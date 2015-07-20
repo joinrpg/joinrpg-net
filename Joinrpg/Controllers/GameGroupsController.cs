@@ -109,5 +109,15 @@ namespace JoinRpg.Web.Controllers
       public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository) : base(userManager, projectRepository)
       {
       }
+
+      public ActionResult AddCharacter(int projectid, int charactergroupid)
+      {
+        throw new NotImplementedException();
+      }
+
+      public ActionResult AddGroup(int projectid, int charactergroupid)
+      {
+        throw new NotImplementedException();
+      }
     }
 }
