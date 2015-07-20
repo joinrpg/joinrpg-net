@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web", "Joinrpg\JoinRpg.Web.csproj", "{24952B80-7D38-44DE-B431-BDC9C1E71D63}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishScripts", "PublishScripts", "{8205D5C6-BED1-45C1-91B5-1000EAAF210D}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\AzureWebsitePublishModule.psm1 = PublishScripts\AzureWebsitePublishModule.psm1
+		PublishScripts\Publish-WebApplicationWebsite.ps1 = PublishScripts\Publish-WebApplicationWebsite.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{91B9B8ED-6229-42C9-83B1-8B6CB4A90FF8}"
+	ProjectSection(SolutionItems) = preProject
+		PublishScripts\Configurations\Joinrpg-WAWS-dev.json = PublishScripts\Configurations\Joinrpg-WAWS-dev.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.DataModel", "JoinRpg.DataModel\JoinRpg.DataModel.csproj", "{BD1358F0-8C7B-4205-84BC-B1C954364DF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Dal.Impl", "JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj", "{2FDC4A55-3A3D-445B-9916-2F3ED898168B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Services.Interfaces", "JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj", "{7032C5D8-131D-4E84-ADF4-263399F9626A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Data.Interfaces", "JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj", "{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Services.Impl", "JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj", "{835EB33A-F3D1-49C7-9C85-1F5F2387A052}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24952B80-7D38-44DE-B431-BDC9C1E71D63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24952B80-7D38-44DE-B431-BDC9C1E71D63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24952B80-7D38-44DE-B431-BDC9C1E71D63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24952B80-7D38-44DE-B431-BDC9C1E71D63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD1358F0-8C7B-4205-84BC-B1C954364DF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD1358F0-8C7B-4205-84BC-B1C954364DF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD1358F0-8C7B-4205-84BC-B1C954364DF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD1358F0-8C7B-4205-84BC-B1C954364DF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FDC4A55-3A3D-445B-9916-2F3ED898168B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FDC4A55-3A3D-445B-9916-2F3ED898168B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FDC4A55-3A3D-445B-9916-2F3ED898168B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FDC4A55-3A3D-445B-9916-2F3ED898168B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7032C5D8-131D-4E84-ADF4-263399F9626A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7032C5D8-131D-4E84-ADF4-263399F9626A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7032C5D8-131D-4E84-ADF4-263399F9626A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7032C5D8-131D-4E84-ADF4-263399F9626A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{91B9B8ED-6229-42C9-83B1-8B6CB4A90FF8} = {8205D5C6-BED1-45C1-91B5-1000EAAF210D}
+	EndGlobalSection
+EndGlobal

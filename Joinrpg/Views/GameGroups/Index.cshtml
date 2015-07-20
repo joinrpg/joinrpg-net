@@ -1,0 +1,54 @@
+﻿@model JoinRpg.Web.Models.CharacterGroupListViewModel
+
+@{
+    ViewBag.Title = "Ролевка" + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+
+<p>
+    @Html.ActionLink("Главная страница игры", "Details", "Game", new {Model.ProjectId}, null)
+</p>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+@{
+    var firstItem = Model.Groups.First();
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.AvaiableDirectSlots)
+        </th>
+        <th></th>
+    </tr>
+
+
+    @foreach (var item in Model.Groups)
+    {
+    <tr>
+        <td>
+            @{
+                var totalSpan = new string('\t', Math.Min(item.DeepLevel - 1, 0));
+            }
+            <span>@totalSpan</span>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+    }
+
+</table>
+

@@ -1,0 +1,38 @@
+﻿@model JoinRpg.Web.Models.HomeViewModel
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>ASP.NET</h1>
+    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
+    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Подать заявку на игру</h2>
+        @Html.DropDownListFor(
+            model => model.ProjectIdToJoin, Model.ActiveProjects.Select(project => new SelectListItem
+            {
+                    Text = project.ProjectName, Value = project.ProjectId.ToString()
+                }));
+        <p><a class="btn btn-default" href="">Подать заявку</a></p>
+    </div>
+    <div class="col-md-4">
+        <h2>Мои базы заявок</h2>
+        <ul>
+            @foreach (var project in Model.MyProjects)
+            {
+                <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId}, null);</li>
+            }
+        </ul>
+        <p>@Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-default" })</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Создать базу заявок для своей игры</h2>
+        <p>JoinRpg.ru позволит вам удобно работать с сеткой персонажей и локаций и принимать заявки игроков. Использование базы заявок бесплатно.</p>
+        
+    </div>
+</div>

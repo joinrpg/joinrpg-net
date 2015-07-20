@@ -1,0 +1,79 @@
+﻿@model JoinRpg.DataModel.Project
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Добавить новое поле персонажа", "Create", new {Model.ProjectId})
+</p>
+@{
+    var firstItem = Model.ProjectFields.FirstOrDefault();
+}
+@if (firstItem != null)
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.FieldName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.IsPublic)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.CanPlayerView)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.CanPlayerEdit)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.FieldHint)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.Order)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.IsPublic)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model.AllProjectFields)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FieldName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsPublic)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CanPlayerView)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CanPlayerEdit)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FieldHint)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Order)
+                </td>
+                <td>
+                    @if (!item.IsActive)
+                    {
+                        <span>удалено</span>
+                    }
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId}) |
+                    @* @Html.ActionLink("Details", "Details", new {id = item.ProjectCharacterFieldId}) | *@
+                    @Html.ActionLink("Удалить", "Delete", new { item.ProjectCharacterFieldId, item.ProjectId })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
