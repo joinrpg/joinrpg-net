@@ -31,6 +31,7 @@ namespace JoinRpg.DataModel
     public IEnumerable<ProjectCharacterField> AllProjectFields => ProjectFields.OrderByDescending(pf => pf.IsActive).ThenBy(pf => pf.Order);
 
     public virtual ICollection<CharacterGroup>  CharacterGroups { get; set; }
+    public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
   }
 
   public static class ProjectExtensions

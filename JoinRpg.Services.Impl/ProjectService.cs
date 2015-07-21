@@ -92,5 +92,37 @@ namespace JoinRpg.Services.Impl
         }
       _unitOfWork.SaveChanges();
     }
+
+      public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds)
+      {
+        var characterGroups =
+          _unitOfWork.GetDbSet<CharacterGroup>().Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId)).ToList();
+
+        if (characterGroups.Any(g => g.ProjectId != projectId))
+        {
+          throw new DbEntityValidationException();
+        }
+
+        if (characterGroups.Count == 0)
+        {
+          throw new DbEntityValidationException();
+        }
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+          throw new DbEntityValidationException();
+        }
+
+        _unitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
+        {
+          AvaiableDirectSlots = 0,
+          CharacterGroupName = name,
+          ParentGroups = characterGroups,
+          ProjectId = projectId,
+          IsRoot = false,
+          IsPublic = isPublic
+        });
+        _unitOfWork.SaveChanges();
+      }
     }
 }

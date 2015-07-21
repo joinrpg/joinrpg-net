@@ -13,5 +13,6 @@ namespace JoinRpg.Services.Interfaces
     void AddCharacterField(ProjectCharacterField field);
     void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     void DeleteField(int projectCharacterFieldId);
+    void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds);
   }
 }

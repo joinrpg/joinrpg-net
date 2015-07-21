@@ -14,13 +14,9 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class GameFieldController : ControllerGameBase
   {
-
-    private readonly IProjectService _projectService;
-
     public GameFieldController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService) : base(userManager, projectRepository)
+      IProjectService projectService) : base(userManager, projectRepository, projectService)
     {
-      _projectService = projectService;
     }
 
     private ActionResult InsideField(int projectId, int fieldId,
@@ -61,7 +57,7 @@ namespace JoinRpg.Web.Controllers
         try
         {
           field.IsActive = true;
-          _projectService.AddCharacterField(field);
+          ProjectService.AddCharacterField(field);
 
           return ReturnToIndex(project);
         }
@@ -101,7 +97,7 @@ namespace JoinRpg.Web.Controllers
       {
         try
         {
-          _projectService.UpdateCharacterField(project.ProjectId, field.ProjectCharacterFieldId, viewModel.Name,
+          ProjectService.UpdateCharacterField(project.ProjectId, field.ProjectCharacterFieldId, viewModel.Name,
             viewModel.FieldHint,
             viewModel.CanPlayerEdit, viewModel.CanPlayerView, viewModel.IsPublic);
 
@@ -132,7 +128,7 @@ namespace JoinRpg.Web.Controllers
       {
         try
         {
-          _projectService.DeleteField(field.ProjectCharacterFieldId);
+          ProjectService.DeleteField(field.ProjectCharacterFieldId);
 
           return ReturnToIndex(project);
         }

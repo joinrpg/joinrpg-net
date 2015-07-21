@@ -1,8 +1,7 @@
-﻿@using JoinRpg.Web.Models
-@model JoinRpg.Web.Models.CharacterGroupListViewModel
+﻿@model JoinRpg.Web.Models.CharacterGroupListViewModel
 
 @{
-    ViewBag.Title = "Ролевка" + Model.ProjectName;
+    ViewBag.Title = "Ролевка " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -17,22 +16,34 @@
     @foreach (var item in Model.Groups)
     {
 
-      var totalSpan = new string('→', Math.Max(item.DeepLevel - 1, 0));
+      var totalSpan = new string('→', Math.Max(item.DeepLevel, 0));
     
         <dt>
         <span>@totalSpan</span>
         @Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)
+            @if (!item.FirstCopy)
+            {
+                <span>см. выше</span>
+            }
     </dt>
         <dd>
-            @Html.ActionLink("Редактировать свойства", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
-            @Html.ActionLink("Удалить", "Delete", new { Model.ProjectId, item.CharacterGroupId }, null) |
-            Добавить @Html.ActionLink("персонажа", "AddCharacter", new {Model.ProjectId, item.CharacterGroupId}, null) |
-            @Html.ActionLink("подлокацию", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
+            @if (item.FirstCopy)
+            {
+            <span>
+                @Html.ActionLink("Редактировать свойства", "Edit", new { Model.ProjectId, item.CharacterGroupId }, null) |
+                @Html.ActionLink("Удалить", "Delete", new { Model.ProjectId, item.CharacterGroupId }, null) |
+                Добавить
+                @Html.ActionLink("персонажа", "AddCharacter", new { Model.ProjectId, item.CharacterGroupId }, null) |
+                @Html.ActionLink("подлокацию", "AddGroup", new { Model.ProjectId, item.CharacterGroupId }, null)
 
-            <br/>
-            Непрописанных персонажей в локации: @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
-            
-            
+                <br/>
+                Непрописанных
+                персонажей в
+                локации:
+                @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
+            </span>
+            }
+
         </dd>
       }
 

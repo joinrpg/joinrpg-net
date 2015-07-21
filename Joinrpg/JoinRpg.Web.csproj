@@ -247,6 +247,7 @@
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\CharacterGroupViewModel.cs" />
+    <Compile Include="Models\AddCharacterGroupViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
@@ -319,6 +320,7 @@
     <Content Include="Views\GameField\Edit.cshtml" />
     <Content Include="Views\GameField\Delete.cshtml" />
     <Content Include="Views\GameGroups\Index.cshtml" />
+    <Content Include="Views\GameGroups\AddGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
