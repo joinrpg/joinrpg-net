@@ -1,33 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Controllers.Common
 {
   public class ControllerGameBase : ControllerBase
   {
+    protected IProjectService ProjectService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
-    protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository) : base(userManager)
+    protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager)
     {
       ProjectRepository = projectRepository;
-    }
-
-    protected bool RequireProject(Func<ProjectAcl, bool> requiredAccess, Project project)
-    {
-      return project.CheckAccess(CurrentUserId, requiredAccess);
+      ProjectService = projectService;
     }
 
     protected ActionResult InsideProject(int projectId, Func<ProjectAcl, bool> requiredRights,
       Func<Project, ActionResult> action)
     {
       var project = ProjectRepository.GetProject(projectId);
-      var result = RequireProject(requiredRights, project);
+      var result = project.CheckAccess(CurrentUserId, requiredRights);
       if (!result)
       {
         return View("ErrorNoAccessToProject", project.ProjectName);

@@ -14,11 +14,8 @@ namespace JoinRpg.Web.Controllers
 {
     public class GameController : ControllerGameBase
   {
-      private readonly IProjectService _projectService;
-
-      public GameController(IProjectService projectService, ApplicationUserManager userManager, IProjectRepository projectRepository) : base (userManager, projectRepository)
+      public GameController(IProjectService projectService, ApplicationUserManager userManager, IProjectRepository projectRepository) : base (userManager, projectRepository, projectService)
       {
-        _projectService = projectService;
       }
 
       // GET: Game
@@ -48,7 +45,7 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
-             var project = _projectService.AddProject(model.ProjectName, GetCurrentUser());
+             var project = ProjectService.AddProject(model.ProjectName, GetCurrentUser());
 
                 return RedirectToAction("Details", new {id = project.ProjectId});
             }
