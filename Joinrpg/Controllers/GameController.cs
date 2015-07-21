@@ -6,20 +6,19 @@ using System.Web;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
-    public class GameController : ControllerBase
-    {
+    public class GameController : ControllerGameBase
+  {
       private readonly IProjectService _projectService;
-      private readonly IProjectRepository _projectRepository;
 
-      public GameController(IProjectService projectService, ApplicationUserManager userManager, IProjectRepository projectRepository) : base (userManager)
+      public GameController(IProjectService projectService, ApplicationUserManager userManager, IProjectRepository projectRepository) : base (userManager, projectRepository)
       {
         _projectService = projectService;
-        _projectRepository = projectRepository;
       }
 
       // GET: Game
@@ -31,7 +30,7 @@ namespace JoinRpg.Web.Controllers
         // GET: Game/Details/5
         public ActionResult Details(int projectId)
         {
-            return View(_projectRepository.GetProject(projectId));
+            return View(ProjectRepository.GetProject(projectId));
         }
 
         // GET: Game/Create
