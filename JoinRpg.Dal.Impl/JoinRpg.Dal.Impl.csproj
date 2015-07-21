@@ -58,21 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IUnitOfWork.cs" />
-    <Compile Include="Migrations\201507162355375_Initial.cs" />
-    <Compile Include="Migrations\201507162355375_Initial.Designer.cs">
-      <DependentUpon>201507162355375_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201507191707282_WasEver.cs" />
-    <Compile Include="Migrations\201507191707282_WasEver.Designer.cs">
-      <DependentUpon>201507191707282_WasEver.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201507191721393_CharGroups.cs" />
-    <Compile Include="Migrations\201507191721393_CharGroups.Designer.cs">
-      <DependentUpon>201507191721393_CharGroups.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201507202039069_AvailField.cs" />
-    <Compile Include="Migrations\201507202039069_AvailField.Designer.cs">
-      <DependentUpon>201507202039069_AvailField.cs</DependentUpon>
+    <Compile Include="Migrations\201507212202152_Initial.cs" />
+    <Compile Include="Migrations\201507212202152_Initial.Designer.cs">
+      <DependentUpon>201507212202152_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -96,17 +84,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201507162355375_Initial.resx">
-      <DependentUpon>201507162355375_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507191707282_WasEver.resx">
-      <DependentUpon>201507191707282_WasEver.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507191721393_CharGroups.resx">
-      <DependentUpon>201507191721393_CharGroups.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201507202039069_AvailField.resx">
-      <DependentUpon>201507202039069_AvailField.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201507212202152_Initial.resx">
+      <DependentUpon>201507212202152_Initial.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

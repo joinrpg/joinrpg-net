@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
@@ -30,7 +27,7 @@ namespace JoinRpg.Services.Impl
           ProjectName = projectName,
           CharacterGroups = new List<CharacterGroup>()
           {
-            new CharacterGroup() {IsPublic = true, IsRoot = true, CharacterGroupName = "Все персонажи на игре"}
+            new CharacterGroup() {IsPublic = true, IsRoot = true, CharacterGroupName = "Все персонажи на игре", IsActive = true}
           },
           ProjectAcls = new List<ProjectAcl>()
           {
@@ -120,7 +117,8 @@ namespace JoinRpg.Services.Impl
           ParentGroups = characterGroups,
           ProjectId = projectId,
           IsRoot = false,
-          IsPublic = isPublic
+          IsPublic = isPublic,
+          IsActive =  true
         });
         _unitOfWork.SaveChanges();
       }

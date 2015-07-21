@@ -25,6 +25,10 @@ namespace JoinRpg.DataModel
     public bool IsPublic { get; set; }
 
     public int AvaiableDirectSlots { get; set; }
+
+    public virtual ICollection<Character> Characters { get; set; }
+
+    public bool IsActive { get; set; }
   }
 
 }

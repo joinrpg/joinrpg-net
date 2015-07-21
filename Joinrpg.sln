@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web", "Joinrpg\JoinRpg.Web.csproj", "{24952B80-7D38-44DE-B431-BDC9C1E71D63}"
 EndProject
@@ -25,6 +25,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Data.Interfaces", "JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj", "{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Services.Impl", "JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj", "{835EB33A-F3D1-49C7-9C85-1F5F2387A052}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Domain", "JoinRpg.Domain\JoinRpg.Domain.csproj", "{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{835EB33A-F3D1-49C7-9C85-1F5F2387A052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

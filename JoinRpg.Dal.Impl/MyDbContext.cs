@@ -32,6 +32,10 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<CharacterGroup>().HasMany(cg => cg.ParentGroups).WithMany(cg => cg.ChildGroups);
 
+      modelBuilder.Entity<Character>().HasMany(c => c.Groups).WithMany(cg => cg.Characters);
+
+      modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project).WillCascadeOnDelete(false);
+
       base.OnModelCreating(modelBuilder);
     }
  }
