@@ -43,9 +43,9 @@ namespace JoinRpg.Dal.Impl.Migrations
                     {
                         CharacterId = c.Int(nullable: false, identity: true),
                         ProjectId = c.Int(nullable: false),
-                        Name = c.String(),
+                        CharacterName = c.String(),
                         IsPublic = c.Boolean(nullable: false),
-                        IsPlayable = c.Boolean(nullable: false),
+                        IsAcceptingClaims = c.Boolean(nullable: false),
                         JsonData = c.String(),
                         IsActive = c.Boolean(nullable: false),
                     })

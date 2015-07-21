@@ -35,12 +35,24 @@
                 Добавить
                 @Html.ActionLink("персонажа", "AddCharacter", new { Model.ProjectId, item.CharacterGroupId }, null) |
                 @Html.ActionLink("подлокацию", "AddGroup", new { Model.ProjectId, item.CharacterGroupId }, null)
+                
+                <ul>
+                    @foreach (var character in item.Characters)
+                    {
+                        <li>@character.CharacterName @if(character.IsFirstCopy) {} else {<span>(см. выше)</span>}</li>
+                    }
+                </ul>
 
-                <br/>
-                Непрописанных
-                персонажей в
-                локации:
-                @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
+                @if (item.AvaiableDirectSlots > 0)
+                {
+                    <span>
+                    <br />
+                    Непрописанных
+                    персонажей в
+                    локации:
+                    @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
+                </span>
+                }
             </span>
             }
 

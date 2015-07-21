@@ -1,7 +1,7 @@
-﻿@model JoinRpg.Web.Models.AddCharacterGroupViewModel
+﻿@model JoinRpg.Web.Models.AddCharacterViewModel
 
 @{
-    ViewBag.Title = "Добавление группы персонажей (локации) в игру " + Model.Data.ProjectName;
+  ViewBag.Title = "Добавление персонажа в игру " + Model.Data.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -11,7 +11,7 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
-    
+
     <div class="form-horizontal">
         <div class="form-group">
             @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-2"})
@@ -40,6 +40,16 @@
                 <div class="checkbox">
                     @Html.EditorFor(model => model.IsPublic)
                     @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.IsAcceptingClaims)
+                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>

@@ -16,14 +16,11 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<CharacterGroup> Groups { get; set; }
 
-    public string Name { get; set; }
+    public string CharacterName { get; set; }
 
     public bool IsPublic { get; set; }
 
-    /// <summary>
-    /// By default, all characters playable. NPC have this set to false, so players can't apply to this Character
-    /// </summary>
-    public bool IsPlayable { get; set; }
+    public bool IsAcceptingClaims { get; set; }
 
     /// <summary>
     /// Contains values of fields for this character

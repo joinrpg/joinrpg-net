@@ -34,9 +34,8 @@ namespace JoinRpg.Web.Models
       private CharacterGroup Root
       { get; }
 
-      private IList<int> AlreadyOutputedGroups
-      { get; }
-      = new List<int>();
+      private IList<int> AlreadyOutputedGroups { get; } = new List<int>();
+      private IList<int> AlreadyOutputedChars { get; } = new List<int>();
 
       private IList<CharacterGroupViewModel> Results
       { get; }
@@ -62,7 +61,8 @@ namespace JoinRpg.Web.Models
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
-          AvaiableDirectSlots = characterGroup.AvaiableDirectSlots
+          AvaiableDirectSlots = characterGroup.AvaiableDirectSlots,
+          Characters = characterGroup.Characters.Select(GenerateCharacter).ToList()
         };
         Results.Add(vm);
 
@@ -76,7 +76,33 @@ namespace JoinRpg.Web.Models
           GenerateFrom(childGroup, deepLevel + 1);
         }
       }
+
+      private CharacterViewModel GenerateCharacter(Character arg)
+      {
+        var vm = new CharacterViewModel()
+        {
+          CharacterId = arg.CharacterId,
+          CharacterName = arg.CharacterName,
+          IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
+          IsAcceptingClaims = arg.IsAcceptingClaims
+        };
+        if (vm.IsFirstCopy)
+        {
+          AlreadyOutputedChars.Add(vm.CharacterId);
+        }
+        return vm;
+      }
     }
+  }
+
+  public class CharacterViewModel
+  {
+    public int CharacterId { get; set; }
+    public string CharacterName { get; set; }
+
+    public bool IsFirstCopy { get; set; }
+
+    public bool IsAcceptingClaims { get; set; }
   }
 
   public class CharacterGroupViewModel
@@ -94,6 +120,8 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Слотов в локации")]
     public int AvaiableDirectSlots { get; set; }
+
+    public IList<CharacterViewModel> Characters { get; set; }
   }
 
 }

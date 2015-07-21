@@ -92,18 +92,7 @@ namespace JoinRpg.Services.Impl
 
       public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds)
       {
-        var characterGroups =
-          _unitOfWork.GetDbSet<CharacterGroup>().Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId)).ToList();
-
-        if (characterGroups.Any(g => g.ProjectId != projectId))
-        {
-          throw new DbEntityValidationException();
-        }
-
-        if (characterGroups.Count == 0)
-        {
-          throw new DbEntityValidationException();
-        }
+        var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
 
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -122,5 +111,43 @@ namespace JoinRpg.Services.Impl
         });
         _unitOfWork.SaveChanges();
       }
+
+      private List<CharacterGroup> ValidateCharacterGroupList(int projectId, List<int> parentCharacterGroupIds)
+      {
+        var characterGroups =
+          _unitOfWork.GetDbSet<CharacterGroup>().Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId)).ToList();
+
+        if (characterGroups.Any(g => g.ProjectId != projectId))
+        {
+          throw new DbEntityValidationException();
+        }
+
+        if (characterGroups.Count == 0)
+        {
+          throw new DbEntityValidationException();
+        }
+        return characterGroups;
+      }
+
+      public void AddCharacter(int projectId, List<int> parentCharacterGroupIds, string name, bool isPublic, bool isAcceptingClaims)
+      {
+      var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
+
+      if (string.IsNullOrWhiteSpace(name))
+      {
+        throw new DbEntityValidationException();
+      }
+
+      _unitOfWork.GetDbSet<Character>().Add(new Character()
+      {
+        CharacterName = name,
+        Groups = characterGroups,
+        ProjectId = projectId,
+        IsPublic = isPublic,
+        IsActive = true,
+        IsAcceptingClaims = isAcceptingClaims
+      });
+      _unitOfWork.SaveChanges();
+    }
     }
 }

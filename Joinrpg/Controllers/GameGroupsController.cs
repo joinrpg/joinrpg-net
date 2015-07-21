@@ -120,11 +120,6 @@ namespace JoinRpg.Web.Controllers
     {
     }
 
-    public ActionResult AddCharacter(int projectid, int charactergroupid)
-    {
-      throw new NotImplementedException();
-    }
-
     [HttpGet]
     [Authorize]
     public ActionResult AddGroup(int projectid, int charactergroupid)
@@ -141,7 +136,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
+    public ActionResult AddGroup(AddGameObjectViewModelBase viewModel)
     {
       return InsideProject(viewModel.ProjectId, project =>
       {
@@ -150,6 +145,41 @@ namespace JoinRpg.Web.Controllers
           ProjectService.AddCharacterGroup( 
             viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
             viewModel.ParentCharacterGroupIds);
+
+          return RedirectToIndex(project);
+        }
+        catch
+        {
+          return View(viewModel);
+        }
+      });
+    }
+
+    [HttpGet]
+    [Authorize]
+    public ActionResult AddCharacter(int projectid, int charactergroupid)
+    {
+      return InsideGroup(projectid, charactergroupid,
+        (project, @group) => View(new AddCharacterViewModel()
+        {
+          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup),
+          ProjectId = projectid,
+          ParentCharacterGroupIds = new List<int> { charactergroupid }
+        }));
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult AddCharacter(AddCharacterViewModel viewModel)
+    {
+      return InsideProject(viewModel.ProjectId, project =>
+      {
+        try
+        {
+          ProjectService.AddCharacter(
+            viewModel.ProjectId,
+            viewModel.ParentCharacterGroupIds, viewModel.Name, viewModel.IsPublic, viewModel.IsAcceptingClaims);
 
           return RedirectToIndex(project);
         }

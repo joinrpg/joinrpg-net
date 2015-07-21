@@ -47,7 +47,7 @@ namespace JoinRpg.Web.Controllers
             {
              var project = ProjectService.AddProject(model.ProjectName, GetCurrentUser());
 
-                return RedirectToAction("Details", new {id = project.ProjectId});
+                return RedirectToAction("Details", new {project.ProjectId});
             }
             catch
             {

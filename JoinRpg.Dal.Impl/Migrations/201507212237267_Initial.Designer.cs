@@ -13,7 +13,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201507212202152_Initial"; }
+            get { return "201507212237267_Initial"; }
         }
         
         string IMigrationMetadata.Source
