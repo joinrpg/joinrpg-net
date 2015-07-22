@@ -37,34 +37,41 @@
             @if (item.FirstCopy)
             {
                 <span>
-            @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
-            @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null) |
-            Добавить
-            @Html.ActionLink("персонажа", "AddCharacter", new {Model.ProjectId, item.CharacterGroupId}, null) |
-            @Html.ActionLink("подлокацию", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
+@if (Model.ShowEditControls)
+{
+    <span>
+    @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
+    @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null) |
+    Добавить
+    @Html.ActionLink("персонажа", "AddCharacter", new {Model.ProjectId, item.CharacterGroupId}, null) |
+    @Html.ActionLink("подлокацию", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
+</span>
+}
             @item.Description
             <ul>
                 @foreach (var character in item.Characters)
                 {
                     <li>
-                        <strong>@character.CharacterName </strong>
+                        <strong>@character.CharacterName </strong> 
+                        @if (character.IsAvailable)
+                        {
+                            @Html.ActionLink("заявиться", "Add", "Claim", new {Model.ProjectId, character.CharacterId}, null);
+                        }
                         @if (character.IsFirstCopy)
-                                             {<div>@character.Description</div>}
-                                             else
-                                             {<span>(см. выше)</span>}
+                        {<div>@character.Description</div>}
+                        else
+                        {<span>(см. выше)</span>}
                 </li>
                 }
             </ul>
 
             @if (item.AvaiableDirectSlots > 0)
             {
-                <span>
-                <br />
-                Непрописанных
-                персонажей в
-                локации:
-                @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
-            </span>
+            <div>
+                <strong>+@item.AvaiableDirectSlots вакансий</strong>
+                @Html.ActionLink("заявиться в локацию", "Add", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null);
+
+            </div>
             }
 
 

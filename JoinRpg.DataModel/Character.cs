@@ -34,6 +34,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<Claim> Claims { get; set; }
 
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
+
+    public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null;
   }
 
   

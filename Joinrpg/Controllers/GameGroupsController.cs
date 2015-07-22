@@ -15,24 +15,29 @@ namespace JoinRpg.Web.Controllers
   public class GameGroupsController : ControllerGameBase
   {
 
-    private ActionResult InsideGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
+    private ActionResult WithGroupAsMaster(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
     {
-      return InsideProjectSubentity(projectId, groupId, project => project.CharacterGroups,
+      return WithSubEntityAsMaster(projectId, groupId, project => project.CharacterGroups,
+        subentity => subentity.CharacterGroupId, pa => pa.CanChangeFields, action);
+    }
+
+    private ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
+    {
+      return WithSubEntity(projectId, groupId, project => project.CharacterGroups,
         subentity => subentity.CharacterGroupId, action);
     }
 
-    [Authorize]
     // GET: GameGroups
     public ActionResult Index(int projectId, int? characterGroupId)
     {
-      return InsideProject(projectId, project =>
+      return WithProject(projectId, (project, acl) =>
       {
         if (characterGroupId == null)
         {
           return RedirectToIndex(project);
         }
-        return InsideGroup(projectId, (int)characterGroupId,
-          (project1, @group) => View(CharacterGroupListViewModel.FromGroup(@group)));
+        return WithGroup(projectId, (int)characterGroupId,
+          (project1, @group) => View(CharacterGroupListViewModel.FromGroup(@group, acl != null)));
 
       });
     }
@@ -124,10 +129,10 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public ActionResult AddGroup(int projectid, int charactergroupid)
     {
-      return InsideGroup(projectid, charactergroupid,
+      return WithGroupAsMaster(projectid, charactergroupid,
         (project, @group) => View(new AddCharacterGroupViewModel()
         {
-          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup),
+          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup, true),
           ProjectId = projectid,
           ParentCharacterGroupIds = new List<int> {charactergroupid}
         }));
@@ -138,7 +143,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
     {
-      return InsideProject(viewModel.ProjectId, project =>
+      return WithProjectAsMaster(viewModel.ProjectId, project =>
       {
         try
         {
@@ -159,10 +164,10 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public ActionResult AddCharacter(int projectid, int charactergroupid)
     {
-      return InsideGroup(projectid, charactergroupid,
+      return WithGroupAsMaster(projectid, charactergroupid,
         (project, @group) => View(new AddCharacterViewModel()
         {
-          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup),
+          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup, true),
           ProjectId = projectid,
           ParentCharacterGroupIds = new List<int> { charactergroupid }
         }));
@@ -173,7 +178,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult AddCharacter(AddCharacterViewModel viewModel)
     {
-      return InsideProject(viewModel.ProjectId, project =>
+      return WithProjectAsMaster(viewModel.ProjectId, project =>
       {
         try
         {

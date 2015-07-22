@@ -11,7 +11,7 @@ namespace JoinRpg.Web.Controllers.Common
   public class ControllerGameBase : ControllerBase
   {
     protected IProjectService ProjectService { get; }
-    protected IProjectRepository ProjectRepository { get; }
+    private IProjectRepository ProjectRepository { get; }
 
     protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager)
     {
@@ -19,28 +19,55 @@ namespace JoinRpg.Web.Controllers.Common
       ProjectService = projectService;
     }
 
-    protected ActionResult InsideProject(int projectId, Func<ProjectAcl, bool> requiredRights,
-      Func<Project, ActionResult> action)
+    protected ActionResult WithProject(int projectId, Func<Project, ProjectAcl, ActionResult> action)
     {
       var project = ProjectRepository.GetProject(projectId);
-      var result = project.CheckAccess(CurrentUserId, requiredRights);
-      if (!result)
+      if (project == null)
       {
-        return View("ErrorNoAccessToProject", project.ProjectName);
+        return HttpNotFound();
       }
-      return action(project);
+      var acl = Request.IsAuthenticated ? project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId) : null;
+      return action(project, acl);
     }
 
-    protected ActionResult InsideProject(int projectId, Func<Project, ActionResult> action)
+    protected ActionResult WithProject(int projectId, Func<Project, ActionResult> action)
     {
-      return InsideProject(projectId, pa => true, action);
+      return WithProject(projectId, (project, acl) => action(project));
     }
 
-    protected ActionResult InsideProjectSubentity<TProjectSubEntity>(int projectId, int fieldId,
+    protected ActionResult WithProjectAsMaster(int projectId, Func<ProjectAcl,bool> requiredRights, Func<Project, ActionResult> action)
+    {
+      return WithProject(projectId, (project, acl) =>
+      {
+        if (acl == null || requiredRights(acl))
+        {
+          return View("ErrorNoAccessToProject", project.ProjectName);
+        }
+        return action(project);
+      });
+    }
+
+    protected ActionResult WithProjectAsMaster(int projectId, Func<Project, ActionResult> action)
+    {
+      return WithProjectAsMaster(projectId, acl => true, action);
+    }
+
+    protected ActionResult WithSubEntityAsMaster<TProjectSubEntity>(int projectId, int fieldId,
+      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector, Func<TProjectSubEntity, int> subentityKeySelector,
+      Func<ProjectAcl, bool> requiredRights, Func<Project, TProjectSubEntity, ActionResult> action)
+    {
+      return WithProjectAsMaster(projectId, requiredRights, project =>
+      {
+        var field = subentitySelector(project).SingleOrDefault(e => subentityKeySelector(e) == fieldId);
+        return field == null ? HttpNotFound() : action(project, field);
+      });
+    }
+
+    protected ActionResult WithSubEntity<TProjectSubEntity>(int projectId, int fieldId,
       Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector, Func<TProjectSubEntity, int> subentityKeySelector,
       Func<Project, TProjectSubEntity, ActionResult> action)
     {
-      return InsideProject(projectId, pa => pa.CanChangeFields, project =>
+      return WithProject(projectId, project =>
       {
         var field = subentitySelector(project).SingleOrDefault(e => subentityKeySelector(e) == fieldId);
         return field == null ? HttpNotFound() : action(project, field);

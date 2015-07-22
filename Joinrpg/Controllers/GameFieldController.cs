@@ -22,8 +22,8 @@ namespace JoinRpg.Web.Controllers
     private ActionResult InsideField(int projectId, int fieldId,
       Func<Project, ProjectCharacterField, ActionResult> action)
     {
-      return InsideProjectSubentity(projectId, fieldId, project => project.AllProjectFields,
-        subentity => subentity.ProjectCharacterFieldId, action);
+      return WithSubEntityAsMaster(projectId, fieldId, project => project.AllProjectFields,
+        subentity => subentity.ProjectCharacterFieldId, pa => pa.CanChangeFields, action);
     }
 
 
@@ -37,14 +37,13 @@ namespace JoinRpg.Web.Controllers
     // GET: GameFields
     public ActionResult Index(int projectId)
     {
-      return InsideProject(projectId, pa => pa.CanChangeFields, project => View(project));
+      return WithProjectAsMaster(projectId, pa => pa.CanChangeFields, project => View(project));
     }
 
     // GET: GameFields/Create
     public ActionResult Create(int projectId)
     {
-      return InsideProject(projectId, pa => pa.CanChangeFields,
-        project => View(new ProjectCharacterField() {ProjectId = projectId}));
+      return WithProjectAsMaster(projectId, pa => pa.CanChangeFields, project => View(new ProjectCharacterField() {ProjectId = projectId}));
     }
 
     // POST: GameFields/Create
@@ -52,7 +51,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Create(ProjectCharacterField field)
     {
-      return InsideProject(field.ProjectId, pa => pa.CanChangeFields, project =>
+      return WithProjectAsMaster(field.ProjectId, pa => pa.CanChangeFields, project =>
       {
         try
         {

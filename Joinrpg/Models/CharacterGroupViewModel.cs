@@ -17,17 +17,21 @@ namespace JoinRpg.Web.Models
 
     public IList<CharacterGroupViewModel> Groups { get; set; }
 
-    public static CharacterGroupListViewModel FromGroup(CharacterGroup group)
+    public static CharacterGroupListViewModel FromGroup(CharacterGroup group, bool showEditControls)
     {
       return new CharacterGroupListViewModel()
       {
         ProjectId = group.ProjectId,
         ProjectName = group.Project.ProjectName,
-        Groups = new CharacterGroupHierarchyBuilder(group).Generate()
+        Groups = new CharacterGroupHierarchyBuilder(group).Generate(),
+        ShowEditControls = showEditControls,
       };
     }
 
+    public bool ShowEditControls { get; set; }
 
+
+    //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
     {
       private CharacterGroup Root
@@ -86,7 +90,7 @@ namespace JoinRpg.Web.Models
           CharacterId = arg.CharacterId,
           CharacterName = arg.CharacterName,
           IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-          IsAcceptingClaims = arg.IsAcceptingClaims,
+          IsAvailable = arg.IsAvailable,
           Description =  arg.Description.ToHtmlString()
         };
         if (vm.IsFirstCopy)
@@ -105,7 +109,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsFirstCopy { get; set; }
 
-    public bool IsAcceptingClaims { get; set; }
+    public bool IsAvailable { get; set; }
 
     public HtmlString Description { get; set; }
   }

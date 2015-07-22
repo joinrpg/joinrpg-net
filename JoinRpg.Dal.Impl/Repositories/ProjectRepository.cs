@@ -36,7 +36,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     public Project GetMyProject(int projectId, int userInfoId)
       => AllProjects.Where(MyProjectPredicate(userInfoId)).Include(nameof(ProjectAcl)).SingleOrDefault(project => project.ProjectId == projectId);
 
-    public Project GetProject(int project) => AllProjects.First(p => p.ProjectId == project);
+    public Project GetProject(int project) => AllProjects.SingleOrDefault(p => p.ProjectId == project);
 
     private static Expression<Func<Project, bool>> MyProjectPredicate(int? userInfoId)
     {

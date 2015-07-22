@@ -246,6 +246,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\UnityMvcActivator.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\Common\ControllerBase.cs" />
     <Compile Include="Controllers\Common\ControllerGameBase.cs" />
     <Compile Include="Controllers\GameController.cs" />

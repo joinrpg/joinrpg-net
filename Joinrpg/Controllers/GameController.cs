@@ -27,7 +27,7 @@ namespace JoinRpg.Web.Controllers
         // GET: Game/Details/5
         public ActionResult Details(int projectId)
         {
-            return View(ProjectRepository.GetProject(projectId));
+          return WithProject(projectId, p => View(p));
         }
 
         // GET: Game/Create
