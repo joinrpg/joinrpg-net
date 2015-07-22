@@ -9,10 +9,6 @@ namespace JoinRpg.DataModel
 {
   public class Character
   {
-    public Character()
-    {
-      Description = new MarkdownString();
-    }
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
 
@@ -33,7 +29,11 @@ namespace JoinRpg.DataModel
 
     public bool IsActive { get; set; }
 
-    public MarkdownString Description { get; set; }
+    public MarkdownString Description { get; set; } = new MarkdownString();
+
+    public virtual ICollection<Claim> Claims { get; set; }
+
+    public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
   }
 
   

@@ -66,6 +66,10 @@
     <Compile Include="Migrations\201507221622159_Description.Designer.cs">
       <DependentUpon>201507221622159_Description.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507221905005_Claims.cs" />
+    <Compile Include="Migrations\201507221905005_Claims.Designer.cs">
+      <DependentUpon>201507221905005_Claims.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -93,6 +97,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507221622159_Description.resx">
       <DependentUpon>201507221622159_Description.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507221905005_Claims.resx">
+      <DependentUpon>201507221905005_Claims.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -33,5 +33,7 @@ namespace JoinRpg.DataModel
     public string PhoneNumber { get; set; }
 
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
+
+    public virtual ICollection<Claim>  Claims { get; set; }
   }
 }
