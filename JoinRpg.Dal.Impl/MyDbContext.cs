@@ -41,6 +41,11 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany().WillCascadeOnDelete(false);
 
+      modelBuilder.Entity<Claim>().HasMany(c => c.Comments).WithRequired(c => c.Claim);
+      modelBuilder.Entity<Comment>().HasMany(c => c.ChildsComments).WithOptional(comment => comment.Parent).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
+
       base.OnModelCreating(modelBuilder);
     }
  }

@@ -74,6 +74,10 @@
     <Compile Include="Migrations\201507222138073_ClaimToProjectLink.Designer.cs">
       <DependentUpon>201507222138073_ClaimToProjectLink.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201507222326314_Comments.cs" />
+    <Compile Include="Migrations\201507222326314_Comments.Designer.cs">
+      <DependentUpon>201507222326314_Comments.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -107,6 +111,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201507222138073_ClaimToProjectLink.resx">
       <DependentUpon>201507222138073_ClaimToProjectLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201507222326314_Comments.resx">
+      <DependentUpon>201507222326314_Comments.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
