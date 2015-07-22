@@ -9,6 +9,10 @@ namespace JoinRpg.DataModel
 {
   public class Character
   {
+    public Character()
+    {
+      Description = new MarkdownString();
+    }
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
 
@@ -28,6 +32,8 @@ namespace JoinRpg.DataModel
     public string JsonData { get; set; }
 
     public bool IsActive { get; set; }
+
+    public MarkdownString Description { get; set; }
   }
 
   

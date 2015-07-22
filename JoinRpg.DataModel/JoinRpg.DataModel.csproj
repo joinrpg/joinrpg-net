@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
+    <Compile Include="MarkdownString.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectCharacterField.cs" />

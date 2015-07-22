@@ -8,6 +8,12 @@ namespace JoinRpg.DataModel
 {
   public class CharacterGroup
   {
+
+    public CharacterGroup()
+    {
+      Description = new MarkdownString();
+    }
+
     public int CharacterGroupId { get; set; }
 
     public int ProjectId { get; set; }
@@ -29,6 +35,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<Character> Characters { get; set; }
 
     public bool IsActive { get; set; }
+
+    public MarkdownString Description { get; set; }
   }
 
 }

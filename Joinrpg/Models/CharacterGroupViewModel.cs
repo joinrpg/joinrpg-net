@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
@@ -62,7 +61,8 @@ namespace JoinRpg.Web.Models
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.AvaiableDirectSlots,
-          Characters = characterGroup.Characters.Select(GenerateCharacter).ToList()
+          Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
+          Description = characterGroup.Description.ToHtmlString()
         };
         Results.Add(vm);
 
@@ -84,7 +84,8 @@ namespace JoinRpg.Web.Models
           CharacterId = arg.CharacterId,
           CharacterName = arg.CharacterName,
           IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
-          IsAcceptingClaims = arg.IsAcceptingClaims
+          IsAcceptingClaims = arg.IsAcceptingClaims,
+          Description =  arg.Description.ToHtmlString()
         };
         if (vm.IsFirstCopy)
         {
@@ -103,6 +104,8 @@ namespace JoinRpg.Web.Models
     public bool IsFirstCopy { get; set; }
 
     public bool IsAcceptingClaims { get; set; }
+
+    public HtmlString Description { get; set; }
   }
 
   public class CharacterGroupViewModel
@@ -122,6 +125,8 @@ namespace JoinRpg.Web.Models
     public int AvaiableDirectSlots { get; set; }
 
     public IList<CharacterViewModel> Characters { get; set; }
+
+    public HtmlString Description { get; set; }
   }
 
 }

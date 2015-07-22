@@ -90,7 +90,7 @@ namespace JoinRpg.Services.Impl
       _unitOfWork.SaveChanges();
     }
 
-      public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds)
+      public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description)
       {
         var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
 
@@ -107,7 +107,8 @@ namespace JoinRpg.Services.Impl
           ProjectId = projectId,
           IsRoot = false,
           IsPublic = isPublic,
-          IsActive =  true
+          IsActive =  true,
+          Description = new MarkdownString(description)
         });
         _unitOfWork.SaveChanges();
       }
@@ -129,7 +130,7 @@ namespace JoinRpg.Services.Impl
         return characterGroups;
       }
 
-      public void AddCharacter(int projectId, List<int> parentCharacterGroupIds, string name, bool isPublic, bool isAcceptingClaims)
+      public void AddCharacter(int projectId, List<int> parentCharacterGroupIds, string name, bool isPublic, bool isAcceptingClaims, string description)
       {
       var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
 
@@ -145,7 +146,8 @@ namespace JoinRpg.Services.Impl
         ProjectId = projectId,
         IsPublic = isPublic,
         IsActive = true,
-        IsAcceptingClaims = isAcceptingClaims
+        IsAcceptingClaims = isAcceptingClaims,
+        Description = new MarkdownString(description)
       });
       _unitOfWork.SaveChanges();
     }

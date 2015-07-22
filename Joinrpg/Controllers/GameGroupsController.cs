@@ -136,7 +136,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult AddGroup(AddGameObjectViewModelBase viewModel)
+    public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
     {
       return InsideProject(viewModel.ProjectId, project =>
       {
@@ -144,7 +144,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectService.AddCharacterGroup( 
             viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds);
+            viewModel.ParentCharacterGroupIds, viewModel.Description);
 
           return RedirectToIndex(project);
         }
@@ -179,7 +179,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectService.AddCharacter(
             viewModel.ProjectId,
-            viewModel.ParentCharacterGroupIds, viewModel.Name, viewModel.IsPublic, viewModel.IsAcceptingClaims);
+            viewModel.ParentCharacterGroupIds, viewModel.Name, viewModel.IsPublic, viewModel.IsAcceptingClaims, viewModel.Description);
 
           return RedirectToIndex(project);
         }
