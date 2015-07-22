@@ -47,11 +47,11 @@ namespace JoinRpg.Web.Models
 
       public IList<CharacterGroupViewModel> Generate()
       {
-        GenerateFrom(Root, 0);
+        GenerateFrom(Root, 0, new List<CharacterGroup>());
         return Results;
       }
 
-      private void GenerateFrom(CharacterGroup characterGroup, int deepLevel)
+      private void GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
         var vm = new CharacterGroupViewModel()
         {
@@ -62,7 +62,8 @@ namespace JoinRpg.Web.Models
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.AvaiableDirectSlots,
           Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
-          Description = characterGroup.Description.ToHtmlString()
+          Description = characterGroup.Description.ToHtmlString(),
+          Path = pathToTop.Where(cg => !cg.IsRoot).Select(cg => cg.CharacterGroupName)
         };
         Results.Add(vm);
 
@@ -73,7 +74,8 @@ namespace JoinRpg.Web.Models
 
         foreach (var childGroup in characterGroup.ChildGroups)
         {
-          GenerateFrom(childGroup, deepLevel + 1);
+          var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
+          GenerateFrom(childGroup, deepLevel + 1, characterGroups);
         }
       }
 
@@ -127,6 +129,8 @@ namespace JoinRpg.Web.Models
     public IList<CharacterViewModel> Characters { get; set; }
 
     public HtmlString Description { get; set; }
+
+    public IEnumerable<string> Path { get; set; }
   }
 
 }

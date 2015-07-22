@@ -11,58 +11,64 @@
     @Html.ActionLink("Главная страница игры", "Details", "Game", new {Model.ProjectId}, null)
 </p>
 
-<dl>
-
     @foreach (var item in Model.Groups)
     {
+        <div style="margin-left: @(item.DeepLevel)em">
+            @if (item.DeepLevel > 2)
+            {
+            @* Get rid of code duplication here*@
+            <h4 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h4>
+            }
+            else if (item.DeepLevel == 2)
+            {
+              @* Get rid of code duplication here*@
+                <h3 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)</h3>
+            }
+            else
+            {
+                <h2 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h2>
+            }
 
-      var totalSpan = new string('→', Math.Max(item.DeepLevel, 0));
-    
-        <dt>
-        <span>@totalSpan</span>
-        @Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)
             @if (!item.FirstCopy)
             {
                 <span>см. выше</span>
             }
-    </dt>
-        <dd>
+
             @if (item.FirstCopy)
             {
-            <span>
-                @Html.ActionLink("Редактировать свойства", "Edit", new { Model.ProjectId, item.CharacterGroupId }, null) |
-                @Html.ActionLink("Удалить", "Delete", new { Model.ProjectId, item.CharacterGroupId }, null) |
-                Добавить
-                @Html.ActionLink("персонажа", "AddCharacter", new { Model.ProjectId, item.CharacterGroupId }, null) |
-                @Html.ActionLink("подлокацию", "AddGroup", new { Model.ProjectId, item.CharacterGroupId }, null)
-                
-                <ul>
-                    @foreach (var character in item.Characters)
-                    {
-                        <li>@character.CharacterName @if (character.IsFirstCopy)
-                                                     {<div>@character.Description</div>} else {<span>(см. выше)</span>}</li>
-                    }
-                </ul>
-
-                @if (item.AvaiableDirectSlots > 0)
+                <span>
+            @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
+            @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null) |
+            Добавить
+            @Html.ActionLink("персонажа", "AddCharacter", new {Model.ProjectId, item.CharacterGroupId}, null) |
+            @Html.ActionLink("подлокацию", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
+            @item.Description
+            <ul>
+                @foreach (var character in item.Characters)
                 {
-                    <span>
-                    <br />
-                    Непрописанных
-                    персонажей в
-                    локации:
-                    @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
-                </span>
+                    <li>
+                        <strong>@character.CharacterName </strong>
+                        @if (character.IsFirstCopy)
+                                             {<div>@character.Description</div>}
+                                             else
+                                             {<span>(см. выше)</span>}
+                </li>
                 }
-                
-                @item.Description
+            </ul>
+
+            @if (item.AvaiableDirectSlots > 0)
+            {
+                <span>
+                <br />
+                Непрописанных
+                персонажей в
+                локации:
+                @Html.DisplayFor(modelItem => item.AvaiableDirectSlots)
             </span>
             }
 
-        </dd>
-      }
 
-</dl>
-
-
-
+        </span>
+            }
+        </div>
+    }

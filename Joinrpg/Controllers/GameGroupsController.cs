@@ -23,15 +23,15 @@ namespace JoinRpg.Web.Controllers
 
     [Authorize]
     // GET: GameGroups
-    public ActionResult Index(int projectId, int? rootCharacterGroupId)
+    public ActionResult Index(int projectId, int? characterGroupId)
     {
       return InsideProject(projectId, project =>
       {
-        if (rootCharacterGroupId == null)
+        if (characterGroupId == null)
         {
           return RedirectToIndex(project);
         }
-        return InsideGroup(projectId, (int) rootCharacterGroupId,
+        return InsideGroup(projectId, (int)characterGroupId,
           (project1, @group) => View(CharacterGroupListViewModel.FromGroup(@group)));
 
       });
@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Controllers
     private ActionResult RedirectToIndex(Project project)
     {
       return RedirectToAction("Index",
-        new {project.ProjectId, rootCharacterGroupId = project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId});
+        new {project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId});
     }
 
     // GET: GameGroups/Details/5
