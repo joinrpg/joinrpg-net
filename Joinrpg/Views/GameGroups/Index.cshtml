@@ -39,7 +39,8 @@
                 <ul>
                     @foreach (var character in item.Characters)
                     {
-                        <li>@character.CharacterName @if(character.IsFirstCopy) {} else {<span>(см. выше)</span>}</li>
+                        <li>@character.CharacterName @if (character.IsFirstCopy)
+                                                     {<div>@character.Description</div>} else {<span>(см. выше)</span>}</li>
                     }
                 </ul>
 
