@@ -73,5 +73,17 @@ namespace JoinRpg.Web.Controllers.Common
         return field == null ? HttpNotFound() : action(project, field);
       });
     }
+
+    protected ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
+    {
+      return WithSubEntity(projectId, groupId, project => project.CharacterGroups,
+        subentity => subentity.CharacterGroupId, action);
+    }
+
+    protected ActionResult WithCharacter(int projectId, int characterId, Func<Project, Character, ActionResult> action)
+    {
+      return WithSubEntity(projectId, characterId, project => project.Characters,
+        subentity => subentity.CharacterId, action);
+    }
   }
 }

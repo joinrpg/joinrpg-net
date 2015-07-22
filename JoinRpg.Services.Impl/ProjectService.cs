@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
-    public class ProjectService : IProjectService
+  [UsedImplicitly]
+    public class ProjectService : DbServiceImplBase, IProjectService
     {
-      private readonly IUnitOfWork _unitOfWork;
-
-      public ProjectService(IUnitOfWork unitOfWork)
+    public ProjectService(IUnitOfWork unitOfWork) : base(unitOfWork)
       {
-        _unitOfWork = unitOfWork;
+        
       }
 
       public Project AddProject(string projectName, User creator)
@@ -34,8 +34,8 @@ namespace JoinRpg.Services.Impl
             ProjectAcl.CreateRootAcl(creator.UserId)
           }
         };
-        _unitOfWork.GetDbSet<Project>().Add(project);
-        _unitOfWork.SaveChanges();
+        UnitOfWork.GetDbSet<Project>().Add(project);
+        UnitOfWork.SaveChanges();
         return project;
       }
 
@@ -43,8 +43,8 @@ namespace JoinRpg.Services.Impl
       {
         field.IsActive = true;
         CheckField(field);
-        _unitOfWork.GetDbSet<ProjectCharacterField>().Add(field);
-        _unitOfWork.SaveChanges();
+        UnitOfWork.GetDbSet<ProjectCharacterField>().Add(field);
+        UnitOfWork.SaveChanges();
       }
 
       private static void CheckField(ProjectCharacterField field)
@@ -58,26 +58,23 @@ namespace JoinRpg.Services.Impl
       public void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
         bool canPlayerEdit, bool canPlayerView, bool isPublic)
       {
-        var field = _unitOfWork.GetDbSet<ProjectCharacterField>().Find(fieldId);
-        if (field.ProjectId != projectId)
-        {
-          throw new DbEntityValidationException();
-        }
+        var field = LoadProjectSubEntity<ProjectCharacterField>(projectId, fieldId);
         field.FieldName = name;
         field.FieldHint = fieldHint;
         field.CanPlayerEdit = canPlayerEdit;
         field.CanPlayerView = canPlayerView;
         field.IsPublic = isPublic;
 
-
         CheckField(field);
 
-        _unitOfWork.SaveChanges();
+        UnitOfWork.SaveChanges();
       }
 
-      public void DeleteField(int projectCharacterFieldId)
+    // ReSharper disable once UnusedParameter.Local
+
+    public void DeleteField(int projectCharacterFieldId)
       {
-        var field = _unitOfWork.GetDbSet<ProjectCharacterField>().Find(projectCharacterFieldId);
+        var field = UnitOfWork.GetDbSet<ProjectCharacterField>().Find(projectCharacterFieldId);
         if (field.WasEverUsed)
         {
           field.IsActive = false;
@@ -85,9 +82,9 @@ namespace JoinRpg.Services.Impl
         }
         else
         {
-          _unitOfWork.GetDbSet<ProjectCharacterField>().Remove(field);
+          UnitOfWork.GetDbSet<ProjectCharacterField>().Remove(field);
         }
-      _unitOfWork.SaveChanges();
+      UnitOfWork.SaveChanges();
     }
 
       public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description)
@@ -99,7 +96,7 @@ namespace JoinRpg.Services.Impl
           throw new DbEntityValidationException();
         }
 
-        _unitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
+        UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
         {
           AvaiableDirectSlots = 0,
           CharacterGroupName = name,
@@ -110,13 +107,13 @@ namespace JoinRpg.Services.Impl
           IsActive =  true,
           Description = new MarkdownString(description)
         });
-        _unitOfWork.SaveChanges();
+        UnitOfWork.SaveChanges();
       }
 
       private List<CharacterGroup> ValidateCharacterGroupList(int projectId, List<int> parentCharacterGroupIds)
       {
         var characterGroups =
-          _unitOfWork.GetDbSet<CharacterGroup>().Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId)).ToList();
+          UnitOfWork.GetDbSet<CharacterGroup>().Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId)).ToList();
 
         if (characterGroups.Any(g => g.ProjectId != projectId))
         {
@@ -139,7 +136,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      _unitOfWork.GetDbSet<Character>().Add(new Character()
+      UnitOfWork.GetDbSet<Character>().Add(new Character()
       {
         CharacterName = name,
         Groups = characterGroups,
@@ -149,7 +146,7 @@ namespace JoinRpg.Services.Impl
         IsAcceptingClaims = isAcceptingClaims,
         Description = new MarkdownString(description)
       });
-      _unitOfWork.SaveChanges();
+      UnitOfWork.SaveChanges();
     }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace JoinRpg.DataModel
 {
-  public class CharacterGroup
+  public class CharacterGroup : IWorldObject
   {
 
     public int CharacterGroupId { get; set; }
@@ -20,6 +20,7 @@ namespace JoinRpg.DataModel
     public bool IsRoot { get; set; }
 
     public virtual ICollection<CharacterGroup> ParentGroups { get; set; }
+    string IWorldObject.Name => CharacterGroupName;
 
     public virtual ICollection<CharacterGroup> ChildGroups { get; set; }
 
@@ -32,6 +33,8 @@ namespace JoinRpg.DataModel
     public bool IsActive { get; set; }
 
     public MarkdownString Description { get; set; } = new MarkdownString();
+
+    public bool IsAvailable => AvaiableDirectSlots > 0;
 
     public virtual ICollection<Claim>  Claims { get; set; }
   }

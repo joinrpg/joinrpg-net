@@ -48,6 +48,8 @@
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
+    <Compile Include="IProjectSubEntity.cs" />
+    <Compile Include="IWorldObject.cs" />
     <Compile Include="MarkdownString.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />

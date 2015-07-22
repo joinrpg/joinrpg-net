@@ -7,16 +7,19 @@ using System.Threading.Tasks;
 
 namespace JoinRpg.DataModel
 {
-  public class Character
+  public class Character : IWorldObject
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
+    ICollection<CharacterGroup> IWorldObject.ParentGroups => Groups;
 
     public virtual Project Project { get; set; }
 
     public virtual ICollection<CharacterGroup> Groups { get; set; }
 
     public string CharacterName { get; set; }
+
+    string IWorldObject.Name => CharacterName;
 
     public bool IsPublic { get; set; }
 

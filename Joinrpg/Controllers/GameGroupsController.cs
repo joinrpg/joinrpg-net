@@ -21,12 +21,6 @@ namespace JoinRpg.Web.Controllers
         subentity => subentity.CharacterGroupId, pa => pa.CanChangeFields, action);
     }
 
-    private ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
-    {
-      return WithSubEntity(projectId, groupId, project => project.CharacterGroups,
-        subentity => subentity.CharacterGroupId, action);
-    }
-
     // GET: GameGroups
     public ActionResult Index(int projectId, int? characterGroupId)
     {

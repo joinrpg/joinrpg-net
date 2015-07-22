@@ -20,6 +20,9 @@ namespace JoinRpg.DataModel
 
     public int PlayerUserId { get; set; }
 
+    public int ProjectId { get; set; }
+    public Project Project { get; set; }
+
     public User Player { get; set; }
 
     public DateTime? PlayerAcceptedDate { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace JoinRpg.DataModel
 {
-  public class ProjectCharacterField
+  public class ProjectCharacterField : IProjectSubEntity
   {
     public int ProjectCharacterFieldId
     { get; set; }

@@ -59,6 +59,7 @@ namespace JoinRpg.Web
       container.RegisterType<IUserRepository, UserInfoRepository>();
 
       container.RegisterType<IProjectService, ProjectService>();
+      container.RegisterType<IClaimService, ClaimServiceImpl>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

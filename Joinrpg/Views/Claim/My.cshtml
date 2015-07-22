@@ -1,0 +1,87 @@
+﻿@model IEnumerable<JoinRpg.DataModel.Claim>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.CharacterId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CharacterGroupId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PlayerUserId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProjectId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PlayerAcceptedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PlayerDeclinedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MasterAcceptedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MasterDeclinedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsActive)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsInDiscussion)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsApproved)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.CharacterId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CharacterGroupId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PlayerUserId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProjectId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PlayerAcceptedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PlayerDeclinedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MasterAcceptedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MasterDeclinedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsActive)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsInDiscussion)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsApproved)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ClaimId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ClaimId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ClaimId })
+        </td>
+    </tr>
+}
+
+</table>

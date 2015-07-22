@@ -55,7 +55,7 @@
                         <strong>@character.CharacterName </strong> 
                         @if (character.IsAvailable)
                         {
-                            @Html.ActionLink("заявиться", "Add", "Claim", new {Model.ProjectId, character.CharacterId}, null);
+                            @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null);
                         }
                         @if (character.IsFirstCopy)
                         {<div>@character.Description</div>}
@@ -69,7 +69,7 @@
             {
             <div>
                 <strong>+@item.AvaiableDirectSlots вакансий</strong>
-                @Html.ActionLink("заявиться в локацию", "Add", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null);
+                @Html.ActionLink("заявиться в локацию", "AddForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null);
 
             </div>
             }
