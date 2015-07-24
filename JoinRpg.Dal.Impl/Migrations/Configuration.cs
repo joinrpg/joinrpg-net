@@ -10,12 +10,11 @@ namespace JoinRpg.Dal.Impl.Migrations
   {
     public Configuration()
     {
-      AutomaticMigrationsEnabled = false;
+      AutomaticMigrationsEnabled = true;
     }
 
     protected override void Seed(MyDbContext context)
     {
-
       context.UserSet.AddOrUpdate(userinfo => userinfo.UserId, new User
       {
         BornName = "Leonid",
