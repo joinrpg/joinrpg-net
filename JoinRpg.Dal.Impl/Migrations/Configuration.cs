@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Data.Entity.Migrations;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -49,7 +49,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         CharacterGroupId = 1,
         ProjectId = 1,
         IsRoot = true,
-        CharacterGroupName = "Все персонажи на игре",
+        CharacterGroupName = "Р’СЃРµ РїРµСЂСЃРѕРЅР°Р¶Рё РЅР° РёРіСЂРµ",
         IsActive = true
       });
     }
