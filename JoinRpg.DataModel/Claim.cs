@@ -36,5 +36,7 @@ namespace JoinRpg.DataModel
     public bool IsActive => MasterDeclinedDate == null && PlayerDeclinedDate == null;
     public bool IsInDiscussion => IsActive && !IsApproved;
     public bool IsApproved => IsActive && PlayerAcceptedDate != null && MasterAcceptedDate != null;
+
+    public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
   }
 }

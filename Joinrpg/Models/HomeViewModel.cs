@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -12,6 +8,7 @@ namespace JoinRpg.Web.Models
     public IEnumerable<Project> ActiveProjects;
 
     public IEnumerable<Project> MyProjects;
-    public int? ProjectIdToJoin { get; set; }
+
+    public IEnumerable<Claim> MyClaims;
   }
 }

@@ -11,21 +11,18 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class ProjectRepository : IProjectRepository
+  public class ProjectRepository : RepositoryImplBase, IProjectRepository
   {
-    private readonly MyDbContext _ctx;
-
-    public ProjectRepository(MyDbContext ctx)
+    public ProjectRepository(MyDbContext ctx) : base(ctx) 
     {
-      _ctx = ctx;
     }
 
     IEnumerable<Project> IProjectRepository.AllProjects => AllProjects;
 
     IEnumerable<Project> IProjectRepository.ActiveProjects => ActiveProjects;
 
-    private IQueryable<Project> ActiveProjects => _ctx.ProjectsSet.Where(project => project.Active);
-    private IQueryable<Project> AllProjects => _ctx.ProjectsSet;
+    private IQueryable<Project> ActiveProjects => Ctx.ProjectsSet.Where(project => project.Active);
+    private IQueryable<Project> AllProjects => Ctx.ProjectsSet;
 
     public IEnumerable<Project> GetAllMyProjects(int userInfoId)
       => AllProjects.Where(MyProjectPredicate(userInfoId));
@@ -45,11 +42,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         return project => false;
       }
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
-    }
-
-    public void Dispose()
-    {
-      _ctx?.Dispose();
     }
   }
 

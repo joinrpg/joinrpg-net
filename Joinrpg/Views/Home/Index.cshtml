@@ -1,38 +1,62 @@
 ﻿@model JoinRpg.Web.Models.HomeViewModel
 
 @{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "JoinRpg.RU";
 }
 
 <div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <h1>@ViewBag.Title</h1>
+    <p class="lead">Простая и универсальная база заявок на игры от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a></p>
+    <p>@Html.ActionLink("Узнать больше", "About", null, new {@class = "btn btn-primary btn-lg" })</p>
 </div>
 
 <div class="row">
     <div class="col-md-4">
-        <h2>Подать заявку на игру</h2>
-        @Html.DropDownListFor(
-            model => model.ProjectIdToJoin, Model.ActiveProjects.Select(project => new SelectListItem
+        
+        <h2>Мои заявки</h2>
+        
+            @if (@Model.MyClaims.Any())
             {
-                    Text = project.ProjectName, Value = project.ProjectId.ToString()
-                }));
-        <p><a class="btn btn-default" href="">Подать заявку</a></p>
+                <ul>
+                    @foreach (var claim in Model.MyClaims)
+                    {
+                        <li>@Html.ActionLink(claim.Name + " на «" + claim.Project.ProjectName + "»", "Details", "Claim", new {claim.ClaimId}, null);</li>
+                    }
+
+
+                </ul>
+            }
+            else
+            {
+              <span>Вы пока никуда не заявились</span>
+            }
     </div>
     <div class="col-md-4">
-        <h2>Мои базы заявок</h2>
+        <h2>Игры, на которые открыты заявки</h2>
         <ul>
-            @foreach (var project in Model.MyProjects)
+            @foreach (var project in Model.ActiveProjects)
             {
-                <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId}, null);</li>
+            <li>@Html.ActionLink(@project.ProjectName, "Index", "GameGroups", new { project.ProjectId }, null);</li>
             }
         </ul>
-        <p>@Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-default" })</p>
+        </p>
     </div>
     <div class="col-md-4">
-        <h2>Создать базу заявок для своей игры</h2>
-        <p>JoinRpg.ru позволит вам удобно работать с сеткой персонажей и локаций и принимать заявки игроков. Использование базы заявок бесплатно.</p>
-        
+        @if (@Model.MyProjects.Any())
+        {
+            <h2>Мои базы заявок</h2>
+            <ul>
+                @foreach (var project in Model.MyProjects)
+                {
+                    <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId}, null);</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <h2>Создать базу заявок для своей игры</h2>
+            <p>JoinRpg.ru позволит вам удобно работать с сеткой персонажей и локаций и принимать заявки игроков. Использование базы заявок бесплатно.</p>
+        }
+        <p>@Html.ActionLink("Создать базу заявок", "Create", "Game", null, new {@class = "btn btn-default"})</p>
     </div>
 </div>

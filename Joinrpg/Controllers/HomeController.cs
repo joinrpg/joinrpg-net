@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
@@ -10,12 +12,12 @@ namespace JoinRpg.Web.Controllers
   public class HomeController : ControllerBase
   {
     private readonly IProjectRepository _projectRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly IClaimsRepository _claimsRepository;
 
-    public HomeController(IProjectRepository projectRepository, ApplicationUserManager userManager, IUserRepository userRepository) : base (userManager)
+    public HomeController(IProjectRepository projectRepository, ApplicationUserManager userManager, IClaimsRepository claimsRepository) : base (userManager)
     {
       _projectRepository = projectRepository;
-      _userRepository = userRepository;
+      _claimsRepository = claimsRepository;
     }
 
     public ActionResult Index()
@@ -30,10 +32,16 @@ namespace JoinRpg.Web.Controllers
       {
         ActiveProjects = _projectRepository.ActiveProjects,
         MyProjects =
-          User.Identity.IsAuthenticated
-            ? _projectRepository.GetMyActiveProjects(CurrentUserId)
-            : new Project[] {}
+          LoadForUser(userId => _projectRepository.GetMyActiveProjects(userId)),
+        MyClaims = LoadForUser(userId => _claimsRepository.GetClaimsForUser(userId))
       };
+    }
+
+    private IEnumerable<T> LoadForUser<T>(Func<int, IEnumerable<T>> loadFunc)
+    {
+      return User.Identity.IsAuthenticated
+        ? loadFunc(CurrentUserId)
+        : new T[] {};
     }
 
     public ActionResult About()

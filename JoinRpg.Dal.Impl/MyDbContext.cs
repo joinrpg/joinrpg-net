@@ -14,6 +14,8 @@ namespace JoinRpg.Dal.Impl
 
     public DbSet<User> UserSet => Set<User>();
 
+    public DbSet<Claim> ClaimSet => Set<Claim>();
+
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
     void IUnitOfWork.SaveChanges() => SaveChanges();
