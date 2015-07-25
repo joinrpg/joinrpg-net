@@ -1,0 +1,64 @@
+﻿@model JoinRpg.Web.Models.ClaimViewModel 
+
+@{
+    ViewBag.Title = "Заявка " + Model.ClaimName + " (" + Model.Player.UserName + ") на проект " + Model.ProjectName;
+}
+<div>
+    <h2>@ViewBag.Title</h2>
+    <hr/>
+    <dl class="dl-horizontal">
+        @if (Model.CharacterId != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.CharacterName)
+            </dt>
+
+            <dd>
+                @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
+                @if (Model.OtherClaimsCount > 0)
+                {
+                    <span>(еще @Model.OtherClaimsCount заявок)</span>
+                }
+            </dd>
+        }
+        @if (Model.CharacterGroupId != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.GroupName)
+            </dt>
+
+            <dd>
+                @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+            </dd>
+        }
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ProjectName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ProjectName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsMyClaim)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsMyClaim)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.HasMasterAccess)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.HasMasterAccess)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

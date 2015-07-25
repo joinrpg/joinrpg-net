@@ -12,6 +12,8 @@ namespace JoinRpg.DataModel
     public int CharacterGroupId { get; set; }
 
     public int ProjectId { get; set; }
+    int IProjectSubEntity.Id => CharacterGroupId;
+
 
     public virtual Project Project { get; set; }
 

@@ -11,6 +11,7 @@ namespace JoinRpg.DataModel
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
+    int IProjectSubEntity.Id => CharacterId;
     ICollection<CharacterGroup> IWorldObject.ParentGroups => Groups;
 
     public virtual Project Project { get; set; }

@@ -1,5 +1,8 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -56,5 +59,37 @@ namespace JoinRpg.Web.Controllers
     {
       return View(GetCurrentUser().Claims);
     }
+
+    [HttpGet]
+    [Authorize]
+    public ActionResult Discussing(int projectid)
+    {
+      return WithProjectAsMaster(projectid, project => View(project.Claims.Where(claim => claim.IsInDiscussion)));
+    }
+
+    [HttpGet]
+    [Authorize]
+    public ActionResult Edit(int projectId, int claimId)
+    {
+      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) => View(new ClaimViewModel()
+      {
+        ClaimId = claim.ClaimId,
+        ClaimName = claim.Name,
+        Comments = claim.Comments,
+        HasMasterAccess = hasMasterAccess,
+        IsMyClaim = isMyClaim,
+        Player = claim.Player,
+        ProjectId = claim.ProjectId,
+        ProjectName = claim.Project.ProjectName,
+        Status = claim.ClaimStatus,
+        CharacterGroupId = claim.CharacterGroupId,
+        GroupName = claim.Group?.CharacterGroupName,
+        CharacterId = claim.CharacterId,
+        CharacterName = claim.Character?.CharacterName,
+        OtherClaimsCount = claim.IsApproved ? 0 : claim.Character?.Claims?.Count(c => c.PlayerUserId != claim.PlayerUserId) ?? 0
+      }));
+    }
+
+
   }
 }

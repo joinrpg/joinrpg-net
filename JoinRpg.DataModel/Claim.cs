@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JoinRpg.DataModel
 {
-  public class Claim
+  public class Claim : IProjectSubEntity
   {
     public int ClaimId { get; set; }
     public int? CharacterId { get; set; }
@@ -22,9 +22,10 @@ namespace JoinRpg.DataModel
     public int PlayerUserId { get; set; }
 
     public int ProjectId { get; set; }
+    int IProjectSubEntity.Id => ClaimId;
     public virtual Project Project { get; set; }
 
-    public User Player { get; set; }
+    public virtual User Player { get; set; }
 
     public DateTime? PlayerAcceptedDate { get; set; }
 

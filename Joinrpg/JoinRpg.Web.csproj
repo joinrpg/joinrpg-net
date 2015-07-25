@@ -246,6 +246,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\UnityMvcActivator.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\CharacterController.cs" />
     <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\Common\ControllerBase.cs" />
     <Compile Include="Controllers\Common\ControllerGameBase.cs" />
@@ -265,6 +266,7 @@
     <Compile Include="Models\AddGameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterGroupViewModel.cs" />
     <Compile Include="Models\AddCharacterGroupViewModel.cs" />
+    <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
@@ -344,6 +346,9 @@
     <Content Include="Views\Claim\Index.cshtml" />
     <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
     <Content Include="Views\Claim\My.cshtml" />
+    <Content Include="Views\Claim\Discussing.cshtml" />
+    <Content Include="Views\Claim\Edit.cshtml" />
+    <Content Include="Views\Character\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

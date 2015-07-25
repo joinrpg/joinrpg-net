@@ -52,10 +52,10 @@
                 @foreach (var character in item.Characters)
                 {
                     <li>
-                        <strong>@character.CharacterName </strong> 
+                        <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new { Model.ProjectId, character.CharacterId }, null) </strong> 
                         @if (character.IsAvailable)
                         {
-                            @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null);
+                            @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
                         }
                         @if (character.IsFirstCopy)
                         {<div>@character.Description</div>}

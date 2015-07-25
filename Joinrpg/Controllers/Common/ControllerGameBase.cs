@@ -42,17 +42,22 @@ namespace JoinRpg.Web.Controllers.Common
       {
         if (acl == null || !requiredRights(acl))
         {
-          return View("ErrorNoAccessToProject",
-            new ErrorNoAccessToProjectViewModel()
-            {
-              CreatorEmail = project.CreatorUser.Email,
-              CreatorUserName = project.CreatorUser.UserName,
-              ProjectId = project.ProjectId,
-              ProjectName = project.ProjectName
-            });
+          return NoAccesToProjectView(project);
         }
         return action(project);
       });
+    }
+
+    private ActionResult NoAccesToProjectView(Project project)
+    {
+      return View("ErrorNoAccessToProject",
+        new ErrorNoAccessToProjectViewModel()
+        {
+          CreatorEmail = project.CreatorUser.Email,
+          CreatorUserName = project.CreatorUser.UserName,
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName
+        });
     }
 
     protected ActionResult WithProjectAsMaster(int projectId, Func<Project, ActionResult> action)
@@ -72,26 +77,38 @@ namespace JoinRpg.Web.Controllers.Common
     }
 
     protected ActionResult WithSubEntity<TProjectSubEntity>(int projectId, int fieldId,
-      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector, Func<TProjectSubEntity, int> subentityKeySelector,
-      Func<Project, TProjectSubEntity, ActionResult> action)
+      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
+      Func<Project, TProjectSubEntity, ActionResult> action) where TProjectSubEntity: IProjectSubEntity
     {
       return WithProject(projectId, project =>
       {
-        var field = subentitySelector(project).SingleOrDefault(e => subentityKeySelector(e) == fieldId);
+        var field = subentitySelector(project).SingleOrDefault(e => e.Id == fieldId);
         return field == null ? HttpNotFound() : action(project, field);
       });
     }
 
     protected ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
     {
-      return WithSubEntity(projectId, groupId, project => project.CharacterGroups,
-        subentity => subentity.CharacterGroupId, action);
+      return WithSubEntity(projectId, groupId, project => project.CharacterGroups, action);
     }
 
     protected ActionResult WithCharacter(int projectId, int characterId, Func<Project, Character, ActionResult> action)
     {
-      return WithSubEntity(projectId, characterId, project => project.Characters,
-        subentity => subentity.CharacterId, action);
+      return WithSubEntity(projectId, characterId, project => project.Characters, action);
+    }
+
+    protected ActionResult WithClaim(int projectId, int claimId, Func<Project, Claim, bool, bool, ActionResult> actionResult)
+    {
+      return WithSubEntity(projectId, claimId, project => project.Claims, (project, claim) =>
+      {
+        var hasMasterAccess = project.ProjectAcls.Any(pa => pa.UserId == CurrentUserId);
+        var isMyClaim = claim.PlayerUserId == CurrentUserId;
+        if (!hasMasterAccess && !isMyClaim)
+        {
+          return NoAccesToProjectView(project);
+        }
+        return actionResult(project, claim, hasMasterAccess, isMyClaim);
+      });
     }
   }
 }

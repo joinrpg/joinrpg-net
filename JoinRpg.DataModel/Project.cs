@@ -34,6 +34,8 @@ namespace JoinRpg.DataModel
     public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
 
     public virtual ICollection<Character>  Characters { get; set; }
+
+    public virtual ICollection<Claim> Claims { get; set; }
   }
 
   public static class ProjectExtensions

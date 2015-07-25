@@ -22,6 +22,7 @@
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }
+    int IProjectSubEntity.Id => ProjectCharacterFieldId;
 
     public bool IsActive { get; set; }
 

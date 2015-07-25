@@ -1,0 +1,8 @@
+﻿@model IEnumerable<JoinRpg.DataModel.Claim>
+
+@{
+    ViewBag.Title = "Обсуждаемые заявки";
+    ViewBag.HideProjectColumn = true;
+}
+
+@Html.Partial("Index", Model)

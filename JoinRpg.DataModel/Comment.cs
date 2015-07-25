@@ -13,6 +13,8 @@ namespace JoinRpg.DataModel
     public virtual  Project Project { get; set; }
     public int ProjectId { get; set; }
 
+    int IProjectSubEntity.Id => CommentId;
+
     public int ClaimId { get; set; }
     public virtual Claim Claim { get; set; }
 

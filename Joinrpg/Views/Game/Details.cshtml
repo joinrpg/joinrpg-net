@@ -55,6 +55,8 @@
         @*TODO: Show if avail*@
         <li>@Html.ActionLink("Настройка полей", "Index", "GameField", new {Model.ProjectId}, null)</li>
         <li>@Html.ActionLink("Ролевка (группы персонажей и персонажи)", "Index", "GameGroups", new {Model.ProjectId}, null)</li>
+        @* TODO: Show count*@
+        <li>@Html.ActionLink("Заявки на обсуждении", "Discussing", "Claim", new { Model.ProjectId }, null)</li>
     </ul>
 </div>
 <p>

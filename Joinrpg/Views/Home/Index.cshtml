@@ -20,7 +20,7 @@
                 <ul>
                     @foreach (var claim in Model.MyClaims)
                     {
-                        <li>@Html.ActionLink(claim.Name + " на «" + claim.Project.ProjectName + "»", "Details", "Claim", new {claim.ClaimId}, null);</li>
+                        <li>@Html.ActionLink(claim.Name + " на «" + claim.Project.ProjectName + "»", "Edit", "Claim", new {claim.ClaimId, claim.ProjectId}, null);</li>
                     }
                 </ul>
             }

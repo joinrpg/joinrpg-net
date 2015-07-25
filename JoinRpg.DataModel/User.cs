@@ -35,5 +35,7 @@ namespace JoinRpg.DataModel
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
     public virtual ICollection<Claim>  Claims { get; set; }
+
+    public string DisplayName => UserName; //Should create creative display name
   }
 }
