@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
@@ -38,5 +39,52 @@ namespace JoinRpg.DataModel
     public bool IsApproved => IsActive && PlayerAcceptedDate != null && MasterAcceptedDate != null;
 
     public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
+
+    public DateTime? StatusChangedDate
+      =>
+        new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.Where(
+          date => date != null).Max();
+
+    public enum Status
+    {
+      [Display(Name = "Подана")]
+      AddedByUser,
+      [Display(Name = "Предложена")]
+      AddedByMaster,
+      [Display(Name = "Принята")]
+      Approved,
+      [Display(Name = "Отозвана")]
+      DeclinedByUser,
+      [Display(Name = "Отклонена")]
+      DeclinedByMaster
+    }
+
+    public Status ClaimStatus
+    {
+      get
+      {
+        if (MasterDeclinedDate != null)
+        {
+          return Status.DeclinedByMaster;
+        }
+        if (PlayerDeclinedDate != null)
+        {
+          return Status.DeclinedByUser;
+        }
+        if (IsApproved)
+        {
+          return Status.Approved;
+        }
+        if (MasterAcceptedDate != null)
+        {
+          return Status.AddedByMaster;
+        }
+        if (PlayerAcceptedDate != null)
+        {
+          return Status.AddedByUser;
+        }
+        throw new InvalidOperationException("Unknown claim status");
+      }
+    }
   }
 }

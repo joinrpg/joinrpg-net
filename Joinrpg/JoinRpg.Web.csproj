@@ -341,8 +341,9 @@
     <Content Include="Views\GameGroups\AddGroup.cshtml" />
     <Content Include="Views\GameGroups\AddCharacter.cshtml" />
     <Content Include="Views\Claim\Add.cshtml" />
-    <Content Include="Views\Claim\My.cshtml" />
+    <Content Include="Views\Claim\Index.cshtml" />
     <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
+    <Content Include="Views\Claim\My.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />
