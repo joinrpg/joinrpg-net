@@ -30,6 +30,7 @@ namespace JoinRpg.Dal.Impl
         throw  new ArgumentNullException(nameof(user));
       }
       _ctx.UserSet.Add(user);
+      _ctx.SaveChanges();
       return Task.FromResult<object>(null);
     }
 
