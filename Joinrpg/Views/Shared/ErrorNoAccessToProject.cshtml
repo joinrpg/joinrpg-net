@@ -1,0 +1,10 @@
+﻿@model JoinRpg.Web.Models.ErrorNoAccessToProjectViewModel
+
+@{
+    ViewBag.Title = "Нет доступа к проекту " + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+<p>У вас нет доступа к проекту @Html.ActionLink(Model.ProjectName, "Index", "Game", new {Model.ProjectId}, null). 
+    Обратитесь к <a href="mailto:@Model.CreatorEmail">@Model.CreatorUserName</a>, чтобы получить доступ
+</p>

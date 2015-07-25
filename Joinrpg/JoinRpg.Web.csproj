@@ -265,6 +265,7 @@
     <Compile Include="Models\AddGameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterGroupViewModel.cs" />
     <Compile Include="Models\AddCharacterGroupViewModel.cs" />
+    <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
@@ -341,6 +342,7 @@
     <Content Include="Views\GameGroups\AddCharacter.cshtml" />
     <Content Include="Views\Claim\Add.cshtml" />
     <Content Include="Views\Claim\My.cshtml" />
+    <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

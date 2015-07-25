@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -39,9 +40,16 @@ namespace JoinRpg.Web.Controllers.Common
     {
       return WithProject(projectId, (project, acl) =>
       {
-        if (acl == null || requiredRights(acl))
+        if (acl == null || !requiredRights(acl))
         {
-          return View("ErrorNoAccessToProject", project.ProjectName);
+          return View("ErrorNoAccessToProject",
+            new ErrorNoAccessToProjectViewModel()
+            {
+              CreatorEmail = project.CreatorUser.Email,
+              CreatorUserName = project.CreatorUser.UserName,
+              ProjectId = project.ProjectId,
+              ProjectName = project.ProjectName
+            });
         }
         return action(project);
       });
