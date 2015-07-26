@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
@@ -27,17 +24,59 @@ namespace JoinRpg.Services.Impl
       {
         LoadProjectSubEntity<Character>(projectId, characterId.Value);
       }
+      var addClaimDate = DateTime.Now;
       var claim = new Claim()
       {
         CharacterGroupId = characterGroupId,
         CharacterId = characterId,
         ProjectId = projectId,
         PlayerUserId = currentUserId,
-        PlayerAcceptedDate = DateTime.Now,
+        PlayerAcceptedDate = addClaimDate,
+        Comments = new List<Comment>()
+        {
+          new Comment()
+          {
+            AuthorUserId = currentUserId,
+            CommentText = new MarkdownString(claimText),
+            CreatedTime = addClaimDate,
+            IsCommentByPlayer = true,
+            IsVisibleToPlayer = true,
+            ProjectId = projectId,
+            LastEditTime = addClaimDate,
+          }
+        }
       };
-      //TODO: Add claim text as first comment
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       UnitOfWork.SaveChanges();
+    }
+
+    public void AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)
+    {
+      LoadProjectSubEntity<Claim>(projectId, claimId);
+      if (string.IsNullOrWhiteSpace(commentText))
+      {
+        throw new DbEntityValidationException();
+      }
+      if (!isVisibleToPlayer && isMyClaim)
+      {
+        throw new DbEntityValidationException();
+      }
+      var now = DateTime.Now;
+      var comment = new Comment()
+      {
+        ProjectId = projectId,
+        AuthorUserId = currentUserId,
+        ClaimId = claimId,
+        CommentText = new MarkdownString(commentText),
+        CreatedTime = now,
+        IsCommentByPlayer = isMyClaim,
+        IsVisibleToPlayer = isVisibleToPlayer,
+        ParentCommentId = parentCommentId,
+        LastEditTime = now
+      };
+      UnitOfWork.GetDbSet<Comment>().Add(comment);
+      UnitOfWork.SaveChanges();
+
     }
 
     public ClaimServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)

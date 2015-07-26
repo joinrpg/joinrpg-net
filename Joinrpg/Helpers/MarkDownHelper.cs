@@ -6,7 +6,7 @@ using Vereyon.Web;
 
 namespace JoinRpg.Web.Helpers
 {
-  static class MarkDownHelper
+  public static class MarkDownHelper
   {
     private static readonly Lazy<HtmlSanitizer> SimpleHtml5SanitizerImpl = new Lazy<HtmlSanitizer>(HtmlSanitizer.SimpleHtml5Sanitizer);
     private static HtmlSanitizer Sanitizer => SimpleHtml5SanitizerImpl.Value;

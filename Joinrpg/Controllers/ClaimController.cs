@@ -62,6 +62,15 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     [Authorize]
+    public ActionResult ForPlayer(int projectId, int userId)
+    {
+      return WithProjectAsMaster(projectId,
+        project => View(project.Claims.Where(cl => cl.IsActive & cl.PlayerUserId == userId)));
+    }
+
+
+    [HttpGet]
+    [Authorize]
     public ActionResult Discussing(int projectid)
     {
       return WithProjectAsMaster(projectid, project => View(project.Claims.Where(claim => claim.IsInDiscussion)));
@@ -75,7 +84,7 @@ namespace JoinRpg.Web.Controllers
       {
         ClaimId = claim.ClaimId,
         ClaimName = claim.Name,
-        Comments = claim.Comments,
+        Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
         IsMyClaim = isMyClaim,
         Player = claim.Player,
@@ -86,7 +95,8 @@ namespace JoinRpg.Web.Controllers
         GroupName = claim.Group?.CharacterGroupName,
         CharacterId = claim.CharacterId,
         CharacterName = claim.Character?.CharacterName,
-        OtherClaimsCount = claim.IsApproved ? 0 : claim.Character?.Claims?.Count(c => c.PlayerUserId != claim.PlayerUserId) ?? 0
+        OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.Character?.Claims?.Count(c => c.PlayerUserId != claim.PlayerUserId) ?? 0,
+        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.Player.Claims.Count(c => c.ClaimId != claimId)
       }));
     }
 

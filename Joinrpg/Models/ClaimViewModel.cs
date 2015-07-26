@@ -21,6 +21,8 @@ namespace JoinRpg.Web.Models
     [DisplayName("Заявка в локацию")]
     public string GroupName { get; set; }
     public int? CharacterGroupId { get; set; }
-    public int OtherClaimsCount { get; set; }
+    public int OtherClaimsForThisCharacterCount { get; set; }
+    public int OtherClaimsFromThisPlayerCount
+    { get; set; }
   }
 }

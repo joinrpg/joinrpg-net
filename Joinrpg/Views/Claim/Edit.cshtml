@@ -1,10 +1,69 @@
-﻿@model JoinRpg.Web.Models.ClaimViewModel 
+﻿@model ClaimViewModel
+
+@helper ShowCommentWithTree(Comment comment)
+{
+    if (!comment.IsVisibleToPlayer && !Model.HasMasterAccess)
+    {
+        return;
+    }
+    <div>
+        @if (comment.IsCommentByPlayer)
+        {
+            <span>Игрок</span>
+        }
+        else
+        {
+            <span>Мастер</span>
+        }
+        <strong>@comment.Author.DisplayName</strong> написал(а) 
+            @comment.CreatedTime
+        <strong>
+            @if (!comment.IsCommentByPlayer)
+            {
+                if (comment.IsVisibleToPlayer)
+                {
+                <span>игроку</span>
+                }
+                else
+                {
+                <span>другим мастерам</span>
+                }
+            }
+        </strong>
+        <span>@comment.CommentText.ToHtmlString()</span>
+              
+        <details>
+            <summary>Ответить...</summary>
+
+            @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                {
+                    ProjectId = Model.ProjectId,
+                    ClaimId = Model.ClaimId,
+                    ParentCommentId = comment.CommentId,
+                    EnableHideFromUser = !Model.IsMyClaim,
+                    HideFromUser = !comment.IsVisibleToPlayer
+                })
+            }
+        </details>     
+        <div style="margin-left: 1em">
+            @foreach (var childComment in comment.ChildsComments)
+            {
+                @ShowCommentWithTree(childComment)
+            }
+        </div>
+    </div>
+}
+@using JoinRpg.DataModel
+@using JoinRpg.Web.Helpers
+@using JoinRpg.Web.Models
 
 @{
     ViewBag.Title = "Заявка " + Model.ClaimName + " (" + Model.Player.UserName + ") на проект " + Model.ProjectName;
 }
 <div>
-    <h2>@ViewBag.Title</h2>
+    <h2>Заявка @Model.ClaimName (@Model.Player.UserName) на проект @Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId},null)</h2>
     <hr/>
     <dl class="dl-horizontal">
         @if (Model.CharacterId != null)
@@ -15,10 +74,6 @@
 
             <dd>
                 @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
-                @if (Model.OtherClaimsCount > 0)
-                {
-                    <span>(еще @Model.OtherClaimsCount заявок)</span>
-                }
             </dd>
         }
         @if (Model.CharacterGroupId != null)
@@ -31,34 +86,70 @@
                 @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
             </dd>
         }
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ProjectName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ProjectName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsMyClaim)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsMyClaim)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.HasMasterAccess)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.HasMasterAccess)
-        </dd>
-
     </dl>
+    @if (Model.HasMasterAccess)
+    {
+        if (Model.Status == Claim.Status.AddedByUser)
+        {
+            if (Model.OtherClaimsForThisCharacterCount > 0)
+            {
+                <p>Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
+                    или переведите их на другого персонажа/локацию</p>
+            }
+            else
+            {
+                <details>
+
+                    <summary>Принять заявку...</summary>
+                    @if (Model.OtherClaimsFromThisPlayerCount > 0)
+                    {
+                    <p>
+                        Также этим же игроком подано на этот проект еще
+                        @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "Claim", new {Model.ProjectId, Model.Player.UserId}, null). Если принять эту заявку,
+                        другие автоматически будут отклонены.
+                    </p>
+                    }
+                    @using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+                    {
+                        ViewBag.AddCommentLabel = "AddCommentLabel";
+                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        {
+                            ProjectId = Model.ProjectId,
+                            ClaimId = Model.ClaimId,
+                            ParentCommentId = null,
+                            EnableHideFromUser = false,
+                            HideFromUser = false
+                        })
+                        <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
+                    }
+                </details>
+            }
+        }
+    }
+    <details>
+        <summary>Оставить комментарий...</summary>
+
+        @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+           {
+               ProjectId = Model.ProjectId,
+               ClaimId = Model.ClaimId,
+               ParentCommentId = null,
+               EnableHideFromUser = !Model.IsMyClaim,
+               HideFromUser = false
+           })
+        }
+    </details>
+
+    <details open>
+        <summary>Комментарии к заявке</summary>
+        @foreach (var comment in Model.Comments.Where(comment => comment.IsVisibleToPlayer || Model.HasMasterAccess))
+        {
+            @ShowCommentWithTree(comment)
+        }
+    </details>
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-    @Html.ActionLink("Back to List", "Index")
+    @Html.ActionLink("Назад к ролевке", "Index", "GameGroups", new {Model.ProjectId}, null)
 </p>
