@@ -48,12 +48,6 @@ namespace JoinRpg.Web.Controllers
       return View();
     }
 
-    // GET: GameGroups/Create
-    public ActionResult Create()
-    {
-      return View();
-    }
-
     // POST: GameGroups/Create
     [HttpPost]
     public ActionResult Create(FormCollection collection)
