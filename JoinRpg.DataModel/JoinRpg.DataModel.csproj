@@ -53,6 +53,8 @@
     <Compile Include="IProjectSubEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="MarkdownString.cs" />
+    <Compile Include="PlotElement.cs" />
+    <Compile Include="PlotFolder.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectCharacterField.cs" />

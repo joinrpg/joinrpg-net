@@ -36,6 +36,11 @@ namespace JoinRpg.DataModel
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
 
     public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null;
+
+    //TODO: Implement plot element order. Save here data like "{12,13,158,46}" where numbers is PlotElementIds
+    public string PlotElementOrderData { get; set; }
+
+    public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
   }
 
   

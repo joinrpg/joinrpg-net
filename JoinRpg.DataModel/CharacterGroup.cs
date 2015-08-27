@@ -35,6 +35,10 @@ namespace JoinRpg.DataModel
     public bool IsAvailable => AvaiableDirectSlots > 0;
 
     public virtual ICollection<Claim>  Claims { get; set; }
+
+    public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
+
+    public virtual ICollection<PlotElement>  DirectlyRelatedPlotElements { get; set; }
   }
 
 }
