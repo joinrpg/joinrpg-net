@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace JoinRpg.DataModel
 {
-  public class CharacterGroup : IWorldObject
+  public class CharacterGroup : IClaimSource
   {
 
     public int CharacterGroupId { get; set; }

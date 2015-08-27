@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JoinRpg.DataModel
 {
-  public class Character : IWorldObject
+  public class Character : IClaimSource
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
