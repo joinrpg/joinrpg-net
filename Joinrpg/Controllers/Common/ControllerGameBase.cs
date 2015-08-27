@@ -108,5 +108,29 @@ namespace JoinRpg.Web.Controllers.Common
         return actionResult(project, claim, project.HasAccess(CurrentUserId), claim.PlayerUserId == CurrentUserId);
       });
     }
+
+    protected ActionResult WithClaimAsMaster(int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
+    {
+      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) =>
+      {
+        if (!hasMasterAccess)
+        {
+          return NoAccesToProjectView(project);
+        }
+        return actionResult(project, claim);
+      });
+    }
+
+    protected ActionResult WithMyClaim (int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
+    {
+      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) =>
+      {
+        if (!isMyClaim)
+        {
+          return NoAccesToProjectView(project);
+        }
+        return actionResult(project, claim);
+      });
+    }
   }
 }

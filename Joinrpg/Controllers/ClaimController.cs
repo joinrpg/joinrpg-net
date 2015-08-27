@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Data.Entity.Validation;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -96,11 +96,84 @@ namespace JoinRpg.Web.Controllers
         GroupName = claim.Group?.CharacterGroupName,
         CharacterId = claim.CharacterId,
         CharacterName = claim.Character?.CharacterName,
-        OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.Character?.Claims?.Count(c => c.PlayerUserId != claim.PlayerUserId) ?? 0,
-        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.Player.Claims.Count(c => c.ClaimId != claimId)
+        OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
+        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count()
       }));
     }
 
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult ApproveByMaster(AddCommentViewModel viewModel)
+    {
+      return WithClaimAsMaster(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      {
+        try
+        {
+          if (viewModel.HideFromUser)
+          {
+            throw new DbEntityValidationException();
+          }
+          _claimService.AppoveByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+        catch
+        {
+          //TODO: Message that comment is not added
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+      });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult DeclineByMaster(AddCommentViewModel viewModel)
+    {
+      return WithClaimAsMaster(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      {
+        try
+        {
+          if (viewModel.HideFromUser)
+          {
+            throw new DbEntityValidationException();
+          }
+          _claimService.DeclineByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+        catch
+        {
+          //TODO: Message that comment is not added
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+      });
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult DeclineByPlayer(AddCommentViewModel viewModel)
+    {
+      return WithMyClaim(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      {
+        try
+        {
+          if (viewModel.HideFromUser)
+          {
+            throw new DbEntityValidationException();
+          }
+          _claimService.DeclineByPlayer(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+        catch
+        {
+          //TODO: Message that comment is not added
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
+      });
+    }
   }
 }
