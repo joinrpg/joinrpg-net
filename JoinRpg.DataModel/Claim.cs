@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
@@ -48,16 +46,11 @@ namespace JoinRpg.DataModel
 
     public enum Status
     {
-      [Display(Name = "Подана")]
-      AddedByUser,
-      [Display(Name = "Предложена")]
-      AddedByMaster,
-      [Display(Name = "Принята")]
-      Approved,
-      [Display(Name = "Отозвана")]
-      DeclinedByUser,
-      [Display(Name = "Отклонена")]
-      DeclinedByMaster
+      [Display(Name = "Подана")] AddedByUser,
+      [Display(Name = "Предложена")] AddedByMaster,
+      [Display(Name = "Принята")] Approved,
+      [Display(Name = "Отозвана")] DeclinedByUser,
+      [Display(Name = "Отклонена")] DeclinedByMaster
     }
 
     public Status ClaimStatus
@@ -86,6 +79,30 @@ namespace JoinRpg.DataModel
         }
         throw new InvalidOperationException("Unknown claim status");
       }
+    }
+  }
+
+  public static class ClaimStaticExtensions
+  {
+    public static bool HasAccess(this Claim claim, int currentUserId)
+    {
+      return claim.Project.HasAccess(currentUserId) || claim.PlayerUserId == currentUserId;
+    }
+
+    public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)
+    {
+      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive);
+    }
+
+    /// <summary>
+    /// If claims for group, not for character, this is 0
+    /// </summary>
+    /// <param name="claim"></param>
+    /// <returns></returns>
+    [NotNull]
+    public static IEnumerable<Claim> OtherClaimsForThisCharacter(this Claim claim)
+    {
+      return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
     }
   }
 }

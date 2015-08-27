@@ -38,11 +38,16 @@ namespace JoinRpg.DataModel
     public virtual ICollection<Claim> Claims { get; set; }
   }
 
-  public static class ProjectExtensions
+  public static class ProjectStaticExtensions
   {
-    public static bool CheckAccess(this Project project, int currentUserId, Func<ProjectAcl, bool> requiredAccess)
+    public static bool HasSpecificAccess(this Project project, int currentUserId, Func<ProjectAcl, bool> requiredAccess)
     {
       return project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
+    }
+
+    public static bool HasAccess(this Project project, int currentUserId)
+    {
+      return project.ProjectAcls.Any(pa => pa.UserId == currentUserId);
     }
   }
 }

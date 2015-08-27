@@ -101,13 +101,11 @@ namespace JoinRpg.Web.Controllers.Common
     {
       return WithSubEntity(projectId, claimId, project => project.Claims, (project, claim) =>
       {
-        var hasMasterAccess = project.ProjectAcls.Any(pa => pa.UserId == CurrentUserId);
-        var isMyClaim = claim.PlayerUserId == CurrentUserId;
-        if (!hasMasterAccess && !isMyClaim)
+        if (!claim.HasAccess(CurrentUserId))
         {
           return NoAccesToProjectView(project);
         }
-        return actionResult(project, claim, hasMasterAccess, isMyClaim);
+        return actionResult(project, claim, project.HasAccess(CurrentUserId), claim.PlayerUserId == CurrentUserId);
       });
     }
   }
