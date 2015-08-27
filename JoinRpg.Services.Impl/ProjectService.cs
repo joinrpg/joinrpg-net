@@ -53,6 +53,13 @@ namespace JoinRpg.Services.Impl
         {
           throw new DbEntityValidationException();
         }
+
+        if (string.IsNullOrWhiteSpace(field.FieldName))
+        {
+          throw new DbEntityValidationException();
+        }
+
+        field.FieldName = field.FieldName.Trim();
       }
 
       public void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
