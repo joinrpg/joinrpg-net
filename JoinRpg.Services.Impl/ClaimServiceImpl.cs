@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
+using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
@@ -19,10 +20,10 @@ namespace JoinRpg.Services.Impl
       }
       if (characterGroupId != null)
       {
-        LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId.Value);
+        EnsureCanAddClaim<CharacterGroup>(projectId, characterGroupId.Value, currentUserId);
       } else if (characterId != null)
       {
-        LoadProjectSubEntity<Character>(projectId, characterId.Value);
+        EnsureCanAddClaim<Character>(projectId, characterId.Value, currentUserId);
       }
       var addClaimDate = DateTime.Now;
       var claim = new Claim()
@@ -48,6 +49,16 @@ namespace JoinRpg.Services.Impl
       };
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       UnitOfWork.SaveChanges();
+    }
+
+    private void EnsureCanAddClaim<T>(int projectId, int characterGroupId, int currentUserId) where T:class, IClaimSource
+    {
+      if (
+        LoadProjectSubEntity<T>(projectId, characterGroupId)
+          .Claims.Any(c => c.PlayerUserId == currentUserId && c.IsActive))
+      {
+        throw new DbEntityValidationException();
+      }
     }
 
     public void AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)

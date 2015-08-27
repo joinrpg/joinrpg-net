@@ -48,6 +48,7 @@ namespace JoinRpg.Web.Controllers
         }
         catch
         {
+          //TODO: Отображать ошибки верно
           return View(viewModel);
         }
       });
