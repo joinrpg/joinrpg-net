@@ -268,8 +268,10 @@
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\AddCommentViewModel.cs" />
     <Compile Include="Models\AddGameObjectViewModelBase.cs" />
+    <Compile Include="Models\CharacterGroupListViewModel.cs" />
     <Compile Include="Models\CharacterGroupViewModel.cs" />
     <Compile Include="Models\AddCharacterGroupViewModel.cs" />
+    <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
