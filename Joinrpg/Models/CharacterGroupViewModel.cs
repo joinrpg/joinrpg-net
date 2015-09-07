@@ -135,6 +135,11 @@ namespace JoinRpg.Web.Models
     public HtmlString Description { get; set; }
 
     public IEnumerable<string> Path { get; set; }
+
+    public bool IsRoot
+    {
+      get { return DeepLevel == 0; }
+    }
   }
 
 }

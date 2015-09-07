@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.CharacterGroupListViewModel
+﻿@using JoinRpg.Web.Models
+@model CharacterGroupListViewModel
 
 @{
     ViewBag.Title = "Ролевка " + Model.ProjectName;
@@ -40,8 +41,13 @@
 @if (Model.ShowEditControls)
 {
     <span>
-    @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
-    @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null) |
+@if (!item.IsRoot)
+{
+    <span>
+        @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
+        @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null) |
+    </span>
+}
     Добавить
     @Html.ActionLink("персонажа", "AddCharacter", new {Model.ProjectId, item.CharacterGroupId}, null) |
     @Html.ActionLink("подлокацию", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
