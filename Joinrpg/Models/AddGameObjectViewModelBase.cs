@@ -6,6 +6,7 @@ namespace JoinRpg.Web.Models
 {
   public class AddGameObjectViewModelBase
   {
+    [Required]
     public int ProjectId { get; set; }
 
     [Required]
