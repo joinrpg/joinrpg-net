@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
@@ -10,7 +7,6 @@ namespace JoinRpg.Web.Models
   {
     public string ProjectName { get; set; }
     public int ProjectId { get; set; }
-    public string CreatorUserName { get; set; }
-    public string CreatorEmail { get; set; }
+    public IEnumerable<User> CanGrantAccess { get; set; }
   }
 }

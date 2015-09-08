@@ -16,6 +16,10 @@
 
     public bool CanChangeProjectProperties { get; set; }
 
+    public bool IsOwner { get; set; }
+
+    public bool CanGrantRights { get; set; }
+
     public static ProjectAcl CreateRootAcl(int userId)
     {
       return new ProjectAcl
@@ -23,7 +27,8 @@
         CanChangeFields = true,
         CanChangeProjectProperties = true,
         UserId = userId,
-        ProjectAclId = -1
+        IsOwner = true,
+        CanGrantRights =  true
       };
     }
   }

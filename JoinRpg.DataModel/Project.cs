@@ -14,10 +14,6 @@ namespace JoinRpg.DataModel
 
     public DateTime CreatedDate { get; set; }
 
-    public int CreatorUserId { get; set; }
-
-    public virtual User CreatorUser { get; set; }
-
     public bool Active { get; set; }
 
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }

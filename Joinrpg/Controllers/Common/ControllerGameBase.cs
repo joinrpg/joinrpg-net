@@ -51,10 +51,9 @@ namespace JoinRpg.Web.Controllers.Common
     private ActionResult NoAccesToProjectView(Project project)
     {
       return View("ErrorNoAccessToProject",
-        new ErrorNoAccessToProjectViewModel()
+        new ErrorNoAccessToProjectViewModel
         {
-          CreatorEmail = project.CreatorUser.Email,
-          CreatorUserName = project.CreatorUser.UserName,
+          CanGrantAccess = project.ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.User),
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName
         });

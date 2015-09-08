@@ -30,7 +30,6 @@ namespace JoinRpg.Dal.Impl.Migrations
         {
           ProjectId = 1,
           Active = true,
-          CreatorUserId = 1,
           ProjectName = "TestActive",
           CreatedDate = new DateTime(1970, 1, 1),
         });
@@ -41,6 +40,8 @@ namespace JoinRpg.Dal.Impl.Migrations
           ProjectAclId = 1,
           UserId = 1,
           CanChangeFields = true,
+          CanGrantRights = true,
+          CanChangeProjectProperties = true,
           ProjectId = 1
         });
 

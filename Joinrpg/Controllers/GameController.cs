@@ -65,7 +65,8 @@ namespace JoinRpg.Web.Controllers
         {
           ClaimApplyRules = project.Details?.ClaimApplyRules?.Contents,
           ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName
+          ProjectName = project.ProjectName,
+          OriginalName = project.ProjectName
         }));
     }
 
@@ -84,6 +85,7 @@ namespace JoinRpg.Web.Controllers
         }
         catch
         {
+          viewModel.OriginalName = project.ProjectName;
           return View(viewModel);
         }
       });

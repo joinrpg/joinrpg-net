@@ -30,7 +30,6 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectAcl>().
         HasKey(c => new {c.UserId, c.ProjectId});
 
-      modelBuilder.Entity<Project>().HasRequired(p => p.CreatorUser).WithMany().HasForeignKey(p => p.CreatorUserId).WillCascadeOnDelete(false);
       modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
       modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
       modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);

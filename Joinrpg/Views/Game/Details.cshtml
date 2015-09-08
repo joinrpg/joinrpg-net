@@ -28,10 +28,10 @@
     </dl>
     <h4>Мастера</h4>
     <ul>
-        @foreach (var master in Model.ProjectAcls.Select(pa => pa.User))
+        @foreach (var master in Model.ProjectAcls)
         {
-            <li>@master.DisplayName
-        @if (master.UserId == Model.CreatorUserId)
+            <li>@master.User.DisplayName
+        @if (master.IsOwner)
         {
             <span>(создатель проекта)</span>
         }

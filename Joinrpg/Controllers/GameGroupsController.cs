@@ -44,7 +44,8 @@ namespace JoinRpg.Web.Controllers
           ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
           Description = @group.Description.Contents,
           IsPublic = @group.IsPublic,
-          Name = @group.CharacterGroupName
+          Name = @group.CharacterGroupName,
+          CharacterGroupId = group.CharacterGroupId
         }));
     }
 

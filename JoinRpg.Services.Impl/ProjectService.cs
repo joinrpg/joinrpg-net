@@ -23,7 +23,6 @@ namespace JoinRpg.Services.Impl
       {
         Active = true,
         CreatedDate = DateTime.Now,
-        CreatorUserId = creator.UserId,
         ProjectName = projectName,
         CharacterGroups = new List<CharacterGroup>()
         {
