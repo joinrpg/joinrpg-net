@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IUnitOfWork.cs" />
+    <Compile Include="LinqStaticExtensions.cs" />
     <Compile Include="Migrations\201507212237267_Initial.cs" />
     <Compile Include="Migrations\201507212237267_Initial.Designer.cs">
       <DependentUpon>201507212237267_Initial.cs</DependentUpon>
