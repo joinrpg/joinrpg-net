@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
@@ -18,6 +12,12 @@ namespace JoinRpg.Web.Controllers
     protected ControllerBase(ApplicationUserManager userManager)
     {
       UserManager = userManager;
+    }
+
+    protected override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+      ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
+      base.OnActionExecuting(filterContext);
     }
 
     protected User GetCurrentUser()

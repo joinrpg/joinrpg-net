@@ -36,6 +36,10 @@
                         <li>@Html.ActionLink("Мои заявки", "My", "Claim")</li>
                     }
                     <li>@Html.ActionLink("О проекте", "About", "Home")</li>
+                    @if (ViewBag.IsProduction != true)
+                    {
+                        <li class="alert-danger">Тестовая версия, данные не сохраняются </li>
+                    }
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>
