@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 using JoinRpg.DataModel;
@@ -12,6 +13,8 @@ namespace JoinRpg.Web.Models
 
     public int? CharacterId { get; set; }
     public int? CharacterGroupId { get; set; }
+
+    [DisplayName("Заявка")]
     public string TargetName { get; set; }
 
     public HtmlString Description { get; set; }
@@ -22,7 +25,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [DataType(DataType.MultilineText)]
+    [DataType(DataType.MultilineText),DisplayName("Текст заявки")]
     public string ClaimText { get; set; }
 
     public static AddClaimViewModel Create(Character character, User user)
@@ -48,7 +51,8 @@ namespace JoinRpg.Web.Models
         HasApprovedClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsApproved),
         TargetName = obj.Name,
         Description = obj.Description.ToHtmlString(),
-        IsAvailable = obj.IsAvailable
+        IsAvailable = obj.IsAvailable,
+        ClaimApplyRules = obj.Project.Details.ClaimApplyRules.ToHtmlString()
       };
       return addClaimViewModel;
     }
