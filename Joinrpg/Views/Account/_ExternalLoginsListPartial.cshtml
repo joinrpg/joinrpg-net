@@ -1,15 +1,14 @@
 ﻿@model JoinRpg.Web.Models.ExternalLoginListViewModel
 @using Microsoft.Owin.Security
 
-<h4>Use another service to log in.</h4>
+<h4>Вход через социальные сети.</h4>
 <hr />
 @{
-    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes();
-    if (loginProviders.Count() == 0) {
+    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().ToList();
+    if (!loginProviders.Any()) {
         <div>
             <p>
-                There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
-                for details on setting up this ASP.NET application to support logging in via external services.
+                К сожалению, логин через социальные сети пока не настроен. (<a href="http://go.microsoft.com/fwlink/?LinkId=403804">вот статья</a>)
             </p>
         </div>
     }
