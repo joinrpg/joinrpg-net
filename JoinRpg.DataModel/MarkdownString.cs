@@ -1,5 +1,8 @@
-﻿namespace JoinRpg.DataModel
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace JoinRpg.DataModel
 {
+  [ComplexType]
   public class MarkdownString
   {
     public MarkdownString(string contents)
