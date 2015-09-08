@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
       return WithGroupAsMaster(projectId, characterGroupId,
         (project, @group) => View(new EditCharacterGroupViewModel
         {
-          Data = CharacterGroupListViewModel.FromGroupForEdit(project.RootGroup),
+          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
           ProjectId = project.ProjectId,
           ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
           Description = @group.Description.Contents,

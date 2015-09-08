@@ -7,6 +7,8 @@ namespace JoinRpg.DataModel
     ICollection<CharacterGroup> ParentGroups { get;  }
     string Name { get; }
     bool IsPublic { get;  }
+
+    bool IsActive { get; }
     MarkdownString Description { get; }
   }
 }
