@@ -1,10 +1,10 @@
 ﻿@model JoinRpg.Web.Models.AddClaimViewModel
 
 @{
-    ViewBag.Title = "Add";
+    ViewBag.Title = "Добавление новой заявки на игру «" + @Model.ProjectName + "»";
 }
 
-<h2>Add</h2>
+<h2>@ViewBag.Title</h2>
 
 
 @using (Html.BeginForm("Add", "Claim")) 
@@ -26,7 +26,12 @@
             <div>У вас уже есть заявка на проект. Утверждена может быть только одна заявка</div>
         }
 
-    @if (Model.CharacterId != null)
+        @if (Model.ClaimApplyRules != null)
+        {
+            <div>@Model.ClaimApplyRules</div>
+        }
+
+        @if (Model.CharacterId != null)
         {
     <div class="form-group">
         @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -65,7 +70,7 @@
         {
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
-            <input type="submit" value="Create" class="btn btn-default" />
+            <input type="submit" value="Отправить заявку" class="btn btn-default" />
         </div>
     </div>
 

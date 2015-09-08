@@ -180,6 +180,18 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
+    public void EditProject(int projectId, string projectName, string claimApplyRules)
+    {
+      var project = UnitOfWork.GetDbSet<Project>().Find(projectId);
+      if (project.Details == null)
+      {
+        project.Details = new ProjectDetails {ProjectId = projectId};
+      }
+      project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
+      project.ProjectName = Required(projectName);
+      UnitOfWork.SaveChanges();
+    }
+
     private static void ReparentChilds(CharacterGroup characterGroup, IEnumerable<IWorldObject> childs)
     {
       foreach (var child in childs)

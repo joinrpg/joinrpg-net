@@ -1,37 +1,20 @@
-﻿@model JoinRpg.DataModel.Project
+﻿@*TODO: Have nice view model here, with Current user acls*@
+@model JoinRpg.DataModel.Project
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Игра «"+ Model.ProjectName +"»";
 }
 
-<h2>Details</h2>
+<h2>@ViewBag.Title</h2>
 
 <div>
-    <h4>Project</h4>
-    <hr />
     <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.ProjectName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ProjectName)
-        </dd>
-
         <dt>
             @Html.DisplayNameFor(model => model.CreatedDate)
         </dt>
 
         <dd>
             @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.CreatorUserId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.CreatorUser.UserName)
         </dd>
 
         <dt>
@@ -45,9 +28,14 @@
     </dl>
     <h4>Мастера</h4>
     <ul>
-        @foreach (var master in Model.ProjectAcls.Select(pa => pa.User.UserName))
+        @foreach (var master in Model.ProjectAcls.Select(pa => pa.User))
         {
-            <li>@master</li>
+            <li>@master.DisplayName
+        @if (master.UserId == Model.CreatorUserId)
+        {
+            <span>(создатель проекта)</span>
+        }
+        </li>
         }
     </ul>
     <h4>Управление проектом</h4>
@@ -55,11 +43,9 @@
         @*TODO: Show if avail*@
         <li>@Html.ActionLink("Настройка полей", "Index", "GameField", new {Model.ProjectId}, null)</li>
         <li>@Html.ActionLink("Ролевка (группы персонажей и персонажи)", "Index", "GameGroups", new {Model.ProjectId}, null)</li>
-        @* TODO: Show count*@
-        <li>@Html.ActionLink("Заявки на обсуждении", "Discussing", "Claim", new { Model.ProjectId }, null)</li>
+        @* TODO: Show count*@ @*TODO: Show if avail*@
+        <li>@Html.ActionLink("Заявки на обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
+        @*TODO: Show if avail*@
+        <li>@Html.ActionLink("Изменить свойства проекта", "Edit", new { Model.ProjectId })</li>
     </ul>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ProjectId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

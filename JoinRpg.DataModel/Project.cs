@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
   public class Project
   {
     public int ProjectId { get; set; }
@@ -36,6 +34,14 @@ namespace JoinRpg.DataModel
     public virtual ICollection<Character>  Characters { get; set; }
 
     public virtual ICollection<Claim> Claims { get; set; }
+
+    public virtual ProjectDetails Details { get; set; }
+  }
+
+  public class ProjectDetails
+  {
+    public int ProjectId { get; set; }
+    public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
   }
 
   public static class ProjectStaticExtensions

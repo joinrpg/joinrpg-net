@@ -273,6 +273,7 @@
     <Compile Include="Models\EditCharacterGroupViewModel.cs" />
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
+    <Compile Include="Models\EditProjectViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
@@ -360,6 +361,7 @@
     <Content Include="Views\Claim\AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
+    <Content Include="Views\Game\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

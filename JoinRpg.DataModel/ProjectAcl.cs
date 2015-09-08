@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JoinRpg.DataModel
+﻿namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (required by LINQ)
   public class ProjectAcl
   {
     public int ProjectAclId { get; set; }
@@ -19,12 +14,16 @@ namespace JoinRpg.DataModel
 
     public bool CanChangeFields { get; set; }
 
+    public bool CanChangeProjectProperties { get; set; }
+
     public static ProjectAcl CreateRootAcl(int userId)
     {
-      return new ProjectAcl()
+      return new ProjectAcl
       {
         CanChangeFields = true,
-        UserId = userId
+        CanChangeProjectProperties = true,
+        UserId = userId,
+        ProjectAclId = -1
       };
     }
   }

@@ -11,6 +11,10 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectId { get; set; }
 
+    public string ProjectName { get; set; }
+
+    public HtmlString ClaimApplyRules { get; set; }
+
     public int? CharacterId { get; set; }
     public int? CharacterGroupId { get; set; }
 
@@ -47,6 +51,7 @@ namespace JoinRpg.Web.Models
       var addClaimViewModel = new AddClaimViewModel
       {
         ProjectId = obj.ProjectId,
+        ProjectName = obj.Project.ProjectName,
         HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId),
         HasApprovedClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsApproved),
         TargetName = obj.Name,
