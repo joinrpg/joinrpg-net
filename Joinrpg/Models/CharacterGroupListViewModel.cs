@@ -11,9 +11,9 @@ namespace JoinRpg.Web.Models
 
     public string ProjectName { get; set; }
 
-    public IList<CharacterGroupViewModel> Groups { get; set; }
+    public IList<CharacterGroupListItemViewModel> Groups { get; set; }
 
-    public static CharacterGroupListViewModel FromGroup(CharacterGroup group, bool showEditControls)
+    public static CharacterGroupListViewModel FromGroup(CharacterGroup group, bool showEditControls = false)
     {
       return new CharacterGroupListViewModel()
       {
@@ -24,8 +24,9 @@ namespace JoinRpg.Web.Models
       };
     }
 
-    public bool ShowEditControls { get; set; }
+    public static CharacterGroupListViewModel FromGroupForEdit(CharacterGroup group) => FromGroup(group, true);
 
+    public bool ShowEditControls { get; set; }
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -35,14 +36,14 @@ namespace JoinRpg.Web.Models
       private IList<int> AlreadyOutputedGroups { get; } = new List<int>();
       private IList<int> AlreadyOutputedChars { get; } = new List<int>();
 
-      private IList<CharacterGroupViewModel> Results { get; } = new List<CharacterGroupViewModel>();
+      private IList<CharacterGroupListItemViewModel> Results { get; } = new List<CharacterGroupListItemViewModel>();
 
       public CharacterGroupHierarchyBuilder(CharacterGroup root)
       {
         Root = root;
       }
 
-      public IList<CharacterGroupViewModel> Generate()
+      public IList<CharacterGroupListItemViewModel> Generate()
       {
         GenerateFrom(Root, 0, new List<CharacterGroup>());
         return Results;
@@ -50,10 +51,9 @@ namespace JoinRpg.Web.Models
 
       private void GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
-        var vm = new CharacterGroupViewModel()
+        var vm = new CharacterGroupListItemViewModel()
         {
           CharacterGroupId = characterGroup.CharacterGroupId,
-          CanDelete = !characterGroup.IsRoot,
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
@@ -69,7 +69,7 @@ namespace JoinRpg.Web.Models
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
 
-        foreach (var childGroup in characterGroup.ChildGroups)
+        foreach (var childGroup in characterGroup.ActiveChildGroups)
         {
           var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
           GenerateFrom(childGroup, deepLevel + 1, characterGroups);

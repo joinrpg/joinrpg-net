@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
@@ -14,6 +10,8 @@ namespace JoinRpg.Services.Interfaces
     void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     void DeleteField(int projectCharacterFieldId);
     void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description);
-    void AddCharacter(int projectId, List<int> parentCharacterGroupIds, string name, bool isPublic, bool isAcceptingClaims, string description);
+    void AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description);
+    void EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description);
+    void DeleteCharacterGroup(int projectId, int characterGroupId);
   }
 }

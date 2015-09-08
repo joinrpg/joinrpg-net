@@ -19,14 +19,6 @@ namespace JoinRpg.Web.Controllers
     {
     }
 
-    private ActionResult InsideField(int projectId, int fieldId,
-      Func<Project, ProjectCharacterField, ActionResult> action)
-    {
-      return WithSubEntityAsMaster(projectId, fieldId, project => project.AllProjectFields,
-        subentity => subentity.ProjectCharacterFieldId, pa => pa.CanChangeFields, action);
-    }
-
-
     private ActionResult ReturnToIndex(Project project)
     {
       return RedirectToAction("Index", new {project.ProjectId});
@@ -71,7 +63,7 @@ namespace JoinRpg.Web.Controllers
     // GET: GameFields/Edit/5
     public ActionResult Edit(int projectId, int projectCharacterFieldId)
     {
-      return InsideField(projectId, projectCharacterFieldId, (project, field) =>
+      return WithGameFieldAsMaster(projectId, projectCharacterFieldId, (project, field) =>
       {
         var viewModel = new GameFieldEditViewModel()
         {
@@ -92,7 +84,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Edit(GameFieldEditViewModel viewModel)
     {
-      return InsideField(viewModel.ProjectId, viewModel.FieldId, (project, field) =>
+      return WithGameFieldAsMaster(viewModel.ProjectId, viewModel.FieldId, (project, field) =>
       {
         try
         {
@@ -114,7 +106,7 @@ namespace JoinRpg.Web.Controllers
     // GET: GameFields/Delete/5
     public ActionResult Delete(int projectId, int projectCharacterFieldId)
     {
-      return InsideField(projectId, projectCharacterFieldId, (project, field) => View(field));
+      return WithGameFieldAsMaster(projectId, projectCharacterFieldId, (project, field) => View(field));
 
     }
 
@@ -123,7 +115,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Delete(int projectId, int projectCharacterFieldId, FormCollection collection)
     {
-      return InsideField(projectId, projectCharacterFieldId, (project, field) =>
+      return WithGameFieldAsMaster(projectId, projectCharacterFieldId, (project, field) =>
       {
         try
         {

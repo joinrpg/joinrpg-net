@@ -65,26 +65,28 @@ namespace JoinRpg.Web.Controllers.Common
       return WithProjectAsMaster(projectId, acl => true, action);
     }
 
-    protected ActionResult WithSubEntityAsMaster<TProjectSubEntity>(int projectId, int fieldId,
-      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector, Func<TProjectSubEntity, int> subentityKeySelector,
-      Func<ProjectAcl, bool> requiredRights, Func<Project, TProjectSubEntity, ActionResult> action)
+    private ActionResult WithSubEntityAsMaster<TProjectSubEntity>(int projectId, int? fieldId,
+      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
+      Func<ProjectAcl, bool> requiredRights, Func<Project, TProjectSubEntity, ActionResult> action) where TProjectSubEntity : IProjectSubEntity
     {
-      return WithProjectAsMaster(projectId, requiredRights, project =>
-      {
-        var field = subentitySelector(project).SingleOrDefault(e => subentityKeySelector(e) == fieldId);
-        return field == null ? HttpNotFound() : action(project, field);
-      });
+
+      return WithProjectAsMaster(projectId, requiredRights, project => LoadSubEntity(fieldId, subentitySelector, action, project));
     }
 
-    protected ActionResult WithSubEntity<TProjectSubEntity>(int projectId, int fieldId,
+    private ActionResult WithSubEntity<TProjectSubEntity>(int projectId, int fieldId,
       Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
       Func<Project, TProjectSubEntity, ActionResult> action) where TProjectSubEntity: IProjectSubEntity
     {
-      return WithProject(projectId, project =>
-      {
-        var field = subentitySelector(project).SingleOrDefault(e => e.Id == fieldId);
-        return field == null ? HttpNotFound() : action(project, field);
-      });
+      return WithProject(projectId, project => LoadSubEntity(fieldId, subentitySelector, action, project));
+    }
+
+    private ActionResult LoadSubEntity<TProjectSubEntity>(int? fieldId,
+      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
+      Func<Project, TProjectSubEntity, ActionResult> action, Project project)
+      where TProjectSubEntity : IProjectSubEntity
+    {
+      var field = subentitySelector(project).SingleOrDefault(e => e.Id == fieldId);
+      return field == null ? HttpNotFound() : action(project, field);
     }
 
     protected ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
@@ -131,6 +133,17 @@ namespace JoinRpg.Web.Controllers.Common
         }
         return actionResult(project, claim);
       });
+    }
+
+    protected ActionResult WithGroupAsMaster(int projectId, int? groupId, Func<Project, CharacterGroup, ActionResult> action)
+    {
+      return WithSubEntityAsMaster(projectId, groupId, project => project.CharacterGroups, pa => pa.CanChangeFields, action);
+    }
+
+    protected ActionResult WithGameFieldAsMaster(int projectId, int fieldId,
+      Func<Project, ProjectCharacterField, ActionResult> action)
+    {
+      return WithSubEntityAsMaster(projectId, fieldId, project => project.AllProjectFields, pa => pa.CanChangeFields, action);
     }
   }
 }

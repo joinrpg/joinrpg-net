@@ -1,6 +1,7 @@
 ﻿namespace JoinRpg.DataModel
 {
-  public class ProjectCharacterField : IProjectSubEntity
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
+  public class ProjectCharacterField : IProjectSubEntity, IDeletableSubEntity
   {
     public int ProjectCharacterFieldId
     { get; set; }
@@ -27,6 +28,8 @@
     public bool IsActive { get; set; }
 
     public bool WasEverUsed { get; set; }
+
+    bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
   }
 
   public enum CharacterFieldType

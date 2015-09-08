@@ -54,6 +54,7 @@
     <Compile Include="Claim.cs" />
     <Compile Include="Comment.cs" />
     <Compile Include="IClaimSource.cs" />
+    <Compile Include="IDeletableSubEntity.cs" />
     <Compile Include="IProjectSubEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="MarkdownString.cs" />

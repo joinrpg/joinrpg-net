@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Models
       return vm;
     }
 
-    private static AddClaimViewModel CreateImpl(IWorldObject obj, User user)
+    private static AddClaimViewModel CreateImpl(IClaimSource obj, User user)
     {
       var addClaimViewModel = new AddClaimViewModel
       {

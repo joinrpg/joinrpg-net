@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace JoinRpg.DataModel
 {
-  public class CharacterGroup : IClaimSource
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity
   {
 
     public int CharacterGroupId { get; set; }
 
     public int ProjectId { get; set; }
     int IProjectSubEntity.Id => CharacterGroupId;
-
 
     public virtual Project Project { get; set; }
 
@@ -21,6 +23,8 @@ namespace JoinRpg.DataModel
     string IWorldObject.Name => CharacterGroupName;
 
     public virtual ICollection<CharacterGroup> ChildGroups { get; set; }
+
+    public IEnumerable<CharacterGroup> ActiveChildGroups => ChildGroups.Where(cg => cg.IsActive);
 
     public bool IsPublic { get; set; }
 
@@ -39,6 +43,17 @@ namespace JoinRpg.DataModel
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 
     public virtual ICollection<PlotElement>  DirectlyRelatedPlotElements { get; set; }
+
+    public IEnumerable<Character> CharactersWithOnlyParent => WithOnlyParent(Characters);
+    public IEnumerable<CharacterGroup> ChildGroupsWithOnlyParent => WithOnlyParent(ChildGroups);
+
+    public bool CanBePermanentlyDeleted
+      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any();
+
+    private IEnumerable<T> WithOnlyParent<T>(IEnumerable<T> worldObjects) where T:IWorldObject
+    {
+      return worldObjects.Where(obj => obj.ParentGroups.All(group => @group.CharacterGroupId == CharacterGroupId));
+    }
   }
 
 }

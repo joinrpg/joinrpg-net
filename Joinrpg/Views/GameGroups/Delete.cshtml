@@ -1,0 +1,67 @@
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.Helpers
+@model CharacterGroup
+
+
+@{
+  ViewBag.Title = "Удаление группы персонажей (локации) «" + Model.CharacterGroupName + "» из игры " + Model.Project.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+
+<h3>Вы действительно хотите удалить группу персонажей (локацию)?</h3>
+<div>
+    <h4>@Model.CharacterGroupName</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        @if (Model.Characters.Any() || Model.ChildGroups.Any())
+        {
+            <dt>
+                Персонажи в локации
+            </dt>
+            <dd>
+                В локации есть:
+                <ul>
+                    @if (Model.Characters.Any())
+                    {
+                        <li>Персонажи: @Model.Characters.Count </li>
+                    }
+                    @if (Model.ChildGroups.Any())
+                    {
+                        <li>Локации: @Model.ChildGroups.Count </li>
+                    }
+                </ul>
+                Подробнее в @Html.ActionLink("ролевке локации", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null). При удалении дочерние персонажи и локации будут автоматически
+                привязаны к локации выше.
+            </dd>
+        }
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsPublic)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsPublic)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Model.Description.ToHtmlString()
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+          @Html.HiddenFor(model => model.CharacterGroupId)
+      @Html.HiddenFor(model => model.ProjectId)
+        <div class="form-actions no-color">
+            <input type="submit" value="Удалить" class="btn btn-default"/>
+            <br/>
+            @Html.ActionLink("Назад к ролевке", "Index", new { @Model.ProjectId, @Model.CharacterGroupId }, null)
+        </div>
+    }
+</div>

@@ -4,7 +4,7 @@ using System.Web;
 
 namespace JoinRpg.Web.Models
 {
-  public class CharacterGroupViewModel
+  public class CharacterGroupListItemViewModel
   {
     public int CharacterGroupId { get; set; }
 
@@ -12,8 +12,6 @@ namespace JoinRpg.Web.Models
     public string Name { get; set; }
 
     public int DeepLevel { get; set; }
-
-    public bool CanDelete { get; set; }
 
     public bool FirstCopy { get; set; }
 
@@ -26,10 +24,7 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<string> Path { get; set; }
 
-    public bool IsRoot
-    {
-      get { return DeepLevel == 0; }
-    }
+    public bool IsRoot => DeepLevel == 0;
   }
 
 }

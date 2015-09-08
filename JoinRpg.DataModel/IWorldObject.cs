@@ -8,6 +8,5 @@ namespace JoinRpg.DataModel
     string Name { get; }
     bool IsPublic { get;  }
     MarkdownString Description { get; }
-    bool IsAvailable { get; }
   }
 }
