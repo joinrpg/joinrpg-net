@@ -191,6 +191,21 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
+    public void GrantAccess(int projectId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties)
+    {
+      var project = UnitOfWork.GetDbSet<Project>().Find(projectId);
+      var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
+      if (acl == null)
+      {
+        acl = new ProjectAcl() {ProjectId = project.ProjectId, UserId = userId};
+        project.ProjectAcls.Add(acl);
+      }
+      acl.CanGrantRights = canGrantRights;
+      acl.CanChangeFields = canChangeFields;
+      acl.CanChangeProjectProperties = canChangeProjectProperties;
+      UnitOfWork.SaveChanges();
+    }
+
     private static void ReparentChilds(CharacterGroup characterGroup, IEnumerable<IWorldObject> childs)
     {
       foreach (var child in childs)

@@ -1,0 +1,82 @@
+﻿@using JoinRpg.Web.Models
+@model JoinRpg.Web.Models.UserProfileViewModel
+
+@{
+  ViewBag.Title = "Профиль " + Model.DisplayName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <h4>@Model.FullName</h4>
+    <hr />
+
+    @if (Model.ThisUserProjects.Any())
+    {
+    <h4>Проекты этого пользователя </h4>
+            <ul>
+                @foreach (var master in Model.ThisUserProjects)
+                {
+                <li>
+                    @master.Project.ProjectName
+                    @if (master.IsOwner)
+                    {
+                    <span>(создатель проекта)</span>
+                    }
+                </li>
+                }
+
+            </ul>
+    }
+
+    @if (Model.ProjectsToAdd.Any())
+    {
+        using (Html.BeginForm("Add", "Acl", FormMethod.Post))
+        {
+        @Html.AntiForgeryToken()
+        <details>
+            <summary>Добавить в проект..</summary>
+            <div class="form-horizontal">
+                <h4>Проект</h4>
+                @Html.DropDownList("ProjectId", Model.ProjectsToAdd.Select(project => new SelectListItem() { Text = project.ProjectName, Value = project.ProjectId.ToString() }))
+                @Html.HiddenFor(model => Model.UserId)
+
+                @{ var acl = new AclViewModel();}
+
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanChangeFields)
+                            @Html.ValidationMessageFor(model => acl.CanChangeFields, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanChangeProjectProperties, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanChangeProjectProperties)
+                            @Html.ValidationMessageFor(model => acl.CanChangeProjectProperties, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanGrantRights)
+                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+            <input type="submit" value="Добавить" class="btn btn-default"/>
+                </div>
+</details>
+        }
+
+    }
+    </div>

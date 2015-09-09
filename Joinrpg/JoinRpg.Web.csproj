@@ -248,6 +248,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\UnityMvcActivator.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AclController.cs" />
     <Compile Include="Controllers\CharacterController.cs" />
     <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\CommentController.cs" />
@@ -265,6 +266,7 @@
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\AclViewModel.cs" />
     <Compile Include="Models\AddCharacterViewModel.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\AddCommentViewModel.cs" />
@@ -364,11 +366,11 @@
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
+    <Content Include="Views\User\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />
     <Folder Include="App_Data\" />
-    <Folder Include="Views\User\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
