@@ -57,7 +57,7 @@ namespace JoinRpg.Web.Models
         TargetName = obj.Name,
         Description = obj.Description.ToHtmlString(),
         IsAvailable = obj.IsAvailable,
-        ClaimApplyRules = obj.Project.Details.ClaimApplyRules.ToHtmlString()
+        ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString()
       };
       return addClaimViewModel;
     }
