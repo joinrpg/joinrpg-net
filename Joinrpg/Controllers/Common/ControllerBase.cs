@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
@@ -44,6 +45,13 @@ namespace JoinRpg.Web.Controllers
       }
 
       base.Dispose(disposing);
+    }
+
+    protected IEnumerable<T> LoadForCurrentUser<T>(Func<int, IEnumerable<T>> loadFunc)
+    {
+      return User.Identity.IsAuthenticated
+        ? loadFunc(CurrentUserId)
+        : new T[] {};
     }
   }
 }
