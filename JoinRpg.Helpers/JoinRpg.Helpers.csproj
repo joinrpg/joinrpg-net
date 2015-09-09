@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</ProjectGuid>
+    <ProjectGuid>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.DataModel</RootNamespace>
-    <AssemblyName>JoinRpg.DataModel</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <RootNamespace>JoinRpg.Helpers</RootNamespace>
+    <AssemblyName>JoinRpg.Helpers</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -30,16 +30,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=9.1.1.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.9.1.1\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.0\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -49,33 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Character.cs" />
-    <Compile Include="CharacterGroup.cs" />
-    <Compile Include="Claim.cs" />
-    <Compile Include="Comment.cs" />
-    <Compile Include="IClaimSource.cs" />
-    <Compile Include="IDeletableSubEntity.cs" />
-    <Compile Include="IProjectSubEntity.cs" />
-    <Compile Include="IWorldObject.cs" />
-    <Compile Include="MarkdownString.cs" />
-    <Compile Include="PlotElement.cs" />
-    <Compile Include="PlotFolder.cs" />
-    <Compile Include="Project.cs" />
-    <Compile Include="ProjectAcl.cs" />
-    <Compile Include="ProjectCharacterField.cs" />
-    <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
-      <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
-      <Name>JoinRpg.Helpers</Name>
-    </ProjectReference>
+    <Compile Include="StaticStringHelpers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
