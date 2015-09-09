@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Dal.Impl
 {
-  public class MyUserStore : IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User,int>, IUserTwoFactorStore<User,int>
+  public class MyUserStore : IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User,int>, IUserTwoFactorStore<User,int>, IUserEmailStore<User, int>
   {
     private readonly MyDbContext _ctx;
 
@@ -128,6 +125,32 @@ namespace JoinRpg.Dal.Impl
     public Task<bool> GetTwoFactorEnabledAsync(User user)
     {
       return Task.FromResult(false);
+    }
+
+    public Task SetEmailAsync(User user, string email)
+    {
+      user.Email = email;
+      return Task.FromResult<object>(null);
+    }
+
+    public Task<string> GetEmailAsync(User user)
+    {
+      return Task.FromResult(user.Email);
+    }
+
+    public Task<bool> GetEmailConfirmedAsync(User user)
+    {
+      return Task.FromResult(false);//We don't support confirming yet
+    }
+
+    public Task SetEmailConfirmedAsync(User user, bool confirmed)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task<User> FindByEmailAsync(string email)
+    {
+      return _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == email);
     }
   }
 }
