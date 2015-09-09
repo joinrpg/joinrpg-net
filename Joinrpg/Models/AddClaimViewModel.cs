@@ -52,7 +52,7 @@ namespace JoinRpg.Web.Models
       {
         ProjectId = obj.ProjectId,
         ProjectName = obj.Project.ProjectName,
-        HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId),
+        HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsActive),
         HasApprovedClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsApproved),
         TargetName = obj.Name,
         Description = obj.Description.ToHtmlString(),
