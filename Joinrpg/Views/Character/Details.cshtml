@@ -1,73 +1,39 @@
-﻿@model JoinRpg.DataModel.Character
+﻿@model JoinRpg.Web.Models.CharacterDetailsViewModel
 
 <div>
     <h4>@Model.CharacterName</h4>
     <hr/>
     @* TODO: Жесточайше причесать эту страницу*@
-    @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, null)
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.ProjectId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ProjectId)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.CharacterName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.CharacterName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsPublic)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsPublic)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsAcceptingClaims)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsAcceptingClaims)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.JsonData)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.JsonData)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsAvailable)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsAvailable)
-        </dd>
-
-    </dl>
+    @if (Model.CanAddClaim)
+    {
+        <p>@Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, null)</p>
+    }
+    @if (Model.ApprovedClaimId != null)
+    {
+        <p>
+            <b>Игрок</b>: @Html.DisplayFor(model => Model.ApprovedClaimUser)
+            @if (Model.HasAccessToClaim)
+            {
+                <span>(
+            @Html.ActionLink("перейти на заявку", "Edit", "Claim", new {Model.ProjectId, ClaimId = Model.ApprovedClaimId}, null)
+        )
+        </span>
+            }
+        </p>
+    }
 </div>
-@{
+@if (Model.DiscussedClaims.Any())
+{
+    <h4>Обсуждаемые заявки</h4>
     ViewBag.HideProjectColumn = true;
+    @Html.Partial(@"~/Views/Claim/Index.cshtml", Model.DiscussedClaims)
 }
-@Html.Partial(@"~/Views/Claim/Index.cshtml", Model.Claims.Where(c => c.IsActive))
+@if (Model.RejectedClaims.Any())
+{
+<h4>Отклоненные заявки</h4>
+    ViewBag.HideProjectColumn = true;
+@Html.Partial(@"~/Views/Claim/Index.cshtml", Model.RejectedClaims)
+}
 <p>
     
     @Html.ActionLink("Назад к ролевке", "Index", "GameGroups", new {Model.ProjectId}, null)

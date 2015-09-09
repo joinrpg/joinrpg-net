@@ -28,7 +28,7 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<Claim> Claims { get; set; }
 
-    public string DisplayName => UserName; //Should create creative display name
+    public string DisplayName => string.IsNullOrWhiteSpace(FullName) ? Email : FullName; //Should create creative display name
 
     public string FullName => new[] {BornName, FatherName, SurName}.JoinIfNotNullOrWhitespace(" ");
   }

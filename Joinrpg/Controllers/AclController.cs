@@ -1,6 +1,5 @@
 ﻿using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -24,7 +23,7 @@ namespace JoinRpg.Web.Controllers
         }
         catch
         {
-          return RedirectToAction("Details", "User", new {user.Email});
+          return RedirectToAction("Details", "User", new {user.Id});
         }
         return RedirectToAction("Details", "Game", new {viewModel.ProjectId});
       });

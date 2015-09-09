@@ -32,7 +32,9 @@ namespace JoinRpg.Domain
 
     private Dictionary<int, CharacterFieldValue> LoadFieldsFromJsonString(Character character)
     {
-      return JsonConvert.DeserializeObject<Dictionary<int, string>>(character.JsonData)
+      var deserializedObject = JsonConvert.DeserializeObject<Dictionary<int, string>>(character.JsonData ?? "") ??
+                               new Dictionary<int, string>();
+      return deserializedObject
         .ToDictionary(obj => obj.Key, obj => new CharacterFieldValue(this, FindField(obj.Key), obj.Value));
     }
 
