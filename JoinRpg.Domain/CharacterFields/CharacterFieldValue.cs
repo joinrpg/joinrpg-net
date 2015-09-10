@@ -1,10 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using JoinRpg.DataModel;
-using Newtonsoft;
+﻿using JoinRpg.DataModel;
 
+//TODO: Actually, this should be viewModel and reside in JoinRpg.Web.Models. Move.
 // ReSharper disable once CheckNamespace
 namespace JoinRpg.Domain
 {
@@ -16,7 +12,7 @@ namespace JoinRpg.Domain
     {
       Containter = containter;
       Field = field;
-      Value = value;
+      _value = value;
     }
 
     public ProjectCharacterField Field { get; }
@@ -27,10 +23,14 @@ namespace JoinRpg.Domain
       set
       {
         _value = value;
+        //TODO: We really don't need to do this on each update. I like my idea of this container, but we can do much simpler if stick with simple parse/serialize approach
         Containter.Update();
       }
     }
 
-    private CharacterFieldsContainter Containter { get; }
+    //TODO: This is example of web logic we like to have here, so clearly viewModel
+    public string FieldClientId => $"field_{Field.ProjectCharacterFieldId}";
+
+  private CharacterFieldsContainter Containter { get; }
   }
 }
