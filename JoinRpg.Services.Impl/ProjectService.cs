@@ -5,6 +5,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -203,6 +204,32 @@ namespace JoinRpg.Services.Impl
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
       acl.CanChangeProjectProperties = canChangeProjectProperties;
+      UnitOfWork.SaveChanges();
+    }
+
+    public void SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
+    {
+      var character = LoadProjectSubEntity<Character>(projectId, characterId);
+      var fields = character.Fields();
+      foreach (var keyValuePair in newFieldValue)
+      {
+        CharacterFieldValue field;
+        if (!fields.TryGetValue(keyValuePair.Key, out field))
+        {
+          throw new DbEntityValidationException();
+        }
+        var newValue = keyValuePair.Value;
+
+        var hasPlayerAccess = field.Field.CanPlayerEdit && character.ApprovedClaim?.PlayerUserId == currentUserId;
+        var hasMasterAccess = character.Project.HasAccess(currentUserId);
+
+        if (!hasPlayerAccess && !hasMasterAccess)
+        {
+          throw new DbEntityValidationException();
+        }
+        //TODO: typechecking here
+        field.Value = newValue;
+      }
       UnitOfWork.SaveChanges();
     }
 

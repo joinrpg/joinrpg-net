@@ -70,6 +70,10 @@
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
+      <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
+      <Name>JoinRpg.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>
       <Name>JoinRpg.Services.Interfaces</Name>
