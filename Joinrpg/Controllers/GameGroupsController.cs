@@ -45,8 +45,18 @@ namespace JoinRpg.Web.Controllers
           Description = @group.Description.Contents,
           IsPublic = @group.IsPublic,
           Name = @group.CharacterGroupName,
+          HaveDirectSlots = GetDirectClaimSettings(group),
+          DirectSlots = group.AvaiableDirectSlots,
           CharacterGroupId = group.CharacterGroupId
         }));
+    }
+
+    private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
+
+    {
+      if (!@group.HaveDirectSlots)
+        return DirectClaimSettings.NoDirectClaims;
+      return @group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
     // POST: GameGroups/Edit/5

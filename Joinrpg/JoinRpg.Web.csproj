@@ -269,6 +269,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DisplayAttributeHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -388,6 +389,7 @@
     <Content Include="Views\Shared\EditorTemplates\CharacterFieldValue.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\CharacterFieldValue.cshtml" />
     <Content Include="Views\Shared\CharacterFieldsPartial.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

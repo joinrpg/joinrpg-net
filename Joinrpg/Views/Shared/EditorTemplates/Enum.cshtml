@@ -1,0 +1,8 @@
+﻿@using JoinRpg.Web.Helpers
+@model Enum
+@foreach (Enum value in Enum.GetValues(Model.GetType()))
+{
+    @Html.RadioButtonFor(m => value, value)
+    @Html.LabelFor(m => value, value.GetDisplayName())
+    <br/>
+}
