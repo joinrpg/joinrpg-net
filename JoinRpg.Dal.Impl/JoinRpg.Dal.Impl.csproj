@@ -90,6 +90,10 @@
     <Compile Include="Migrations\201509082135587_MoreRightsForAcl.Designer.cs">
       <DependentUpon>201509082135587_MoreRightsForAcl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509101901092_DirectSlotsUnlimited.cs" />
+    <Compile Include="Migrations\201509101901092_DirectSlotsUnlimited.Designer.cs">
+      <DependentUpon>201509101901092_DirectSlotsUnlimited.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -137,6 +141,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509082135587_MoreRightsForAcl.resx">
       <DependentUpon>201509082135587_MoreRightsForAcl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509101901092_DirectSlotsUnlimited.resx">
+      <DependentUpon>201509101901092_DirectSlotsUnlimited.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

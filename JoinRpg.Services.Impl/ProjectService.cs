@@ -99,6 +99,7 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
       {
         AvaiableDirectSlots = 0,
+        HaveDirectSlots = false,
         CharacterGroupName = name,
         ParentGroups = characterGroups,
         ProjectId = projectId,

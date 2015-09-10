@@ -30,19 +30,26 @@ namespace JoinRpg.DataModel
 
     public int AvaiableDirectSlots { get; set; }
 
+    public bool HaveDirectSlots { get; set; }
+
+    public bool DirectSlotsUnlimited => AvaiableDirectSlots == -1;
+
     public virtual ICollection<Character> Characters { get; set; }
 
     public bool IsActive { get; set; }
 
     public MarkdownString Description { get; set; } = new MarkdownString();
 
-    public bool IsAvailable => AvaiableDirectSlots > 0;
+    /// <summary>
+    /// Can add claim directly to character group (not individual characters)
+    /// </summary>
+    public bool IsAvailable => HaveDirectSlots && AvaiableDirectSlots != 0;
 
-    public virtual ICollection<Claim>  Claims { get; set; }
+    public virtual ICollection<Claim> Claims { get; set; }
 
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 
-    public virtual ICollection<PlotElement>  DirectlyRelatedPlotElements { get; set; }
+    public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
 
     public IEnumerable<Character> CharactersWithOnlyParent => WithOnlyParent(Characters);
     public IEnumerable<CharacterGroup> ChildGroupsWithOnlyParent => WithOnlyParent(ChildGroups);
