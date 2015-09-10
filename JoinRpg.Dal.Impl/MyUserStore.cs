@@ -104,7 +104,7 @@ namespace JoinRpg.Dal.Impl
 
     public Task<int> GetAccessFailedCountAsync(User user)
     {
-      throw new NotImplementedException();
+      return Task.FromResult(0); 
     }
 
     public Task<bool> GetLockoutEnabledAsync(User user)
