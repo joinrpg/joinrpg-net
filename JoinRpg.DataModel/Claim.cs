@@ -91,7 +91,7 @@ namespace JoinRpg.DataModel
 
     public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)
     {
-      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive);
+      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive && c.ProjectId == claim.ProjectId);
     }
 
     /// <summary>
