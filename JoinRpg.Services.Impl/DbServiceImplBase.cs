@@ -1,4 +1,5 @@
 using System.Data.Entity.Validation;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 
@@ -13,10 +14,14 @@ namespace JoinRpg.Services.Impl
       UnitOfWork = unitOfWork;
     }
 
+    [NotNull]
     protected T LoadProjectSubEntity<T>(int projectId, int subentityId) where T : class, IProjectSubEntity
     {
       var field = UnitOfWork.GetDbSet<T>().Find(subentityId);
-      if (field.ProjectId == projectId) return field;
+      if (field != null && field.ProjectId == projectId)
+      {
+        return field;
+      }
       throw new DbEntityValidationException();
     }
 
