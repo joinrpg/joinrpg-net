@@ -84,9 +84,10 @@ namespace JoinRpg.DataModel
 
   public static class ClaimStaticExtensions
   {
-    public static bool HasAccess(this Claim claim, int currentUserId)
+    public static bool HasAccess(this Claim claim, int? currentUserId)
     {
-      return claim.Project.HasAccess(currentUserId) || claim.PlayerUserId == currentUserId;
+      return currentUserId != null &&
+             (claim.PlayerUserId == currentUserId || claim.Project.HasAccess(currentUserId.Value));
     }
 
     public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)
