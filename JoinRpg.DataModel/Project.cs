@@ -47,7 +47,7 @@ namespace JoinRpg.DataModel
       return project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
     }
 
-    public static bool HasAccess(this Project project, int currentUserId)
+    public static bool HasAccess(this Project project, int? currentUserId)
     {
       return project.ProjectAcls.Any(pa => pa.UserId == currentUserId);
     }
