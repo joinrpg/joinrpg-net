@@ -45,17 +45,25 @@ namespace JoinRpg.Domain
 
     public void Update()
     {
-      Character.JsonData = JsonConvert.SerializeObject(_dictionary);
+      Character.JsonData = JsonConvert.SerializeObject(_dictionary.ToDictionary(pair => pair.Key, pair => pair.Value.Value));
     }
 
     IEnumerator<KeyValuePair<int, CharacterFieldValue>> IEnumerable<KeyValuePair<int, CharacterFieldValue>>.GetEnumerator() => _dictionary.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable) _dictionary).GetEnumerator();
     int IReadOnlyCollection<KeyValuePair<int, CharacterFieldValue>>.Count => _dictionary.Count;
     bool IReadOnlyDictionary<int, CharacterFieldValue>.ContainsKey(int key) => _dictionary.ContainsKey(key);
-    bool IReadOnlyDictionary<int, CharacterFieldValue>.TryGetValue(int key, out CharacterFieldValue value) => _dictionary.TryGetValue(key, out value);
-    CharacterFieldValue IReadOnlyDictionary<int, CharacterFieldValue>.this[int key] => _dictionary[key];
+    public bool TryGetValue(int key, out CharacterFieldValue value) => _dictionary.TryGetValue(key, out value);
+    public CharacterFieldValue this[int key] => _dictionary[key];
     IEnumerable<int> IReadOnlyDictionary<int, CharacterFieldValue>.Keys => _dictionary.Keys;
     IEnumerable<CharacterFieldValue> IReadOnlyDictionary<int, CharacterFieldValue>.Values => _dictionary.Values;
+
+    public IEnumerable<string> GetFieldClientIds()
+    {
+      return _dictionary.Values.Select(field => field.FieldClientId);
+    }
+
+    public CharacterFieldValue ByClientId(string fieldClientId)
+      => _dictionary.Values.SingleOrDefault(value => value.FieldClientId == fieldClientId);
   }
 
   public static class CharacterFieldsExtractor
