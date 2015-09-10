@@ -1,8 +1,10 @@
-﻿using System.Data.Entity.Validation;
+﻿using System;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -54,31 +56,22 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpGet]
-    [Authorize]
-    public ActionResult My()
-    {
-      return View(GetCurrentUser().Claims);
-    }
+    [HttpGet, Authorize]
+    public ActionResult My() => View(GetCurrentUser().Claims);
 
-    [HttpGet]
-    [Authorize]
+    [HttpGet, Authorize]
     public ActionResult ForPlayer(int projectId, int userId)
+      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId);
+
+    private ActionResult MasterList(int projectId, Func<Claim, bool> predicate)
     {
-      return WithProjectAsMaster(projectId,
-        project => View(project.Claims.Where(cl => cl.IsActive & cl.PlayerUserId == userId)));
+      return WithProjectAsMaster(projectId, project => View(project.Claims.Where(predicate)));
     }
 
+    [HttpGet, Authorize]
+    public ActionResult Discussing(int projectid) => MasterList(projectid, claim => claim.IsInDiscussion);
 
-    [HttpGet]
-    [Authorize]
-    public ActionResult Discussing(int projectid)
-    {
-      return WithProjectAsMaster(projectid, project => View(project.Claims.Where(claim => claim.IsInDiscussion)));
-    }
-
-    [HttpGet]
-    [Authorize]
+    [HttpGet, Authorize]
     public ActionResult Edit(int projectId, int claimId)
     {
       return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) => View(new ClaimViewModel()
@@ -87,6 +80,8 @@ namespace JoinRpg.Web.Controllers
         ClaimName = claim.Name,
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
+        HasPlayerAccessToCharacter = hasMasterAccess || (claim.PlayerUserId == CurrentUserId && claim.IsApproved),
+        CharacterFields = claim.Character.Fields().Select(pair => pair.Value),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
@@ -101,9 +96,7 @@ namespace JoinRpg.Web.Controllers
       }));
     }
 
-    [HttpPost]
-    [Authorize]
-    [ValidateAntiForgeryToken]
+    [HttpPost, Authorize, ValidateAntiForgeryToken]
     public ActionResult ApproveByMaster(AddCommentViewModel viewModel)
     {
       return WithClaimAsMaster(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>

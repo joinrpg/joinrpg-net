@@ -5,20 +5,20 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
-    public class UserController : ControllerBase
+    public class UserController : Common.ControllerBase
     {
 
         [HttpGet]
         // GET: User
-        public ActionResult Details(string email)
+        public ActionResult Details(int userId)
         {
-          var user = UserManager.FindByEmail(email);
+          var user = UserManager.FindById(userId);
           return View(new UserProfileViewModel()
           {
             DisplayName = user.DisplayName,
             FullName = user.FullName,
             ThisUserProjects = user.ProjectAcls,
-            CanGrantAccessProjects = LoadForCurrentUser(userId =>  GetCurrentUser().ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.Project)),
+            CanGrantAccessProjects = LoadForCurrentUser(() =>  GetCurrentUser().ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.Project)),
             UserId = user.UserId
           });
         }

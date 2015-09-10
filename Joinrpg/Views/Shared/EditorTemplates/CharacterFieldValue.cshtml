@@ -1,0 +1,11 @@
+﻿@model JoinRpg.Domain.CharacterFieldValue
+<div class="form-group">
+    <div class="col-md-2">
+        @Model.Field.FieldName
+    </div>
+    
+    <div class="col-md-10">
+        @Html.EditorFor(model => model.Value, null, Model.FieldClientId)
+        @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
+    </div>
+</div>

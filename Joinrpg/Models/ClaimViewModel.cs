@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
-  public class ClaimViewModel
+  public class ClaimViewModel : ICharacterFieldsViewModel
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
@@ -13,7 +14,9 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
+    public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
+    public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
     [DisplayName("Заявка на персонажа")]
     public string CharacterName { get; set; } 

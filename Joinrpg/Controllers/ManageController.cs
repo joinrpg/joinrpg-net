@@ -10,7 +10,7 @@ using Microsoft.Owin.Security;
 namespace JoinRpg.Web.Controllers
 {
     [Authorize]
-    public class ManageController : ControllerBase
+    public class ManageController : Common.ControllerBase
     {
         private ApplicationSignInManager _signInManager;
         

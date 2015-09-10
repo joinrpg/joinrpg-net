@@ -1,0 +1,39 @@
+﻿@using JoinRpg.Domain
+@model JoinRpg.Web.Models.ICharacterFieldsViewModel
+@functions {
+  private bool CanView(CharacterFieldValue field)
+  {
+      return field.Field.IsPublic || (Model.HasMasterAccess || (Model.HasPlayerAccessToCharacter && field.Field.CanPlayerView));
+  }
+
+  private bool CanEdit(CharacterFieldValue field)
+  {
+      return (Model.HasMasterAccess || (Model.HasPlayerAccessToCharacter && field.Field.CanPlayerEdit));
+  }
+
+}
+<h4>Поля персонажа</h4>
+<div class="form-horizontal">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        foreach (var field in Model.CharacterFields)
+        {
+            <div>
+                @if (CanView(field))
+                {
+                    @(CanEdit(field) ? Html.EditorFor(model => field) : Html.DisplayFor(model => field))
+                }
+            </div>
+        }
+
+        if (Model.CharacterFields.Any(CanEdit))
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    <input type="submit" value="Сохранить" class="btn btn-default"/>
+                </div>
+            </div>
+        }
+    }
+</div>

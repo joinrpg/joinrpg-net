@@ -8,11 +8,13 @@
     {
         <p>@Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, null)</p>
     }
+
+    @Html.Partial("CharacterFieldsPartial", Model)
     @if (Model.ApprovedClaimId != null)
     {
         <p>
             <b>Игрок</b>: @Html.DisplayFor(model => Model.ApprovedClaimUser)
-            @if (Model.HasAccessToClaim)
+            @if (Model.HasPlayerAccessToCharacter)
             {
                 <span>(
             @Html.ActionLink("перейти на заявку", "Edit", "Claim", new {Model.ProjectId, ClaimId = Model.ApprovedClaimId}, null)

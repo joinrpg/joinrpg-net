@@ -5,7 +5,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  public class HomeController : ControllerBase
+  public class HomeController : Common.ControllerBase
   {
     private readonly IProjectRepository _projectRepository;
     private readonly IClaimsRepository _claimsRepository;

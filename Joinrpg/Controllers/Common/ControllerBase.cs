@@ -4,7 +4,7 @@ using System.Web.Mvc;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Web.Controllers.Common
 {
   public class ControllerBase : Controller 
   {
@@ -30,10 +30,19 @@ namespace JoinRpg.Web.Controllers
     {
       get
       {
-        var userIdString = User.Identity.GetUserId();
-        if (userIdString == null)
+        var id = CurrentUserIdOrDefault;
+        if (id == null)
           throw new Exception("Authorization required here");
-        return int.Parse(userIdString);
+        return id.Value;
+      }
+    }
+
+    protected int? CurrentUserIdOrDefault
+    {
+      get
+      {
+        var userIdString = User.Identity.GetUserId();
+        return userIdString == null ? (int?) null : int.Parse(userIdString);
       }
     }
 
@@ -51,6 +60,20 @@ namespace JoinRpg.Web.Controllers
     {
       return User.Identity.IsAuthenticated
         ? loadFunc(CurrentUserId)
+        : new T[] {};
+    }
+
+    protected IEnumerable<T> LoadForCurrentUser<T>(Func<IEnumerable<T>> loadFunc)
+    {
+      return User.Identity.IsAuthenticated
+        ? loadFunc()
+        : new T[] { };
+    }
+
+    protected IEnumerable<T> LoadIfMaster<T>(Project project, Func<IEnumerable<T>> load)
+    {
+      return (User.Identity.IsAuthenticated && project.HasAccess(CurrentUserId))
+        ? load()
         : new T[] {};
     }
   }

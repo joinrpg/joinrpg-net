@@ -1,0 +1,5 @@
+﻿@model JoinRpg.DataModel.User
+
+<span title="@Html.DisplayFor(model => model.FullName)">
+<a href="@Url.Action("Details", "User", new {Model.UserId})">@Model.DisplayName</a>
+</span>
