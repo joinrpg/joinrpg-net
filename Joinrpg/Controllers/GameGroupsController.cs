@@ -60,11 +60,6 @@ namespace JoinRpg.Web.Controllers
         }));
     }
 
-    private ActionResult WithGroupAsMaster(int projectId, int characterGroupId, Func<Project, CharacterGroup, ActionResult> p)
-    {
-      throw new NotImplementedException();
-    }
-
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
 
     {
