@@ -123,7 +123,7 @@ namespace JoinRpg.Services.Impl
           .Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId))
           .ToList();
 
-      if (characterGroups.Count != parentCharacterGroupIds.Count)
+      if (characterGroups.Count != parentCharacterGroupIds.Distinct().Count())
       {
         throw new DbEntityValidationException();
       }
