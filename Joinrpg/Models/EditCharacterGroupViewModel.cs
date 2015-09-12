@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models
@@ -16,6 +17,8 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Прямые заявки"),Description("Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
     public DirectClaimSettings HaveDirectSlots { get; set; }
+
+    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.PossibleParentsForGroup(CharacterGroupId);
   }
 
   public enum DirectClaimSettings
@@ -32,5 +35,7 @@ namespace JoinRpg.Web.Models
   {
     [DisplayName("Название локации"), Required]
     public string Name { get; set; }
+
+    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups;
   }
 }

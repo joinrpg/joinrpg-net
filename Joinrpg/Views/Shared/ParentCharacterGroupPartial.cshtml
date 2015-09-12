@@ -1,0 +1,14 @@
+﻿@using JoinRpg.Web.Models
+@model EditGameObjectViewModelBase
+
+@functions {
+    private static string GetName(CharacterGroupListItemViewModel gr)
+    {
+        return new string('—', gr.DeepLevel) + gr.Name;
+    }
+}
+
+@Html.ListBoxFor(m => m.ParentCharacterGroupIds, 
+    new MultiSelectList(
+        Model.PossibleParents.Select(gr => new { Value = gr.CharacterGroupId.ToString(), Text = GetName(gr) }), "Value",
+        "Text")))

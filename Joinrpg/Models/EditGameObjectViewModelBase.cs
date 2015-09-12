@@ -22,5 +22,7 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }
+
+    public abstract IEnumerable<CharacterGroupListItemViewModel> PossibleParents { get; }
   }
 }
