@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
@@ -22,6 +20,8 @@ namespace JoinRpg.Services.Impl.Search
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
     {
       var searchTasks = GetProviders().Select(p => p.SearchAsync(searchString)).ToList(); //Starting searches
+
+      //TODO: Ths is not correct way to do it. We must consume it one-by-one until we have X values. When we have X, we should cancel other requests
       var result = await Task.WhenAll(searchTasks);
       return result.SelectMany(resultGroup => resultGroup).ToList().AsReadOnly(); //Waiting for results
     }
@@ -38,18 +38,26 @@ namespace JoinRpg.Services.Impl.Search
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
     {
-      return
+      var results =
         await
           UnitOfWork.GetDbSet<User>()
-            .Where(user => user.Email.Contains(searchString))
-            .Select(user => new SearchResultImpl
+            .Where(user =>
+             //TODO There should be magic way to do this. Experiment with Expression.Voodoo
+              user.Email.Contains(searchString)
+              || user.FatherName.Contains(searchString)
+              || user.BornName.Contains(searchString)
+              || user.SurName.Contains(searchString)
+            )
+            .ToListAsync();
+
+      return results.Select(user => new SearchResultImpl
             {
               Type = SearchResultType.ResultUser,
-              Name = user.UserName,
-              Description = "",
+              Name = user.DisplayName,
+              Description = user.FullName,
               FoundValue = user.Email,
               Identification = user.UserId.ToString()
-            }).ToListAsync();
+            }).ToList();
     }
   }
 
@@ -65,6 +73,5 @@ namespace JoinRpg.Services.Impl.Search
   internal interface ISearchProvider
   {
     Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString);
-    IUnitOfWork UnitOfWork { set; }
   }
 }
