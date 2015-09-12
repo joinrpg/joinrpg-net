@@ -178,6 +178,7 @@ namespace JoinRpg.Services.Impl
       {
         characterGroup.DirectlyRelatedPlotFolders.CleanLinksList();
         characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
+        characterGroup.ParentGroups.CleanLinksList();
       }
       SmartDelete(characterGroup);
       UnitOfWork.SaveChanges();
