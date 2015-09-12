@@ -81,7 +81,7 @@ namespace JoinRpg.Web.Controllers
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
         HasPlayerAccessToCharacter = hasMasterAccess || (claim.PlayerUserId == CurrentUserId && claim.IsApproved),
-        CharacterFields = claim.Character.Fields().Select(pair => pair.Value),
+        CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] {},
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
