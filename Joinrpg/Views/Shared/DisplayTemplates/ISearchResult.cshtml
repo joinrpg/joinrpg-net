@@ -10,7 +10,7 @@
     }
 }
 <div>
-    <h4><a href="@GetUrl()">@Model.Name</a></h4>
+    <h4><a href="@GetUrl()">@Model.Type.GetDisplayName() @Model.Name</a></h4>
     <p>
         @Model.Description
     </p>

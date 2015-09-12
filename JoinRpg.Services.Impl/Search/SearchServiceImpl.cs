@@ -54,7 +54,7 @@ namespace JoinRpg.Services.Impl.Search
             {
               Type = SearchResultType.ResultUser,
               Name = user.DisplayName,
-              Description = user.FullName,
+              Description = "",
               FoundValue = user.Email,
               Identification = user.UserId.ToString()
             }).ToList();
