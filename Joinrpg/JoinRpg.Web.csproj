@@ -265,12 +265,14 @@
     <Compile Include="Controllers\GameGroupsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\DisplayAttributeHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
+    <Compile Include="Helpers\SearchResultHelper.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AclViewModel.cs" />
@@ -291,6 +293,8 @@
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
+    <Compile Include="Models\SearchResultViewModel.cs" />
+    <Compile Include="Models\SuperSearchViewModel.cs" />
     <Compile Include="Models\UserProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -337,7 +341,6 @@
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
-    <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
@@ -392,6 +395,10 @@
     <Content Include="Views\Shared\CharacterFieldsPartial.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
     <Content Include="Views\Shared\ParentCharacterGroupPartial.cshtml" />
+    <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
+    <Content Include="Views\Search\Index.cshtml" />
+    <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

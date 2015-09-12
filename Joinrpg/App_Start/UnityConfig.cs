@@ -1,16 +1,14 @@
 using System;
 using System.Data.Entity;
-using System.Net;
 using System.Web;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Impl;
+using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
 
@@ -19,7 +17,7 @@ namespace JoinRpg.Web
   /// <summary>
   /// Specifies the Unity configuration for the main container.
   /// </summary>
-  public class UnityConfig
+  public static class UnityConfig
   {
     #region Unity Container
 
@@ -61,6 +59,7 @@ namespace JoinRpg.Web
 
       container.RegisterType<IProjectService, ProjectService>();
       container.RegisterType<IClaimService, ClaimServiceImpl>();
+      container.RegisterType<ISearchService, SearchServiceImpl>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

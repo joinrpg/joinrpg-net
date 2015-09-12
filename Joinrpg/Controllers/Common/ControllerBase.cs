@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers.Common
@@ -75,6 +76,11 @@ namespace JoinRpg.Web.Controllers.Common
       return (User.Identity.IsAuthenticated && project.HasAccess(CurrentUserId))
         ? load()
         : new T[] {};
+    }
+
+    protected ActionResult RedirectToAction(RouteTarget routeTarget)
+    {
+      return RedirectToAction(routeTarget.Action, routeTarget.Controller, routeTarget.Params);
     }
   }
 }

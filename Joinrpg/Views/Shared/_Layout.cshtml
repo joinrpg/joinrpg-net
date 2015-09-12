@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using JoinRpg.Web.Models
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -40,6 +41,9 @@
                     {
                         <li class="alert-danger">Тестовая версия, данные не сохраняются </li>
                     }
+                    <li>
+                        @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
+                    </li>
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

@@ -1,0 +1,17 @@
+﻿@using JoinRpg.Services.Interfaces.Search
+@using JoinRpg.Web.Helpers
+@model ISearchResult
+
+@functions {
+    private string GetUrl()
+    {
+        var target = Model.GetRouteTarget();
+        return Url.Action(target.Action, target.Controller, target.Params);
+    }
+}
+<div>
+    <h4><a href="@GetUrl()">@Model.Name</a></h4>
+    <p>
+        @Model.Description
+    </p>
+</div>

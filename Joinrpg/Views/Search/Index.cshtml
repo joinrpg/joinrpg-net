@@ -1,0 +1,19 @@
+﻿@model JoinRpg.Web.Models.SearchResultViewModel
+@{
+  ViewBag.Title = "Результаты поиска";
+}
+
+<h2>@ViewBag.Title</h2>
+<p>Вы искали: @Model.SearchString</p>
+@if (Model.Results.Any())
+{
+    foreach (var result in Model.Results)
+
+    {
+        Html.DisplayFor(m => result);
+    }
+}
+else
+{
+    <p>Ничего не найдено</p>
+}

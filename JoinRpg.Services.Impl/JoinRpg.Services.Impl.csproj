@@ -60,6 +60,7 @@
     <Compile Include="DbServiceImplBase.cs" />
     <Compile Include="ProjectService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Search\SearchServiceImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj">

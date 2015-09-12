@@ -1,0 +1,6 @@
+﻿@model JoinRpg.Web.Models.SuperSearchViewModel
+@using (Html.BeginForm("Index", "Search"))
+{
+    @Html.EditorFor(m => m.SearchRequest)
+  <input type="submit" value="@Html.DisplayNameFor(m=>m.SearchRequest)!"/>
+}
