@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -12,6 +13,11 @@ namespace JoinRpg.Helpers
         .GetMember(enumValue.ToString())
         .First()
         .GetCustomAttribute<TAttribute>();
+    }
+
+    public static IEnumerable<T> GetValues<T>()
+    {
+      return Enum.GetValues(typeof (T)).Cast<T>();
     }
   }
 
