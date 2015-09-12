@@ -30,7 +30,7 @@
     <ul>
         @foreach (var master in Model.ProjectAcls)
         {
-            <li>@master.User.DisplayName
+            <li>@Html.DisplayFor(model => master.User)
         @if (master.IsOwner)
         {
             <span>(создатель проекта)</span>
