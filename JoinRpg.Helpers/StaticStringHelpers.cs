@@ -9,7 +9,7 @@ namespace JoinRpg.Helpers
   {
     public static string JoinIfNotNullOrWhitespace([NotNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
-      return string.Join(separator, strings.Where(string.IsNullOrWhiteSpace));
+      return string.Join(separator, strings.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
     /// <summary>
