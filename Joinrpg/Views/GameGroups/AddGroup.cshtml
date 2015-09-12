@@ -1,7 +1,7 @@
-﻿@model JoinRpg.Web.Models.EditCharacterGroupViewModel
+﻿@model JoinRpg.Web.Models.AddCharacterGroupViewModel
 
 @{
-    ViewBag.Title = "Добавление группы персонажей (локации) в игру " + Model.Data.ProjectName;
+    ViewBag.Title = "Добавление группы персонажей (локации) в игру " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -27,7 +27,7 @@
                 <div class="checkbox">
                     @Html.ListBoxFor(model => model.ParentCharacterGroupIds,
                         new MultiSelectList(
-                            Model.Data.Groups.Select(gr => new { Value = gr.CharacterGroupId.ToString(), Text = gr.Name }), "Value",
+                            Model.Data.ActiveGroups.Select(gr => new { Value = gr.CharacterGroupId.ToString(), Text = gr.Name }), "Value",
                             "Text"))
                     @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
                 </div>

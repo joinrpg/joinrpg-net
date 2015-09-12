@@ -12,5 +12,7 @@ namespace JoinRpg.Web.Models
     public bool IsAvailable { get; set; }
 
     public HtmlString Description { get; set; }
+
+    public bool IsPublic { get; set; }
   }
 }

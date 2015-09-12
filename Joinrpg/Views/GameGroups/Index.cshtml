@@ -1,8 +1,8 @@
 ﻿@using JoinRpg.Web.Models
-@model CharacterGroupListViewModel
+@model GameRolesViewModel
 
 @{
-    ViewBag.Title = "Ролевка " + Model.ProjectName;
+    ViewBag.Title = "Сетка ролей " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -12,7 +12,7 @@
     @Html.ActionLink("Главная страница игры", "Details", "Game", new {Model.ProjectId}, null)
 </p>
 
-    @foreach (var item in Model.Groups)
+    @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups :  Model.Data.PublicGroups)
     {
         <div style="margin-left: @(item.DeepLevel)em">
             @if (item.DeepLevel > 2)
@@ -55,7 +55,7 @@
 }
             @item.Description
             <ul>
-                @foreach (var character in item.Characters)
+                @foreach (var character in Model.ShowEditControls ? item.Characters : item.PublicCharacters)
                 {
                     <li>
                         <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new { Model.ProjectId, character.CharacterId }, null) </strong> 

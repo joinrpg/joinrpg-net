@@ -156,7 +156,7 @@ namespace JoinRpg.Services.Impl
 
     public void EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       List<int> parentCharacterGroupIds,
-      string description)
+      string description, bool haveDirectSlots, int directSlots)
     {
       var characterGroup = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId);
       var parentGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
@@ -164,6 +164,8 @@ namespace JoinRpg.Services.Impl
       characterGroup.IsPublic = isPublic;
       characterGroup.ParentGroups.AssignLinksList(parentGroups);
       characterGroup.Description = new MarkdownString(description);
+      characterGroup.AvaiableDirectSlots = directSlots;
+      characterGroup.HaveDirectSlots = haveDirectSlots;
       UnitOfWork.SaveChanges();
     }
 

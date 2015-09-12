@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -20,8 +21,16 @@ namespace JoinRpg.Web.Controllers
         {
           return RedirectToIndex(project);
         }
+        
         return WithGroup(projectId, (int)characterGroupId,
-          (project1, @group) => View(CharacterGroupListViewModel.FromGroup(@group, acl != null)));
+          (project1, @group) => View(
+            new GameRolesViewModel
+            {
+              ProjectId = project.ProjectId,
+              ProjectName = project.ProjectName,
+              ShowEditControls = acl!=null,
+              Data = CharacterGroupListViewModel.FromGroup(group)
+            }));
 
       });
     }
@@ -46,9 +55,14 @@ namespace JoinRpg.Web.Controllers
           IsPublic = @group.IsPublic,
           Name = @group.CharacterGroupName,
           HaveDirectSlots = GetDirectClaimSettings(group),
-          DirectSlots = group.AvaiableDirectSlots,
+          DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
           CharacterGroupId = group.CharacterGroupId
         }));
+    }
+
+    private ActionResult WithGroupAsMaster(int projectId, int characterGroupId, Func<Project, CharacterGroup, ActionResult> p)
+    {
+      throw new NotImplementedException();
     }
 
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
@@ -67,9 +81,13 @@ namespace JoinRpg.Web.Controllers
       {
         try
         {
+          var haveDirectSlots = viewModel.HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
+          var directSlots = viewModel.HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited
+            ? -1
+            : viewModel.DirectSlots;
           ProjectService.EditCharacterGroup(
             project.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description);
+            viewModel.ParentCharacterGroupIds, viewModel.Description, haveDirectSlots, directSlots);
 
           return RedirectToIndex(project);
         }
@@ -118,9 +136,9 @@ namespace JoinRpg.Web.Controllers
     public ActionResult AddGroup(int projectid, int charactergroupid)
     {
       return WithGroupAsMaster(projectid, charactergroupid,
-        (project, @group) => View(new EditCharacterGroupViewModel()
+        (project, @group) => View(new AddCharacterGroupViewModel()
         {
-          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup, true),
+          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
           ProjectId = projectid,
           ParentCharacterGroupIds = new List<int> {charactergroupid}
         }));
@@ -129,7 +147,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult AddGroup(EditCharacterGroupViewModel viewModel)
+    public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
     {
       return WithProjectAsMaster(viewModel.ProjectId, project =>
       {
@@ -155,7 +173,7 @@ namespace JoinRpg.Web.Controllers
       return WithGroupAsMaster(projectid, charactergroupid,
         (project, @group) => View(new AddCharacterViewModel()
         {
-          Data = CharacterGroupListViewModel.FromGroup(project.RootGroup, true),
+          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
           ProjectId = projectid,
           ParentCharacterGroupIds = new List<int> { charactergroupid }
         }));

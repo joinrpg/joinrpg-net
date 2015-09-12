@@ -277,7 +277,7 @@
     <Compile Include="Models\AddCharacterViewModel.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\AddCommentViewModel.cs" />
-    <Compile Include="Models\AddGameObjectViewModelBase.cs" />
+    <Compile Include="Models\EditGameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\CharacterGroupListViewModel.cs" />
     <Compile Include="Models\CharacterGroupListItemViewModel.cs" />
@@ -287,6 +287,7 @@
     <Compile Include="Models\EditProjectViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
+    <Compile Include="Models\GameRolesViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />

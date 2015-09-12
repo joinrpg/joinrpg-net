@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models
 {
-  public class EditCharacterGroupViewModel : AddGameObjectViewModelBase
+  public class EditCharacterGroupViewModel : EditGameObjectViewModelBase
   {
     public int CharacterGroupId { get; set; }
-    public string OriginalName { get; set; }
+    //public string OriginalName { get; set; }
 
     [DisplayName("Название локации"), Required]
     public string Name { get; set; }
@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     DirectClaimsLimited
   }
 
-  public class AddCharacterGroupViewModel : AddGameObjectViewModelBase
+  public class AddCharacterGroupViewModel : EditGameObjectViewModelBase
   {
     [DisplayName("Название локации"), Required]
     public string Name { get; set; }

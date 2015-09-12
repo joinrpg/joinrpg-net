@@ -1,7 +1,10 @@
-﻿@model JoinRpg.Web.Models.EditCharacterGroupViewModel
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Helpers
+@using JoinRpg.Web.Models
+@model JoinRpg.Web.Models.EditCharacterGroupViewModel
 
 @{
-  ViewBag.Title = "Редактирование группы персонажей (локации) «" + Model.Name + "» в игре " + Model.Data.ProjectName;
+  ViewBag.Title = "Редактирование группы персонажей (локации) «" + Model.Name + "» в игре " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -10,72 +13,79 @@
 {
 @Html.AntiForgeryToken()
 
-<div class="form-horizontal">
-   @Html.HiddenFor(model => model.ProjectId)
+    <div class="form-horizontal">
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.CharacterGroupId)
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-2"})
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
-            @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+            </div>
         </div>
-    </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            <div class="checkbox">
-                @Html.ListBoxFor(model => model.ParentCharacterGroupIds,
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.ListBoxFor(model => model.ParentCharacterGroupIds,
                         new MultiSelectList(
-                            Model.Data.Groups.Select(gr => new { Value = gr.CharacterGroupId.ToString(), Text = gr.Name}),
+                            Model.Data.PossibleParentsForGroup(Model.CharacterGroupId).Select(gr => new {Value = gr.CharacterGroupId.ToString(), Text = gr.Name}),
                             "Value",
                             "Text",
                             Model.ParentCharacterGroupIds.Select(id => id.ToString()).ToArray()))
-                @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.IsPublic)
+                    @Html.ValidationMessageFor(model => model.IsPublic, "", new {@class = "text-danger"})
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.Description, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @foreach (var value in StaticEnumHelpers.GetValues<DirectClaimSettings>())
+                {
+                    var id = TagBuilder.CreateSanitizedId(string.Format(
+                        "{0}_{1}_{2}", ViewData.TemplateInfo.HtmlFieldPrefix, Model.GetType(), value));
+                    @Html.RadioButtonFor(m => m.HaveDirectSlots, value, new {id})
+                    @Html.Label(value.ToString(), value.GetDisplayName(), new {@for = id})
+                    <br/>
+                }
+                @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DirectSlots, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.DirectSlots, "", new {@class = "text-danger"})
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Сохранить" class="btn btn-default"/>
             </div>
         </div>
     </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            <div class="checkbox">
-                @Html.EditorFor(model => model.IsPublic)
-                @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "control-label col-md-2"})
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "form-control"}})
-            @Html.ValidationMessageFor(model => model.Description, "", new {@class = "text-danger"})
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.HaveDirectSlots, new {htmlAttributes = new {@class = "form-control"}})
-            @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new {@class = "text-danger"})
-        </div>
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.DirectSlots, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DirectSlots, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.DirectSlots, "", new { @class = "text-danger" })
-        </div>
-    </div>
-
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" value="Сохранить" class="btn btn-default" />
-        </div>
-    </div>
-</div>
 }
 
 <div>

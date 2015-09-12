@@ -5,34 +5,43 @@ using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
+  
   public class CharacterGroupListViewModel
   {
-    public int ProjectId { get; set; }
+    private IList<CharacterGroupListItemViewModel> Groups { get; set; }
 
-    public string ProjectName { get; set; }
-
-    public IList<CharacterGroupListItemViewModel> Groups { get; set; }
-
-    public static CharacterGroupListViewModel FromGroup(CharacterGroup group, bool masterMode = false)
+    public IEnumerable<CharacterGroupListItemViewModel> PossibleParentsForGroup(int characterGroupId)
     {
-      return new CharacterGroupListViewModel()
+      return
+        ActiveGroups.Where(
+          listItem =>
+            listItem.CharacterGroupId != characterGroupId &&
+            listItem.Path.All(cg => cg.CharacterGroupId != characterGroupId));
+    }
+
+    public IEnumerable<CharacterGroupListItemViewModel> PublicGroups
+    {
+      get { return Groups.Where(listItem => listItem.IsPublic && listItem.IsActive); }
+    }
+
+    public IEnumerable<CharacterGroupListItemViewModel> ActiveGroups
+    {
+      get { return Groups.Where(listItem => listItem.IsActive); }
+    }
+
+    public static CharacterGroupListViewModel FromGroup(CharacterGroup @group)
+    {
+      return new CharacterGroupListViewModel
       {
-        ProjectId = group.ProjectId,
-        ProjectName = group.Project.ProjectName,
-        Groups = new CharacterGroupHierarchyBuilder(group, masterMode, false).Generate(),
-        ShowEditControls = masterMode,
+        Groups = new CharacterGroupHierarchyBuilder(group).Generate(),
       };
     }
 
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(group, true);
-
-    public bool ShowEditControls { get; set; }
+    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(group);
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
     {
-      private readonly bool _showPrivate;
-      private readonly bool _showInactive;
       private CharacterGroup Root { get; }
 
       private IList<int> AlreadyOutputedGroups { get; } = new List<int>();
@@ -40,10 +49,8 @@ namespace JoinRpg.Web.Models
 
       private IList<CharacterGroupListItemViewModel> Results { get; } = new List<CharacterGroupListItemViewModel>();
 
-      public CharacterGroupHierarchyBuilder(CharacterGroup root, bool showPrivate, bool showInactive)
+      public CharacterGroupHierarchyBuilder(CharacterGroup root)
       {
-        _showPrivate = showPrivate;
-        _showInactive = showInactive;
         Root = root;
       }
 
@@ -62,9 +69,11 @@ namespace JoinRpg.Web.Models
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.AvaiableDirectSlots,
-          Characters = characterGroup.Characters.Where(ObjectSelector).Select(GenerateCharacter).ToList(),
+          Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
-          Path = pathToTop.Where(cg => !cg.IsRoot).Select(cg => cg.CharacterGroupName)
+          Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
+          IsPublic = characterGroup.IsPublic,
+          IsActive = characterGroup.IsActive
         };
         Results.Add(vm);
 
@@ -73,16 +82,11 @@ namespace JoinRpg.Web.Models
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
 
-        foreach (var childGroup in characterGroup.ChildGroups.Where(ObjectSelector))
+        foreach (var childGroup in characterGroup.ChildGroups)
         {
           var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
           GenerateFrom(childGroup, deepLevel + 1, characterGroups);
         }
-      }
-
-      private bool ObjectSelector(IWorldObject @group)
-      {
-        return (@group.IsPublic || _showPrivate) && (@group.IsActive || _showInactive);
       }
 
       private CharacterViewModel GenerateCharacter(Character arg)
@@ -93,7 +97,8 @@ namespace JoinRpg.Web.Models
           CharacterName = arg.CharacterName,
           IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
           IsAvailable = arg.IsAvailable,
-          Description =  arg.Description.ToHtmlString()
+          Description =  arg.Description.ToHtmlString(),
+          IsPublic =  arg.IsPublic
         };
         if (vm.IsFirstCopy)
         {

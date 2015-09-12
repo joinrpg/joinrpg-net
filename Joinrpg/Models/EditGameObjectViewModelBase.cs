@@ -4,9 +4,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models
 {
-  public abstract class AddGameObjectViewModelBase
+  public abstract class EditGameObjectViewModelBase
   {
     public int ProjectId { get; set; }
+    
+    [ReadOnly(true)]
+    public string ProjectName { get; set; }
 
     [Required, DisplayName("Является частью локаций")]
     public List<int> ParentCharacterGroupIds { get; set; } = new List<int>();
@@ -16,6 +19,8 @@ namespace JoinRpg.Web.Models
 
     [DataType(DataType.MultilineText),DisplayName("Описание")]
     public string Description { get; set; }
+
+    [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }
   }
 }

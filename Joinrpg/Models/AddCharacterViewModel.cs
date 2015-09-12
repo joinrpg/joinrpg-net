@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models
 {
-  public class AddCharacterViewModel : AddGameObjectViewModelBase
+  public class AddCharacterViewModel : EditGameObjectViewModelBase
   {
     [DisplayName("Принимать заявки на этого персонажа")]
     public bool IsAcceptingClaims { get; set; } = true;
