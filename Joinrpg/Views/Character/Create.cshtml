@@ -7,7 +7,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm("Create", "Character", FormMethod.Post)) 
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
@@ -71,7 +71,7 @@
 }
 
 <div>
-    @Html.ActionLink("Назад к ролевке", "Index", new {@Model.ProjectId}, null)
+    @Html.ActionLink("Назад к ролевке", "Index", "GameGroups", new {@Model.ProjectId}, null)
 </div>
 
 @section Scripts {

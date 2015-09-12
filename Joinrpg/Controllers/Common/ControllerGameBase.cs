@@ -144,5 +144,11 @@ namespace JoinRpg.Web.Controllers.Common
     {
       return WithSubEntityAsMaster(projectId, fieldId, project => project.AllProjectFields, pa => pa.CanChangeFields, action);
     }
+
+    protected ActionResult RedirectToIndex(Project project)
+    {
+      return RedirectToAction("Index", "GameGroups",
+        new {project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId});
+    }
   }
 }

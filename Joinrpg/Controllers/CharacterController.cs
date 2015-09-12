@@ -66,6 +66,42 @@ namespace JoinRpg.Web.Controllers
       
     }
 
+    [HttpGet]
+    [Authorize]
+    public ActionResult Create(int projectid, int charactergroupid)
+    {
+      return WithGroupAsMaster(projectid, charactergroupid,
+        (project, @group) => View(new AddCharacterViewModel()
+        {
+          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
+          ProjectId = projectid,
+          ParentCharacterGroupIds = new List<int> { charactergroupid }
+        }));
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public ActionResult Create(AddCharacterViewModel viewModel)
+    {
+      return WithProjectAsMaster(viewModel.ProjectId, project =>
+      {
+        try
+        {
+          ProjectService.AddCharacter(
+            viewModel.ProjectId,
+            viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
+            viewModel.Description);
+
+          return RedirectToIndex(project);
+        }
+        catch
+        {
+          return View(viewModel);
+        }
+      });
+    }
+
     private static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
     {
       var prefix = "field.field_";

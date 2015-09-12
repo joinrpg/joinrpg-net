@@ -375,7 +375,7 @@
     <Content Include="Views\GameField\Delete.cshtml" />
     <Content Include="Views\GameGroups\Index.cshtml" />
     <Content Include="Views\GameGroups\AddGroup.cshtml" />
-    <Content Include="Views\GameGroups\AddCharacter.cshtml" />
+    <Content Include="Views\Character\Create.cshtml" />
     <Content Include="Views\Claim\Add.cshtml" />
     <Content Include="Views\Claim\Index.cshtml" />
     <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />

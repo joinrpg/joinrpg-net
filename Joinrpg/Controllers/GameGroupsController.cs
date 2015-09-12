@@ -35,12 +35,6 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    private ActionResult RedirectToIndex(Project project)
-    {
-      return RedirectToAction("Index",
-        new {project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId});
-    }
-
     // GET: GameGroups/Edit/5
     [HttpGet, Authorize]
     public ActionResult Edit(int projectId, int characterGroupId)
@@ -160,43 +154,5 @@ namespace JoinRpg.Web.Controllers
         }
       });
     }
-
-    [HttpGet]
-    [Authorize]
-    public ActionResult AddCharacter(int projectid, int charactergroupid)
-    {
-      return WithGroupAsMaster(projectid, charactergroupid,
-        (project, @group) => View(new AddCharacterViewModel()
-        {
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
-          ProjectId = projectid,
-          ParentCharacterGroupIds = new List<int> { charactergroupid }
-        }));
-    }
-
-    [HttpPost]
-    [Authorize]
-    [ValidateAntiForgeryToken]
-    public ActionResult AddCharacter(AddCharacterViewModel viewModel)
-    {
-      return WithProjectAsMaster(viewModel.ProjectId, project =>
-      {
-        try
-        {
-          ProjectService.AddCharacter(
-            viewModel.ProjectId,
-            viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-            viewModel.Description);
-
-          return RedirectToIndex(project);
-        }
-        catch
-        {
-          return View(viewModel);
-        }
-      });
-    }
-
-
   }
 }
