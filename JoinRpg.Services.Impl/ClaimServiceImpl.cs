@@ -212,7 +212,7 @@ namespace JoinRpg.Services.Impl
       claim.Group.AvaiableDirectSlots -= 1;
       var character = new Character()
       {
-        CharacterName = "Новый персонаж в группе" + claim.Group.CharacterGroupName,
+        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
         ProjectId = claim.ProjectId,
         IsAcceptingClaims = true,
         IsPublic = claim.Group.IsPublic,
