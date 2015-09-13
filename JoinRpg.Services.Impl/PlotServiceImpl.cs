@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
@@ -34,8 +35,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, int[] targetGroups,
-      int[] targetChars)
+    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars)
     {
       var now = DateTime.UtcNow;
       var plotElement = new PlotElement()

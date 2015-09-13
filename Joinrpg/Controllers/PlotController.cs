@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
@@ -121,10 +123,11 @@ namespace JoinRpg.Web.Controllers
       {
         try
         {
-          var targetGroups = new int[] {};
-          var ints = new int[] {};
+          var dict = other.ToDictionary();
+          var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
+          var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
           await
-            _plotService.AddPlotElement(projectId, plotFolderId, content, todoField, targetGroups, ints);
+            _plotService.AddPlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars);
           return RedirectToAction("Index", "Plot", new {folder.ProjectId});
         }
         catch (Exception)

@@ -18,6 +18,7 @@
 @helper CreateCheckBox( string prefix, string name, int elementId)
 {
     @Html.CheckBox(prefix + elementId)
+  @*TODO: Why razor output some hidden element here??*@
     @Html.Label(prefix + elementId, name, null)
   <br/>
 }

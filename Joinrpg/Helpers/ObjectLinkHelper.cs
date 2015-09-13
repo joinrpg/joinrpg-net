@@ -39,12 +39,13 @@ namespace JoinRpg.Web.Helpers
 
     public static GameObjectLinkViewModel AsObjectLink(this IWorldObject c)
     {
+      //TODO ugly hack
       return new GameObjectLinkViewModel()
       {
         DisplayName = c.Name,
         Identification = c.Id.ToString(),
         ProjectId = c.ProjectId,
-        Type = GameObjectLinkType.Character
+        Type = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? GameObjectLinkType.CharacterGroup : GameObjectLinkType.Character
       };
     }
 

@@ -223,7 +223,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
     {
       var prefix = "field.field_";
-      return post.Keys.UnprefixNumbers(prefix).ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
+      return GetDynamicValuesFromPost(post, prefix);
     }
 
     protected async Task<ActionResult> AsMaster<TEntity>(TEntity entity, Func<TEntity, Task<ActionResult>> action)

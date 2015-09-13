@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -81,6 +83,17 @@ namespace JoinRpg.Web.Controllers.Common
     protected ActionResult RedirectToAction(RouteTarget routeTarget)
     {
       return RedirectToAction(routeTarget.Action, routeTarget.Controller, routeTarget.Params);
+    }
+
+    protected static IDictionary<int, string> GetDynamicValuesFromPost(Dictionary<string, string> post, string prefix)
+    {
+      return post.Keys.UnprefixNumbers(prefix)
+        .ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
+    }
+
+    protected static ICollection<int> GetDynamicCheckBoxesFromPost(Dictionary<string, string> dict, string prefix)
+    {
+      return GetDynamicValuesFromPost(dict, prefix).Where(pair => pair.Value.Contains("true")).Select(pair => pair.Key).ToList();
     }
   }
 }

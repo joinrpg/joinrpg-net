@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -11,6 +12,7 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotElementListItemViewModel 
   {
     public int PlotFolderElementId { get; set; }
+    [Display(Name="Для кого")]
     public IEnumerable<GameObjectLinkViewModel> For {  get; set;}
 
   }
