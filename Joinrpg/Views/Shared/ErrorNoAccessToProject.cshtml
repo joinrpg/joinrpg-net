@@ -6,5 +6,5 @@
 
 <h2>@ViewBag.Title</h2>
 <p>У вас нет доступа к проекту @Html.ActionLink(Model.ProjectName, "Index", "Game", new {Model.ProjectId}, null). 
-    Обратитесь к @string.Join(", ", Model.CanGrantAccess.Select(user => string.Format("<a href=\"mailto: {0}\">{1}</a>", user.Email, user.DisplayName))), чтобы получить доступ
+    Обратитесь к @(new MvcHtmlString(string.Join(", ", Model.CanGrantAccess.Select(user => Html.DisplayFor(u => user))))), чтобы получить доступ
 </p>
