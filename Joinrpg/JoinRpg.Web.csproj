@@ -292,6 +292,7 @@
     <Compile Include="Models\GameRolesViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\MasterMenuViewModel.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
@@ -399,6 +400,7 @@
     <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
     <Content Include="Views\Web.config" />
+    <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

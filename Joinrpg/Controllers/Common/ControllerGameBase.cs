@@ -29,6 +29,14 @@ namespace JoinRpg.Web.Controllers.Common
         return HttpNotFound();
       }
       var acl = Request.IsAuthenticated ? project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId) : null;
+      if (acl != null)
+      {
+        ViewBag.MasterMenu = new MasterMenuViewModel
+        {
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName
+        };
+      }
       return action(project, acl);
     }
 

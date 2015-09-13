@@ -7,11 +7,6 @@
 
 <h2>@ViewBag.Title</h2>
 
-
-<p>
-    @Html.ActionLink("Главная страница игры", "Details", "Game", new {Model.ProjectId}, null)
-</p>
-
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups :  Model.Data.PublicGroups)
     {
         <div style="margin-left: @(item.DeepLevel)em">
