@@ -60,6 +60,7 @@ namespace JoinRpg.Web
       container.RegisterType<IProjectService, ProjectService>();
       container.RegisterType<IClaimService, ClaimServiceImpl>();
       container.RegisterType<ISearchService, SearchServiceImpl>();
+      container.RegisterType<IPlotService, PlotServiceImpl>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

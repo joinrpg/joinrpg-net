@@ -32,6 +32,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<Claim> Claims { get; set; }
 
     public virtual ProjectDetails Details { get; set; }
+
+    public virtual ICollection<PlotFolder> PlotFolders { get; set; }
   }
 
   public class ProjectDetails

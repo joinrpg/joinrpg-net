@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -28,16 +29,46 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      var acl = Request.IsAuthenticated ? project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId) : null;
+      var acl = GetProjectAcl(project);
       if (acl != null)
       {
-        ViewBag.MasterMenu = new MasterMenuViewModel
-        {
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName
-        };
+        PrepareMasterMenu(project);
       }
       return action(project, acl);
+    }
+
+    private void PrepareMasterMenu(Project project)
+    {
+      ViewBag.MasterMenu = new MasterMenuViewModel
+      {
+        ProjectId = project.ProjectId,
+        ProjectName = project.ProjectName
+      };
+    }
+
+    private ProjectAcl GetProjectAcl(Project project)
+    {
+      return Request.IsAuthenticated ? project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId) : null;
+    }
+
+    protected async Task<ActionResult> WithProjectAsync(int projectId, Func<Project, ProjectAcl, Task<ActionResult>> action)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      if (project == null)
+      {
+        return HttpNotFound();
+      }
+      var acl = GetProjectAcl(project);
+      if (acl != null)
+      {
+        PrepareMasterMenu(project);
+      }
+      return await action(project, acl);
+    }
+
+    protected async Task<ActionResult> WithProjectAsync(int projectId, Func<Project, ProjectAcl, ActionResult> action)
+    {
+      return await WithProjectAsync(projectId, (project, acl) => Task.FromResult(action(project, acl)));
     }
 
     protected ActionResult WithProject(int projectId, Func<Project, ActionResult> action)
@@ -71,6 +102,40 @@ namespace JoinRpg.Web.Controllers.Common
     protected ActionResult WithProjectAsMaster(int projectId, Func<Project, ActionResult> action)
     {
       return WithProjectAsMaster(projectId, acl => true, action);
+    }
+
+    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, Task<ActionResult>> action)
+    {
+      return WithProjectAsMasterAsync(projectId, acl => true, action);
+    }
+
+    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
+    {
+      return WithProjectAsMasterAsync(projectId, acl => true, action);
+    }
+
+    private Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, Task<ActionResult>> action)
+    {
+      return WithProjectAsync(projectId, async (project, acl) =>
+      {
+        if (acl == null || !requiredRights(acl))
+        {
+          return NoAccesToProjectView(project);
+        }
+        return await action(project);
+      });
+    }
+
+    private Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, ActionResult> action)
+    {
+      return WithProjectAsync(projectId, (project, acl) =>
+      {
+        if (acl == null || !requiredRights(acl))
+        {
+          return NoAccesToProjectView(project);
+        }
+        return action(project);
+      });
     }
 
     private ActionResult WithSubEntityAsMaster<TProjectSubEntity>(int projectId, int? fieldId,

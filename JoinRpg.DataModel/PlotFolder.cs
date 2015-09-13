@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JoinRpg.DataModel
 {
@@ -14,7 +15,7 @@ namespace JoinRpg.DataModel
     //TODO: Decide if title should be for players or for masters or we need two titles
     public string MasterTitle { get; set; }
 
-    public MarkdownString MasterSummary { get; set; }
+    public MarkdownString MasterSummary { get; set; } = new MarkdownString();
 
     public virtual ICollection<PlotElement> Elements { get; set; }
 
@@ -27,5 +28,10 @@ namespace JoinRpg.DataModel
     public virtual ICollection<CharacterGroup> RelatedGroups { get; set; }
 
     public bool IsObsolete { get; set; }
+
+    public bool Completed()
+    {
+      return string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
+    }
   }
 }

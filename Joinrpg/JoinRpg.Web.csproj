@@ -265,6 +265,7 @@
     <Compile Include="Controllers\GameGroupsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\PlotController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
@@ -293,6 +294,8 @@
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MasterMenuViewModel.cs" />
+    <Compile Include="Models\Plot\AddPlotFolderViewModel.cs" />
+    <Compile Include="Models\Plot\PlotFolderListViewModel.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
@@ -401,6 +404,8 @@
     <Content Include="Views\Search\Index.cshtml" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
+    <Content Include="Views\Plot\Index.cshtml" />
+    <Content Include="Views\Plot\Create.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Code\" />

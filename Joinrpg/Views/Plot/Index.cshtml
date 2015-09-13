@@ -1,0 +1,48 @@
+﻿@model JoinRpg.Web.Models.Plot.PlotFolderListViewModel
+
+@{
+    ViewBag.Title = "Сюжеты " + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @Html.ActionLink("Создать новый сюжет", "Create", new {Model.ProjectId})
+</p>
+@{
+  var firstItem = Model.Folders.FirstOrDefault();
+}
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.MasterTitle)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.TodoField)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.ModifiedDateTime)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model.Folders) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.MasterTitle)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.TodoField)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ModifiedDateTime)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.PlotFolderId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.PlotFolderId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.PlotFolderId })
+        </td>
+    </tr>
+}
+
+</table>

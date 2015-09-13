@@ -13,8 +13,8 @@ namespace JoinRpg.Data.Interfaces
     IEnumerable<Project> GetAllMyProjects(int userInfoId);
 
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
-    Project GetMyProject(int projectId, int userInfoId);
 
     Project GetProject(int project);
+    Task<Project> GetProjectAsync(int project);
   }
 }

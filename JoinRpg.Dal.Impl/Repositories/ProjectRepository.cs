@@ -22,7 +22,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     IEnumerable<Project> IProjectRepository.ActiveProjects => ActiveProjects;
 
     private IQueryable<Project> ActiveProjects => Ctx.ProjectsSet.Where(project => project.Active);
-    private IQueryable<Project> AllProjects => Ctx.ProjectsSet;
+    private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
 
     public IEnumerable<Project> GetAllMyProjects(int userInfoId)
       => AllProjects.Where(MyProjectPredicate(userInfoId));
@@ -30,10 +30,8 @@ namespace JoinRpg.Dal.Impl.Repositories
     public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
       => ActiveProjects.Where(MyProjectPredicate(userInfoId));
 
-    public Project GetMyProject(int projectId, int userInfoId)
-      => AllProjects.Where(MyProjectPredicate(userInfoId)).Include(nameof(ProjectAcl)).SingleOrDefault(project => project.ProjectId == projectId);
-
     public Project GetProject(int project) => AllProjects.SingleOrDefault(p => p.ProjectId == project);
+    public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     private static Expression<Func<Project, bool>> MyProjectPredicate(int? userInfoId)
     {

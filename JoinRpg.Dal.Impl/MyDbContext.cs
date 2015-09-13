@@ -1,6 +1,5 @@
-﻿using System;
-using System.Data.Entity;
-using System.Net.Http.Headers;
+﻿using System.Data.Entity;
+using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl
@@ -19,6 +18,7 @@ namespace JoinRpg.Dal.Impl
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
     void IUnitOfWork.SaveChanges() => SaveChanges();
+    Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
 
     public static MyDbContext Create()
     {
@@ -51,7 +51,7 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
 
       modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups).WithMany(cg => cg.DirectlyRelatedPlotFolders);
-      modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project).WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetCharacters).WithMany(c => c.DirectlyRelatedPlotElements);
       modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups).WithMany(c => c.DirectlyRelatedPlotElements);

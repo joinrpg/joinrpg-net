@@ -11,5 +11,6 @@ namespace JoinRpg.Dal.Impl
   {
     DbSet<T> GetDbSet<T>() where T : class;
     void SaveChanges();
+    Task SaveChangesAsync();
   }
 }
