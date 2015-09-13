@@ -17,13 +17,13 @@
             <ul>
                 @foreach (var master in Model.ThisUserProjects)
                 {
-                <li>
-                    @master.Project.ProjectName
-                    @if (master.IsOwner)
-                    {
-                    <span>(создатель проекта)</span>
-                    }
-                </li>
+                    <li>
+                        @Html.ActionLink(@master.Project.ProjectName, "Details", "Game", new {master.ProjectId}, null)
+                        @if (master.IsOwner)
+                        {
+                            <span>(создатель проекта)</span>
+                        }
+                    </li>
                 }
 
             </ul>
