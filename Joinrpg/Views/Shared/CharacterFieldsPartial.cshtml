@@ -18,21 +18,19 @@
     {
         @Html.AntiForgeryToken()
 
+    <div>
         @Html.LabelFor(model => model.CharacterName)
         @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+    </div>
 
-        foreach (var field in Model.CharacterFields)
+        foreach (var field in Model.CharacterFields.Where(CanView))
         {
             <div>
-                @if (CanView(field))
-                {
-                    @(CanEdit(field) ? Html.EditorFor(model => field) : Html.DisplayFor(model => field))
-                }
+                @(CanEdit(field) ? Html.EditorFor(model => field) : Html.DisplayFor(model => field))
             </div>
         }
-
         if (Model.CharacterFields.Any(CanEdit))
-        {
+            {
             <div class="form-group">
                 <div class="col-md-10">
                     <input type="submit" value="Сохранить" class="btn btn-default"/>
