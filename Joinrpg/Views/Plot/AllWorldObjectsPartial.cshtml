@@ -1,0 +1,34 @@
+﻿@using JoinRpg.Web.Models
+@model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
+@*TODO: Use more generic model*@
+
+
+@functions {
+  private static string GetName(CharacterGroupListItemViewModel gr)
+  {
+      return Deep(gr) + gr.Name;
+  }
+
+    private static string Deep(CharacterGroupListItemViewModel gr)
+    {
+        return new string('—', gr.DeepLevel);
+    }
+
+}
+@helper CreateCheckBox( string prefix, string name, int elementId)
+{
+    @Html.CheckBox(prefix + elementId)
+    @Html.Label(prefix + elementId, name, null)
+  <br/>
+}
+
+<p>Этот контрол смотрится ужасно, но он временный. Сделаем тут нормальный</p>
+@foreach (var element in Model.Data.ActiveGroups.Where(g => g.FirstCopy))
+{
+    @CreateCheckBox("group_", GetName(element), element.CharacterGroupId)
+    ;
+    foreach (var character in element.Characters)
+    {
+        @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId)
+    }
+}

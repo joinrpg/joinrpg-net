@@ -42,6 +42,10 @@
     </div>
 }
 
+<p>
+    @Html.ActionLink("Добавить новую вводную", "CreateElement", new { Model.PlotFolderId, Model.ProjectId})
+</p>
+
 @Html.Partial("Elements", Model.Elements)
 
 @section Scripts {

@@ -90,7 +90,7 @@ namespace JoinRpg.Services.Impl
     public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       string description)
     {
-      var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
+      var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       if (string.IsNullOrWhiteSpace(name))
       {
@@ -112,29 +112,10 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    private List<CharacterGroup> ValidateCharacterGroupList(int projectId, List<int> parentCharacterGroupIds)
-    {
-      if (parentCharacterGroupIds.Count == 0)
-      {
-        throw new DbEntityValidationException();
-      }
-
-      var characterGroups =
-        UnitOfWork.GetDbSet<CharacterGroup>().Where(cg => cg.ProjectId == projectId)
-          .Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId))
-          .ToList();
-
-      if (characterGroups.Count != parentCharacterGroupIds.Distinct().Count())
-      {
-        throw new DbEntityValidationException();
-      }
-      return characterGroups;
-    }
-
     public void AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       bool isAcceptingClaims, string description)
     {
-      var characterGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
+      var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       if (string.IsNullOrWhiteSpace(name))
       {
@@ -160,7 +141,7 @@ namespace JoinRpg.Services.Impl
       string description, bool haveDirectSlots, int directSlots)
     {
       var characterGroup = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId);
-      var parentGroups = ValidateCharacterGroupList(projectId, parentCharacterGroupIds);
+      var parentGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
       characterGroup.CharacterGroupName = Required(name);
       characterGroup.IsPublic = isPublic;
       characterGroup.ParentGroups.AssignLinksList(parentGroups);

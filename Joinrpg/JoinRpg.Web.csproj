@@ -296,6 +296,7 @@
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MasterMenuViewModel.cs" />
+    <Compile Include="Models\Plot\AddPlotElementViewModel.cs" />
     <Compile Include="Models\Plot\AddPlotFolderViewModel.cs" />
     <Compile Include="Models\Plot\EditPlotFolderViewModel.cs" />
     <Compile Include="Models\Plot\PlotFolderListViewModel.cs" />
@@ -414,6 +415,8 @@
     <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
     <Content Include="Views\Plot\Edit.cshtml" />
     <Content Include="Views\Plot\Elements.cshtml" />
+    <Content Include="Views\Plot\CreateElement.cshtml" />
+    <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

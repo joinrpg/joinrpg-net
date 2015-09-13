@@ -18,7 +18,7 @@ namespace JoinRpg.DataModel
 
     public PlotFolder PlotFolder { get; set; }
 
-    public MarkdownString MasterSummary { get; set; } 
+    public MarkdownString MasterSummary { get; set; } = new MarkdownString();
 
     public virtual ICollection<CharacterGroup> TargetGroups { get; set; }
 

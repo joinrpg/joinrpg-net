@@ -34,6 +34,28 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, int[] targetGroups,
+      int[] targetChars)
+    {
+      var now = DateTime.UtcNow;
+      var plotElement = new PlotElement()
+      {
+        Content = new MarkdownString(content),
+        TodoField = todoField,
+        CreatedDateTime = now,
+        ModifiedDateTime = now,
+        IsObsolete = false,
+        IsCompleted = false,
+        ProjectId = projectId,
+        PlotFolderId = plotFolderId,
+        TargetGroups = ValidateCharacterGroupList(projectId, targetGroups),
+        TargetCharacters = ValidateCharactersList(projectId, targetChars)
+      };
+
+      UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public PlotServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
     {
     }
