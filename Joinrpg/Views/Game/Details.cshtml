@@ -7,6 +7,8 @@
 
 <h2>@ViewBag.Title</h2>
 
+<p>Мне не нравится эта страница, хочу с ней как-то расправиться</p>
+
 <div>
     <dl class="dl-horizontal">
         <dt>
@@ -37,15 +39,5 @@
         }
         </li>
         }
-    </ul>
-    <h4>Управление проектом</h4>
-    <ul>
-        @*TODO: Show if avail*@
-        <li>@Html.ActionLink("Настройка полей", "Index", "GameField", new {Model.ProjectId}, null)</li>
-        <li>@Html.ActionLink("Ролевка (группы персонажей и персонажи)", "Index", "GameGroups", new {Model.ProjectId}, null)</li>
-        @* TODO: Show count*@ @*TODO: Show if avail*@
-        <li>@Html.ActionLink("Заявки на обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
-        @*TODO: Show if avail*@
-        <li>@Html.ActionLink("Изменить свойства проекта", "Edit", new { Model.ProjectId })</li>
     </ul>
 </div>
