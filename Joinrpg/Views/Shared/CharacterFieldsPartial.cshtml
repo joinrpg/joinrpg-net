@@ -17,6 +17,10 @@
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
+
+        @Html.LabelFor(model => model.CharacterName)
+        @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+
         foreach (var field in Model.CharacterFields)
         {
             <div>

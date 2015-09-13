@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
@@ -211,10 +212,25 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public void SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
+    public void SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, IDictionary<int, string> newFieldValue)
     {
       var character = LoadProjectSubEntity<Character>(projectId, characterId);
       var fields = character.Fields();
+
+      var hasMasterAccess = character.Project.HasAccess(currentUserId);
+      var hasPlayerAccess = character.ApprovedClaim?.PlayerUserId == currentUserId;
+
+      if (!hasMasterAccess && !hasPlayerAccess)
+      {
+        throw new DbEntityValidationException();
+      }
+
+      if (hasMasterAccess)
+      {
+        character.CharacterName = Required(characterName);
+      }
+      
+
       foreach (var keyValuePair in newFieldValue)
       {
         CharacterFieldValue field;
@@ -224,10 +240,7 @@ namespace JoinRpg.Services.Impl
         }
         var newValue = keyValuePair.Value;
 
-        var hasPlayerAccess = field.Field.CanPlayerEdit && character.ApprovedClaim?.PlayerUserId == currentUserId;
-        var hasMasterAccess = character.Project.HasAccess(currentUserId);
-
-        if (!hasPlayerAccess && !hasMasterAccess)
+        if (!field.Field.CanPlayerEdit && !hasMasterAccess)
         {
           throw new DbEntityValidationException();
         }

@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Controllers
     {
       var hasMasterAccess = project.HasAccess(CurrentUserIdOrDefault);
       var approvedClaimUser = character.ApprovedClaim?.Player;
-      var viewModel = new CharacterDetailsViewModel()
+      var viewModel = new CharacterDetailsViewModel
       {
         CharacterName = character.CharacterName,
         Description = character.Description.ToHtmlString(),
@@ -49,13 +49,13 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult Details(int projectId, int characterId, FormCollection formCollection)
+    public ActionResult Details(int projectId, int characterId, string characterName, FormCollection formCollection)
     {
       return WithCharacter(projectId, characterId, (project, character) =>
       {
         try
         {
-          ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId, GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+          ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId, characterName, GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
           return RedirectToAction("Details", new {projectId, characterId});
         }
         catch
@@ -63,7 +63,6 @@ namespace JoinRpg.Web.Controllers
           return Details(projectId, characterId);
         }
       });
-      
     }
 
     [HttpGet]
@@ -100,12 +99,6 @@ namespace JoinRpg.Web.Controllers
           return View(viewModel);
         }
       });
-    }
-
-    private static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
-    {
-      var prefix = "field.field_";
-      return post.Keys.UnprefixNumbers(prefix).ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
     }
   }
 }

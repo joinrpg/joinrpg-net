@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
@@ -17,6 +18,6 @@ namespace JoinRpg.Services.Interfaces
     void DeleteCharacterGroup(int projectId, int characterGroupId);
     void EditProject(int projectId, string projectName, string claimApplyRules);
     void GrantAccess(int projectId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties);
-    void SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int,string> newFieldValue);
+    void SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, IDictionary<int, string> newFieldValue);
   }
 }

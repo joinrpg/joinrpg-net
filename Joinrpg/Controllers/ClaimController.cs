@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -94,6 +95,27 @@ namespace JoinRpg.Web.Controllers
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count()
       }));
+    }
+
+    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    public ActionResult Edit(int projectId, int claimId, string characterName, FormCollection formCollection)
+    {
+      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) =>
+      {
+        if (!claim.IsApproved || claim.CharacterId == null)
+        {
+          return Edit(projectId, claimId);
+        }
+        try
+        {
+          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName, GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+          return RedirectToAction("Edit", "Claim", new { projectId, claimId });
+        }
+        catch
+        {
+          return Edit(projectId, claimId);
+        }
+      });
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]

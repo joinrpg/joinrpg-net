@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
@@ -149,6 +150,12 @@ namespace JoinRpg.Web.Controllers.Common
     {
       return RedirectToAction("Index", "GameGroups",
         new {project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId});
+    }
+
+    protected static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
+    {
+      var prefix = "field.field_";
+      return post.Keys.UnprefixNumbers(prefix).ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
     }
   }
 }
