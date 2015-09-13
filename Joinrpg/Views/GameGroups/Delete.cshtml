@@ -32,7 +32,7 @@
                         <li>Локации: @Model.ChildGroups.Count </li>
                     }
                 </ul>
-                Подробнее в @Html.ActionLink("ролевке локации", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null). При удалении дочерние персонажи и локации будут автоматически
+                Подробнее в @Html.ActionLink("сетке ролей", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null) локации. При удалении дочерние персонажи и локации будут автоматически
                 привязаны к локации выше.
             </dd>
         }
@@ -61,7 +61,7 @@
         <div class="form-actions no-color">
             <input type="submit" value="Удалить" class="btn btn-default"/>
             <br/>
-            @Html.ActionLink("Назад к ролевке", "Index", new { @Model.ProjectId}, null)
+            @Html.ActionLink("Назад к сетке ролей", "Index", new { @Model.ProjectId}, null)
         </div>
     }
 </div>
