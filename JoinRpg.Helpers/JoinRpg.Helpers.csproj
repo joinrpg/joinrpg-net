@@ -48,6 +48,7 @@
     <Compile Include="StaticCollectionHelpers.cs" />
     <Compile Include="StaticEnumHelpers.cs" />
     <Compile Include="StaticStringHelpers.cs" />
+    <Compile Include="StaticTaskHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
@@ -20,10 +21,15 @@ namespace JoinRpg.Services.Impl.Search
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
     {
       var searchTasks = GetProviders().Select(p => p.SearchAsync(searchString)).ToList(); //Starting searches
-
-      //TODO: Ths is not correct way to do it. We must consume it one-by-one until we have X values. When we have X, we should cancel other requests
-      var result = await Task.WhenAll(searchTasks);
-      return result.SelectMany(resultGroup => resultGroup).ToList().AsReadOnly(); //Waiting for results
+      var results = new List<ISearchResult>();
+      foreach (var bucket in searchTasks.Interleaved())
+      {
+        var task = await bucket;
+        var rGroup = await task;
+        //TODO: We can stop here when we have X results.
+        results.AddRange(rGroup);
+      }
+      return results.AsReadOnly(); 
     }
 
     private IEnumerable<ISearchProvider> GetProviders()

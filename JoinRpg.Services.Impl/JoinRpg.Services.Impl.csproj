@@ -75,6 +75,10 @@
       <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
+      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
+      <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>
       <Name>JoinRpg.Services.Interfaces</Name>
