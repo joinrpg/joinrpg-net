@@ -1,9 +1,16 @@
 ﻿@using JoinRpg.Services.Interfaces.Search
 @using JoinRpg.Web.Helpers
+@using JoinRpg.Web.Models
 @model ISearchResult
 
 <div>
-    <h4><a href="@RouteHelper.GetUrl(Model.GetRouteTarget())">@Model.Type.GetDisplayName() @Model.Name</a></h4>
+    <h4>
+        @{
+          var gameObjectLinkViewModel = Model.ToLinkViewModel();
+        }
+        @Html.DisplayFor(model => gameObjectLinkViewModel)
+
+    </h4>
     <p>
         @Model.Description
     </p>

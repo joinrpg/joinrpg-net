@@ -1,32 +1,30 @@
 ﻿using System;
-using JetBrains.Annotations;
 using JoinRpg.Services.Interfaces.Search;
+using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Helpers
 {
-  public class RouteTarget
-  {
-    public RouteTarget([AspMvcAction] string action, [AspMvcController] string controller, object @params)
-    {
-      Action = action;
-      Controller = controller;
-      Params = @params;
-    }
-
-    public string Action { get; }
-    public string Controller { get; }
-    public object Params { get; }
-  }
   public static class SearchResultHelper
   {
-    public static RouteTarget GetRouteTarget(this ISearchResult result)
+    public static GameObjectLinkViewModel ToLinkViewModel(this ISearchResult result)
     {
-      switch (result.Type)
+      return new GameObjectLinkViewModel
+      {
+        Type = ConvertToLinkType(result.Type),
+        Identification = result.Identification,
+        DisplayName = result.Name,
+        ProjectId = result.ProjectId
+      };
+    }
+
+    private static GameObjectLinkType ConvertToLinkType(SearchResultType type)
+    {
+      switch (type)
       {
         case SearchResultType.ResultUser:
-          return new RouteTarget("Details", "User", new { UserId = result.Identification });
+          return GameObjectLinkType.User;
         default:
-          throw new ArgumentOutOfRangeException();
+          throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
     }
   }

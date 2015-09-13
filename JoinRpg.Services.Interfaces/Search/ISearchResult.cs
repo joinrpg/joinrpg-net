@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace JoinRpg.Services.Interfaces.Search
 {
   public enum SearchResultType
   {
-    //TODO: I don't like it here. Should have UI enum for this. Split in two enums before localization.
-    [Display(Name="Пользователь")]
     ResultUser
   }
 
@@ -21,5 +18,6 @@ namespace JoinRpg.Services.Interfaces.Search
     string FoundValue { get; }
     [CanBeNull]
     string Identification { get; }
+    int? ProjectId { get; }
   }
 }

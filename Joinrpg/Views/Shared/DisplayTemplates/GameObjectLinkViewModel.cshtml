@@ -1,0 +1,3 @@
+﻿@using JoinRpg.Web.Helpers
+@model JoinRpg.Web.Models.GameObjectLinkViewModel
+<a href="@RouteHelper.GetUrl(Model.GetRouteTarget())">@Model.Type.GetDisplayName() @Model.DisplayName</a>

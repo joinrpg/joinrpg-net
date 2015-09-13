@@ -74,6 +74,7 @@ namespace JoinRpg.Services.Impl.Search
     public string Description { get; set; }
     public string FoundValue { get; set; }
     public string Identification { get; set; }
+    public int? ProjectId => null; //Users not associated with any project
   }
 
   internal interface ISearchProvider
