@@ -1,5 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
+using JoinRpg.DataModel;
+using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Helpers
@@ -32,6 +34,39 @@ namespace JoinRpg.Web.Helpers
           return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
         default:
           throw new ArgumentOutOfRangeException();
+      }
+    }
+
+    public static GameObjectLinkViewModel AsObjectLink(this IWorldObject c)
+    {
+      return new GameObjectLinkViewModel()
+      {
+        DisplayName = c.Name,
+        Identification = c.Id.ToString(),
+        ProjectId = c.ProjectId,
+        Type = GameObjectLinkType.Character
+      };
+    }
+
+    public static GameObjectLinkViewModel AsObjectLink(this ISearchResult result)
+    {
+      return new GameObjectLinkViewModel
+      {
+        Type = ConvertToLinkType(result.Type),
+        Identification = result.Identification,
+        DisplayName = result.Name,
+        ProjectId = result.ProjectId
+      };
+    }
+
+    private static GameObjectLinkType ConvertToLinkType(SearchResultType type)
+    {
+      switch (type)
+      {
+        case SearchResultType.ResultUser:
+          return GameObjectLinkType.User;
+        default:
+          throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
     }
   }

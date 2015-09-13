@@ -246,6 +246,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Code\MvcIntrinsics.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -273,7 +274,7 @@
     </Compile>
     <Compile Include="Helpers\DisplayAttributeHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
-    <Compile Include="Helpers\SearchResultHelper.cs" />
+    <Compile Include="Helpers\ObjectLinkHelper.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AclViewModel.cs" />
@@ -290,12 +291,15 @@
     <Compile Include="Models\EditProjectViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldEditViewModel.cs" />
+    <Compile Include="Models\GameObjectLinkViewModel.cs" />
     <Compile Include="Models\GameRolesViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MasterMenuViewModel.cs" />
     <Compile Include="Models\Plot\AddPlotFolderViewModel.cs" />
+    <Compile Include="Models\Plot\EditPlotFolderViewModel.cs" />
     <Compile Include="Models\Plot\PlotFolderListViewModel.cs" />
+    <Compile Include="Models\Plot\PlotFolderViewModelBase.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
@@ -319,6 +323,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="App_Code\RouteHelper.cshtml" />
     <None Include="Properties\PublishProfiles\joinrpg-dev.pubxml" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -406,9 +411,11 @@
     <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
     <Content Include="Views\Plot\Index.cshtml" />
     <Content Include="Views\Plot\Create.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
+    <Content Include="Views\Plot\Edit.cshtml" />
+    <Content Include="Views\Plot\Elements.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Code\" />
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>

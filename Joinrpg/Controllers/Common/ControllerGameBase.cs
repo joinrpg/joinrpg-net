@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Controllers.Common
   public class ControllerGameBase : ControllerBase
   {
     protected IProjectService ProjectService { get; }
-    private IProjectRepository ProjectRepository { get; }
+    protected IProjectRepository ProjectRepository { get; }
 
     protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager)
     {
@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      var acl = GetProjectAcl(project);
+      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
       if (acl != null)
       {
         PrepareMasterMenu(project);
@@ -46,11 +46,6 @@ namespace JoinRpg.Web.Controllers.Common
       };
     }
 
-    private ProjectAcl GetProjectAcl(Project project)
-    {
-      return Request.IsAuthenticated ? project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId) : null;
-    }
-
     protected async Task<ActionResult> WithProjectAsync(int projectId, Func<Project, ProjectAcl, Task<ActionResult>> action)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -58,7 +53,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      var acl = GetProjectAcl(project);
+      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
       if (acl != null)
       {
         PrepareMasterMenu(project);
@@ -229,6 +224,27 @@ namespace JoinRpg.Web.Controllers.Common
     {
       var prefix = "field.field_";
       return post.Keys.UnprefixNumbers(prefix).ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
+    }
+
+    protected async Task<ActionResult> AsMaster<TEntity>(TEntity entity, Func<TEntity, Task<ActionResult>> action)
+      where TEntity:IProjectSubEntity
+    {
+      if (entity == null)
+      {
+        return HttpNotFound();
+      }
+      if (!entity.Project.HasAccess(CurrentUserId))
+      {
+        return NoAccesToProjectView(entity.Project);
+      }
+
+      return await action(entity);
+    }
+
+    protected Task<ActionResult> AsMaster<TEntity>(TEntity folder, Func<TEntity, ActionResult> action)
+     where TEntity : IProjectSubEntity
+    {
+      return AsMaster(folder, f => Task.FromResult(action(f)));
     }
   }
 }

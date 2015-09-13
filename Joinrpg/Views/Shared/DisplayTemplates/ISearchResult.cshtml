@@ -6,7 +6,7 @@
 <div>
     <h4>
         @{
-          var gameObjectLinkViewModel = Model.ToLinkViewModel();
+          var gameObjectLinkViewModel = Model.AsObjectLink();
         }
         @Html.DisplayFor(model => gameObjectLinkViewModel)
 

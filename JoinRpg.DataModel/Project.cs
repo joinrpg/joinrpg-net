@@ -53,5 +53,10 @@ namespace JoinRpg.DataModel
     {
       return project.ProjectAcls.Any(pa => pa.UserId == currentUserId);
     }
+
+    public static ProjectAcl GetProjectAcl(this Project project, int? userId)
+    {
+      return project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
+    }
   }
 }

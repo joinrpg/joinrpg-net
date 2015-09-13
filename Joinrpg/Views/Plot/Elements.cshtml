@@ -1,0 +1,36 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.Plot.PlotElementListItemViewModel>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.PlotFolderElementId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.For)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.PlotFolderElementId)
+        </td>
+        <td>
+            @foreach (var target in item.For)
+            {
+                @Html.DisplayFor(model => target)
+            }
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+}
+
+</table>

@@ -29,9 +29,7 @@ namespace JoinRpg.DataModel
 
     public bool IsObsolete { get; set; }
 
-    public bool Completed()
-    {
-      return string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
-    }
+    public bool Completed => !IsObsolete && string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
+    public bool InWork => !IsObsolete && !Completed;
   }
 }

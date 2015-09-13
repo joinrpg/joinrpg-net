@@ -29,7 +29,7 @@
 @foreach (var item in Model.Folders) {
     <tr>
         <td>
-            @Html.DisplayFor(modelItem => item.MasterTitle)
+            @Html.ActionLink(item.MasterTitle, "Edit", new { item.PlotFolderId, item.ProjectId })
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.TodoField)
@@ -38,9 +38,7 @@
             @Html.DisplayFor(modelItem => item.ModifiedDateTime)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.PlotFolderId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.PlotFolderId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.PlotFolderId })
+            @Html.ActionLink("Delete", "Delete", new { item.PlotFolderId })
         </td>
     </tr>
 }

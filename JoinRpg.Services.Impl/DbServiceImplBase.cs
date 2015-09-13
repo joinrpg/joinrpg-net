@@ -1,4 +1,5 @@
 using System.Data.Entity.Validation;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
@@ -18,6 +19,17 @@ namespace JoinRpg.Services.Impl
     protected T LoadProjectSubEntity<T>(int projectId, int subentityId) where T : class, IProjectSubEntity
     {
       var field = UnitOfWork.GetDbSet<T>().Find(subentityId);
+      if (field != null && field.ProjectId == projectId)
+      {
+        return field;
+      }
+      throw new DbEntityValidationException();
+    }
+
+    [NotNull]
+    protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId) where T : class, IProjectSubEntity
+    {
+      var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
       if (field != null && field.ProjectId == projectId)
       {
         return field;

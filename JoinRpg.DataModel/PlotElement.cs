@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace JoinRpg.DataModel
 {
@@ -36,5 +37,7 @@ namespace JoinRpg.DataModel
     public bool IsCompleted { get; set; }
 
     public bool IsObsolete { get; set; }
+
+    public IEnumerable<IWorldObject> Targets => TargetCharacters.Cast<IWorldObject>().Union(TargetGroups);
   }
 }

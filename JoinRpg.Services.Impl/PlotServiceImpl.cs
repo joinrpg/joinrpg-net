@@ -20,9 +20,17 @@ namespace JoinRpg.Services.Impl
         CreatedDateTime = startTimeUtc,
         ModifiedDateTime = startTimeUtc,
         ProjectId = projectId,
-        MasterTitle = masterTitle,
+        MasterTitle = Required(masterTitle),
         TodoField = todo
       });
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
+    {
+      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+      folder.MasterTitle = Required(plotFolderMasterTitle);
+      folder.TodoField = todoField;
       await UnitOfWork.SaveChangesAsync();
     }
 

@@ -6,6 +6,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
@@ -33,7 +34,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
-          Folders = project.PlotFolders.Where(pf => !pf.Completed())
+          Folders = project.PlotFolders.Where(pf => pf.InWork)
         }));
     }
 
@@ -44,7 +45,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
-          Folders = project.PlotFolders.Where(pf => pf.Completed())
+          Folders = project.PlotFolders.Where(pf => pf.Completed)
         }));
     }
 
@@ -78,6 +79,51 @@ namespace JoinRpg.Web.Controllers
           return View(viewModel);
         }
       });
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> Edit(int projectId, int plotFolderId)
+    {
+      return await WithPlotFolderAsync(projectId, plotFolderId, folder => View(new EditPlotFolderViewModel()
+      {
+        PlotFolderMasterTitle = folder.MasterTitle,
+        PlotFolderId = folder.PlotFolderId,
+        TodoField = folder.TodoField,
+        Elements = folder.Elements.Select(e => new PlotElementListItemViewModel()
+        {
+          PlotFolderElementId = e.PlotElementId,
+          For = e.Targets.Select(t => t.AsObjectLink())
+        })
+      }));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> Edit(EditPlotFolderViewModel viewModel)
+    {
+      return await WithPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId, async folder =>
+      {
+        try
+        {
+          await _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+          return RedirectToAction("Index", "Plot", new {folder.ProjectId});
+        }
+        catch (Exception)
+        {
+          return View(viewModel);
+        }
+      });
+    }
+
+    private async Task<ActionResult> WithPlotFolderAsync(int projectId, int projectFolderId,
+      Func<PlotFolder, Task<ActionResult>> action)
+    {
+      return await AsMaster(await ProjectRepository.GetPlotFolderAsync(projectId, projectFolderId), action);
+    }
+
+    private async Task<ActionResult> WithPlotFolderAsync(int projectId, int projectFolderId,
+      Func<PlotFolder, ActionResult> action)
+    {
+      return await AsMaster(await ProjectRepository.GetPlotFolderAsync(projectId, projectFolderId), action);
     }
   }
 }
