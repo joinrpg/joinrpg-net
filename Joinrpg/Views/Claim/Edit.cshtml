@@ -15,8 +15,7 @@
         {
             <span>Мастер</span>
         }
-        <strong>@comment.Author.DisplayName</strong> написал(а) 
-            @comment.CreatedTime
+        @Html.DisplayFor(model => comment.Author)написал(а) @comment.CreatedTime
         <strong>
             @if (!comment.IsCommentByPlayer)
             {
