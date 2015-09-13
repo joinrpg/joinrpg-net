@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -7,6 +8,8 @@ namespace JoinRpg.Web.Models
 {
   public interface ICharacterFieldsViewModel
   {
+    [Display(Name = "Имя персонажа"),Required]
+    string CharacterName { get; set; }
     bool HasPlayerAccessToCharacter { get; set; }
     bool HasMasterAccess { get; set; }
     IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
@@ -18,7 +21,7 @@ namespace JoinRpg.Web.Models
 
     public int ProjectId { get; set; }
     public int CharacterId { get; set;}
-
+    [Display(Name="Имя персонажа")]
     public string CharacterName { get; set; }
 
     public HtmlString Description { get; set; }
