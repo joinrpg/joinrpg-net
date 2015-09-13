@@ -4,7 +4,9 @@ namespace JoinRpg.Services.Interfaces.Search
 {
   public enum SearchResultType
   {
-    ResultUser
+    ResultUser,
+    ResultCharacterGroup,
+    ResultCharacter
   }
 
   public interface ISearchResult
@@ -14,8 +16,7 @@ namespace JoinRpg.Services.Interfaces.Search
     string Name { get; }
     [NotNull]
     string Description { get; }
-    [NotNull]
-    string FoundValue { get; }
+
     [CanBeNull]
     string Identification { get; }
     int? ProjectId { get; }

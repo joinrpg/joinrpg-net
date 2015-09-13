@@ -66,6 +66,10 @@ namespace JoinRpg.Web.Helpers
       {
         case SearchResultType.ResultUser:
           return GameObjectLinkType.User;
+        case SearchResultType.ResultCharacterGroup:
+          return GameObjectLinkType.CharacterGroup;
+        case SearchResultType.ResultCharacter:
+          return GameObjectLinkType.Character;
         default:
           throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }

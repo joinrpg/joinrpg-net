@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
@@ -20,11 +18,10 @@ namespace JoinRpg.Services.Impl.Search
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
     {
-      var searchTasks = GetProviders().Select(p => p.SearchAsync(searchString)).ToList(); //Starting searches
       var results = new List<ISearchResult>();
-      foreach (var bucket in searchTasks.Interleaved())
+      //TODO: We like to do multiple searches in parallel. We only allowed it to do in parallel UnitOfWorks
+      foreach (var task in GetProviders().Select(p => p.SearchAsync(searchString)))
       {
-        var task = await bucket;
         var rGroup = await task;
         //TODO: We can stop here when we have X results.
         results.AddRange(rGroup);
@@ -35,35 +32,8 @@ namespace JoinRpg.Services.Impl.Search
     private IEnumerable<ISearchProvider> GetProviders()
     {
       yield return new UserSearchProvider {UnitOfWork = UnitOfWork};
-    }
-  }
-
-  internal class UserSearchProvider : ISearchProvider
-  {
-    public IUnitOfWork UnitOfWork { private get; set; }
-
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
-    {
-      var results =
-        await
-          UnitOfWork.GetDbSet<User>()
-            .Where(user =>
-             //TODO There should be magic way to do this. Experiment with Expression.Voodoo
-              user.Email.Contains(searchString)
-              || user.FatherName.Contains(searchString)
-              || user.BornName.Contains(searchString)
-              || user.SurName.Contains(searchString)
-            )
-            .ToListAsync();
-
-      return results.Select(user => new SearchResultImpl
-            {
-              Type = SearchResultType.ResultUser,
-              Name = user.DisplayName,
-              Description = "",
-              FoundValue = user.Email,
-              Identification = user.UserId.ToString()
-            }).ToList();
+      yield return new PublicCharacterGroupsProvider { UnitOfWork = UnitOfWork };
+      yield return new PublicCharacterProvider { UnitOfWork = UnitOfWork };
     }
   }
 
@@ -72,9 +42,20 @@ namespace JoinRpg.Services.Impl.Search
     public SearchResultType Type { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public string FoundValue { get; set; }
     public string Identification { get; set; }
-    public int? ProjectId => null; //Users not associated with any project
+    public int? ProjectId {get;set;}
+
+    public static SearchResultImpl FromWorldObject(IWorldObject @group, SearchResultType type)
+    {
+      return new SearchResultImpl
+      {
+        Type = type,
+        Name = @group.Name,
+        Description = "",
+        Identification = @group.Id.ToString(),
+        ProjectId = @group.ProjectId
+      };
+    }
   }
 
   internal interface ISearchProvider
