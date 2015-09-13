@@ -2,15 +2,8 @@
 @using JoinRpg.Web.Helpers
 @model ISearchResult
 
-@functions {
-    private string GetUrl()
-    {
-        var target = Model.GetRouteTarget();
-        return Url.Action(target.Action, target.Controller, target.Params);
-    }
-}
 <div>
-    <h4><a href="@GetUrl()">@Model.Type.GetDisplayName() @Model.Name</a></h4>
+    <h4><a href="@RouteHelper.GetUrl(Model.GetRouteTarget())">@Model.Type.GetDisplayName() @Model.Name</a></h4>
     <p>
         @Model.Description
     </p>
