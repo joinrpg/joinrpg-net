@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
@@ -16,21 +19,22 @@ namespace JoinRpg.Web.Controllers
       _claimsRepository = claimsRepository;
     }
 
-    public ActionResult Index()
+    public async Task<ActionResult> Index()
     {
-        return View(LoadModel());
+        return View(await LoadModel());
     }
 
-    private HomeViewModel LoadModel()
+    private async Task<HomeViewModel> LoadModel()
     {
-
-      return new HomeViewModel()
+      var homeViewModel = new HomeViewModel();
+      
+      if (User.Identity.IsAuthenticated)
       {
-        ActiveProjects = _projectRepository.ActiveProjects,
-        MyProjects =
-          LoadForCurrentUser(userId => _projectRepository.GetMyActiveProjects(userId)),
-        MyClaims = LoadForCurrentUser(userId => _claimsRepository.GetClaimsForUser(userId).Where(claim => claim.IsActive))
-      };
+        homeViewModel.MyClaims = await _claimsRepository.GetActiveClaimsForUser(CurrentUserId);
+        homeViewModel.MyProjects = await _projectRepository.GetMyActiveProjectsAsync(CurrentUserId);
+      }
+      homeViewModel.ActiveProjects = await _projectRepository.GetActiveProjects();
+      return homeViewModel;
     }
 
     public ActionResult About()

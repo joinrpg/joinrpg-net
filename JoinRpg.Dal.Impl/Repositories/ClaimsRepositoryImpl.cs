@@ -1,21 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using System.Data.Entity;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
   public class ClaimsRepositoryImpl : RepositoryImplBase, IClaimsRepository
   {
-    public IEnumerable<Claim> GetClaimsForUser(int userId)
-    {
-      return Ctx.ClaimSet.Where(claim => claim.PlayerUserId == userId);
-    }
-
     public ClaimsRepositoryImpl(MyDbContext ctx) : base(ctx)
     {
+    }
+
+    public async Task<IEnumerable<Claim>> GetActiveClaimsForUser(int userId)
+    {
+      return
+        await
+          Ctx.ClaimSet.Include(p => p.Character)
+            .Include(p => p.Group)
+            .Where(c => c.MasterDeclinedDate == null && c.PlayerDeclinedDate == null && c.PlayerUserId == userId)
+            .ToListAsync();
     }
   }
 }

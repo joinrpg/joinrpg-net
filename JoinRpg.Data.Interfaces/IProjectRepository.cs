@@ -8,7 +8,7 @@ namespace JoinRpg.Data.Interfaces
   public interface IProjectRepository : IDisposable
   {
     IEnumerable<Project> AllProjects { get; }
-    IEnumerable<Project> ActiveProjects { get; }
+    Task<IEnumerable<Project>> GetActiveProjects();
 
     IEnumerable<Project> GetAllMyProjects(int userInfoId);
 

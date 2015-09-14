@@ -19,10 +19,10 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     IEnumerable<Project> IProjectRepository.AllProjects => AllProjects;
 
-    IEnumerable<Project> IProjectRepository.ActiveProjects => ActiveProjects;
+    async Task<IEnumerable<Project>> IProjectRepository.GetActiveProjects() => await ActiveProjects.ToListAsync();
 
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
-    private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls);
+    private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls); 
 
     public IEnumerable<Project> GetAllMyProjects(int userInfoId)
       => AllProjects.Where(MyProjectPredicate(userInfoId));

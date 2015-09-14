@@ -104,13 +104,13 @@ namespace JoinRpg.Web.Controllers.Common
     {
       var project1 = ProjectRepository.GetProject(projectId);
       var field = subentitySelector(project1).SingleOrDefault(e => e.Id == fieldId);
-      return AsMaster(field) ?? action(project1, field);
+      return WithProject(field.Project) ?? action(project1, field);
     }
 
     protected ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
     {
       var field = ProjectRepository.GetCharacterGroup(projectId, groupId);
-      return AsMaster(field) ?? action(field.Project, field);
+      return WithProject(field.Project) ?? action(field.Project, field);
     }
 
     protected ActionResult WithCharacter(int projectId, int characterId, Func<Project, Character, ActionResult> action)
