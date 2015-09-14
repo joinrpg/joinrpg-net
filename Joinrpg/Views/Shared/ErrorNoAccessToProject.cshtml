@@ -5,6 +5,6 @@
 }
 
 <h2>@ViewBag.Title</h2>
-<p>У вас нет доступа к проекту @Html.ActionLink(Model.ProjectName, "Index", "Game", new {Model.ProjectId}, null). 
+<p>У вас нет доступа к проекту @Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null). 
     Обратитесь к @(new MvcHtmlString(string.Join(", ", Model.CanGrantAccess.Select(user => Html.DisplayFor(u => user))))), чтобы получить доступ
 </p>
