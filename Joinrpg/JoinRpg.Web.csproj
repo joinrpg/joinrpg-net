@@ -266,6 +266,7 @@
     <Compile Include="Controllers\GameGroupsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PlotController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\UserController.cs" />
@@ -418,6 +419,7 @@
     <Content Include="Views\Plot\CreateElement.cshtml" />
     <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
     <Content Include="Views\Home\AboutTest.cshtml" />
+    <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

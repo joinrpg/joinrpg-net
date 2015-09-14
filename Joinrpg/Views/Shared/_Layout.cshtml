@@ -36,13 +36,14 @@
                 {
                     <li>@Html.ActionLink("Мои заявки", "My", "Claim")</li>
                 }
+                @Html.Action("MyProjectDropdown", "Menu")
                 @if (ViewBag.IsProduction != true)
                 {
-                    <li  class="alert-danger">@Html.ActionLink("Тестовая версия", "AboutTest", "Home")</li>
+                    <li class="alert-danger">@Html.ActionLink("Тестовая версия", "AboutTest", "Home")</li>
                 }
                 else
                 {
-                <li>@Html.ActionLink("О проекте", "About", "Home")</li>
+                    <li>@Html.ActionLink("О проекте", "About", "Home")</li>
                 }
                 <li class="navbar-text">
                     @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
