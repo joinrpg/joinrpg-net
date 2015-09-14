@@ -51,7 +51,8 @@ namespace JoinRpg.Web.Controllers
           Name = @group.CharacterGroupName,
           HaveDirectSlots = GetDirectClaimSettings(group),
           DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
-          CharacterGroupId = group.CharacterGroupId
+          CharacterGroupId = group.CharacterGroupId,
+          IsRoot = group.IsRoot
         }));
     }
 
