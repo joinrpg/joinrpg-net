@@ -9,7 +9,7 @@
 <h2>@ViewBag.Title</h2>
 
 <p>Мне не нравится эта страница, хочу с ней как-то расправиться</p>
-@if (!string.IsNullOrWhiteSpace(Model.Details.ProjectAnnounce.Contents))
+@if (Model.Details != null && !string.IsNullOrWhiteSpace(Model.Details.ProjectAnnounce.Contents))
 {
     <hr/>
     @Model.Details.ProjectAnnounce.ToHtmlString()
