@@ -24,6 +24,12 @@ namespace JoinRpg.Web.Controllers
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
         {
             UserManager = userManager;
+      //TODO FIX ME: Why in hell I need this? I already setup it inside userManager.Create
+          UserManager.UserValidator = new UserValidator<User, int>(userManager)
+          {
+            AllowOnlyAlphanumericUserNames = false,
+            RequireUniqueEmail = true
+          };
             SignInManager = signInManager;
         }
 
