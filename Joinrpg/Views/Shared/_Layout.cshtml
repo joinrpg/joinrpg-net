@@ -36,12 +36,15 @@
                 {
                     <li>@Html.ActionLink("Мои заявки", "My", "Claim")</li>
                 }
-                <li>@Html.ActionLink("О проекте", "About", "Home")</li>
                 @if (ViewBag.IsProduction != true)
                 {
-                    <li class="alert-danger">Тестовая версия, данные не сохраняются </li>
+                    <li  class="alert-danger">@Html.ActionLink("Тестовая версия", "AboutTest", "Home")</li>
                 }
-                <li>
+                else
+                {
+                <li>@Html.ActionLink("О проекте", "About", "Home")</li>
+                }
+                <li class="navbar-text">
                     @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
                 </li>
             </ul>

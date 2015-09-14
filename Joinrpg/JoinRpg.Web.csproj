@@ -417,6 +417,7 @@
     <Content Include="Views\Plot\Elements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
     <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
+    <Content Include="Views\Home\AboutTest.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -46,5 +46,10 @@ namespace JoinRpg.Web.Controllers
 
       return View();
     }
+
+    public ActionResult AboutTest()
+    {
+      return View();
+    }
   }
 }
