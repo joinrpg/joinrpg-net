@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -54,18 +53,23 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(AddPlotFolderViewModel viewModel)
     {
-      return await WithProjectAsMasterAsync(viewModel.ProjectId, async project =>
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var errorResult = AsMaster(project, acl => true);
+      if (errorResult != null)
       {
-        try
-        {
-          await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
-          return RedirectToAction("Index", "Plot", new {project.ProjectId});
-        }
-        catch (Exception)
-        {
-          return View(viewModel);
-        }
-      });
+        return errorResult;
+      }
+
+      try
+      {
+        await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+        return RedirectToAction("Index", "Plot", new {project.ProjectId});
+      }
+      catch (Exception)
+      {
+        return View(viewModel);
+      }
+
     }
 
     [HttpGet]
@@ -150,13 +154,15 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> WithPlotFolderAsync(int projectId, int plotFolderId,
       Func<PlotFolder, Task<ActionResult>> action)
     {
-      return await AsMaster(await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId), action);
+      PlotFolder entity = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return AsMaster(entity) ?? await action(entity);
     }
 
     private async Task<ActionResult> WithPlotFolderAsync(int projectId, int plotFolderId,
       Func<PlotFolder, ActionResult> action)
     {
-      return await AsMaster(await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId), action);
+      PlotFolder folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return AsMaster(folder) ?? action(folder);
     }
 
     //TODO: This should use special ProjectRepository method 

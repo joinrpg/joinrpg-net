@@ -19,6 +19,9 @@ namespace JoinRpg.Web.Models
     public DirectClaimSettings HaveDirectSlots { get; set; }
 
     public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.PossibleParentsForGroup(CharacterGroupId);
+
+    [ReadOnly(true)]
+    public bool IsRoot { get; set; }
   }
 
   public enum DirectClaimSettings

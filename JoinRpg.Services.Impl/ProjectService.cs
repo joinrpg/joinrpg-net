@@ -137,19 +137,22 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public void EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
+    public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       List<int> parentCharacterGroupIds,
       string description, bool haveDirectSlots, int directSlots)
     {
-      var characterGroup = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId);
-      var parentGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
-      characterGroup.CharacterGroupName = Required(name);
-      characterGroup.IsPublic = isPublic;
-      characterGroup.ParentGroups.AssignLinksList(parentGroups);
-      characterGroup.Description = new MarkdownString(description);
+      var characterGroup = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+      if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
+      {
+        var parentGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+        characterGroup.CharacterGroupName = Required(name);
+        characterGroup.IsPublic = isPublic;
+        characterGroup.ParentGroups.AssignLinksList(parentGroups);
+        characterGroup.Description = new MarkdownString(description);
+      }
       characterGroup.AvaiableDirectSlots = directSlots;
       characterGroup.HaveDirectSlots = haveDirectSlots;
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public void DeleteCharacterGroup(int projectId, int characterGroupId)

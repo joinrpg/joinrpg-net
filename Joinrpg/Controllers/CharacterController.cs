@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -83,7 +84,8 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Create(AddCharacterViewModel viewModel)
     {
-      return WithProjectAsMaster(viewModel.ProjectId, project =>
+      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
+      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project =>
       {
         try
         {
@@ -98,7 +100,7 @@ namespace JoinRpg.Web.Controllers
         {
           return View(viewModel);
         }
-      });
+      }))(project1);
     }
   }
 }

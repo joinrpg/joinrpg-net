@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -64,27 +65,35 @@ namespace JoinRpg.Web.Controllers
 
     // POST: GameGroups/Edit/5
     [HttpPost, ValidateAntiForgeryToken, Authorize]
-    public ActionResult Edit(EditCharacterGroupViewModel viewModel)
+    public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
-      return WithGroupAsMaster(viewModel.ProjectId, viewModel.CharacterGroupId, (project, @group) =>
+      CharacterGroup group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
+      var error = AsMaster(group);
+      if (error != null)
       {
-        try
-        {
-          var haveDirectSlots = viewModel.HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
-          var directSlots = viewModel.HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited
-            ? -1
-            : viewModel.DirectSlots;
-          ProjectService.EditCharacterGroup(
-            project.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description, haveDirectSlots, directSlots);
+        return error;
+      }
 
-          return RedirectToIndex(project);
-        }
-        catch
-        {
-          return View(viewModel);
-        }
-      });
+      try
+      {
+        var haveDirectSlots = viewModel.HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
+        var directSlots = viewModel.HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited
+          ? -1
+          : viewModel.DirectSlots;
+
+
+        await ProjectService.EditCharacterGroup(
+          group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
+          viewModel.ParentCharacterGroupIds, viewModel.Description, haveDirectSlots, directSlots);
+
+
+        return RedirectToIndex(group.Project);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+
     }
 
     // GET: GameGroups/Delete/5
@@ -138,7 +147,8 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
     {
-      return WithProjectAsMaster(viewModel.ProjectId, project =>
+      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
+      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project =>
       {
         try
         {
@@ -152,7 +162,7 @@ namespace JoinRpg.Web.Controllers
         {
           return View(viewModel);
         }
-      });
+      }))(project1);
     }
   }
 }

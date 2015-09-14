@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return WithProject(project, p => p);
+      return WithProject(project) ?? View(project);
     }
 
     // GET: Game/Create
@@ -68,22 +68,28 @@ namespace JoinRpg.Web.Controllers
 
     // POST: Game/Edit/5
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public Task<ActionResult> Edit(EditProjectViewModel viewModel)
+    public async Task<ActionResult> Edit(EditProjectViewModel viewModel)
     {
-      return WithProjectAsMasterAsync(viewModel.ProjectId, pacl => pacl.CanChangeProjectProperties, 
-        async project =>
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var errorResult = AsMaster(project, pacl => pacl.CanChangeProjectProperties);
+      if (errorResult != null)
       {
-        try
-        {
-          await ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules, viewModel.ProjectAnnounce);
+        return errorResult;
+      }
 
-          return RedirectTo(project);
-        }
-        catch
-        {
-          viewModel.OriginalName = project.ProjectName;
-          return View(viewModel);
-        }
-      });
-    }  }
+      try
+      {
+        await
+          ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules,
+            viewModel.ProjectAnnounce);
+
+        return RedirectTo(project);
+      }
+      catch
+      {
+        viewModel.OriginalName = project.ProjectName;
+        return View(viewModel);
+      }
+    }
+  }
 }

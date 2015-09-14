@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,26 +24,15 @@ namespace JoinRpg.Web.Controllers.Common
     protected ActionResult WithProject(int projectId, Func<Project, ProjectAcl, ActionResult> action)
     {
       var project = ProjectRepository.GetProject(projectId);
-      if (project == null)
-      {
-        return HttpNotFound();
-      }
-      PrepareMasterMenu(project);
-      return action(project, project.GetProjectAcl(CurrentUserIdOrDefault));
+      return WithProject(project) ?? action(project, project.GetProjectAcl(CurrentUserIdOrDefault));
     }
 
-    protected ActionResult WithProject(Project project, Func<Project, object> viewModelGenerator)
+    protected ActionResult WithProject(Project project)
     {
       if (project == null)
       {
         return HttpNotFound();
       }
-      PrepareMasterMenu(project);
-      return View(viewModelGenerator(project));
-    }
-
-    private void PrepareMasterMenu(Project project)
-    {
       var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
       if (acl != null)
       {
@@ -53,41 +42,33 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectName = project.ProjectName
         };
       }
+      return null;
     }
 
-    protected async Task<ActionResult> WithProjectAsync(int projectId,
-      Func<Project, ProjectAcl, Task<ActionResult>> action)
+    protected ActionResult AsMaster(Project project, Func<ProjectAcl, bool> requiredRights)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (project == null)
+      var projectError = WithProject(project);
+      if (projectError != null)
       {
-        return HttpNotFound();
+        return projectError;
       }
       var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
-      PrepareMasterMenu(project);
-      return await action(project, acl);
+      if (acl == null || !requiredRights(acl))
+      {
+        return NoAccesToProjectView(project);
+      }
+      return null;
     }
 
-    protected async Task<ActionResult> WithProjectAsync(int projectId, Func<Project, ProjectAcl, ActionResult> action)
+    protected ActionResult AsMaster(Project project)
     {
-      return await WithProjectAsync(projectId, (project, acl) => Task.FromResult(action(project, acl)));
-    }
-
-    protected ActionResult WithProject(int projectId, Func<Project, ActionResult> action)
-    {
-      return WithProject(projectId, (project, acl) => action(project));
+      return AsMaster(project, acl => true);
     }
 
     protected ActionResult WithProjectAsMaster(int projectId, Func<ProjectAcl,bool> requiredRights, Func<Project, ActionResult> action)
     {
-      return WithProject(projectId, (project, acl) =>
-      {
-        if (acl == null || !requiredRights(acl))
-        {
-          return NoAccesToProjectView(project);
-        }
-        return action(project);
-      });
+      var project = ProjectRepository.GetProject(projectId);
+      return AsMaster(project, requiredRights) ?? action(project);
     }
 
     private ActionResult NoAccesToProjectView(Project project)
@@ -101,43 +82,10 @@ namespace JoinRpg.Web.Controllers.Common
         });
     }
 
-    protected ActionResult WithProjectAsMaster(int projectId, Func<Project, ActionResult> action)
+    protected async Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
     {
-      return WithProjectAsMaster(projectId, acl => true, action);
-    }
-
-    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, Task<ActionResult>> action)
-    {
-      return WithProjectAsMasterAsync(projectId, acl => true, action);
-    }
-
-    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
-    {
-      return WithProjectAsMasterAsync(projectId, acl => true, action);
-    }
-
-    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, Task<ActionResult>> action)
-    {
-      return WithProjectAsync(projectId, async (project, acl) =>
-      {
-        if (acl == null || !requiredRights(acl))
-        {
-          return NoAccesToProjectView(project);
-        }
-        return await action(project);
-      });
-    }
-
-    private Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, ActionResult> action)
-    {
-      return WithProjectAsync(projectId, (project, acl) =>
-      {
-        if (acl == null || !requiredRights(acl))
-        {
-          return NoAccesToProjectView(project);
-        }
-        return action(project);
-      });
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1) ?? action(project1);
     }
 
     private ActionResult WithSubEntityAsMaster<TProjectSubEntity>(int projectId, int? fieldId,
@@ -145,28 +93,24 @@ namespace JoinRpg.Web.Controllers.Common
       Func<ProjectAcl, bool> requiredRights, Func<Project, TProjectSubEntity, ActionResult> action) where TProjectSubEntity : IProjectSubEntity
     {
 
-      return WithProjectAsMaster(projectId, requiredRights, project => LoadSubEntity(fieldId, subentitySelector, action, project));
+      var project1 = ProjectRepository.GetProject(projectId);
+      var field = subentitySelector(project1).SingleOrDefault(e => e.Id == fieldId);
+      return AsMaster(field,requiredRights) ?? action(project1, field);
     }
 
     private ActionResult WithSubEntity<TProjectSubEntity>(int projectId, int fieldId,
       Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
       Func<Project, TProjectSubEntity, ActionResult> action) where TProjectSubEntity: IProjectSubEntity
     {
-      return WithProject(projectId, project => LoadSubEntity(fieldId, subentitySelector, action, project));
-    }
-
-    private ActionResult LoadSubEntity<TProjectSubEntity>(int? fieldId,
-      Func<Project, IEnumerable<TProjectSubEntity>> subentitySelector,
-      Func<Project, TProjectSubEntity, ActionResult> action, Project project)
-      where TProjectSubEntity : IProjectSubEntity
-    {
-      var field = subentitySelector(project).SingleOrDefault(e => e.Id == fieldId);
-      return field == null ? HttpNotFound() : action(project, field);
+      var project1 = ProjectRepository.GetProject(projectId);
+      var field = subentitySelector(project1).SingleOrDefault(e => e.Id == fieldId);
+      return AsMaster(field) ?? action(project1, field);
     }
 
     protected ActionResult WithGroup(int projectId, int groupId, Func<Project, CharacterGroup, ActionResult> action)
     {
-      return WithSubEntity(projectId, groupId, project => project.CharacterGroups, action);
+      var field = ProjectRepository.GetCharacterGroup(projectId, groupId);
+      return AsMaster(field) ?? action(field.Project, field);
     }
 
     protected ActionResult WithCharacter(int projectId, int characterId, Func<Project, Character, ActionResult> action)
@@ -233,25 +177,14 @@ namespace JoinRpg.Web.Controllers.Common
       return GetDynamicValuesFromPost(post, prefix);
     }
 
-    protected async Task<ActionResult> AsMaster<TEntity>(TEntity entity, Func<TEntity, Task<ActionResult>> action)
-      where TEntity:IProjectSubEntity
+    protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectSubEntity
     {
-      if (entity == null)
-      {
-        return HttpNotFound();
-      }
-      if (!entity.Project.HasAccess(CurrentUserId))
-      {
-        return NoAccesToProjectView(entity.Project);
-      }
-
-      return await action(entity);
+      return AsMaster(entity.Project, acl => true);
     }
 
-    protected Task<ActionResult> AsMaster<TEntity>(TEntity folder, Func<TEntity, ActionResult> action)
-     where TEntity : IProjectSubEntity
+    protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectSubEntity
     {
-      return AsMaster(folder, f => Task.FromResult(action(f)));
+      return AsMaster(entity.Project, requiredRights);
     }
   }
 }

@@ -37,6 +37,15 @@ namespace JoinRpg.Dal.Impl.Repositories
       => AllProjects
         .Include(p => p.Details) //TODO: Include p.ProjectAcls.Users
         .SingleOrDefaultAsync(p => p.ProjectId == project);
+
+    public Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId)
+    {
+      return
+        Ctx.Set<CharacterGroup>()
+          .Include(cg => cg.Project)
+          .SingleOrDefaultAsync(cg => cg.CharacterGroupId ==characterGroupId && cg.ProjectId == projectId);
+    }
+
     public Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
       return
@@ -54,6 +63,11 @@ namespace JoinRpg.Dal.Impl.Repositories
         return project => false;
       }
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
+    }
+
+    public CharacterGroup GetCharacterGroup(int projectId, int groupId)
+    {
+      return GetProject(projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
     }
   }
 

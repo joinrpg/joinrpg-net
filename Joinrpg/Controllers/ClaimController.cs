@@ -40,7 +40,8 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Add(AddClaimViewModel viewModel)
     {
-      return WithProject(viewModel.ProjectId, project =>
+      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
+      return WithProject(project1) ?? ((Func<Project, ActionResult>) (project =>
       {
         try
         {
@@ -54,7 +55,7 @@ namespace JoinRpg.Web.Controllers
           //TODO: Отображать ошибки верно
           return View(viewModel);
         }
-      });
+      }))(project1);
     }
 
     [HttpGet, Authorize]
@@ -66,7 +67,8 @@ namespace JoinRpg.Web.Controllers
 
     private ActionResult MasterList(int projectId, Func<Claim, bool> predicate)
     {
-      return WithProjectAsMaster(projectId, project => View(project.Claims.Where(predicate)));
+      var project1 = ProjectRepository.GetProject(projectId);
+      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project => View(project.Claims.Where(predicate))))(project1);
     }
 
     [HttpGet, Authorize]
