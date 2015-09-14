@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 namespace JoinRpg.DataModel
@@ -40,6 +39,7 @@ namespace JoinRpg.DataModel
   {
     public int ProjectId { get; set; }
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
+    public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
   }
 
   public static class ProjectStaticExtensions

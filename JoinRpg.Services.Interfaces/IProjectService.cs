@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Interfaces
     void EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots);
     void DeleteCharacterGroup(int projectId, int characterGroupId);
-    void EditProject(int projectId, string projectName, string claimApplyRules);
+    Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce);
     void GrantAccess(int projectId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties);
     void SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, IDictionary<int, string> newFieldValue);
   }

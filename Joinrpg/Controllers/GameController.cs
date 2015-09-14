@@ -1,29 +1,24 @@
-﻿using System.Web.Mvc;
+﻿using System.Threading.Tasks;
+using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  public class GameController : ControllerGameBase
+  public class GameController : Common.ControllerGameBase
   {
     public GameController(IProjectService projectService, ApplicationUserManager userManager,
       IProjectRepository projectRepository) : base(userManager, projectRepository, projectService)
     {
     }
 
-    // GET: Game
-    public ActionResult Index()
-    {
-      return View();
-    }
-
     // GET: Game/Details/5
-    public ActionResult Details(int projectId)
+    public async Task<ActionResult> Details(int projectId)
     {
-      return WithProject(projectId, p => View(p));
+      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+      return WithProject(project, p => p);
     }
 
     // GET: Game/Create
@@ -64,6 +59,7 @@ namespace JoinRpg.Web.Controllers
         project => View(new EditProjectViewModel
         {
           ClaimApplyRules = project.Details?.ClaimApplyRules?.Contents,
+          ProjectAnnounce = project.Details?.ProjectAnnounce?.Contents,
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           OriginalName = project.ProjectName
@@ -72,14 +68,14 @@ namespace JoinRpg.Web.Controllers
 
     // POST: Game/Edit/5
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult Edit(EditProjectViewModel viewModel)
+    public Task<ActionResult> Edit(EditProjectViewModel viewModel)
     {
-      return WithProjectAsMaster(viewModel.ProjectId, pacl => pacl.CanChangeProjectProperties, 
-        project =>
+      return WithProjectAsMasterAsync(viewModel.ProjectId, pacl => pacl.CanChangeProjectProperties, 
+        async project =>
       {
         try
         {
-          ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules);
+          await ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules, viewModel.ProjectAnnounce);
 
           return RedirectTo(project);
         }
@@ -89,7 +85,5 @@ namespace JoinRpg.Web.Controllers
           return View(viewModel);
         }
       });
-    }
-
-  }
+    }  }
 }

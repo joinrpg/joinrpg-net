@@ -18,5 +18,6 @@ namespace JoinRpg.Data.Interfaces
     Task<Project> GetProjectAsync(int project);
 
     Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId);
+    Task<Project> GetProjectWithDetailsAsync(int project);
   }
 }

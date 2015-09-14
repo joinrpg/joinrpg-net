@@ -1,4 +1,5 @@
 ﻿@*TODO: Have nice view model here, with Current user acls*@
+@using JoinRpg.Web.Helpers
 @model JoinRpg.DataModel.Project
 
 @{
@@ -8,6 +9,13 @@
 <h2>@ViewBag.Title</h2>
 
 <p>Мне не нравится эта страница, хочу с ней как-то расправиться</p>
+@if (!string.IsNullOrWhiteSpace(Model.Details.ProjectAnnounce.Contents))
+{
+    <hr/>
+    @Model.Details.ProjectAnnounce.ToHtmlString()
+}
+
+<hr/>
 
 <div>
     <dl class="dl-horizontal">

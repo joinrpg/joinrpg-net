@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -166,16 +167,14 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public void EditProject(int projectId, string projectName, string claimApplyRules)
+    public async Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce)
     {
-      var project = UnitOfWork.GetDbSet<Project>().Find(projectId);
-      if (project.Details == null)
-      {
-        project.Details = new ProjectDetails {ProjectId = projectId};
-      }
+      var project = await UnitOfWork.GetDbSet<Project>().Include(p =>p.Details).SingleOrDefaultAsync(p => p.ProjectId == projectId);
+      project.Details = project.Details ?? new ProjectDetails {ProjectId = projectId};
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
+      project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
       project.ProjectName = Required(projectName);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public void GrantAccess(int projectId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties)

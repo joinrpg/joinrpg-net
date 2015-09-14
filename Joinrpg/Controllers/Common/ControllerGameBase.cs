@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
@@ -29,24 +28,35 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
-      if (acl != null)
+      PrepareMasterMenu(project);
+      return action(project, project.GetProjectAcl(CurrentUserIdOrDefault));
+    }
+
+    protected ActionResult WithProject(Project project, Func<Project, object> viewModelGenerator)
+    {
+      if (project == null)
       {
-        PrepareMasterMenu(project);
+        return HttpNotFound();
       }
-      return action(project, acl);
+      PrepareMasterMenu(project);
+      return View(viewModelGenerator(project));
     }
 
     private void PrepareMasterMenu(Project project)
     {
-      ViewBag.MasterMenu = new MasterMenuViewModel
+      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
+      if (acl != null)
       {
-        ProjectId = project.ProjectId,
-        ProjectName = project.ProjectName
-      };
+        ViewBag.MasterMenu = new MasterMenuViewModel
+        {
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName
+        };
+      }
     }
 
-    protected async Task<ActionResult> WithProjectAsync(int projectId, Func<Project, ProjectAcl, Task<ActionResult>> action)
+    protected async Task<ActionResult> WithProjectAsync(int projectId,
+      Func<Project, ProjectAcl, Task<ActionResult>> action)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       if (project == null)
@@ -54,10 +64,7 @@ namespace JoinRpg.Web.Controllers.Common
         return HttpNotFound();
       }
       var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
-      if (acl != null)
-      {
-        PrepareMasterMenu(project);
-      }
+      PrepareMasterMenu(project);
       return await action(project, acl);
     }
 
@@ -109,7 +116,7 @@ namespace JoinRpg.Web.Controllers.Common
       return WithProjectAsMasterAsync(projectId, acl => true, action);
     }
 
-    private Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, Task<ActionResult>> action)
+    protected Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<ProjectAcl, bool> requiredRights, Func<Project, Task<ActionResult>> action)
     {
       return WithProjectAsync(projectId, async (project, acl) =>
       {

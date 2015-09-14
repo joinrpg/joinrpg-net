@@ -32,6 +32,11 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public Project GetProject(int project) => AllProjects.SingleOrDefault(p => p.ProjectId == project);
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
+
+    public Task<Project> GetProjectWithDetailsAsync(int project)
+      => AllProjects
+        .Include(p => p.Details) //TODO: Include p.ProjectAcls.Users
+        .SingleOrDefaultAsync(p => p.ProjectId == project);
     public Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
       return

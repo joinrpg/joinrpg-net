@@ -12,6 +12,9 @@ namespace JoinRpg.Web.Models
     [DisplayName("Правила подачи заявок"),DataType(DataType.MultilineText)]
     public string ClaimApplyRules { get; set; }
 
+    [DisplayName("Анонс проекта"), DataType(DataType.MultilineText)]
+    public string ProjectAnnounce { get; set; }
+
     [ReadOnly(true)]
     public string OriginalName { get; set;  }
   }

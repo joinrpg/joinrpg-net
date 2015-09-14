@@ -94,6 +94,10 @@
     <Compile Include="Migrations\201509101901092_DirectSlotsUnlimited.Designer.cs">
       <DependentUpon>201509101901092_DirectSlotsUnlimited.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509140946286_ProjectAnnounce.cs" />
+    <Compile Include="Migrations\201509140946286_ProjectAnnounce.Designer.cs">
+      <DependentUpon>201509140946286_ProjectAnnounce.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -144,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509101901092_DirectSlotsUnlimited.resx">
       <DependentUpon>201509101901092_DirectSlotsUnlimited.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509140946286_ProjectAnnounce.resx">
+      <DependentUpon>201509140946286_ProjectAnnounce.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
