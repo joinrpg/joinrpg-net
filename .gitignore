@@ -188,3 +188,7 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+#Join-Rpg specfic ignores
+#We will store our API keys here
+/Secret.config

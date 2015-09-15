@@ -11,24 +11,17 @@ using Microsoft.Owin.Security;
 
 namespace JoinRpg.Web
 {
-    public class EmailService : IIdentityMessageService
-    {
-      public Task SendAsync(IdentityMessage identityMessage)
-      {
-        return Task.FromResult(0);
-      }
-    }
-
-    // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
+  // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class ApplicationUserManager : UserManager<User, int>
     {
-        public ApplicationUserManager(IUserStore<User, int> store)
+      private ApplicationUserManager(IUserStore<User, int> store)
             : base(store)
         {
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
         {
+            //TODO: Fix this to use MyUserStore from DI container
             var manager = new ApplicationUserManager(new MyUserStore(context.Get<MyDbContext>()));
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<User, int>(manager)
