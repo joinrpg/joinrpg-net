@@ -127,7 +127,7 @@ namespace JoinRpg.Services.Impl
       }
 
       DateTime now = DateTime.Now;
-      claim.MasterDeclinedDate = now;
+      claim.PlayerDeclinedDate = now;
       claim.AddCommentImpl(currentUserId, null, isVisibleToPlayer: true, isMyClaim: true, commentText: commentText, now: now);
 
       UnitOfWork.SaveChanges();
