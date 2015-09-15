@@ -229,6 +229,11 @@ namespace JoinRpg.Services.Impl
         }
         //TODO: typechecking here
         field.Value = newValue;
+
+        if (!field.Field.WasEverUsed)
+        {
+          field.Field.WasEverUsed = true;
+        }
       }
       UnitOfWork.SaveChanges();
     }
