@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -11,15 +10,11 @@ using Microsoft.Owin.Security;
 
 namespace JoinRpg.Web.Controllers
 {
-    [Authorize]
+  [Authorize]
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-
-        public AccountController()
-        {
-        }
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
         {
@@ -62,47 +57,42 @@ namespace JoinRpg.Web.Controllers
 
         //
         // POST: /Account/Login
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+      [HttpPost]
+      [AllowAnonymous]
+      [ValidateAntiForgeryToken]
+      public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+      {
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // This doesn't count login failures towards account lockout
-            // To enable password failures to trigger account lockout, change to shouldLockout: true
-            var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
-            switch (result)
-            {
-                case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
-                case SignInStatus.LockedOut:
-                    return View("Lockout");
-                case SignInStatus.RequiresVerification:
-                    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                case SignInStatus.Failure:
-                default:
-                    ModelState.AddModelError("", "Invalid login attempt.");
-                    return View(model);
-            }
+          return View(model);
         }
 
-        //
-        // GET: /Account/VerifyCode
-        [AllowAnonymous]
-        public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
+        // Require the user to have a confirmed email before they can log on.
+        var user = await UserManager.FindByNameAsync(model.Email);
+        if (user != null)
         {
-            // Require that the user has already logged in via username/password or external login
-            if (!await SignInManager.HasBeenVerifiedAsync())
-            {
-                return View("Error");
-            }
-            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+          if (!await UserManager.IsEmailConfirmedAsync(user.Id))
+          {
+            await SendConfirmationEmail(user);
+            return View("EmailUnconfirmed");
+          }
         }
 
+        // This doesn't count login failures towards account lockout
+        // To enable password failures to trigger account lockout, change to shouldLockout: true
+        var result =
+          await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+        switch (result)
+        {
+          case SignInStatus.Success:
+            return RedirectToLocal(returnUrl);
+          case SignInStatus.LockedOut:
+            return View("Lockout");
+          default:
+            ModelState.AddModelError("", "Invalid login attempt.");
+            return View(model);
+        }
+      }
         //
         // GET: /Account/Register
         [AllowAnonymous]
@@ -124,15 +114,12 @@ namespace JoinRpg.Web.Controllers
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    //We don't want to sign in user until he has email confirmed 
+                    //await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
-                    // Send an email with this link
-                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                    await SendConfirmationEmail(user);
 
-                    return RedirectToAction("Index", "Home");
+                  return View("RegisterSuccess");
                 }
                 AddErrors(result);
             }
@@ -141,20 +128,49 @@ namespace JoinRpg.Web.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/ConfirmEmail
-        [AllowAnonymous]
-        public async Task<ActionResult> ConfirmEmail(int? userId, string code)
-        {
-            if (userId == null || code == null)
-            {
-                return View("Error");
-            }
-            var result = await UserManager.ConfirmEmailAsync((int) userId, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
-        }
+      private async Task SendConfirmationEmail(User user)
+      {
+        string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+        var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.Id, code = code},
+          protocol: Request.Url.Scheme);
 
-        //
+
+      //TODO: Implement template for emails (probably Razor-based)
+        await
+          UserManager.SendEmailAsync(user.Id, "Регистрация на joinrpg.ru",
+            $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
+
+Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{callbackUrl}"">вот по этой ссылке</a>.
+
+Это необходимо, для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
+
+Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его и все.
+--
+С уважением, робот joinrpg.ru
+");
+      }
+
+      //
+        // GET: /Account/ConfirmEmail
+      [AllowAnonymous]
+      public async Task<ActionResult> ConfirmEmail(int? userId, string code)
+      {
+        if (userId == null || code == null)
+        {
+          return View("Error");
+        }
+        var result = await UserManager.ConfirmEmailAsync((int) userId, code);
+        if (result.Succeeded)
+        {
+          return View("ConfirmEmail");
+        }
+        else
+        {
+          return View("Error");
+      }
+      }
+
+      //
         // GET: /Account/ForgotPassword
         [AllowAnonymous]
         public ActionResult ForgotPassword()
@@ -180,10 +196,15 @@ namespace JoinRpg.Web.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
+                await UserManager.SendEmailAsync(user.Id, "Восстановление пароля на JoinRpg.Ru",
+                  $@"
+Здравствуйте, вы (или кто-то, выдающй себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. Если это вы, кликните
+с<a href=""{callbackUrl}"">вот по этой ссылке</a>, и мы восстановим вам пароль.
+
+Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его и все.");
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form

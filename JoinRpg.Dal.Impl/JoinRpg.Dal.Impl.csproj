@@ -98,6 +98,10 @@
     <Compile Include="Migrations\201509140946286_ProjectAnnounce.Designer.cs">
       <DependentUpon>201509140946286_ProjectAnnounce.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509151650160_UserPropertiesAuth.cs" />
+    <Compile Include="Migrations\201509151650160_UserPropertiesAuth.Designer.cs">
+      <DependentUpon>201509151650160_UserPropertiesAuth.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -151,6 +155,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509140946286_ProjectAnnounce.resx">
       <DependentUpon>201509140946286_ProjectAnnounce.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509151650160_UserPropertiesAuth.resx">
+      <DependentUpon>201509151650160_UserPropertiesAuth.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

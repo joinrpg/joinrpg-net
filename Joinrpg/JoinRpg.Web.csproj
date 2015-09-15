@@ -428,6 +428,8 @@
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
+    <Content Include="Views\Account\RegisterSuccess.cshtml" />
+    <Content Include="Views\Account\EmailUnconfirmed.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -21,14 +21,14 @@ namespace JoinRpg.Web.Helpers
         {
           Email = identityMessage.Destination
         })
-        .SetSubject("Регистрация на joinrpg.ru")
+        .SetSubject(identityMessage.Subject)
         .SetFromAddress(new Recipient()
         {
           DisplayName = "Команда JoinRpg.Ru",
           Email = "support@dev.joinrpg.ru"
         })
         .SetTextBody(identityMessage.Body)
-        .SetHtmlBody(identityMessage.Body)
+        
         .GetMessage();
       
       return messageService.SendMessageAsync(MailGunFacade.ApiDomain, message);

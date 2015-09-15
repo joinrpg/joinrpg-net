@@ -6,7 +6,8 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Dal.Impl
 {
-  public class MyUserStore : IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User,int>, IUserTwoFactorStore<User,int>, IUserEmailStore<User, int>
+  public class MyUserStore : 
+    IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>
   {
     private readonly MyDbContext _ctx;
 
@@ -24,11 +25,10 @@ namespace JoinRpg.Dal.Impl
     {
       if (user == null)
       {
-        throw  new ArgumentNullException(nameof(user));
+        throw new ArgumentNullException(nameof(user));
       }
       _ctx.UserSet.Add(user);
-      _ctx.SaveChanges();
-      return Task.FromResult<object>(null);
+      return _ctx.SaveChangesAsync();
     }
 
     public Task UpdateAsync(User user)
@@ -38,8 +38,7 @@ namespace JoinRpg.Dal.Impl
         throw new ArgumentNullException(nameof(user));
       }
       _ctx.UserSet.Attach(user);
-      _ctx.SaveChanges();
-      return Task.FromResult<object>(null);
+      return _ctx.SaveChangesAsync();
     }
 
     public Task DeleteAsync(User user)
@@ -49,7 +48,7 @@ namespace JoinRpg.Dal.Impl
         throw new ArgumentNullException(nameof(user));
       }
       _ctx.UserSet.Remove(user);
-      return Task.FromResult<object>(null);
+      return _ctx.SaveChangesAsync();
     }
 
     public async Task<User> FindByIdAsync(int userId)
@@ -68,8 +67,9 @@ namespace JoinRpg.Dal.Impl
       {
         throw new ArgumentNullException(nameof(user));
       }
+      _ctx.UserSet.Attach(user);
       user.PasswordHash = passwordHash;
-      return Task.FromResult<object>(null);
+      return _ctx.SaveChangesAsync();
     }
 
     public Task<string> GetPasswordHashAsync(User user)
@@ -104,7 +104,7 @@ namespace JoinRpg.Dal.Impl
 
     public Task<int> GetAccessFailedCountAsync(User user)
     {
-      return Task.FromResult(0); 
+      return Task.FromResult(0);
     }
 
     public Task<bool> GetLockoutEnabledAsync(User user)
@@ -140,12 +140,14 @@ namespace JoinRpg.Dal.Impl
 
     public Task<bool> GetEmailConfirmedAsync(User user)
     {
-      return Task.FromResult(false);//We don't support confirming yet
+      return Task.FromResult(user.Auth?.EmailConfirmed ?? false);
     }
 
     public Task SetEmailConfirmedAsync(User user, bool confirmed)
     {
-      throw new NotImplementedException();
+      user.Auth = user.Auth ?? new UserAuthDetails();
+      user.Auth.EmailConfirmed = confirmed;
+      return Task.FromResult(0);
     }
 
     public Task<User> FindByEmailAsync(string email)

@@ -27,8 +27,7 @@ namespace JoinRpg.Dal.Impl
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
-      modelBuilder.Entity<ProjectAcl>().
-        HasKey(c => new {c.UserId, c.ProjectId});
+      modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});
 
       modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
       modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
@@ -56,6 +55,9 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetCharacters).WithMany(c => c.DirectlyRelatedPlotElements);
       modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups).WithMany(c => c.DirectlyRelatedPlotElements);
       modelBuilder.Entity<PlotElement>().HasRequired(pf => pf.Project).WithMany().WillCascadeOnDelete(false);
+
+      modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
+      modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
 
       base.OnModelCreating(modelBuilder);
     }
