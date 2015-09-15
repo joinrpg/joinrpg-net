@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Models
     [DisplayName("Название локации"), Required]
     public string Name { get; set; }
 
-    [DisplayName("Лимит прямых заявок")]
+    [DisplayName("Лимит прямых заявок"), Range(1, 100)]
     public int DirectSlots { get; set; }
 
     [DisplayName("Прямые заявки"),Description("Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
