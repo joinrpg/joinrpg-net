@@ -29,8 +29,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [DataType(DataType.MultilineText),DisplayName("Текст заявки")]
-    public string ClaimText { get; set; }
+    [Display(Name ="Текст заявки")]
+    public MarkdownString ClaimText { get; set; }
 
     public static AddClaimViewModel Create(Character character, User user)
     {

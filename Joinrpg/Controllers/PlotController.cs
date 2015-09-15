@@ -142,7 +142,7 @@ namespace JoinRpg.Web.Controllers
             PlotFolderId = plotFolderId,
             PlotFolderName = folder.MasterTitle,
             Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup),
-            Content = content,
+            Content = new MarkdownString(content),
             TodoField = todoField
           });
         }

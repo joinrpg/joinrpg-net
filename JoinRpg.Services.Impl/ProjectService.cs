@@ -195,9 +195,10 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public void SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, IDictionary<int, string> newFieldValue)
+    public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
     {
-      var character = LoadProjectSubEntity<Character>(projectId, characterId);
+      //TODO: Prevent lazy load here - use repository 
+      var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       var fields = character.Fields();
 
       var hasMasterAccess = character.Project.HasAccess(currentUserId);
@@ -211,6 +212,7 @@ namespace JoinRpg.Services.Impl
       if (hasMasterAccess)
       {
         character.CharacterName = Required(characterName);
+        character.Description.Contents = description;
       }
       
 
@@ -235,7 +237,7 @@ namespace JoinRpg.Services.Impl
           field.Field.WasEverUsed = true;
         }
       }
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     private static void ReparentChilds(CharacterGroup characterGroup, IEnumerable<IWorldObject> childs)

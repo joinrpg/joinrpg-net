@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Controllers
           Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
           ProjectId = project.ProjectId,
           ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
-          Description = @group.Description.Contents,
+          Description = @group.Description,
           IsPublic = @group.IsPublic,
           Name = @group.CharacterGroupName,
           HaveDirectSlots = GetDirectClaimSettings(group),
@@ -85,7 +85,7 @@ namespace JoinRpg.Web.Controllers
 
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description, haveDirectSlots, directSlots);
+          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, haveDirectSlots, directSlots);
 
 
         return RedirectToIndex(group.Project);
@@ -155,7 +155,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectService.AddCharacterGroup( 
             viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description);
+            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents);
 
           return RedirectToIndex(project);
         }

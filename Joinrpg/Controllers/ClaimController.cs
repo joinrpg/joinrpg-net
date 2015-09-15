@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -20,7 +21,8 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public ActionResult AddForCharacter(int projectid, int characterid)
     {
-      return WithCharacter(projectid, characterid, (project, character) => View("Add", AddClaimViewModel.Create(character, GetCurrentUser())));
+      var field = ProjectRepository.GetCharacter(projectid, characterid);
+      return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     [HttpGet]
@@ -46,7 +48,7 @@ namespace JoinRpg.Web.Controllers
         try
         {
           _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-            CurrentUserId, viewModel.ClaimText);
+            CurrentUserId, viewModel.ClaimText.Contents);
 
           return RedirectToAction("My", "Claim");
         }
@@ -77,13 +79,21 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public ActionResult Edit(int projectId, int claimId)
     {
-      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) => View(new ClaimViewModel()
+      var claim = ProjectRepository.GetClaim(projectId, claimId);
+      var error = WithClaim(claim);
+      if (error != null)
+      {
+        return error;
+      }
+      var hasMasterAccess = claim.Project.HasAccess(CurrentUserId);
+      var isMyClaim = claim.PlayerUserId == CurrentUserId;
+      return View(new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
         ClaimName = claim.Name,
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
-        HasPlayerAccessToCharacter = hasMasterAccess || (claim.PlayerUserId == CurrentUserId && claim.IsApproved),
+        HasPlayerAccessToCharacter = hasMasterAccess || (isMyClaim && claim.IsApproved),
         CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] {},
         IsMyClaim = isMyClaim,
         Player = claim.Player,
@@ -95,35 +105,42 @@ namespace JoinRpg.Web.Controllers
         CharacterId = claim.CharacterId,
         CharacterName = claim.Character?.CharacterName,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
-        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count()
-      }));
+        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
+        Description = claim.Character?.Description
+      });
+
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult Edit(int projectId, int claimId, string characterName, FormCollection formCollection)
+    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownString description, FormCollection formCollection)
     {
-      return WithClaim(projectId, claimId, (project, claim, hasMasterAccess, isMyClaim) =>
+      var claim = ProjectRepository.GetClaim(projectId, claimId);
+      var error = WithClaim(claim);
+      if (error != null)
       {
-        if (!claim.IsApproved || claim.CharacterId == null)
-        {
-          return Edit(projectId, claimId);
-        }
-        try
-        {
-          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName, GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
-          return RedirectToAction("Edit", "Claim", new { projectId, claimId });
-        }
-        catch
-        {
-          return Edit(projectId, claimId);
-        }
-      });
+        return error;
+      }
+      if (!claim.IsApproved || claim.CharacterId == null)
+      {
+        return Edit(projectId, claimId);
+      }
+      try
+      {
+        await ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName, description.Contents,
+          GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+        return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+      }
+      catch
+      {
+        return Edit(projectId, claimId);
+      }
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public ActionResult ApproveByMaster(AddCommentViewModel viewModel)
     {
-      return WithClaimAsMaster(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      var claim1 = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      return WithMyClaim(claim1) ?? ((Func<Project, Claim, ActionResult>) ((project, claim) =>
       {
         try
         {
@@ -131,7 +148,7 @@ namespace JoinRpg.Web.Controllers
           {
             throw new DbEntityValidationException();
           }
-          _claimService.AppoveByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.AppoveByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
@@ -140,7 +157,7 @@ namespace JoinRpg.Web.Controllers
           //TODO: Message that comment is not added
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
-      });
+      }))(claim1.Project, claim1);
     }
 
     [HttpPost]
@@ -148,7 +165,8 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult DeclineByMaster(AddCommentViewModel viewModel)
     {
-      return WithClaimAsMaster(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      var claim1 = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      return WithMyClaim(claim1) ?? ((Func<Project, Claim, ActionResult>) ((project, claim) =>
       {
         try
         {
@@ -156,7 +174,7 @@ namespace JoinRpg.Web.Controllers
           {
             throw new DbEntityValidationException();
           }
-          _claimService.DeclineByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
@@ -165,7 +183,7 @@ namespace JoinRpg.Web.Controllers
           //TODO: Message that comment is not added
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
-      });
+      }))(claim1.Project, claim1);
     }
 
     [HttpPost]
@@ -181,7 +199,7 @@ namespace JoinRpg.Web.Controllers
           {
             throw new DbEntityValidationException();
           }
-          _claimService.DeclineByPlayer(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByPlayer(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }

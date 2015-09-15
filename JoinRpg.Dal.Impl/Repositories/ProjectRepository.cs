@@ -74,9 +74,21 @@ namespace JoinRpg.Dal.Impl.Repositories
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
     }
 
+    //TODO: Change to async
+    //TODO: Eager load
     public CharacterGroup GetCharacterGroup(int projectId, int groupId)
     {
       return GetProject(projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
+    }
+
+    public Character GetCharacter(int projectId, int characterId)
+    {
+      return GetProject(projectId).Characters.SingleOrDefault(e => e.CharacterId == characterId);
+    }
+
+    public Claim GetClaim(int projectId, int claimId)
+    {
+      return GetProject(projectId).Claims.SingleOrDefault(e => e.ClaimId == claimId);
     }
   }
 

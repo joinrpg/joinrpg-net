@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
@@ -23,7 +23,8 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public ActionResult Details(int projectid, int characterid)
     {
-      return WithCharacter(projectid, characterid, ShowCharacter);
+      var field = ProjectRepository.GetCharacter(projectid, characterid);
+      return WithEntity(field) ?? ShowCharacter(field.Project, field);
     }
 
     private ActionResult ShowCharacter(Project project, Character character)
@@ -33,7 +34,7 @@ namespace JoinRpg.Web.Controllers
       var viewModel = new CharacterDetailsViewModel
       {
         CharacterName = character.CharacterName,
-        Description = character.Description.ToHtmlString(),
+        Description = character.Description,
         ApprovedClaimId = character.ApprovedClaim?.ClaimId,
         ApprovedClaimUser = approvedClaimUser,
         CanAddClaim = character.IsAvailable,
@@ -50,20 +51,19 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult Details(int projectId, int characterId, string characterName, FormCollection formCollection)
+    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownString description,
+      FormCollection formCollection)
     {
-      return WithCharacter(projectId, characterId, (project, character) =>
+      try
       {
-        try
-        {
-          ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId, characterName, GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
-          return RedirectToAction("Details", new {projectId, characterId});
-        }
-        catch
-        {
-          return Details(projectId, characterId);
-        }
-      });
+        await ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId, characterName, description.Contents,
+          GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+        return RedirectToAction("Details", new {projectId, characterId});
+      }
+      catch
+      {
+        return Details(projectId, characterId);
+      }
     }
 
     [HttpGet]
@@ -92,7 +92,7 @@ namespace JoinRpg.Web.Controllers
           ProjectService.AddCharacter(
             viewModel.ProjectId,
             viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-            viewModel.Description);
+            viewModel.Description.Contents);
 
           return RedirectToIndex(project);
         }

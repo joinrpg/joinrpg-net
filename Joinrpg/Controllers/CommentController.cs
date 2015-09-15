@@ -1,44 +1,49 @@
 ﻿using System.Data.Entity.Validation;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
+  [Authorize]
   public class CommentController : Common.ControllerGameBase
   {
-    private IClaimService ClaimService
-    { get; }
-    public CommentController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService) : base(userManager, projectRepository, projectService)
+    private IClaimService ClaimService { get; }
+
+    public CommentController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IClaimService claimService) : base(userManager, projectRepository, projectService)
     {
       ClaimService = claimService;
     }
 
-  //  [HttpPost]
-    [Authorize]
-//    [ValidateAntiForgeryToken]
+    [HttpPost]
+   [ValidateAntiForgeryToken]
     public ActionResult Create(AddCommentViewModel viewModel)
     {
-      return WithClaim(viewModel.ProjectId, viewModel.ClaimId, (project, claim, hasMasterAccess, isMyClaim) =>
-      {
-        try
-        {
-          if (viewModel.HideFromUser && !hasMasterAccess)
-          {
-            throw new DbEntityValidationException();
-          }
-          ClaimService.AddComment(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId, !(viewModel.HideFromUser),
-            isMyClaim, viewModel.CommentText);
+      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
 
-          return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
-        }
-        catch
+      var error = WithClaim(claim);
+      if (error != null) return error;
+      try
+      {
+        if (viewModel.HideFromUser && !claim.Project.HasAccess(CurrentUserId))
         {
-          //TODO: Message that comment is not added
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+          throw new DbEntityValidationException();
         }
-      });
+        ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
+          !(viewModel.HideFromUser),
+          claim.PlayerUserId == CurrentUserId, viewModel.CommentText.Contents);
+
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+
     }
   }
 }

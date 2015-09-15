@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
@@ -12,8 +13,8 @@ namespace JoinRpg.Web.Models
     /// </summary>
     public int? ParentCommentId { get; set; }
 
-    [DataType(DataType.MultilineText), Required, DisplayName("Текст комментария")] 
-    public string CommentText { get; set; }
+    [Required, DisplayName("Текст комментария")] 
+    public MarkdownString CommentText { get; set; }
 
     [DisplayName("Только другим мастерам")]
     public bool HideFromUser

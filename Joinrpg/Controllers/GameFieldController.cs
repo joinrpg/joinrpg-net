@@ -29,13 +29,15 @@ namespace JoinRpg.Web.Controllers
     // GET: GameFields
     public ActionResult Index(int projectId)
     {
-      return WithProjectAsMaster(projectId, pa => pa.CanChangeFields, project => View(project));
+      var project1 = ProjectRepository.GetProject(projectId);
+      return AsMaster(project1, pa => pa.CanChangeFields) ?? ((Func<Project, ActionResult>) (project => View(project)))(project1);
     }
 
     // GET: GameFields/Create
     public ActionResult Create(int projectId)
     {
-      return WithProjectAsMaster(projectId, pa => pa.CanChangeFields, project => View(new ProjectCharacterField() {ProjectId = projectId}));
+      var project1 = ProjectRepository.GetProject(projectId);
+      return AsMaster(project1, pa => pa.CanChangeFields) ?? ((Func<Project, ActionResult>) (project => View(new ProjectCharacterField() {ProjectId = projectId})))(project1);
     }
 
     // POST: GameFields/Create
@@ -43,7 +45,8 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult Create(ProjectCharacterField field)
     {
-      return WithProjectAsMaster(field.ProjectId, pa => pa.CanChangeFields, project =>
+      var project1 = ProjectRepository.GetProject(field.ProjectId);
+      return AsMaster(project1, pa => pa.CanChangeFields) ?? ((Func<Project, ActionResult>) (project =>
       {
         try
         {
@@ -56,8 +59,7 @@ namespace JoinRpg.Web.Controllers
         {
           return View();
         }
-      });
-
+      }))(project1);
     }
 
     // GET: GameFields/Edit/5

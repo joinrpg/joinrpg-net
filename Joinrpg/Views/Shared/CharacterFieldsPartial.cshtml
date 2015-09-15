@@ -18,10 +18,16 @@
     {
         @Html.AntiForgeryToken()
 
-    <div>
-        @Html.LabelFor(model => model.CharacterName)
-        @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+        <div>
+            @Html.LabelFor(model => model.CharacterName)
+            @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+        </div>
+
+        <div>
+        @Html.LabelFor(model => model.Description)
+        @(Model.HasMasterAccess ? Html.EditorFor(model => model.Description) : Html.DisplayFor(model => model.Description))
     </div>
+
 
         foreach (var field in Model.CharacterFields.Where(CanView))
         {

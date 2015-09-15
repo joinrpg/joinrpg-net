@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -13,6 +12,8 @@ namespace JoinRpg.Web.Models
     bool HasPlayerAccessToCharacter { get; set; }
     bool HasMasterAccess { get; set; }
     IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
+    [Display(Name = "Описание персонажа")]
+    MarkdownString Description { get; set; }
   }
 
   public class CharacterDetailsViewModel : ICharacterFieldsViewModel
@@ -24,7 +25,8 @@ namespace JoinRpg.Web.Models
     [Display(Name="Имя персонажа")]
     public string CharacterName { get; set; }
 
-    public HtmlString Description { get; set; }
+    [Display(Name = "Описание персонажа")]
+    public MarkdownString Description { get; set; }
 
     public bool CanAddClaim { get; set; }
 

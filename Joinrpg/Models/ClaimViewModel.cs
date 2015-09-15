@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -27,5 +29,8 @@ namespace JoinRpg.Web.Models
     public int OtherClaimsForThisCharacterCount { get; set; }
     public int OtherClaimsFromThisPlayerCount
     { get; set; }
+
+    [Display(Name = "Описание персонажа")]
+    public MarkdownString Description { get; set; }
   }
 }

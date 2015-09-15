@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
@@ -9,11 +10,11 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Название проекта"), Required]
     public string ProjectName { get; set; }
-    [DisplayName("Правила подачи заявок"),DataType(DataType.MultilineText)]
-    public string ClaimApplyRules { get; set; }
+    [DisplayName("Правила подачи заявок")]
+    public MarkdownString ClaimApplyRules { get; set; }
 
-    [DisplayName("Анонс проекта"), DataType(DataType.MultilineText)]
-    public string ProjectAnnounce { get; set; }
+    [DisplayName("Анонс проекта")]
+    public MarkdownString ProjectAnnounce { get; set; }
 
     [ReadOnly(true)]
     public string OriginalName { get; set;  }
