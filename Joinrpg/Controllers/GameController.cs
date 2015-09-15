@@ -32,11 +32,11 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public ActionResult Create(ProjectCreateViewModel model)
+    public async Task<ActionResult> Create(ProjectCreateViewModel model)
     {
       try
       {
-        var project = ProjectService.AddProject(model.ProjectName, GetCurrentUser());
+        var project = await ProjectService.AddProject(model.ProjectName, GetCurrentUser());
 
         return RedirectTo(project);
       }

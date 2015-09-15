@@ -20,13 +20,13 @@ namespace JoinRpg.Services.Impl
 
     }
 
-    public Project AddProject(string projectName, User creator)
+    public async Task<Project> AddProject(string projectName, User creator)
     {
       var project = new Project()
       {
         Active = true,
         CreatedDate = DateTime.Now,
-        ProjectName = projectName,
+        ProjectName = Required(projectName),
         CharacterGroups = new List<CharacterGroup>()
         {
           new CharacterGroup()
@@ -43,7 +43,7 @@ namespace JoinRpg.Services.Impl
         }
       };
       UnitOfWork.GetDbSet<Project>().Add(project);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
       return project;
     }
 

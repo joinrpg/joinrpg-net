@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Interfaces
 {
   public interface IProjectService
   {
-    Project AddProject(string projectName, User creator);
+    Task<Project> AddProject(string projectName, User creator);
     void AddCharacterField(ProjectCharacterField field);
     void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     void DeleteField(int projectCharacterFieldId);
