@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Helpers
         case GameObjectLinkType.User:
           return new RouteTarget("Details", "User", new {UserId = link.Identification});
         case GameObjectLinkType.CharacterGroup:
-          return new RouteTarget("Edit", "GameGroups", new {CharacterGroupId = link.Identification, link.ProjectId});
+          return new RouteTarget("Index", "GameGroups", new {CharacterGroupId = link.Identification, link.ProjectId});
         case GameObjectLinkType.Character:
           return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
         default:
