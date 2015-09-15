@@ -9,6 +9,7 @@ using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
 
@@ -66,6 +67,9 @@ namespace JoinRpg.Web
 
       container.RegisterType<IAuthenticationManager>(
         new InjectionFactory(o => HttpContext.Current.GetOwinContext().Authentication));
+
+      container.RegisterType<ApplicationUserManager>(
+        new InjectionFactory(o => HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>()));
     }
   }
 }

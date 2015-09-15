@@ -4,9 +4,7 @@ using System.Threading.Tasks;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
@@ -15,20 +13,10 @@ namespace JoinRpg.Web
 {
     public class EmailService : IIdentityMessageService
     {
-        public Task SendAsync(IdentityMessage message)
-        {
-            // Plug in your email service here to send an email.
-            return Task.FromResult(0);
-        }
-    }
-
-    public class SmsService : IIdentityMessageService
-    {
-        public Task SendAsync(IdentityMessage message)
-        {
-            // Plug in your SMS service here to send a text message.
-            return Task.FromResult(0);
-        }
+      public Task SendAsync(IdentityMessage identityMessage)
+      {
+        return Task.FromResult(0);
+      }
     }
 
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
@@ -53,25 +41,27 @@ namespace JoinRpg.Web
             manager.PasswordValidator = new PasswordValidator
             {
                 RequiredLength = 6,
-                RequireNonLetterOrDigit = true,
-                RequireDigit = true,
+                RequireNonLetterOrDigit = false,
+                RequireDigit = false,
                 RequireLowercase = true,
                 RequireUppercase = true,
             };
 
             // Configure user lockout defaults
-            manager.UserLockoutEnabledByDefault = true;
+            manager.UserLockoutEnabledByDefault = false;
             manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
             manager.MaxFailedAccessAttemptsBeforeLockout = 5;
 
             manager.EmailService = new EmailService();
-            manager.SmsService = new SmsService();
+
+
+
+            //manager.SmsService = new SmsService();
             var dataProtectionProvider = options.DataProtectionProvider;
-            if (dataProtectionProvider != null)
-            {
+            
                 manager.UserTokenProvider = 
                     new DataProtectorTokenProvider<User,int>(dataProtectionProvider.Create("ASP.NET Identity"));
-            }
+            
             return manager;
         }
     }
