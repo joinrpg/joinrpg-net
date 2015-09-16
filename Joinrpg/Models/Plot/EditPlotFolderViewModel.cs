@@ -22,8 +22,9 @@ namespace JoinRpg.Web.Models.Plot
         ProjectId = folder.ProjectId,
         Elements = folder.Elements.Select(e => new PlotElementListItemViewModel()
         {
-          PlotFolderElementId = e.PlotElementId,
-          For = e.Targets.Select(t => t.AsObjectLink())
+          PlotElementId = e.PlotElementId,
+          For = e.Targets.Select(t => t.AsObjectLink()),
+          Content = e.Content
         }),
         Status = GetStatus(folder)
       };
@@ -32,9 +33,12 @@ namespace JoinRpg.Web.Models.Plot
 
   public class PlotElementListItemViewModel 
   {
-    public int PlotFolderElementId { get; set; }
+    public int PlotElementId { get; set; }
     [Display(Name="Для кого")]
     public IEnumerable<GameObjectLinkViewModel> For {  get; set;}
+    [Display(Name = "Текст вводной")]
+    public MarkdownString Content
+    { get; set; }
 
   }
 }
