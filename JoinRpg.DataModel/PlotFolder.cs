@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace JoinRpg.DataModel
 {
-  public class PlotFolder : IProjectSubEntity
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global — required by LINQ
+  public class PlotFolder : IProjectSubEntity, IDeletableSubEntity
   {
     public int PlotFolderId { get; set; }
     public int ProjectId { get; set; }
@@ -27,9 +29,10 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<CharacterGroup> RelatedGroups { get; set; }
 
-    public bool IsObsolete { get; set; }
+    public bool IsActive { get; set; }
 
-    public bool Completed => !IsObsolete && string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
-    public bool InWork => !IsObsolete && !Completed;
+    public bool Completed => IsActive && string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
+    public bool InWork => IsActive && !Completed;
+    public bool CanBePermanentlyDeleted => !Elements.Any();
   }
 }

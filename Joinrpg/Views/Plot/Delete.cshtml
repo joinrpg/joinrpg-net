@@ -1,0 +1,31 @@
+﻿@model JoinRpg.Web.Models.Plot.EditPlotFolderViewModel
+
+@{
+    ViewBag.Title = "Удаление сюжета " + Model.PlotFolderMasterTitle;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>Вы действительно хотите удалить сюжет?</h3>
+<div>
+    @using (Html.BeginForm())
+    {
+    @Html.AntiForgeryToken()
+
+    <div class="form-actions no-color">
+        <input type="submit" value="Удалить" class="btn btn-default" /> |
+        @Html.ActionLink("Назад", "Index", new { Model.ProjectId })
+    </div>
+    }
+    @if (Model.Elements.Any())
+    {
+        <h4>Сюжет</h4>
+        <p>Удаленный сюжет и его вводные можно будет восстановить позже.</p>
+        <hr/>
+        @Html.Partial("Elements", Model.Elements)
+    }
+    else
+    {
+        <p>Сюжет будет удален безвозвратно.</p>
+    }
+</div>

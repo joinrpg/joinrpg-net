@@ -102,6 +102,10 @@
     <Compile Include="Migrations\201509151650160_UserPropertiesAuth.Designer.cs">
       <DependentUpon>201509151650160_UserPropertiesAuth.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509161240009_ObsoleteToActive.cs" />
+    <Compile Include="Migrations\201509161240009_ObsoleteToActive.Designer.cs">
+      <DependentUpon>201509161240009_ObsoleteToActive.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -158,6 +162,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509151650160_UserPropertiesAuth.resx">
       <DependentUpon>201509151650160_UserPropertiesAuth.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509161240009_ObsoleteToActive.resx">
+      <DependentUpon>201509161240009_ObsoleteToActive.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

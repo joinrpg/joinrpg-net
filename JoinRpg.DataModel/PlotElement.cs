@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global — required by LINQ
   public class PlotElement : IProjectSubEntity
   {
     public int PlotElementId { get; set; }
@@ -36,7 +37,7 @@ namespace JoinRpg.DataModel
 
     public bool IsCompleted { get; set; }
 
-    public bool IsObsolete { get; set; }
+    public bool IsActive { get; set; }
 
     public IEnumerable<IWorldObject> Targets => TargetCharacters.Cast<IWorldObject>().Union(TargetGroups);
   }

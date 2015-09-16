@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Plot
@@ -10,7 +12,39 @@ namespace JoinRpg.Web.Models.Plot
     public int ProjectId { get; set; }
     public string ProjectName { get; set; }
 
-    //TODO: May be better to have ViewModel here
-    public IEnumerable<PlotFolder> Folders;
+    public IEnumerable<PlotFolderListItemViewModel> Folders;
+
+    public static PlotFolderListViewModel FromProject(List<PlotFolder> folders, Project project)
+    {
+      return new PlotFolderListViewModel()
+      {
+        ProjectId = project.ProjectId,
+        ProjectName = project.ProjectName,
+        Folders =
+          folders
+            .Select(PlotFolderListItemViewModel.FromFolder)
+            .OrderBy(pf => pf.Status)
+            .ThenBy(pf => pf.PlotFolderMasterTitle)
+      };
+    }
+  }
+
+  public class PlotFolderListItemViewModel : PlotFolderViewModelBase
+  {
+    public int PlotFolderId { get; set; }
+    public int ElementsCount { get; set; }
+
+    public static PlotFolderListItemViewModel FromFolder(PlotFolder folder)
+    {
+      return new PlotFolderListItemViewModel
+      {
+        PlotFolderId = folder.PlotFolderId,
+        PlotFolderMasterTitle = folder.MasterTitle,
+        ProjectId = folder.ProjectId,
+        Status = GetStatus(folder),
+        ElementsCount = folder.Elements.Count(),
+        TodoField = folder.TodoField
+      };
+    }
   }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -18,6 +19,8 @@ namespace JoinRpg.Data.Interfaces
 
     Project GetProject(int project);
     Task<Project> GetProjectAsync(int project);
+
+    Task<List<PlotFolder>> GetPlots(int project);
 
     Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId);
     Task<Project> GetProjectWithDetailsAsync(int project);

@@ -7,7 +7,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Plot;
 
@@ -75,18 +74,8 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
-      return await WithPlotFolderAsync(projectId, plotFolderId, folder => View(new EditPlotFolderViewModel()
-      {
-        PlotFolderMasterTitle = folder.MasterTitle,
-        PlotFolderId = folder.PlotFolderId,
-        TodoField = folder.TodoField,
-        ProjectId = folder.ProjectId,
-        Elements = folder.Elements.Select(e => new PlotElementListItemViewModel()
-        {
-          PlotFolderElementId = e.PlotElementId,
-          For = e.Targets.Select(t => t.AsObjectLink())
-        })
-      }));
+      var folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return AsMaster(folder) ?? View(EditPlotFolderViewModel.FromFolder(folder));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -165,17 +154,37 @@ namespace JoinRpg.Web.Controllers
       return AsMaster(folder) ?? action(folder);
     }
 
-    //TODO: This should use special ProjectRepository method 
     private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
     {
-      return await WithProjectAsMasterAsync(projectId, project => View("Index",
-        new PlotFolderListViewModel()
-        {
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName,
-          Folders = project.PlotFolders.Where(predicate)
-        }));
+      var allFolders = (await ProjectRepository.GetPlots(projectId));
+      var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
+      var project = await GetProjectFromList(projectId, folders);
+      return AsMaster(project) ?? View("Index", PlotFolderListViewModel.FromProject(folders, project));
     }
+
     #endregion
+
+    [HttpGet]
+    public async Task<ActionResult> Delete(int projectId, int plotFolderId)
+    {
+      PlotFolder folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var error = AsMaster(folder);
+      if (error != null) return null;
+      return View(EditPlotFolderViewModel.FromFolder(folder));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> Delete(int projectId, int plotFolderId, FormCollection collection)
+    {
+      try
+      {
+        await _plotService.DeleteFolder(projectId, plotFolderId, CurrentUserId);
+        return RedirectToAction("Index", new {projectId});
+      }
+      catch (Exception)
+      {
+        return await Delete(projectId, plotFolderId);
+      }
+    }
   }
 }

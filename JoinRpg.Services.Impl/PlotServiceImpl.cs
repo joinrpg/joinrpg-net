@@ -22,7 +22,8 @@ namespace JoinRpg.Services.Impl
         ModifiedDateTime = startTimeUtc,
         ProjectId = projectId,
         MasterTitle = Required(masterTitle),
-        TodoField = todo
+        TodoField = todo,
+        IsActive = true
       });
       await UnitOfWork.SaveChangesAsync();
     }
@@ -44,7 +45,7 @@ namespace JoinRpg.Services.Impl
         TodoField = todoField,
         CreatedDateTime = now,
         ModifiedDateTime = now,
-        IsObsolete = false,
+        IsActive = true,
         IsCompleted = false,
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
@@ -53,6 +54,17 @@ namespace JoinRpg.Services.Impl
       };
 
       UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteFolder(int projectId, int plotFolderId, int currentUserId)
+    {
+      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+      SmartDelete(folder);
+      foreach (var element in folder.Elements)
+      {
+        element.IsActive = false;
+      }
       await UnitOfWork.SaveChangesAsync();
     }
 

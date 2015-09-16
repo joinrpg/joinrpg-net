@@ -1,7 +1,8 @@
-﻿@model JoinRpg.Web.Models.Plot.PlotFolderListViewModel
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotFolderListViewModel
 
 @{
-    ViewBag.Title = "Сюжеты " + Model.ProjectName;
+    ViewBag.Title = Model.ProjectName + " :: Сюжеты";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -15,30 +16,29 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => firstItem.MasterTitle)
+            @Html.DisplayNameFor(model => firstItem.PlotFolderMasterTitle)
         </th>
         <th>
-            @Html.DisplayNameFor(model => firstItem.TodoField)
+            @Html.DisplayNameFor(model => firstItem.Status)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.ModifiedDateTime)
-        </th>
+        <th>Вводные</th>
         <th></th>
     </tr>
 
 @foreach (var item in Model.Folders) {
     <tr>
         <td>
-            @Html.ActionLink(item.MasterTitle, "Edit", new { item.PlotFolderId, item.ProjectId })
+            @Html.DisplayFor(model => item)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.TodoField)
+            @Html.DisplayFor(modelItem => item.Status)
         </td>
+        <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</td>
         <td>
-            @Html.DisplayFor(modelItem => item.ModifiedDateTime)
-        </td>
-        <td>
-            @Html.ActionLink("Delete", "Delete", new { item.PlotFolderId })
+           @if (item.Status != PlotFolderStatus.Deleted)
+           {
+               @Html.ActionLink("Удалить", "Delete", new {item.PlotFolderId, item.ProjectId})
+           }
         </td>
     </tr>
 }

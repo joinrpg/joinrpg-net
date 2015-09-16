@@ -168,5 +168,10 @@ namespace JoinRpg.Web.Controllers.Common
     {
       return entity == null ? HttpNotFound() : AsMaster(entity.Project, requiredRights);
     }
+
+    protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectSubEntity> folders)
+    {
+      return folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
+    }
   }
 }
