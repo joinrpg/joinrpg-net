@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
@@ -7,7 +8,7 @@ using Microsoft.AspNet.Identity;
 namespace JoinRpg.Dal.Impl
 {
   public class MyUserStore : 
-    IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>
+    IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>, IUserLoginStore<User, int>
   {
     private readonly MyDbContext _ctx;
 
@@ -153,6 +154,28 @@ namespace JoinRpg.Dal.Impl
     public Task<User> FindByEmailAsync(string email)
     {
       return _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == email);
+    }
+
+    //External logins are not implemented yet
+
+    public Task AddLoginAsync(User user, UserLoginInfo login)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task RemoveLoginAsync(User user, UserLoginInfo login)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
+    {
+      return Task.FromResult<IList<UserLoginInfo>>(new UserLoginInfo[] {});
+    }
+
+    public Task<User> FindAsync(UserLoginInfo login)
+    {
+      throw new NotImplementedException();
     }
   }
 }
