@@ -61,7 +61,8 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - JoinRpg.Ru</p>
+            @*TODO: Customize by user's timezone*@
+            <p>&copy; @DateTime.UtcNow.Year - JoinRpg.Ru</p>
             @ViewBag.TraceMessage
         </footer>
     </div>

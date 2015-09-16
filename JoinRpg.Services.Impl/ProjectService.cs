@@ -25,7 +25,7 @@ namespace JoinRpg.Services.Impl
       var project = new Project()
       {
         Active = true,
-        CreatedDate = DateTime.Now,
+        CreatedDate = DateTime.UtcNow,
         ProjectName = Required(projectName),
         CharacterGroups = new List<CharacterGroup>()
         {

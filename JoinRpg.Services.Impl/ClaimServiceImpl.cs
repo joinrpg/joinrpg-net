@@ -28,7 +28,7 @@ namespace JoinRpg.Services.Impl
       {
         EnsureCanAddClaim<Character>(projectId, characterId.Value, currentUserId);
       }
-      var addClaimDate = DateTime.Now;
+      var addClaimDate = DateTime.UtcNow;
       var claim = new Claim()
       {
         CharacterGroupId = characterGroupId,
@@ -68,7 +68,7 @@ namespace JoinRpg.Services.Impl
     {
       var claim = LoadClaim(projectId, claimId, currentUserId);
 
-      claim.AddCommentImpl(currentUserId, parentCommentId, isVisibleToPlayer, isMyClaim, commentText, DateTime.Now);
+      claim.AddCommentImpl(currentUserId, parentCommentId, isVisibleToPlayer, isMyClaim, commentText, DateTime.UtcNow);
       UnitOfWork.SaveChanges();
     }
 
@@ -84,7 +84,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      var now = DateTime.Now;
+      var now = DateTime.UtcNow;
       claim.MasterAcceptedDate = now;
       claim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
 
@@ -113,7 +113,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      DeclineClaimByMasterImpl(currentUserId, claim, DateTime.Now, commentText);
+      DeclineClaimByMasterImpl(currentUserId, claim, DateTime.UtcNow, commentText);
 
       UnitOfWork.SaveChanges();
     }
@@ -126,7 +126,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      DateTime now = DateTime.Now;
+      DateTime now = DateTime.UtcNow;
       claim.PlayerDeclinedDate = now;
       claim.AddCommentImpl(currentUserId, null, isVisibleToPlayer: true, isMyClaim: true, commentText: commentText, now: now);
 
