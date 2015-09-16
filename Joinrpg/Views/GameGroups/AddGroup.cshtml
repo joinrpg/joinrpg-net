@@ -1,4 +1,7 @@
-﻿@model JoinRpg.Web.Models.AddCharacterGroupViewModel
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Helpers
+@using JoinRpg.Web.Models
+@model AddCharacterGroupViewModel
 
 @{
   ViewBag.Title = "Добавление группы персонажей (локации) в игру " + Model.ProjectName;
@@ -42,12 +45,28 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.Description)
-                    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(model => model.Description, "", new {@class = "text-danger"})
                 </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.Partial("HaveDirectSlotsPartial")
+                @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.DirectSlots, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.DirectSlots, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.DirectSlots, "", new { @class = "text-danger" })
             </div>
         </div>
 

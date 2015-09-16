@@ -61,14 +61,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @foreach (var value in StaticEnumHelpers.GetValues<DirectClaimSettings>())
-                {
-                    var id = TagBuilder.CreateSanitizedId(string.Format(
-                        "{0}_{1}_{2}", ViewData.TemplateInfo.HtmlFieldPrefix, Model.GetType(), value));
-                    @Html.RadioButtonFor(m => m.HaveDirectSlots, value, new {id})
-                    @Html.Label(value.ToString(), value.GetDisplayName(), new {@for = id})
-                    <br/>
-                }
+                @Html.Partial("HaveDirectSlotsPartial")
                 @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new {@class = "text-danger"})
             </div>
         </div>

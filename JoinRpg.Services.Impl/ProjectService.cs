@@ -88,8 +88,7 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public void AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
-      string description)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave)
     {
       var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
@@ -100,22 +99,24 @@ namespace JoinRpg.Services.Impl
 
       UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
       {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = false,
+        AvaiableDirectSlots = directSlotsForSave,
+        HaveDirectSlots = haveDirectSlotsForSave,
         CharacterGroupName = name,
         ParentGroups = characterGroups,
         ProjectId = projectId,
         IsRoot = false,
         IsPublic = isPublic,
         IsActive = true,
-        Description = new MarkdownString(description)
-      });
-      UnitOfWork.SaveChanges();
+        Description = new MarkdownString(description),
+    });
+      
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public void AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       bool isAcceptingClaims, string description)
     {
+      //TODO: This is last non-async usage of this.
       var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       if (string.IsNullOrWhiteSpace(name))

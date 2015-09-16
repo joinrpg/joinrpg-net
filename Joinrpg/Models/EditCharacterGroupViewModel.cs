@@ -4,11 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.Web.Models
 {
-  public class EditCharacterGroupViewModel : EditGameObjectViewModelBase
-  {
-    public int CharacterGroupId { get; set; }
-    //public string OriginalName { get; set; }
 
+  public abstract class CharacterGroupViewModelBase : EditGameObjectViewModelBase
+  {
     [DisplayName("Название локации"), Required]
     public string Name { get; set; }
 
@@ -17,6 +15,15 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Прямые заявки"),Description("Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
     public DirectClaimSettings HaveDirectSlots { get; set; }
+
+    public bool HaveDirectSlotsForSave() => HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
+
+    public int DirectSlotsForSave() => HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited ? -1 : DirectSlots;
+  }
+
+  public class EditCharacterGroupViewModel : CharacterGroupViewModelBase
+  {
+    public int CharacterGroupId { get; set; }
 
     public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.PossibleParentsForGroup(CharacterGroupId);
 
@@ -34,11 +41,8 @@ namespace JoinRpg.Web.Models
     DirectClaimsLimited
   }
 
-  public class AddCharacterGroupViewModel : EditGameObjectViewModelBase
+  public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
   {
-    [DisplayName("Название локации"), Required]
-    public string Name { get; set; }
-
     public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups;
   }
 }

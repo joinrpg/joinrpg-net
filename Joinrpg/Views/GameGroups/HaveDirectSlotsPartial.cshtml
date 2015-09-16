@@ -1,0 +1,13 @@
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Helpers
+@using JoinRpg.Web.Models
+@model CharacterGroupViewModelBase
+
+@foreach (var value in StaticEnumHelpers.GetValues<DirectClaimSettings>())
+{
+    var id = TagBuilder.CreateSanitizedId(string.Format(
+        "{0}_{1}_{2}", ViewData.TemplateInfo.HtmlFieldPrefix, Model.GetType(), value));
+    @Html.RadioButtonFor(m => m.HaveDirectSlots, value, new {id})
+    @Html.Label(value.ToString(), value.GetDisplayName(), new {@for = id})
+    <br/>
+}

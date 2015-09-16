@@ -426,6 +426,7 @@
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Account\RegisterSuccess.cshtml" />
     <Content Include="Views\Account\EmailUnconfirmed.cshtml" />
+    <Content Include="Views\GameGroups\HaveDirectSlotsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

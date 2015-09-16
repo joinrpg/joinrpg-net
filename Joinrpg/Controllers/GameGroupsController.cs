@@ -77,15 +77,9 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        var haveDirectSlots = viewModel.HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
-        var directSlots = viewModel.HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited
-          ? -1
-          : viewModel.DirectSlots;
-
-
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, haveDirectSlots, directSlots);
+          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
 
 
         return RedirectToIndex(group.Project);
@@ -155,7 +149,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectService.AddCharacterGroup( 
             viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents);
+            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
 
           return RedirectToIndex(project);
         }
