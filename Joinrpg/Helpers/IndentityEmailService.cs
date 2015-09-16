@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Helpers
           Email = "support@dev.joinrpg.ru"
         })
         .SetTextBody(identityMessage.Body)
-        
+        .SetHtmlBody(identityMessage.Body)
         .GetMessage();
       
       return messageService.SendMessageAsync(MailGunFacade.ApiDomain, message);
