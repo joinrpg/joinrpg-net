@@ -68,9 +68,18 @@ namespace JoinRpg.Dal.Impl
       {
         throw new ArgumentNullException(nameof(user));
       }
-      _ctx.UserSet.Attach(user);
+      var entry = _ctx.Entry(user);
+      //if (entry.State == )
+      //_ctx.UserSet.Attach(user);
       user.PasswordHash = passwordHash;
-      return _ctx.SaveChangesAsync();
+      if (entry.State != EntityState.Detached)
+      {
+        return _ctx.SaveChangesAsync();
+      }
+      else
+      {
+        return Task.FromResult(0); //Will save anything on CreateUser()
+      }
     }
 
     public Task<string> GetPasswordHashAsync(User user)
