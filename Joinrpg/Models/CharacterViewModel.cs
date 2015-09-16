@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
@@ -14,5 +15,8 @@ namespace JoinRpg.Web.Models
     public HtmlString Description { get; set; }
 
     public bool IsPublic { get; set; }
+
+    public User Player { get; set; }
+    public int ActiveClaimsCount { get; set; }
   }
 }

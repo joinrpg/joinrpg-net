@@ -55,9 +55,17 @@
                 {
                     <li>
                         <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new { Model.ProjectId, character.CharacterId }, null) </strong> 
-                        @if (character.IsAvailable)
+                        @if (character.Player != null)
                         {
-                            @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
+                        <span> @Html.DisplayFor(m => character.Player)</span>
+                        }
+                        else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
+                        {
+                            @DisplayCount.OfX(character.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                            if (character.IsAvailable)
+                            {
+                                @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
+                            }
                         }
                         @if (character.IsFirstCopy)
                         {<div>@character.Description</div>}
@@ -72,9 +80,13 @@
                 <div>
                     @if (item.AvaiableDirectSlots > 0)
                     {
-                        <strong>+@item.AvaiableDirectSlots вакансий</strong>
+                        <strong>+@item.AvaiableDirectSlots вакансий: </strong>
                     }
-                    @Html.ActionLink("заявиться в локацию", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
+                    else
+                    {
+                        <strong>есть вакансии: </strong>
+                    }
+                    @Html.ActionLink("заявиться", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
 
                 </div>
             }

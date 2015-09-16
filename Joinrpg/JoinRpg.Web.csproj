@@ -332,6 +332,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="App_Code\RouteHelper.cshtml" />
+    <Content Include="App_Code\DisplayCount.cshtml" />
     <None Include="Properties\PublishProfiles\joinrpg-dev.pubxml" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

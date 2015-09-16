@@ -98,7 +98,9 @@ namespace JoinRpg.Web.Models
           IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
           IsAvailable = arg.IsAvailable,
           Description =  arg.Description.ToHtmlString(),
-          IsPublic =  arg.IsPublic
+          IsPublic =  arg.IsPublic,
+          ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
+          Player = arg.ApprovedClaim?.Player
         };
         if (vm.IsFirstCopy)
         {
