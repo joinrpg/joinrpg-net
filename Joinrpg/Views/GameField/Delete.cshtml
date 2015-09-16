@@ -1,47 +1,29 @@
 ﻿@model JoinRpg.DataModel.ProjectCharacterField
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Удалить поле персонажа «" + Model.FieldName +"»";
 }
 
-<h2>Delete</h2>
+<h2>@ViewBag.Title</h2>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Вы действительно хотите удалить?</h3>
 <div>
-    <h4>ProjectCharacterField</h4>
-    <hr/>
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.FieldName)
-        </dt>
+    <h4>@Model.FieldName</h4>
+    <hr/> @if (Model.WasEverUsed)
+          {
+              <p>У некоторых персонажей это поле уже выставлено в какое-то значение. Чтобы предотвратить потерю данных, поле будет спрятано, а не удалено</p>
+          }
 
-        <dd>
-            @Html.DisplayFor(model => model.FieldName)
-        </dd>
 
-        
-        
-
-        <dt>
-        </dt>
-
-        <dd>
-            @if (Model.WasEverUsed)
-            {
-              <span>У некоторых персонажей это поле уже выставлено в какое-то значение. Чтобы предотвратить потерю данных, поле будет спрятано, а не удалено</span>  
-            }
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
+    @using (Html.BeginForm())
+    {
         @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.ProjectId)
-    @Html.HiddenFor(model => model.ProjectCharacterFieldId)
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.ProjectCharacterFieldId)
 
         <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
+            <input type="submit" value="Удалить" class="btn btn-default"/> |
+            @Html.ActionLink("Назад к списку", "Index", new {Model.ProjectId})
         </div>
     }
 </div>
