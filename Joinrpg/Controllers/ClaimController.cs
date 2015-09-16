@@ -139,25 +139,28 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public ActionResult ApproveByMaster(AddCommentViewModel viewModel)
     {
-      var claim1 = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
-      return WithMyClaim(claim1) ?? ((Func<Project, Claim, ActionResult>) ((project, claim) =>
+      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = AsMaster(claim);
+      if (error != null)
       {
-        try
-        {
-          if (viewModel.HideFromUser)
-          {
-            throw new DbEntityValidationException();
-          }
-          _claimService.AppoveByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        return error;
+      }
 
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
-        catch
+      try
+      {
+        if (viewModel.HideFromUser)
         {
-          //TODO: Message that comment is not added
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+          throw new DbEntityValidationException();
         }
-      }))(claim1.Project, claim1);
+        _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
     }
 
     [HttpPost]
@@ -165,25 +168,29 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public ActionResult DeclineByMaster(AddCommentViewModel viewModel)
     {
-      var claim1 = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
-      return WithMyClaim(claim1) ?? ((Func<Project, Claim, ActionResult>) ((project, claim) =>
+      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = AsMaster(claim);
+      if (error != null)
       {
-        try
-        {
-          if (viewModel.HideFromUser)
-          {
-            throw new DbEntityValidationException();
-          }
-          _claimService.DeclineByMaster(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        return error;
+      }
 
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
-        catch
+      try
+      {
+        if (viewModel.HideFromUser)
         {
-          //TODO: Message that comment is not added
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+          throw new DbEntityValidationException();
         }
-      }))(claim1.Project, claim1);
+        _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+
     }
 
     [HttpPost]
