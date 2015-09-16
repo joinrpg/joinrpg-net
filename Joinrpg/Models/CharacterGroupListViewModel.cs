@@ -68,7 +68,7 @@ namespace JoinRpg.Web.Models
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
-          AvaiableDirectSlots = characterGroup.AvaiableDirectSlots,
+          AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
           Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
