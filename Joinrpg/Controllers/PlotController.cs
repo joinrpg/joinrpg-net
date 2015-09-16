@@ -17,6 +17,7 @@ namespace JoinRpg.Web.Controllers
   {
 
     private readonly IPlotService _plotService;
+    private readonly IPlotRepository _plotRepository;
 
     public async Task<ActionResult> Index(int projectId)
     {
@@ -34,9 +35,10 @@ namespace JoinRpg.Web.Controllers
     }
 
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IPlotService plotService) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
     {
       _plotService = plotService;
+      _plotRepository = plotRepository;
     }
 
     [HttpGet]
@@ -74,89 +76,81 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
-      var folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       return AsMaster(folder) ?? View(EditPlotFolderViewModel.FromFolder(folder));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(EditPlotFolderViewModel viewModel)
     {
-      return await WithPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId, async folder =>
+      var folder = await _plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
+      var error = AsMaster(folder);
+      if (error != null)
       {
-        try
-        {
-          await
-            _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle,
-              viewModel.TodoField);
-          return RedirectToAction("Index", "Plot", new {folder.ProjectId});
-        }
-        catch (Exception)
-        {
-          return View(viewModel);
-        }
-      });
+        return error;
+      }
+      try
+      {
+        await
+          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+        return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
+      }
+      catch (Exception)
+      {
+        return View(viewModel);
+      }
     }
 
     [HttpGet]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
-      return await WithPlotFolderAsync(projectId, plotFolderId, folder => View(new AddPlotElementViewModel()
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return AsMaster(folder) ?? View(new AddPlotElementViewModel()
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
         Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup)
-      }));
+      });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, string content, string todoField,
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownString content, string todoField,
       FormCollection other)
     {
-      return await WithPlotFolderAsync(projectId, plotFolderId, async folder =>
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var error = AsMaster(folder);
+      if (error != null)
       {
-        try
+        return error;
+      }
+      try
+      {
+        var dict = other.ToDictionary();
+        var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
+        var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
+        await
+          _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
+        return ReturnToPlot(plotFolderId, projectId);
+      }
+      catch (Exception)
+      {
+        return View(new AddPlotElementViewModel()
         {
-          var dict = other.ToDictionary();
-          var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
-          var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
-          await
-            _plotService.AddPlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars);
-          return RedirectToAction("Index", "Plot", new {folder.ProjectId});
-        }
-        catch (Exception)
-        {
-          return View(new AddPlotElementViewModel()
-          {
-            ProjectId = projectId,
-            PlotFolderId = plotFolderId,
-            PlotFolderName = folder.MasterTitle,
-            Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup),
-            Content = new MarkdownString(content),
-            TodoField = todoField
-          });
-        }
-      });
+          ProjectId = projectId,
+          PlotFolderId = plotFolderId,
+          PlotFolderName = folder.MasterTitle,
+          Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup),
+          Content = content,
+          TodoField = todoField
+        });
+      }
     }
 
     #region private methods
 
-    private async Task<ActionResult> WithPlotFolderAsync(int projectId, int plotFolderId,
-      Func<PlotFolder, Task<ActionResult>> action)
-    {
-      PlotFolder entity = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(entity) ?? await action(entity);
-    }
-
-    private async Task<ActionResult> WithPlotFolderAsync(int projectId, int plotFolderId,
-      Func<PlotFolder, ActionResult> action)
-    {
-      PlotFolder folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(folder) ?? action(folder);
-    }
-
     private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
     {
-      var allFolders = (await ProjectRepository.GetPlots(projectId));
+      var allFolders = await _plotRepository.GetPlots(projectId);
       var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
       var project = await GetProjectFromList(projectId, folders);
       return AsMaster(project) ?? View("Index", PlotFolderListViewModel.FromProject(folders, project));
@@ -167,7 +161,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
-      PlotFolder folder = await ProjectRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      PlotFolder folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
       if (error != null) return null;
       return View(EditPlotFolderViewModel.FromFolder(folder));
@@ -184,6 +178,50 @@ namespace JoinRpg.Web.Controllers
       catch (Exception)
       {
         return await Delete(projectId, plotFolderId);
+      }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteElement(int plotelementid, int plotFolderId, int projectId)
+    {
+      try
+      {
+        await _plotService.DeleteElement(projectId, plotFolderId, plotelementid, CurrentUserId);
+        return ReturnToPlot(plotFolderId, projectId);
+      }
+      catch (Exception)
+      {
+        return await Edit(projectId, plotFolderId);
+      }
+    }
+
+    private ActionResult ReturnToPlot(int plotFolderId, int projectId)
+    {
+      return RedirectToAction("Edit", new {projectId, plotFolderId});
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownString content, string todoField,
+      bool isCompleted, FormCollection other)
+    {
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var error = AsMaster(folder);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        var dict = other.ToDictionary();
+        var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
+        var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
+        await
+          _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
+        return ReturnToPlot(plotFolderId, projectId);
+      }
+      catch (Exception)
+      {
+        return await Edit(projectId, plotFolderId);
       }
     }
   }

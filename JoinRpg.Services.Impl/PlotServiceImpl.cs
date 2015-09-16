@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
@@ -33,6 +35,7 @@ namespace JoinRpg.Services.Impl
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
       folder.MasterTitle = Required(plotFolderMasterTitle);
       folder.TodoField = todoField;
+      folder.IsActive = true; //Restore if deleted
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -60,11 +63,43 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteFolder(int projectId, int plotFolderId, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+      if (!folder.Project.HasAccess(currentUserId))
+      {
+        throw new DbEntityValidationException();
+      }
       SmartDelete(folder);
       foreach (var element in folder.Elements)
       {
         element.IsActive = false;
       }
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    {
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      SmartDelete(plotElement);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    {
+      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+      if (!folder.Project.HasAccess(currentUserId))
+      {
+        throw new DbEntityValidationException();
+      }
+      return folder.Elements.Single(e => e.PlotElementId == plotelementid);
+    }
+
+    public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars, bool isCompleted, int currentUserId)
+    {
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      plotElement.Content.Contents = contents;
+      plotElement.TodoField = todoField;
+      plotElement.TargetGroups.AssignLinksList(ValidateCharacterGroupList(projectId, targetGroups));
+      plotElement.TargetCharacters.AssignLinksList(ValidateCharactersList(projectId, targetChars));
+      plotElement.IsCompleted = isCompleted;
       await UnitOfWork.SaveChangesAsync();
     }
 

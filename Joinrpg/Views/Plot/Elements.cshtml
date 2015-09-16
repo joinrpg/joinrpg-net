@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.Plot.PlotElementListItemViewModel>
 
 @foreach (var item in Model) {
-    @Html.Partial("ElementParital", item)
+    @Html.Partial("ElementPartial", item)
+    <hr>
 }

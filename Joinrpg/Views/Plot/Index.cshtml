@@ -35,7 +35,7 @@
         </td>
         <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</td>
         <td>
-           @if (item.Status != PlotFolderStatus.Deleted)
+           @if (item.Status != PlotStatus.Deleted)
            {
                @Html.ActionLink("Удалить", "Delete", new {item.PlotFolderId, item.ProjectId})
            }

@@ -1,0 +1,84 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotElementListItemViewModel
+<h4>Вводная
+
+    </h4>
+
+<p>
+    <b>Для</b>:
+    @if (Model.For.Any())
+    {
+        foreach (var target in Model.For)
+        {
+            @Html.DisplayFor(model => target)
+        }
+    }
+    else
+    {
+        <span>Не установлено</span>
+    }
+    <br/>
+    <b>Статус</b>: <b>@Html.DisplayFor(model => model.Status)</b>
+</p>
+@if (!string.IsNullOrWhiteSpace(Model.TodoField))
+{
+    <p><b style="color: orange">TODO:</b> @Model.TodoField</p>
+}
+<div title="@Model.Content.Contents" style="max-height: 5em; overflow-y: hidden">
+    @Html.DisplayFor(model => Model.Content)
+    @if (string.IsNullOrWhiteSpace(Model.Content.Contents))
+    {
+        <i>Вводная пуста</i>
+    }
+</div>
+<details>
+    <summary>Изменить</summary>
+    @using (Html.BeginForm("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            @Html.LabelFor(model => model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Content, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.Content, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.TodoField, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.IsCompleted, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @*TODO: Disable this if TODOField!=''*@
+                @Html.EditorFor(model => model.IsCompleted, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.TodoField, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        @Html.Partial("AllWorldObjectsPartial", Model)
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default btn-success"/>
+            </div>
+        </div>
+    }
+</details>
+@if (Model.Status != PlotStatus.Deleted)
+{
+<details>
+    <summary>Удалить</summary>
+    @using (Html.BeginForm("DeleteElement", "Plot", new { Model.PlotElementId, Model.PlotFolderId, Model.ProjectId }, FormMethod.Post))
+    {
+    @Html.AntiForgeryToken()
+    <input type="submit" value="Удалить" class="btn btn-default btn-danger" />
+    }
+</details>
+
+}

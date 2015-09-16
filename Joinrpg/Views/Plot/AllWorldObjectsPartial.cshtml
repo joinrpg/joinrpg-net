@@ -1,6 +1,5 @@
 ﻿@using JoinRpg.Web.Models
-@model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
-@*TODO: Use more generic model*@
+@model JoinRpg.Web.Models.Plot.IPlotElementViewModel
 
 
 @functions {
@@ -15,10 +14,9 @@
     }
 
 }
-@helper CreateCheckBox( string prefix, string name, int elementId)
+@helper CreateCheckBox( string prefix, string name, int elementId, bool @checked)
 {
-    @Html.CheckBox(prefix + elementId)
-  @*TODO: Why razor output some hidden element here??*@
+    @Html.CheckBox(prefix + elementId, @checked)
     @Html.Label(prefix + elementId, name, null)
   <br/>
 }
@@ -26,10 +24,9 @@
 <p>Этот контрол смотрится ужасно, но он временный. Сделаем тут нормальный</p>
 @foreach (var element in Model.Data.ActiveGroups.Where(g => g.FirstCopy))
 {
-    @CreateCheckBox("group_", GetName(element), element.CharacterGroupId)
-    ;
+    @CreateCheckBox("group_", GetName(element), element.CharacterGroupId, Model.For.Any(f => f.IsGroup(element.CharacterGroupId)))
     foreach (var character in element.Characters)
     {
-        @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId)
+        @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId, Model.For.Any(f => f.IsCharacter(element.CharacterGroupId)))
     }
 }

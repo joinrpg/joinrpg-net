@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.Plot.EditPlotFolderViewModel
+﻿@using JoinRpg.Web.Models.Plot
+@model JoinRpg.Web.Models.Plot.EditPlotFolderViewModel
 
 @{
     ViewBag.Title = "Сюжет " + @Model.PlotFolderMasterTitle;
@@ -36,7 +37,8 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-default" />
+                
+                <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default"/>
             </div>
         </div>
     </div>

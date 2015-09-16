@@ -145,10 +145,10 @@ namespace JoinRpg.Services.Impl
       var characterGroup = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
       if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
       {
-        var parentGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
-        characterGroup.ParentGroups.AssignLinksList(parentGroups);
+        var characterGroupIds = Required(parentCharacterGroupIds);
+        characterGroup.ParentGroups.AssignLinksList(ValidateCharacterGroupList(projectId, characterGroupIds));
         characterGroup.Description = new MarkdownString(description);
       }
       characterGroup.AvaiableDirectSlots = directSlots;

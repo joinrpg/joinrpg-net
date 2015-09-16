@@ -57,6 +57,7 @@ namespace JoinRpg.Web
       container.RegisterType<IProjectRepository, ProjectRepository>();
       container.RegisterType<IUserRepository, UserInfoRepository>();
       container.RegisterType<IClaimsRepository, ClaimsRepositoryImpl>();
+      container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
 
       container.RegisterType<IProjectService, ProjectService>();
       container.RegisterType<IClaimService, ClaimServiceImpl>();

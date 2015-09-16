@@ -17,15 +17,10 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
     }
 
-    IEnumerable<Project> IProjectRepository.AllProjects => AllProjects;
-
     async Task<IEnumerable<Project>> IProjectRepository.GetActiveProjects() => await ActiveProjects.ToListAsync();
 
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls); 
-
-    public IEnumerable<Project> GetAllMyProjects(int userInfoId)
-      => AllProjects.Where(MyProjectPredicate(userInfoId));
 
     public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
       => ActiveProjects.Where(MyProjectPredicate(userInfoId));
@@ -42,9 +37,6 @@ namespace JoinRpg.Dal.Impl.Repositories
     public Project GetProject(int project) => AllProjects.SingleOrDefault(p => p.ProjectId == project);
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public Task<List<PlotFolder>> GetPlots(int project)
-      => Ctx.Set<PlotFolder>().Include(pf => pf.Elements).ToListAsync();
-
     public Task<Project> GetProjectWithDetailsAsync(int project)
       => AllProjects
         .Include(p => p.Details) //TODO: Include p.ProjectAcls.Users
@@ -56,16 +48,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         Ctx.Set<CharacterGroup>()
           .Include(cg => cg.Project)
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId ==characterGroupId && cg.ProjectId == projectId);
-    }
-
-    public Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
-    {
-      return
-        Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Project)
-          .Include(pf => pf.Project.ProjectAcls)
-          .Include(pf => pf.Elements)
-          .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
     }
 
     private static Expression<Func<Project, bool>> MyProjectPredicate(int? userInfoId)
