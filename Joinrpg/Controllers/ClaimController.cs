@@ -120,7 +120,7 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      if (!claim.IsApproved || claim.CharacterId == null)
+      if ((!claim.IsApproved && !claim.Project.HasAccess(CurrentUserId)) || claim.CharacterId == null)
       {
         return Edit(projectId, claimId);
       }
