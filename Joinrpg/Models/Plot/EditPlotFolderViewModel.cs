@@ -10,7 +10,7 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotFolderViewModel : PlotFolderViewModelBase
   {
     public int PlotFolderId { get; set; }
-    public IEnumerable<PlotElementListItemViewModel> Elements { get; set; }
+    public IEnumerable<EditPlotElementViewModel> Elements { get; set; }
 
     public static EditPlotFolderViewModel FromFolder(PlotFolder folder)
     {
@@ -26,9 +26,9 @@ namespace JoinRpg.Web.Models.Plot
       };
     }
 
-    private static PlotElementListItemViewModel FromElement(PlotElement e, CharacterGroupListViewModel groupsView)
+    private static EditPlotElementViewModel FromElement(PlotElement e, CharacterGroupListViewModel groupsView)
     {
-      return new PlotElementListItemViewModel()
+      return new EditPlotElementViewModel()
       {
         PlotElementId = e.PlotElementId,
         For = e.Targets.Select(t => t.AsObjectLink()),
@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Models.Plot
     }
   }
 
-  public class PlotElementListItemViewModel  : IPlotElementViewModel
+  public class EditPlotElementViewModel  : IEditablePlotElementViewModel
   {
     public int ProjectId { get; set; }
 

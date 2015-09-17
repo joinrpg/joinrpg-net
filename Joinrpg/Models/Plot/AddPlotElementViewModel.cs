@@ -4,13 +4,13 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Plot
 {
-  public interface IPlotElementViewModel
+  public interface IEditablePlotElementViewModel
   {
     CharacterGroupListViewModel Data { get; }
     IEnumerable<GameObjectLinkViewModel> For { get;  }
   }
 
-  public class AddPlotElementViewModel : IPlotElementViewModel
+  public class AddPlotElementViewModel : IEditablePlotElementViewModel
   {
     public int ProjectId { get; set; }
     public int PlotFolderId{ get; set; }

@@ -1,6 +1,6 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.Plot.PlotElementListItemViewModel>
+﻿@model IEnumerable<JoinRpg.Web.Models.Plot.EditPlotElementViewModel>
 
 @foreach (var item in Model) {
-    @Html.Partial("ElementPartial", item)
+    @Html.Partial("EditElementPartial", item)
     <hr>
 }

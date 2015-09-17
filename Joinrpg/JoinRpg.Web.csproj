@@ -432,7 +432,7 @@
     <Content Include="Views\Plot\Delete.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PlotFolderListItemViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
-    <Content Include="Views\Plot\ElementPartial.cshtml" />
+    <Content Include="Views\Plot\EditElementPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
