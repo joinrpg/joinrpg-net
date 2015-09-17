@@ -62,10 +62,10 @@
                         else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
                         {
                             @DisplayCount.OfX(character.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                            if (character.IsAvailable)
-                            {
-                                @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
-                            }
+                        }
+                        @if (character.IsAvailable)
+                        {
+                         @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, character.CharacterId }, null)
                         }
                         @if (character.IsFirstCopy)
                         {<div>@character.Description</div>}
