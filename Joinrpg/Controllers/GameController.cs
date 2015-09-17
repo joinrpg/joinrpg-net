@@ -92,5 +92,11 @@ namespace JoinRpg.Web.Controllers
         return View(viewModel);
       }
     }
+
+    protected async Task<ActionResult> WithMyClaim (int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
+    {
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      return WithMyClaim(claim) ?? actionResult(claim.Project, claim);
+    }
   }
 }

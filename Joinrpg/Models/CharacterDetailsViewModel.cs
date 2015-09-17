@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models
 {
@@ -43,6 +44,8 @@ namespace JoinRpg.Web.Models
     public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
 
     public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
+
+    public IEnumerable<PlotElementViewModel> Plot { get; set; }
 
   }
 }

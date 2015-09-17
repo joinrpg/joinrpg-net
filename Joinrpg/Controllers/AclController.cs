@@ -1,7 +1,6 @@
-﻿using System;
+﻿using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -13,9 +12,9 @@ namespace JoinRpg.Web.Controllers
   public class AclController : ControllerGameBase
   {
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult Add(AclViewModel viewModel)
+    public async Task<ActionResult> Add(AclViewModel viewModel)
     {
-      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
+      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var error = AsMaster(project1, acl => acl.CanGrantRights);
       if (error != null) return error;
 

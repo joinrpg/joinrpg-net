@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -27,17 +26,17 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     [Authorize]
     // GET: GameFields
-    public ActionResult Index(int projectId)
+    public async Task<ActionResult> Index(int projectId)
     {
-      var project1 = ProjectRepository.GetProject(projectId);
-      return AsMaster(project1, pa => pa.CanChangeFields) ?? ((Func<Project, ActionResult>) (project => View(project)))(project1);
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1, pa => pa.CanChangeFields) ?? View(project1);
     }
 
     // GET: GameFields/Create
-    public ActionResult Create(int projectId)
+    public async Task<ActionResult> Create(int projectId)
     {
-      var project1 = ProjectRepository.GetProject(projectId);
-      return AsMaster(project1, pa => pa.CanChangeFields) ?? ((Func<Project, ActionResult>) (project => View(new ProjectCharacterField() {ProjectId = projectId})))(project1);
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1, pa => pa.CanChangeFields) ?? View(new ProjectCharacterField() {ProjectId = projectId});
     }
 
     // POST: GameFields/Create
@@ -132,6 +131,14 @@ namespace JoinRpg.Web.Controllers
       });
 
 
+    }
+
+    private ActionResult WithGameFieldAsMaster(int projectId, int fieldId,
+      Func<Project, ProjectCharacterField, ActionResult> action)
+    {
+      var project1 = ProjectRepository.GetProject(projectId);
+      var field = project1.AllProjectFields.SingleOrDefault(e => e.ProjectCharacterFieldId == fieldId);
+      return AsMaster(field,pa => pa.CanChangeFields) ?? action(project1, field);
     }
   }
 }

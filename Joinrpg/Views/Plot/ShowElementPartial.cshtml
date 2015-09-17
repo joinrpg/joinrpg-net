@@ -1,0 +1,23 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotElementViewModel
+
+ @if (Model.Status == PlotStatus.Deleted)
+ {
+     return;
+ }
+@if (Model.Status == PlotStatus.InWork)
+{
+    ViewBag.HasUnfinishedPlot = true;
+    return;
+}
+ 
+@*TODO: show "For" field for masters *@<div style="max-height: 10em; overflow-y: scroll">
+    @Html.DisplayFor(model => Model.Content)
+</div>
+
+@if (Model.HasMasterAccess)
+{
+    <div>
+        @Html.ActionLink("Изменить", "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)
+    </div>
+}

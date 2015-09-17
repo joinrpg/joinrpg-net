@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Models.Plot
     [ReadOnly(true), Display(Name = "Статус")]
     public PlotStatus Status { get; set; }
 
-    protected static PlotStatus GetStatus(PlotElement e)
+    public static PlotStatus GetStatus(PlotElement e)
     {
       return !e.IsActive ? PlotStatus.Deleted : (e.IsCompleted ? PlotStatus.Completed : PlotStatus.InWork);
     }

@@ -307,6 +307,7 @@
     <Compile Include="Models\Plot\AddPlotElementViewModel.cs" />
     <Compile Include="Models\Plot\AddPlotFolderViewModel.cs" />
     <Compile Include="Models\Plot\EditPlotFolderViewModel.cs" />
+    <Compile Include="Models\Plot\PlotElementViewModel.cs" />
     <Compile Include="Models\Plot\PlotFolderListViewModel.cs" />
     <Compile Include="Models\Plot\PlotFolderViewModelBase.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
@@ -433,6 +434,7 @@
     <Content Include="Views\Shared\DisplayTemplates\PlotFolderListItemViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
     <Content Include="Views\Plot\EditElementPartial.cshtml" />
+    <Content Include="Views\Plot\ShowElementPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

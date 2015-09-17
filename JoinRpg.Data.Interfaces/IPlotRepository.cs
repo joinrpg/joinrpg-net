@@ -11,5 +11,6 @@ namespace JoinRpg.Data.Interfaces
     Task<List<PlotFolder>> GetPlots(int project);
 
     Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId);
+    Task<IList<PlotElement>> GetPlotsForCharacter(Character character);
   }
 }

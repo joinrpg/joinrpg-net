@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Web;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models
 {
@@ -20,17 +20,22 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; set; }
     public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
+
     [DisplayName("Заявка на персонажа")]
-    public string CharacterName { get; set; } 
+    public string CharacterName { get; set; }
+
     public int? CharacterId { get; set; }
+
     [DisplayName("Заявка в локацию")]
     public string GroupName { get; set; }
+
     public int? CharacterGroupId { get; set; }
     public int OtherClaimsForThisCharacterCount { get; set; }
-    public int OtherClaimsFromThisPlayerCount
-    { get; set; }
+    public int OtherClaimsFromThisPlayerCount { get; set; }
 
     [Display(Name = "Описание персонажа")]
     public MarkdownString Description { get; set; }
+
+    public IEnumerable<PlotElementViewModel> Plot { get; set; }
   }
 }

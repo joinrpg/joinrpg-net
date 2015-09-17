@@ -10,31 +10,35 @@ using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
 {
   public class ClaimController : ControllerGameBase
   {
     private readonly IClaimService _claimService;
+    private readonly IPlotRepository _plotRepository;
 
     [HttpGet]
     [Authorize]
-    public ActionResult AddForCharacter(int projectid, int characterid)
+    public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
-      var field = ProjectRepository.GetCharacter(projectid, characterid);
+      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
       return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     [HttpGet]
     [Authorize]
-    public ActionResult AddForGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
-      return WithGroup(projectid, characterGroupId, (project, group) => View("Add", AddClaimViewModel.Create(group, GetCurrentUser())));
+      var field = await ProjectRepository.LoadGroupAsync(projectid, characterGroupId);
+      return WithProject(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
-    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService) : base(userManager, projectRepository, projectService)
+    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
     {
       _claimService = claimService;
+      _plotRepository = plotRepository;
     }
 
     [HttpPost]
@@ -78,9 +82,9 @@ namespace JoinRpg.Web.Controllers
     public ActionResult Discussing(int projectid) => MasterList(projectid, claim => claim.IsInDiscussion);
 
     [HttpGet, Authorize]
-    public ActionResult Edit(int projectId, int claimId)
+    public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-      var claim = ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -88,7 +92,7 @@ namespace JoinRpg.Web.Controllers
       }
       var hasMasterAccess = claim.Project.HasAccess(CurrentUserId);
       var isMyClaim = claim.PlayerUserId == CurrentUserId;
-      return View(new ClaimViewModel()
+      var claimViewModel = new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
         ClaimName = claim.Name,
@@ -107,15 +111,22 @@ namespace JoinRpg.Web.Controllers
         CharacterName = claim.Character?.CharacterName,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
-        Description = claim.Character?.Description
-      });
+        Description = claim.Character?.Description,
+      };
 
+      if ((hasMasterAccess || isMyClaim) && claim.IsApproved)
+      {
+        claimViewModel.Plot =
+          (await _plotRepository.GetPlotsForCharacter(claim.Character)).Select(
+            p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
+      }
+      return View(claimViewModel);
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownString description, FormCollection formCollection)
     {
-      var claim = ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -123,7 +134,7 @@ namespace JoinRpg.Web.Controllers
       }
       if ((!claim.IsApproved && !claim.Project.HasAccess(CurrentUserId)) || claim.CharacterId == null)
       {
-        return Edit(projectId, claimId);
+        return await Edit(projectId, claimId);
       }
       try
       {
@@ -133,14 +144,14 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return Edit(projectId, claimId);
+        return await Edit(projectId, claimId);
       }
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public ActionResult ApproveByMaster(AddCommentViewModel viewModel)
+    public async Task<ActionResult> ApproveByMaster(AddCommentViewModel viewModel)
     {
-      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -167,9 +178,9 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult DeclineByMaster(AddCommentViewModel viewModel)
+    public async Task<ActionResult> DeclineByMaster(AddCommentViewModel viewModel)
     {
-      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -197,9 +208,9 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult DeclineByPlayer(AddCommentViewModel viewModel)
+    public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
     {
-      return WithMyClaim(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      return await WithMyClaim(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
       {
         try
         {
@@ -217,6 +228,12 @@ namespace JoinRpg.Web.Controllers
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
       });
+    }
+
+    private async Task<ActionResult> WithMyClaim (int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
+    {
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      return WithMyClaim(claim) ?? actionResult(claim.Project, claim);
     }
   }
 }

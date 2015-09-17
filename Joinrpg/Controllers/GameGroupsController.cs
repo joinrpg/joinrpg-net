@@ -14,26 +14,22 @@ namespace JoinRpg.Web.Controllers
   public class GameGroupsController : ControllerGameBase
   {
     // GET: GameGroups
-    public ActionResult Index(int projectId, int? characterGroupId)
+    public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
-      return WithProject(projectId, (project, acl) =>
+      if (characterGroupId == null)
       {
-        if (characterGroupId == null)
+        return await RedirectToProject(projectId);
+      }
+      
+      var field = await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+      return WithEntity(field) ?? View(
+        new GameRolesViewModel
         {
-          return RedirectToIndex(project);
-        }
-        
-        return WithGroup(projectId, (int)characterGroupId,
-          (project1, @group) => View(
-            new GameRolesViewModel
-            {
-              ProjectId = project.ProjectId,
-              ProjectName = project.ProjectName,
-              ShowEditControls = acl!=null,
-              Data = CharacterGroupListViewModel.FromGroup(group)
-            }));
-
-      });
+          ProjectId = field.Project.ProjectId,
+          ProjectName = field.Project.ProjectName,
+          ShowEditControls = field.Project.GetProjectAcl(CurrentUserIdOrDefault) != null,
+          Data = CharacterGroupListViewModel.FromGroup(field)
+        });
     }
 
     // GET: GameGroups/Edit/5
@@ -159,5 +155,13 @@ namespace JoinRpg.Web.Controllers
         }
       }))(project1);
     }
+
+    private ActionResult WithGroupAsMaster(int projectId, int? groupId, Func<Project, CharacterGroup, ActionResult> action)
+    {
+      var field = groupId == null ? null : ProjectRepository.GetCharacterGroup(projectId, (int)groupId);
+
+      return AsMaster(field, pa => pa.CanChangeFields) ?? action(field.Project, field);
+    }
+
   }
 }

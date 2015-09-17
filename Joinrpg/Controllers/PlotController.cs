@@ -224,5 +224,12 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectId, plotFolderId);
       }
     }
+
+
+    private async Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
+    {
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1) ?? action(project1);
+    }
   }
 }

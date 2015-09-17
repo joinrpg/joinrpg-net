@@ -9,28 +9,32 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
 {
   public class CharacterController : Common.ControllerGameBase
   {
-    // GET: Character
+    private readonly IPlotRepository _plotRepository;
+
     public CharacterController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
     {
+      _plotRepository = plotRepository;
     }
 
     [HttpGet]
-    public ActionResult Details(int projectid, int characterid)
+    public async Task<ActionResult> Details(int projectid, int characterid)
     {
-      var field = ProjectRepository.GetCharacter(projectid, characterid);
-      return WithEntity(field) ?? ShowCharacter(field.Project, field);
+      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      return WithEntity(field) ?? await ShowCharacter(field.Project, field);
     }
 
-    private ActionResult ShowCharacter(Project project, Character character)
+    private async Task<ActionResult> ShowCharacter(Project project, Character character)
     {
       var hasMasterAccess = project.HasAccess(CurrentUserIdOrDefault);
       var approvedClaimUser = character.ApprovedClaim?.Player;
+      var hasAnyAccess = hasMasterAccess || (User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId);
       var viewModel = new CharacterDetailsViewModel
       {
         CharacterName = character.CharacterName,
@@ -44,9 +48,13 @@ namespace JoinRpg.Web.Controllers
         ProjectName = project.ProjectName,
         ProjectId = project.ProjectId,
         CharacterId = character.CharacterId,
-        HasPlayerAccessToCharacter = hasMasterAccess || approvedClaimUser?.UserId == CurrentUserIdOrDefault,
-        HasMasterAccess = hasMasterAccess
+        HasPlayerAccessToCharacter = hasAnyAccess,
+        HasMasterAccess = hasMasterAccess,
       };
+      if (hasAnyAccess)
+      {
+        viewModel.Plot = (await _plotRepository.GetPlotsForCharacter(character)).Select(p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
+      }
       return View(viewModel);
     }
 
@@ -62,21 +70,22 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return Details(projectId, characterId);
+        return await Details(projectId, characterId);
       }
     }
 
     [HttpGet]
     [Authorize]
-    public ActionResult Create(int projectid, int charactergroupid)
+    public async Task<ActionResult> Create(int projectid, int charactergroupid)
     {
-      return WithGroupAsMaster(projectid, charactergroupid,
-        (project, @group) => View(new AddCharacterViewModel()
-        {
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
-          ProjectId = projectid,
-          ParentCharacterGroupIds = new List<int> { charactergroupid }
-        }));
+      var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
+
+      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new AddCharacterViewModel()
+      {
+        Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup),
+        ProjectId = projectid,
+        ParentCharacterGroupIds = new List<int> {charactergroupid}
+      });
     }
 
     [HttpPost]

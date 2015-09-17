@@ -59,21 +59,33 @@ namespace JoinRpg.Dal.Impl.Repositories
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
     }
 
-    //TODO: Change to async
-    //TODO: Eager load
+
+    public Task<Character> GetCharacterAsync(int projectId, int characterId)
+    {
+      return
+        Ctx.Set<Character>()
+          .Include(c => c.Project)
+          .Include(c => c.Project.ProjectFields)
+          .Include(c => c.Claims)
+          //TODO .Include (c => c.Clalims.User)
+          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
+    }
+
     public CharacterGroup GetCharacterGroup(int projectId, int groupId)
     {
       return GetProject(projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
     }
 
-    public Character GetCharacter(int projectId, int characterId)
+    public Task<Claim> GetClaim(int projectId, int claimId)
     {
-      return GetProject(projectId).Characters.SingleOrDefault(e => e.CharacterId == characterId);
-    }
-
-    public Claim GetClaim(int projectId, int claimId)
-    {
-      return GetProject(projectId).Claims.SingleOrDefault(e => e.ClaimId == claimId);
+      return
+        Ctx.ClaimSet
+          .Include(c => c.Project)
+          .Include(c => c.Project.ProjectAcls)
+          .Include(c => c.Character)
+          .Include(c => c.Player)
+          .Include(c => c.Player.Claims)
+          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
   }
 

@@ -1,4 +1,5 @@
 ﻿using System.Data.Entity.Validation;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -20,9 +21,9 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
    [ValidateAntiForgeryToken]
-    public ActionResult Create(AddCommentViewModel viewModel)
+    public async Task<ActionResult> Create(AddCommentViewModel viewModel)
     {
-      var claim = ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
 
       var error = WithClaim(claim);
       if (error != null) return error;
