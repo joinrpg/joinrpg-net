@@ -40,9 +40,9 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
 
-    public IEnumerable<Claim> DiscussedClaims { get; set; }
+    public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
 
-    public IEnumerable<Claim> RejectedClaims { get; set; }
+    public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
 
   }
 }

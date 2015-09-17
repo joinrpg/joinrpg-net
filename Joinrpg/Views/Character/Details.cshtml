@@ -32,9 +32,12 @@
 }
 @if (Model.RejectedClaims.Any())
 {
-<h4>Отклоненные заявки</h4>
-    ViewBag.HideProjectColumn = true;
-@Html.Partial(@"~/Views/Claim/Index.cshtml", Model.RejectedClaims)
+    <details>
+        <summary><h4>Отклоненные заявки</h4></summary>
+        @{ ViewBag.HideProjectColumn = true; }
+        @Html.Partial(@"~/Views/Claim/Index.cshtml", Model.RejectedClaims)        
+    </details>
+
 }
 <p>
     
