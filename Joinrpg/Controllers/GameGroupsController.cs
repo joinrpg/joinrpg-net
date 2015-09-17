@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
+          viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
 
 
         return RedirectToIndex(group.Project);
