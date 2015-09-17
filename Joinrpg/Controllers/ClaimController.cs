@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, Authorize]
-    public ActionResult My() => View(GetCurrentUser().Claims);
+    public ActionResult My() => View(GetCurrentUser().Claims.Select(ClaimListItemViewModel.FromClaim));
 
     [HttpGet, Authorize]
     public ActionResult ForPlayer(int projectId, int userId)
@@ -69,8 +69,9 @@ namespace JoinRpg.Web.Controllers
 
     private ActionResult MasterList(int projectId, Func<Claim, bool> predicate)
     {
-      var project1 = ProjectRepository.GetProject(projectId);
-      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project => View(project.Claims.Where(predicate))))(project1);
+      //TODO: Eager load claims
+      var project = ProjectRepository.GetProject(projectId);
+      return AsMaster(project) ?? View(project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
     }
 
     [HttpGet, Authorize]

@@ -1,34 +1,34 @@
-﻿@model IEnumerable<JoinRpg.DataModel.Claim>
+﻿@model IEnumerable<JoinRpg.Web.Models.ClaimListItemViewModel>
 
 <h2>@ViewBag.Title</h2>
 
 @* TODO: Решить, не добавить ли сюда каких-нибудь быстрых действий в таблицу*@
 <table class="table">
     <tr>
-        <th>
+        <th>    
             @Html.DisplayNameFor(model => model.Name)
         </th>
         @if (ViewBag.HideUserColumn != true) //We can't do !ViewBag.HideUserColumn, cause it can be null
         {
             <th>
-                @Html.DisplayNameFor(model => model.Player.UserName)
+                @Html.DisplayNameFor(model => model.Player)
             </th>
         }
         @if (ViewBag.HideProjectColumn != true)
         {
             <th>
-                @Html.DisplayNameFor(model => model.Project.ProjectName)
+                @Html.DisplayNameFor(model => model.ProjectName)
             </th>
         }
         <th>
             @Html.DisplayNameFor(model => model.ClaimStatus)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.StatusChangedDate)
+            @Html.DisplayNameFor(model => model.UpdateDate)
         </th>
     </tr>
 
-@foreach (var item in Model)
+@foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
 {
     <tr>
         <td>
@@ -43,14 +43,14 @@
         @if (ViewBag.HideProjectColumn != true)
         {
             <td>
-                @Html.DisplayFor(modelItem => item.Project.ProjectName)
+                @Html.DisplayFor(modelItem => item.ProjectName)
             </td>
         }
         <th>
             @Html.DisplayFor(modelItem => item.ClaimStatus)
         </th>
         <th>
-            @Html.DisplayFor(modelItem => item.StatusChangedDate)
+            @Html.DisplayFor(modelItem => item.UpdateDate)
         </th>
     </tr>
 }
