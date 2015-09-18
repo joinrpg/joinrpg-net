@@ -24,6 +24,10 @@ namespace JoinRpg.Dal.Impl
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
 
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
+    public IProjectRepository GetProjectRepository()
+    {
+      return new ProjectRepository(this);
+    }
 
     public static MyDbContext Create()
     {

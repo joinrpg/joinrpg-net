@@ -90,7 +90,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave)
     {
-      var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       if (string.IsNullOrWhiteSpace(name))
       {
@@ -113,21 +113,16 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public void AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
+    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       bool isAcceptingClaims, string description)
     {
       //TODO: This is last non-async usage of this.
-      var characterGroups = ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
-
-      if (string.IsNullOrWhiteSpace(name))
-      {
-        throw new DbEntityValidationException();
-      }
+      var characterGroups = await  ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       UnitOfWork.GetDbSet<Character>().Add(
         new Character
         {
-          CharacterName = name,
+          CharacterName = Required(name),
           Groups = characterGroups,
           ProjectId = projectId,
           IsPublic = isPublic,
@@ -135,7 +130,7 @@ namespace JoinRpg.Services.Impl
           IsAcceptingClaims = isAcceptingClaims,
           Description = new MarkdownString(description)
         });
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
@@ -148,7 +143,7 @@ namespace JoinRpg.Services.Impl
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
         var characterGroupIds = Required(parentCharacterGroupIds);
-        characterGroup.ParentGroups.AssignLinksList(ValidateCharacterGroupList(projectId, characterGroupIds));
+        characterGroup.ParentGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, characterGroupIds));
         characterGroup.Description = new MarkdownString(description);
       }
       characterGroup.AvaiableDirectSlots = directSlots;

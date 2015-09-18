@@ -11,5 +11,6 @@ namespace JoinRpg.Dal.Impl
     Task SaveChangesAsync();
 
     IUserRepository GetUsersRepository();
+    IProjectRepository GetProjectRepository();
   }
 }

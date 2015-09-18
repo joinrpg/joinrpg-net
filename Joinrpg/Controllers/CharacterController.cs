@@ -91,25 +91,27 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult Create(AddCharacterViewModel viewModel)
+    public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
     {
-      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
-      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project =>
+      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project1);
+      if (error != null)
       {
-        try
-        {
-          ProjectService.AddCharacter(
-            viewModel.ProjectId,
-            viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-            viewModel.Description.Contents);
+        return error;
+      }
+      try
+      {
+        await ProjectService.AddCharacter(
+          viewModel.ProjectId,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
+          viewModel.Description.Contents);
 
-          return RedirectToIndex(project);
-        }
-        catch
-        {
-          return View(viewModel);
-        }
-      }))(project1);
+        return RedirectToIndex(project1);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
     }
   }
 }

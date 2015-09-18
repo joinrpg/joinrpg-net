@@ -11,7 +11,6 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Services.Impl
 {
   //TODO: Split on specific and not specific to domain helpers
-  //TODO: We should be able to use Repositories here
   public class DbServiceImplBase
   {
     protected readonly IUnitOfWork UnitOfWork;
@@ -19,10 +18,15 @@ namespace JoinRpg.Services.Impl
 
     private readonly Lazy<IUserRepository> _userRepository;
 
+    protected IProjectRepository ProjectRepository => _projectRepository.Value;
+
+    private readonly Lazy<IProjectRepository> _projectRepository;
+
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
       UnitOfWork = unitOfWork;
       _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
+      _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
     }
 
     [NotNull]
@@ -80,14 +84,11 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    protected List<CharacterGroup> ValidateCharacterGroupList(int projectId, ICollection<int> parentCharacterGroupIds)
+    protected async Task<IList<CharacterGroup>> ValidateCharacterGroupList(int projectId, ICollection<int> groupIds)
     {
-      var characterGroups =
-        UnitOfWork.GetDbSet<CharacterGroup>().Where(cg => cg.ProjectId == projectId)
-          .Where(cg => parentCharacterGroupIds.Contains(cg.CharacterGroupId))
-          .ToList();
+      var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
 
-      if (characterGroups.Count != parentCharacterGroupIds.Distinct().Count())
+      if (characterGroups.Count != groupIds.Distinct().Count())
       {
         throw new DbEntityValidationException();
       }
@@ -95,12 +96,10 @@ namespace JoinRpg.Services.Impl
     }
 
     //TODO: Merge this with prev. (we can't do it directly, cause LINQ can't filter by ((IProjectSubEntity)char).Id <- this is not a "simple" property
-    protected List<Character> ValidateCharactersList(int projectId, ICollection<int> characterIds)
+    protected async Task<IList<Character>> ValidateCharactersList(int projectId, ICollection<int> characterIds)
     {
       var characters =
-        UnitOfWork.GetDbSet<Character>().Where(cg => cg.ProjectId == projectId)
-          .Where(cg => characterIds.Contains(cg.CharacterId))
-          .ToList();
+        await ProjectRepository.LoadCharacters(projectId, characterIds);
 
       if (characters.Count != characterIds.Distinct().Count())
       {

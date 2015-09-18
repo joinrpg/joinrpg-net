@@ -87,6 +87,16 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Player.Claims)
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
+
+    public async Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds)
+    {
+      return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
+    }
+
+    public async Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds)
+    {
+      return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId&& groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
+    }
   }
 
 }

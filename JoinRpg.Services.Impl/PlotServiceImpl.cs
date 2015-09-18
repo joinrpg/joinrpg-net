@@ -52,8 +52,8 @@ namespace JoinRpg.Services.Impl
         IsCompleted = false,
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        TargetGroups = ValidateCharacterGroupList(projectId, targetGroups),
-        TargetCharacters = ValidateCharactersList(projectId, targetChars)
+        TargetGroups = await ValidateCharacterGroupList(projectId, targetGroups),
+        TargetCharacters = await ValidateCharactersList(projectId, targetChars)
       };
 
       UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
@@ -97,8 +97,8 @@ namespace JoinRpg.Services.Impl
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
       plotElement.Content.Contents = contents;
       plotElement.TodoField = todoField;
-      plotElement.TargetGroups.AssignLinksList(ValidateCharacterGroupList(projectId, targetGroups));
-      plotElement.TargetCharacters.AssignLinksList(ValidateCharactersList(projectId, targetChars));
+      plotElement.TargetGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, targetGroups));
+      plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;
       await UnitOfWork.SaveChangesAsync();
     }
