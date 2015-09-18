@@ -437,6 +437,7 @@
     <Content Include="Views\Plot\ShowElementPartial.cshtml" />
     <Content Include="Views\Manage\SetupProfile.cshtml" />
     <Content Include="Views\ResetPasswordMail.cshtml" />
+    <Content Include="Views\Acl\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

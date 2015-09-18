@@ -1,0 +1,56 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.AclViewModel>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Master)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanApproveClaims)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanChangeFields)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanChangeProjectProperties)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanGrantRights)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Master)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanApproveClaims)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanChangeFields)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanChangeProjectProperties)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanGrantRights)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+        </td>
+    </tr>
+}
+
+</table>

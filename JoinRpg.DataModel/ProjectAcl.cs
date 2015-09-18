@@ -20,6 +20,8 @@
 
     public bool CanGrantRights { get; set; }
 
+    public bool CanApproveClaims { get; set; }
+
     public static ProjectAcl CreateRootAcl(int userId)
     {
       return new ProjectAcl
@@ -28,7 +30,8 @@
         CanChangeProjectProperties = true,
         UserId = userId,
         IsOwner = true,
-        CanGrantRights =  true
+        CanGrantRights =  true,
+        CanApproveClaims = true
       };
     }
   }
