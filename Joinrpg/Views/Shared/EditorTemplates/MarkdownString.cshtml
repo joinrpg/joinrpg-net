@@ -1,6 +1,19 @@
 ﻿@model JoinRpg.DataModel.MarkdownString
+@{
+  var requiredMsg = "";
+  foreach (var attr in @Html.GetUnobtrusiveValidationAttributes(@ViewData.TemplateInfo.HtmlFieldPrefix, @ViewData.ModelMetadata))
+  {
+      if (attr.Key == "data-val-required")
+      {
+          requiredMsg = attr.Value.ToString();
+      }
+  }
+}
 <div>
     Можно использовать MarkDown (**<b>полужирный</b>**, _<i>курсив</i>_) <br/>
-    @Html.TextAreaFor(model => model.Contents, 4, 100, null)
-
+    <textarea cols="100" id="@(ViewData.TemplateInfo.HtmlFieldPrefix)_Contents" name="@(ViewData.TemplateInfo.HtmlFieldPrefix).Contents" data-val-required="@requiredMsg" data-val="true" rows="4">@(Model == null ? "" : Model.Contents)</textarea>
 </div>
+@if (!string.IsNullOrWhiteSpace(requiredMsg))
+{
+@Html.ValidationMessageFor(model => Model.Contents, "", new { @class = "text-danger" })
+}
