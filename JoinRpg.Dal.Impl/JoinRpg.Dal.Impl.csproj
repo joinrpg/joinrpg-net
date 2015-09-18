@@ -106,6 +106,10 @@
     <Compile Include="Migrations\201509161240009_ObsoleteToActive.Designer.cs">
       <DependentUpon>201509161240009_ObsoleteToActive.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509181553147_AllrpgUserProfiles.cs" />
+    <Compile Include="Migrations\201509181553147_AllrpgUserProfiles.Designer.cs">
+      <DependentUpon>201509181553147_AllrpgUserProfiles.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -170,6 +174,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509161240009_ObsoleteToActive.resx">
       <DependentUpon>201509161240009_ObsoleteToActive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509181553147_AllrpgUserProfiles.resx">
+      <DependentUpon>201509181553147_AllrpgUserProfiles.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticCollectionHelpers.cs" />
+    <Compile Include="UnixTime.cs" />
     <Compile Include="StaticEnumHelpers.cs" />
     <Compile Include="StaticStringHelpers.cs" />
     <Compile Include="StaticTaskHelpers.cs" />

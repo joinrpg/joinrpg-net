@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using JoinRpg.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -20,24 +22,68 @@ namespace JoinRpg.DataModel
 
     public string PasswordHash { get; set; }
 
-    public string PhoneNumber { get; set; }
-
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
     public virtual ICollection<Claim> Claims { get; set; }
 
-    public string DisplayName => string.IsNullOrWhiteSpace(FullName) ? Email : FullName; //Should create creative display name
+    public string DisplayName
+      => new string[] {PrefferedName, FullName, Email}.SkipWhile(string.IsNullOrWhiteSpace).FirstOrDefault();
+
+    //Should create creative display name
 
     public string FullName => new[] {BornName, FatherName, SurName}.JoinIfNotNullOrWhitespace(" ");
 
+    public string PrefferedName { get; set; }
+
     public virtual UserAuthDetails Auth { get; set; }
+
+    public virtual AllrpgUserDetails Allrpg { get; set; }
+    public virtual UserExtra Extra { get; set; }
   }
+
+  public enum Gender : byte
+  {
+    Unknown = 0,
+    Male = 1,
+    Female = 2
+  }
+
+  public class UserExtra
+  {
+    public int UserId { get; set; }
+    public byte GenderByte { get; set; }
+
+    public Gender Gender
+    {
+      get { return (Gender) GenderByte; }
+      set { GenderByte = (byte) value; }
+    }
+
+    public string PhoneNumber { get; set; }
+    public string Skype { get; set; }
+
+    public string Nicknames { get; set; }
+
+    public string GroupNames { get; set; }
+
+    public DateTime? BirthDate { get; set; }
+  }
+
+
 
   public class UserAuthDetails
   {
     public int UserId { get; set; }
-    public int? LegacyAllRpgInp { get; set; }
 
     public bool EmailConfirmed { get; set; }
+
+    public DateTime RegisterDate { get; set; }
+  }
+
+  public class AllrpgUserDetails
+  {
+    public int UserId { get; set; }
+    public int? Sid { get; set; }
+    public string JsonProfile { get; set; }
   }
 }

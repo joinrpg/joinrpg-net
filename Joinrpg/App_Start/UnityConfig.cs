@@ -8,6 +8,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Allrpg;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
@@ -63,6 +64,7 @@ namespace JoinRpg.Web
       container.RegisterType<IClaimService, ClaimServiceImpl>();
       container.RegisterType<ISearchService, SearchServiceImpl>();
       container.RegisterType<IPlotService, PlotServiceImpl>();
+      container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

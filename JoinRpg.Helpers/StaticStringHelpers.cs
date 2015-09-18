@@ -24,5 +24,15 @@ namespace JoinRpg.Helpers
     {
       return enumerable.SelectWherePrefix(prefix).Select(int.Parse);
     }
+
+    public static string AsString(this IEnumerable<string> enumerable)
+    {
+      return string.Join("", enumerable);
+    }
+
+    public static string AsString(this IEnumerable<char> enumerable)
+    {
+      return string.Join("", enumerable);
+    }
   }
 }

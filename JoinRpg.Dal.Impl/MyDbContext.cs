@@ -59,6 +59,12 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
       modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
 
+      modelBuilder.Entity<User>().HasRequired(u => u.Allrpg).WithRequiredPrincipal();
+      modelBuilder.Entity<AllrpgUserDetails>().HasKey(a => a.UserId);
+
+      modelBuilder.Entity<User>().HasRequired(u => u.Extra).WithRequiredPrincipal();
+      modelBuilder.Entity<UserExtra>().HasKey(a => a.UserId);
+
       base.OnModelCreating(modelBuilder);
     }
  }

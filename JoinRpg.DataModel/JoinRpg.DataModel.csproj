@@ -43,6 +43,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="UserInfo\AllrpgUserDetails.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
