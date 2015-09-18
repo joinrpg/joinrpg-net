@@ -10,5 +10,7 @@ namespace JoinRpg.Data.Interfaces
    public interface IUserRepository
    {
      User GetById(int id);
+
+     Task<User> WithProfile(int userId);
    }
 }

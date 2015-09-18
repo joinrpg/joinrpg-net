@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
+﻿using System.Data.Entity;
 using System.Threading.Tasks;
+using JoinRpg.Data.Interfaces;
 
 namespace JoinRpg.Dal.Impl
 {
@@ -12,5 +9,7 @@ namespace JoinRpg.Dal.Impl
     DbSet<T> GetDbSet<T>() where T : class;
     void SaveChanges();
     Task SaveChangesAsync();
+
+    IUserRepository GetUsersRepository();
   }
 }

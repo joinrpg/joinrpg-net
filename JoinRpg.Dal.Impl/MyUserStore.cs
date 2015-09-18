@@ -59,7 +59,7 @@ namespace JoinRpg.Dal.Impl
 
     public async Task<User> FindByNameAsync(string userName)
     {
-      return await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserName == userName);
+      return await _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == userName);
     }
 
     public Task SetPasswordHashAsync(User user, string passwordHash)

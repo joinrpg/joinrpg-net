@@ -23,7 +23,7 @@ namespace JoinRpg.Web
   {
     #region Unity Container
 
-    private static Lazy<IUnityContainer> container = new Lazy<IUnityContainer>(() =>
+    private static readonly Lazy<IUnityContainer> container = new Lazy<IUnityContainer>(() =>
     {
       var container = new UnityContainer();
       RegisterTypes(container);
@@ -65,6 +65,7 @@ namespace JoinRpg.Web
       container.RegisterType<ISearchService, SearchServiceImpl>();
       container.RegisterType<IPlotService, PlotServiceImpl>();
       container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
+      container.RegisterType<IUserService, UserServiceImpl>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

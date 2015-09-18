@@ -1,7 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using JoinRpg.Data.Interfaces;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -13,11 +16,15 @@ namespace JoinRpg.Web.Controllers
   public class ManageController : Common.ControllerBase
   {
     private readonly ApplicationSignInManager _signInManager;
+    private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
-    public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+    public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUserRepository userRepository, IUserService userService)
       : base(userManager)
     {
       _signInManager = signInManager;
+      _userRepository = userRepository;
+      _userService = userService;
     }
 
     private ApplicationSignInManager SignInManager
@@ -188,7 +195,42 @@ namespace JoinRpg.Web.Controllers
         : RedirectToAction("ManageLogins", new {Message = ManageMessageId.Error});
     }
 
+    [HttpGet]
+    public async Task<ActionResult> SetupProfile()
+    {
+      var user = await _userRepository.WithProfile(CurrentUserId);
+      return View(new EditUserProfileViewModel()
+      {
+        SurName = user.SurName,
+        UserId = user.UserId,
+        FatherName = user.FatherName,
+        BornName = user.BornName,
+        PrefferedName = user.DisplayName,
+        Gender = user.Extra.Gender,
+        //BirthDate = user.Extra.BirthDate,
+        PhoneNumber = user.Extra.PhoneNumber,
+        Nicknames = user.Extra.Nicknames,
+        GroupNames = user.Extra.GroupNames,
+        Skype = user.Extra.Skype
+      });
+    }
 
+    [HttpPost]
+    public async Task<ActionResult> SetupProfile(EditUserProfileViewModel viewModel)
+    {
+      try
+      {
+        await
+          _userService.UpdateProfile(CurrentUserId, viewModel.UserId, viewModel.SurName, viewModel.FatherName,
+            viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
+            viewModel.GroupNames, viewModel.Skype);
+        return RedirectToAction("SetupProfile");
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+    }
 
     #region Helpers
 

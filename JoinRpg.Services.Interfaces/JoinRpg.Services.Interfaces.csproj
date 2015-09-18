@@ -52,6 +52,7 @@
     <Compile Include="IClaimService.cs" />
     <Compile Include="IPlotService.cs" />
     <Compile Include="IProjectService.cs" />
+    <Compile Include="IUserService.cs" />
     <Compile Include="Search\ISearchService.cs" />
     <Compile Include="Search\ISearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

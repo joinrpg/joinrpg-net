@@ -1,5 +1,8 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Data.Entity;
 using System.Threading.Tasks;
+using JoinRpg.Dal.Impl.Repositories;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl
@@ -19,6 +22,8 @@ namespace JoinRpg.Dal.Impl
 
     void IUnitOfWork.SaveChanges() => SaveChanges();
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
+
+    public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
 
     public static MyDbContext Create()
     {

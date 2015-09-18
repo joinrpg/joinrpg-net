@@ -70,11 +70,16 @@
     <Compile Include="Search\SearchServiceImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\UserSearchProvider.cs" />
+    <Compile Include="UserServiceImpl.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj">
       <Project>{2FDC4A55-3A3D-445B-9916-2F3ED898168B}</Project>
       <Name>JoinRpg.Dal.Impl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj">
+      <Project>{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}</Project>
+      <Name>JoinRpg.Data.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>

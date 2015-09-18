@@ -1,15 +1,17 @@
 ﻿@model JoinRpg.Web.Models.IndexViewModel
 @{
-    ViewBag.Title = "Профиль";
+    ViewBag.Title = "Мой аккаунт";
 }
 
 <h2>@ViewBag.Title.</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
-    <h4>Настройки профиля</h4>
+    <h4>Настройки аккаунта</h4>
     <hr />
     <dl class="dl-horizontal">
+        <dt>Профиль:</dt>
+        <dd>[ @Html.ActionLink("Настроить", "SetupProfile") ]</dd>
         <dt>Пароль:</dt>
         <dd>
             [

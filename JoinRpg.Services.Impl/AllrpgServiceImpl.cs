@@ -10,7 +10,6 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Allrpg;
 using Newtonsoft.Json;
-using System.Data.Entity;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Impl
@@ -21,12 +20,7 @@ namespace JoinRpg.Services.Impl
     public async Task<DownloadResult> DownloadAllrpgProfile(int userId, string allrpgKey)
     {
       var user =
-        await
-          UnitOfWork.GetDbSet<User>()
-            .Include(u => u.Auth)
-            .Include(u => u.Allrpg)
-            .Include(u => u.Extra)
-             .SingleOrDefaultAsync(u => u.UserId == userId);
+        await UserRepository.WithProfile(userId);
 
       if (user.Allrpg?.Sid != null)
       {

@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Impl
@@ -13,10 +15,14 @@ namespace JoinRpg.Services.Impl
   public class DbServiceImplBase
   {
     protected readonly IUnitOfWork UnitOfWork;
+    protected IUserRepository UserRepository => _userRepository.Value;
+
+    private readonly Lazy<IUserRepository> _userRepository;
 
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
       UnitOfWork = unitOfWork;
+      _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
     }
 
     [NotNull]
