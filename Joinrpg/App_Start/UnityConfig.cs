@@ -5,10 +5,12 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
+using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
@@ -66,6 +68,9 @@ namespace JoinRpg.Web
       container.RegisterType<IPlotService, PlotServiceImpl>();
       container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
       container.RegisterType<IUserService, UserServiceImpl>();
+
+      container.RegisterType<IEmailService>(
+        new InjectionFactory(o => new EmailServiceImpl(MailGunFacade.ApiDomain, MailGunFacade.ApiKey)));
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

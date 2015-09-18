@@ -436,6 +436,7 @@
     <Content Include="Views\Plot\EditElementPartial.cshtml" />
     <Content Include="Views\Plot\ShowElementPartial.cshtml" />
     <Content Include="Views\Manage\SetupProfile.cshtml" />
+    <Content Include="Views\ResetPasswordMail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -464,6 +465,10 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
       <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj">
+      <Project>{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}</Project>
+      <Name>JoinRpg.Services.Email</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj">
       <Project>{835EB33A-F3D1-49C7-9C85-1F5F2387A052}</Project>

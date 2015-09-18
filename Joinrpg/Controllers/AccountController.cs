@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
@@ -19,13 +20,15 @@ namespace JoinRpg.Web.Controllers
     private ApplicationUserManager _userManager;
 
     private readonly IAllrpgService _allrpgService;
+    private readonly IEmailService _emailService;
 
     public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager,
-      IAllrpgService allrpgService)
+      IAllrpgService allrpgService, IEmailService emailService)
     {
       _userManager = userManager;
       _signInManager = signInManager;
       _allrpgService = allrpgService;
+      _emailService = emailService;
     }
 
     private ApplicationSignInManager SignInManager
