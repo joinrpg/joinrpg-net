@@ -206,12 +206,12 @@ namespace JoinRpg.Web.Controllers
         FatherName = user.FatherName,
         BornName = user.BornName,
         PrefferedName = user.DisplayName,
-        Gender = user.Extra.Gender,
+        //Gender = user.Extra.Gender,
         //BirthDate = user.Extra.BirthDate,
-        PhoneNumber = user.Extra.PhoneNumber,
-        Nicknames = user.Extra.Nicknames,
-        GroupNames = user.Extra.GroupNames,
-        Skype = user.Extra.Skype
+        PhoneNumber = user.Extra?.PhoneNumber,
+        Nicknames = user.Extra?.Nicknames,
+        GroupNames = user.Extra?.GroupNames,
+        Skype = user.Extra?.Skype
       });
     }
 
