@@ -312,6 +312,7 @@
     <Compile Include="Models\Plot\PlotFolderViewModelBase.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
+    <Compile Include="Models\SubscribeSettingsViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
     <Compile Include="Models\UserProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -440,6 +441,7 @@
     <Content Include="Views\Acl\Index.cshtml" />
     <Content Include="Views\Acl\Delete.cshtml" />
     <Content Include="Views\Acl\Edit.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\SubscribeSettingsViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

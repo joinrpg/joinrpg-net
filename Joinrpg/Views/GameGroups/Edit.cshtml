@@ -73,6 +73,8 @@
                 @Html.ValidationMessageFor(model => model.DirectSlots, "", new {@class = "text-danger"})
             </div>
         </div>
+
+        @Html.EditorFor(model => model.Subscribe)
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Сохранить" class="btn btn-default"/>

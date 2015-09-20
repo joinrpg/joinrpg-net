@@ -73,6 +73,10 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<User>().HasRequired(u => u.Extra).WithRequiredPrincipal();
       modelBuilder.Entity<UserExtra>().HasKey(a => a.UserId);
+      
+      modelBuilder.Entity<User>().HasMany(u => u.Subscriptions).WithRequired(s => s.User).WillCascadeOnDelete(true);
+      modelBuilder.Entity<UserSubscription>().HasRequired(us => us.Project).WithMany().WillCascadeOnDelete(false);
+
 
       base.OnModelCreating(modelBuilder);
     }

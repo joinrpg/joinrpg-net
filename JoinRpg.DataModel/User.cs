@@ -37,6 +37,8 @@ namespace JoinRpg.DataModel
 
     public virtual AllrpgUserDetails Allrpg { get; set; }
     public virtual UserExtra Extra { get; set; }
+
+    public virtual ICollection<UserSubscription> Subscriptions{ get; set; }
   }
 
   public enum Gender : byte

@@ -105,5 +105,10 @@ namespace JoinRpg.DataModel
     {
       return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
     }
+
+    public static IWorldObject GetTarget(this Claim claim)
+    {
+      return (IWorldObject) claim.Character ?? claim.Group;
+    }
   }
 }

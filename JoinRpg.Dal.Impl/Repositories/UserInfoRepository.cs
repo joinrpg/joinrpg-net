@@ -25,5 +25,10 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(u => u.Extra)
         .SingleOrDefaultAsync(u => u.UserId == userId);
     }
+
+    public Task<User> GetWithSubscribe(int currentUserId)
+    {
+      return _ctx.UserSet.Include(u => u.Subscriptions).SingleOrDefaultAsync(u => u.UserId == currentUserId);
+    }
   }
 }

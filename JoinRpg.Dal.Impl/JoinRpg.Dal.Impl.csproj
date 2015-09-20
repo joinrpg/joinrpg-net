@@ -114,6 +114,10 @@
     <Compile Include="Migrations\201509182112442_CanApproveClaims.Designer.cs">
       <DependentUpon>201509182112442_CanApproveClaims.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509201326080_Subscription.cs" />
+    <Compile Include="Migrations\201509201326080_Subscription.Designer.cs">
+      <DependentUpon>201509201326080_Subscription.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -184,6 +188,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509182112442_CanApproveClaims.resx">
       <DependentUpon>201509182112442_CanApproveClaims.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509201326080_Subscription.resx">
+      <DependentUpon>201509201326080_Subscription.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -13,6 +14,8 @@ namespace JoinRpg.Web.Controllers
 {
   public class GameGroupsController : ControllerGameBase
   {
+    private readonly IUserRepository _userRepository;
+
     // GET: GameGroups
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
@@ -34,22 +37,32 @@ namespace JoinRpg.Web.Controllers
 
     // GET: GameGroups/Edit/5
     [HttpGet, Authorize]
-    public ActionResult Edit(int projectId, int characterGroupId)
+    public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
-      return WithGroupAsMaster(projectId, characterGroupId,
-        (project, @group) => View(new EditCharacterGroupViewModel
-        {
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
-          ProjectId = project.ProjectId,
-          ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
-          Description = @group.Description,
-          IsPublic = @group.IsPublic,
-          Name = @group.CharacterGroupName,
-          HaveDirectSlots = GetDirectClaimSettings(group),
-          DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
-          CharacterGroupId = group.CharacterGroupId,
-          IsRoot = group.IsRoot
-        }));
+      var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      
+      var user = await _userRepository.GetWithSubscribe(CurrentUserId);
+
+      var error = AsMaster(group, pa => pa.CanChangeFields);
+      if (error != null)
+      {
+        return error;
+      }
+
+      return View(new EditCharacterGroupViewModel
+      {
+        Data = CharacterGroupListViewModel.FromGroupAsMaster(group.Project.RootGroup),
+        ProjectId = group.Project.ProjectId,
+        ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
+        Description = @group.Description,
+        IsPublic = @group.IsPublic,
+        Name = @group.CharacterGroupName,
+        HaveDirectSlots = GetDirectClaimSettings(@group),
+        DirectSlots = Math.Max(@group.AvaiableDirectSlots, 0),
+        CharacterGroupId = @group.CharacterGroupId,
+        IsRoot = @group.IsRoot,
+        Subscribe = new SubscribeSettingsViewModel(user, group)
+      });
     }
 
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
@@ -115,9 +128,10 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService)
+    public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IUserRepository userRepository)
       : base(userManager, projectRepository, projectService)
     {
+      _userRepository = userRepository;
     }
 
     [HttpGet]

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -12,5 +8,6 @@ namespace JoinRpg.Data.Interfaces
      User GetById(int id);
 
      Task<User> WithProfile(int userId);
+     Task<User> GetWithSubscribe(int currentUserId);
    }
 }
