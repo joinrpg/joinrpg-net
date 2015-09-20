@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -12,48 +13,95 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class AclController : ControllerGameBase
   {
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
-      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project1, acl => acl.CanGrantRights);
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project, a => a.CanGrantRights);
       if (error != null) return error;
 
       var user = UserManager.FindById(viewModel.UserId);
       try
       {
-        ProjectService.GrantAccess(viewModel.ProjectId, viewModel.UserId, viewModel.CanGrantRights,
-          viewModel.CanChangeFields, viewModel.CanChangeProjectProperties);
+        await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
+          viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanApproveClaims);
       }
       catch
       {
         return RedirectToAction("Details", "User", new {user.Id});
       }
-      return RedirectToAction("Details", "Game", new {viewModel.ProjectId});
+      return RedirectToAction("Index", "Acl", new {viewModel.ProjectId});
     }
 
     public AclController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager, projectRepository, projectService)
     {
     }
 
+    [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
-      var project1 = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      var error = AsMaster(project1, acl => acl.CanGrantRights);
+      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+      return AsMaster(project, acl => acl.CanGrantRights) ?? View(project.ProjectAcls.Select(AclViewModel.FromAcl));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> Delete(int projectid, int projectaclid)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      return AsMaster(project, acl => acl.CanGrantRights) ??
+             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid)));
+
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> Delete(AclViewModel viewModel)
+    {
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project, acl => acl.CanGrantRights);
       if (error != null)
         return error;
 
-      return View(project1.ProjectAcls.Select(acl => new AclViewModel()
+      try
       {
-        ProjectId = acl.ProjectId,
-        ProjectAclId = acl.ProjectAclId,
-        UserId = acl.UserId,
-        CanApproveClaims = acl.CanApproveClaims,
-        CanChangeFields = acl.CanChangeFields,
-        CanChangeProjectProperties = acl.CanChangeProjectProperties,
-        CanGrantRights = acl.CanGrantRights,
-        Master = acl.User
-      }));
+        await ProjectService.RemoveAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+      return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+
+    }
+
+
+    [HttpGet]
+    public async Task<ActionResult> Edit(int projectid, int? projectaclid)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      return AsMaster(project, acl => acl.CanGrantRights) ??
+             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid)));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> Edit(AclViewModel viewModel)
+    {
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project, acl => acl.CanGrantRights);
+      if (error != null)
+        return error;
+
+      try
+      {
+        await
+          ProjectService.ChangeAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
+            viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanApproveClaims);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+      return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
+
     }
   }
 }

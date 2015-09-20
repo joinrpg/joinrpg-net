@@ -44,40 +44,40 @@
                 @{ var acl = new AclViewModel();}
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+                    @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanApproveClaims" })
                     <div class="col-md-10">
                         <div class="checkbox">
-                            @Html.EditorFor(model => acl.CanGrantRights)
-                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new {@class = "text-danger"})
+                            @Html.EditorFor(model => acl.CanApproveClaims, null, htmlFieldName: "CanApproveClaims")
+                            @Html.ValidationMessageFor(model => acl.CanApproveClaims, "", new {@class = "text-danger"})
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2", @for= "CanChangeFields" })
                     <div class="col-md-10">
                         <div class="checkbox">
-                            @Html.EditorFor(model => acl.CanChangeFields)
+                            @Html.EditorFor(model => acl.CanChangeFields, null, htmlFieldName: "CanChangeFields")
                             @Html.ValidationMessageFor(model => acl.CanChangeFields, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanChangeProjectProperties, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.LabelFor(model => acl.CanChangeProjectProperties, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanChangeProjectProperties" })
                     <div class="col-md-10">
                         <div class="checkbox">
-                            @Html.EditorFor(model => acl.CanChangeProjectProperties)
+                            @Html.EditorFor(model => acl.CanChangeProjectProperties, null, htmlFieldName: "CanChangeProjectProperties")
                             @Html.ValidationMessageFor(model => acl.CanChangeProjectProperties, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
                     <div class="col-md-10">
                         <div class="checkbox">
-                            @Html.EditorFor(model => acl.CanGrantRights)
+                            @Html.EditorFor(model => acl.CanGrantRights, null, htmlFieldName: "CanGrantRights")
                             @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new { @class = "text-danger" })
                         </div>
                     </div>

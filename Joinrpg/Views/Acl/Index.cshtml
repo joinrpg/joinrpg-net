@@ -1,13 +1,18 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.AclViewModel>
+﻿@using JoinRpg.Web.Models
+@using Microsoft.AspNet.Identity
+@model IEnumerable<JoinRpg.Web.Models.AclViewModel>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Мастера " + Model.First().ProjectName;
+    var countOfCanGrantRights = Model.Count(acl => acl.CanGrantRights);
 }
 
-<h2>Index</h2>
+<h2>@ViewBag.Title</h2>
 
 <p>
-    @Html.ActionLink("Create New", "Create")
+    Чтобы добавить мастера в проект, найдите его поиском по email, нику или ФИО.
+    <br/>
+    @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
 </p>
 <table class="table">
     <tr>
@@ -47,8 +52,15 @@
             @Html.DisplayFor(modelItem => item.CanGrantRights)
         </td>
         <td>
-            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+            @Html.ActionLink("Изменить", "Edit", new { item.ProjectId, item.ProjectAclId})
+            @if (item.UserId.ToString() == User.Identity.GetUserId() && countOfCanGrantRights == 1)
+            {
+
+            }
+            else
+            {
+                <text> <nobr> @Html.ActionLink("Снять доступ", "Delete", new {item.ProjectId, item.ProjectAclId}) </nobr> </text>
+            }
         </td>
     </tr>
 }

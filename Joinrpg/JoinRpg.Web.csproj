@@ -438,6 +438,8 @@
     <Content Include="Views\Manage\SetupProfile.cshtml" />
     <Content Include="Views\ResetPasswordMail.cshtml" />
     <Content Include="Views\Acl\Index.cshtml" />
+    <Content Include="Views\Acl\Delete.cshtml" />
+    <Content Include="Views\Acl\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -176,9 +176,13 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public void GrantAccess(int projectId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties)
+    public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims)
     {
-      var project = UnitOfWork.GetDbSet<Project>().Find(projectId);
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
+      {
+        throw new Exception();
+      }
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
       if (acl == null)
       {
@@ -188,7 +192,37 @@ namespace JoinRpg.Services.Impl
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
       acl.CanChangeProjectProperties = canChangeProjectProperties;
-      UnitOfWork.SaveChanges();
+      acl.CanApproveClaims = canApproveClaims;
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+
+    public async Task RemoveAccess(int projectId, int currentUserId, int userId)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
+      {
+        throw new Exception();
+      }
+      var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
+      UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
+      bool canChangeProjectProperties, bool canApproveClaims)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
+      {
+        throw new Exception();
+      }
+      var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
+      acl.CanGrantRights = canGrantRights;
+      acl.CanChangeFields = canChangeFields;
+      acl.CanChangeProjectProperties = canChangeProjectProperties;
+      acl.CanApproveClaims = canApproveClaims;
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
