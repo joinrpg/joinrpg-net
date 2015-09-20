@@ -34,5 +34,10 @@ namespace JoinRpg.Helpers
     {
       return string.Join("", enumerable);
     }
+
+    public static string ToHexString(this IEnumerable<byte> bytes)
+    {
+      return bytes.Select(b => $"{b:x2}").AsString();
+    }
   }
 }

@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Impl
       try
       {
         var bytes = Encoding.ASCII.GetBytes(user.Email + allrpgKey);
-        var key = SHA1.Create().ComputeHash(bytes).Select(b => $"{b:x2}").AsString();
+        var key = SHA1.Create().ComputeHash(bytes).ToHexString();
 
         resultString = await new WebClient().DownloadStringTaskAsync(
           new Uri(
