@@ -86,7 +86,7 @@
             </dd>
         }
     </dl>
-    @if (Model.HasMasterAccess)
+    @if (Model.HasApproveRejectClaim)
     {
         if (Model.Status == Claim.Status.AddedByUser)
         {

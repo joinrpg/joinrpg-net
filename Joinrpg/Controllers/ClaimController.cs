@@ -100,6 +100,7 @@ namespace JoinRpg.Web.Controllers
         HasMasterAccess = hasMasterAccess,
         HasPlayerAccessToCharacter = hasMasterAccess || (isMyClaim && claim.IsApproved),
         CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] {},
+        HasApproveRejectClaim = claim.Project.HasSpecificAccess(CurrentUserId, acl => acl.CanApproveClaims),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,

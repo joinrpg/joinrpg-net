@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
 
     public void AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = LoadClaimAsMaster(projectId, claimId, currentUserId);
+      var claim = LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       if (claim.MasterAcceptedDate != null)
       {
         throw new DbEntityValidationException();
@@ -107,7 +107,7 @@ namespace JoinRpg.Services.Impl
 
     public void DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = LoadClaimAsMaster(projectId, claimId, currentUserId);
+      var claim = LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       if (claim.MasterDeclinedDate != null)
       {
         throw new DbEntityValidationException();
@@ -139,10 +139,10 @@ namespace JoinRpg.Services.Impl
       otherClaim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
     }
 
-    private Claim LoadClaimAsMaster(int projectId, int claimId, int currentUserId)
+    private Claim LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = LoadClaim(projectId, claimId, currentUserId);
-      if (!claim.Project.HasAccess(currentUserId))
+      if (!claim.Project.HasSpecificAccess(currentUserId, acl => acl.CanApproveClaims))
       {
         throw new DbEntityValidationException();
       }

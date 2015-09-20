@@ -16,8 +16,11 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
+
     public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
+    public bool HasApproveRejectClaim { get; set; }
+
     public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
 
