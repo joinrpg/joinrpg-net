@@ -29,8 +29,6 @@ namespace JoinRpg.DataModel
     public string DisplayName
       => new string[] {PrefferedName, FullName, Email}.SkipWhile(string.IsNullOrWhiteSpace).FirstOrDefault();
 
-    //Should create creative display name
-
     public string FullName => new[] {BornName, FatherName, SurName}.JoinIfNotNullOrWhitespace(" ");
 
     public string PrefferedName { get; set; }
