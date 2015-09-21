@@ -9,7 +9,7 @@
         @Html.LabelFor(model => model.ClaimStatusChange, htmlAttributes: new {@class = "control-label col-md-2"})
         <div class="col-md-10">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.ClaimStatusChange, new {@enabled = Model.ClaimStatusChangeEnabled})
+                @Html.CheckBoxFor(model => model.ClaimStatusChange, new {@disabled = !Model.ClaimStatusChangeEnabled})
                 @Html.ValidationMessageFor(model => model.ClaimStatusChange, "", new {@class = "text-danger"})
             </div>
         </div>
@@ -20,7 +20,7 @@
         @Html.LabelFor(model => model.Comments, htmlAttributes: new {@class = "control-label col-md-2"})
         <div class="col-md-10">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.Comments, new {@enabled = Model.CommentsEnabled})
+                @Html.CheckBoxFor(model => model.Comments, new {@disabled = !Model.CommentsEnabled})
                 @Html.ValidationMessageFor(model => model.Comments, "", new {@class = "text-danger"})
             </div>
         </div>
@@ -31,7 +31,7 @@
         @Html.LabelFor(model => model.FieldChange, htmlAttributes: new {@class = "control-label col-md-2"})
         <div class="col-md-10">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.FieldChange, new {@enabled = Model.FieldChangeEnabled})
+                @Html.CheckBoxFor(model => model.FieldChange, new {@disabled = !Model.FieldChangeEnabled})
                 @Html.ValidationMessageFor(model => model.FieldChange, "", new {@class = "text-danger"})
             </div>
         </div>
