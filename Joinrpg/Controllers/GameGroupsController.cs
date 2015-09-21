@@ -15,6 +15,7 @@ namespace JoinRpg.Web.Controllers
   public class GameGroupsController : ControllerGameBase
   {
     private readonly IUserRepository _userRepository;
+    private readonly IUserService _userService;
 
     // GET: GameGroups
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
@@ -89,6 +90,11 @@ namespace JoinRpg.Web.Controllers
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
+
+        await
+          ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
+            viewModel.Subscribe.ClaimStatusChangeValue, viewModel.Subscribe.CommentsValue,
+            viewModel.Subscribe.FieldChangeValue);
 
 
         return RedirectToIndex(group.Project);

@@ -225,6 +225,42 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue)
+    {
+      var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      if (!group.Project.HasAccess(currentUserId))
+      {
+        throw new Exception();
+      }
+      var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue;
+      var user = await UserRepository.GetWithSubscribe(currentUserId);
+      var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == characterGroupId);
+      if (needSubscrive)
+      {
+        if (direct == null)
+        {
+          direct = new UserSubscription()
+          {
+            UserId = currentUserId,
+            CharacterGroupId = characterGroupId,
+            ProjectId = projectId
+          };
+          user.Subscriptions.Add(direct);
+        }
+        direct.ClaimStatusChange = claimStatusChangeValue;
+        direct.Comments = commentsValue;
+        direct.FieldChange = fieldChangeValue;
+      }
+      else
+      {
+        if (direct != null)
+        {
+          UnitOfWork.GetDbSet<UserSubscription>().Remove(direct);
+        }
+      }
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
     {
       //TODO: Prevent lazy load here - use repository 

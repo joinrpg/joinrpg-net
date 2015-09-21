@@ -102,19 +102,20 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Подписка на новые заявки/прием/отклонение")]
     public bool ClaimStatusChange { get; set; }
 
-    [ReadOnly(true)]
     public bool ClaimStatusChangeEnabled { get; set; }
 
     [Display(Name = "Подписка на комментарии")]
     public bool Comments { get; set; }
 
-    [ReadOnly(true)]
     public bool CommentsEnabled { get; set; }
 
     [Display(Name = "Подписка на изменение полей персонажа")]
     public bool FieldChange { get; set; }
 
-    [ReadOnly(true)]
     public bool FieldChangeEnabled { get; set; }
+
+    public bool ClaimStatusChangeValue => ClaimStatusChangeEnabled && ClaimStatusChange;
+    public bool CommentsValue => CommentsEnabled && Comments;
+    public bool FieldChangeValue => FieldChangeEnabled && FieldChange;
   }
 }

@@ -13,6 +13,7 @@
                 @Html.ValidationMessageFor(model => model.ClaimStatusChange, "", new {@class = "text-danger"})
             </div>
         </div>
+        @Html.HiddenFor(model => model.ClaimStatusChangeEnabled)
     </div>
 
     <div class="form-group">
@@ -23,15 +24,17 @@
                 @Html.ValidationMessageFor(model => model.Comments, "", new {@class = "text-danger"})
             </div>
         </div>
+        @Html.HiddenFor(model => model.CommentsEnabled)
     </div>
 
     <div class="form-group">
         @Html.LabelFor(model => model.FieldChange, htmlAttributes: new {@class = "control-label col-md-2"})
         <div class="col-md-10">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.FieldChange, new { @enabled = Model.FieldChangeEnabled })
+                @Html.CheckBoxFor(model => model.FieldChange, new {@enabled = Model.FieldChangeEnabled})
                 @Html.ValidationMessageFor(model => model.FieldChange, "", new {@class = "text-danger"})
             </div>
         </div>
     </div>
+    @Html.HiddenFor(model => model.FieldChangeEnabled)
 </div>
