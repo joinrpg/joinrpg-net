@@ -15,8 +15,8 @@ namespace JoinRpg.Web.Controllers
   public class GameGroupsController : ControllerGameBase
   {
     private readonly IUserRepository _userRepository;
-    private readonly IUserService _userService;
 
+    [HttpGet]
     // GET: GameGroups
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
@@ -34,6 +34,51 @@ namespace JoinRpg.Web.Controllers
           ShowEditControls = field.Project.GetProjectAcl(CurrentUserIdOrDefault) != null,
           Data = CharacterGroupListViewModel.FromGroup(field)
         });
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
+    {
+      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      if (field == null)
+      {
+        return HttpNotFound();
+      }
+
+      return Json(
+        new
+        {
+          field.Project.ProjectId,
+          field.Project.ProjectName,
+          ShowEditControls = field.Project.GetProjectAcl(CurrentUserIdOrDefault) != null,
+          Groups =
+            CharacterGroupListViewModel.FromGroup(field)
+              .PublicGroups.Select(
+                g =>
+                  new
+                  {
+                    g.CharacterGroupId,
+                    g.Name,
+                    g.DeepLevel,
+                    g.FirstCopy,
+                    g.Description,
+                    Path = g.Path.Select(gr => gr.Name),
+                    Characters =
+                      g.PublicCharacters.Select(
+                        ch =>
+                          new
+                          {
+                            p = ch.CharacterId,
+                            ch.IsAvailable,
+                            ch.IsFirstCopy,
+                            ch.CharacterName,
+                            ch.Description,
+                            PlayerName = ch.Player?.DisplayName,
+                            PlayerId = ch.Player?.Id
+                          }),
+                    CanAddDirectClaim = g.AvaiableDirectSlots != 0
+                  }),
+        }, JsonRequestBehavior.AllowGet);
     }
 
     // GET: GameGroups/Edit/5
