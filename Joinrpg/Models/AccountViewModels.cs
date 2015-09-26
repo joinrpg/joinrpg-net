@@ -127,7 +127,7 @@ namespace JoinRpg.Web.Models
     public string SurName { get; set; }
 
     [Display(Name = "Как называть", Description = "Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника).")]
-    [Required]
+    [Required(ErrorMessage = "Укажите, как вас называть")]
     public string PrefferedName { get; set; }
 
     [Display(Name="Пол")]
