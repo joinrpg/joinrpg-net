@@ -437,7 +437,6 @@
     <Content Include="Views\Plot\EditElementPartial.cshtml" />
     <Content Include="Views\Plot\ShowElementPartial.cshtml" />
     <Content Include="Views\Manage\SetupProfile.cshtml" />
-    <Content Include="Views\ResetPasswordMail.cshtml" />
     <Content Include="Views\Acl\Index.cshtml" />
     <Content Include="Views\Acl\Delete.cshtml" />
     <Content Include="Views\Acl\Edit.cshtml" />
