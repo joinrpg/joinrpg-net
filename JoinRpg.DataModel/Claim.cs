@@ -33,6 +33,9 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<Comment> Comments { get; set; }
 
+    public virtual User ResponsibleMasterUser { get; set; }
+    public int? ResponsibleMasterUserId { get; set; }
+
     public bool IsActive => MasterDeclinedDate == null && PlayerDeclinedDate == null;
     public bool IsInDiscussion => IsActive && !IsApproved;
     public bool IsApproved => IsActive && PlayerAcceptedDate != null && MasterAcceptedDate != null;

@@ -88,27 +88,30 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.SaveChanges();
     }
 
-    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
       var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var project = await ProjectRepository.GetProjectAsync(projectId);
 
-      if (string.IsNullOrWhiteSpace(name))
+      if (responsibleMasterId != null &&
+          project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
       {
-        throw new DbEntityValidationException();
+        throw new Exception("No such master");
       }
 
       UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
       {
         AvaiableDirectSlots = directSlotsForSave,
         HaveDirectSlots = haveDirectSlotsForSave,
-        CharacterGroupName = name,
+        CharacterGroupName = Required(name),
         ParentGroups = characterGroups,
         ProjectId = projectId,
         IsRoot = false,
         IsPublic = isPublic,
         IsActive = true,
         Description = new MarkdownString(description),
-    });
+        ResponsibleMasterUserId = responsibleMasterId,
+      });
       
       await UnitOfWork.SaveChangesAsync();
     }
@@ -116,7 +119,6 @@ namespace JoinRpg.Services.Impl
     public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       bool isAcceptingClaims, string description)
     {
-      //TODO: This is last non-async usage of this.
       var characterGroups = await  ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       UnitOfWork.GetDbSet<Character>().Add(
@@ -134,8 +136,8 @@ namespace JoinRpg.Services.Impl
     }
 
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
-      List<int> parentCharacterGroupIds,
-      string description, bool haveDirectSlots, int directSlots)
+      List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
+      int? responsibleMasterId)
     {
       var characterGroup = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
       if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
@@ -146,6 +148,12 @@ namespace JoinRpg.Services.Impl
         characterGroup.ParentGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, characterGroupIds));
         characterGroup.Description = new MarkdownString(description);
       }
+      if (responsibleMasterId != null &&
+          characterGroup.Project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
+      {
+        throw new Exception("No such master");
+      }
+      characterGroup.ResponsibleMasterUserId = responsibleMasterId;
       characterGroup.AvaiableDirectSlots = directSlots;
       characterGroup.HaveDirectSlots = haveDirectSlots;
       await UnitOfWork.SaveChangesAsync();

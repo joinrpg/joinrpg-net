@@ -47,6 +47,10 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<Claim> Claims { get; set; }
 
+    public virtual User ResponsibleMasterUser { get; set; }
+
+    public int? ResponsibleMasterUserId { get; set; }
+
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }

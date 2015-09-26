@@ -62,8 +62,28 @@ namespace JoinRpg.Web.Controllers
         DirectSlots = Math.Max(@group.AvaiableDirectSlots, 0),
         CharacterGroupId = @group.CharacterGroupId,
         IsRoot = @group.IsRoot,
-        Subscribe = new SubscribeSettingsViewModel(user, group)
+        Subscribe = new SubscribeSettingsViewModel(user, group),
+        ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
+        Masters = GetMasters(@group, false)
       });
+    }
+
+    private IEnumerable<MasterListItemViewModel> GetMasters(CharacterGroup @group, bool includeSelf)
+    {
+      return @group.Project.ProjectAcls.Select(
+        acl => new MasterListItemViewModel() {Id = acl.UserId.ToString(), Name = acl.User.DisplayName})
+        .Union(new[]
+        {new MasterListItemViewModel() {Id =  "-1", Name = "По умолчанию: " + GetDefaultResponsible(@group, includeSelf)}});
+    }
+
+    private string GetDefaultResponsible(CharacterGroup @group, bool includeSelf)
+    {
+      var result =
+        group.FlatTree(g => g.ParentGroups, includeSelf)
+          .Select(g => g.ResponsibleMasterUser?.DisplayName)
+          .Distinct()
+          .JoinIfNotNullOrWhitespace(", ");
+      return string.IsNullOrWhiteSpace(result) ? "Никто" : result;
     }
 
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
@@ -87,9 +107,11 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
+        var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
+          viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         await
           ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
@@ -149,7 +171,9 @@ namespace JoinRpg.Web.Controllers
         {
           Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
           ProjectId = projectid,
-          ParentCharacterGroupIds = new List<int> {charactergroupid}
+          ParentCharacterGroupIds = new List<int> {charactergroupid},
+          Masters = GetMasters(@group, includeSelf: true),
+          ResponsibleMasterId = -1
         }));
     }
 
@@ -163,9 +187,10 @@ namespace JoinRpg.Web.Controllers
       {
         try
         {
+          var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?)null : viewModel.ResponsibleMasterId;
           ProjectService.AddCharacterGroup( 
             viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave());
+            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
 
           return RedirectToIndex(project);
         }

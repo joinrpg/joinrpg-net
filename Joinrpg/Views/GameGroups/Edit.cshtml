@@ -74,6 +74,14 @@
             </div>
         </div>
 
+        <div class="form-group">
+            @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(project => new SelectListItem() { Text = project.Name, Value = project.Id }))
+                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
         @Html.EditorFor(model => model.Subscribe)
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

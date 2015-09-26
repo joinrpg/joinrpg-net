@@ -16,6 +16,14 @@ namespace JoinRpg.Web.Models
     [DisplayName("Прямые заявки"),Description("Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
     public DirectClaimSettings HaveDirectSlots { get; set; }
 
+
+    [Display(Name = "Ответственный мастер")]
+    public int ResponsibleMasterId
+    { get; set; }
+    [ReadOnly(true)]
+    public IEnumerable<MasterListItemViewModel> Masters
+    { get; set; }
+
     public bool HaveDirectSlotsForSave() => HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
 
     public int DirectSlotsForSave() => HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited ? -1 : DirectSlots;
@@ -31,6 +39,12 @@ namespace JoinRpg.Web.Models
     public bool IsRoot { get; set; }
 
    public SubscribeSettingsViewModel Subscribe { get; set; } = new SubscribeSettingsViewModel();
+  }
+
+  public class MasterListItemViewModel  
+  {
+    public string Id { get; set; }
+    public string Name { get; set; }
   }
 
   public enum DirectClaimSettings

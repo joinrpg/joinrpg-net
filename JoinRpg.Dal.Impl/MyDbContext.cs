@@ -43,6 +43,10 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
       
       modelBuilder.Entity<CharacterGroup>().HasMany(cg => cg.ParentGroups).WithMany(cg => cg.ChildGroups);
+      modelBuilder.Entity<CharacterGroup>()
+        .HasOptional(c => c.ResponsibleMasterUser)
+        .WithMany()
+        .HasForeignKey(c => c.ResponsibleMasterUserId);
 
       modelBuilder.Entity<Character>().HasMany(c => c.Groups).WithMany(cg => cg.Characters);
 
@@ -54,6 +58,13 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<Claim>().HasMany(c => c.Comments).WithRequired(c => c.Claim);
+
+      modelBuilder.Entity<Claim>()
+        .HasOptional(c => c.ResponsibleMasterUser)
+        .WithMany()
+        .HasForeignKey(c => c.ResponsibleMasterUserId);
+
+
       modelBuilder.Entity<Comment>().HasMany(c => c.ChildsComments).WithOptional(comment => comment.Parent).WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);

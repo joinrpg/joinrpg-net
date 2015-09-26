@@ -118,6 +118,10 @@
     <Compile Include="Migrations\201509201326080_Subscription.Designer.cs">
       <DependentUpon>201509201326080_Subscription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201509252323402_ResponsibleMaster.cs" />
+    <Compile Include="Migrations\201509252323402_ResponsibleMaster.Designer.cs">
+      <DependentUpon>201509252323402_ResponsibleMaster.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -191,6 +195,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201509201326080_Subscription.resx">
       <DependentUpon>201509201326080_Subscription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201509252323402_ResponsibleMaster.resx">
+      <DependentUpon>201509252323402_ResponsibleMaster.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
