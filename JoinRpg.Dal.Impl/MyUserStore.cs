@@ -28,6 +28,8 @@ namespace JoinRpg.Dal.Impl
       {
         throw new ArgumentNullException(nameof(user));
       }
+      user.Auth = user.Auth ?? new UserAuthDetails() {RegisterDate = DateTime.Now};
+
       _ctx.UserSet.Add(user);
       return _ctx.SaveChangesAsync();
     }
@@ -155,7 +157,7 @@ namespace JoinRpg.Dal.Impl
 
     public Task SetEmailConfirmedAsync(User user, bool confirmed)
     {
-      user.Auth = user.Auth ?? new UserAuthDetails();
+      user.Auth = user.Auth ?? new UserAuthDetails() { RegisterDate = DateTime.Now };
       user.Auth.EmailConfirmed = confirmed;
       return Task.FromResult(0);
     }
