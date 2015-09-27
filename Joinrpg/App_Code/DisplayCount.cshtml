@@ -1,5 +1,9 @@
-﻿@helper OfX(int count, string single, string multi1, string multi2)
-{
-    var selected = count == 1 ? single : (count < 5 ? multi1 : multi2);
-    <span>@count @selected</span>
-}
+﻿@functions{
+
+    public static string OfX(int count, string single, string multi1, string multi2)
+  {
+      var selected = count == 1 ? single : (count < 5 ? multi1 : multi2);
+      return count + " " + @selected;
+  }
+
+} 

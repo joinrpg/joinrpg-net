@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -28,6 +29,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Игра")]
     public string ProjectName { get; set; }
 
+    [Display(Name = "Заявок на мастере")]
+    public int ClaimsCount { get; set; }
+
     public static AclViewModel FromAcl(ProjectAcl acl)
     {
       return new AclViewModel()
@@ -40,7 +44,8 @@ namespace JoinRpg.Web.Models
         CanChangeProjectProperties = acl.CanChangeProjectProperties,
         CanGrantRights = acl.CanGrantRights,
         Master = acl.User, 
-        ProjectName = acl.Project.ProjectName
+        ProjectName = acl.Project.ProjectName,
+        ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId)
       };
     }
   }

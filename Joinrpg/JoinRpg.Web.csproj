@@ -441,6 +441,7 @@
     <Content Include="Views\Acl\Delete.cshtml" />
     <Content Include="Views\Acl\Edit.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\SubscribeSettingsViewModel.cshtml" />
+    <Content Include="Views\Claim\Responsible.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

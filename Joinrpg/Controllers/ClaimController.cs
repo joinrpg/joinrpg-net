@@ -3,6 +3,7 @@ using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -68,18 +69,22 @@ namespace JoinRpg.Web.Controllers
     public ActionResult My() => View(GetCurrentUser().Claims.Select(ClaimListItemViewModel.FromClaim));
 
     [HttpGet, Authorize]
-    public ActionResult ForPlayer(int projectId, int userId)
-      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId);
+    public Task<ActionResult> ForPlayer(int projectId, int userId)
+      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, "ForPlayer");
 
-    private ActionResult MasterList(int projectId, Func<Claim, bool> predicate)
+    private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName)
     {
       //TODO: Eager load claims
-      var project = ProjectRepository.GetProject(projectId);
-      return AsMaster(project) ?? View(project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project) ?? View(viewName, project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
     }
 
     [HttpGet, Authorize]
-    public ActionResult Discussing(int projectid) => MasterList(projectid, claim => claim.IsInDiscussion);
+    public Task<ActionResult> Discussing(int projectid) => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing");
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> Responsible(int projectid, int responsibleMasterId)
+      => MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive, "Responsible");
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)

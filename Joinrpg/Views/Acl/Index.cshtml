@@ -31,6 +31,9 @@
         <th>
             @Html.DisplayNameFor(model => model.CanGrantRights)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClaimsCount)
+        </th>
         <th></th>
     </tr>
 
@@ -50,6 +53,9 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.CanGrantRights)
+        </td>
+        <td>
+            @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
         </td>
         <td>
             @Html.ActionLink("Изменить", "Edit", new { item.ProjectId, item.ProjectAclId})
