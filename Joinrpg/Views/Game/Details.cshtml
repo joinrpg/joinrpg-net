@@ -1,6 +1,5 @@
-﻿@*TODO: Have nice view model here, with Current user acls*@
-@using JoinRpg.Web.Helpers
-@model JoinRpg.DataModel.Project
+﻿@using JoinRpg.Web.Helpers
+@model JoinRpg.Web.Models.ProjectDetailsViewModel
 
 @{
     ViewBag.Title = "Игра «"+ Model.ProjectName +"»";
@@ -8,11 +7,11 @@
 
 <h2>@ViewBag.Title</h2>
 
-<p>Мне не нравится эта страница, хочу с ней как-то расправиться</p>
-@if (Model.Details != null && !string.IsNullOrWhiteSpace(Model.Details.ProjectAnnounce.Contents))
+
+@if (string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Contents))
 {
     <hr/>
-    @Model.Details.ProjectAnnounce.ToHtmlString()
+    @Model.ProjectAnnounce.ToHtmlString()
 }
 
 <hr/>
@@ -28,24 +27,22 @@
         </dd>
 
         <dt>
-            @Html.DisplayNameFor(model => model.Active)
+            @Html.DisplayNameFor(model => model.IsActive)
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Active)
+            @Html.DisplayFor(model => model.IsActive)
         </dd>
 
     </dl>
+    <Hr/>
+     @Html.ActionLink("Перейти к сетке ролей", "Index", "GameGroups", new {Model.ProjectId}, null)
+    <hr/>
     <h4>Мастера</h4>
     <ul>
-        @foreach (var master in Model.ProjectAcls)
+        @foreach (var master in Model.Masters)
         {
-            <li>@Html.DisplayFor(model => master.User)
-        @if (master.IsOwner)
-        {
-            <span>(создатель проекта)</span>
-        }
-        </li>
+            <li>@Html.DisplayFor(model => master)</li>
         }
     </ul>
 </div>

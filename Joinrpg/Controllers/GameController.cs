@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -19,7 +20,15 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return WithProject(project) ?? View(project);
+      return WithProject(project) ?? View(new ProjectDetailsViewModel()
+      {
+        ProjectAnnounce = project.Details?.ProjectAnnounce,
+        ProjectId = project.ProjectId,
+        ProjectName = project.ProjectName,
+        IsActive = project.Active,
+        CreatedDate = project.CreatedDate,
+        Masters = project.ProjectAcls.Select(acl => acl.User)
+      });
     }
 
     // GET: Game/Create
