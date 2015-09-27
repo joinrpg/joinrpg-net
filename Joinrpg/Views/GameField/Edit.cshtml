@@ -1,21 +1,19 @@
 ﻿@model JoinRpg.Web.Models.GameFieldEditViewModel
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Редактирование поля персонажа";
 }
 
-<h2>Edit</h2>
+<h2>@ViewBag.Title</h2>
 
 
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
   @Html.HiddenFor(model => model.ProjectId)
-  @Html.HiddenFor(model => model.FieldId)
+  @Html.HiddenFor(model => model.ProjectCharacterFieldId)
     
     <div class="form-horizontal">
-        <h4>GameFieldEditViewModel</h4>
-        <hr/>
 
         <div class="form-group">
             @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
@@ -64,7 +62,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-default" />
             </div>
         </div>
     </div>

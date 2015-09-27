@@ -225,25 +225,28 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult AddGroup(AddCharacterGroupViewModel viewModel)
+    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel)
     {
-      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
-      return AsMaster(project1, acl => true) ?? ((Func<Project, ActionResult>) (project =>
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project);
+      if (error != null)
       {
-        try
-        {
-          var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?)null : viewModel.ResponsibleMasterId;
-          ProjectService.AddCharacterGroup( 
-            viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-            viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
+        return error;
+      }
+      try
+      {
+        var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
+        await ProjectService.AddCharacterGroup(
+          viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
+          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-          return RedirectToIndex(project);
-        }
-        catch
-        {
-          return View(viewModel);
-        }
-      }))(project1);
+        return RedirectToIndex(project);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
     }
 
     private ActionResult WithGroupAsMaster(int projectId, int? groupId, Func<Project, CharacterGroup, ActionResult> action)

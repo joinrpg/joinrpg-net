@@ -298,7 +298,7 @@
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\EditProjectViewModel.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
-    <Compile Include="Models\GameFieldEditViewModel.cs" />
+    <Compile Include="Models\GameFieldViewModel.cs" />
     <Compile Include="Models\GameObjectLinkViewModel.cs" />
     <Compile Include="Models\GameRolesViewModel.cs" />
     <Compile Include="Models\HomeViewModel.cs" />

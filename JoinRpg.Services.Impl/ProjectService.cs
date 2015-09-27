@@ -47,12 +47,31 @@ namespace JoinRpg.Services.Impl
       return project;
     }
 
-    public void AddCharacterField(ProjectCharacterField field)
+
+    public async Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
+      bool canPlayerEdit, bool canPlayerView, bool isPublic)
     {
-      field.IsActive = true;
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+
+      if (!project.HasSpecificAccess(currentUserId, acl => acl.CanChangeFields))
+      {
+        throw new Exception();
+      }
+      var field = new ProjectCharacterField
+      {
+        FieldName = Required(name),
+        FieldHint = fieldHint,
+        CanPlayerEdit = canPlayerEdit,
+        CanPlayerView = canPlayerView,
+        IsPublic = isPublic,
+        ProjectId = projectId,
+        FieldType = fieldType,
+        IsActive = true,
+        Order = project.AllProjectFields.Count(),
+      };
       CheckField(field);
       UnitOfWork.GetDbSet<ProjectCharacterField>().Add(field);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     private static void CheckField(ProjectCharacterField field)
@@ -61,31 +80,30 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
-
-      field.FieldName = Required(field.FieldName);
     }
 
-    public void UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
+    public async Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic)
     {
       var field = LoadProjectSubEntity<ProjectCharacterField>(projectId, fieldId);
-      field.FieldName = name;
+      field.FieldName = Required(name);
       field.FieldHint = fieldHint;
       field.CanPlayerEdit = canPlayerEdit;
       field.CanPlayerView = canPlayerView;
       field.IsPublic = isPublic;
+      field.IsActive = true;
 
       CheckField(field);
 
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     //TODO: pass projectId and use LoadProjectSubEntity here
-    public void DeleteField(int projectCharacterFieldId)
+    public async Task DeleteField(int projectCharacterFieldId)
     {
-      var field = UnitOfWork.GetDbSet<ProjectCharacterField>().Find(projectCharacterFieldId);
+      var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(projectCharacterFieldId);
       SmartDelete(field);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)

@@ -1,23 +1,23 @@
-﻿@model JoinRpg.DataModel.Project
+﻿@model JoinRpg.Web.Models.GameFieldListViewModel
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Поля персонажа";
 }
 
-<h2>Index</h2>
+<h2>@ViewBag.Title</h2>
 
 <p>
     @Html.ActionLink("Добавить новое поле персонажа", "Create", new {Model.ProjectId})
 </p>
 @{
-    var firstItem = Model.ProjectFields.FirstOrDefault();
+    var firstItem = Model.Items.FirstOrDefault();
 }
 @if (firstItem != null)
 {
     <table class="table">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => firstItem.FieldName)
+                @Html.DisplayNameFor(model => firstItem.Name)
             </th>
             <th>
                 @Html.DisplayNameFor(model => firstItem.IsPublic)
@@ -32,19 +32,16 @@
                 @Html.DisplayNameFor(model => firstItem.FieldHint)
             </th>
             <th>
-                @Html.DisplayNameFor(model => firstItem.Order)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => firstItem.IsPublic)
+                
             </th>
             <th></th>
         </tr>
 
-        @foreach (var item in Model.AllProjectFields)
+        @foreach (var item in Model.Items)
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.FieldName)
+                    @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.IsPublic)
@@ -59,18 +56,21 @@
                     @Html.DisplayFor(modelItem => item.FieldHint)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Order)
-                </td>
-                <td>
                     @if (!item.IsActive)
                     {
                         <span>удалено</span>
                     }
                 </td>
                 <td>
-                    @Html.ActionLink("Edit", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId}) |
-                    @* @Html.ActionLink("Details", "Details", new {id = item.ProjectCharacterFieldId}) | *@
-                    @Html.ActionLink("Удалить", "Delete", new { item.ProjectCharacterFieldId, item.ProjectId })
+                    @if (item.IsActive)
+                    {
+                        @Html.ActionLink("Изменить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})<text> | </text>
+                        @Html.ActionLink("Удалить", "Delete", new {item.ProjectCharacterFieldId, item.ProjectId})
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Восстановить", "Edit", new { item.ProjectCharacterFieldId, item.ProjectId })
+                    }
                 </td>
             </tr>
         }
