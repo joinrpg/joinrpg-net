@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace JoinRpg.DataModel
@@ -54,6 +53,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
+
+    public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     public IEnumerable<Character> CharactersWithOnlyParent => WithOnlyParent(Characters);
     public IEnumerable<CharacterGroup> ChildGroupsWithOnlyParent => WithOnlyParent(ChildGroups);

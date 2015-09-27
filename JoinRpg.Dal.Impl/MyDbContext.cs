@@ -87,6 +87,11 @@ namespace JoinRpg.Dal.Impl
       
       modelBuilder.Entity<User>().HasMany(u => u.Subscriptions).WithRequired(s => s.User).WillCascadeOnDelete(true);
       modelBuilder.Entity<UserSubscription>().HasRequired(us => us.Project).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<UserSubscription>()
+        .HasOptional(us => us.Claim)
+        .WithMany(c => c.Subscriptions)
+        .HasForeignKey(us => us.ClaimId)
+        .WillCascadeOnDelete(false);
 
 
       base.OnModelCreating(modelBuilder);

@@ -16,13 +16,15 @@ namespace JoinRpg.Web.Helpers
     /// </summary>
     public static HtmlString ToHtmlString(this MarkdownString markdownString)
     {
-      if (markdownString?.Contents == null)
-      {
-        return null;
-      }
-      var markdownResults = CommonMarkConverter.Convert(markdownString.Contents);
-      var sanitazeResults = Sanitizer.Sanitize(markdownResults);
-      return new HtmlString(sanitazeResults);
+      return markdownString?.Contents == null ? null : new HtmlString(Convert(markdownString));
+    }
+
+    // ReSharper disable once UnusedParameter.Local Reshaper are wrong here
+    private static string Convert(MarkdownString markdownString)
+    {
+      var settings = CommonMarkSettings.Default.Clone();
+      settings.RenderSoftLineBreaksAsLineBreaks = true;
+      return Sanitizer.Sanitize(CommonMarkConverter.Convert(markdownString.Contents, settings));
     }
   }
 }

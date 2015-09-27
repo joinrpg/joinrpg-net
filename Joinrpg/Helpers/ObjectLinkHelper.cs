@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Web;
+using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces.Search;
@@ -18,20 +20,27 @@ namespace JoinRpg.Web.Helpers
     public string Action { get; }
     public string Controller { get; }
     public object Params { get; }
+
+    public string GetUri(HttpContext context)
+    {
+      return new UrlHelper(context.Request.RequestContext).Action(Action, Controller, Params, context.Request.Url.Scheme);
+    }
   }
 
   public static class ObjectLinkHelper
   {
-    public static RouteTarget GetRouteTarget(this GameObjectLinkViewModel link)
+    public static RouteTarget GetRouteTarget(this ILinkable link)
     {
-      switch (link.Type)
+      switch (link.LinkType)
       {
-        case GameObjectLinkType.User:
+        case LinkType.ResultUser:
           return new RouteTarget("Details", "User", new {UserId = link.Identification});
-        case GameObjectLinkType.CharacterGroup:
+        case LinkType.ResultCharacterGroup:
           return new RouteTarget("Index", "GameGroups", new {CharacterGroupId = link.Identification, link.ProjectId});
-        case GameObjectLinkType.Character:
+        case LinkType.ResultCharacter:
           return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
+        case LinkType.Claim:
+          return new RouteTarget("Edit", "Claim", new {ClaimId = link.Identification, link.ProjectId});
         default:
           throw new ArgumentOutOfRangeException();
       }
@@ -45,7 +54,7 @@ namespace JoinRpg.Web.Helpers
         DisplayName = c.Name,
         Identification = c.Id.ToString(),
         ProjectId = c.ProjectId,
-        Type = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? GameObjectLinkType.CharacterGroup : GameObjectLinkType.Character
+        LinkType = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? LinkType.ResultCharacterGroup : LinkType.ResultCharacter
       };
     }
 
@@ -53,26 +62,11 @@ namespace JoinRpg.Web.Helpers
     {
       return new GameObjectLinkViewModel
       {
-        Type = ConvertToLinkType(result.Type),
+        LinkType = result.LinkType,
         Identification = result.Identification,
         DisplayName = result.Name,
         ProjectId = result.ProjectId
       };
-    }
-
-    private static GameObjectLinkType ConvertToLinkType(SearchResultType type)
-    {
-      switch (type)
-      {
-        case SearchResultType.ResultUser:
-          return GameObjectLinkType.User;
-        case SearchResultType.ResultCharacterGroup:
-          return GameObjectLinkType.CharacterGroup;
-        case SearchResultType.ResultCharacter:
-          return GameObjectLinkType.Character;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(type), type, null);
-      }
     }
   }
 }

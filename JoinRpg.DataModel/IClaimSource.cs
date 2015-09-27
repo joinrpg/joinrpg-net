@@ -7,5 +7,6 @@ namespace JoinRpg.DataModel
     ICollection<Claim> Claims { get; }
     bool IsAvailable { get; }
     User ResponsibleMasterUser { get; }
+    ICollection<UserSubscription>  Subscriptions { get; }
   }
 }

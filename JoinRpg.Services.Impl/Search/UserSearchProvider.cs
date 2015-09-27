@@ -28,7 +28,7 @@ namespace JoinRpg.Services.Impl.Search
 
       return results.Select(user => new SearchResultImpl
       {
-        Type = SearchResultType.ResultUser,
+        LinkType = LinkType.ResultUser,
         Name = user.DisplayName,
         Description = "",
         Identification = user.UserId.ToString(),

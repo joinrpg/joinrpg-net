@@ -51,9 +51,6 @@ namespace JoinRpg.Web
       // NOTE: To load from web.config uncomment the line below. Make sure to add a Microsoft.Practices.Unity.Configuration to the using statements.
       // container.LoadConfiguration();
 
-      // TODO: Register your types here
-      // container.RegisterType<IProductRepository, ProductRepository>();
-
       container.RegisterType<IUnitOfWork, MyDbContext>();
       container.RegisterType<DbContext, MyDbContext>();
 
@@ -69,8 +66,11 @@ namespace JoinRpg.Web
       container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
       container.RegisterType<IUserService, UserServiceImpl>();
 
+      container.RegisterType<IHtmlService, HtmlServiceImpl>();
+      container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(HttpContext.Current)));
+
       container.RegisterType<IEmailService>(
-        new InjectionFactory(o => new EmailServiceImpl(MailGunFacade.ApiDomain, MailGunFacade.ApiKey)));
+        new InjectionFactory(o => new EmailServiceImpl(MailGunFacade.ApiDomain, MailGunFacade.ApiKey, o.Resolve<IHtmlService>(), o.Resolve<IUriService>())));
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

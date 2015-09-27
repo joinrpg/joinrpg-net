@@ -51,8 +51,10 @@
     <Compile Include="Allrpg\IAllrpgService.cs" />
     <Compile Include="IClaimService.cs" />
     <Compile Include="IEmailService.cs" />
+    <Compile Include="IHtmlService.cs" />
     <Compile Include="IPlotService.cs" />
     <Compile Include="IProjectService.cs" />
+    <Compile Include="IUriService.cs" />
     <Compile Include="IUserService.cs" />
     <Compile Include="Search\ISearchService.cs" />
     <Compile Include="Search\ISearchResult.cs" />

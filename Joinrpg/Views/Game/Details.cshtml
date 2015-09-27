@@ -8,7 +8,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@if (string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Contents))
+@if (Model.ProjectAnnounce != null && string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Contents))
 {
     <hr/>
     @Model.ProjectAnnounce.ToHtmlString()

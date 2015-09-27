@@ -16,7 +16,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       _ctx = ctx;
     }
 
-    public User GetById(int id) => _ctx.UserSet.Find(id);
+    public Task<User> GetById(int id) => _ctx.UserSet.FindAsync(id);
     public Task<User> WithProfile(int userId)
     {
       return _ctx.Set<User>()

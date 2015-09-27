@@ -5,7 +5,7 @@ namespace JoinRpg.Data.Interfaces
 {
    public interface IUserRepository
    {
-     User GetById(int id);
+     Task<User> GetById(int id);
 
      Task<User> WithProfile(int userId);
      Task<User> GetWithSubscribe(int currentUserId);

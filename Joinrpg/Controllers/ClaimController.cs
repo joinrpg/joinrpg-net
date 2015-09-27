@@ -45,24 +45,27 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public ActionResult Add(AddClaimViewModel viewModel)
+    public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
-      var project1 = ProjectRepository.GetProject(viewModel.ProjectId);
-      return WithProject(project1) ?? ((Func<Project, ActionResult>) (project =>
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = WithProject(project);
+      if (error != null)
       {
-        try
-        {
-          _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-            CurrentUserId, viewModel.ClaimText.Contents);
+        return error;
+      }
 
-          return RedirectToAction("My", "Claim");
-        }
-        catch
-        {
-          //TODO: Отображать ошибки верно
-          return View(viewModel);
-        }
-      }))(project1);
+      try
+      {
+        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
+          CurrentUserId, viewModel.ClaimText.Contents);
+
+        return RedirectToAction("My", "Claim");
+      }
+      catch
+      {
+        //TODO: Отображать ошибки верно
+        return View(viewModel);
+      }
     }
 
     [HttpGet, Authorize]
@@ -172,7 +175,7 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        await _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -201,7 +204,7 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        await _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -218,30 +221,27 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
     {
-      return await WithMyClaim(viewModel.ProjectId, viewModel.ClaimId, (project, claim) =>
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = WithMyClaim(claim);
+      if (error != null)
       {
-        try
+        return error;
+      }
+      try
+      {
+        if (viewModel.HideFromUser)
         {
-          if (viewModel.HideFromUser)
-          {
-            throw new DbEntityValidationException();
-          }
-          _claimService.DeclineByPlayer(project.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
-
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+          throw new DbEntityValidationException();
         }
-        catch
-        {
-          //TODO: Message that comment is not added
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
-      });
-    }
+        await _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
-    private async Task<ActionResult> WithMyClaim (int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
-    {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      return WithMyClaim(claim) ?? actionResult(claim.Project, claim);
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
     }
 
     [HttpPost]

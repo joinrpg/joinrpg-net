@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
+        await ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
           !(viewModel.HideFromUser),
           claim.PlayerUserId == CurrentUserId, viewModel.CommentText.Contents);
 

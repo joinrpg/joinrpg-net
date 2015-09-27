@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -21,7 +22,8 @@ namespace JoinRpg.Domain
         .Distinct();
     }
 
-    private static IEnumerable<IClaimSource> GetParentGroups(this IClaimSource @group)
+    [NotNull]
+    public static IEnumerable<IClaimSource> GetParentGroups([CanBeNull] this IClaimSource @group)
     {
       return @group.FlatTree(g => g.ParentGroups, false);
     }

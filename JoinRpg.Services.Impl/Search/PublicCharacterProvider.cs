@@ -23,7 +23,7 @@ namespace JoinRpg.Services.Impl.Search
             )
             .ToListAsync();
 
-      return results.Select(@group => SearchResultImpl.FromWorldObject(@group, SearchResultType.ResultCharacter)).ToList();
+      return results.Select(@group => SearchResultImpl.FromWorldObject(@group, LinkType.ResultCharacter)).ToList();
     }
   }
 }

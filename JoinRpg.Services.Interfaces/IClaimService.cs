@@ -4,14 +4,14 @@ namespace JoinRpg.Services.Interfaces
 {
   public interface IClaimService
   {
-    void AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText);
+    Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText);
 
-    void AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
+    Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
       bool isMyClaim, string commentText);
 
-    void AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
-    void DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
-    void DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
+    Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
+    Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
+    Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
   }
 }

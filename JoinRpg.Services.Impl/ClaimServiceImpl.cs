@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -14,16 +15,18 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class ClaimServiceImpl : DbServiceImplBase, IClaimService
   {
-    public void AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
+    private readonly IEmailService _emailService;
+
+    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
     {
       IClaimSource source;
       if (characterGroupId != null)
       {
-        source = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId.Value);
+        source = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId.Value);
       }
       else if (characterId != null)
       {
-        source = LoadProjectSubEntity<Character>(projectId, characterId.Value);
+        source = await ProjectRepository.GetCharacterAsync(projectId, characterId.Value);
       }
       else
       {
@@ -33,6 +36,7 @@ namespace JoinRpg.Services.Impl
       EnsureCanAddClaim(currentUserId, source);
 
       var addClaimDate = DateTime.UtcNow;
+      var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
       {
         CharacterGroupId = characterGroupId,
@@ -53,10 +57,15 @@ namespace JoinRpg.Services.Impl
             LastEditTime = addClaimDate,
           }
         },
-        ResponsibleMasterUserId = source.GetResponsibleMasters().FirstOrDefault()?.UserId
+        ResponsibleMasterUserId = responsibleMaster?.UserId,
+        ResponsibleMasterUser = responsibleMaster,
+        Subscriptions = new List<UserSubscription>() //We need this as we are using it later
       };
       UnitOfWork.GetDbSet<Claim>().Add(claim);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
+
+      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, true, claimText, s => s.ClaimStatusChange);
+      await _emailService.Email(email);
     }
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
@@ -67,17 +76,34 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public void AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)
+    public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)
     {
       var claim = LoadClaim(projectId, claimId, currentUserId);
 
       claim.AddCommentImpl(currentUserId, parentCommentId, isVisibleToPlayer, isMyClaim, commentText, DateTime.UtcNow);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
+
+      var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, isMyClaim, commentText, s => s.Comments);
+      addCommentEmail.Recepients.Add(claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId)?.Author);
+      await _emailService.Email(addCommentEmail);
     }
 
-    public void AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText)
+    private async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, bool isMyClaim, string commentText, Func<UserSubscription, bool> predicate) where TEmail:ClaimEmailBase, new()
     {
-      var claim = LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+      return new TEmail()
+      {
+        Claim = claim,
+        ProjectName = claim.Project.ProjectName,
+        Initiator = await UserRepository.GetById(currentUserId),
+        InitiatorType = isMyClaim ? ParcipantType.Player : ParcipantType.Master,
+        Recepients = claim.GetSubscriptions(predicate, currentUserId).ToList(),
+        Text = new MarkdownString(commentText)
+      };
+    }
+
+    public async Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText)
+    {
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       if (claim.MasterAcceptedDate != null)
       {
         throw new DbEntityValidationException();
@@ -97,7 +123,7 @@ namespace JoinRpg.Services.Impl
         {
           throw new DbEntityValidationException();
         }
-        DeclineClaimByMasterImpl(currentUserId, otherClaim, now, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект");
+        await DeclineClaimByMasterImpl(currentUserId, otherClaim, now, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект");
       }
 
       if (claim.Group != null)
@@ -105,23 +131,25 @@ namespace JoinRpg.Services.Impl
         //TODO: Добавить здесь возможность ввести имя персонажа или брать его из заявки
         claim.ConvertToIndividual();
       }
-      UnitOfWork.SaveChanges();
+
+      await _emailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
+      await UnitOfWork.SaveChangesAsync();
     }
 
-    public void DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
+    public async Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       if (claim.MasterDeclinedDate != null)
       {
         throw new DbEntityValidationException();
       }
 
-      DeclineClaimByMasterImpl(currentUserId, claim, DateTime.UtcNow, commentText);
+      await DeclineClaimByMasterImpl(currentUserId, claim, DateTime.UtcNow, commentText);
 
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
-    public void DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
+    public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = LoadMyClaim(projectId, claimId, currentUserId);
       if (claim.PlayerDeclinedDate != null)
@@ -133,7 +161,9 @@ namespace JoinRpg.Services.Impl
       claim.PlayerDeclinedDate = now;
       claim.AddCommentImpl(currentUserId, null, isVisibleToPlayer: true, isMyClaim: true, commentText: commentText, now: now);
 
-      UnitOfWork.SaveChanges();
+      await _emailService.Email(await CreateClaimEmail<DeclineByPlayerEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
+
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -151,15 +181,16 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void DeclineClaimByMasterImpl(int currentUserId, Claim otherClaim, DateTime now, string commentText)
+    private async Task DeclineClaimByMasterImpl(int currentUserId, Claim claim, DateTime now, string commentText)
     {
-      otherClaim.MasterDeclinedDate = now;
-      otherClaim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
+      claim.MasterDeclinedDate = now;
+      claim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
+      await _emailService.Email(await CreateClaimEmail<DeclineByMasterEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
     }
 
-    private Claim LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
+    private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
-      var claim = LoadClaim(projectId, claimId, currentUserId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
       if (!claim.Project.HasSpecificAccess(currentUserId, acl => acl.CanApproveClaims))
       {
         throw new DbEntityValidationException();
@@ -187,8 +218,9 @@ namespace JoinRpg.Services.Impl
       return claim;
     }
 
-    public ClaimServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
     {
+      _emailService = emailService;
     }
   }
 
@@ -244,6 +276,24 @@ namespace JoinRpg.Services.Impl
       };
       claim.CharacterGroupId = null;
       claim.Character = character;
+    }
+
+    public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate, int initiatorUserId)
+    {
+      return claim.GetTarget() //Character or group
+        .GetParentGroups() //Get parents
+        .Union(claim.Group) //Don't forget group himself
+        .WhereNotNull() //..that can be null
+        .SelectMany(g => g.Subscriptions) //get subscriptions on groups
+        .Union(claim.Subscriptions) //subscribtions on claim
+        .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters
+        .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
+        .Select(u => u.User) //Select users
+        .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
+        .Union(claim.Player) //...and player himself also
+        .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
+        .Distinct() //One user can be subscribed by multiple reasons
+        ;
     }
   }
 }

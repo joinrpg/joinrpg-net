@@ -51,6 +51,7 @@
     <Compile Include="IDeletableSubEntity.cs" />
     <Compile Include="IProjectSubEntity.cs" />
     <Compile Include="IWorldObject.cs" />
+    <Compile Include="Links.cs" />
     <Compile Include="MarkdownString.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />

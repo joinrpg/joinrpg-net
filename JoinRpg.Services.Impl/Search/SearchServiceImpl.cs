@@ -39,17 +39,17 @@ namespace JoinRpg.Services.Impl.Search
 
   internal class SearchResultImpl : ISearchResult
   {
-    public SearchResultType Type { get; set; }
+    public LinkType LinkType { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
 
-    public static SearchResultImpl FromWorldObject(IWorldObject @group, SearchResultType type)
+    public static SearchResultImpl FromWorldObject(IWorldObject @group, LinkType type)
     {
       return new SearchResultImpl
       {
-        Type = type,
+        LinkType = type,
         Name = @group.Name,
         Description = "",
         Identification = @group.Id.ToString(),

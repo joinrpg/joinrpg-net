@@ -63,17 +63,17 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet, Authorize]
     // GET: Game/Edit/5
-    public ActionResult Edit(int projectId)
+    public async Task<ActionResult> Edit(int projectId)
     {
-      var project1 = ProjectRepository.GetProject(projectId);
-      return AsMaster(project1, pacl => pacl.CanChangeProjectProperties) ?? ((Func<Project, ActionResult>) (project => View(new EditProjectViewModel
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project, pacl => pacl.CanChangeProjectProperties) ?? View(new EditProjectViewModel
       {
         ClaimApplyRules = project.Details?.ClaimApplyRules,
         ProjectAnnounce = project.Details?.ProjectAnnounce,
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         OriginalName = project.ProjectName
-      })))(project1);
+      });
     }
 
     // POST: Game/Edit/5

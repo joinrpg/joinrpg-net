@@ -1,10 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public class GameObjectLinkViewModel
+  public class GameObjectLinkViewModel : ILinkable
   {
-    public GameObjectLinkType Type { get; set; }
+    public LinkType LinkType { get; set; }
+    public GameObjectLinkType Type => ConvertToLinkType(LinkType);
     public string Identification { get; set; }
 
     public string DisplayName { get; set; }
@@ -24,6 +27,23 @@ namespace JoinRpg.Web.Models
     {
       return Type == objType && Identification == characterGroupId.ToString();
     }
+
+
+    private static GameObjectLinkType ConvertToLinkType(LinkType type)
+    {
+      switch (type)
+      {
+        case LinkType.ResultUser:
+        return GameObjectLinkType.User;
+        case LinkType.ResultCharacterGroup:
+        return GameObjectLinkType.CharacterGroup;
+        case LinkType.ResultCharacter:
+        return GameObjectLinkType.Character;
+        case LinkType.Claim:
+        default:
+        throw new ArgumentOutOfRangeException(nameof(type), type, null);
+      }
+    }
   }
 
   public enum GameObjectLinkType
@@ -33,6 +53,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Группа/локация")]
     CharacterGroup,
     [Display(Name = "Персонаж")]
-    Character
+    Character,
+    [Display(Name = "Заявка")]
+    Claim
   }
 }

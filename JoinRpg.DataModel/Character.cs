@@ -35,6 +35,8 @@ namespace JoinRpg.DataModel
 
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
 
+    public virtual ICollection<UserSubscription> Subscriptions { get; set; }
+
     /// <summary>
     /// Is available for claims (IsAcceptingClaims + has no approved claim
     /// </summary>

@@ -6,7 +6,8 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
-  public class Claim : IProjectSubEntity
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
+  public class Claim : IProjectSubEntity, ILinkable
   {
     public int ClaimId { get; set; }
     public int? CharacterId { get; set; }
@@ -32,6 +33,8 @@ namespace JoinRpg.DataModel
     public DateTime? MasterDeclinedDate { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; }
+
+    public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
@@ -83,6 +86,15 @@ namespace JoinRpg.DataModel
         throw new InvalidOperationException("Unknown claim status");
       }
     }
+
+    #region ILinkable impl
+
+    LinkType ILinkable.LinkType => LinkType.Claim;
+
+    string ILinkable.Identification => ClaimId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
+
+    #endregion
   }
 
   public static class ClaimStaticExtensions
@@ -109,9 +121,9 @@ namespace JoinRpg.DataModel
       return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
     }
 
-    public static IWorldObject GetTarget(this Claim claim)
+    public static IClaimSource GetTarget(this Claim claim)
     {
-      return (IWorldObject) claim.Character ?? claim.Group;
+      return (IClaimSource) claim.Character ?? claim.Group;
     }
   }
 }
