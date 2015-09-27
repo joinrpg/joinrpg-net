@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -25,6 +21,9 @@ namespace JoinRpg.Web.Models
     [Display (Name ="Обновлена")]
     public DateTime? UpdateDate { get; set; }
 
+    [Display (Name = "Ответственный")]
+    public User Responsible { get; set; }
+
     public int ProjectId { get; set; }
 
     public int ClaimId{ get; set; }
@@ -39,7 +38,8 @@ namespace JoinRpg.Web.Models
         Player = claim.Player,
         ProjectId = claim.ProjectId,
         ProjectName = claim.Name,
-        UpdateDate = claim.StatusChangedDate
+        UpdateDate = claim.StatusChangedDate,
+        Responsible = claim.ResponsibleMasterUser
       };
     }
   }

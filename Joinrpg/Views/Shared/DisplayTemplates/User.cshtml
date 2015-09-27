@@ -1,5 +1,10 @@
 ﻿@model JoinRpg.DataModel.User
 
+@if (Model == null)
+{
+    <span>нет</span>
+    return;
+}
 <span title="@Html.DisplayFor(model => model.FullName)" style="font-weight: bold">
 <a href="@Url.Action("Details", "User", new {Model.UserId})">@Model.DisplayName</a>
 </span>

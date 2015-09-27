@@ -26,6 +26,10 @@
         <th>
             @Html.DisplayNameFor(model => model.UpdateDate)
         </th>
+        @if (ViewBag.MasterAccessColumn == true)
+        {
+            <th>@Html.DisplayNameFor(model => model.Responsible)</th>
+        }
     </tr>
 
 @foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
@@ -46,12 +50,17 @@
                 @Html.DisplayFor(modelItem => item.ProjectName)
             </td>
         }
-        <th>
+        <td>
             @Html.DisplayFor(modelItem => item.ClaimStatus)
-        </th>
-        <th>
+        </td>
+        <td>
             @Html.DisplayFor(modelItem => item.UpdateDate)
-        </th>
+        </td>
+       @if (ViewBag.MasterAccessColumn == true)
+        {
+        <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+        }
+        
     </tr>
 }
 
