@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
@@ -18,11 +20,10 @@ namespace JoinRpg.Web.Models
 
 
     [Display(Name = "Ответственный мастер")]
-    public int ResponsibleMasterId
-    { get; set; }
+    public int ResponsibleMasterId { get; set; }
+
     [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters
-    { get; set; }
+    public IEnumerable<MasterListItemViewModel> Masters { get; set; }
 
     public bool HaveDirectSlotsForSave() => HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
 
@@ -45,6 +46,12 @@ namespace JoinRpg.Web.Models
   {
     public string Id { get; set; }
     public string Name { get; set; }
+
+    public static IEnumerable<MasterListItemViewModel> FromProject(Project project)
+    {
+      return project.ProjectAcls.Select(
+        acl => new MasterListItemViewModel() {Id = acl.UserId.ToString(), Name = acl.User.DisplayName});
+    }
   }
 
   public enum DirectClaimSettings

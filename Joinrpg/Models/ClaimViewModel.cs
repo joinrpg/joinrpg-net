@@ -40,5 +40,11 @@ namespace JoinRpg.Web.Models
     public MarkdownString Description { get; set; }
 
     public IEnumerable<PlotElementViewModel> Plot { get; set; }
+
+    [Display(Name = "Ответственный мастер")]
+    public int ResponsibleMasterId { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<MasterListItemViewModel> Masters { get; set; }
   }
 }

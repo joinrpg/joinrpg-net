@@ -34,7 +34,8 @@ namespace JoinRpg.Services.Impl
             IsPublic = true,
             IsRoot = true,
             CharacterGroupName = "Все персонажи на игре",
-            IsActive = true
+            IsActive = true,
+            ResponsibleMasterUserId = creator.UserId
           }
         },
         ProjectAcls = new List<ProjectAcl>()
@@ -76,10 +77,8 @@ namespace JoinRpg.Services.Impl
 
     private static void CheckField(ProjectCharacterField field)
     {
-      if (field.IsPublic && !field.CanPlayerView)
-      {
-        throw new DbEntityValidationException();
-      }
+      if (!field.IsPublic || field.CanPlayerView) return;
+      throw new DbEntityValidationException();
     }
 
     public async Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,

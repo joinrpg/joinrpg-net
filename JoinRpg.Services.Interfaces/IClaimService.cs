@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace JoinRpg.Services.Interfaces
 {
   public interface IClaimService
@@ -10,5 +12,6 @@ namespace JoinRpg.Services.Interfaces
     void AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
     void DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
     void DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
+    Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
   }
 }

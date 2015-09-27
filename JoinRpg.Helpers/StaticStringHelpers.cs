@@ -12,6 +12,11 @@ namespace JoinRpg.Helpers
       return string.Join(separator, strings.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
+    public static string Join([NotNull] this IEnumerable<string> strings, [NotNull] string separator)
+    {
+      return string.Join(separator, strings);
+    }
+
     /// <summary>
     /// Return only strings that have specified prefix (and with this prefix removed)
     /// </summary>

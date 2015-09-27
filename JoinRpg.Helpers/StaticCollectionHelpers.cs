@@ -32,5 +32,17 @@ namespace JoinRpg.Helpers
         flattedcharacterGroupIds.Add(characterGroup);
       }
     }
+
+    public static IEnumerable<T> UnionIf<T>(this IEnumerable<T> source, T @object, bool add)
+    {
+      var self = add ? new[] {@object} : new T[] {};
+      var claimSources = source.Union(self);
+      return claimSources;
+    }
+
+    public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t)
+    {
+      return source.Union(new [] {t});
+    }
   }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
@@ -113,21 +114,21 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    private IEnumerable<MasterListItemViewModel> GetMasters(CharacterGroup @group, bool includeSelf)
+    private static IEnumerable<MasterListItemViewModel>  GetMasters(CharacterGroup @group, bool includeSelf)
     {
-      return @group.Project.ProjectAcls.Select(
-        acl => new MasterListItemViewModel() {Id = acl.UserId.ToString(), Name = acl.User.DisplayName})
-        .Union(new[]
-        {new MasterListItemViewModel() {Id =  "-1", Name = "По умолчанию: " + GetDefaultResponsible(@group, includeSelf)}});
+      return MasterListItemViewModel.FromProject(@group.Project)
+        .Union(new MasterListItemViewModel()
+        {
+          Id = "-1",
+          Name = "По умолчанию: " + GetDefaultResponsible(@group, includeSelf)
+        });
     }
 
-    private string GetDefaultResponsible(CharacterGroup @group, bool includeSelf)
+    private static string GetDefaultResponsible(CharacterGroup group, bool includeSelf)
     {
-      var result =
-        group.FlatTree(g => g.ParentGroups, includeSelf)
-          .Select(g => g.ResponsibleMasterUser?.DisplayName)
-          .Distinct()
-          .JoinIfNotNullOrWhitespace(", ");
+      var result = group.GetResponsibleMasters(includeSelf)
+          .Select(u => u.DisplayName)
+          .Join(", ");
       return string.IsNullOrWhiteSpace(result) ? "Никто" : result;
     }
 

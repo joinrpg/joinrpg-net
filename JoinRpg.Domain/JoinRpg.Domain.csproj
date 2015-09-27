@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -46,12 +50,17 @@
   <ItemGroup>
     <Compile Include="CharacterFields\CharacterFieldsContainter.cs" />
     <Compile Include="CharacterFields\CharacterFieldValue.cs" />
+    <Compile Include="ClaimSourceExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
+      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
+      <Name>JoinRpg.Helpers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

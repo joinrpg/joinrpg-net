@@ -85,13 +85,30 @@
                 @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
             </dd>
         }
+        @if (Model.HasMasterAccess)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+            </dt>
+            <dd>
+                @using (Html.BeginForm("ChangeResponsible", "Claim"))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(model => model.ProjectId)
+                    @Html.HiddenFor(model => model.ClaimId)
+                    @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}))
+                    @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
+                    <input type="submit" value="Изменить" class="btn btn-default"/>
+                }
+            </dd>
+        }
     </dl>
     @if (Model.HasApproveRejectClaim)
     {
         if (Model.Status == Claim.Status.AddedByUser)
         {
             if (Model.OtherClaimsForThisCharacterCount > 0)
-            {
+            { 
                 <p>Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
                     или переведите их на другого персонажа/локацию (пока не реализовано).</p>
             }

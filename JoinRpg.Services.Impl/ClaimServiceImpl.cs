@@ -2,32 +2,36 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
-  /// <summary>
-  /// TODO: Rewrite this calls using real Command pattern.
-  /// </summary>
   [UsedImplicitly]
   public class ClaimServiceImpl : DbServiceImplBase, IClaimService
   {
     public void AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
     {
-      if (characterGroupId != null && characterId != null)
+      IClaimSource source;
+      if (characterGroupId != null)
+      {
+        source = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId.Value);
+      }
+      else if (characterId != null)
+      {
+        source = LoadProjectSubEntity<Character>(projectId, characterId.Value);
+      }
+      else
       {
         throw new DbEntityValidationException();
       }
-      if (characterGroupId != null)
-      {
-        EnsureCanAddClaim<CharacterGroup>(projectId, characterGroupId.Value, currentUserId);
-      } else if (characterId != null)
-      {
-        EnsureCanAddClaim<Character>(projectId, characterId.Value, currentUserId);
-      }
+
+      EnsureCanAddClaim(currentUserId, source);
+
       var addClaimDate = DateTime.UtcNow;
       var claim = new Claim()
       {
@@ -48,17 +52,16 @@ namespace JoinRpg.Services.Impl
             ProjectId = projectId,
             LastEditTime = addClaimDate,
           }
-        }
+        },
+        ResponsibleMasterUserId = source.GetResponsibleMasters().FirstOrDefault()?.UserId
       };
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       UnitOfWork.SaveChanges();
     }
 
-    private void EnsureCanAddClaim<T>(int projectId, int characterGroupId, int currentUserId) where T:class, IClaimSource
+    private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
     {
-      if (
-        LoadProjectSubEntity<T>(projectId, characterGroupId)
-          .Claims.Any(c => c.PlayerUserId == currentUserId && c.IsActive))
+      if (claimSource.HasClaimForUser(currentUserId))
       {
         throw new DbEntityValidationException();
       }
@@ -131,6 +134,21 @@ namespace JoinRpg.Services.Impl
       claim.AddCommentImpl(currentUserId, null, isVisibleToPlayer: true, isMyClaim: true, commentText: commentText, now: now);
 
       UnitOfWork.SaveChanges();
+    }
+
+    public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
+    {
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      if (!claim.Project.HasSpecificAccess(currentUserId, acl => acl.CanApproveClaims))
+      {
+        throw new Exception();
+      }
+      if (!claim.Project.HasAccess(responsibleMasterId))
+      {
+        throw new DbEntityValidationException();
+      }
+      claim.ResponsibleMasterUserId = responsibleMasterId;
+      await UnitOfWork.SaveChangesAsync();
     }
 
     private static void DeclineClaimByMasterImpl(int currentUserId, Claim otherClaim, DateTime now, string commentText)
@@ -209,7 +227,10 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
-      claim.Group.AvaiableDirectSlots -= 1;
+      if (claim.Group.AvaiableDirectSlots > 0)
+      {
+        claim.Group.AvaiableDirectSlots -= 1;
+      }
       var character = new Character()
       {
         CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",

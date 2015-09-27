@@ -40,6 +40,8 @@ namespace JoinRpg.DataModel
     /// </summary>
     public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null;
 
+    public User ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
+
     //TODO: Implement plot element order. Save here data like "{12,13,158,46}" where numbers is PlotElementIds
     public string PlotElementOrderData { get; set; }
 

@@ -113,6 +113,8 @@ namespace JoinRpg.Web.Controllers
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
         Description = claim.Character?.Description,
+        Masters = MasterListItemViewModel.FromProject(claim.Project).Union(new MasterListItemViewModel() {Id = "-1", Name="Нет"}),
+        ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1
       };
 
       if ((hasMasterAccess || isMyClaim) && claim.IsApproved)
@@ -235,6 +237,28 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
       return WithMyClaim(claim) ?? actionResult(claim.Project, claim);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
+    {
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var error = AsMaster(claim);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        await _claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
+      }
+      catch
+      {
+        //TODO: Message 
+        return RedirectToAction("Edit", "Claim", new { claimId, projectId });
+      }
+      return RedirectToAction("Edit", "Claim", new { claimId, projectId });
     }
   }
 }
