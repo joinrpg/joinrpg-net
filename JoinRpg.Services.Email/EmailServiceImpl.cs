@@ -8,6 +8,7 @@ using JoinRpg.Services.Interfaces;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Mailgun.Service;
+using Newtonsoft.Json.Linq;
 
 namespace JoinRpg.Services.Email
 {
@@ -23,11 +24,8 @@ namespace JoinRpg.Services.Email
     private readonly IHtmlService _htmlService;
     private readonly IUriService _uriService;
 
-    private Task Send(IMessageBuilder messageBuilder)
+    private Task Send(IMessage message)
     {
-      var message = messageBuilder
-        .GetMessage();
-
       return MessageService.SendMessageAsync(_apiDomain, message);
     }
 
@@ -51,14 +49,16 @@ namespace JoinRpg.Services.Email
         return;
       }
       var html = _htmlService.MarkdownToHtml(new MarkdownString(text));
-      await Send(
-          new MessageBuilder().AddUsers(recepients)
-            .SetSubject(subject)
-            .SetFromAddress(_joinRpgSender)
-            .SetReplyToAddress(sender)
-            .SetTextBody(text)
-            .SetHtmlBody(html)
-          );
+      var message = new MessageBuilder().AddUsers(recepients)
+        .SetSubject(subject)
+        .SetFromAddress(new Recipient() {DisplayName = sender.DisplayName, Email = _joinRpgSender.Email})
+        .SetReplyToAddress(sender)
+        .SetTextBody(text)
+        .SetHtmlBody(html)
+        .GetMessage();
+      message.RecipientVariables =
+        JObject.Parse("{" +string.Join(", ", recepients.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
+      await Send(message);
     }
 
     private static string GetInitiatorString(ClaimEmailBase model)
@@ -75,9 +75,14 @@ namespace JoinRpg.Services.Email
         throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
       }
     }
-    private Task SendClaimEmail(ClaimEmailBase model, string text)
+    private async Task SendClaimEmail(ClaimEmailBase model, string text)
     {
-      return SendEmail(model.Recepients, $"{model.ProjectName}: {model.Claim.Name}",
+      var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
+      if (!recepients.Any())
+      {
+        return;
+      }
+      await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}",
         $@"{text}
 
 {model.Text.Contents}
@@ -90,7 +95,7 @@ namespace JoinRpg.Services.Email
     {
       return SendClaimEmail(model,
         $@"
-Добрый день!
+Добрый день, %recipient.name%!
 
 Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {GetInitiatorString(model)}.
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
@@ -100,7 +105,7 @@ namespace JoinRpg.Services.Email
     {
       return SendClaimEmail(model,
   $@"
-Добрый день!
+Добрый день, %recipient.name%!
 
 Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {GetInitiatorString(model)}.
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
@@ -110,7 +115,7 @@ namespace JoinRpg.Services.Email
     {
       return SendClaimEmail(model,
 $@"
-Добрый день!
+Добрый день, %recipient.name%!
 
 Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {GetInitiatorString(model)}.
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
@@ -120,7 +125,7 @@ $@"
     {
       return SendClaimEmail(model,
        $@"
-Добрый день!
+Добрый день, %recipient.name%!
 
 Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отозвана игроком.   
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
@@ -130,7 +135,7 @@ $@"
     {
       return SendClaimEmail(model,
        $@"
-Добрый день!
+Добрый день, %recipient.name%!
 
 Новая заявка «{model.Claim.Name}» от игрока «{model.Claim.Player.DisplayName}».   
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
