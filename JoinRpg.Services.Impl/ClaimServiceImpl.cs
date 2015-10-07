@@ -64,7 +64,7 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       await UnitOfWork.SaveChangesAsync();
 
-      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, true, claimText, s => s.ClaimStatusChange);
+      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange);
       await _emailService.Email(email);
     }
 
@@ -80,22 +80,22 @@ namespace JoinRpg.Services.Impl
     {
       var claim = LoadClaim(projectId, claimId, currentUserId);
 
-      claim.AddCommentImpl(currentUserId, parentCommentId, isVisibleToPlayer, isMyClaim, commentText, DateTime.UtcNow);
+      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, DateTime.UtcNow, isVisibleToPlayer, isMyClaim);
       await UnitOfWork.SaveChangesAsync();
 
-      var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, isMyClaim, commentText, s => s.Comments);
+      var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, commentText, s => s.Comments);
       addCommentEmail.Recepients.Add(claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId)?.Author);
       await _emailService.Email(addCommentEmail);
     }
 
-    private async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, bool isMyClaim, string commentText, Func<UserSubscription, bool> predicate) where TEmail:ClaimEmailBase, new()
+    private async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText, Func<UserSubscription, bool> predicate) where TEmail:ClaimEmailBase, new()
     {
       return new TEmail()
       {
         Claim = claim,
         ProjectName = claim.Project.ProjectName,
         Initiator = await UserRepository.GetById(currentUserId),
-        InitiatorType = isMyClaim ? ParcipantType.Player : ParcipantType.Master,
+        InitiatorType = currentUserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
         Recepients = claim.GetSubscriptions(predicate, currentUserId).ToList(),
         Text = new MarkdownString(commentText)
       };
@@ -115,7 +115,7 @@ namespace JoinRpg.Services.Impl
 
       var now = DateTime.UtcNow;
       claim.MasterAcceptedDate = now;
-      claim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
+      claim.AddCommentImpl(currentUserId, null, commentText, now, true, false);
 
       foreach (var otherClaim in claim.OtherClaimsForThisPlayer())
       {
@@ -123,7 +123,13 @@ namespace JoinRpg.Services.Impl
         {
           throw new DbEntityValidationException();
         }
-        await DeclineClaimByMasterImpl(currentUserId, otherClaim, now, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект");
+        otherClaim.MasterDeclinedDate = now;
+        await
+          _emailService.Email(
+            await
+              AddCommentWithEmail<DeclineByMasterEmail>(currentUserId,
+                "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                otherClaim, now, true, s => s.ClaimStatusChange));
       }
 
       if (claim.Group != null)
@@ -132,7 +138,7 @@ namespace JoinRpg.Services.Impl
         claim.ConvertToIndividual();
       }
 
-      await _emailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
+      await _emailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange));
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -144,9 +150,13 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      await DeclineClaimByMasterImpl(currentUserId, claim, DateTime.UtcNow, commentText);
+      DateTime now = DateTime.UtcNow;
+
+      claim.MasterDeclinedDate = now;
+      var email = await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
+      await _emailService.Email(email);
     }
 
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
@@ -159,11 +169,17 @@ namespace JoinRpg.Services.Impl
 
       DateTime now = DateTime.UtcNow;
       claim.PlayerDeclinedDate = now;
-      claim.AddCommentImpl(currentUserId, null, isVisibleToPlayer: true, isMyClaim: true, commentText: commentText, now: now);
 
-      await _emailService.Email(await CreateClaimEmail<DeclineByPlayerEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
-
+      var email = await AddCommentWithEmail<DeclineByPlayerEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
+     
       await UnitOfWork.SaveChangesAsync();
+      await _emailService.Email(email);
+    }
+
+    private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now, bool isVisibleToPlayer, Func<UserSubscription, bool> predicate) where T : ClaimEmailBase, new()
+    {
+      claim.AddCommentImpl(currentUserId, null, commentText, now, isVisibleToPlayer, isMyClaim: true);
+      return await CreateClaimEmail<T>(claim, currentUserId, commentText, predicate);
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -177,15 +193,13 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
+      var newMaster = await UserRepository.GetById(responsibleMasterId);
       claim.ResponsibleMasterUserId = responsibleMasterId;
-      await UnitOfWork.SaveChangesAsync();
-    }
 
-    private async Task DeclineClaimByMasterImpl(int currentUserId, Claim claim, DateTime now, string commentText)
-    {
-      claim.MasterDeclinedDate = now;
-      claim.AddCommentImpl(currentUserId, null, true, false, commentText, now);
-      await _emailService.Email(await CreateClaimEmail<DeclineByMasterEmail>(claim, currentUserId, false, commentText, s => s.ClaimStatusChange));
+      claim.AddCommentImpl(currentUserId, null,
+        $"Отвественный мастер: {claim.ResponsibleMasterUser.DisplayName} → {newMaster.DisplayName}", DateTime.UtcNow,
+        isVisibleToPlayer: false, isMyClaim: false);
+      await UnitOfWork.SaveChangesAsync();
     }
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
@@ -226,10 +240,10 @@ namespace JoinRpg.Services.Impl
 
   internal static class ClaimStaticExtensions
   {
-    public static void AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
-      bool isMyClaim, string commentText, DateTime now)
+    public static void AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText,
+      DateTime now, bool isVisibleToPlayer, bool isMyClaim)
     {
-      if (String.IsNullOrWhiteSpace(commentText))
+      if (string.IsNullOrWhiteSpace(commentText))
       {
         throw new DbEntityValidationException();
       }
