@@ -32,6 +32,8 @@ namespace JoinRpg.Web.Models
     public bool IsRoot => DeepLevel == 0;
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
+
+    public int ActiveClaimsCount { get; set; }
   }
 
 }

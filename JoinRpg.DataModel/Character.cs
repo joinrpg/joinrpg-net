@@ -41,7 +41,7 @@ namespace JoinRpg.DataModel
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     /// <summary>
-    /// Is available for claims (IsAcceptingClaims + has no approved claim
+    /// Is available for claims (IsAcceptingClaims + has no approved claim)
     /// </summary>
     public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null;
 
@@ -51,8 +51,6 @@ namespace JoinRpg.DataModel
     public string PlotElementOrderData { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
-
-    public bool HasActiveClaims => Claims.Any(claim => claim.IsActive);
   }
 
   

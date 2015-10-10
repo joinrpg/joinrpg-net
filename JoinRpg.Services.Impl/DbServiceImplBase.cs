@@ -34,14 +34,6 @@ namespace JoinRpg.Services.Impl
     }
 
     [NotNull]
-    protected T LoadProjectSubEntity<T>(int projectId, int subentityId) where T : class, IProjectSubEntity
-    {
-      var field = UnitOfWork.GetDbSet<T>().Find(subentityId);
-      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
-      return field;
-    }
-
-    [NotNull]
     protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
       where T : class, IProjectSubEntity
     {
@@ -96,7 +88,6 @@ namespace JoinRpg.Services.Impl
       return characterGroups;
     }
 
-    //TODO: Merge this with prev. (we can't do it directly, cause LINQ can't filter by ((IProjectSubEntity)char).Id <- this is not a "simple" property
     protected async Task<IList<Character>> ValidateCharactersList(int projectId, ICollection<int> characterIds)
     {
       var characters =

@@ -27,5 +27,10 @@ namespace JoinRpg.Domain
     {
       return @group.FlatTree(g => g.ParentGroups, false);
     }
+
+    public static bool HasActiveClaims(this IClaimSource characterGroup)
+    {
+      return characterGroup.Claims.Any(claim => claim.IsActive);
+    }
   }
 }

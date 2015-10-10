@@ -1,10 +1,11 @@
 ﻿@model JoinRpg.DataModel.Character
+@using JoinRpg.Domain
 
 <h3>Действительно ли вы хотите удалить персонажа?</h3>
 <div>
     <h4>@Model.CharacterName</h4>
     <hr />
-    @if (Model.HasActiveClaims)
+    @if (Model.HasActiveClaims())
     {
         <p>Удалить персонажа, пока на него есть активные заявки, нельзя. Отклоните или перенаправьте заявки </p>
     }

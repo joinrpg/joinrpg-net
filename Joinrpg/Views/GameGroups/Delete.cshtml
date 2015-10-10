@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.DataModel
+@using JoinRpg.Domain
 @using JoinRpg.Web.Helpers
 @model CharacterGroup
 
@@ -13,8 +14,15 @@
 <h3>Вы действительно хотите удалить группу персонажей?</h3>
 <div>
     <h4>@Model.CharacterGroupName</h4>
-    <hr />
+    <hr/>
+@if (Model.HasActiveClaims())
+{
+    <p>Удалить группу,, пока в ней есть активные заявки, нельзя. Отклоните или перенаправьте заявки </p>
+}
+else
+{
     <dl class="dl-horizontal">
+
         @if (Model.Characters.Any() || Model.ChildGroups.Any())
         {
             <dt>
@@ -54,14 +62,16 @@
         </dd>
     </dl>
 
-    @using (Html.BeginForm()) {
+    using (Html.BeginForm())
+    {
         @Html.AntiForgeryToken()
-          @Html.HiddenFor(model => model.CharacterGroupId)
-      @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.CharacterGroupId)
+        @Html.HiddenFor(model => model.ProjectId)
         <div class="form-actions no-color">
             <input type="submit" value="Удалить" class="btn btn-default"/>
             <br/>
-            @Html.ActionLink("Назад к сетке ролей", "Index", new { @Model.ProjectId}, null)
+            @Html.ActionLink("Назад к сетке ролей", "Index", new {@Model.ProjectId}, null)
         </div>
     }
+}
 </div>

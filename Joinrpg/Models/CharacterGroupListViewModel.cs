@@ -71,6 +71,7 @@ namespace JoinRpg.Web.Models
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
           Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
+          ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
           IsPublic = characterGroup.IsPublic,
           IsActive = characterGroup.IsActive

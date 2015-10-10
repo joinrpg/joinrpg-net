@@ -33,11 +33,11 @@
             @if (item.FirstCopy)
             {
                 <div>
-@if (Model.ShowEditControls)
-{
-    <span>
+                    @if (Model.ShowEditControls)
+                    {
+                        <span>
         @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
-@if (!item.IsRoot)
+@if (!item.IsRoot && item.ActiveClaimsCount == 0)
 {
     <span>
     @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null)
@@ -48,59 +48,65 @@
     @Html.ActionLink("персонажа", "Create", "Character", new {Model.ProjectId, item.CharacterGroupId}, null) |
     @Html.ActionLink("подгруппу", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
 </span>
-}
-            @item.Description
-            <ul>
-                @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
-                {
-                    <li>
-                        <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new { Model.ProjectId, character.CharacterId }, null) </strong> 
-                        @if (character.Player != null)
+                    }
+                    @item.Description
+                    <ul>
+                        @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
                         {
-                        <span> @Html.DisplayFor(m => character.Player)</span>
+                            <li>
+                                <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new {Model.ProjectId, character.CharacterId}, null) </strong>
+                                @if (character.Player != null)
+                                {
+                                    <span> @Html.DisplayFor(m => character.Player)</span>
+                                }
+                                else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
+                                {
+                                    @DisplayCount.OfX(character.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                                }
+                                @if (character.IsAvailable)
+                                {
+                                    @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
+                                }
+                                @if (character.IsFirstCopy)
+                                {
+                                    <div>@character.Description</div>
+                                    if (Model.ShowEditControls && character.ActiveClaimsCount == 0)
+                                    {
+                                        @Html.ActionLink("удалить", "Delete", "Character", new {Model.ProjectId, character.CharacterId}, null)
+                                    }
+                                }
+                                else
+                                {
+                                    <span>(см. выше)</span>
+                                }
+                            </li>
                         }
-                        else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
-                        {
-                            @DisplayCount.OfX(character.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                        }
-                        @if (character.IsAvailable)
-                        {
-                         @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, character.CharacterId }, null)
-                        }
-                        @if (character.IsFirstCopy)
-                        {
-                            <div>@character.Description</div>
-                            if (Model.ShowEditControls && character.ActiveClaimsCount == 0)
-                            {
-                                @Html.ActionLink("удалить", "Delete", "Character", new { Model.ProjectId, character.CharacterId }, null)
-                            }
-                        }
-                        else
-                        {
-                            <span>(см. выше)</span>
-                        }
-                </li>
-                }
-            </ul>
+                    </ul>
 
-            @if (item. AvaiableDirectSlots != 0)
-            {
-                <div>
-                    @if (item.AvaiableDirectSlots > 0)
-                    {
-                        <strong>+@item.AvaiableDirectSlots вакансий: </strong>
-                    }
-                    else
-                    {
-                        <strong>есть вакансии: </strong>
-                    }
-                    @Html.ActionLink("заявиться", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
+
+                    <div>
+                        @if (item.AvaiableDirectSlots > 0)
+                        {
+                            <strong>+@item.AvaiableDirectSlots вакансий: </strong>
+                        }
+                        else if (item.AvaiableDirectSlots < 0)
+                        {
+                            <strong>есть вакансии: </strong>
+                        }
+                        @if (Model.ShowEditControls &&
+                             item.ActiveClaimsCount > 0)
+                        {
+                            @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                        }
+                        @if (item.AvaiableDirectSlots != 0)
+                        {
+                            @Html.ActionLink("заявиться", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
+                        }
+
+                    </div>
+
 
                 </div>
-            }
-
-
-        </div>
             }
         </div>
     }

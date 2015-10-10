@@ -80,7 +80,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)
     {
-      var claim = LoadClaim(projectId, claimId, currentUserId);
+      var claim = await LoadClaim(projectId, claimId, currentUserId);
 
       claim.AddCommentImpl(currentUserId, parentCommentId, commentText, DateTime.UtcNow, isVisibleToPlayer, isMyClaim);
       await UnitOfWork.SaveChangesAsync();
@@ -163,7 +163,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = LoadMyClaim(projectId, claimId, currentUserId);
+      var claim = await LoadMyClaim(projectId, claimId, currentUserId);
       if (claim.PlayerDeclinedDate != null)
       {
         throw new DbEntityValidationException();
@@ -223,9 +223,9 @@ namespace JoinRpg.Services.Impl
       return claim;
     }
 
-    private Claim LoadMyClaim(int projectId, int claimId, int currentUserId)
+    private async Task<Claim> LoadMyClaim(int projectId, int claimId, int currentUserId)
     {
-      var claim = LoadClaim(projectId, claimId, currentUserId);
+      var claim = await LoadClaim(projectId, claimId, currentUserId);
       if (claim.PlayerUserId != currentUserId)
       {
         throw new DbEntityValidationException();
@@ -233,9 +233,10 @@ namespace JoinRpg.Services.Impl
       return claim;
     }
 
-    private Claim LoadClaim(int projectId, int claimId, int currentUserId)
+    private async Task<Claim> LoadClaim(int projectId, int claimId, int currentUserId)
     {
-      var claim = LoadProjectSubEntity<Claim>(projectId, claimId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      if (claim == null || claim.ProjectId != projectId) throw new DbEntityValidationException();
       if (!claim.HasAccess(currentUserId))
       {
         throw new DbEntityValidationException();

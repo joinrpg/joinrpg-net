@@ -84,7 +84,9 @@ namespace JoinRpg.Services.Impl
     public async Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic)
     {
-      var field = LoadProjectSubEntity<ProjectCharacterField>(projectId, fieldId);
+      var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(fieldId);
+      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
+      
       field.FieldName = Required(name);
       field.FieldHint = fieldHint;
       field.CanPlayerEdit = canPlayerEdit;
@@ -97,7 +99,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    //TODO: pass projectId and use LoadProjectSubEntity here
+    //TODO: pass projectId 
     public async Task DeleteField(int projectCharacterFieldId)
     {
       var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(projectCharacterFieldId);
@@ -176,9 +178,16 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public void DeleteCharacterGroup(int projectId, int characterGroupId)
+    public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
-      var characterGroup = LoadProjectSubEntity<CharacterGroup>(projectId, characterGroupId);
+      var characterGroup = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      if (characterGroup == null || characterGroup.ProjectId != projectId) throw new DbEntityValidationException();
+
+      if (characterGroup.HasActiveClaims())
+      {
+        throw new DbEntityValidationException();
+      }
+      
       ReparentChilds(characterGroup, characterGroup.ChildGroups);
       ReparentChilds(characterGroup, characterGroup.Characters);
       if (characterGroup.CanBePermanentlyDeleted)
@@ -188,7 +197,7 @@ namespace JoinRpg.Services.Impl
         characterGroup.ParentGroups.CleanLinksList();
       }
       SmartDelete(characterGroup);
-      UnitOfWork.SaveChanges();
+      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce)
@@ -291,7 +300,7 @@ namespace JoinRpg.Services.Impl
       var character = await ProjectRepository.GetCharacterAsync(projectId, characterId);
       if (character == null || character.ProjectId != projectId) throw new DbEntityValidationException();
 
-      if (character.HasActiveClaims)
+      if (character.HasActiveClaims())
       {
         throw new DbEntityValidationException();
       }

@@ -13,7 +13,7 @@ namespace JoinRpg.Services.Interfaces
     Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description);
 
     Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots, int? responsibleMasterId);
-    void DeleteCharacterGroup(int projectId, int characterGroupId);
+    Task DeleteCharacterGroup(int projectId, int characterGroupId);
     Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce);
     Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims);
     Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue);
