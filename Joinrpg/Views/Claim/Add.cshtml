@@ -54,9 +54,12 @@
             @Html.HiddenFor(model => model.CharacterGroupId)
     }
 
-    <div class="form-group">
-        @Model.Description
-    </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Model.Description
+            </div>
+        </div>
 
     <div class="form-group">
         @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })

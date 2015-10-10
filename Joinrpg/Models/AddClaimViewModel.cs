@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Models
     [DisplayName("Заявка")]
     public string TargetName { get; set; }
 
+    [Display(Name="Описание")]
     public HtmlString Description { get; set; }
 
     public bool HasApprovedClaim { get; set; }
