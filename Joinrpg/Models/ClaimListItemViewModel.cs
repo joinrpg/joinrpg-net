@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Models
     [Display (Name="Статус")]
     public Claim.Status ClaimStatus { get; set; }
 
-    [Display (Name ="Обновлена")]
+    [Display (Name ="Обновлена"),UIHint("EventTime")]
     public DateTime? UpdateDate { get; set; }
 
     [Display (Name = "Ответственный")]
