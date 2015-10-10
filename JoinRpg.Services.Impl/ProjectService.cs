@@ -33,7 +33,7 @@ namespace JoinRpg.Services.Impl
           {
             IsPublic = true,
             IsRoot = true,
-            CharacterGroupName = "Все персонажи на игре",
+            CharacterGroupName = "Все роли",
             IsActive = true,
             ResponsibleMasterUserId = creator.UserId
           }
