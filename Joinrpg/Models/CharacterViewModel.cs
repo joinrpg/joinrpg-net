@@ -16,6 +16,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsPublic { get; set; }
 
+    public bool IsActive { get; set; }
+
     public User Player { get; set; }
     public int ActiveClaimsCount { get; set; }
   }

@@ -286,6 +286,25 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task DeleteCharacter(int projectId, int characterId)
+    {
+      var character = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      if (character == null || character.ProjectId != projectId) throw new DbEntityValidationException();
+
+      if (character.HasActiveClaims)
+      {
+        throw new DbEntityValidationException();
+      }
+
+      if (character.CanBePermanentlyDeleted)
+      {
+        character.DirectlyRelatedPlotElements.CleanLinksList();
+        character.Groups.CleanLinksList();
+      }
+      SmartDelete(character);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
     {
       //TODO: Prevent lazy load here - use repository 

@@ -1,0 +1,23 @@
+﻿@model JoinRpg.DataModel.Character
+
+<h3>Действительно ли вы хотите удалить персонажа?</h3>
+<div>
+    <h4>@Model.CharacterName</h4>
+    <hr />
+    @if (Model.HasActiveClaims)
+    {
+        <p>Удалить персонажа, пока на него есть активные заявки, нельзя. Отклоните или перенаправьте заявки </p>
+    }
+    else
+    {
+        using (Html.BeginForm())
+         {
+             @Html.AntiForgeryToken()
+
+             <div class="form-actions no-color">
+                 <input type="submit" value="Удалить" class="btn btn-default"/> |
+                 @Html.ActionLink("Назад к сетке ролей", "Index", "GameGroups", new {Model.ProjectId}, null)
+             </div>
+         }
+    }
+</div>

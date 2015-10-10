@@ -21,7 +21,9 @@ namespace JoinRpg.Web.Models
 
     public IList<CharacterViewModel> Characters { get; set; }
 
-    public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsPublic);
+    public IEnumerable<CharacterViewModel> ActiveCharacters => Characters.Where(c => c.IsActive);
+
+    public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsActive && c.IsPublic);
 
     public HtmlString Description { get; set; }
 

@@ -51,7 +51,7 @@
 }
             @item.Description
             <ul>
-                @foreach (var character in Model.ShowEditControls ? item.Characters : item.PublicCharacters)
+                @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
                 {
                     <li>
                         <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new { Model.ProjectId, character.CharacterId }, null) </strong> 
@@ -68,9 +68,17 @@
                          @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, character.CharacterId }, null)
                         }
                         @if (character.IsFirstCopy)
-                        {<div>@character.Description</div>}
+                        {
+                            <div>@character.Description</div>
+                            if (Model.ShowEditControls && character.ActiveClaimsCount == 0)
+                            {
+                                @Html.ActionLink("удалить", "Delete", "Character", new { Model.ProjectId, character.CharacterId }, null)
+                            }
+                        }
                         else
-                        {<span>(см. выше)</span>}
+                        {
+                            <span>(см. выше)</span>
+                        }
                 </li>
                 }
             </ul>

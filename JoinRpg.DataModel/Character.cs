@@ -3,7 +3,8 @@ using System.Linq;
 
 namespace JoinRpg.DataModel
 {
-  public class Character : IClaimSource
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
+  public class Character : IClaimSource, IDeletableSubEntity
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -27,6 +28,8 @@ namespace JoinRpg.DataModel
     /// </summary>
     public string JsonData { get; set; }
 
+    public bool CanBePermanentlyDeleted => !Claims.Any();
+
     public bool IsActive { get; set; }
 
     public MarkdownString Description { get; set; } = new MarkdownString();
@@ -48,6 +51,8 @@ namespace JoinRpg.DataModel
     public string PlotElementOrderData { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
+
+    public bool HasActiveClaims => Claims.Any(claim => claim.IsActive);
   }
 
   

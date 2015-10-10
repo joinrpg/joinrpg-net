@@ -21,5 +21,6 @@ namespace JoinRpg.Services.Interfaces
     Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims);
     Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue);
+    Task DeleteCharacter(int projectId, int characterId);
   }
 }

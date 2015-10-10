@@ -99,6 +99,7 @@ namespace JoinRpg.Web.Models
           IsAvailable = arg.IsAvailable,
           Description =  arg.Description.ToHtmlString(),
           IsPublic =  arg.IsPublic,
+          IsActive = arg.IsActive,
           ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
           Player = arg.ApprovedClaim?.Player
         };

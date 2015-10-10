@@ -37,11 +37,8 @@ namespace JoinRpg.Services.Impl
     protected T LoadProjectSubEntity<T>(int projectId, int subentityId) where T : class, IProjectSubEntity
     {
       var field = UnitOfWork.GetDbSet<T>().Find(subentityId);
-      if (field != null && field.ProjectId == projectId)
-      {
-        return field;
-      }
-      throw new DbEntityValidationException();
+      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
+      return field;
     }
 
     [NotNull]

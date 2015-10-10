@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -111,6 +110,34 @@ namespace JoinRpg.Web.Controllers
       catch
       {
         return View(viewModel);
+      }
+    }
+
+    [HttpGet,Authorize]
+    public async Task<ActionResult> Delete(int projectid, int characterid)
+    {
+      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      return AsMaster(field) ?? View(field);
+    }
+
+    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    public async Task<ActionResult> Delete(int projectId, int characterId, FormCollection form)
+    {
+      var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      var error = AsMaster(field);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        await ProjectService.DeleteCharacter(projectId, characterId);
+
+        return RedirectToIndex(field.Project);
+      }
+      catch
+      {
+        return View(field);
       }
     }
   }
