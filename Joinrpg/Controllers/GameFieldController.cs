@@ -55,6 +55,10 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      if (!ModelState.IsValid)
+      {
+        return View(viewModel);
+      }
       try
       {
         await ProjectService.AddCharacterField(project.ProjectId, CurrentUserId, viewModel.FieldType, viewModel.Name,
@@ -65,7 +69,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return View();
+        return View(viewModel);
       }
     }
 
@@ -89,6 +93,10 @@ namespace JoinRpg.Web.Controllers
       if (error != null)
       {
         return error;
+      }
+      if (!ModelState.IsValid)
+      {
+        return View(viewModel);
       }
       try
       {

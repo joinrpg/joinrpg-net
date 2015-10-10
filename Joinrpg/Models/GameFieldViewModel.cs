@@ -4,7 +4,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public class GameFieldViewModelBase
+  public class GameFieldViewModelBase : IValidatableObject
   {
     public int ProjectId { get; set; }
 
@@ -22,6 +22,14 @@ namespace JoinRpg.Web.Models
 
     [Display(Name = "Описание")]
     public string FieldHint { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      if (IsPublic && !CanPlayerView)
+      {
+        yield return new ValidationResult("Нельзя скрыть публичное поле от игрока");
+      }
+    }
   }
 
   public class GameFieldEditViewModel : GameFieldViewModelBase
