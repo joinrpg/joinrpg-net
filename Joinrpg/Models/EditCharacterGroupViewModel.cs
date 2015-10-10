@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Models
     public DirectClaimSettings HaveDirectSlots { get; set; }
 
 
-    [Display(Name = "Ответственный мастер")]
+    [Display(Name = "Ответственный мастер для новых заявок")]
     public int ResponsibleMasterId { get; set; }
 
     [ReadOnly(true)]
