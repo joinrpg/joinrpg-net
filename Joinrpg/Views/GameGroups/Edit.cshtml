@@ -1,14 +1,12 @@
-﻿@using JoinRpg.Helpers
-@using JoinRpg.Web.Helpers
-@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Models
 @model EditCharacterGroupViewModel
 
 @{
-  ViewBag.Title = "Редактирование группы персонажей (локации) «" + Model.Name + "» в игре " + Model.ProjectName;
+  ViewBag.Title = "Редактирование группы персонажей «" + Model.Name + "» в игре " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
-
+@Html.Partial("_GroupHelpTextPartial")
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()

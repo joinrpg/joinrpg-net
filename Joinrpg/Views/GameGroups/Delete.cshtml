@@ -4,13 +4,13 @@
 
 
 @{
-  ViewBag.Title = "Удаление группы персонажей (локации) «" + Model.CharacterGroupName + "» из игры " + Model.Project.ProjectName;
+  ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "» из игры " + Model.Project.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
 
 
-<h3>Вы действительно хотите удалить группу персонажей (локацию)?</h3>
+<h3>Вы действительно хотите удалить группу персонажей?</h3>
 <div>
     <h4>@Model.CharacterGroupName</h4>
     <hr />
@@ -18,10 +18,10 @@
         @if (Model.Characters.Any() || Model.ChildGroups.Any())
         {
             <dt>
-                Персонажи в локации
+                Персонажи в группе
             </dt>
             <dd>
-                В локации есть:
+                В группе есть:
                 <ul>
                     @if (Model.Characters.Any())
                     {
@@ -29,11 +29,11 @@
                     }
                     @if (Model.ChildGroups.Any())
                     {
-                        <li>Локации: @Model.ChildGroups.Count </li>
+                        <li>Группы: @Model.ChildGroups.Count </li>
                     }
                 </ul>
-                Подробнее в @Html.ActionLink("сетке ролей", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null) локации. При удалении дочерние персонажи и локации будут автоматически
-                привязаны к локации выше.
+                Подробнее в @Html.ActionLink("сетке ролей", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null) этой группы. При удалении дочерние персонажи и группы будут автоматически
+                привязаны к группам выше.
             </dd>
         }
 

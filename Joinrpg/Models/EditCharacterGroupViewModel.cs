@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models
 
   public abstract class CharacterGroupViewModelBase : EditGameObjectViewModelBase
   {
-    [DisplayName("Название локации"), Required]
+    [DisplayName("Название группы"), Required]
     public string Name { get; set; }
 
     [DisplayName("Лимит прямых заявок"), Range(0, 100)]

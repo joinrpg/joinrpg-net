@@ -9,14 +9,14 @@ namespace JoinRpg.Web.Models
   {
     public int CharacterGroupId { get; set; }
 
-    [DisplayName("Название локации (группы)")]
+    [DisplayName("Название группы ролей")]
     public string Name { get; set; }
 
     public int DeepLevel { get; set; }
 
     public bool FirstCopy { get; set; }
 
-    [DisplayName("Слотов в локации")]
+    [DisplayName("Слотов для заявок в группу")]
     public int AvaiableDirectSlots { get; set; }
 
     public IList<CharacterViewModel> Characters { get; set; }

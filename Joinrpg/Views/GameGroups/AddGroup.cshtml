@@ -4,11 +4,11 @@
 @model AddCharacterGroupViewModel
 
 @{
-  ViewBag.Title = "Добавление группы персонажей (локации) в игру " + Model.ProjectName;
+  ViewBag.Title = "Добавление группы персонажей в игру " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
-
+@Html.Partial("_GroupHelpTextPartial")
 
 @using (Html.BeginForm()) 
 {
@@ -81,7 +81,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Создать локацию / группу персонажей" class="btn btn-default" />
+                <input type="submit" value="Создать группу персонажей" class="btn btn-default" />
             </div>
         </div>
     </div>

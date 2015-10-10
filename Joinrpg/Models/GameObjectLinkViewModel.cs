@@ -50,9 +50,9 @@ namespace JoinRpg.Web.Models
   {
     [Display(Name = "Пользователь")]
     User,
-    [Display(Name = "Группа/локация")]
+    [Display(Name = "Группа ролей")]
     CharacterGroup,
-    [Display(Name = "Персонаж")]
+    [Display(Name = "Персонаж/роль")]
     Character,
     [Display(Name = "Заявка")]
     Claim

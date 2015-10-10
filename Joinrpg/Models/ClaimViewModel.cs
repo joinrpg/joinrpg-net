@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Models
 
     public int? CharacterId { get; set; }
 
-    [DisplayName("Заявка в локацию")]
+    [DisplayName("Заявка в групу")]
     public string GroupName { get; set; }
 
     public int? CharacterGroupId { get; set; }

@@ -448,6 +448,7 @@
     <Content Include="Views\Claim\Responsible.cshtml" />
     <Content Include="Views\Claim\Problems.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\EventTime.cshtml" />
+    <Content Include="Views\GameGroups\_GroupHelpTextPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

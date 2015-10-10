@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public string ProjectName { get; set; }
 
-    [Required, DisplayName("Является частью локаций")]
+    [Required, DisplayName("Является частью групп")]
     public List<int> ParentCharacterGroupIds { get; set; } = new List<int>();
 
     [DisplayName("Публично?")]
