@@ -45,6 +45,7 @@ namespace JoinRpg.Services.Impl
         ProjectId = projectId,
         PlayerUserId = currentUserId,
         PlayerAcceptedDate = addClaimDate,
+        CreateDate =  addClaimDate,
         Comments = new List<Comment>()
         {
           new Comment()
