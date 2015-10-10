@@ -32,6 +32,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Helpers", "JoinRpg.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Services.Email", "JoinRpg.Services.Email\JoinRpg.Services.Email.csproj", "{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web.Test", "JoinRpg.Web.Test\JoinRpg.Web.Test.csproj", "{9536D2A6-1378-4467-B914-438573337AC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.TestHelpers", "JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj", "{7B8DB01F-423B-4BC9-9336-50D772F34F82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +78,14 @@ Global
 		{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9536D2A6-1378-4467-B914-438573337AC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9536D2A6-1378-4467-B914-438573337AC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9536D2A6-1378-4467-B914-438573337AC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9536D2A6-1378-4467-B914-438573337AC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B8DB01F-423B-4BC9-9336-50D772F34F82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B8DB01F-423B-4BC9-9336-50D772F34F82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B8DB01F-423B-4BC9-9336-50D772F34F82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B8DB01F-423B-4BC9-9336-50D772F34F82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

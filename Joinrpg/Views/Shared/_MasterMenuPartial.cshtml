@@ -31,7 +31,8 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Заявки <span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Заявки, назначенные на меня", "Responsible", "Claim", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)</li>
+                            <li>@Html.ActionLink("Проблемные", "Problems", "Claim", new { Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Заявки, назначенные на меня", "Responsible", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)</li>
                             <li>@Html.ActionLink("На обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
                         </ul>
                     </li>

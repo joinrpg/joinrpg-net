@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -32,6 +33,8 @@ namespace JoinRpg.DataModel
     public DateTime? MasterAcceptedDate { get; set; }
     public DateTime? MasterDeclinedDate { get; set; }
 
+    public DateTime CreateDate { get; set; }
+
     public virtual ICollection<Comment> Comments { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
@@ -47,8 +50,7 @@ namespace JoinRpg.DataModel
 
     public DateTime? StatusChangedDate
       =>
-        new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.Where(
-          date => date != null).Max();
+        new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.WhereNotNull().Max();
 
     public enum Status
     {

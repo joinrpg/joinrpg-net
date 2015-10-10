@@ -12,5 +12,6 @@ namespace JoinRpg.Dal.Impl
 
     IUserRepository GetUsersRepository();
     IProjectRepository GetProjectRepository();
+    IClaimsRepository GetClaimsRepository();
   }
 }

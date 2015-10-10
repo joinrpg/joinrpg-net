@@ -8,6 +8,7 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Services.Impl.ClaimProblemFilters;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -185,7 +186,7 @@ namespace JoinRpg.Services.Impl
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      if (!claim.Project.HasSpecificAccess(currentUserId, acl => acl.CanApproveClaims))
+      if (!claim.Project.HasAccess(currentUserId))
       {
         throw new Exception();
       }
@@ -197,9 +198,18 @@ namespace JoinRpg.Services.Impl
       claim.ResponsibleMasterUserId = responsibleMasterId;
 
       claim.AddCommentImpl(currentUserId, null,
-        $"Отвественный мастер: {claim.ResponsibleMasterUser.DisplayName} → {newMaster.DisplayName}", DateTime.UtcNow,
+        $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}", DateTime.UtcNow,
         isVisibleToPlayer: false, isMyClaim: false);
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<IList<ClaimProblem>> GetProblemClaims(int projectId)
+    {
+      var project = await ClaimsRepository.GetClaims(projectId);
+      var filters = new IClaimProblemFilter[] {new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(),};
+      return
+        project.Claims.Where(claim => claim.IsActive)
+          .SelectMany(claim => filters.SelectMany(f => f.GetProblems(project, claim))).ToList();
     }
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)

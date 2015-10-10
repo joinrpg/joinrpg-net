@@ -22,11 +22,15 @@ namespace JoinRpg.Services.Impl
 
     private readonly Lazy<IProjectRepository> _projectRepository;
 
+    protected IClaimsRepository ClaimsRepository => _claimRepository.Value;
+    private readonly Lazy<IClaimsRepository> _claimRepository;
+
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
       UnitOfWork = unitOfWork;
       _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
       _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
+      _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
     }
 
     [NotNull]

@@ -1,0 +1,53 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.ClaimProblemListItemViewModel>
+
+@{
+    ViewBag.Title = "Проблемные заявки";
+}
+
+<h2>@ViewBag.Title</h2>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Player)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ClaimStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdateDate)
+        </th>
+        <th>@Html.DisplayNameFor(model => model.Responsible)</th>
+        <th>@Html.DisplayNameFor(model => model.ProblemType)</th>
+    </tr>
+
+    @foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
+    {
+    <tr>
+        <td>
+            @Html.ActionLink(item.Name, "Edit", "Claim", new { item.ProjectId, item.ClaimId }, null)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Player)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ClaimStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdateDate, "EventTime")
+        </td>
+        <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ProblemType)
+            @if (item.ProblemTime != null)
+            {
+               @Html.DisplayFor(modelItem => item.ProblemTime, "EventTime");
+            }
+        </td>
+
+    </tr>
+    }
+
+</table>

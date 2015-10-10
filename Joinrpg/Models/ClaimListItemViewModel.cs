@@ -1,9 +1,40 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models
 {
+
+  /// <summary>
+  /// <see cref="ClaimProblemType"/>
+  /// </summary>
+  public enum ProblemTypeViewModel
+  {
+    [Display(Name="Нет ответственного мастера")]
+    NoResponsibleMaster,
+    [Display(Name="Неверный ответственный мастер")]
+    InvalidResponsibleMaster,
+    [Display(Name="Заявка без ответа")]
+    ClaimNeverAnswered
+  }
+
+  public class ClaimProblemListItemViewModel : ClaimListItemViewModel
+  {
+    [Display(Name="Проблема")]
+    public ProblemTypeViewModel ProblemType { get; set; }
+
+    public DateTime? ProblemTime { get; set; }
+
+    public static ClaimProblemListItemViewModel FromClaimProblem(ClaimProblem problem)
+    {
+      var self = new ClaimProblemListItemViewModel();
+      self.Assign(problem.Claim);
+      self.ProblemType = (ProblemTypeViewModel) problem.ProblemType;
+      self.ProblemTime = problem.ProblemTime;
+      return self;
+    }
+  }
   public class ClaimListItemViewModel
   {
     [Display(Name="Заявка")]
@@ -30,17 +61,21 @@ namespace JoinRpg.Web.Models
 
     public static ClaimListItemViewModel FromClaim(Claim claim)
     {
-      return new ClaimListItemViewModel()
-      {
-        ClaimId = claim.ClaimId,
-        ClaimStatus = claim.ClaimStatus,
-        Name = claim.Name,
-        Player = claim.Player,
-        ProjectId = claim.ProjectId,
-        ProjectName = claim.Name,
-        UpdateDate = claim.StatusChangedDate,
-        Responsible = claim.ResponsibleMasterUser
-      };
+      var claimListItemViewModel = new ClaimListItemViewModel();
+      claimListItemViewModel.Assign(claim);
+      return claimListItemViewModel;
+    }
+
+    protected void Assign(Claim claim)
+    {
+      ClaimId = claim.ClaimId;
+      ClaimStatus = claim.ClaimStatus;
+      Name = claim.Name;
+      Player = claim.Player;
+      ProjectId = claim.ProjectId;
+      ProjectName = claim.Name;
+      UpdateDate = claim.StatusChangedDate;
+      Responsible = claim.ResponsibleMasterUser;
     }
   }
 }

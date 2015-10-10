@@ -8,5 +8,7 @@ namespace JoinRpg.Data.Interfaces
   public interface IClaimsRepository : IDisposable
   {
     Task<IEnumerable<Claim>>  GetActiveClaimsForUser(int userId);
+
+    Task<Project> GetClaims(int projectId);
   }
 }

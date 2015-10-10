@@ -24,5 +24,13 @@ namespace JoinRpg.Dal.Impl.Repositories
             .Where(c => c.MasterDeclinedDate == null && c.PlayerDeclinedDate == null && c.PlayerUserId == userId)
             .ToListAsync();
     }
+
+    public Task<Project> GetClaims(int projectId)
+    {
+      return
+        Ctx.ProjectsSet.Include(p => p.Claims)
+          .Include(p => p.ProjectAcls)
+          .SingleOrDefaultAsync(p => p.ProjectId == projectId);
+    }
   }
 }

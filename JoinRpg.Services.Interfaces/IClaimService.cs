@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -13,5 +16,29 @@ namespace JoinRpg.Services.Interfaces
     Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
+
+    Task<IList<ClaimProblem>> GetProblemClaims(int projectId);
+  }
+
+  public class ClaimProblem
+  {
+    public Claim Claim { get; }
+    public ClaimProblemType ProblemType{ get; }
+
+    public DateTime? ProblemTime { get; }
+
+    public ClaimProblem(Claim claim, ClaimProblemType problemType, DateTime? problemTime = null)
+    {
+      Claim = claim;
+      ProblemType = problemType;
+      ProblemTime = problemTime;
+    }
+  }
+
+  public enum ClaimProblemType 
+  {
+    NoResponsibleMaster,
+    InvalidResponsibleMaster,
+    ClaimNeverAnswered
   }
 }

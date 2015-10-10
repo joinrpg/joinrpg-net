@@ -29,6 +29,8 @@ namespace JoinRpg.Dal.Impl
       return new ProjectRepository(this);
     }
 
+    public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
+
     public static MyDbContext Create()
     {
       return new MyDbContext();

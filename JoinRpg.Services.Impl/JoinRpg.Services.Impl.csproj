@@ -61,6 +61,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllrpgServiceImpl.cs" />
+    <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
+    <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
+    <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
     <Compile Include="PlotServiceImpl.cs" />

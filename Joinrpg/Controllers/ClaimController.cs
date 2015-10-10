@@ -19,6 +19,7 @@ namespace JoinRpg.Web.Controllers
   {
     private readonly IClaimService _claimService;
     private readonly IPlotRepository _plotRepository;
+    private readonly IClaimsRepository _claimsRepository;
 
     [HttpGet]
     [Authorize]
@@ -36,10 +37,11 @@ namespace JoinRpg.Web.Controllers
       return WithProject(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
-    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
+    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository, IClaimsRepository claimsRepository) : base(userManager, projectRepository, projectService)
     {
       _claimService = claimService;
       _plotRepository = plotRepository;
+      _claimsRepository = claimsRepository;
     }
 
     [HttpPost]
@@ -78,7 +80,7 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName)
     {
       //TODO: Eager load claims
-      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var project = await _claimsRepository.GetClaims(projectId);
       return AsMaster(project) ?? View(viewName, project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
     }
 
@@ -88,6 +90,15 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public Task<ActionResult> Responsible(int projectid, int responsibleMasterId)
       => MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive, "Responsible");
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> Problems(int projectId)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project) ??
+             View(
+               (await _claimService.GetProblemClaims(projectId)).Select(ClaimProblemListItemViewModel.FromClaimProblem));
+    }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
