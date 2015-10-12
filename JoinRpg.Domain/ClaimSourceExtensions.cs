@@ -23,9 +23,9 @@ namespace JoinRpg.Domain
     }
 
     [NotNull]
-    public static IEnumerable<IClaimSource> GetParentGroups([CanBeNull] this IClaimSource @group)
+    public static IEnumerable<CharacterGroup> GetParentGroups([CanBeNull] this IClaimSource @group)
     {
-      return @group.FlatTree(g => g.ParentGroups, false);
+      return @group.FlatTree(g => g.ParentGroups, false).Cast<CharacterGroup>();
     }
 
     public static bool HasActiveClaims(this IClaimSource characterGroup)

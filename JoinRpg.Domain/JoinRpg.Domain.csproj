@@ -55,6 +55,7 @@
     <Compile Include="CharacterFields\CharacterFieldsContainter.cs" />
     <Compile Include="CharacterFields\CharacterFieldValue.cs" />
     <Compile Include="ClaimSourceExtensions.cs" />
+    <Compile Include="ClaimExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

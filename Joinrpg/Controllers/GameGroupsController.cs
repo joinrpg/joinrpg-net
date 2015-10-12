@@ -256,6 +256,5 @@ namespace JoinRpg.Web.Controllers
 
       return AsMaster(field, pa => pa.CanChangeFields) ?? action(field.Project, field);
     }
-
   }
 }

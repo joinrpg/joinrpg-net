@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -97,35 +96,5 @@ namespace JoinRpg.DataModel
     int? ILinkable.ProjectId => ProjectId;
 
     #endregion
-  }
-
-  public static class ClaimStaticExtensions
-  {
-    public static bool HasAccess(this Claim claim, int? currentUserId)
-    {
-      return currentUserId != null &&
-             (claim.PlayerUserId == currentUserId || claim.Project.HasAccess(currentUserId.Value));
-    }
-
-    public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)
-    {
-      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive && c.ProjectId == claim.ProjectId);
-    }
-
-    /// <summary>
-    /// If claims for group, not for character, this is 0
-    /// </summary>
-    /// <param name="claim"></param>
-    /// <returns></returns>
-    [NotNull]
-    public static IEnumerable<Claim> OtherClaimsForThisCharacter(this Claim claim)
-    {
-      return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
-    }
-
-    public static IClaimSource GetTarget(this Claim claim)
-    {
-      return (IClaimSource) claim.Character ?? claim.Group;
-    }
   }
 }

@@ -306,10 +306,7 @@ namespace JoinRpg.Services.Impl
 
     public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate, int initiatorUserId)
     {
-      return claim.GetTarget() //Character or group
-        .GetParentGroups() //Get parents
-        .Union(claim.Group) //Don't forget group himself
-        .WhereNotNull() //..that can be null
+      return claim.GetParentGroups() //Get all groups for claim
         .SelectMany(g => g.Subscriptions) //get subscriptions on groups
         .Union(claim.Subscriptions) //subscribtions on claim
         .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters

@@ -36,6 +36,7 @@
                     @if (Model.ShowEditControls)
                     {
                         <span>
+@Html.ActionLink("Список заявок", "ListForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null) |
         @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
 @if (!item.IsRoot && item.ActiveClaimsCount == 0)
 {
@@ -96,7 +97,7 @@
                         @if (Model.ShowEditControls &&
                              item.ActiveClaimsCount > 0)
                         {
-                            @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                            @Html.ActionLink(DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"), "ListForGroupDirect", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
                         }
                         @if (item.AvaiableDirectSlots != 0)
                         {

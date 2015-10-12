@@ -37,7 +37,9 @@ namespace JoinRpg.Web.Controllers
       return WithProject(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
-    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository, IClaimsRepository claimsRepository) : base(userManager, projectRepository, projectService)
+    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
+      IClaimsRepository claimsRepository) : base(userManager, projectRepository, projectService)
     {
       _claimService = claimService;
       _plotRepository = plotRepository;
@@ -77,19 +79,37 @@ namespace JoinRpg.Web.Controllers
     public Task<ActionResult> ForPlayer(int projectId, int userId)
       => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, "ForPlayer");
 
+    [HttpGet, Authorize]
+    public Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId)
+    {
+      ViewBag.CharacterGroupId = characterGroupId;
+      ViewBag.ProjectId = projectId;
+      return MasterList(projectId, cl => cl.CharacterGroupId == characterGroupId, "ListForGroupDirect");
+    }
+
+    public Task<ActionResult> ListForGroup(int projectId, int characterGroupId)
+    {
+      ViewBag.CharacterGroupId = characterGroupId;
+      ViewBag.ProjectId = projectId;
+      return MasterList(projectId, cl => cl.PartOfGroup(characterGroupId), "ListForGroup");
+    }
+
     private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName)
     {
-      //TODO: Eager load claims
       var project = await _claimsRepository.GetClaims(projectId);
-      return AsMaster(project) ?? View(viewName, project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
+      return AsMaster(project) ??
+             View(viewName, project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> Discussing(int projectid) => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing");
+    public Task<ActionResult> Discussing(int projectid)
+      => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing");
 
     [HttpGet, Authorize]
     public Task<ActionResult> Responsible(int projectid, int responsibleMasterId)
-      => MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive, "Responsible");
+      =>
+        MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,
+          "Responsible");
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId)
@@ -132,7 +152,9 @@ namespace JoinRpg.Web.Controllers
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
         Description = claim.Character?.Description,
-        Masters = MasterListItemViewModel.FromProject(claim.Project).Union(new MasterListItemViewModel() {Id = "-1", Name="Нет"}),
+        Masters =
+          MasterListItemViewModel.FromProject(claim.Project)
+            .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1
       };
 
@@ -146,7 +168,8 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownString description, FormCollection formCollection)
+    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownString description,
+      FormCollection formCollection)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
       var error = WithClaim(claim);
@@ -160,8 +183,10 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName, description.Contents,
-          GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+        await
+          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName,
+            description.Contents,
+            GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
       catch
@@ -186,7 +211,8 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        await _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        await
+          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -215,7 +241,8 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        await _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        await
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -244,7 +271,8 @@ namespace JoinRpg.Web.Controllers
         {
           throw new DbEntityValidationException();
         }
-        await _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+        await
+          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -272,9 +300,9 @@ namespace JoinRpg.Web.Controllers
       catch
       {
         //TODO: Message 
-        return RedirectToAction("Edit", "Claim", new { claimId, projectId });
+        return RedirectToAction("Edit", "Claim", new {claimId, projectId});
       }
-      return RedirectToAction("Edit", "Claim", new { claimId, projectId });
+      return RedirectToAction("Edit", "Claim", new {claimId, projectId});
     }
   }
 }

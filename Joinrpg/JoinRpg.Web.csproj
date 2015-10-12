@@ -450,6 +450,8 @@
     <Content Include="Views\Shared\DisplayTemplates\EventTime.cshtml" />
     <Content Include="Views\GameGroups\_GroupHelpTextPartial.cshtml" />
     <Content Include="Views\Character\Delete.cshtml" />
+    <Content Include="Views\Claim\ListForGroupDirect.cshtml" />
+    <Content Include="Views\Claim\ListForGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
