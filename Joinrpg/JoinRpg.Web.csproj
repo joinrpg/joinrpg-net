@@ -452,6 +452,8 @@
     <Content Include="Views\Character\Delete.cshtml" />
     <Content Include="Views\Claim\ListForGroupDirect.cshtml" />
     <Content Include="Views\Claim\ListForGroup.cshtml" />
+    <Content Include="Views\Claim\ActiveList.cshtml" />
+    <Content Include="Views\Claim\DeclinedList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

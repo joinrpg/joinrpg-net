@@ -304,5 +304,10 @@ namespace JoinRpg.Web.Controllers
       }
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
     }
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> ActiveList(int projectid) => MasterList(projectid, claim => claim.IsActive, "ActiveList");
+
+    public Task<ActionResult> DeclinedList(int projectid) => MasterList(projectid, claim => !claim.IsActive, "DeclinedList");
   }
 }
