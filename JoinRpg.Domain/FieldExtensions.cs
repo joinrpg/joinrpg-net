@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -12,6 +8,12 @@ namespace JoinRpg.Domain
     public static bool HasValueList(this ProjectCharacterField field)
     {
       return field.FieldType == CharacterFieldType.Dropdown;
+    }
+
+    public static ProjectCharacterFieldDropdownValue GetDropdownValueOrDefault(this CharacterFieldValue field)
+    {
+      return field.Field.DropdownValues.SingleOrDefault(
+        v => v.ProjectCharacterFieldDropdownValueId.ToString() == field.Value);
     }
   }
 }

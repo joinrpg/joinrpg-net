@@ -1,4 +1,4 @@
-﻿using System; 
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (project.HasAccess(CurrentUserIdOrDefault))
+      if (project.HasMasterAccess(CurrentUserIdOrDefault))
       {
         ViewBag.MasterMenu = new MasterMenuViewModel
         {
@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return NoAccesToProjectView(claim.Project);
       }
-      return WithEntity(claim.Project);
+      return WithEntity(claim);
     }
 
     protected ActionResult WithClaim(Claim claim)
@@ -78,7 +78,7 @@ namespace JoinRpg.Web.Controllers.Common
         return NoAccesToProjectView(claim.Project);
       }
 
-      return WithEntity(claim.Project);
+      return WithEntity(claim);
     }
 
     protected static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
@@ -94,7 +94,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
     {
       return WithEntity(entity) ??
-             (entity.Project.HasSpecificAccess(CurrentUserId, requiredRights)
+             (entity.HasMasterAccess(CurrentUserId, requiredRights)
                ? null
                : NoAccesToProjectView(entity.Project));
     }
@@ -120,6 +120,13 @@ namespace JoinRpg.Web.Controllers.Common
         return errorResult;
       }
       return RedirectToIndex(project1);
+    }
+
+    protected IEnumerable<T> LoadIfMaster<T>(Project project, Func<IEnumerable<T>> load)
+    {
+      return (User.Identity.IsAuthenticated && project.HasMasterAccess(CurrentUserId))
+        ? load()
+        : new T[] {};
     }
   }
 }

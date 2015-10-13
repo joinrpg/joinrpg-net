@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Impl
 {
@@ -98,14 +99,6 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
       return characters;
-    }
-
-    protected static void RequestAccess(int currentUserId, IProjectEntity field, Func<ProjectAcl, bool> requiredAccess)
-    {
-      if (!field.Project.HasSpecificAccess(currentUserId, requiredAccess))
-      {
-        throw new Exception();
-      }
     }
   }
 }

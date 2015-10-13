@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> ShowCharacter(Project project, Character character)
     {
-      var hasMasterAccess = project.HasAccess(CurrentUserIdOrDefault);
+      var hasMasterAccess = project.HasMasterAccess(CurrentUserIdOrDefault);
       var approvedClaimUser = character.ApprovedClaim?.Player;
       var hasAnyAccess = hasMasterAccess || (User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId);
       var viewModel = new CharacterDetailsViewModel

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -100,12 +99,6 @@ namespace JoinRpg.Web.Controllers
         viewModel.OriginalName = project.ProjectName;
         return View(viewModel);
       }
-    }
-
-    protected async Task<ActionResult> WithMyClaim (int projectId, int claimId, Func<Project, Claim, ActionResult> actionResult)
-    {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      return WithMyClaim(claim) ?? actionResult(claim.Project, claim);
     }
   }
 }

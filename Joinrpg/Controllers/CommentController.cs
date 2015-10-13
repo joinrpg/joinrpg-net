@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
@@ -29,7 +30,7 @@ namespace JoinRpg.Web.Controllers
       if (error != null) return error;
       try
       {
-        if (viewModel.HideFromUser && !claim.Project.HasAccess(CurrentUserId))
+        if (viewModel.HideFromUser && !claim.Project.HasMasterAccess(CurrentUserId))
         {
           throw new DbEntityValidationException();
         }

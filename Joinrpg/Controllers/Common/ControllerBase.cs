@@ -73,13 +73,6 @@ namespace JoinRpg.Web.Controllers.Common
         : new T[] { };
     }
 
-    protected IEnumerable<T> LoadIfMaster<T>(Project project, Func<IEnumerable<T>> load)
-    {
-      return (User.Identity.IsAuthenticated && project.HasAccess(CurrentUserId))
-        ? load()
-        : new T[] {};
-    }
-
     protected ActionResult RedirectToAction(RouteTarget routeTarget)
     {
       return RedirectToAction(routeTarget.Action, routeTarget.Controller, routeTarget.Params);

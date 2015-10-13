@@ -187,14 +187,10 @@ namespace JoinRpg.Services.Impl
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      if (!claim.Project.HasAccess(currentUserId))
-      {
-        throw new Exception();
-      }
-      if (!claim.Project.HasAccess(responsibleMasterId))
-      {
-        throw new DbEntityValidationException();
-      }
+      claim.RequestMasterAccess(currentUserId);
+      claim.RequestMasterAccess(responsibleMasterId);
+
+
       var newMaster = await UserRepository.GetById(responsibleMasterId);
       claim.ResponsibleMasterUserId = responsibleMasterId;
 
@@ -216,10 +212,7 @@ namespace JoinRpg.Services.Impl
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      if (!claim.Project.HasSpecificAccess(currentUserId, acl => acl.CanApproveClaims))
-      {
-        throw new DbEntityValidationException();
-      }
+      claim.RequestMasterAccess(currentUserId, acl => acl.CanApproveClaims);
       return claim;
     }
 

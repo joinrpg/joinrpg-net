@@ -10,8 +10,7 @@ namespace JoinRpg.Domain
   {
     public static bool HasAccess(this Claim claim, int? currentUserId)
     {
-      return currentUserId != null &&
-             (claim.PlayerUserId == currentUserId || claim.Project.HasAccess(currentUserId.Value));
+      return (claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId));
     }
 
     public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)

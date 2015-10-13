@@ -45,17 +45,4 @@ namespace JoinRpg.DataModel
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
   }
-
-  public static class ProjectStaticExtensions
-  {
-    public static bool HasSpecificAccess(this Project project, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
-    {
-      return project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
-    }
-
-    public static bool HasAccess(this Project project, int? currentUserId)
-    {
-      return project.ProjectAcls.Any(pa => pa.UserId == currentUserId);
-    }
-  }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -63,7 +64,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteFolder(int projectId, int plotFolderId, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.Project.HasAccess(currentUserId))
+      if (!folder.HasMasterAccess(currentUserId))
       {
         throw new DbEntityValidationException();
       }
@@ -85,7 +86,7 @@ namespace JoinRpg.Services.Impl
     private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.Project.HasAccess(currentUserId))
+      if (!folder.HasMasterAccess(currentUserId))
       {
         throw new DbEntityValidationException();
       }

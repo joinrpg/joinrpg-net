@@ -54,7 +54,7 @@ namespace JoinRpg.Services.Impl
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
-      if (!project.HasSpecificAccess(currentUserId, acl => acl.CanChangeFields))
+      if (!project.HasMasterAccess(currentUserId, acl => acl.CanChangeFields))
       {
         throw new Exception();
       }
@@ -213,10 +213,8 @@ namespace JoinRpg.Services.Impl
     public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
-      {
-        throw new Exception();
-      }
+      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
       if (acl == null)
       {
@@ -234,10 +232,8 @@ namespace JoinRpg.Services.Impl
     public async Task RemoveAccess(int projectId, int currentUserId, int userId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
-      {
-        throw new Exception();
-      }
+      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
       UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
       await UnitOfWork.SaveChangesAsync();
@@ -247,10 +243,8 @@ namespace JoinRpg.Services.Impl
       bool canChangeProjectProperties, bool canApproveClaims)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (!project.HasSpecificAccess(currentUserId, a => a.CanGrantRights))
-      {
-        throw new Exception();
-      }
+      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+      
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
@@ -262,10 +256,8 @@ namespace JoinRpg.Services.Impl
     public async Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue)
     {
       var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
-      if (!group.Project.HasAccess(currentUserId))
-      {
-        throw new Exception();
-      }
+      group.RequestMasterAccess(currentUserId);
+      
       var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue;
       var user = await UserRepository.GetWithSubscribe(currentUserId);
       var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == characterGroupId);
@@ -318,7 +310,7 @@ namespace JoinRpg.Services.Impl
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
 
-      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
       field.DropdownValues.Add(new ProjectCharacterFieldDropdownValue()
       {
@@ -339,7 +331,7 @@ namespace JoinRpg.Services.Impl
     {
       var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
 
-      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
       field.Description = description;
       field.Label = label;
@@ -351,7 +343,7 @@ namespace JoinRpg.Services.Impl
     {
       var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
 
-      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
       SmartDelete(field);
       await UnitOfWork.SaveChangesAsync();
@@ -363,7 +355,7 @@ namespace JoinRpg.Services.Impl
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       var fields = character.Fields();
 
-      var hasMasterAccess = character.Project.HasAccess(currentUserId);
+      var hasMasterAccess = character.HasMasterAccess(currentUserId);
       var hasPlayerAccess = character.ApprovedClaim?.PlayerUserId == currentUserId;
 
       if (!hasMasterAccess && !hasPlayerAccess)
@@ -401,9 +393,7 @@ namespace JoinRpg.Services.Impl
 
         if (field.Field.HasValueList())
         {
-          var value =
-            field.Field.DropdownValues.SingleOrDefault(
-              v => v.ProjectCharacterFieldDropdownValueId.ToString() == newValue);
+          var value = field.GetDropdownValueOrDefault();
 
           if (value == null)
           {

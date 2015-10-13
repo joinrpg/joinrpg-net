@@ -129,7 +129,7 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      var hasMasterAccess = claim.Project.HasAccess(CurrentUserId);
+      var hasMasterAccess = claim.Project.HasMasterAccess(CurrentUserId);
       var isMyClaim = claim.PlayerUserId == CurrentUserId;
       var claimViewModel = new ClaimViewModel()
       {
@@ -139,7 +139,7 @@ namespace JoinRpg.Web.Controllers
         HasMasterAccess = hasMasterAccess,
         HasPlayerAccessToCharacter = hasMasterAccess || (isMyClaim && claim.IsApproved),
         CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] {},
-        HasApproveRejectClaim = claim.Project.HasSpecificAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        HasApproveRejectClaim = claim.Project.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
@@ -177,7 +177,7 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      if ((!claim.IsApproved && !claim.Project.HasAccess(CurrentUserId)) || claim.CharacterId == null)
+      if ((!claim.IsApproved && !claim.Project.HasMasterAccess(CurrentUserId)) || claim.CharacterId == null)
       {
         return await Edit(projectId, claimId);
       }

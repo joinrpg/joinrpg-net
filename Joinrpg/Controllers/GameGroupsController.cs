@@ -32,7 +32,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
-          ShowEditControls = field.Project.HasAccess(CurrentUserIdOrDefault),
+          ShowEditControls = field.Project.HasMasterAccess(CurrentUserIdOrDefault),
           Data = CharacterGroupListViewModel.FromGroup(field)
         });
     }
@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Controllers
         {
           field.Project.ProjectId,
           field.Project.ProjectName,
-          ShowEditControls = field.Project.HasAccess(CurrentUserIdOrDefault),
+          ShowEditControls = field.Project.HasMasterAccess(CurrentUserIdOrDefault),
           Groups =
             CharacterGroupListViewModel.FromGroup(field)
               .PublicGroups.Select(
