@@ -34,7 +34,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return await ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
     }
 
-    public Project GetProject(int project) => AllProjects.SingleOrDefault(p => p.ProjectId == project);
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
@@ -67,13 +66,13 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Project)
           .Include(c => c.Project.ProjectFields)
           .Include(c => c.Claims)
-          //TODO .Include (c => c.Clalims.User)
+          //TODO .Include (c => c.Claims.User)
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
     public CharacterGroup GetCharacterGroup(int projectId, int groupId)
     {
-      return GetProject(projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
+      return AllProjects.Single(p => p.ProjectId == projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
     }
 
     public Task<Claim> GetClaim(int projectId, int claimId)
@@ -95,7 +94,26 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds)
     {
-      return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId&& groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
+      return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
+    }
+
+    public Task<ProjectCharacterField> GetProjectField(int projectId, int projectCharacterFieldId)
+    {
+      return Ctx.Set<ProjectCharacterField>()
+        .Include(f => f.Project)
+        .Include(f => f.DropdownValues)
+        .SingleOrDefaultAsync(f => f.ProjectCharacterFieldId == projectCharacterFieldId && f.ProjectId == projectId);
+    }
+
+    public async Task<ProjectCharacterFieldDropdownValue> GetFieldValue(int projectId, int projectCharacterFieldDropdownValueId)
+    {
+      return await Ctx.Set<ProjectCharacterFieldDropdownValue>()
+        .Include(f => f.Project)
+        .Include(f => f.ProjectCharacterField)
+        .SingleOrDefaultAsync(
+          f =>
+            f.ProjectId == projectId &&
+            f.ProjectCharacterFieldDropdownValueId == projectCharacterFieldDropdownValueId);
     }
   }
 

@@ -7,6 +7,7 @@ namespace JoinRpg.Domain
   public class CharacterFieldValue
   {
     private string _value;
+    public const string HtmlIdPrefix = "field_";
 
     public CharacterFieldValue(CharacterFieldsContainter containter, ProjectCharacterField field, string value)
     {
@@ -29,7 +30,7 @@ namespace JoinRpg.Domain
     }
 
     //TODO: This is example of web logic we like to have here, so clearly viewModel
-    public string FieldClientId => $"field_{Field.ProjectCharacterFieldId}";
+    public string FieldClientId => $"{HtmlIdPrefix}{Field.ProjectCharacterFieldId}";
 
   private CharacterFieldsContainter Containter { get; }
   }

@@ -20,7 +20,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return WithProject(project) ?? View(new ProjectDetailsViewModel()
+      return WithEntity(project) ?? View(new ProjectDetailsViewModel()
       {
         ProjectAnnounce = project.Details?.ProjectAnnounce,
         ProjectId = project.ProjectId,

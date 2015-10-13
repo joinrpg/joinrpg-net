@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
@@ -38,6 +41,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsActive { get; set; }
 
+    public bool HasValueList { get; }
+
     public GameFieldEditViewModel(ProjectCharacterField field)
     {
       CanPlayerView = field.CanPlayerView;
@@ -48,14 +53,20 @@ namespace JoinRpg.Web.Models
       Name = field.FieldName;
       ProjectId = field.ProjectId;
       IsActive = field.IsActive;
+      HasValueList = field.HasValueList();
+      DropdownValues = field.DropdownValues.Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
     }
 
     public GameFieldEditViewModel()
     { }
+
+    [ReadOnly(true)]
+    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; set; }
   }
 
   public class GameFieldCreateViewModel : GameFieldViewModelBase
   {
+    [Display(Name="Тип поля")]
     public CharacterFieldType FieldType { get; set; }
   }
 
@@ -63,5 +74,68 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectId { get; set; }
     public IEnumerable<GameFieldEditViewModel> Items { get; set; }
+  }
+
+  public abstract class GameFieldDropdownValueViewModelBase
+  {
+    [Display(Name="Значение"), Required]
+    public string Label { get; set; }
+
+    [Display(Name = "Описание"),DataType(DataType.MultilineText)]
+    public string Description { get; set; }
+
+    public int ProjectId { get; set; }
+    public int ProjectCharacterFieldId { get; set; }
+  }
+
+  public class GameFieldDropdownValueListItemViewModel : GameFieldDropdownValueViewModelBase
+  {
+    public bool IsActive { get; set; }
+
+    public int ProjectCharacterFieldDropdownValueId { get; set; }
+
+    public GameFieldDropdownValueListItemViewModel(ProjectCharacterFieldDropdownValue value)
+    {
+      Label = value.Label;
+      Description = value.Description;
+      IsActive = value.IsActive;
+      ProjectId = value.ProjectId;
+      ProjectCharacterFieldId = value.ProjectCharacterFieldId;
+      ProjectCharacterFieldDropdownValueId = value.ProjectCharacterFieldDropdownValueId;
+    }
+  }
+
+  public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewModelBase
+  {
+    public bool IsActive
+    { get; set; }
+
+    public int ProjectCharacterFieldDropdownValueId
+    { get; set; }
+
+    public GameFieldDropdownValueEditViewModel(ProjectCharacterFieldDropdownValue value)
+    {
+      Label = value.Label;
+      Description = value.Description;
+      IsActive = value.IsActive;
+      ProjectId = value.ProjectId;
+      ProjectCharacterFieldId = value.ProjectCharacterFieldId;
+      ProjectCharacterFieldDropdownValueId = value.ProjectCharacterFieldDropdownValueId;
+    }
+
+    public GameFieldDropdownValueEditViewModel() { }//For binding
+
+  }
+
+  public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewModelBase
+  {
+    public GameFieldDropdownValueCreateViewModel(ProjectCharacterField field)
+    {
+      ProjectId = field.ProjectId;
+      ProjectCharacterFieldId = field.ProjectCharacterFieldId;
+      Label = $"Вариант {(field.DropdownValues.Count + 1)}";
+    }
+
+    public GameFieldDropdownValueCreateViewModel() { }//For binding
   }
 }

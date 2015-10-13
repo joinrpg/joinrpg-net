@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace JoinRpg.DataModel
 {
-  public class Comment : IProjectSubEntity
+  public class Comment : IProjectEntity
   {
     public int CommentId { get; set; }
 
     public virtual  Project Project { get; set; }
     public int ProjectId { get; set; }
 
-    int IProjectSubEntity.Id => CommentId;
+    int IProjectEntity.Id => CommentId;
 
     public int ClaimId { get; set; }
     public virtual Claim Claim { get; set; }

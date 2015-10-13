@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -75,10 +74,10 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     // GET: GameFields/Edit/5
-    public ActionResult Edit(int projectId, int projectCharacterFieldId)
+    public async Task<ActionResult> Edit(int projectId, int projectCharacterFieldId)
     {
-      return WithGameFieldAsMaster(projectId, projectCharacterFieldId,
-        (project, field) => View(new GameFieldEditViewModel(field)));
+      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
+      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new GameFieldEditViewModel(field));
     }
 
     // POST: GameFields/Edit/5
@@ -114,10 +113,10 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     // GET: GameFields/Delete/5
-    public ActionResult Delete(int projectId, int projectCharacterFieldId)
+    public async Task<ActionResult> Delete(int projectId, int projectCharacterFieldId)
     {
-      return WithGameFieldAsMaster(projectId, projectCharacterFieldId, (project, field) => View(field));
-
+      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
+      return AsMaster(field, pa => pa.CanChangeFields) ?? View(field);
     }
 
     // POST: GameFields/Delete/5
@@ -125,8 +124,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(int projectId, int projectCharacterFieldId, FormCollection collection)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      var field = project.AllProjectFields.SingleOrDefault(e => e.ProjectCharacterFieldId == projectCharacterFieldId);
+      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
 
       var error = AsMaster(field, pa => pa.CanChangeFields);
       if (error != null)
@@ -138,23 +136,109 @@ namespace JoinRpg.Web.Controllers
         {
           await ProjectService.DeleteField(field.ProjectCharacterFieldId);
 
-          return ReturnToIndex(project);
+          return ReturnToIndex(field.Project);
         }
         catch
         {
           return View(field);
         }
       }
-
-
     }
 
-    private ActionResult WithGameFieldAsMaster(int projectId, int fieldId,
-      Func<Project, ProjectCharacterField, ActionResult> action)
+    [HttpGet]
+    public async Task<ActionResult> CreateValue(int projectId, int projectCharacterFieldId)
     {
-      var project1 = ProjectRepository.GetProject(projectId);
-      var field = project1.AllProjectFields.SingleOrDefault(e => e.ProjectCharacterFieldId == fieldId);
-      return AsMaster(field,pa => pa.CanChangeFields) ?? action(project1, field);
+      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
+      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueCreateViewModel(field));
+    }
+
+    [HttpPost,ValidateAntiForgeryToken]
+    public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
+    {
+      var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectCharacterFieldId);
+
+      var error = AsMaster(field, pa => pa.CanChangeFields);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        await
+          ProjectService.CreateFieldValue(field.ProjectId, field.ProjectCharacterFieldId, CurrentUserId, viewModel.Label,
+            viewModel.Description);
+
+        return ReturnToIndex(field.Project);
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> EditValue(int projectCharacterFieldDropdownValueId, int projectId, int projectCharacterFieldId)
+    {
+      var value = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
+      return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(value));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> EditValue(GameFieldDropdownValueEditViewModel viewModel)
+    {
+      var value =
+        await
+          ProjectRepository.GetFieldValue(viewModel.ProjectId, viewModel.ProjectCharacterFieldDropdownValueId);
+
+      var error = AsMaster(value, pa => pa.CanChangeFields);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        await
+          ProjectService.UpdateFieldValue(value.ProjectId, value.ProjectCharacterFieldDropdownValueId, CurrentUserId,
+            viewModel.Label, viewModel.Description);
+
+        return RedirectToAction("Edit", new {viewModel.ProjectId, viewModel.ProjectCharacterFieldId});
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> DeleteValue(int projectCharacterFieldDropdownValueId, int projectId, int projectCharacterFieldId)
+    {
+      var value = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
+      return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(value));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> DeleteValue(GameFieldDropdownValueEditViewModel viewModel)
+    {
+      var value =
+        await
+          ProjectRepository.GetFieldValue(viewModel.ProjectId, viewModel.ProjectCharacterFieldDropdownValueId);
+
+      var error = AsMaster(value, pa => pa.CanChangeFields);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        await
+          ProjectService.DeleteFieldValue(value.ProjectId, value.ProjectCharacterFieldDropdownValueId, CurrentUserId);
+
+        return RedirectToAction("Edit", new { viewModel.ProjectId, viewModel.ProjectCharacterFieldId });
+      }
+      catch
+      {
+        return View(viewModel);
+      }
     }
   }
 }

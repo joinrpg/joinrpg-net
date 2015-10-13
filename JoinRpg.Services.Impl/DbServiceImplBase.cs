@@ -35,7 +35,7 @@ namespace JoinRpg.Services.Impl
 
     [NotNull]
     protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
-      where T : class, IProjectSubEntity
+      where T : class, IProjectEntity
     {
       var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
       if (field != null && field.ProjectId == projectId)
@@ -98,6 +98,14 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
       return characters;
+    }
+
+    protected static void RequestAccess(int currentUserId, IProjectEntity field, Func<ProjectAcl, bool> requiredAccess)
+    {
+      if (!field.Project.HasSpecificAccess(currentUserId, requiredAccess))
+      {
+        throw new Exception();
+      }
     }
   }
 }

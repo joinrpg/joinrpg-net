@@ -410,7 +410,6 @@
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
     <Content Include="Views\User\Details.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\CharacterFieldValue.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\CharacterFieldValue.cshtml" />
     <Content Include="Views\Shared\CharacterFieldsPartial.cshtml" />
@@ -454,6 +453,11 @@
     <Content Include="Views\Claim\ListForGroup.cshtml" />
     <Content Include="Views\Claim\ActiveList.cshtml" />
     <Content Include="Views\Claim\DeclinedList.cshtml" />
+    <Content Include="Views\GameField\ValuesList.cshtml" />
+    <Content Include="Views\GameField\CreateValue.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
+    <Content Include="Views\GameField\EditValue.cshtml" />
+    <Content Include="Views\GameField\DeleteValue.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

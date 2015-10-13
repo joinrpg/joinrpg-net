@@ -5,9 +5,11 @@ using System.Linq;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
-  public class Project
+  public class Project : IProjectEntity
   {
     public int ProjectId { get; set; }
+
+    int IProjectEntity.Id => ProjectId;
 
     public string ProjectName { get; set; }
 
@@ -33,6 +35,8 @@ namespace JoinRpg.DataModel
     public virtual ProjectDetails Details { get; set; }
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
+
+    Project IProjectEntity.Project => this;
   }
 
   public class ProjectDetails
@@ -44,7 +48,7 @@ namespace JoinRpg.DataModel
 
   public static class ProjectStaticExtensions
   {
-    public static bool HasSpecificAccess(this Project project, int currentUserId, Func<ProjectAcl, bool> requiredAccess)
+    public static bool HasSpecificAccess(this Project project, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
     {
       return project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
     }
@@ -52,11 +56,6 @@ namespace JoinRpg.DataModel
     public static bool HasAccess(this Project project, int? currentUserId)
     {
       return project.ProjectAcls.Any(pa => pa.UserId == currentUserId);
-    }
-
-    public static ProjectAcl GetProjectAcl(this Project project, int? userId)
-    {
-      return project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
     }
   }
 }

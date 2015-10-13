@@ -1,11 +1,29 @@
-﻿@model JoinRpg.Domain.CharacterFieldValue
+﻿@using JoinRpg.DataModel
+@model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
     <div class="col-md-2">
-        @Model.Field.FieldName
+        <b> @Model.Field.FieldName</b>
     </div>
-    
+
     <div class="col-md-10">
-        @Html.EditorFor(model => model.Value, null, Model.FieldClientId)
+        @if (Model.Field.FieldType == CharacterFieldType.Text)
+        {
+            <textarea cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" rows="4">@(Model == null ? "" : Model.Value)</textarea>
+        }
+        else if (Model.Field.FieldType == CharacterFieldType.Dropdown)
+        {
+            <select name="@Model.FieldClientId" id="@Model.FieldClientId">
+                @foreach (var val in Model.Field.DropdownValues)
+                {
+                    <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value? "selected='selected'" : "")>@val.Label</option>
+                }
+            </select>
+        }
+        else
+        {
+            <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text">
+
+        }
         @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
     </div>
 </div>

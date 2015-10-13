@@ -5,7 +5,7 @@ using System.Linq;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global — required by LINQ
-  public class PlotElement : IProjectSubEntity, IDeletableSubEntity
+  public class PlotElement : IProjectEntity, IDeletableSubEntity
   {
     public int PlotElementId { get; set; }
 
@@ -13,7 +13,7 @@ namespace JoinRpg.DataModel
 
     public Project Project { get; set; }
 
-    int IProjectSubEntity.Id => PlotElementId;
+    int IProjectEntity.Id => PlotElementId;
 
     public int PlotFolderId { get; set; }
 

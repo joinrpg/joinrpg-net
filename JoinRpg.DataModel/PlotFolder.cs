@@ -6,13 +6,13 @@ using System.Linq.Expressions;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global — required by LINQ
-  public class PlotFolder : IProjectSubEntity, IDeletableSubEntity
+  public class PlotFolder : IProjectEntity, IDeletableSubEntity
   {
     public int PlotFolderId { get; set; }
     public int ProjectId { get; set; }
     public virtual Project Project { get; set; }
 
-    int IProjectSubEntity.Id => PlotFolderId;
+    int IProjectEntity.Id => PlotFolderId;
 
     //TODO: Decide if title should be for players or for masters or we need two titles
     public string MasterTitle { get; set; }

@@ -314,6 +314,49 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task CreateFieldValue(int projectId, int projectCharacterFieldId, int currentUserId, string label, string description)
+    {
+      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
+
+      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+
+      field.DropdownValues.Add(new ProjectCharacterFieldDropdownValue()
+      {
+        Description = description,
+        Label = label,
+        IsActive = true,
+        WasEverUsed = false,
+        ProjectId = field.ProjectId,
+        ProjectCharacterFieldId = field.ProjectCharacterFieldId
+      }
+        );
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label,
+      string description)
+    {
+      var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
+
+      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+
+      field.Description = description;
+      field.Label = label;
+      field.IsActive = true;
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId)
+    {
+      var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
+
+      RequestAccess(currentUserId, field, acl => acl.CanChangeFields);
+
+      SmartDelete(field);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
     {
       //TODO: Prevent lazy load here - use repository 
@@ -348,12 +391,29 @@ namespace JoinRpg.Services.Impl
         {
           throw new DbEntityValidationException();
         }
-        //TODO: typechecking here
+        
         field.Value = newValue;
 
         if (!field.Field.WasEverUsed)
         {
           field.Field.WasEverUsed = true;
+        }
+
+        if (field.Field.HasValueList())
+        {
+          var value =
+            field.Field.DropdownValues.SingleOrDefault(
+              v => v.ProjectCharacterFieldDropdownValueId.ToString() == newValue);
+
+          if (value == null)
+          {
+            throw new DbEntityValidationException();
+          }
+
+          if (!value.WasEverUsed)
+          {
+            value.WasEverUsed = true;
+          }
         }
       }
       await UnitOfWork.SaveChangesAsync();

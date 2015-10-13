@@ -1,7 +1,9 @@
-﻿namespace JoinRpg.DataModel
+﻿using System.Collections.Generic;
+
+namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
-  public class ProjectCharacterField : IProjectSubEntity, IDeletableSubEntity
+  public class ProjectCharacterField : IProjectEntity, IDeletableSubEntity
   {
     public int ProjectCharacterFieldId
     { get; set; }
@@ -23,13 +25,15 @@
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }
-    int IProjectSubEntity.Id => ProjectCharacterFieldId;
+    int IProjectEntity.Id => ProjectCharacterFieldId;
 
     public bool IsActive { get; set; }
 
     public bool WasEverUsed { get; set; }
 
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
+
+    public virtual ICollection<ProjectCharacterFieldDropdownValue> DropdownValues { get; set; }
   }
 
   public enum CharacterFieldType

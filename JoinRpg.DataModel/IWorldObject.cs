@@ -2,7 +2,7 @@
 
 namespace JoinRpg.DataModel
 {
-  public interface IWorldObject : IProjectSubEntity
+  public interface IWorldObject : IProjectEntity
   {
     ICollection<CharacterGroup> ParentGroups { get;  }
     string Name { get; }

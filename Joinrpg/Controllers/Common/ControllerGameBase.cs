@@ -22,43 +22,6 @@ namespace JoinRpg.Web.Controllers.Common
       ProjectService = projectService;
     }
 
-    protected ActionResult WithProject(Project project)
-    {
-      if (project == null)
-      {
-        return HttpNotFound();
-      }
-      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
-      if (acl != null)
-      {
-        ViewBag.MasterMenu = new MasterMenuViewModel
-        {
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName
-        };
-      }
-      return null;
-    }
-
-    protected ActionResult AsMaster(Project project, Func<ProjectAcl, bool> requiredRights)
-    {
-      var projectError = WithProject(project);
-      if (projectError != null)
-      {
-        return projectError;
-      }
-      var acl = project.GetProjectAcl(CurrentUserIdOrDefault);
-      if (acl == null || !requiredRights(acl))
-      {
-        return NoAccesToProjectView(project);
-      }
-      return null;
-    }
-
-    protected ActionResult AsMaster(Project project)
-    {
-      return AsMaster(project, acl => true);
-    }
 
     private ActionResult NoAccesToProjectView(Project project)
     {
@@ -72,9 +35,23 @@ namespace JoinRpg.Web.Controllers.Common
     }
 
 
-    protected ActionResult WithEntity(IProjectSubEntity field)
+    protected ActionResult WithEntity(IProjectEntity field)
     {
-      return field == null ? HttpNotFound() : WithProject(field.Project);
+      if (field == null) return HttpNotFound();
+      var project = field.Project;
+      if (project == null)
+      {
+        return HttpNotFound();
+      }
+      if (project.HasAccess(CurrentUserIdOrDefault))
+      {
+        ViewBag.MasterMenu = new MasterMenuViewModel
+        {
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName
+        };
+      }
+      return null;
     }
 
     protected ActionResult WithMyClaim(Claim claim)
@@ -87,7 +64,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return NoAccesToProjectView(claim.Project);
       }
-      return WithProject(claim.Project);
+      return WithEntity(claim.Project);
     }
 
     protected ActionResult WithClaim(Claim claim)
@@ -101,26 +78,28 @@ namespace JoinRpg.Web.Controllers.Common
         return NoAccesToProjectView(claim.Project);
       }
 
-      return WithProject(claim.Project);
+      return WithEntity(claim.Project);
     }
 
     protected static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
     {
-      var prefix = "field.field_";
-      return GetDynamicValuesFromPost(post, prefix);
+      return GetDynamicValuesFromPost(post, CharacterFieldValue.HtmlIdPrefix);
     }
 
-    protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectSubEntity
+    protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity
     {
       return AsMaster(entity, acl => true);
     }
 
-    protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectSubEntity
+    protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
     {
-      return entity == null ? HttpNotFound() : AsMaster(entity.Project, requiredRights);
+      return WithEntity(entity) ??
+             (entity.Project.HasSpecificAccess(CurrentUserId, requiredRights)
+               ? null
+               : NoAccesToProjectView(entity.Project));
     }
 
-    protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectSubEntity> folders)
+    protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders)
     {
       return folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
     }
@@ -135,7 +114,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected async Task<ActionResult> RedirectToProject(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      var errorResult = WithProject(project1);
+      var errorResult = WithEntity(project1);
       if (errorResult != null)
       {
         return errorResult;

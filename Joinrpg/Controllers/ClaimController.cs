@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupAsync(projectid, characterGroupId);
-      return WithProject(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+      return WithEntity(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -52,7 +52,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = WithProject(project);
+      var error = WithEntity(project);
       if (error != null)
       {
         return error;

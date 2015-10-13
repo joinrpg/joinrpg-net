@@ -7,7 +7,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-  public class Claim : IProjectSubEntity, ILinkable
+  public class Claim : IProjectEntity, ILinkable
   {
     public int ClaimId { get; set; }
     public int? CharacterId { get; set; }
@@ -21,7 +21,7 @@ namespace JoinRpg.DataModel
     public int PlayerUserId { get; set; }
 
     public int ProjectId { get; set; }
-    int IProjectSubEntity.Id => ClaimId;
+    int IProjectEntity.Id => ClaimId;
     public virtual Project Project { get; set; }
 
     public virtual User Player { get; set; }

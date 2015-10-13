@@ -49,7 +49,7 @@
     <Compile Include="Comment.cs" />
     <Compile Include="IClaimSource.cs" />
     <Compile Include="IDeletableSubEntity.cs" />
-    <Compile Include="IProjectSubEntity.cs" />
+    <Compile Include="IProjectEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="Links.cs" />
     <Compile Include="MarkdownString.cs" />
@@ -58,6 +58,7 @@
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectCharacterField.cs" />
+    <Compile Include="ProjectCharacterFieldDropdownValue.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserSubscription.cs" />

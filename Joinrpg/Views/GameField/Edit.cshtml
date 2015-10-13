@@ -68,8 +68,14 @@
     </div>
 }
 
+@if (Model.HasValueList)
+{
+    <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectCharacterFieldId})</p>
+    Html.RenderPartial("ValuesList", Model.DropdownValues, null);
+}
+
 <div>
-    @Html.ActionLink("Назад к списку полей", "Index", new {@Model.ProjectId})
+    @Html.ActionLink("Назад к списку полей", "Index", new {Model.ProjectId})
 </div>
 
 @section Scripts {

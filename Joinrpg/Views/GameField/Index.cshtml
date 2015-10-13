@@ -40,7 +40,7 @@
         @foreach (var item in Model.Items)
         {
             <tr>
-                <td>
+                <td class="@(item.IsActive ? "" : "deleted")">
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
