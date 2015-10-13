@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
@@ -12,11 +13,17 @@ namespace JoinRpg.Web.Models
   public enum ProblemTypeViewModel
   {
     [Display(Name="Нет ответственного мастера")]
+    [UsedImplicitly]
     NoResponsibleMaster,
     [Display(Name="Неверный ответственный мастер")]
+    [UsedImplicitly]
     InvalidResponsibleMaster,
     [Display(Name="Заявка без ответа")]
-    ClaimNeverAnswered
+    [UsedImplicitly]
+    ClaimNeverAnswered,
+    [Display(Name="По заявке нет решения")]
+    [UsedImplicitly]
+    ClaimNoDecision
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel

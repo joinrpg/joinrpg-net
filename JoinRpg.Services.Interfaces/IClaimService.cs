@@ -39,6 +39,7 @@ namespace JoinRpg.Services.Interfaces
   {
     NoResponsibleMaster,
     InvalidResponsibleMaster,
-    ClaimNeverAnswered
+    ClaimNeverAnswered,
+    ClaimNoDecision
   }
 }

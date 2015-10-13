@@ -15,6 +15,11 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
       {
         yield return claim.Problem(ClaimProblemType.ClaimNeverAnswered, claim.CreateDate);
       }
+
+      if (DateTime.UtcNow.Subtract(claim.CreateDate) > TimeSpan.FromDays(10))
+      {
+        yield return claim.Problem(ClaimProblemType.ClaimNoDecision, claim.CreateDate);
+      }
     }
   }
 }
