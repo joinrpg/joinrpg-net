@@ -14,6 +14,7 @@ namespace JoinRpg.Services.Email
 {
   public class EmailServiceImpl : IEmailService
   {
+    private const string JoinRpgTeam = "Команда JoinRpg.Ru";
     private readonly string _apiDomain;
 
     private readonly Recipient _joinRpgSender;
@@ -35,11 +36,16 @@ namespace JoinRpg.Services.Email
       _htmlService = htmlService;
       _joinRpgSender = new Recipient()
       {
-        DisplayName = "Команда JoinRpg.Ru",
+        DisplayName = JoinRpgTeam,
         Email = "support@" + uriService.GetHostName()
       };
       _uriService = uriService;
       _lazyService = new Lazy<MessageService>(() => new MessageService(apiKey));
+    }
+
+    private Task SendEmail(User recepient, string subject, string text, Recipient sender)
+    {
+      return SendEmail(new[] {recepient}, subject, text, sender);
     }
 
     private async Task SendEmail(ICollection<User> recepients, string subject, string text, Recipient sender)
@@ -61,7 +67,7 @@ namespace JoinRpg.Services.Email
       await Send(message);
     }
 
-    private static string GetInitiatorString(ClaimEmailBase model)
+    private static string GetInitiatorString(ClaimEmailModel model)
     {
       switch (model.InitiatorType)
       {
@@ -75,7 +81,7 @@ namespace JoinRpg.Services.Email
         throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
       }
     }
-    private async Task SendClaimEmail(ClaimEmailBase model, string text)
+    private async Task SendClaimEmail(ClaimEmailModel model, string text)
     {
       var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
       if (!recepients.Any())
@@ -139,6 +145,38 @@ $@"
 
 Новая заявка «{model.Claim.Name}» от игрока «{model.Claim.Player.DisplayName}».   
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
+    }
+
+    public Task Email(RemindPasswordEmail email)
+    {
+      return SendEmail(email.Recepient, "Восстановление пароля на JoinRpg.Ru",
+        $@"Здравствуйте, 
+
+вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
+Если это вы, кликните <a href=""{
+          email.CallbackUrl
+          }"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
+Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его и всё.
+
+--
+{JoinRpgTeam}", _joinRpgSender);
+    }
+
+    public Task Email(ConfirmEmail email)
+    {
+      return SendEmail(email.Recepient, "Регистрация на JoinRpg.Ru",
+        $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
+
+Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{
+            email.CallbackUrl
+            }"">вот по этой ссылке</a>.
+
+Это необходимо, для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
+
+Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его и все.
+--
+--
+{JoinRpgTeam}", _joinRpgSender);
     }
   }
 

@@ -133,22 +133,7 @@ namespace JoinRpg.Web.Controllers
       var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.Id, code = code},
         protocol: Request.Url.Scheme);
 
-
-      //TODO: Implement template for emails (probably Razor-based)
-      await
-        UserManager.SendEmailAsync(user.Id, "Регистрация на joinrpg.ru",
-          $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
-
-Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{
-            callbackUrl
-            }"">вот по этой ссылке</a>.
-
-Это необходимо, для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
-
-Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его и все.
---
-С уважением, робот joinrpg.ru
-");
+      await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recepient = user});
     }
 
     //
@@ -200,14 +185,9 @@ namespace JoinRpg.Web.Controllers
         string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
         var callbackUrl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code},
           protocol: Request.Url.Scheme);
-        await UserManager.SendEmailAsync(user.Id, "Восстановление пароля на JoinRpg.Ru",
-          $@"
-Здравствуйте, вы (или кто-то, выдающй себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. Если это вы, кликните
-с<a href=""{
-            callbackUrl
-            }"">вот по этой ссылке</a>, и мы восстановим вам пароль.
 
-Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его и все.");
+        await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recepient = user});
+
         return RedirectToAction("ForgotPasswordConfirmation", "Account");
       }
 

@@ -90,7 +90,7 @@ namespace JoinRpg.Services.Impl
       await _emailService.Email(addCommentEmail);
     }
 
-    private async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText, Func<UserSubscription, bool> predicate) where TEmail:ClaimEmailBase, new()
+    private async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText, Func<UserSubscription, bool> predicate) where TEmail:ClaimEmailModel, new()
     {
       return new TEmail()
       {
@@ -178,7 +178,7 @@ namespace JoinRpg.Services.Impl
       await _emailService.Email(email);
     }
 
-    private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now, bool isVisibleToPlayer, Func<UserSubscription, bool> predicate) where T : ClaimEmailBase, new()
+    private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now, bool isVisibleToPlayer, Func<UserSubscription, bool> predicate) where T : ClaimEmailModel, new()
     {
       claim.AddCommentImpl(currentUserId, null, commentText, now, isVisibleToPlayer, isMyClaim: true);
       return await CreateClaimEmail<T>(claim, currentUserId, commentText, predicate);
