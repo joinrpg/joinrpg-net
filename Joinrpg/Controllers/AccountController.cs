@@ -87,7 +87,7 @@ namespace JoinRpg.Web.Controllers
         case SignInStatus.LockedOut:
           return View("Lockout");
         default:
-          ModelState.AddModelError("", "Invalid login attempt.");
+          ModelState.AddModelError("", "Не найден логин или пароль");
           return View(model);
       }
     }
