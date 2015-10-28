@@ -161,6 +161,31 @@ namespace JoinRpg.Services.Impl
       await _emailService.Email(email);
     }
 
+    public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
+    {
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+      if (claim.MasterDeclinedDate == null || claim.PlayerAcceptedDate == null)
+      {
+        throw new DbEntityValidationException();
+      }
+
+      claim.MasterAcceptedDate = null;
+      claim.MasterDeclinedDate = null;
+
+      if (claim.CharacterId != null && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved))
+      {
+        claim.CharacterId = null;
+        claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
+      }
+      var email =
+        await
+          AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, DateTime.UtcNow, true,
+            s => s.ClaimStatusChange);
+
+      await UnitOfWork.SaveChangesAsync();
+      await _emailService.Email(email);
+    }
+
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadMyClaim(projectId, claimId, currentUserId);

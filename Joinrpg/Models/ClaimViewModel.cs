@@ -46,5 +46,8 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public IEnumerable<MasterListItemViewModel> Masters { get; set; }
+
+    [ReadOnly(true)]
+    public bool HasOtherApprovedClaim { get; set; }
   }
 }

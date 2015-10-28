@@ -178,6 +178,17 @@ $@"
 --
 {JoinRpgTeam}", _joinRpgSender);
     }
+
+    public Task Email(RestoreByMasterEmail model)
+    {
+      return SendClaimEmail(model,
+        $@"
+Добрый день, %recipient.name%!
+
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
+          }» была восстановлена {GetInitiatorString(model)}.
+Ссылка на заявку: {_uriService.Get(model.Claim)}");
+    }
   }
 
   public static class Exts

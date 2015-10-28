@@ -1,10 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public class AddCommentViewModel
+  public class AddCommentViewModel : IValidatableObject
   {
     public int ProjectId { get; set; }
     public int ClaimId { get; set; }
@@ -23,5 +24,12 @@ namespace JoinRpg.Web.Models
     public bool EnableHideFromUser { get; set; }
 
     public string ActionName { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      if (HideFromUser && !EnableHideFromUser)
+      {
+        yield return new ValidationResult("Нельзя скрыть данный комментарий от игрока");
+      }
+    }
   }
 }

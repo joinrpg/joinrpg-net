@@ -150,6 +150,7 @@ namespace JoinRpg.Web.Controllers
         CharacterId = claim.CharacterId,
         CharacterName = claim.Character?.CharacterName,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
+        HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
         Description = claim.Character?.Description,
         Masters =
@@ -252,6 +253,36 @@ namespace JoinRpg.Web.Controllers
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
 
+    }
+
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> RestoreByMaster(AddCommentViewModel viewModel)
+    {
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = AsMaster(claim);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          throw new DbEntityValidationException();
+        }
+        await
+          _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+
+        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
     }
 
     [HttpPost]

@@ -18,6 +18,7 @@ namespace JoinRpg.Services.Interfaces
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
 
     Task<IList<ClaimProblem>> GetProblemClaims(int projectId);
+    Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
   }
 
   public class ClaimProblem
