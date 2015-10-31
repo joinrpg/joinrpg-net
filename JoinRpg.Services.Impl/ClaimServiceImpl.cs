@@ -117,6 +117,7 @@ namespace JoinRpg.Services.Impl
 
       var now = DateTime.UtcNow;
       claim.MasterAcceptedDate = now;
+      claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, now, true, false);
 
       foreach (var otherClaim in claim.OtherClaimsForThisPlayer())
@@ -171,6 +172,8 @@ namespace JoinRpg.Services.Impl
 
       claim.MasterAcceptedDate = null;
       claim.MasterDeclinedDate = null;
+
+      claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
       if (claim.CharacterId != null && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved))
       {
