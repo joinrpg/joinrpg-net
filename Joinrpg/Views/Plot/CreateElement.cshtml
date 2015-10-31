@@ -12,7 +12,7 @@
     @Html.AntiForgeryToken()
     
     <div class="form-horizontal">
-        <h4>Cюжет @Html.ActionLink(Model.PlotFolderName, "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId})</h4>
+        <h4>Cюжет @Html.ActionLink(Model.PlotFolderName, "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(p => p.ProjectId)
