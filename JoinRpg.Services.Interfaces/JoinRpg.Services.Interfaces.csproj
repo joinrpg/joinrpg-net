@@ -49,10 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Allrpg\DownloadResult.cs" />
+    <Compile Include="Allrpg\IAllrpgApiKeyStorage.cs" />
     <Compile Include="Allrpg\IAllrpgService.cs" />
     <Compile Include="IClaimService.cs" />
     <Compile Include="IEmailService.cs" />
     <Compile Include="IHtmlService.cs" />
+    <Compile Include="IMailGunConfig.cs" />
     <Compile Include="IPlotService.cs" />
     <Compile Include="IProjectService.cs" />
     <Compile Include="IUriService.cs" />

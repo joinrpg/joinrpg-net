@@ -85,5 +85,7 @@ namespace JoinRpg.DataModel
     public int UserId { get; set; }
     public int? Sid { get; set; }
     public string JsonProfile { get; set; }
+
+    public bool PreventAllrpgPassword { get; set; }
   }
 }

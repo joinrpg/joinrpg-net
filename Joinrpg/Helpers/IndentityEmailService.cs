@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using JoinRpg.Services.Interfaces;
 using Mailgun.Messages;
 using Mailgun.Service;
 using Microsoft.AspNet.Identity;
@@ -7,14 +8,21 @@ namespace JoinRpg.Web.Helpers
 {
   public class EmailService : IIdentityMessageService
   {
+    private readonly IMailGunConfig _config;
+
+    public EmailService(IMailGunConfig config)
+    {
+      _config = config;
+    }
+
     public Task SendAsync(IdentityMessage identityMessage)
     {
-      if (MailGunFacade.Configured)
+      if (string.IsNullOrWhiteSpace(_config.ApiDomain) || string.IsNullOrWhiteSpace(_config.ApiKey))
       {
         return Task.FromResult(0);
       }
 
-      var messageService = new MessageService(MailGunFacade.ApiKey);
+      var messageService = new MessageService(_config.ApiKey);
 
       var message = new MessageBuilder().
         AddToRecipient(new Recipient()
@@ -31,7 +39,7 @@ namespace JoinRpg.Web.Helpers
         .SetHtmlBody(identityMessage.Body)
         .GetMessage();
       
-      return messageService.SendMessageAsync(MailGunFacade.ApiDomain, message);
+      return messageService.SendMessageAsync(_config.ApiDomain, message);
     }
   }
 }

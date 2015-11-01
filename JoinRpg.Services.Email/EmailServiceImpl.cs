@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -13,6 +14,7 @@ using Newtonsoft.Json.Linq;
 
 namespace JoinRpg.Services.Email
 {
+  [UsedImplicitly]
   public class EmailServiceImpl : IEmailService
   {
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
@@ -31,9 +33,9 @@ namespace JoinRpg.Services.Email
       return MessageService.SendMessageAsync(_apiDomain, message);
     }
 
-    public EmailServiceImpl(string apiDomain, string apiKey, IHtmlService htmlService, IUriService uriService)
+    public EmailServiceImpl(IHtmlService htmlService, IUriService uriService, IMailGunConfig config)
     {
-      _apiDomain = apiDomain;
+      _apiDomain = config.ApiDomain;
       _htmlService = htmlService;
       _joinRpgSender = new Recipient()
       {
@@ -41,7 +43,7 @@ namespace JoinRpg.Services.Email
         Email = "support@" + uriService.GetHostName()
       };
       _uriService = uriService;
-      _lazyService = new Lazy<MessageService>(() => new MessageService(apiKey));
+      _lazyService = new Lazy<MessageService>(() => new MessageService(config.ApiKey));
     }
 
     private Task SendEmail(User recepient, string subject, string text, Recipient sender)

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Configuration;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -60,6 +60,7 @@ namespace JoinRpg.Web.Controllers
 
       // Require the user to have a confirmed email before they can log on.
       var user = await UserManager.FindByNameAsync(model.Email);
+
       if (user != null)
       {
         if (!await UserManager.IsEmailConfirmedAsync(user.Id))
@@ -74,11 +75,24 @@ namespace JoinRpg.Web.Controllers
       var result =
         await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
 
+      if (result == SignInStatus.Failure)
+      {
+        if (await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password) == LegacyLoginResult.Success)
+        {
+          //Change password to imported
+          var changePasswordResult = await UserManager.SetPasswordWithoutValidationAsync(user.Id, model.Password);
+
+          //Login again
+          result =
+            await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+        }
+      }
+
       if (result == SignInStatus.Success)
       {
         var allrpgImport =
           await
-            _allrpgService.DownloadAllrpgProfile(user.UserId, ConfigurationManager.AppSettings["AllrpgInfoPassphrase"]);
+            _allrpgService.DownloadAllrpgProfile(user.UserId);
       }
       switch (result)
       {

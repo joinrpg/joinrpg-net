@@ -71,9 +71,14 @@ namespace JoinRpg.Dal.Impl
         throw new ArgumentNullException(nameof(user));
       }
       var entry = _ctx.Entry(user);
-      //if (entry.State == )
-      //_ctx.UserSet.Attach(user);
+      
       user.PasswordHash = passwordHash;
+      if (user.Allrpg != null)
+      {
+        //First time we change password, we should never ask allrpg.info for password
+        user.Allrpg.PreventAllrpgPassword = true;
+      }
+
       if (entry.State != EntityState.Detached)
       {
         return _ctx.SaveChangesAsync();

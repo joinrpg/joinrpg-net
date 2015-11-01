@@ -30,5 +30,14 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       return _ctx.UserSet.Include(u => u.Subscriptions).SingleOrDefaultAsync(u => u.UserId == currentUserId);
     }
+
+    public Task<User> GetByEmail(string email)
+    {
+      return _ctx.Set<User>()
+        .Include(u => u.Auth)
+        .Include(u => u.Allrpg)
+        .Include(u => u.Extra)
+        .SingleOrDefaultAsync(u => u.Email == email);
+    }
   }
 }

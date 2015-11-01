@@ -45,7 +45,7 @@ namespace JoinRpg.Web
             manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
             manager.MaxFailedAccessAttemptsBeforeLockout = 5;
 
-            manager.EmailService = new EmailService();
+            manager.EmailService = new EmailService(new ApiSecretsStorage());
 
 
 

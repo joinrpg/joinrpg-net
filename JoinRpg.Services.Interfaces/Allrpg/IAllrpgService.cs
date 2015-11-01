@@ -4,7 +4,19 @@ namespace JoinRpg.Services.Interfaces.Allrpg
 {
   public interface IAllrpgService
   {
-    Task<DownloadResult> DownloadAllrpgProfile(int userId, string allrpgKey);
+    Task<DownloadResult> DownloadAllrpgProfile(int userId);
+
+    Task<LegacyLoginResult> TryToLoginWithOldPassword(string email, string password);
+  }
+
+  public enum LegacyLoginResult
+  {
+    NoSuchUserOrPassword,
+    Success,
+    ImportDisabled,
+    NetworkError,
+    ParseError,
+    WrongKey
   }
 
 }

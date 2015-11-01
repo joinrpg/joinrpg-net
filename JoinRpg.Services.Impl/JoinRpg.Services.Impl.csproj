@@ -61,7 +61,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AllrpgServiceImpl.cs" />
+    <Compile Include="Allrpg\AllrpgApi.cs" />
+    <Compile Include="Allrpg\AllrpgServiceImpl.cs" />
+    <Compile Include="Allrpg\PasswordReply.cs" />
+    <Compile Include="Allrpg\ProfileReply.cs" />
     <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
     <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
     <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />

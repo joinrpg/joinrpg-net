@@ -7,6 +7,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl;
+using JoinRpg.Services.Impl.Allrpg;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
@@ -69,8 +70,10 @@ namespace JoinRpg.Web
       container.RegisterType<IHtmlService, HtmlServiceImpl>();
       container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(HttpContext.Current)));
 
-      container.RegisterType<IEmailService>(
-        new InjectionFactory(o => new EmailServiceImpl(MailGunFacade.ApiDomain, MailGunFacade.ApiKey, o.Resolve<IHtmlService>(), o.Resolve<IUriService>())));
+      container.RegisterType<IEmailService, EmailServiceImpl>();
+
+      container.RegisterType<IAllrpgApiKeyStorage, ApiSecretsStorage>();
+      container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
 

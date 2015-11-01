@@ -236,7 +236,6 @@
   <ItemGroup>
     <Content Include="App_Code\MvcIntrinsics.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
-    <Compile Include="Helpers\MailGunFacade.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -267,6 +266,7 @@
     <Compile Include="Helpers\DisplayAttributeHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\ObjectLinkHelper.cs" />
+    <Compile Include="Helpers\ApiSecretsStorage.cs" />
     <Compile Include="Helpers\UriServiceImpl.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
