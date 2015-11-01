@@ -20,19 +20,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
     {
-      IClaimSource source;
-      if (characterGroupId != null)
-      {
-        source = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId.Value);
-      }
-      else if (characterId != null)
-      {
-        source = await ProjectRepository.GetCharacterAsync(projectId, characterId.Value);
-      }
-      else
-      {
-        throw new DbEntityValidationException();
-      }
+      var source = await GetClaimSource(projectId, characterGroupId, characterId);
 
       EnsureCanAddClaim(currentUserId, source);
 
@@ -68,6 +56,21 @@ namespace JoinRpg.Services.Impl
 
       var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange);
       await _emailService.Email(email);
+    }
+
+    private async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
+    {
+      var characterGroup = characterGroupId != null
+        ? await ProjectRepository.LoadGroupAsync(projectId, characterGroupId.Value)
+        : null;
+      var character = characterId != null ? await ProjectRepository.GetCharacterAsync(projectId, characterId.Value) : null;
+
+      var source = new IClaimSource[] {characterGroup, character}.WhereNotNull().Single();
+      if (!source.IsAvailable)
+      {
+        throw new DbEntityValidationException();
+      }
+      return source;
     }
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
@@ -183,6 +186,30 @@ namespace JoinRpg.Services.Impl
       var email =
         await
           AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, DateTime.UtcNow, true,
+            s => s.ClaimStatusChange);
+
+      await UnitOfWork.SaveChangesAsync();
+      await _emailService.Email(email);
+    }
+
+    public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
+      int? characterId)
+    {
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+      await GetClaimSource(projectId, characterGroupId, characterId);
+
+      claim.CharacterGroupId = characterGroupId;
+      claim.CharacterId = characterId;
+
+      if (claim.IsApproved && claim.CharacterId == null)
+      {
+        throw new DbEntityValidationException();
+      }
+
+      claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
+      var email =
+        await
+          AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, true,
             s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();

@@ -14,6 +14,7 @@ namespace JoinRpg.Services.Interfaces
     Task Email(RemindPasswordEmail email);
     Task Email(ConfirmEmail email);
     Task Email(RestoreByMasterEmail createClaimEmail);
+    Task Email(MoveByMasterEmail createClaimEmail);
   }
 
   public class RemindPasswordEmail 
@@ -47,6 +48,10 @@ namespace JoinRpg.Services.Interfaces
   }
 
   public class RestoreByMasterEmail : ClaimEmailModel {}
+
+  public class MoveByMasterEmail : ClaimEmailModel
+  {
+  }
 
   public class DeclineByPlayerEmail : ClaimEmailModel
   {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using Mailgun.Core.Messages;
@@ -187,6 +188,18 @@ $@"
 
 Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
           }» была восстановлена {GetInitiatorString(model)}.
+Ссылка на заявку: {_uriService.Get(model.Claim)}");
+    }
+
+    public Task Email(MoveByMasterEmail model)
+    {
+      return SendClaimEmail(model,
+  $@"
+Добрый день, %recipient.name%!
+
+Мастер {GetInitiatorString(model)} перенес заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
+    }» на {model.Claim.GetTarget().Name}.
+
 Ссылка на заявку: {_uriService.Get(model.Claim)}");
     }
   }

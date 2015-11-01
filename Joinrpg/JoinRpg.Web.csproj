@@ -442,6 +442,7 @@
     <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
     <Content Include="Views\GameField\EditValue.cshtml" />
     <Content Include="Views\GameField\DeleteValue.cshtml" />
+    <Content Include="Views\Shared\AvailClaimTargetsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

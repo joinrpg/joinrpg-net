@@ -13,6 +13,8 @@ namespace JoinRpg.Web.Controllers.Common
 {
   public class ControllerGameBase : ControllerBase
   {
+    protected const string GroupFieldPrefix = "group_";
+    protected const string CharFieldPrefix = "char_";
     protected IProjectService ProjectService { get; }
     protected IProjectRepository ProjectRepository { get; }
 

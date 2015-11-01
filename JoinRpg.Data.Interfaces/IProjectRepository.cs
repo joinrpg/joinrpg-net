@@ -20,6 +20,7 @@ namespace JoinRpg.Data.Interfaces
     CharacterGroup GetCharacterGroup(int projectId, int groupId);
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Claim> GetClaim(int projectId, int claimId);
+    Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds);
     Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds);
     Task<ProjectCharacterField> GetProjectField(int projectId, int projectCharacterFieldId);

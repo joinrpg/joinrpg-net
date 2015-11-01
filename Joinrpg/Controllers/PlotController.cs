@@ -15,7 +15,6 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class PlotController : ControllerGameBase
   {
-
     private readonly IPlotService _plotService;
     private readonly IPlotRepository _plotRepository;
 
@@ -126,8 +125,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         var dict = other.ToDictionary();
-        var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
-        var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
+        var targetGroups = GetDynamicCheckBoxesFromPost(dict, GroupFieldPrefix);
+        var targetChars = GetDynamicCheckBoxesFromPost(dict, CharFieldPrefix);
         await
           _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
         return ReturnToPlot(plotFolderId, projectId);
@@ -213,8 +212,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         var dict = other.ToDictionary();
-        var targetGroups = GetDynamicCheckBoxesFromPost(dict, "group_");
-        var targetChars = GetDynamicCheckBoxesFromPost(dict, "char_");
+        var targetGroups = GetDynamicCheckBoxesFromPost(dict, GroupFieldPrefix);
+        var targetChars = GetDynamicCheckBoxesFromPost(dict, CharFieldPrefix);
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
         return ReturnToPlot(plotFolderId, projectId);

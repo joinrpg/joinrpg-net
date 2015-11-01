@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -7,12 +6,12 @@ namespace JoinRpg.Helpers
 {
   public static class StaticStringHelpers
   {
-    public static string JoinIfNotNullOrWhitespace([NotNull] this IEnumerable<string> strings, [NotNull] string separator)
+    public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
       return string.Join(separator, strings.Where(s => !string.IsNullOrWhiteSpace(s)));
     }
 
-    public static string Join([NotNull] this IEnumerable<string> strings, [NotNull] string separator)
+    public static string Join([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
       return string.Join(separator, strings);
     }
@@ -20,14 +19,19 @@ namespace JoinRpg.Helpers
     /// <summary>
     /// Return only strings that have specified prefix (and with this prefix removed)
     /// </summary>
-    public static IEnumerable<string> SelectWherePrefix([NotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
+    public static IEnumerable<string> SelectWherePrefix([NotNull, ItemNotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
     {
       return enumerable.Where(key => key.StartsWith(prefix)).Select(key=> key.Substring(prefix.Length));
     }
 
-    public static IEnumerable<int> UnprefixNumbers(this IEnumerable<string> enumerable, string prefix)
+    public static IEnumerable<int> UnprefixNumbers([NotNull, ItemNotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
     {
       return enumerable.SelectWherePrefix(prefix).Select(int.Parse);
+    }
+
+    public static int? UnprefixNumber([NotNull] this string number, [NotNull] string prefix)
+    {
+      return new[] {number}.UnprefixNumbers(prefix).Select(i => (int?)i).SingleOrDefault();
     }
 
     public static string AsString(this IEnumerable<string> enumerable)

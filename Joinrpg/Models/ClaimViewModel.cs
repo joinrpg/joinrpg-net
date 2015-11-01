@@ -49,5 +49,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; set; }
+
+
+    [ReadOnly(true)]
+    public CharacterGroupListViewModel Data { get; set; }
   }
 }

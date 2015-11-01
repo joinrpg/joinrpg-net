@@ -153,30 +153,55 @@
         }
         if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
         {
-        <details>
-            <summary>Отклонить заявку...</summary>
-            @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-            {
-            @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                   {
-                       ProjectId = Model.ProjectId,
-                       ClaimId = Model.ClaimId,
-                       ParentCommentId = null,
-                       EnableHideFromUser = false,
-                       HideFromUser = false,
-                       ActionName = "Отклонить заявку"
-                   })
-                if (Model.Status == Claim.Status.AddedByUser)
+            <details>
+                <summary>Отклонить заявку...</summary>
+                @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                 {
-                    <p>При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
-                        воспользовавшись функцией перевода заявки на другую роль/группу (пока не реализована)</p>
+                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    {
+                        ProjectId = Model.ProjectId,
+                        ClaimId = Model.ClaimId,
+                        ParentCommentId = null,
+                        EnableHideFromUser = false,
+                        HideFromUser = false,
+                        ActionName = "Отклонить заявку"
+                    })
+                    if (Model.Status == Claim.Status.AddedByUser)
+                    {
+                        <p>При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
+                            воспользовавшись функцией перевода заявки на другую роль/группу (пока не реализована)</p>
+                    }
+                    else
+                    {
+                        <p>Добавьте разумный текст, объясняющий причины отклонения заявки.</p>
+                    }
                 }
-                else
+            </details>
+            <details>
+                <summary>Переместить заявку</summary>
+                @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
-                    <p>Добавьте разумный текст, объясняющий причины отклонения заявки.</p>
+                    if (Model.Status == Claim.Status.Approved)
+                    {
+                        <p>Принятую заявку можно переместить только на конкретную роль (нельзя переместить в локацию)</p>
+                        ViewBag.ShowGroupsInAvailClaim = false;
+                    }
+                    else
+                    {
+                        ViewBag.ShowGroupsInAvailClaim = true;
+                    }
+                    @Html.Partial("AvailClaimTargetsPartial", Model.Data)
+                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    {
+                        ProjectId = Model.ProjectId,
+                        ClaimId = Model.ClaimId,
+                        ParentCommentId = null,
+                        EnableHideFromUser = false,
+                        HideFromUser = false,
+                        ActionName = "Переместить заявку"
+                    })
                 }
-            }
-        </details>
+            </details>
         }
         if ((Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser))
         {

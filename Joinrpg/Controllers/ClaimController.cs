@@ -151,6 +151,7 @@ namespace JoinRpg.Web.Controllers
         CharacterName = claim.Character?.CharacterName,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
+        Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
         Description = claim.Character?.Description,
         Masters =
@@ -327,18 +328,63 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await _claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
+        return ReturnToClaim(claimId, projectId);
       }
       catch
       {
         //TODO: Message 
         return RedirectToAction("Edit", "Claim", new {claimId, projectId});
       }
-      return RedirectToAction("Edit", "Claim", new {claimId, projectId});
+      
     }
 
     [HttpGet, Authorize]
     public Task<ActionResult> ActiveList(int projectid) => MasterList(projectid, claim => claim.IsActive, "ActiveList");
 
     public Task<ActionResult> DeclinedList(int projectid) => MasterList(projectid, claim => !claim.IsActive, "DeclinedList");
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="viewModel"></param>
+    /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
+    public async Task<ActionResult> Move(AddCommentViewModel viewModel, string claimTarget)
+    {
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = AsMaster(claim);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          throw new DbEntityValidationException();
+        }
+        var characterGroupId = claimTarget.UnprefixNumber(GroupFieldPrefix);
+        var characterId = claimTarget.UnprefixNumber(CharFieldPrefix);
+        await
+          _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents, characterGroupId, characterId);
+
+        return ReturnToClaim(viewModel);
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return ReturnToClaim(viewModel);
+      }
+    }
+
+    private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
+    {
+      return ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
+    }
+
+    private ActionResult ReturnToClaim(int claimId, int projectId)
+    {
+      return RedirectToAction("Edit", "Claim", new {claimId, projectId});
+    }
   }
 }
