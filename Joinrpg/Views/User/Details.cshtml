@@ -38,11 +38,12 @@
             <summary>Добавить в проект..</summary>
             <div class="form-horizontal">
                 <h4>Проект</h4>
-                @Html.DropDownList("ProjectId", Model.ProjectsToAdd.Select(project => new SelectListItem() { Text = project.ProjectName, Value = project.ProjectId.ToString() }))
+
+                @*TODO: Move to partial view*@
                 @Html.HiddenFor(model => Model.UserId)
 
                 @{ var acl = new AclViewModel();}
-
+                @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new { Projects = Model.ProjectsToAdd })
                 <div class="form-group">
                     @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanApproveClaims" })
                     <div class="col-md-10">

@@ -1,27 +1,34 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
 using System.Web.Mvc;
+using JoinRpg.Domain;
 using JoinRpg.Web.Models;
-using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
     public class UserController : Common.ControllerBase
     {
 
-        [HttpGet]
-        // GET: User
-        public ActionResult Details(int userId)
+      [HttpGet]
+      // GET: User
+      public async Task<ActionResult> Details(int userId)
+      {
+        var user = await UserManager.FindByIdAsync(userId);
+
+        var userProfileViewModel = new UserProfileViewModel()
         {
-          var user = UserManager.FindById(userId);
-          return View(new UserProfileViewModel()
-          {
-            DisplayName = user.DisplayName,
-            FullName = user.FullName,
-            ThisUserProjects = user.ProjectAcls,
-            CanGrantAccessProjects = LoadForCurrentUser(() =>  GetCurrentUser().ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.Project)),
-            UserId = user.UserId
-          });
+          DisplayName = user.DisplayName,
+          FullName = user.FullName,
+          ThisUserProjects = user.ProjectAcls,
+          UserId = user.UserId
+        };
+
+        var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
+        if (currentUser != null)
+        {
+          userProfileViewModel.CanGrantAccessProjects = currentUser.GetProjects(acl => acl.CanGrantRights);
         }
+        return View(userProfileViewModel);
+      }
 
       public UserController(ApplicationUserManager userManager) : base(userManager)
       {

@@ -12,7 +12,8 @@ namespace JoinRpg.Web.Models
     public string FullName { get; set; }
     public IEnumerable<ProjectAcl> ThisUserProjects { get; set; }
 
-    public IEnumerable<Project> CanGrantAccessProjects { get; set; }
+    [ReadOnly(true)]
+    public IEnumerable<Project> CanGrantAccessProjects { get; set; } = new Project[] {};
     public int UserId { get; set; }
 
     public IEnumerable<Project> ProjectsToAdd

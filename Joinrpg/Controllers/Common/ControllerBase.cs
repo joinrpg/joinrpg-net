@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -27,6 +28,11 @@ namespace JoinRpg.Web.Controllers.Common
     protected User GetCurrentUser()
     {
       return UserManager.FindById(CurrentUserId);
+    }
+
+    protected Task<User> GetCurrentUserAsync()
+    {
+      return UserManager.FindByIdAsync(CurrentUserId);
     }
 
     protected int CurrentUserId
@@ -57,20 +63,6 @@ namespace JoinRpg.Web.Controllers.Common
       }
 
       base.Dispose(disposing);
-    }
-
-    protected IEnumerable<T> LoadForCurrentUser<T>(Func<int, IEnumerable<T>> loadFunc)
-    {
-      return User.Identity.IsAuthenticated
-        ? loadFunc(CurrentUserId)
-        : new T[] {};
-    }
-
-    protected IEnumerable<T> LoadForCurrentUser<T>(Func<IEnumerable<T>> loadFunc)
-    {
-      return User.Identity.IsAuthenticated
-        ? loadFunc()
-        : new T[] { };
     }
 
     protected ActionResult RedirectToAction(RouteTarget routeTarget)
