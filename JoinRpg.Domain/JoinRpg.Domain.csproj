@@ -56,6 +56,7 @@
     <Compile Include="CharacterFields\CharacterFieldValue.cs" />
     <Compile Include="ClaimSourceExtensions.cs" />
     <Compile Include="ClaimExtensions.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="FieldExtensions.cs" />
     <Compile Include="ProjectEntityExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -16,17 +17,36 @@ namespace JoinRpg.Domain
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 
-    public static void RequestMasterAccess(this IProjectEntity field, int currentUserId, Func<ProjectAcl, bool> requiredAccess)
+    public static void RequestMasterAccess(this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> lambda)
     {
-      if (!field.HasMasterAccess(currentUserId, requiredAccess))
+      if (field == null)
       {
-        throw new Exception();
+        throw new ArgumentNullException(nameof(field));
+      }
+      if (field.Project == null)
+      {
+        throw new ArgumentNullException(nameof(field.Project));
+      }
+      if (!field.HasMasterAccess(currentUserId, acl => lambda.Compile()(acl)))
+      {
+        throw new NoAccessToProjectException(field.Project, currentUserId, lambda);
       }
     }
 
-    public static void RequestMasterAccess(this IProjectEntity field, int currentUserId)
+    public static void RequestMasterAccess(this IProjectEntity field, int? currentUserId)
     {
-      field.RequestMasterAccess(currentUserId, acl => true);
+      if (field == null)
+      {
+        throw new ArgumentNullException(nameof(field));
+      }
+      if (field.Project == null)
+      {
+        throw new ArgumentNullException(nameof(field.Project));
+      }
+      if (!field.HasMasterAccess(currentUserId))
+      {
+        throw new NoAccessToProjectException(field.Project, currentUserId);
+      }
     }
   }
 }
