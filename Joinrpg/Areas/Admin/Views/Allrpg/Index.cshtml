@@ -1,0 +1,11 @@
+﻿@using JoinRpg.Web.Areas.Admin.Models
+@model AllrpgIndexViewModel
+
+@{
+    ViewBag.Title = "Функции Allrpg";
+}
+
+<h2>@ViewBag.Title</h2>
+<div>
+   @Html.Partial("AssociateProject", new AssociateAllrpgProjectViewModel(){Projects =  Model.Projects})
+</div>

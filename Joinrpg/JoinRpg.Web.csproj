@@ -235,6 +235,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Code\MvcIntrinsics.cs" />
+    <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
+    <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -322,6 +325,9 @@
     <Content Include="Content\bootstrap-theme.css.map" />
     <Content Include="App_Code\RouteHelper.cshtml" />
     <Content Include="App_Code\DisplayCount.cshtml" />
+    <Content Include="Areas\Admin\Views\web.config" />
+    <Content Include="Areas\Admin\Views\Allrpg\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Allrpg\AssociateProject.cshtml" />
     <None Include="Properties\PublishProfiles\joinrpg-dev.pubxml" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -443,9 +449,11 @@
     <Content Include="Views\GameField\EditValue.cshtml" />
     <Content Include="Views\GameField\DeleteValue.cshtml" />
     <Content Include="Views\Shared\AvailClaimTargetsPartial.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\ProjectDropDown.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Areas\Admin\Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

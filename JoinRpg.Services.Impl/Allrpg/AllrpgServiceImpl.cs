@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Allrpg;
 
 namespace JoinRpg.Services.Impl.Allrpg
@@ -131,6 +132,19 @@ namespace JoinRpg.Services.Impl.Allrpg
         default:
           throw new ArgumentOutOfRangeException();
       }
+    }
+
+    public async Task AssociateProject(int currentUserId, int projectId, int allrpgProjectId)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.IsOwner);
+      project.Details = project.Details ?? new ProjectDetails();
+      if (project.Details.AllrpgId != null)
+      {
+        throw new ValueAlreadySetException("Project is already associated with allrpg");
+      }
+      project.Details.AllrpgId = allrpgProjectId;
+      await UnitOfWork.SaveChangesAsync();
     }
 
     private static string GetFioComponent(string present, IReadOnlyList<string> splitFio, int index)
