@@ -25,6 +25,15 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private IDictionary<int, CharacterGroup> Locations { get; }= new Dictionary<int, CharacterGroup>();
 
+    /// <summary>
+    /// In allrpg we have roles(kolvo>1). In joinrpg it maps to CharacterGroup(HaveDirectSlots=true)
+    /// </summary>
+    private IDictionary<int, CharacterGroup> LocationsFromVacancies { get; } = new Dictionary<int, CharacterGroup>();
+
+    private IDictionary<int, Character>  Characters { get; } = new Dictionary<int, Character>();
+
+    private IDictionary<int, User> Users { get; } = new Dictionary<int, User>();
+
     private struct ParentRelation
     {
       public int ParentAllrpgId;
@@ -33,40 +42,150 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private ICollection<ParentRelation> LocationParentRelation { get; }= new List<ParentRelation>();
 
-    public async Task Apply(AllrpgApi.Reply<ProjectReply> reply)
+    public async Task Apply(ProjectReply projectReply)
     {
-      foreach (var allrpgUser in reply.Result.users)
+      foreach (var allrpgUser in projectReply.users)
       {
         await ImportUser(allrpgUser);
       }
 
-      _operationLog.Info($"PROJECT.LOCATIONS to remove {Project.CharacterGroups.Count}");
-      var characterGroups = Project.CharacterGroups.Where(cg => !cg.IsRoot).ToList(); 
+      CleanProject();
+
+      ImportLocations(projectReply);
+
+      ImportCharacters(projectReply);
+    }
+
+    private void ImportCharacters(ProjectReply projectReply)
+    {
+      foreach (var vacancy in projectReply.vacancies.OrderByDescending(l => l.code)) // Poor man attempt to keep order
+      {
+        if (vacancy.kolvo == 1)
+        {
+          ImportCharacter(vacancy);
+        }
+        else
+        {
+          ImportLocation(vacancy);
+        }
+      }
+
+      Project.Characters.AddLinkList(Characters.Values);
+      UnitOfWork.GetDbSet<Character>().AddRange(Characters.Values);
+
+      Project.CharacterGroups.AddLinkList(LocationsFromVacancies.Values);
+      UnitOfWork.GetDbSet<CharacterGroup>().AddRange(LocationsFromVacancies.Values);
+    }
+
+    private void ImportCharacter(VacancyData vacancy)
+    {
+      if (Characters.ContainsKey(vacancy.id))
+      {
+        return;
+      }
+
+      var character = new Character()
+      {
+        Project = Project,
+        ProjectId = Project.ProjectId,
+        Description = new MarkdownString(vacancy.content),
+        IsPublic = true,
+        IsActive = true,
+        CharacterName = vacancy.name,
+        Claims = new List<Claim>(),
+        IsAcceptingClaims = true,
+        Groups = new List<CharacterGroup>() {GetParentGroupByAllrpgId(vacancy.locat)}
+      };
+
+      Characters.Add(vacancy.id, character);
+    }
+
+    private void CleanProject()
+    {
+      UnitOfWork.GetDbSet<PlotElement>().RemoveRange(Project.PlotFolders.SelectMany(f => f.Elements).ToList());
+      UnitOfWork.GetDbSet<PlotFolder>().RemoveRange(Project.PlotFolders.ToList());
+      UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Comments).ToList());
+      UnitOfWork.GetDbSet<Claim>().RemoveRange(Project.Claims.ToList());
+
       
+      
+      var characters = Project.Characters.ToList();
+      _operationLog.Info($"PROJECT.CHARS to remove {characters.Count}");
+
+      foreach (var character in characters)
+      {
+        character.Groups.CleanLinksList();
+      }
+      UnitOfWork.GetDbSet<Character>().RemoveRange(characters);
+
+      _operationLog.Info($"PROJECT.CHARS remove finished");
+
+      var characterGroups = Project.CharacterGroups.Where(cg => !cg.IsRoot).ToList();
+      _operationLog.Info($"PROJECT.LOCATIONS to remove {characterGroups.Count}");
+
       foreach (var characterGroup in characterGroups)
       {
         characterGroup.ParentGroups.CleanLinksList();
-        UnitOfWork.GetDbSet<CharacterGroup>().Remove(characterGroup);
       }
+      UnitOfWork.GetDbSet<CharacterGroup>().RemoveRange(characterGroups);
 
-      foreach (var locationData in reply.Result.locations.OrderByDescending(l => l.code)) // Poor man attempt to keep order
-      { 
+      _operationLog.Info($"PROJECT.LOCATIONS remove finished");
+    }
+
+    private void ImportLocations(ProjectReply projectReply)
+    {
+      foreach (var locationData in projectReply.locations.OrderByDescending(l => l.code)) // Poor man attempt to keep order
+      {
         ImportLocation(locationData);
       }
 
+      //Fixing parent-child relations
       foreach (var parentRelation in LocationParentRelation)
       {
         var child = Locations[parentRelation.ChildAllrpgId];
-        var parent = parentRelation.ParentAllrpgId == 0
-          ? Project.RootGroup
-          : Locations[parentRelation.ParentAllrpgId];
+        var parent = GetParentGroupByAllrpgId(parentRelation.ParentAllrpgId);
         _operationLog.Info($"LOCATION.PARENT {parent.CharacterGroupName} of CHILD {child.CharacterGroupName}");
         child.ParentGroups.Add(parent);
       }
-      
+
       Project.CharacterGroups.AddLinkList(Locations.Values);
       UnitOfWork.GetDbSet<CharacterGroup>().AddRange(Locations.Values);
     }
+
+    private CharacterGroup GetParentGroupByAllrpgId(int parentAllrpgId)
+    {
+      return parentAllrpgId == 0
+        ? Project.RootGroup
+        : Locations[parentAllrpgId];
+    }
+
+
+    private void ImportLocation(VacancyData locationData)
+    {
+      if (LocationsFromVacancies.ContainsKey(locationData.id))
+      {
+        return;
+      }
+      var characterGroup = new CharacterGroup()
+      {
+        AvaiableDirectSlots = locationData.kolvo,
+        CharacterGroupName = locationData.name.Trim(),
+        ProjectId = Project.ProjectId,
+        Project = Project,
+        IsRoot = false,
+        Characters = new List<Character>(),
+        ParentGroups = new List<CharacterGroup>() {GetParentGroupByAllrpgId(locationData.locat)},
+        IsActive = true,
+        HaveDirectSlots = true,
+        IsPublic = true, 
+        Description = new MarkdownString(locationData.content.Trim())
+      };
+
+      LocationsFromVacancies.Add(locationData.id, characterGroup);
+
+      _operationLog.Info($"GROUP.CREATE FROM VACANCY {characterGroup}");
+    }
+
 
     private void ImportLocation(LocationData locationData)
     {
@@ -98,25 +217,27 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private async Task ImportUser(ProfileReply allrpgUser)
     {
-      _operationLog.Info("USER.IMPORT: " + allrpgUser);
       var usersRepository = UnitOfWork.GetUsersRepository();
       var user = await usersRepository.GetByAllRpgId(allrpgUser.sid);
       if (user != null)
       {
         _operationLog.Info("USER.FOUND: " + user);
+        Users.Add(allrpgUser.sid, user);
         return;
       }
 
       user = await usersRepository.GetByEmail(allrpgUser.em) ?? await usersRepository.GetByEmail(allrpgUser.em2);
       if (user == null)
       {
-        user = new User {Email = new[] {allrpgUser.em, allrpgUser.em2}.WhereNotNullOrWhiteSpace().First()};
+        user = new User {Email = new[] {allrpgUser.em, allrpgUser.em2}.WhereNotNullOrWhiteSpace().First(), };
         _operationLog.Info($"USER.CREATE email={user.Email}");
+        UnitOfWork.GetDbSet<User>().Add(user);
       }
       else
       {
         _operationLog.Info($"USER.UPDATE user={user}");
       }
+      Users.Add(allrpgUser.sid, user);
       user.Allrpg = user.Allrpg ?? new AllrpgUserDetails();
       user.Allrpg.Sid = allrpgUser.sid;
       AllrpgImportUtilities.ImportUserFromResult(user, allrpgUser);

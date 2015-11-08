@@ -14,8 +14,8 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     public static void ImportUserFromResult(User user, ProfileReply result)
     {
-      user.Auth = user.Auth ?? new UserAuthDetails();
-      user.Extra = user.Extra ?? new UserExtra();
+      user.Auth = user.Auth ?? new UserAuthDetails() {RegisterDate = DateTime.UtcNow};
+      user.Extra = user.Extra ?? new UserExtra() {BirthDate = null};
 
       user.Allrpg.Sid = result.sid;
 

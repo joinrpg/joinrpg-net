@@ -14,9 +14,11 @@ namespace JoinRpg.Services.Impl.Allrpg
     public ICollection<ProfileReply> users { get; set; }
     [NotNull, ItemNotNull]
     public ICollection<LocationData> locations { get; set; }
+
+    [NotNull, ItemNotNull]
+    public ICollection<VacancyData> vacancies { get; set; }
   }
 
-  [UsedImplicitly]
   internal class LocationData
   {
     public int id { get; set; }
@@ -27,5 +29,19 @@ namespace JoinRpg.Services.Impl.Allrpg
     public int code { get; set; }
     [NotNull]
     public string description { get; set; }
+  }
+
+  internal class VacancyData
+  {
+    public int id { get; set; }
+    public int locat { get; set; }
+
+    [NotNull]
+    public string name { get; set; }
+
+    public int code { get; set; }
+    public int kolvo { get; set; }
+    public int autonewrole { get; set; }
+    public string content { get; set; }
   }
 }
