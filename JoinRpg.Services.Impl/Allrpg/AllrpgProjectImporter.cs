@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Dal.Impl;
@@ -34,6 +35,8 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private IDictionary<int, User> Users { get; } = new Dictionary<int, User>();
 
+    private IDictionary<int, Claim> Claims { get; } = new Dictionary<int, Claim>();
+
     private struct ParentRelation
     {
       public int ParentAllrpgId;
@@ -54,6 +57,68 @@ namespace JoinRpg.Services.Impl.Allrpg
       ImportLocations(projectReply);
 
       ImportCharacters(projectReply);
+
+      ImportClaims(projectReply.roles);
+    }
+
+    private void ImportClaims(ICollection<RoleData> roles)
+    {
+      foreach (var roleData in roles)
+      {
+        ImportClaim(roleData);
+      }
+
+      Project.Claims.AddLinkList(Claims.Values);
+      UnitOfWork.GetDbSet<Claim>().AddRange(Claims.Values);
+    }
+
+    private void ImportClaim(RoleData roleData)
+    {
+      if (Claims.ContainsKey(roleData.id))
+      {
+        return;
+      }
+
+      var claim = new Claim
+      {
+        Project = Project,
+        ProjectId = Project.ProjectId,
+        Character = null, //see later
+        Group = null, // see later
+        Comments = new List<Comment>(),
+        CreateDate = UnixTime.ToDateTime(roleData.datesent),
+        Player = Users[roleData.sid],
+        MasterDeclinedDate = roleData.todelete2 == 0 && roleData.status != 4 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
+        PlayerDeclinedDate = roleData.todelete == 0 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
+        PlayerAcceptedDate = UnixTime.ToDateTime(roleData.datesent)
+      };
+
+      bool canbeApproved = false;
+
+      Character character;
+      CharacterGroup characterGroup;
+      if (Characters.TryGetValue(roleData.vacancy, out character))
+      {
+        claim.Character = character;
+        canbeApproved = true;
+
+      }
+      else if (LocationsFromVacancies.TryGetValue(roleData.vacancy, out characterGroup))
+      {
+        claim.Group = characterGroup;
+      }
+      else if (Locations.TryGetValue(roleData.locat, out characterGroup))
+      {
+        claim.Group = characterGroup;
+      }
+      else
+      {
+        claim.Group = Project.RootGroup;
+      }
+
+      claim.MasterAcceptedDate = canbeApproved && roleData.status == 3 ? UnixTime.ToDateTime(roleData.date) : (DateTime?) null;
+
+      Claims.Add(roleData.id, claim);
     }
 
     private void ImportCharacters(ProjectReply projectReply)
@@ -107,8 +172,6 @@ namespace JoinRpg.Services.Impl.Allrpg
       UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Comments).ToList());
       UnitOfWork.GetDbSet<Claim>().RemoveRange(Project.Claims.ToList());
 
-      
-      
       var characters = Project.Characters.ToList();
       _operationLog.Info($"PROJECT.CHARS to remove {characters.Count}");
 
@@ -229,7 +292,8 @@ namespace JoinRpg.Services.Impl.Allrpg
       user = await usersRepository.GetByEmail(allrpgUser.em) ?? await usersRepository.GetByEmail(allrpgUser.em2);
       if (user == null)
       {
-        user = new User {Email = new[] {allrpgUser.em, allrpgUser.em2}.WhereNotNullOrWhiteSpace().First(), };
+        user = new User {Email = new[] {allrpgUser.em, allrpgUser.em2}.WhereNotNullOrWhiteSpace().First() };
+        user.UserName = user.Email;
         _operationLog.Info($"USER.CREATE email={user.Email}");
         UnitOfWork.GetDbSet<User>().Add(user);
       }
