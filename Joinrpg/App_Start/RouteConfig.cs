@@ -49,15 +49,16 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "CharacterAddClaim", url: "{ProjectId}/character/{CharacterId}/apply",
         defaults: new {controller = "Claim", action = "AddForCharacter"});
 
-      routes.MapRoute(name: "ClaimResp", url: "{ProjectId}/claim/for-master/{ResponsibleMasterId}",
+      routes.MapRoute(name: "ClaimResp", url: "{ProjectId}/claims/for-master/{ResponsibleMasterId}",
         defaults: new {controller = "Claim", action = "Responsible"});
 
-      routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claim/{action}",
+      routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
+        defaults: new { controller = "Claim", action = "Edit" });
+
+      routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claims/{action}",
   defaults: new { controller = "Claim", action = "Index" });
 
 
-      routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
-        defaults: new {controller = "Claim", action = "Edit"});
 
 
       routes.MapRoute(name: "PlotWithId", url: "{ProjectId}/plot/{PlotFolderId}/{action}",
