@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -6,9 +7,17 @@ namespace JoinRpg.Helpers
 {
   public static class StaticStringHelpers
   {
+    [NotNull]
     public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
-      return string.Join(separator, strings.Where(s => !string.IsNullOrWhiteSpace(s)));
+      return string.Join(separator, strings.WhereNotNullOrWhiteSpace());
+    }
+
+    [NotNull, ItemNotNull]
+    public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull] this IEnumerable<string> strings)
+    {
+      if (strings == null) throw new ArgumentNullException(nameof(strings));
+      return strings.Where(s => !string.IsNullOrWhiteSpace(s));
     }
 
     public static string Join([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)

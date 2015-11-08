@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces.Allrpg
 {
@@ -8,6 +9,7 @@ namespace JoinRpg.Services.Interfaces.Allrpg
 
     Task<LegacyLoginResult> TryToLoginWithOldPassword(string email, string password);
     Task AssociateProject(int currentUserId, int projectId, int allrpgProjectId);
+    Task<IEnumerable<string>> UpdateProject(int currentUserId, int projectId);
   }
 
   public enum LegacyLoginResult

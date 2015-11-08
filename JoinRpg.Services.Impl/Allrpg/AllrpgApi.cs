@@ -78,16 +78,14 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private static string SignPayload(string payload, string key) => ToHexHash(payload + key, SHA1.Create());
 
-    private static string ToHexHash(string str, HashAlgorithm sha1)
+    private static string ToHexHash(string str, HashAlgorithm hashAlgorithm)
     {
       var bytes = Encoding.UTF8.GetBytes(str); //TODO: In what encoding Allrpg.info saves passwords? Do not want to think about it....
-      return sha1.ComputeHash(bytes).ToHexString();
+      return hashAlgorithm.ComputeHash(bytes).ToHexString();
     }
 
-    private static string AllrpgLegacyHash(string password)
-    {
-      return ToHexHash(password, MD5.Create()); //Yes, yes, MD5 without salt. Send you complaints to Cetb
-    }
+    //Yes, yes, MD5 without salt. Send you complaints to Cetb
+    private static string AllrpgLegacyHash(string password) => ToHexHash(password, MD5.Create());
 
     public Task<Reply<ProfileReply>> GetProfile(string email)
     {
@@ -101,6 +99,12 @@ namespace JoinRpg.Services.Impl.Allrpg
       var key = SignPayload(email + "@" + AllrpgLegacyHash(password), _apiKey);
 
       return Call<PasswordReply>("checkpassword", $"email={email}&key={key}");
+    }
+
+    public Task<Reply<ProjectReply>>  DownloadProject(int allrpgId)
+    {
+      var key = SignPayload(allrpgId.ToString(), _apiKey);
+      return Call<ProjectReply>("importproject", $"id={allrpgId}&key={key}");
     }
   }
 }

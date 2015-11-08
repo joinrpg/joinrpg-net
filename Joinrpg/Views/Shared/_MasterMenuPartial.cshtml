@@ -44,7 +44,11 @@
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Настройка полей персонажей", "Index", "GameField", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Мастера (доступ в проект)", "Index", "Acl", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Мастера (доступ в проект)", "Index", "Acl", new {Model.ProjectId}, null)</li>
+                            @if (Model.HasAllrpg)
+                            {
+                            <li>@Html.ActionLink("Обновить из allrpg", "AllrpgUpdate", "Game", new { Model.ProjectId }, null)</li>
+                            }
                         </ul>
                     </li>
                 </ul>

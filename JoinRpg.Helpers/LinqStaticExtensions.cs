@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace JoinRpg.Dal.Impl
+namespace JoinRpg.Helpers
 {
   public static class LinqStaticExtensions
   {

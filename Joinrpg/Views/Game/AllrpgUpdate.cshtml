@@ -1,0 +1,18 @@
+﻿@model JoinRpg.Web.Models.AllrpgUpdateViewModel
+@{
+    ViewBag.Title = "Обновление проекта " + Model.ProjectName + " из Allrpg";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>Обратите внимание, что все данные будут удалены и заменены на соответствующие данные из allrpg</p>
+@using (Html.BeginForm("AllrpgUpdate", "Game"))
+{
+    @Html.HiddenFor(model => model.ProjectId)
+  @Html.AntiForgeryToken()
+
+<input type="submit" value="Импорт" class="btn btn-default" onclick="return confirm('Вы действительно хотите импортировать проект из ALLRPG?\nВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ')"/>
+}
+
+<p>Результаты:</p>
+@Html.TextAreaFor(model => model.UpdateResult, 50, 100, new { @readonly = "readonly" })

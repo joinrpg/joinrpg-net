@@ -42,5 +42,11 @@ namespace JoinRpg.Services.Impl.Allrpg
     // ReSharper restore UnusedAutoPropertyAccessor.Global
 
     public DateTime CreateDate => UnixTime.ToDateTime(date);
+
+    public override string ToString()
+    {
+      return
+        $"ProfileReply(sid: {sid}, fio: {fio}, nick: {nick}, gender: {gender}, em: {em}, em2: {em2}, phone2: {phone2}, icq: {icq}, skype: {skype}, jabber: {jabber}, vkontakte: {vkontakte}, livejournal: {livejournal}, googleplus: {googleplus}, facebook: {facebook}, photo: {photo}, login: {login}, birth: {birth}, city: {city}, sickness: {sickness}, additional: {additional}, prefer: {prefer}, prefer2: {prefer2}, prefer3: {prefer3}, prefer4: {prefer4}, specializ: {specializ}, ingroup: {ingroup}, hidesome: {hidesome}, date: {date}, CreateDate: {CreateDate})";
+    }
   }
 }

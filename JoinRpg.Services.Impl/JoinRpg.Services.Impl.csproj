@@ -62,9 +62,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Allrpg\AllrpgApi.cs" />
+    <Compile Include="Allrpg\AllrpgImportUtilities.cs" />
+    <Compile Include="Allrpg\AllrpgProjectImporter.cs" />
     <Compile Include="Allrpg\AllrpgServiceImpl.cs" />
+    <Compile Include="Allrpg\OperationLog.cs" />
     <Compile Include="Allrpg\PasswordReply.cs" />
     <Compile Include="Allrpg\ProfileReply.cs" />
+    <Compile Include="Allrpg\ProjectReply.cs" />
     <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
     <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
     <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />

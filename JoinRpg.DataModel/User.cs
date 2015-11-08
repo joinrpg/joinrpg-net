@@ -6,9 +6,16 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class User : IUser<int>
   {
     public int UserId { get; set; }
+
+    public override string ToString()
+    {
+      return
+        $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {Id}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls}, Claims: {Claims}, DisplayName: {DisplayName}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
+    }
 
     public string BornName { get; set; }
 
@@ -67,6 +74,11 @@ namespace JoinRpg.DataModel
     public string GroupNames { get; set; }
 
     public DateTime? BirthDate { get; set; }
+
+    public override string ToString()
+    {
+      return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Skype: {Skype}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate})";
+    }
   }
 
 
@@ -78,6 +90,11 @@ namespace JoinRpg.DataModel
     public bool EmailConfirmed { get; set; }
 
     public DateTime RegisterDate { get; set; }
+
+    public override string ToString()
+    {
+      return $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
+    }
   }
 
   public class AllrpgUserDetails
@@ -87,5 +104,10 @@ namespace JoinRpg.DataModel
     public string JsonProfile { get; set; }
 
     public bool PreventAllrpgPassword { get; set; }
+
+    public override string ToString()
+    {
+      return $"AllrpgUser(UserId: {UserId}, Sid: {Sid}, JsonProfile: {JsonProfile}, PreventAllrpgPassword: {PreventAllrpgPassword})";
+    }
   }
 }

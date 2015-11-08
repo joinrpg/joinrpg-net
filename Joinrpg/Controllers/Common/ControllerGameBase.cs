@@ -50,7 +50,8 @@ namespace JoinRpg.Web.Controllers.Common
         ViewBag.MasterMenu = new MasterMenuViewModel
         {
           ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName
+          ProjectName = project.ProjectName,
+          HasAllrpg = project.Details?.AllrpgId != null
         };
       }
       return null;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
@@ -49,52 +48,10 @@ namespace JoinRpg.Services.Impl.Allrpg
 
       var result = reply.Result;
 
-      user.Allrpg = user.Allrpg ?? new AllrpgUserDetails();
-      user.Extra = user.Extra ?? new UserExtra();
-
-      if (user.PasswordHash != null)
-      {
-        user.Allrpg.PreventAllrpgPassword = true;
-      }
-
+      user.Allrpg = user.Allrpg ?? new AllrpgUserDetails() {PreventAllrpgPassword = user.PasswordHash != null};
       user.Allrpg.JsonProfile = reply.RawResult; //Save raw value, we m.b. like to parse it later
 
-      user.Allrpg.Sid = result.sid;
-
-      var splitFio = result.fio.Trim().Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-      user.SurName = GetFioComponent(user.SurName, splitFio, 0);
-      user.BornName = GetFioComponent(user.BornName, splitFio, 1);
-      user.FatherName = GetFioComponent(user.FatherName, splitFio, 2);
-
-      if (user.Extra.Gender == Gender.Unknown && result.gender <= 2)
-      {
-        user.Extra.GenderByte = result.gender;
-      }
-      if (user.Extra.PhoneNumber == null)
-      {
-        user.Extra.PhoneNumber = result.phone2;
-      }
-      if (user.Extra.Nicknames == null)
-      {
-        user.Extra.Nicknames = result.nick;
-      }
-
-      if (user.Extra.Skype == null)
-      {
-        user.Extra.Skype = result.skype;
-      }
-
-      if (user.Extra.GroupNames == null)
-      {
-        user.Extra.GroupNames = result.ingroup;
-      }
-
-      if (user.Extra.BirthDate == null)
-      {
-        user.Extra.BirthDate = result.birth;
-      }
-
-      user.Auth.RegisterDate = new[] {user.Auth.RegisterDate, result.CreateDate}.Min();
+      AllrpgImportUtilities.ImportUserFromResult(user, result);
 
       await UnitOfWork.SaveChangesAsync();
       return DownloadResult.Success;
@@ -147,9 +104,46 @@ namespace JoinRpg.Services.Impl.Allrpg
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private static string GetFioComponent(string present, IReadOnlyList<string> splitFio, int index)
+    public async Task<IEnumerable<string>> UpdateProject(int currentUserId, int projectId)
     {
-      return string.IsNullOrWhiteSpace(present) && splitFio.Count > index ? splitFio[index] : present;
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.IsOwner);
+      if (project.Details?.AllrpgId == null)
+      {
+        return new[] {"Проект не ассоциирован с allrpg"};
+      }
+      
+      var reply = await _api.DownloadProject((int) project.Details.AllrpgId);
+
+
+      switch (reply.Status)
+      {
+        case AllrpgApi.Status.Success:
+        {
+          var log = new OperationLog();
+          try
+          {
+            var importer = new AllrpgProjectImporter(project, UnitOfWork, log);
+            await importer.Apply(reply);
+            log.Info("SUCCESS");
+            await UnitOfWork.SaveChangesAsync();
+            log.Info("DATA_SAVED");
+          }
+          catch (Exception e)
+          {
+            log.Error($"EXCEPTION: {e}");
+          }
+          return log.Results;
+        }
+        case AllrpgApi.Status.NetworkError:
+        return new[] { "Сетевая ошибка" };
+        case AllrpgApi.Status.ParseError:
+        return new[] { "Не разобран ответ allrpg" };
+        case AllrpgApi.Status.WrongKey:
+        return new[] { "Ошибочный ключ" };
+        default:
+        throw new ArgumentOutOfRangeException(nameof(reply.Status));
+      }
     }
 
     public AllrpgServiceImpl(IUnitOfWork unitOfWork, IAllrpgApiKeyStorage keyStorage) : base(unitOfWork)
@@ -157,4 +151,5 @@ namespace JoinRpg.Services.Impl.Allrpg
       _api = new AllrpgApi(keyStorage.Key);
     }
   }
+
 }
