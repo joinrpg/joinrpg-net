@@ -37,6 +37,8 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private IDictionary<int, Claim> Claims { get; } = new Dictionary<int, Claim>();
 
+    private IDictionary<int, Comment> Comments { get; } = new Dictionary<int, Comment>();
+
     private struct ParentRelation
     {
       public int ParentAllrpgId;
@@ -59,6 +61,42 @@ namespace JoinRpg.Services.Impl.Allrpg
       ImportCharacters(projectReply);
 
       ImportClaims(projectReply.roles);
+
+      ImportComments(projectReply.comments);
+    }
+
+    private void ImportComments(ICollection<CommentData> comments)
+    {
+      foreach (var comment in comments)
+      {
+        ImportComment(comment);
+      }
+
+      UnitOfWork.GetDbSet<Comment>().AddRange(Comments.Values);
+    }
+
+    private void ImportComment(CommentData data)
+    {
+      Claim claim;
+      if (!Claims.TryGetValue(data.role_id, out claim))
+      {
+        return;
+      }
+      var comment = new Comment
+      {
+        Project = Project,
+        ProjectId = Project.ProjectId,
+        Claim = claim,
+        Author = Users[data.sid],
+        CommentText = new MarkdownString(data.content),
+        LastEditTime = UnixTime.ToDateTime(data.date),
+        CreatedTime = UnixTime.ToDateTime(data.date),
+        IsVisibleToPlayer = data.type != 2,
+        ParentCommentId = null,
+        ChildsComments = new List<Comment>()
+      };
+      comment.IsCommentByPlayer = comment.Author == comment.Claim.Player;
+      comment.Claim.Comments.Add(comment);
     }
 
     private void ImportClaims(ICollection<RoleData> roles)

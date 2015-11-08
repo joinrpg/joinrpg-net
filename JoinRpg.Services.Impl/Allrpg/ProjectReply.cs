@@ -23,6 +23,9 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     [NotNull, ItemNotNull]
     public ICollection<RoleData> roles { get; set; }
+
+    [NotNull, ItemNotNull]
+    public ICollection<CommentData> comments { get; set; }
   }
 
   internal class LocationData
@@ -70,5 +73,16 @@ namespace JoinRpg.Services.Impl.Allrpg
     public int todelete2 { get; set; }
     public int datesent { get; set; }
     public int date { get; set; }
+  }
+
+  internal class CommentData
+  {
+    public int role_id { get; set; }
+    public int type { get; set; }
+
+    public int sid { get; set; }
+
+    public int date { get; set; }
+    public string content { get; set; }
   }
 }
