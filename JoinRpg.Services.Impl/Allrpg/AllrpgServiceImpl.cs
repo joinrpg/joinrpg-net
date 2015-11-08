@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Allrpg;
 
 namespace JoinRpg.Services.Impl.Allrpg
@@ -16,8 +17,7 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     public async Task<DownloadResult> DownloadAllrpgProfile(int userId)
     {
-      var user =
-        await UserRepository.WithProfile(userId);
+      var user = await UserRepository.WithProfile(userId);
 
       if (user.Allrpg?.Sid != null)
       {

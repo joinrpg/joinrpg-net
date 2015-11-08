@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace JoinRpg.Services.Impl.Allrpg
+namespace JoinRpg.Helpers
 {
-  internal class OperationLog
+  public class OperationLog
   {
     private ICollection<string> Log { get; } = new List<string>();
     private DateTime Start { get; } = DateTime.Now;
