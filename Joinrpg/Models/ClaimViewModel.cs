@@ -12,6 +12,7 @@ namespace JoinRpg.Web.Models
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
     public string ClaimName { get; set; }
+    [DisplayName("Игрок")]
     public User Player { get; set; }
     public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
@@ -29,7 +30,7 @@ namespace JoinRpg.Web.Models
 
     public int? CharacterId { get; set; }
 
-    [DisplayName("Заявка в групу")]
+    [DisplayName("Заявка в группу")]
     public string GroupName { get; set; }
 
     public int? CharacterGroupId { get; set; }

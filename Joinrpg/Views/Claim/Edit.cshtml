@@ -76,45 +76,52 @@
 <div>
     <h2>Заявка @Model.ClaimName (@Model.Player.UserName) на проект @Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId},null)</h2>
     <hr/>
-    <dl class="dl-horizontal">
-        @if (Model.CharacterId != null)
-        {
-            <dt>
-                @Html.DisplayNameFor(model => model.CharacterName)
-            </dt>
+<dl class="dl-horizontal">
+    <dt>
+        @Html.DisplayNameFor(model => model.Player)
+    </dt>
 
-            <dd>
-                @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
-            </dd>
-        }
-        @if (Model.CharacterGroupId != null)
-        {
-            <dt>
-                @Html.DisplayNameFor(model => model.GroupName)
-            </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Player)
+    </dd>
+    @if (Model.CharacterId != null)
+    {
+        <dt>
+            @Html.DisplayNameFor(model => model.CharacterName)
+        </dt>
 
-            <dd>
-                @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
-            </dd>
-        }
-        @if (Model.HasMasterAccess)
-        {
-            <dt>
-                @Html.DisplayNameFor(model => model.ResponsibleMasterId)
-            </dt>
-            <dd>
-                @using (Html.BeginForm("ChangeResponsible", "Claim"))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.HiddenFor(model => model.ProjectId)
-                    @Html.HiddenFor(model => model.ClaimId)
-                    @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}))
-                    @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                    <input type="submit" value="Изменить" class="btn btn-default"/>
-                }
-            </dd>
-        }
-    </dl>
+        <dd>
+            @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
+        </dd>
+    }
+    @if (Model.CharacterGroupId != null)
+    {
+        <dt>
+            @Html.DisplayNameFor(model => model.GroupName)
+        </dt>
+
+        <dd>
+            @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+        </dd>
+    }
+    @if (Model.HasMasterAccess)
+    {
+        <dt>
+            @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+        </dt>
+        <dd>
+            @using (Html.BeginForm("ChangeResponsible", "Claim"))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}))
+                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
+                <input type="submit" value="Изменить" class="btn btn-default"/>
+            }
+        </dd>
+    }
+</dl>
     @if (Model.HasApproveRejectClaim)
     {
         if (Model.Status == Claim.Status.AddedByUser)
