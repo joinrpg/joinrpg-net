@@ -52,11 +52,13 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "ClaimResp", url: "{ProjectId}/claim/for-master/{ResponsibleMasterId}",
         defaults: new {controller = "Claim", action = "Responsible"});
 
+      routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claim/{action}",
+  defaults: new { controller = "Claim", action = "Index" });
+
+
       routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
         defaults: new {controller = "Claim", action = "Edit"});
 
-      routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claim/{action}",
-        defaults: new {controller = "Claim", action = "Index"});
 
       routes.MapRoute(name: "PlotWithId", url: "{ProjectId}/plot/{PlotFolderId}/{action}",
         defaults: new {controller = "Plot", action = "Index"});
