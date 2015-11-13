@@ -1,4 +1,7 @@
-﻿namespace JoinRpg.Web.Models
+﻿using System.Collections.Generic;
+using JoinRpg.DataModel;
+
+namespace JoinRpg.Web.Models
 {
   public class MasterMenuViewModel
   {
@@ -6,5 +9,7 @@
     public string ProjectName { get; set; }
 
     public bool HasAllrpg { get; set; }
+
+    public IEnumerable<User> Masters { get; set; }
   }
 }

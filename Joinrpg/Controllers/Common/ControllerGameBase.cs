@@ -51,7 +51,8 @@ namespace JoinRpg.Web.Controllers.Common
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
-          HasAllrpg = project.Details?.AllrpgId != null
+          HasAllrpg = project.Details?.AllrpgId != null,
+          Masters = project.ProjectAcls.Select(acl => acl.User)
         };
       }
       return null;
