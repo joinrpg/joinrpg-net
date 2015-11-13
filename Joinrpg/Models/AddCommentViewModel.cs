@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Models
     /// </summary>
     public int? ParentCommentId { get; set; }
 
-    [Required, DisplayName("Текст комментария")] 
+    [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария")] 
     public MarkdownString CommentText { get; set; }
 
     [DisplayName("Только другим мастерам")]
