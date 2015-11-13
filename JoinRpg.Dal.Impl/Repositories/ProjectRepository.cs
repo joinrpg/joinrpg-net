@@ -38,7 +38,8 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
       => AllProjects
-        .Include(p => p.Details) //TODO: Include p.ProjectAcls.Users
+        .Include(p => p.Details)
+        .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId)
@@ -65,8 +66,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         Ctx.Set<Character>()
           .Include(c => c.Project)
           .Include(c => c.Project.ProjectFields)
-          .Include(c => c.Claims)
-          //TODO .Include (c => c.Claims.User)
+          .Include(c => c.Claims.Select(claim => claim.Player))
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
