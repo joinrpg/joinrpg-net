@@ -1,9 +1,7 @@
 ﻿@using JoinRpg.DataModel
 @model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
-    <div class="col-md-2">
-        <b> @Model.Field.FieldName</b>
-    </div>
+    <label class="control-label col-md-2">@Model.Field.FieldName</label>
 
     <div class="col-md-10">
         @if (Model.Field.FieldType == CharacterFieldType.Text)

@@ -14,6 +14,8 @@ namespace JoinRpg.Web.Models
     public string ClaimName { get; set; }
     [DisplayName("Игрок")]
     public User Player { get; set; }
+
+    
     public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
@@ -57,6 +59,9 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }
 
+    public bool HasAccess => true;
+
+    public bool HidePlayer => false;
 
   }
 }

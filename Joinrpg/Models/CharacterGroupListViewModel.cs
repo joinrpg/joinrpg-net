@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -29,15 +30,15 @@ namespace JoinRpg.Web.Models
       get { return Groups.Where(listItem => listItem.IsActive); }
     }
 
-    public static CharacterGroupListViewModel FromGroup(CharacterGroup @group)
+    public static CharacterGroupListViewModel FromGroup(CharacterGroup @group, bool hasMasterAccess)
     {
       return new CharacterGroupListViewModel
       {
-        Groups = new CharacterGroupHierarchyBuilder(@group).Generate(),
+        Groups = new CharacterGroupHierarchyBuilder(@group, hasMasterAccess).Generate(),
       };
     }
 
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group);
+    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group, true);
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -49,9 +50,12 @@ namespace JoinRpg.Web.Models
 
       private IList<CharacterGroupListItemViewModel> Results { get; } = new List<CharacterGroupListItemViewModel>();
 
-      public CharacterGroupHierarchyBuilder(CharacterGroup root)
+      private bool HasMasterAccess { get; }
+
+      public CharacterGroupHierarchyBuilder(CharacterGroup root, bool hasMasterAccess)
       {
         Root = root;
+        HasMasterAccess = hasMasterAccess;
       }
 
       public IList<CharacterGroupListItemViewModel> Generate()
@@ -101,8 +105,10 @@ namespace JoinRpg.Web.Models
           Description =  arg.Description.ToHtmlString(),
           IsPublic =  arg.IsPublic,
           IsActive = arg.IsActive,
+          HidePlayer = arg.HidePlayerForCharacter,
           ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
-          Player = arg.ApprovedClaim?.Player
+          Player = arg.ApprovedClaim?.Player,
+          HasMasterAccess = HasMasterAccess 
         };
         if (vm.IsFirstCopy)
         {

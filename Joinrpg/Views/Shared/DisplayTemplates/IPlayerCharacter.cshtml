@@ -1,0 +1,10 @@
+﻿@model JoinRpg.Web.Models.ICharacterWithPlayerViewModel
+
+@if (!Model.HidePlayer || Model.HasAccess)
+{
+    @Html.DisplayFor(model => Model.Player)
+}
+else
+{
+    <i>скрыто</i>
+}

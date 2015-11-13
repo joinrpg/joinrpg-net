@@ -2,15 +2,13 @@
 @using JoinRpg.Domain
 @model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
-    <div class="col-md-2">
-        @Model.Field.FieldName
-    </div>
-
+    <label class="control-label col-md-2">@Model.Field.FieldName</label>
     <div class="col-md-10">
         @*TODO: May be also set client id here*@
         @if (Model.Field.FieldType == CharacterFieldType.Dropdown)
         {
-          @Model.GetDropdownValueOrDefault().Label
+            var projectCharacterFieldDropdownValue = Model.GetDropdownValueOrDefault();
+            @(projectCharacterFieldDropdownValue == null ? null : projectCharacterFieldDropdownValue.Label)
         }
         else
         {

@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.CharacterDetailsViewModel
+﻿@using JoinRpg.Web.Models
+@model CharacterDetailsViewModel
 
 <div>
     <h4>@Model.CharacterName</h4>
@@ -8,21 +9,20 @@
     {
         <p>@Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, null)</p>
     }
-
-    @Html.Partial("CharacterFieldsPartial", Model)
-    @if (Model.ApprovedClaimId != null)
+    @if (Model.ApprovedClaimId != null && Model.HasAccess)
     {
         <p>
-            <b>Игрок</b>: @Html.DisplayFor(model => Model.ApprovedClaimUser)
-            @if (Model.HasPlayerAccessToCharacter)
-            {
-                <span>(
             @Html.ActionLink("перейти на заявку", "Edit", "Claim", new {Model.ProjectId, ClaimId = Model.ApprovedClaimId}, null)
-        )
-        </span>
-            }
         </p>
     }
+    @if (Model.HasMasterAccess)
+    {
+        <p>
+            @Html.ActionLink("Редактировать персонажа", "Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)
+        </p>
+    }
+    @Html.Partial("CharacterFieldsPartial", Model)
+    
 </div>
 @if (Model.DiscussedClaims.Any())
 {
@@ -37,8 +37,6 @@
         @{ ViewBag.HideProjectColumn = true; }
         @Html.Partial(@"~/Views/Claim/Index.cshtml", Model.RejectedClaims)        
     </details>
-
-
 }
 @if (Model.Plot != null)
 {

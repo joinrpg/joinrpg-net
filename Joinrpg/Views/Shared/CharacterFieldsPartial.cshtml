@@ -13,19 +13,22 @@
 
 }
 <h4>Поля персонажа</h4>
-@if (Model.HasMasterAccess && Model.CharacterId != null)
-{
-    @Html.ActionLink("Редактировать персонажа", "Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)
-}
 <div class="form-horizontal">
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CharacterName, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.CharacterName, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
                 @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Игрок</label>
+            <div class="col-md-10">
+                @Html.DisplayFor(model => model, "IPlayerCharacter")
             </div>
         </div>
 
@@ -48,9 +51,14 @@
 
         foreach (var field in Model.CharacterFields.Where(CanView))
         {
-            <div>
-                @(CanEdit(field) ? Html.EditorFor(model => field) : Html.DisplayFor(model => field))
-            </div>
+            if (CanEdit(field))
+            {
+                @Html.EditorFor(model => field);
+            }
+            else
+            {
+                @Html.DisplayFor(model => field);
+            }
         }
         if (Model.CharacterFields.Any(CanEdit))
             {

@@ -3,7 +3,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public class CharacterViewModel
+  public class CharacterViewModel  : ICharacterWithPlayerViewModel
   {
     public int CharacterId { get; set; }
     public string CharacterName { get; set; }
@@ -19,6 +19,10 @@ namespace JoinRpg.Web.Models
     public bool IsActive { get; set; }
 
     public User Player { get; set; }
+    public bool HidePlayer { get; set; }
+    public bool HasAccess => HasMasterAccess;
     public int ActiveClaimsCount { get; set; }
+
+    public bool HasMasterAccess { get; set; }
   }
 }

@@ -58,7 +58,7 @@
                                 <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new {Model.ProjectId, character.CharacterId}, null) </strong>
                                 @if (character.Player != null)
                                 {
-                                    <span> @Html.DisplayFor(m => character.Player)</span>
+                                    @Html.DisplayFor(model => character, "IPlayerCharacter")
                                 }
                                 else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
                                 {
@@ -77,7 +77,7 @@
                                         {
                                             @Html.ActionLink("удалить", "Delete", "Character", new {Model.ProjectId, character.CharacterId}, null)<text> | </text>
                                         }
-                                        @Html.ActionLink("редактировать", "Edit", "Character", new {Model.ProjectId, character.CharacterId})
+                                        @Html.ActionLink("редактировать", "Edit", "Character", new {Model.ProjectId, character.CharacterId}, null)
                                     }
                                     <div>@character.Description</div>
                                     

@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
         CharacterName = character.CharacterName,
         Description = character.Description,
         ApprovedClaimId = character.ApprovedClaim?.ClaimId,
-        ApprovedClaimUser = approvedClaimUser,
+        Player = approvedClaimUser,
         CanAddClaim = character.IsAvailable,
         DiscussedClaims = LoadIfMaster(project, () => character.Claims.Where(claim => claim.IsInDiscussion)).Select(ClaimListItemViewModel.FromClaim),
         RejectedClaims = LoadIfMaster(project, () => character.Claims.Where(claim => !claim.IsActive)).Select(ClaimListItemViewModel.FromClaim),
@@ -50,6 +50,7 @@ namespace JoinRpg.Web.Controllers
         HasPlayerAccessToCharacter = hasAnyAccess,
         HasMasterAccess = hasMasterAccess,
         ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToList(),
+        HidePlayer = character.HidePlayerForCharacter
       };
       if (hasAnyAccess)
       {

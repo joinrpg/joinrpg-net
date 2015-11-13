@@ -27,13 +27,14 @@ namespace JoinRpg.Web.Controllers
       }
       
       var field = await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
       return WithEntity(field) ?? View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
-          ShowEditControls = field.Project.HasMasterAccess(CurrentUserIdOrDefault),
-          Data = CharacterGroupListViewModel.FromGroup(field)
+          ShowEditControls = hasMasterAccess,
+          Data = CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
         });
     }
 
@@ -46,14 +47,15 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
+      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
       return Json(
         new
         {
           field.Project.ProjectId,
           field.Project.ProjectName,
-          ShowEditControls = field.Project.HasMasterAccess(CurrentUserIdOrDefault),
+          ShowEditControls = hasMasterAccess,
           Groups =
-            CharacterGroupListViewModel.FromGroup(field)
+            CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
               .PublicGroups.Select(
                 g =>
                   new
@@ -74,7 +76,7 @@ namespace JoinRpg.Web.Controllers
                             ch.IsFirstCopy,
                             ch.CharacterName,
                             ch.Description,
-                            PlayerName = ch.Player?.DisplayName,
+                            PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
                             PlayerId = ch.Player?.Id
                           }),
                     CanAddDirectClaim = g.AvaiableDirectSlots != 0
