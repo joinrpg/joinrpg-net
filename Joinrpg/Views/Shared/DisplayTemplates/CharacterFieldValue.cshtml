@@ -1,4 +1,6 @@
-﻿@model JoinRpg.Domain.CharacterFieldValue
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Domain
+@model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
     <div class="col-md-2">
         @Model.Field.FieldName
@@ -6,6 +8,13 @@
 
     <div class="col-md-10">
         @*TODO: May be also set client id here*@
-        @Html.DisplayFor(model => model.Value, new {htmlAttributes = new {@class = "form-control"}})
+        @if (Model.Field.FieldType == CharacterFieldType.Dropdown)
+        {
+          @Model.GetDropdownValueOrDefault().Label
+        }
+        else
+        {
+            @Html.DisplayFor(model => model.Value, new {htmlAttributes = new {@class = "form-control"}})
+        }
     </div>
 </div>
