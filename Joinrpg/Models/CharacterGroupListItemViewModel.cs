@@ -2,9 +2,35 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
+
+  public interface ICharacterGroupLinkViewModel
+  {
+    int CharacterGroupId { get; }
+    string Name { get; }
+    bool IsPublic { get; }
+    int ProjectId { get; }
+  }
+
+  public class CharacterGroupLinkViewModel : ICharacterGroupLinkViewModel
+  {
+    public int CharacterGroupId { get; }
+    public string Name { get; }
+    public bool IsPublic { get; }
+    public int ProjectId { get; }
+
+    public CharacterGroupLinkViewModel(CharacterGroup group)
+    {
+      CharacterGroupId = group.CharacterGroupId;
+      Name = group.CharacterGroupName;
+      IsPublic = group.IsPublic;
+      ProjectId = group.ProjectId;
+    }
+  }
+
   public class CharacterGroupListItemViewModel
   {
     public int CharacterGroupId { get; set; }

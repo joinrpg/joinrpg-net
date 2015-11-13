@@ -40,6 +40,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Описание персонажа")]
     public MarkdownString Description { get; set; }
 
+    public IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; set; }
+
     public IEnumerable<PlotElementViewModel> Plot { get; set; }
 
     [Display(Name = "Ответственный мастер")]
@@ -54,5 +56,7 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }
+
+
   }
 }

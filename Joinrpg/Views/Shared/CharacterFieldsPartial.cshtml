@@ -13,21 +13,38 @@
 
 }
 <h4>Поля персонажа</h4>
+@if (Model.HasMasterAccess && Model.CharacterId != null)
+{
+    @Html.ActionLink("Редактировать персонажа", "Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)
+}
 <div class="form-horizontal">
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
 
-        <div>
-            @Html.LabelFor(model => model.CharacterName)
-            @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+        <div class="form-group">
+            @Html.LabelFor(model => model.CharacterName, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @(Model.HasMasterAccess ? Html.EditorFor(model => model.CharacterName) : Html.DisplayFor(model => model.CharacterName))
+            </div>
         </div>
 
-        <div>
-        @Html.LabelFor(model => model.Description)
-        @(Model.HasMasterAccess ? Html.EditorFor(model => model.Description) : Html.DisplayFor(model => model.Description))
-    </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParentGroups, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @foreach (var gr in Model.ParentGroups.Where(g => Model.HasMasterAccess || g.IsPublic))
+                {
+                    @Html.ActionLink(gr.Name, "Index", "GameGroups", new { gr.CharacterGroupId, gr.ProjectId }, null) <br/>
+                }
+            </div>
+        </div>
 
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @(Model.HasMasterAccess ? Html.EditorFor(model => model.Description) : Html.DisplayFor(model => model.Description))
+            </div>
+        </div>
 
         foreach (var field in Model.CharacterFields.Where(CanView))
         {

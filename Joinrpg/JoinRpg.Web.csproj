@@ -274,12 +274,12 @@
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AclViewModel.cs" />
-    <Compile Include="Models\AddCharacterViewModel.cs" />
+    <Compile Include="Models\CharacterViewModels.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\AddCommentViewModel.cs" />
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
-    <Compile Include="Models\EditGameObjectViewModelBase.cs" />
+    <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\CharacterGroupListViewModel.cs" />
     <Compile Include="Models\CharacterGroupListItemViewModel.cs" />
@@ -452,6 +452,7 @@
     <Content Include="Views\Shared\AvailClaimTargetsPartial.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\ProjectDropDown.cshtml" />
     <Content Include="Views\Game\AllrpgUpdate.cshtml" />
+    <Content Include="Views\Character\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

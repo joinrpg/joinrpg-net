@@ -5,7 +5,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public abstract class EditGameObjectViewModelBase
+  public abstract class GameObjectViewModelBase 
   {
     public int ProjectId { get; set; }
     

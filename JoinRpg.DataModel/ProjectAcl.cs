@@ -22,6 +22,8 @@
 
     public bool CanApproveClaims { get; set; }
 
+    public bool CanEditRoles => true;  //Think may be should be own right
+
     public static ProjectAcl CreateRootAcl(int userId)
     {
       return new ProjectAcl

@@ -7,7 +7,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Web.Models
 {
 
-  public abstract class CharacterGroupViewModelBase : EditGameObjectViewModelBase
+  public abstract class CharacterGroupViewModelBase : GameObjectViewModelBase
   {
     [DisplayName("Название группы"), Required]
     public string Name { get; set; }

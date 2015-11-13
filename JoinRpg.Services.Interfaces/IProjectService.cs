@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Interfaces
     Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     Task DeleteField(int projectCharacterFieldId);
     Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
-    Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description);
+    Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter);
 
     Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots, int? responsibleMasterId);
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
@@ -25,5 +25,6 @@ namespace JoinRpg.Services.Interfaces
     Task CreateFieldValue(int projectId, int projectCharacterFieldId, int currentUserId, string label, string description);
     Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label, string description);
     Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId);
+    Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter);
   }
 }

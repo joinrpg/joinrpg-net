@@ -51,6 +51,8 @@ namespace JoinRpg.DataModel
     public string PlotElementOrderData { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
+
+    public bool HidePlayerForCharacter { get; set; }
   }
 
   

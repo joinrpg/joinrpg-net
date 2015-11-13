@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.Web.Models
-@model EditGameObjectViewModelBase
+@model GameObjectViewModelBase
 
 @functions {
     private static string GetName(CharacterGroupListItemViewModel gr)
@@ -8,7 +8,10 @@
     }
 }
 
-@Html.ListBoxFor(m => m.ParentCharacterGroupIds, 
+@Html.ListBoxFor(m => m.ParentCharacterGroupIds,
     new MultiSelectList(
-        Model.PossibleParents.Select(gr => new { Value = gr.CharacterGroupId.ToString(), Text = GetName(gr) }), "Value",
-        "Text")))
+        Model.PossibleParents.Select(gr =>
+            new { Value = gr.CharacterGroupId.ToString(), Text = GetName(gr) }),
+        "Value",
+        "Text")
+    )

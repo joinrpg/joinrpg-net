@@ -49,7 +49,6 @@ namespace JoinRpg.Services.Impl
       return project;
     }
 
-
     public async Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic)
     {
@@ -136,8 +135,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
-      bool isAcceptingClaims, string description)
+    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter)
     {
       var characterGroups = await  ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
@@ -150,8 +148,24 @@ namespace JoinRpg.Services.Impl
           IsPublic = isPublic,
           IsActive = true,
           IsAcceptingClaims = isAcceptingClaims,
-          Description = new MarkdownString(description)
+          Description = new MarkdownString(description),
+          HidePlayerForCharacter = hidePlayerForCharacter
         });
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter)
+    {
+      var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
+      character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+
+      character.CharacterName = Required(name);
+      character.IsAcceptingClaims = isAcceptingClaims;
+      character.IsPublic = isPublic;
+      character.Description = new MarkdownString(contents);
+      character.HidePlayerForCharacter = hidePlayerForCharacter;
+      character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
+
       await UnitOfWork.SaveChangesAsync();
     }
 

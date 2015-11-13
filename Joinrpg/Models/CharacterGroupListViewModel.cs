@@ -33,11 +33,11 @@ namespace JoinRpg.Web.Models
     {
       return new CharacterGroupListViewModel
       {
-        Groups = new CharacterGroupHierarchyBuilder(group).Generate(),
+        Groups = new CharacterGroupHierarchyBuilder(@group).Generate(),
       };
     }
 
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(group);
+    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group);
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -92,7 +92,7 @@ namespace JoinRpg.Web.Models
 
       private CharacterViewModel GenerateCharacter(Character arg)
       {
-        var vm = new CharacterViewModel()
+        var vm = new CharacterViewModel
         {
           CharacterId = arg.CharacterId,
           CharacterName = arg.CharacterName,
@@ -111,5 +111,7 @@ namespace JoinRpg.Web.Models
         return vm;
       }
     }
+
+    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroupAsMaster(project.RootGroup);
   }
 }

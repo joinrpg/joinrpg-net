@@ -138,6 +138,10 @@
     <Compile Include="Migrations\201511070833402_ProjectAllrpgLink.Designer.cs">
       <DependentUpon>201511070833402_ProjectAllrpgLink.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511132018577_HidePlayerForCharacter.cs" />
+    <Compile Include="Migrations\201511132018577_HidePlayerForCharacter.Designer.cs">
+      <DependentUpon>201511132018577_HidePlayerForCharacter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -226,6 +230,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511070833402_ProjectAllrpgLink.resx">
       <DependentUpon>201511070833402_ProjectAllrpgLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511132018577_HidePlayerForCharacter.resx">
+      <DependentUpon>201511132018577_HidePlayerForCharacter.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -153,6 +153,7 @@ namespace JoinRpg.Web.Controllers
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
+        ParentGroups = claim.Character?.Groups.Select(g => new CharacterGroupLinkViewModel(g)) ?? new CharacterGroupLinkViewModel[] {},
         Description = claim.Character?.Description,
         Masters =
           MasterListItemViewModel.FromProject(claim.Project)

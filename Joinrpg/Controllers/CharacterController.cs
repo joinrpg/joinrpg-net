@@ -49,12 +49,13 @@ namespace JoinRpg.Web.Controllers
         CharacterId = character.CharacterId,
         HasPlayerAccessToCharacter = hasAnyAccess,
         HasMasterAccess = hasMasterAccess,
+        ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToList(),
       };
       if (hasAnyAccess)
       {
         viewModel.Plot = (await _plotRepository.GetPlotsForCharacter(character)).Select(p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
       }
-      return View(viewModel);
+      return View("Details", viewModel);
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
@@ -73,6 +74,55 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    [HttpGet, Authorize]
+    public async Task<ActionResult> Edit(int projectId, int characterId)
+    {
+      var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      return AsMaster(field) ?? View(new EditCharacterViewModel()
+      {
+        ProjectId = field.ProjectId,
+        CharacterId = field.CharacterId,
+        Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
+        Description = field.Description,
+        IsPublic = field.IsAcceptingClaims,
+        ProjectName = field.Project.ProjectName,
+        IsAcceptingClaims = field.IsAcceptingClaims,
+        HidePlayerForCharacter = field.HidePlayerForCharacter,
+        Name = field.CharacterName,
+        ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
+      });
+    }
+
+    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
+    {
+      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var error = AsMaster(project1);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return View(viewModel);
+        }
+        await ProjectService.EditCharacter(
+          CurrentUserId,
+          viewModel.CharacterId,
+          viewModel.ProjectId,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
+          viewModel.Description.Contents, viewModel.HidePlayerForCharacter);
+
+        return RedirectToAction("Details", new {viewModel.ProjectId, viewModel.CharacterId});
+      }
+      catch
+      {
+        return View(viewModel);
+      }
+    }
+
     [HttpGet]
     [Authorize]
     public async Task<ActionResult> Create(int projectid, int charactergroupid)
@@ -81,7 +131,7 @@ namespace JoinRpg.Web.Controllers
 
       return AsMaster(field, pa => pa.CanChangeFields) ?? View(new AddCharacterViewModel()
       {
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup),
+        Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
         ProjectId = projectid,
         ParentCharacterGroupIds = new List<int> {charactergroupid}
       });
@@ -103,7 +153,7 @@ namespace JoinRpg.Web.Controllers
         await ProjectService.AddCharacter(
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents);
+          viewModel.Description.Contents, viewModel.HidePlayerForCharacter);
 
         return RedirectToIndex(project1);
       }

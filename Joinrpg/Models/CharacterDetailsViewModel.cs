@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -15,6 +16,10 @@ namespace JoinRpg.Web.Models
     IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
     [Display(Name = "Описание персонажа")]
     MarkdownString Description { get; set; }
+    [ReadOnly(true), DisplayName("Входит в группы")]
+    IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; }
+    int ProjectId { get; }
+    int? CharacterId { get; }
   }
 
   public class CharacterDetailsViewModel : ICharacterFieldsViewModel
@@ -23,11 +28,14 @@ namespace JoinRpg.Web.Models
 
     public int ProjectId { get; set; }
     public int CharacterId { get; set;}
+    int? ICharacterFieldsViewModel.CharacterId => CharacterId;
     [Display(Name="Имя персонажа")]
     public string CharacterName { get; set; }
 
     [Display(Name = "Описание персонажа")]
     public MarkdownString Description { get; set; }
+
+    public IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; set; }
 
     public bool CanAddClaim { get; set; }
 

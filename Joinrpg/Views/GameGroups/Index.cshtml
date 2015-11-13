@@ -70,14 +70,20 @@
                                 }
                                 @if (character.IsFirstCopy)
                                 {
-                                    <div>@character.Description</div>
-                                    if (Model.ShowEditControls && character.ActiveClaimsCount == 0)
+                                    if (Model.ShowEditControls)
                                     {
-                                        @Html.ActionLink("удалить", "Delete", "Character", new {Model.ProjectId, character.CharacterId}, null)
+                                        <text> | </text>
+                                        if (character.ActiveClaimsCount == 0)
+                                        {
+                                            @Html.ActionLink("удалить", "Delete", "Character", new {Model.ProjectId, character.CharacterId}, null)<text> | </text>
+                                        }
+                                        @Html.ActionLink("редактировать", "Edit", "Character", new {Model.ProjectId, character.CharacterId})
                                     }
+                                    <div>@character.Description</div>
+                                    
                                 }
-                                else
-                                {
+else
+{
                                     <span>(см. выше)</span>
                                 }
                             </li>
