@@ -141,6 +141,10 @@
     <Compile Include="Migrations\201511132018577_HidePlayerForCharacter.Designer.cs">
       <DependentUpon>201511132018577_HidePlayerForCharacter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511142027167_CharacterGroupOrdering.cs" />
+    <Compile Include="Migrations\201511142027167_CharacterGroupOrdering.Designer.cs">
+      <DependentUpon>201511142027167_CharacterGroupOrdering.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -236,6 +240,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511132018577_HidePlayerForCharacter.resx">
       <DependentUpon>201511132018577_HidePlayerForCharacter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511142027167_CharacterGroupOrdering.resx">
+      <DependentUpon>201511142027167_CharacterGroupOrdering.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

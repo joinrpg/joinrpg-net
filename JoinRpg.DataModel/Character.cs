@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -8,7 +9,7 @@ namespace JoinRpg.DataModel
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
-    int IProjectEntity.Id => CharacterId;
+    int IOrderableEntity.Id => CharacterId;
     ICollection<CharacterGroup> IWorldObject.ParentGroups => Groups;
 
     public virtual Project Project { get; set; }

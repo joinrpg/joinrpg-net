@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -10,7 +11,7 @@ namespace JoinRpg.DataModel
     public int CharacterGroupId { get; set; }
 
     public int ProjectId { get; set; }
-    int IProjectEntity.Id => CharacterGroupId;
+    int IOrderableEntity.Id => CharacterGroupId;
 
     public virtual Project Project { get; set; }
 
@@ -21,6 +22,10 @@ namespace JoinRpg.DataModel
     public virtual ICollection<CharacterGroup> ParentGroups { get; set; }
     string IWorldObject.Name => CharacterGroupName;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>Check may be you need to use ordered groups</remarks>
     public virtual ICollection<CharacterGroup> ChildGroups { get; set; }
 
     public IEnumerable<CharacterGroup> ActiveChildGroups => ChildGroups.Where(cg => cg.IsActive);
@@ -49,6 +54,9 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
 
     public int? ResponsibleMasterUserId { get; set; }
+
+    public string ChildCharactersOrdering { get; set; }
+    public string ChildGroupsOrdering { get; set; }
 
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 

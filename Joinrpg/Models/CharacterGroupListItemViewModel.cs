@@ -60,6 +60,11 @@ namespace JoinRpg.Web.Models
     public bool IsPublic { get; set; }
 
     public int ActiveClaimsCount { get; set; }
+
+    public CharacterGroupListItemViewModel()
+    {
+      
+    }
   }
 
 }

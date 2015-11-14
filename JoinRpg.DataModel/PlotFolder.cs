@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -12,7 +12,7 @@ namespace JoinRpg.DataModel
     public int ProjectId { get; set; }
     public virtual Project Project { get; set; }
 
-    int IProjectEntity.Id => PlotFolderId;
+    int IOrderableEntity.Id => PlotFolderId;
 
     //TODO: Decide if title should be for players or for masters or we need two titles
     public string MasterTitle { get; set; }

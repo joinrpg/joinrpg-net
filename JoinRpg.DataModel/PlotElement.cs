@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -13,7 +14,7 @@ namespace JoinRpg.DataModel
 
     public Project Project { get; set; }
 
-    int IProjectEntity.Id => PlotElementId;
+    int IOrderableEntity.Id => PlotElementId;
 
     public int PlotFolderId { get; set; }
 

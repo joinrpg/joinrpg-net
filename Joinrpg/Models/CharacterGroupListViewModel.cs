@@ -66,14 +66,14 @@ namespace JoinRpg.Web.Models
 
       private void GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
-        var vm = new CharacterGroupListItemViewModel()
+        var vm = new CharacterGroupListItemViewModel
         {
           CharacterGroupId = characterGroup.CharacterGroupId,
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
-          Characters = characterGroup.Characters.Select(GenerateCharacter).ToList(),
+          Characters = characterGroup.GetOrderedCharacters().Select(GenerateCharacter).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
@@ -87,7 +87,7 @@ namespace JoinRpg.Web.Models
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
 
-        foreach (var childGroup in characterGroup.ChildGroups)
+        foreach (var childGroup in characterGroup.GetOrderedChildGroups())
         {
           var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
           GenerateFrom(childGroup, deepLevel + 1, characterGroups);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -9,74 +8,34 @@ namespace JoinRpg.Helpers
   public interface IOrderableEntity
   {
     int Id { get; }
-    string PrefixForEntity { get; }
   }
 
-  public class VirtualOrderConstants
+  public interface IParentEntity<TChild> where TChild: IOrderableEntity
   {
-    //Generic classes will have a copy of this for each argument
-    protected static char[] Digits { get; } = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-
-    protected const char Separator = ',';
+    ICollection<TChild> Childs { get; }
+    string Ordering { get; set; }
   }
 
-
-  public class VirtualOrderContainer<TItem> : VirtualOrderConstants where TItem : class, IOrderableEntity
+  public static class OrderedChildExtensions
   {
-   
-    private class VirtualOrderItem : IEquatable<VirtualOrderItem>
+    public static IReadOnlyList<TChild> GetOrderedChilds<TChild>(this IParentEntity<TChild> characterSource) where TChild : class, IOrderableEntity
     {
-      
-
-      [NotNull]
-      private string Prefix{ get; }
-      private int Id { get; }
-
-      public VirtualOrderItem([NotNull] IOrderableEntity item)
-      {
-        Prefix = item.PrefixForEntity;
-        Id = item.Id;
-      }
-
-      public VirtualOrderItem(string orderItem)
-      {
-        var digitStart = orderItem.IndexOfAny(Digits);
-        if (digitStart == -1)
-        {
-          throw new ArgumentException("Can't convert orderItem", nameof(orderItem));
-        }
-        Prefix = orderItem.TakeWhile(ch => !char.IsDigit(ch)).AsString();
-        Id = int.Parse(orderItem.SkipWhile(ch => !char.IsDigit(ch)).AsString());
-      }
-
-      public bool Equals([CanBeNull] VirtualOrderItem other)
-      {
-        return other != null && Prefix == other.Prefix && Id == other.Id;
-      }
-
-      public override bool Equals([CanBeNull] object obj)
-      {
-        var other = obj as VirtualOrderItem;
-        return Equals(other);
-      }
-
-      public override int GetHashCode()
-      {
-        return Prefix.GetHashCode() ^ Id;
-      }
-
-      public override string ToString()
-      {
-        return Prefix+ Id;
-      }
+      return new VirtualOrderContainer<TChild>(characterSource.Ordering, characterSource.Childs).OrderedItems;
     }
+  }
+
+
+  public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
+  {
+    private const char Separator = ',';
+
 
     [NotNull, ItemNotNull]
     private List<TItem>  Items { get; } = new List<TItem>();
 
-    public VirtualOrderContainer([NotNull] string storedOrder, [ItemNotNull] [NotNull] IEnumerable<TItem> entites)
+    public VirtualOrderContainer([CanBeNull] string storedOrder, [ItemNotNull] [NotNull] IEnumerable<TItem> entites)
     {
-      if (storedOrder == null) throw new ArgumentNullException(nameof(storedOrder));
+      storedOrder = storedOrder ?? "";
       if (entites == null) throw new ArgumentNullException(nameof(entites));
 
       var list = entites.ToList(); // Copy 
@@ -89,20 +48,20 @@ namespace JoinRpg.Helpers
           Items.Add(item);
         }
       }
-      foreach (var item in list.OrderBy(li => li.Id).ThenBy(li => li.PrefixForEntity))
+      foreach (var item in list.OrderBy(li => li.Id))
       {
         Items.Add(item);
       }
     }
 
-    private IEnumerable<VirtualOrderItem> ParseStoredData(string storedOrder)
+    private IEnumerable<int> ParseStoredData(string storedOrder)
     {
-      return storedOrder.Split(Separator).WhereNotNullOrWhiteSpace().Select(orderItem => new VirtualOrderItem(orderItem));
+      return storedOrder.Split(Separator).WhereNotNullOrWhiteSpace().Select(orderItem => int.Parse(orderItem.Trim()));
     }
 
-    private static TItem FindItem(ICollection<TItem> list, VirtualOrderItem virtualOrderItem)
+    private static TItem FindItem(ICollection<TItem> list, int virtualOrderItem)
     {
-      var item = list.FirstOrDefault(i => virtualOrderItem.Equals(new VirtualOrderItem(i)));
+      var item = list.FirstOrDefault(i => i.Id == virtualOrderItem);
       if (item!= null)
       {
         list.Remove(item);
@@ -112,7 +71,7 @@ namespace JoinRpg.Helpers
 
     public string GetStoredOrder()
     {
-      return string.Join(Separator.ToString(), Items.Select(item => new VirtualOrderItem(item)));
+      return string.Join(Separator.ToString(), Items.Select(item =>  item.Id));
     }
 
     public IReadOnlyList<TItem> OrderedItems => Items.AsReadOnly();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -25,7 +26,7 @@ namespace JoinRpg.DataModel
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }
-    int IProjectEntity.Id => ProjectCharacterFieldId;
+    int IOrderableEntity.Id => ProjectCharacterFieldId;
 
     public bool IsActive { get; set; }
 

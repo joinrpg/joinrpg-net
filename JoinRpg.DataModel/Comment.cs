@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -13,7 +11,7 @@ namespace JoinRpg.DataModel
     public virtual  Project Project { get; set; }
     public int ProjectId { get; set; }
 
-    int IProjectEntity.Id => CommentId;
+    int IOrderableEntity.Id => CommentId;
 
     public int ClaimId { get; set; }
     public virtual Claim Claim { get; set; }

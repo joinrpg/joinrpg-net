@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -9,7 +10,7 @@ namespace JoinRpg.DataModel
   {
     public int ProjectId { get; set; }
 
-    int IProjectEntity.Id => ProjectId;
+    int IOrderableEntity.Id => ProjectId;
 
     public string ProjectName { get; set; }
 

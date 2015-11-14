@@ -15,11 +15,10 @@ namespace JoinRpg.Helpers.Test
       }
 
       public int Id { get; }
-      public string PrefixForEntity => "Foo";
 
       public override string ToString()
       {
-        return $"{PrefixForEntity}{Id}";
+        return $"{"Foo"}{Id}";
       }
     }
 
