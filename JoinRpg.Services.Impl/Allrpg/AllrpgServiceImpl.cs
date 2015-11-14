@@ -125,9 +125,6 @@ namespace JoinRpg.Services.Impl.Allrpg
           {
             var importer = new AllrpgProjectImporter(project, UnitOfWork, log);
             await importer.Apply(reply.Result);
-            log.Info("SUCCESS");
-            await UnitOfWork.SaveChangesAsync();
-            log.Info("DATA_SAVED");
           }
           catch (Exception e)
           {

@@ -41,8 +41,14 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private struct ParentRelation
     {
-      public int ParentAllrpgId;
-      public int ChildAllrpgId;
+      public int ParentAllrpgId { get; }
+      public int ChildAllrpgId { get; }
+
+      public ParentRelation(int parentAllrpgId, int childAllrpgId)
+      {
+        ParentAllrpgId = parentAllrpgId;
+        ChildAllrpgId = childAllrpgId;
+      }
     }
 
     private ICollection<ParentRelation> LocationParentRelation { get; }= new List<ParentRelation>();
@@ -56,13 +62,36 @@ namespace JoinRpg.Services.Impl.Allrpg
 
       CleanProject();
 
-      ImportLocations(projectReply);
+      ImportLocations(projectReply.locations);
 
       ImportCharacters(projectReply);
 
       ImportClaims(projectReply.roles);
 
       ImportComments(projectReply.comments);
+
+      _operationLog.Info("SUCCESS");
+      await UnitOfWork.SaveChangesAsync();
+      _operationLog.Info("DATA_SAVED");
+
+      ReorderLocations(Project.RootGroup);
+      await UnitOfWork.SaveChangesAsync();
+      _operationLog.Info("DATA_REORDED_SAVED");
+    }
+
+    private void ReorderLocations(CharacterGroup @group)
+    {
+      group.ChildGroupsOrdering = string.Join(",", @group.ChildGroups.OrEmptyList().OrderBy(g => g.ChildGroupsOrdering).Select(g => g.CharacterGroupId));
+      
+      group.ChildCharactersOrdering = string.Join(",", @group.Characters.OrEmptyList().OrderBy(g => g.PlotElementOrderData).Select(c => c.CharacterId));
+      foreach (var child in @group.ChildGroups.OrEmptyList())
+      {
+        ReorderLocations(child);
+      }
+      foreach (var character in @group.Characters.OrEmptyList())
+      {
+        character.PlotElementOrderData = null;
+      }
     }
 
     private void ImportComments(ICollection<CommentData> comments)
@@ -197,7 +226,8 @@ namespace JoinRpg.Services.Impl.Allrpg
         CharacterName = vacancy.name,
         Claims = new List<Claim>(),
         IsAcceptingClaims = true,
-        Groups = new List<CharacterGroup>() {GetParentGroupByAllrpgId(vacancy.locat)}
+        Groups = new List<CharacterGroup>() {GetGroupByAllrpgId(vacancy.locat)},
+        PlotElementOrderData = "allrpg" + vacancy.code
       };
 
       Characters.Add(vacancy.id, character);
@@ -233,9 +263,9 @@ namespace JoinRpg.Services.Impl.Allrpg
       _operationLog.Info($"PROJECT.LOCATIONS remove finished");
     }
 
-    private void ImportLocations(ProjectReply projectReply)
+    private void ImportLocations(ICollection<LocationData> locationDatas)
     {
-      foreach (var locationData in projectReply.locations.OrderByDescending(l => l.code)) // Poor man attempt to keep order
+      foreach (var locationData in locationDatas) 
       {
         ImportLocation(locationData);
       }
@@ -244,16 +274,21 @@ namespace JoinRpg.Services.Impl.Allrpg
       foreach (var parentRelation in LocationParentRelation)
       {
         var child = Locations[parentRelation.ChildAllrpgId];
-        var parent = GetParentGroupByAllrpgId(parentRelation.ParentAllrpgId);
+        var parent = GetGroupByAllrpgId(parentRelation.ParentAllrpgId);
         _operationLog.Info($"LOCATION.PARENT {parent.CharacterGroupName} of CHILD {child.CharacterGroupName}");
         child.ParentGroups.Add(parent);
       }
 
-      Project.CharacterGroups.AddLinkList(Locations.Values);
-      UnitOfWork.GetDbSet<CharacterGroup>().AddRange(Locations.Values);
+      var sortedLocations =
+        Locations
+          .Values
+          .ToList();
+
+      Project.CharacterGroups.AddLinkList(sortedLocations);
+      UnitOfWork.GetDbSet<CharacterGroup>().AddRange(sortedLocations);
     }
 
-    private CharacterGroup GetParentGroupByAllrpgId(int parentAllrpgId)
+    private CharacterGroup GetGroupByAllrpgId(int parentAllrpgId)
     {
       return parentAllrpgId == 0
         ? Project.RootGroup
@@ -275,11 +310,12 @@ namespace JoinRpg.Services.Impl.Allrpg
         Project = Project,
         IsRoot = false,
         Characters = new List<Character>(),
-        ParentGroups = new List<CharacterGroup>() {GetParentGroupByAllrpgId(locationData.locat)},
+        ParentGroups = new List<CharacterGroup>() {GetGroupByAllrpgId(locationData.locat)},
         IsActive = true,
         HaveDirectSlots = true,
         IsPublic = true, 
-        Description = new MarkdownString(locationData.content.Trim())
+        Description = new MarkdownString(locationData.content.Trim()),
+        ChildGroupsOrdering = "allrpg!"+locationData.code
       };
 
       LocationsFromVacancies.Add(locationData.id, characterGroup);
@@ -306,14 +342,15 @@ namespace JoinRpg.Services.Impl.Allrpg
         IsActive = true,
         HaveDirectSlots = false,
         IsPublic = locationData.rights == 0,
-        Description = new MarkdownString(locationData.description.Trim())
+        Description = new MarkdownString(locationData.description.Trim()),
+        ChildGroupsOrdering = "allrpg" + locationData.code
       };
 
       Locations.Add(locationData.id,characterGroup);
 
       _operationLog.Info($"GROUP.CREATE {characterGroup}");
 
-      LocationParentRelation.Add(new ParentRelation {ChildAllrpgId = locationData.id, ParentAllrpgId = locationData.parent});
+      LocationParentRelation.Add(new ParentRelation(locationData.parent, locationData.id));
     }
 
     private async Task ImportUser(ProfileReply allrpgUser)

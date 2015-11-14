@@ -37,6 +37,9 @@ namespace JoinRpg.Services.Impl.Allrpg
     public string name { get; set; }
 
     public int rights { get; set; }
+    /// <summary>
+    /// This is a "order" field
+    /// </summary>
     public int code { get; set; }
 
     [NotNull]
