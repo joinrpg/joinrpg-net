@@ -188,8 +188,8 @@
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="Vereyon.Web.HtmlSanitizer, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Vereyon.Web.HtmlSanitizer.1.1.1.0\lib\net40\Vereyon.Web.HtmlSanitizer.dll</HintPath>
+    <Reference Include="Vereyon.Web.HtmlSanitizer, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vereyon.Web.HtmlSanitizer.1.1.2.0\lib\net40\Vereyon.Web.HtmlSanitizer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="WebActivatorEx, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">
