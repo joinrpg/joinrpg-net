@@ -111,7 +111,7 @@ namespace JoinRpg.Services.Email
 Добрый день, %recipient.name%!
 
 Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {GetInitiatorString(model)}.
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+Перейдите на заявку, чтобы ответить на комментарий: {_uriService.Get(model.Claim)}");
     }
 
     public Task Email(ApproveByMasterEmail model)
