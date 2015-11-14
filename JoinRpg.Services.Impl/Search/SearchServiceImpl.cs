@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using JoinRpg.Dal.Impl;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;

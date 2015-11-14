@@ -4,6 +4,7 @@ using System.Web;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Impl;

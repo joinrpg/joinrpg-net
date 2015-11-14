@@ -1,0 +1,30 @@
+Joinrpg.Helpers
+  misc. helpers that have no depedency on anything project-specific
+Joinrpg.DataModel
+  Data model. Classes w/o any logic or data access, but used to generate database schema. 
+  Please ask LEO for review when you add/remove new field. 
+  If you like to put some logic into entity, create extension method in Joinrpg.Domain
+Joinrpg.Data.Interfaces
+  Interfaces that represent repositories. 
+  If you want just read some data, use IXXXRepository from here. 
+  Try to use as specific method as possible to eliminate lazy loads. 
+JoinRpg.Data.Write.Interfaces
+  Contains IUnitOfWork interface that you should use to modify something. Should be used only from inside services.
+JoinRpg.Services.Interfaces
+  Services are business logic code. 1 method = 1 user action  = 1 transaction.
+JoinRpg.Services.Impl
+  Implementation of services. Contain most business logic code. Do not trust your input, ask for currentUserId, check rights yourself. 
+  Encapsulate read operations (aside of selecting by primary key) inside repositories.
+JoinRpg.Services.Email
+  Email service put aside in a separate project. If you got especially large service, you can put it in your own project.
+JoinRpg.Web
+  Web site. Should contain only UI. Please put a least logic as possible. Best variant is "get something from repository, transform to viewModel, return View" 
+  or "read and validate parameters, call service, redirect".
+  JoinRpg.Web\Controllers — 1 method of Controller corresponds to 1 web page. Remember to return Task<ActionResult>, not ActionResult!
+  JoinRpg.Web\Models — ViewModels. Should be logic-less.
+  JoinRpg.Web\Views — Templates
+  JoinRpg.Web\Views\Shared — shared/partial templates
+  JoinRpg.Web\Views\Shared\DisplayTemplates — used when you are DisplayFor(model => model.ComplexObject)
+  JoinRpg.Web\Views\Shared\EditorTemplates — used when you are EditorFor(model => model.ComplexObject)
+Joinrpg.Dal.Impl
+  Implementation of DataAccess, repositories, etc. Not be referenced from anywhere.

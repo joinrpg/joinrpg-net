@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Threading.Tasks;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl
@@ -20,7 +21,6 @@ namespace JoinRpg.Dal.Impl
 
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
-    void IUnitOfWork.SaveChanges() => SaveChanges();
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
 
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);

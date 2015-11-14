@@ -40,6 +40,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8BB208B6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Helpers.Test", "JoinRpg.Helpers.Test\JoinRpg.Helpers.Test.csproj", "{2C54153D-EB05-4A29-9163-C559628CFD7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Data.Write.Interfaces", "JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj", "{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18541948-5966-481B-B755-833AF5A7BC17}"
+	ProjectSection(SolutionItems) = preProject
+		code_placement.txt = code_placement.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +101,10 @@ Global
 		{2C54153D-EB05-4A29-9163-C559628CFD7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C54153D-EB05-4A29-9163-C559628CFD7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C54153D-EB05-4A29-9163-C559628CFD7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

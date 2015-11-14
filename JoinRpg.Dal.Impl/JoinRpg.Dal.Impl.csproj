@@ -57,7 +57,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IUnitOfWork.cs" />
     <Compile Include="Migrations\201507212237267_Initial.cs" />
     <Compile Include="Migrations\201507212237267_Initial.Designer.cs">
       <DependentUpon>201507212237267_Initial.cs</DependentUpon>
@@ -156,6 +155,10 @@
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj">
       <Project>{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}</Project>
       <Name>JoinRpg.Data.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj">
+      <Project>{1da9abca-67fe-4e37-b97d-7a5ccc5cdb46}</Project>
+      <Name>JoinRpg.Data.Write.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>

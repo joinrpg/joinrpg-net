@@ -471,6 +471,10 @@
       <Project>{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}</Project>
       <Name>JoinRpg.Data.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj">
+      <Project>{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}</Project>
+      <Name>JoinRpg.Data.Write.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{bd1358f0-8c7b-4205-84bc-b1c954364df0}</Project>
       <Name>JoinRpg.DataModel</Name>
