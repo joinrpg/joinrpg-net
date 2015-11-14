@@ -86,6 +86,10 @@ namespace JoinRpg.Services.Email
     }
     private async Task SendClaimEmail(ClaimEmailModel model, string text)
     {
+      if (model.ProjectName.Trim().StartsWith("NOEMAIL"))
+      {
+        return;
+      }
       var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
       if (!recepients.Any())
       {
