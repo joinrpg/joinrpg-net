@@ -44,11 +44,16 @@
   <ItemGroup>
     <Compile Include="ExpressionHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VirtualOrderContainerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
       <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj">
+      <Project>{7b8db01f-423b-4bc9-9336-50d772f34f82}</Project>
+      <Name>JoinRpg.TestHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

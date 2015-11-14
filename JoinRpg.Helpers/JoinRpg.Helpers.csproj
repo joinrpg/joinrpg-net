@@ -53,6 +53,7 @@
     <Compile Include="StaticEnumHelpers.cs" />
     <Compile Include="StaticStringHelpers.cs" />
     <Compile Include="StaticTaskHelpers.cs" />
+    <Compile Include="VirtualOrderContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
