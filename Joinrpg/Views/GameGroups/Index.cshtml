@@ -42,7 +42,7 @@
                         @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
                         {
                             <li>
-                                <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new {Model.ProjectId, character.CharacterId}, null) </strong>
+                                <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new {character.ProjectId, character.CharacterId}, null) </strong>
                                 @if (character.Player != null)
                                 {
                                     @Html.DisplayFor(model => character, "IPlayerCharacter")
@@ -53,24 +53,19 @@
                                 }
                                 @if (character.IsAvailable)
                                 {
-                                    @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, character.CharacterId}, null)
+                                    @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { character.ProjectId, character.CharacterId}, null)
                                 }
                                 @if (character.IsFirstCopy)
                                 {
                                     if (Model.ShowEditControls)
                                     {
-                                        <text> | </text>
-                                        if (character.ActiveClaimsCount == 0)
-                                        {
-                                            @Html.ActionLink("удалить", "Delete", "Character", new {Model.ProjectId, character.CharacterId}, null)<text> | </text>
-                                        }
-                                        @Html.ActionLink("редактировать", "Edit", "Character", new {Model.ProjectId, character.CharacterId}, null)
+                                        @Html.Partial("_CharacterEditControls", character)
                                     }
                                     <div>@character.Description</div>
-                                    
+
                                 }
-else
-{
+                                else
+                                {
                                     <span>(см. выше)</span>
                                 }
                             </li>

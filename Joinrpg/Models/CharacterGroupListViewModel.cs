@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
-          Characters = characterGroup.GetOrderedCharacters().Select(GenerateCharacter).ToList(),
+          Characters = characterGroup.GetOrderedCharacters().Select(character => GenerateCharacter(character, characterGroup)).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
@@ -102,8 +102,10 @@ namespace JoinRpg.Web.Models
         }
       }
 
-      private CharacterViewModel GenerateCharacter(Character arg)
+      private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group)
       {
+        var siblings = group.GetOrderedCharacters() ?? new List<Character> { arg };
+
         var vm = new CharacterViewModel
         {
           CharacterId = arg.CharacterId,
@@ -116,7 +118,12 @@ namespace JoinRpg.Web.Models
           HidePlayer = arg.HidePlayerForCharacter,
           ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
           Player = arg.ApprovedClaim?.Player,
-          HasMasterAccess = HasMasterAccess 
+          HasMasterAccess = HasMasterAccess,
+          ProjectId = arg.ProjectId,
+          FirstInGroup = siblings.First() == arg,
+          LastInGroup = siblings.Last() == arg,
+          ParentCharacterGroupId = group.CharacterGroupId,
+          RootGroupId = Root.CharacterGroupId
         };
         if (vm.IsFirstCopy)
         {

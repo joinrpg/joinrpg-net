@@ -1,0 +1,34 @@
+﻿@model JoinRpg.Web.Models.CharacterViewModel
+<span>
+    |
+    @if (Model.ActiveClaimsCount == 0)
+    {
+    @Html.ActionLink("удалить", "Delete", "Character", new { Model.ProjectId, Model.CharacterId }, null)<text> | </text>
+    }
+    @Html.ActionLink("редактировать", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)
+
+    @if (!Model.FirstInGroup || !Model.LastInGroup)
+    {
+    <text> | Поместить </text>
+        var moveParameters = new
+        {
+            Model.ProjectId,
+            Model.CharacterId,
+            parentCharacterGroupId = Model.ParentCharacterGroupId,
+            currentRootGroupId = Model.RootGroupId
+        };
+        if (!Model.FirstInGroup)
+        {
+
+        @Html.ActionLink("выше", "MoveUp", "Character", moveParameters, null)
+        }
+        if (!Model.FirstInGroup && !Model.LastInGroup)
+        {
+        <text> | </text>
+        }
+        if (!Model.LastInGroup)
+        {
+        @Html.ActionLink("ниже", "MoveDown", "Character", moveParameters, null)
+        }
+    }
+</span>

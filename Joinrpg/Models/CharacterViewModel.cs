@@ -6,6 +6,7 @@ namespace JoinRpg.Web.Models
   public class CharacterViewModel  : ICharacterWithPlayerViewModel
   {
     public int CharacterId { get; set; }
+    public int ProjectId { get; set; }
     public string CharacterName { get; set; }
 
     public bool IsFirstCopy { get; set; }
@@ -24,5 +25,11 @@ namespace JoinRpg.Web.Models
     public int ActiveClaimsCount { get; set; }
 
     public bool HasMasterAccess { get; set; }
+
+    public bool FirstInGroup { get; set; }
+    public bool LastInGroup { get; set; }
+
+    public int ParentCharacterGroupId { get; set; }
+    public int RootGroupId { get; set; }
   }
 }

@@ -191,5 +191,39 @@ namespace JoinRpg.Web.Controllers
         return View(field);
       }
     }
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> MoveUp(int projectid, int characterid, int parentcharactergroupid, int currentrootgroupid)
+    {
+      return MoveImpl(projectid, characterid, parentcharactergroupid, currentrootgroupid, -1);
+    }
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> MoveDown(int projectid, int characterid, int parentcharactergroupid, int currentrootgroupid)
+    {
+      return MoveImpl(projectid, characterid, parentcharactergroupid, currentrootgroupid, +1);
+    }
+
+    private async Task<ActionResult> MoveImpl(int projectId, int characterId, int parentCharacterGroupId, int currentRootGroupId, int direction)
+    {
+      var group = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      var error = AsMaster(@group);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await ProjectService.MoveCharacter(CurrentUserId, projectId, characterId, parentCharacterGroupId, direction);
+
+
+        return RedirectToIndex(projectId, currentRootGroupId);
+      }
+      catch
+      {
+        return RedirectToIndex(projectId, currentRootGroupId);
+      }
+    }
   }
 }
