@@ -303,19 +303,20 @@
 </div>
 @if (Model.Plot != null)
 {
-<details>
-    <summary><h4>Загрузы</h4></summary>
-    @foreach (var plot in Model.Plot)
+    <hr/>
+    <details>
+        <summary><h4>Загрузы</h4></summary>
+        @foreach (var plot in Model.Plot)
         {
-    @Html.Partial("../Plot/ShowElementPartial", plot)
-    }
-    @if (ViewBag.HasUnfinishedPlot == true)
+            @Html.Partial("../Plot/ShowElementPartial", plot)
+        }
+        @if (ViewBag.HasUnfinishedPlot == true)
         {
-    <p>
-        <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
-    </p>
-    }
-</details>
+            <p>
+                <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
+            </p>
+        }
+    </details>
 }
 <p>
     @Html.ActionLink("Назад к сетке ролей", "Index", "GameGroups", new {Model.ProjectId}, null)
