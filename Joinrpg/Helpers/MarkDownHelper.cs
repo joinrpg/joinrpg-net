@@ -19,7 +19,6 @@ namespace JoinRpg.Web.Helpers
       return markdownString?.Contents == null ? null : new HtmlString(Convert(markdownString));
     }
 
-    // ReSharper disable once UnusedParameter.Local Reshaper are wrong here
     private static string Convert(MarkdownString markdownString)
     {
       var settings = CommonMarkSettings.Default.Clone();
