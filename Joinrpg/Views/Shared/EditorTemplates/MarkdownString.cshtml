@@ -12,7 +12,7 @@
   }
 }
 <div>
-    Можно использовать MarkDown (**<b>полужирный</b>**, _<i>курсив</i>_) <br/>
+    Можно использовать <a href="http://daringfireball.net/projects/markdown/syntax">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_) <br/>
     <textarea cols="100" id="@(ViewData.TemplateInfo.HtmlFieldPrefix)_Contents" name="@(ViewData.TemplateInfo.HtmlFieldPrefix).Contents" @requiredMsg @(validation ? "data-val=true" : "") rows="4">@(Model == null ? "" : Model.Contents)</textarea>
 </div>
 @if (validation)
