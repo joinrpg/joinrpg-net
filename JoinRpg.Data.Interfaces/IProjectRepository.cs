@@ -16,6 +16,7 @@ namespace JoinRpg.Data.Interfaces
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId);
+    Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
     [Obsolete("LoadGroupAsync")]
     CharacterGroup GetCharacterGroup(int projectId, int groupId);
     Task<Character> GetCharacterAsync(int projectId, int characterId);

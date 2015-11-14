@@ -50,6 +50,16 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId ==characterGroupId && cg.ProjectId == projectId);
     }
 
+    public Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
+    {
+      return
+        Ctx.Set<CharacterGroup>()
+          .Include(cg => cg.Project)
+          .Include(cg => cg.Characters)
+          .Include(cg => cg.ChildGroups)
+          .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
+    }
+
     private static Expression<Func<Project, bool>> MyProjectPredicate(int? userInfoId)
     {
       if (userInfoId == null)

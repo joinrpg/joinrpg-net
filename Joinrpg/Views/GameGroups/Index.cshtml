@@ -35,20 +35,7 @@
                 <div>
                     @if (Model.ShowEditControls)
                     {
-                        <span>
-@Html.ActionLink("Список заявок", "ListForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null) |
-        @Html.ActionLink("Редактировать", "Edit", new {Model.ProjectId, item.CharacterGroupId}, null) |
-@if (!item.IsRoot && item.ActiveClaimsCount == 0)
-{
-    <span>
-    @Html.ActionLink("Удалить", "Delete", new {Model.ProjectId, item.CharacterGroupId}, null)
-    |
-</span>
-}
-    Добавить
-    @Html.ActionLink("персонажа", "Create", "Character", new {Model.ProjectId, item.CharacterGroupId}, null) |
-    @Html.ActionLink("подгруппу", "AddGroup", new {Model.ProjectId, item.CharacterGroupId}, null)
-</span>
+                        @Html.Partial("_GroupEditControls", item)
                     }
                     @item.Description
                     <ul>

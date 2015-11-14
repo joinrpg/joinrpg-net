@@ -454,6 +454,7 @@
     <Content Include="Views\Game\AllrpgUpdate.cshtml" />
     <Content Include="Views\Character\Edit.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\IPlayerCharacter.cshtml" />
+    <Content Include="Views\GameGroups\_GroupEditControls.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -18,10 +18,7 @@ namespace JoinRpg.Helpers
 
   public static class OrderedChildExtensions
   {
-    public static IReadOnlyList<TChild> GetOrderedChilds<TChild>(this IParentEntity<TChild> characterSource) where TChild : class, IOrderableEntity
-    {
-      return new VirtualOrderContainer<TChild>(characterSource.Ordering, characterSource.Childs).OrderedItems;
-    }
+
   }
 
 

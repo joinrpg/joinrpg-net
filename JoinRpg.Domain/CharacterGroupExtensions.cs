@@ -43,14 +43,29 @@ namespace JoinRpg.Domain
       }
     }
 
+    public static VirtualOrderContainer<TChild> GetVirtualOrderContainer<TChild>(IParentEntity<TChild> characterSource) where TChild : class, IOrderableEntity
+    {
+      return new VirtualOrderContainer<TChild>(characterSource.Ordering, characterSource.Childs);
+    }
+
     public static IReadOnlyList<Character> GetOrderedCharacters(this CharacterGroup characterGroup)
     {
-      return new CharacterGroupIsCharacterContainer(characterGroup).GetOrderedChilds();
+      return characterGroup.GetCharactersContainer().OrderedItems;
+    }
+
+    public static VirtualOrderContainer<Character> GetCharactersContainer(this CharacterGroup characterGroup)
+    {
+      return GetVirtualOrderContainer(new CharacterGroupIsCharacterContainer(characterGroup));
     }
 
     public static IReadOnlyList<CharacterGroup> GetOrderedChildGroups(this CharacterGroup characterGroup)
     {
-      return new CharacterGroupIsCharacterGroupContainer(characterGroup).GetOrderedChilds();
+      return characterGroup.GetCharacterGroupsContainer().OrderedItems;
+    }
+
+    public static VirtualOrderContainer<CharacterGroup> GetCharacterGroupsContainer(this CharacterGroup characterGroup)
+    {
+      return GetVirtualOrderContainer(new CharacterGroupIsCharacterGroupContainer(characterGroup));
     }
   }
 }

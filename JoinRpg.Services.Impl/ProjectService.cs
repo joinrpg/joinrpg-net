@@ -169,6 +169,31 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId,
+      int direction)
+    {
+      var parentCharacterGroup = await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
+      parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+
+      var thisCharacterGroup = parentCharacterGroup.ChildGroups.Single(i => i.CharacterGroupId == charactergroupId);
+
+      var voc = parentCharacterGroup.GetCharacterGroupsContainer();
+      switch (direction)
+      {
+        case -1:
+          voc.MoveUp(thisCharacterGroup);
+          break;
+        case 1:
+          voc.MoveDown(thisCharacterGroup);
+          break;
+        default:
+          throw new ArgumentException(nameof(direction));
+      }
+
+      parentCharacterGroup.ChildGroupsOrdering = voc.GetStoredOrder();
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
       int? responsibleMasterId)

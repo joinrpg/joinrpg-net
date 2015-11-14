@@ -33,6 +33,8 @@ namespace JoinRpg.Web.Models
 
   public class CharacterGroupListItemViewModel
   {
+    public int RootGroupId
+    { get; set; }
     public int CharacterGroupId { get; set; }
 
     [DisplayName("Название группы ролей")]
@@ -61,6 +63,10 @@ namespace JoinRpg.Web.Models
 
     public int ActiveClaimsCount { get; set; }
 
+    public bool FirstInGroup { get; set; }
+    public bool LasInGroup { get; set; }
+
+    public int ProjectId { get; set; }
     public CharacterGroupListItemViewModel()
     {
       

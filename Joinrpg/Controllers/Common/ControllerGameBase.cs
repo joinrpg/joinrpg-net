@@ -111,8 +111,12 @@ namespace JoinRpg.Web.Controllers.Common
 
     protected ActionResult RedirectToIndex(Project project)
     {
-      return RedirectToAction("Index", "GameGroups",
-        new { project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId, area = "" });
+      return RedirectToIndex(project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId);
+    }
+
+    protected ActionResult RedirectToIndex(int projectId, int characterGroupId)
+    {
+      return RedirectToAction("Index", "GameGroups", new {projectId, characterGroupId, area = ""});
     }
 
     protected async Task<ActionResult> RedirectToProject(int projectId)

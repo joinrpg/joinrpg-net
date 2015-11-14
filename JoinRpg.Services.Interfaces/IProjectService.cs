@@ -26,5 +26,6 @@ namespace JoinRpg.Services.Interfaces
     Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label, string description);
     Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId);
     Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter);
+    Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, int direction);
   }
 }

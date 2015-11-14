@@ -8,5 +8,7 @@
 
     public bool ShowEditControls { get; set; }
     public CharacterGroupListViewModel Data { get; set; }
+
+    public int CharacterGroupId { get; set; }
   }
 }

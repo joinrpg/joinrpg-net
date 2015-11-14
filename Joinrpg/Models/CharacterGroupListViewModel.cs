@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Models
       return new CharacterGroupListViewModel
       {
         Groups = new CharacterGroupHierarchyBuilder(@group, hasMasterAccess).Generate(),
-      };
+      }; 
     }
 
     public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group, true);
@@ -66,6 +66,10 @@ namespace JoinRpg.Web.Models
 
       private void GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
+        var immediateParent = pathToTop.LastOrDefault();
+
+        var siblings = immediateParent?.GetOrderedChildGroups() ?? new List<CharacterGroup> { characterGroup};
+
         var vm = new CharacterGroupListItemViewModel
         {
           CharacterGroupId = characterGroup.CharacterGroupId,
@@ -78,7 +82,11 @@ namespace JoinRpg.Web.Models
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
           IsPublic = characterGroup.IsPublic,
-          IsActive = characterGroup.IsActive
+          IsActive = characterGroup.IsActive,
+          FirstInGroup = siblings.First() == characterGroup,
+          LasInGroup = siblings.Last() == characterGroup,
+          ProjectId = characterGroup.ProjectId,
+          RootGroupId = Root.CharacterGroupId
         };
         Results.Add(vm);
 

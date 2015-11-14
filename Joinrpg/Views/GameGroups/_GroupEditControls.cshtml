@@ -1,0 +1,40 @@
+﻿@model JoinRpg.Web.Models.CharacterGroupListItemViewModel
+<span>
+    @Html.ActionLink("Список заявок", "ListForGroup", "Claim", new { Model.ProjectId, Model.CharacterGroupId }, null) |
+    @Html.ActionLink("Редактировать", "Edit", new { Model.ProjectId, Model.CharacterGroupId }, null) |
+    @if (!Model.IsRoot && Model.ActiveClaimsCount == 0)
+    {
+    <span>
+        @Html.ActionLink("Удалить", "Delete", new { Model.ProjectId, Model.CharacterGroupId }, null)
+        |
+    </span>
+    }
+    Добавить
+    @Html.ActionLink("персонажа", "Create", "Character", new { Model.ProjectId, Model.CharacterGroupId }, null) |
+    @Html.ActionLink("подгруппу", "AddGroup", new { Model.ProjectId, Model.CharacterGroupId }, null)
+    @if (!Model.FirstInGroup || !Model.LasInGroup)
+    {
+        <text> | Поместить </text>
+        var moveParameters = new
+        {
+            Model.ProjectId,
+            Model.CharacterGroupId,
+            parentCharacterGroupId = Model.Path.Last().CharacterGroupId,
+            currentRootGroupId = Model.RootGroupId
+        };
+        if (!Model.FirstInGroup)
+        {
+
+            @Html.ActionLink("выше", "MoveUp", "GameGroups", moveParameters, null)
+        }
+        if (!Model.FirstInGroup && !Model.LasInGroup)
+        {
+            <text> | </text>
+        }
+        if (!Model.LasInGroup)
+        {
+            @Html.ActionLink("ниже", "MoveDown", "GameGroups", moveParameters, null)
+        }
+    }
+</span>
+

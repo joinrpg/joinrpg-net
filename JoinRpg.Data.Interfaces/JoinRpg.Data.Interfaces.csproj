@@ -55,6 +55,10 @@
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
+      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
+      <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

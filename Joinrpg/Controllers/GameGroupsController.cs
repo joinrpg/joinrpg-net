@@ -33,6 +33,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
+          CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = hasMasterAccess,
           Data = CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
         });
@@ -257,6 +258,38 @@ namespace JoinRpg.Web.Controllers
       var field = groupId == null ? null : ProjectRepository.GetCharacterGroup(projectId, (int)groupId);
 
       return AsMaster(field, pa => pa.CanChangeFields) ?? action(field.Project, field);
+    }
+
+    public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
+    {
+      return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
+    }
+
+    private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, int direction)
+    {
+      var group = await ProjectRepository.LoadGroupAsync(projectId, charactergroupId);
+      var error = AsMaster(@group);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await ProjectService.MoveCharacterGroup(CurrentUserId, projectId, charactergroupId, parentCharacterGroupId, direction);
+
+
+        return RedirectToIndex(projectId, currentRootGroupId);
+      }
+      catch
+      {
+        return RedirectToIndex(projectId, currentRootGroupId);
+      }
+    }
+
+    public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
+    {
+      return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
     }
   }
 }
