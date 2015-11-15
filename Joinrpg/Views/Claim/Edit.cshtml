@@ -94,6 +94,10 @@
 
         <dd>
             @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
+            @if (Model.HasMasterAccess)
+            {
+              <text>(@Html.ActionLink("редактировать", "Details", "Character", new { Model.CharacterId, Model.ProjectId }, null) персонажа)</text>
+            }
         </dd>
     }
     @if (Model.CharacterGroupId != null)
