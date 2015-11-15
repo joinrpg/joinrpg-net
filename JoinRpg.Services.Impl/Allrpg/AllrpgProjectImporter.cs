@@ -300,7 +300,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         Claims = new List<Claim>(),
         IsAcceptingClaims = true,
         Groups = new List<CharacterGroup>() {GetGroupByAllrpgId(vacancy.locat)},
-        PlotElementOrderData = "allrpg" + vacancy.code
+        PlotElementOrderData = $"allrpg{vacancy.code:00000}"
       };
 
       Characters.Add(vacancy.id, character);
@@ -388,7 +388,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         HaveDirectSlots = true,
         IsPublic = true, 
         Description = new MarkdownString(locationData.content.Trim()),
-        ChildGroupsOrdering = "allrpg!"+locationData.code
+        ChildGroupsOrdering = $"allrpg!{locationData.code:00000}"
       };
 
       LocationsFromVacancies.Add(locationData.id, characterGroup);
@@ -416,7 +416,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         HaveDirectSlots = false,
         IsPublic = locationData.rights == 0,
         Description = new MarkdownString(locationData.description.Trim()),
-        ChildGroupsOrdering = "allrpg" + locationData.code
+        ChildGroupsOrdering = $"allrpg!{locationData.code:00000}"
       };
 
       Locations.Add(locationData.id,characterGroup);
