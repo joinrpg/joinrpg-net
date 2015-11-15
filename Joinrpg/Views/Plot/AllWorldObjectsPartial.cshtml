@@ -20,13 +20,17 @@
     @Html.Label(prefix + elementId, name, null)
   <br/>
 }
-
-<p>Этот контрол смотрится ужасно, но он временный. Сделаем тут нормальный</p>
-@foreach (var element in Model.Data.ActiveGroups.Where(g => g.FirstCopy))
-{
-    @CreateCheckBox("group_", GetName(element), element.CharacterGroupId, Model.For.Any(f => f.IsGroup(element.CharacterGroupId)))
-    foreach (var character in element.Characters)
-    {
-        @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId, Model.For.Any(f => f.IsCharacter(element.CharacterGroupId)))
-    }
-}
+<div class="form-group" style="clear:both">
+    <details>
+        <summary>Выбрать, кому будет показана вводная...</summary>
+        <p>Этот контрол смотрится ужасно, но он временный. Сделаем тут нормальный</p>
+        @foreach (var element in Model.Data.ActiveGroups.Where(g => g.FirstCopy))
+        {
+        @CreateCheckBox("group_", GetName(element), element.CharacterGroupId, Model.For.Any(f => f.IsGroup(element.CharacterGroupId)))
+            foreach (var character in element.Characters)
+            {
+            @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId, Model.For.Any(f => f.IsCharacter(element.CharacterGroupId)))
+            }
+        }
+    </details>
+</div>
