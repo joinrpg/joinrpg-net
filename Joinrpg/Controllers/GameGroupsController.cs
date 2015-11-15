@@ -10,6 +10,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -104,7 +105,7 @@ namespace JoinRpg.Web.Controllers
         Data = CharacterGroupListViewModel.FromGroupAsMaster(group.Project.RootGroup),
         ProjectId = group.Project.ProjectId,
         ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
-        Description = @group.Description,
+        Description = new MarkdownViewModel(@group.Description),
         IsPublic = @group.IsPublic,
         Name = @group.CharacterGroupName,
         HaveDirectSlots = GetDirectClaimSettings(@group),

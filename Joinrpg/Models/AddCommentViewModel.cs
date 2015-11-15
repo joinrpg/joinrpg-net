@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -15,7 +15,7 @@ namespace JoinRpg.Web.Models
     public int? ParentCommentId { get; set; }
 
     [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария")] 
-    public MarkdownString CommentText { get; set; }
+    public MarkdownViewModel CommentText { get; set; }
 
     [DisplayName("Только другим мастерам")]
     public bool HideFromUser

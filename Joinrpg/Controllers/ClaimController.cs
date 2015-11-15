@@ -11,6 +11,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
@@ -154,7 +155,7 @@ namespace JoinRpg.Web.Controllers
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
         ParentGroups = claim.Character?.Groups.Select(g => new CharacterGroupLinkViewModel(g)) ?? new CharacterGroupLinkViewModel[] {},
-        Description = claim.Character?.Description,
+        Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =
           MasterListItemViewModel.FromProject(claim.Project)
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
@@ -171,7 +172,8 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownString description,
+    //TODO: Put this into viewmodel
+    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownViewModel description,
       FormCollection formCollection)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);

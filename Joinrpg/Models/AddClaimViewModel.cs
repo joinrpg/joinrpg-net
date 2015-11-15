@@ -2,8 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -31,7 +33,7 @@ namespace JoinRpg.Web.Models
     public bool IsAvailable { get; set; }
 
     [Display(Name ="Текст заявки")]
-    public MarkdownString ClaimText { get; set; }
+    public MarkdownViewModel ClaimText { get; set; }
 
     public static AddClaimViewModel Create(Character character, User user)
     {

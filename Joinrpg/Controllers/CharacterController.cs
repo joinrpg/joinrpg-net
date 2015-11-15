@@ -8,6 +8,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
@@ -37,7 +38,7 @@ namespace JoinRpg.Web.Controllers
       var viewModel = new CharacterDetailsViewModel
       {
         CharacterName = character.CharacterName,
-        Description = character.Description,
+        Description = new MarkdownViewModel(character.Description),
         ApprovedClaimId = character.ApprovedClaim?.ClaimId,
         Player = approvedClaimUser,
         CanAddClaim = character.IsAvailable,
@@ -60,7 +61,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownString description,
+    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownViewModel description,
       FormCollection formCollection)
     {
       try
@@ -84,7 +85,7 @@ namespace JoinRpg.Web.Controllers
         ProjectId = field.ProjectId,
         CharacterId = field.CharacterId,
         Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
-        Description = field.Description,
+        Description = new MarkdownViewModel(field.Description),
         IsPublic = field.IsAcceptingClaims,
         ProjectName = field.Project.ProjectName,
         IsAcceptingClaims = field.IsAcceptingClaims,

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Models
     public bool IsPublic { get; set; } = true;
 
     [DisplayName("Описание")]
-    public MarkdownString Description { get; set; }
+    public MarkdownViewModel Description { get; set; }
 
     [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }

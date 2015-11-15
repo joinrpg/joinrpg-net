@@ -117,7 +117,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Claim = claim,
         Author = Users[data.sid],
-        CommentText = new MarkdownString(data.content),
+        CommentText = new MarkdownString(data.content.Replace("&lt;", "<").Replace("&gt;", ">").Replace("<br>", "\n")),
         LastEditTime = UnixTime.ToDateTime(data.date),
         CreatedTime = UnixTime.ToDateTime(data.date),
         IsVisibleToPlayer = data.type != 2,

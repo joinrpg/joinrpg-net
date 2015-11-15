@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -14,12 +15,12 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; set; }
 
     [DisplayName("Анонс проекта")]
-    public MarkdownString ProjectAnnounce { get; set; }
+    public MarkdownViewModel ProjectAnnounce { get; set; }
   }
   public class EditProjectViewModel: ProjectViewModelBase
   {
     [DisplayName("Правила подачи заявок")]
-    public MarkdownString ClaimApplyRules { get; set; }
+    public MarkdownViewModel ClaimApplyRules { get; set; }
 
     [ReadOnly(true)]
     public string OriginalName { get; set;  }

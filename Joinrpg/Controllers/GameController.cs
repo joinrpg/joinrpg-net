@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -26,7 +27,7 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
       return WithEntity(project) ?? View(new ProjectDetailsViewModel()
       {
-        ProjectAnnounce = project.Details?.ProjectAnnounce,
+        ProjectAnnounce = new MarkdownViewModel(project.Details?.ProjectAnnounce),
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         IsActive = project.Active,
@@ -72,8 +73,8 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectId);
       return AsMaster(project, pacl => pacl.CanChangeProjectProperties) ?? View(new EditProjectViewModel
       {
-        ClaimApplyRules = project.Details?.ClaimApplyRules,
-        ProjectAnnounce = project.Details?.ProjectAnnounce,
+        ClaimApplyRules =new MarkdownViewModel(project.Details?.ClaimApplyRules),
+        ProjectAnnounce = new MarkdownViewModel(project.Details?.ProjectAnnounce),
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         OriginalName = project.ProjectName

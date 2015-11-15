@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models
@@ -40,7 +42,7 @@ namespace JoinRpg.Web.Models
     public int OtherClaimsFromThisPlayerCount { get; set; }
 
     [Display(Name = "Описание персонажа")]
-    public MarkdownString Description { get; set; }
+    public MarkdownViewModel Description { get; set; }
 
     public IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; set; }
 

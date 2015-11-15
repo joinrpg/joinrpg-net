@@ -8,7 +8,15 @@ namespace JoinRpg.Web.Helpers
 {
   public static class MarkDownHelper
   {
-    private static readonly Lazy<HtmlSanitizer> SimpleHtml5SanitizerImpl = new Lazy<HtmlSanitizer>(HtmlSanitizer.SimpleHtml5Sanitizer);
+    private static readonly Lazy<HtmlSanitizer> SimpleHtml5SanitizerImpl = new Lazy<HtmlSanitizer>(InitHtml5Sanitizer);
+
+    private static HtmlSanitizer InitHtml5Sanitizer()
+    {
+      var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
+      sanitizer.Tag("br");
+      return sanitizer;
+    }
+
     private static HtmlSanitizer Sanitizer => SimpleHtml5SanitizerImpl.Value;
 
     /// <summary>

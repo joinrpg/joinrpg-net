@@ -8,6 +8,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
@@ -113,7 +114,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownString content, string todoField,
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField,
       FormCollection other)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
@@ -200,7 +201,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownString content, string todoField,
+    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
       bool isCompleted, FormCollection other)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);

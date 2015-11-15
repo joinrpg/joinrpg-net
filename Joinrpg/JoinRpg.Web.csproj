@@ -279,6 +279,7 @@
     <Compile Include="Models\AddCommentViewModel.cs" />
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
+    <Compile Include="Models\CommonTypes\MarkdownViewModel.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\CharacterGroupListViewModel.cs" />

@@ -69,6 +69,7 @@
 @using JoinRpg.DataModel
 @using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.CommonTypes
 
 @{
     ViewBag.Title = "Заявка " + Model.ClaimName + " (" + Model.Player.UserName + ") на проект " + Model.ProjectName;
@@ -263,7 +264,7 @@
                     EnableHideFromUser = false,
                     HideFromUser = false,
                     ActionName = "Отозвать заявку",
-                    CommentText = new MarkdownString("Извините, я передумал ехать")
+                    CommentText = new MarkdownViewModel("Извините, я передумал ехать")
                 })
             }
         </details>
