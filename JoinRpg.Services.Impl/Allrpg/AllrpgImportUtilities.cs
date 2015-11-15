@@ -35,6 +35,10 @@ namespace JoinRpg.Services.Impl.Allrpg
       if (user.Extra.Nicknames == null)
       {
         user.Extra.Nicknames = result.nick;
+        if (string.IsNullOrWhiteSpace(user.PrefferedName) && !string.IsNullOrWhiteSpace(user.Extra.Nicknames))
+        {
+          user.PrefferedName = user.Extra.Nicknames;
+        }
       }
 
       if (user.Extra.Skype == null)
