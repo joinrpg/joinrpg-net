@@ -17,21 +17,21 @@ namespace JoinRpg.Services.Impl.Allrpg
       Project = project;
       _operationLog = operationLog;
       UnitOfWork = unitOfWork;
-      
+
     }
 
     private Project Project { get; }
 
     private IUnitOfWork UnitOfWork { get; }
 
-    private IDictionary<int, CharacterGroup> Locations { get; }= new Dictionary<int, CharacterGroup>();
+    private IDictionary<int, CharacterGroup> Locations { get; } = new Dictionary<int, CharacterGroup>();
 
     /// <summary>
     /// In allrpg we have roles(kolvo>1). In joinrpg it maps to CharacterGroup(HaveDirectSlots=true)
     /// </summary>
     private IDictionary<int, CharacterGroup> LocationsFromVacancies { get; } = new Dictionary<int, CharacterGroup>();
 
-    private IDictionary<int, Character>  Characters { get; } = new Dictionary<int, Character>();
+    private IDictionary<int, Character> Characters { get; } = new Dictionary<int, Character>();
 
     private IDictionary<int, User> Users { get; } = new Dictionary<int, User>();
 
@@ -51,7 +51,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       }
     }
 
-    private ICollection<ParentRelation> LocationParentRelation { get; }= new List<ParentRelation>();
+    private ICollection<ParentRelation> LocationParentRelation { get; } = new List<ParentRelation>();
 
     public async Task Apply(ProjectReply projectReply)
     {
@@ -81,9 +81,11 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private void ReorderLocations(CharacterGroup @group)
     {
-      group.ChildGroupsOrdering = string.Join(",", @group.ChildGroups.OrEmptyList().OrderBy(g => g.ChildGroupsOrdering).Select(g => g.CharacterGroupId));
-      
-      group.ChildCharactersOrdering = string.Join(",", @group.Characters.OrEmptyList().OrderBy(g => g.PlotElementOrderData).Select(c => c.CharacterId));
+      group.ChildGroupsOrdering = string.Join(",",
+        @group.ChildGroups.OrEmptyList().OrderBy(g => g.ChildGroupsOrdering).Select(g => g.CharacterGroupId));
+
+      group.ChildCharactersOrdering = string.Join(",",
+        @group.Characters.OrEmptyList().OrderBy(g => g.PlotElementOrderData).Select(c => c.CharacterId));
       foreach (var child in @group.ChildGroups.OrEmptyList())
       {
         ReorderLocations(child);
@@ -152,13 +154,55 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Character = null, //see later
         Group = null, // see later
-        Comments = new List<Comment>(),
+        Comments = new List<Comment>()
+        {
+          new Comment()
+          {
+            Author = Users[roleData.sid], //Not sure its correct
+            ChildsComments = new List<Comment>(),
+            CommentText = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>"),
+            CreatedTime = DateTime.UtcNow,
+            IsCommentByPlayer = false,
+            IsVisibleToPlayer = false,
+            LastEditTime = DateTime.UtcNow,
+            ParentCommentId = null,
+            Project = Project,
+          }
+        },
         CreateDate = UnixTime.ToDateTime(roleData.datesent),
         Player = Users[roleData.sid],
-        MasterDeclinedDate = roleData.todelete2 == 0 && roleData.status != 4 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
+        MasterDeclinedDate =
+          roleData.todelete2 == 0 && roleData.status != 4 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
         PlayerDeclinedDate = roleData.todelete == 0 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
         PlayerAcceptedDate = UnixTime.ToDateTime(roleData.datesent)
       };
+
+      foreach (var virtualField in roleData.@virtual)
+      {
+        if (virtualField.Key == 7152) //Known steam2016 "responsible master"
+        {
+          int responsibleMasterIdx;
+          if (int.TryParse(virtualField.Value, out responsibleMasterIdx))
+          {
+            var responsibleSid = Steam2016ResponsibleMasters[responsibleMasterIdx];
+            claim.ResponsibleMasterUser = responsibleSid == null ? null : Users[(int) responsibleSid];
+          }
+        } else if (ConvertToCommentVirtualFields.Contains(virtualField.Key) &&string.IsNullOrWhiteSpace(virtualField.Value))
+        {
+          claim.Comments.Add(new Comment()
+          {
+            Author = Users[roleData.sid],
+            ChildsComments = new List<Comment>(),
+            CommentText = new MarkdownString(virtualField.Value),
+            CreatedTime = claim.CreateDate,
+            IsCommentByPlayer = true,
+            IsVisibleToPlayer = true,
+            LastEditTime = DateTime.UtcNow,
+            ParentCommentId = null,
+            Project = Project,
+          });
+        }
+      }
 
       bool canbeApproved = false;
 
@@ -183,10 +227,39 @@ namespace JoinRpg.Services.Impl.Allrpg
         claim.Group = Project.RootGroup;
       }
 
-      claim.MasterAcceptedDate = canbeApproved && roleData.status == 3 ? UnixTime.ToDateTime(roleData.date) : (DateTime?) null;
+      claim.MasterAcceptedDate = canbeApproved && roleData.status == 3
+        ? UnixTime.ToDateTime(roleData.date)
+        : (DateTime?) null;
 
       Claims.Add(roleData.id, claim);
     }
+
+    /// <summary>
+    /// Allrpg virtual fields that should be converted to comments.
+    /// </summary>
+    private ICollection<int> ConvertToCommentVirtualFields { get; } = new [] { 7126};
+
+    private IReadOnlyDictionary<int, int?> Steam2016ResponsibleMasters { get; } = new Dictionary<int, int?>()
+    {
+      {1, 8270}, //Enno
+      {2,11536 }, //Teoni
+      {3,4400 }, //Nadya Sertakova
+      {4, 8881 }, //Asya
+      {5, 14636 }, //Veter
+      {6, 16484 }, //Astaya
+      {7, 2233 }, //Warpo
+      {8, 11479 }, //Freexee
+      {9, 4503 }, //Ksiontes
+      {10, 13506 }, //Ranma
+      {11, 7536 }, //Martell
+      {12,  null}, //Yusja
+      {13, null }, //Weddika
+      {14, 339 }, //Kubela
+      {15, 8834 }, //DonnaAnna
+      {16, 1490 }, //Myfa
+      {17, null }, //Not defined
+      {18, 1298 } //Atana
+    };
 
     private void ImportCharacters(ProjectReply projectReply)
     {

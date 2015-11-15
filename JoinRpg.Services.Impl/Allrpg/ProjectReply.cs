@@ -76,6 +76,7 @@ namespace JoinRpg.Services.Impl.Allrpg
     public int todelete2 { get; set; }
     public int datesent { get; set; }
     public int date { get; set; }
+    public IDictionary<int, string> @virtual { get; set; }
   }
 
   internal class CommentData
