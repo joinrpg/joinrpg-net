@@ -97,6 +97,7 @@ namespace JoinRpg.Services.Email
       }
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}",
         $@"{text}
+Перейдите на заявку, чтобы ответить на комментарий: {_uriService.Get(model.Claim)}
 
 {model.Text.Contents}
 
@@ -110,8 +111,7 @@ namespace JoinRpg.Services.Email
         $@"
 Добрый день, %recipient.name%!
 
-Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {GetInitiatorString(model)}.
-Перейдите на заявку, чтобы ответить на комментарий: {_uriService.Get(model.Claim)}");
+Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {GetInitiatorString(model)}.");
     }
 
     public Task Email(ApproveByMasterEmail model)
@@ -120,8 +120,7 @@ namespace JoinRpg.Services.Email
   $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {GetInitiatorString(model)}.
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {GetInitiatorString(model)}.");
     }
 
     public Task Email(DeclineByMasterEmail model)
@@ -130,8 +129,7 @@ namespace JoinRpg.Services.Email
 $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {GetInitiatorString(model)}.
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {GetInitiatorString(model)}.");
     }
 
     public Task Email(DeclineByPlayerEmail model)
@@ -140,8 +138,7 @@ $@"
        $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отозвана игроком.   
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отозвана игроком. ");
     }
 
     public Task Email(NewClaimEmail model)
@@ -150,8 +147,7 @@ $@"
        $@"
 Добрый день, %recipient.name%!
 
-Новая заявка «{model.Claim.Name}» от игрока «{model.Claim.Player.DisplayName}».   
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+Новая заявка «{model.Claim.Name}» от игрока «{model.Claim.Player.DisplayName}».");
     }
 
     public Task Email(RemindPasswordEmail email)
@@ -193,8 +189,7 @@ $@"
 Добрый день, %recipient.name%!
 
 Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
-          }» была восстановлена {GetInitiatorString(model)}.
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+          }» была восстановлена {GetInitiatorString(model)}.");
     }
 
     public Task Email(MoveByMasterEmail model)
@@ -204,9 +199,7 @@ $@"
 Добрый день, %recipient.name%!
 
 Мастер {GetInitiatorString(model)} перенес заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
-    }» на {model.Claim.GetTarget().Name}.
-
-Ссылка на заявку: {_uriService.Get(model.Claim)}");
+    }» на {model.Claim.GetTarget().Name}.");
     }
   }
 
