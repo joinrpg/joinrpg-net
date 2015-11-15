@@ -457,6 +457,7 @@
     <Content Include="Views\Shared\DisplayTemplates\IPlayerCharacter.cshtml" />
     <Content Include="Views\GameGroups\_GroupEditControls.cshtml" />
     <Content Include="Views\GameGroups\_CharacterEditControls.cshtml" />
+    <Content Include="Views\GameGroups\_CharacterPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

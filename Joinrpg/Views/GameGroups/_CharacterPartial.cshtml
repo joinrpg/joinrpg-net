@@ -1,0 +1,28 @@
+﻿@model JoinRpg.Web.Models.CharacterViewModel
+<strong>@Html.ActionLink(Model.CharacterName, "Details", "Character", new { Model.ProjectId, Model.CharacterId }, null) </strong>
+@if (Model.Player != null)
+{
+    @Html.DisplayFor(model => model, "IPlayerCharacter")
+}
+else if (Model.ActiveClaimsCount > 0)
+{
+    @DisplayCount.OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
+}
+
+@if (Model.IsAvailable)
+{
+  <text> </text> @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, null)
+}
+
+@if (Model.IsFirstCopy)
+{
+    if (Model.HasMasterAccess)
+    {
+        @Html.Partial("_CharacterEditControls", Model)
+    }
+    <div>@Model.Description</div>
+}
+else
+{
+    <span>(см. выше)</span>
+}

@@ -42,37 +42,10 @@
                         @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
                         {
                             <li>
-                                <strong>@Html.ActionLink(character.CharacterName, "Details", "Character", new {character.ProjectId, character.CharacterId}, null) </strong>
-                                @if (character.Player != null)
-                                {
-                                    @Html.DisplayFor(model => character, "IPlayerCharacter")
-                                }
-                                else if (Model.ShowEditControls && character.ActiveClaimsCount > 0)
-                                {
-                                    @DisplayCount.OfX(character.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                                }
-                                @if (character.IsAvailable)
-                                {
-                                    @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { character.ProjectId, character.CharacterId}, null)
-                                }
-                                @if (character.IsFirstCopy)
-                                {
-                                    if (Model.ShowEditControls)
-                                    {
-                                        @Html.Partial("_CharacterEditControls", character)
-                                    }
-                                    <div>@character.Description</div>
-
-                                }
-                                else
-                                {
-                                    <span>(см. выше)</span>
-                                }
+                                @Html.Partial("_CharacterPartial", character)
                             </li>
                         }
                     </ul>
-
-
                     <div>
                         @if (item.AvaiableDirectSlots > 0)
                         {
