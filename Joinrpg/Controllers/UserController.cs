@@ -19,7 +19,8 @@ namespace JoinRpg.Web.Controllers
           DisplayName = user.DisplayName,
           FullName = user.FullName,
           ThisUserProjects = user.ProjectAcls,
-          UserId = user.UserId
+          UserId = user.UserId,
+          AllrpgId = user.Allrpg?.Sid
         };
 
         var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;

@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.Web.Models
-@model JoinRpg.Web.Models.UserProfileViewModel
+@model UserProfileViewModel
 
 @{
   ViewBag.Title = "Профиль " + Model.DisplayName;
@@ -9,7 +9,13 @@
 
 <div>
     <h4>@Model.FullName</h4>
-    <hr />
+    <hr/>
+
+    @if (Model.AllrpgId != null)
+    {
+        <p><a href="http://inf.allrpg.info/users/@Model.AllrpgId/">Профиль на allrpg</a>
+        </p>
+    }
 
     @if (Model.ThisUserProjects.Any())
     {
@@ -88,6 +94,5 @@
                 </div>
 </details>
         }
-
     }
     </div>

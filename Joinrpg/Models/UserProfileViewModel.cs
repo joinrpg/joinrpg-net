@@ -18,5 +18,7 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<Project> ProjectsToAdd
       => CanGrantAccessProjects.Where(acl => ThisUserProjects.All(acl1 => acl1.ProjectId != acl.ProjectId));
+
+    public int? AllrpgId { get; set; }
   }
 }
