@@ -7,7 +7,8 @@
     <strong>@Html.ActionLink(Model.CharacterName, "Details", "Character", new { Model.ProjectId, Model.CharacterId }, null) </strong>
     @if (Model.Player != null)
     {
-    @Html.DisplayFor(model => model, "IPlayerCharacter")
+        <text> — </text>
+        @Html.DisplayFor(model => model, "IPlayerCharacter")
     }
     else if (Model.ActiveClaimsCount > 0)
     {
