@@ -27,7 +27,7 @@
      }
      else if (span.Days > 1)
      {
-         @val.ToString("dddd")
+         <text>@DisplayCount.OfX(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
      }
      else if (span.Days == 1)
      {

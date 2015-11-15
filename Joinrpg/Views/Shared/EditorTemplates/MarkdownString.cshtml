@@ -18,9 +18,7 @@
         id="@(ViewData.TemplateInfo.HtmlFieldPrefix)_Contents"
         name="@(ViewData.TemplateInfo.HtmlFieldPrefix).Contents"
         @requiredMsg @(validation ? "data-val=true" : "") 
-        rows="4">
-            @(Model == null ? "" : Model.Contents)
-    </textarea>
+        rows="4">@(Model == null ? "" : Model.Contents)</textarea>
 </div>
 @if (validation)
 {
