@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -32,7 +33,7 @@ namespace JoinRpg.Web.Models.Plot
       {
         PlotElementId = e.PlotElementId,
         For = e.Targets.Select(t => t.AsObjectLink()),
-        Content = e.Content,
+        Content =new MarkdownViewModel(e.Content),
         TodoField = e.TodoField,
         ProjectId = e.PlotFolder.ProjectId,
         PlotFolderId = e.PlotFolderId,
@@ -55,7 +56,7 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name="Для кого")]
     public IEnumerable<GameObjectLinkViewModel> For {  get; set;}
     [Display(Name = "Текст вводной")]
-    public MarkdownString Content { get; set; }
+    public MarkdownViewModel Content { get; set; }
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; set; }

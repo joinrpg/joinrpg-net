@@ -5,13 +5,17 @@
  {
      return;
  }
-@if (Model.Status == PlotStatus.InWork)
+@if (Model.Status == PlotStatus.InWork && !Model.HasMasterAccess)
 {
     ViewBag.HasUnfinishedPlot = true;
     return;
 }
- 
-@*TODO: show "For" field for masters *@<div style="max-height: 10em; overflow-y: scroll">
+
+@if (Model.Status == PlotStatus.InWork)
+{
+    <b>Не готов</b>
+}@*TODO: show "For" field for masters *@
+<div>
     @Html.DisplayFor(model => Model.Content)
 </div>
 

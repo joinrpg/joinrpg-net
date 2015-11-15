@@ -76,9 +76,14 @@ namespace JoinRpg.Web.Controllers.Common
         .ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
     }
 
-    protected static ICollection<int> GetDynamicCheckBoxesFromPost(Dictionary<string, string> dict, string prefix)
+    protected ICollection<int> GetDynamicCheckBoxesFromPost(string prefix)
     {
-      return GetDynamicValuesFromPost(dict, prefix).Where(pair => pair.Value.Contains("true")).Select(pair => pair.Key).ToList();
+      //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
+      return
+        GetDynamicValuesFromPost(Request.Unvalidated.Form.ToDictionary(), prefix)
+          .Where(pair => pair.Value.Contains("true"))
+          .Select(pair => pair.Key)
+          .ToList();
     }
   }
 }

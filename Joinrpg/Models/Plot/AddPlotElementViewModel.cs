@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -15,7 +15,7 @@ namespace JoinRpg.Web.Models.Plot
     public int ProjectId { get; set; }
     public int PlotFolderId{ get; set; }
     [Display(Name = "Текст вводной")]
-    public MarkdownString Content { get; set; }
+    public MarkdownViewModel Content { get; set; }
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; set; }

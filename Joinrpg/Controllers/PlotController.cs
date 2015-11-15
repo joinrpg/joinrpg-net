@@ -114,9 +114,8 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField,
-      FormCollection other)
-    {
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField )
+    { 
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
       if (error != null)
@@ -125,9 +124,8 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var dict = other.ToDictionary();
-        var targetGroups = GetDynamicCheckBoxesFromPost(dict, GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(dict, CharFieldPrefix);
+        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
+        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
         await
           _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
         return ReturnToPlot(plotFolderId, projectId);
@@ -202,7 +200,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
-      bool isCompleted, FormCollection other)
+      bool isCompleted)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -212,9 +210,9 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var dict = other.ToDictionary();
-        var targetGroups = GetDynamicCheckBoxesFromPost(dict, GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(dict, CharFieldPrefix);
+        var dict = new FormCollection(Request.Unvalidated.Form).ToDictionary();
+        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
+        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
         return ReturnToPlot(plotFolderId, projectId);
