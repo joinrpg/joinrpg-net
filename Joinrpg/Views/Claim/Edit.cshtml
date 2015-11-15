@@ -6,7 +6,8 @@
     {
         return;
     }
-    <div>
+    var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
+    <div class="@hideClassName">
         @if (comment.IsCommentByPlayer)
         {
             <span>Игрок</span>
@@ -15,7 +16,7 @@
         {
             <span>Мастер</span>
         }
-        @Html.DisplayFor(model => comment.Author)написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
+        @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
         <strong>
             @if (!comment.IsCommentByPlayer)
             {
@@ -30,7 +31,6 @@
             }
         </strong>
         <span>@comment.CommentText.ToHtmlString()</span>
-              
         <details>
             <summary>Ответить...</summary>
 
@@ -45,13 +45,14 @@
                     HideFromUser = !comment.IsVisibleToPlayer
                 })
             }
-        </details>     
-        <div style="margin-left: 1em">
+        </details>
+        <div style="margin-left: 1em; margin-top: 1em">
             @foreach (var childComment in comment.ChildsComments)
             {
                 @ShowCommentWithTree(childComment)
             }
         </div>
+        <hr/>
     </div>
 }
 @helper OtherClaimsForThisCharacterLink()

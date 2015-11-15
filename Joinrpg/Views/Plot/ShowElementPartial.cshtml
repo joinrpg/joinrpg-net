@@ -11,11 +11,19 @@
     return;
 }
 
+@{
+    var hideClass = "";
+}
+
 @if (Model.Status == PlotStatus.InWork)
 {
     <b>Не готов</b>
-}@*TODO: show "For" field for masters *@
-<div>
+
+    hideClass = "world-object-hidden";
+
+}
+@*TODO: show "For" field for masters *@
+<div class="@hideClass">
     @Html.DisplayFor(model => Model.Content)
 </div>
 

@@ -2,7 +2,8 @@
 
 @if (!Model.HidePlayer || Model.HasAccess)
 {
-    @Html.DisplayFor(model => Model.Player)
+    var hideClassName = Model.HidePlayer ? "world-object-hidden" : "";
+    <span class="@hideClassName">@Html.DisplayFor(model => Model.Player)</span>
 }
 else
 {

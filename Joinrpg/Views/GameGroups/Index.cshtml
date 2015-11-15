@@ -9,7 +9,8 @@
 
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups :  Model.Data.PublicGroups)
     {
-        <div style="margin-left: @(item.DeepLevel)em">
+        var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
+        <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
             @if (item.DeepLevel > 2)
             {
             @* Get rid of code duplication here*@

@@ -44,3 +44,7 @@ textarea {
 .deleted {
   text-decoration: line-through;
 }
+
+.world-object-hidden {
+  background-color: #DFE4E6;
+}
