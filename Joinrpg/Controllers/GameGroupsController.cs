@@ -94,7 +94,7 @@ namespace JoinRpg.Web.Controllers
       
       var user = await _userRepository.GetWithSubscribe(CurrentUserId);
 
-      var error = AsMaster(group, pa => pa.CanChangeFields);
+      var error = AsMaster(group, pa => pa.CanEditRoles);
       if (error != null)
       {
         return error;
@@ -258,7 +258,7 @@ namespace JoinRpg.Web.Controllers
     {
       var field = groupId == null ? null : ProjectRepository.GetCharacterGroup(projectId, (int)groupId);
 
-      return AsMaster(field, pa => pa.CanChangeFields) ?? action(field.Project, field);
+      return AsMaster(field, pa => pa.CanEditRoles) ?? action(field.Project, field);
     }
 
     public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)

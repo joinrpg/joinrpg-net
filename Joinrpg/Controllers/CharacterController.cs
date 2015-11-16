@@ -131,7 +131,7 @@ namespace JoinRpg.Web.Controllers
     {
       var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
 
-      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new AddCharacterViewModel()
+      return AsMaster(field, pa => pa.CanEditRoles) ?? View(new AddCharacterViewModel()
       {
         Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
         ProjectId = projectid,
