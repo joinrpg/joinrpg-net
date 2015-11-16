@@ -65,8 +65,12 @@
         <hr />
         <footer>
             @*TODO: Customize by user's timezone*@
-            <p>&copy; @DateTime.UtcNow.Year - JoinRpg.Ru</p>
-            @ViewBag.TraceMessage
+            @{
+                var supportEmail = "support@" + Request.Url.Host;
+            }
+            Поддержка: <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> <a href="maito:@supportEmail">@supportEmail</a>
+            <br/>&copy; <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья
+            <div>@ViewBag.TraceMessage</div>
         </footer>
     </div>
 
