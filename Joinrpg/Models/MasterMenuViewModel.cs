@@ -11,5 +11,7 @@ namespace JoinRpg.Web.Models
     public bool HasAllrpg { get; set; }
 
     public IEnumerable<User> Masters { get; set; }
+
+    public ProjectAcl AccessToProject { get; set; }
   }
 }

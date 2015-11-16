@@ -1,6 +1,11 @@
 ﻿@using Microsoft.AspNet.Identity
 @model JoinRpg.Web.Models.MasterMenuViewModel
-    <div class="navbar navbar-default">
+
+@helper GetDisabled(bool access)
+{
+    @(!access ? "class=disabled" : "")
+}
+<div class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -53,12 +58,14 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Дополнительно <span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Настройка полей персонажей", "Index", "GameField", new {Model.ProjectId}, null)</li>
+
+                            
+                            <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
+                            <li @GetDisabled(Model.AccessToProject.CanChangeFields)>@Html.ActionLink("Настройка полей персонажей", "Index", "GameField", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Мастера (доступ в проект)", "Index", "Acl", new {Model.ProjectId}, null)</li>
-                            @if (Model.HasAllrpg)
+                            @if (Model.HasAllrpg && Model.AccessToProject.IsOwner)
                             {
-                            <li>@Html.ActionLink("Обновить из allrpg", "AllrpgUpdate", "Game", new { Model.ProjectId }, null)</li>
+                                <li>@Html.ActionLink("Обновить из allrpg", "AllrpgUpdate", "Game", new {Model.ProjectId}, null)</li>
                             }
                         </ul>
                     </li>

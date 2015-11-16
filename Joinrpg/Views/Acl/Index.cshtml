@@ -1,10 +1,11 @@
 ﻿@using JoinRpg.Web.Models
 @using Microsoft.AspNet.Identity
-@model IEnumerable<JoinRpg.Web.Models.AclViewModel>
+@model IEnumerable<AclViewModel>
 
 @{
     ViewBag.Title = "Мастера " + Model.First().ProjectName;
     var countOfCanGrantRights = Model.Count(acl => acl.CanGrantRights);
+    var canGrantRights = Model.Single(acl => acl.UserId == User.Identity.GetUserId<int>()).CanGrantRights;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -34,10 +35,14 @@
         <th>
             @Html.DisplayNameFor(model => model.ClaimsCount)
         </th>
-        <th></th>
+        @if (canGrantRights)
+        {
+            <th></th>
+        }
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model)
+{
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.Master)
@@ -57,17 +62,22 @@
         <td>
             @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
         </td>
-        <td>
-            @Html.ActionLink("Изменить", "Edit", new { item.ProjectId, item.ProjectAclId})
-            @if (item.UserId.ToString() == User.Identity.GetUserId() && countOfCanGrantRights == 1)
-            {
+        @if (canGrantRights)
+        {
+            <td>
 
-            }
-            else
-            {
-                <text> <nobr> @Html.ActionLink("Снять доступ", "Delete", new {item.ProjectId, item.ProjectAclId}) </nobr> </text>
-            }
-        </td>
+
+                @Html.ActionLink("Изменить", "Edit", new {item.ProjectId, item.ProjectAclId})
+                @if (item.UserId.ToString() == User.Identity.GetUserId() && countOfCanGrantRights == 1)
+                {
+
+                }
+                else
+                {
+                    <text> <nobr> @Html.ActionLink("Снять доступ", "Delete", new {item.ProjectId, item.ProjectAclId}) </nobr> </text>
+                }
+            </td>
+        }
     </tr>
 }
 

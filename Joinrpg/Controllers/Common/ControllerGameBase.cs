@@ -45,14 +45,16 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (project.HasMasterAccess(CurrentUserIdOrDefault))
+      var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
+      if (acl != null)
       {
         ViewBag.MasterMenu = new MasterMenuViewModel
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           HasAllrpg = project.Details?.AllrpgId != null,
-          Masters = project.ProjectAcls.Select(acl => acl.User)
+          Masters = project.ProjectAcls.Select(a => a.User),
+          AccessToProject = acl
         };
       }
       return null;

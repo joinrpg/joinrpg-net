@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -41,7 +40,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Index(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return AsMaster(project, acl => acl.CanGrantRights) ?? View(project.ProjectAcls.Select(AclViewModel.FromAcl));
+      return AsMaster(project) ?? View(project.ProjectAcls.Select(AclViewModel.FromAcl));
     }
 
     [HttpGet]
