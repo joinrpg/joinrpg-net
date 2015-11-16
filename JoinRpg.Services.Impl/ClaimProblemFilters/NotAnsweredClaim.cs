@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
@@ -11,12 +11,12 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
     public IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim)
     {
       if (claim.Comments.All(comment => comment.AuthorUserId == claim.PlayerUserId) &&
-          DateTime.UtcNow.Subtract(claim.CreateDate) > TimeSpan.FromDays(2))
+          DateTime.UtcNow.Subtract(claim.CreateDate) > TimeSpan.FromDays(2) && claim.IsInDiscussion)
       {
         yield return claim.Problem(ClaimProblemType.ClaimNeverAnswered, claim.CreateDate);
       }
 
-      if (DateTime.UtcNow.Subtract(claim.CreateDate) > TimeSpan.FromDays(10))
+      if (DateTime.UtcNow.Subtract(claim.CreateDate) > TimeSpan.FromDays(10) && claim.IsInDiscussion)
       {
         yield return claim.Problem(ClaimProblemType.ClaimNoDecision, claim.CreateDate);
       }
