@@ -1,10 +1,6 @@
 ﻿@model JoinRpg.Web.Models.EditCharacterViewModel
 
-@{
-    ViewBag.Title = "Редактирование персонажа " + Model.Name;
-}
-
-<h2>@ViewBag.Title</h2>
+@Html.Partial("CharacterNavigation", Model.Navigation)
 
 @using (Html.BeginForm())
 {
@@ -82,6 +78,3 @@
         </div>
     </div>
 }
-<div>
-    @Html.ActionLink("Назад к сетке ролей", "Index", "GameGroups", new { @Model.ProjectId }, null)
-</div>

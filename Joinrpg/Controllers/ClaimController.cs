@@ -165,7 +165,8 @@ namespace JoinRpg.Web.Controllers
           HasMasterAccess = hasMasterAccess,
           EditAllowed = true,
           HasPlayerAccessToCharacter = hasPlayerAccess
-        }
+        },
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim)
       };
 
       if (claim.Character !=null)
@@ -180,11 +181,15 @@ namespace JoinRpg.Web.Controllers
           (await _plotRepository.GetPlotsForCharacter(claim.Character)).Select(
             p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
       }
+      else
+      {
+        claimViewModel.Plot = Enumerable.Empty<PlotElementViewModel>();
+      }
       return View(claimViewModel);
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    //TODO: Put this into viewmodel
+    // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);

@@ -459,6 +459,8 @@
     <Content Include="Views\GameGroups\_CharacterPartial.cshtml" />
     <Content Include="Views\Shared\_EditFieldsPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.cshtml" />
+    <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
+    <Content Include="Views\Shared\CharacterNavigation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

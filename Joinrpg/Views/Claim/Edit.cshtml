@@ -72,12 +72,8 @@
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.CommonTypes
 
-@{
-    ViewBag.Title = "Заявка " + Model.ClaimName + " (" + Model.Player.UserName + ") на проект " + Model.ProjectName;
-}
 <div>
-<h2>Заявка @Model.ClaimName (@Model.Player.UserName) на проект @Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</h2>
-<hr/>
+@Html.Partial("CharacterNavigation", Model.Navigation)
 <dl class="dl-horizontal">
     <dt>
         @Html.DisplayNameFor(model => model.Player)
@@ -86,20 +82,6 @@
     <dd>
         @Html.DisplayFor(model => model.Player)
     </dd>
-    @if (Model.CharacterId != null)
-    {
-        <dt>
-            @Html.DisplayNameFor(model => model.CharacterName)
-        </dt>
-
-        <dd>
-            @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
-            @if (Model.HasMasterAccess)
-            {
-                <text>(@Html.ActionLink("редактировать", "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null) персонажа)</text>
-            }
-        </dd>
-    }
     @if (Model.CharacterGroupId != null)
     {
         <dt>
@@ -335,23 +317,4 @@
     }
 </details>
 </div>
-@if (Model.Plot != null)
-{
-    <hr/>
-    <details>
-        <summary><h4>Загрузы</h4></summary>
-        @foreach (var plot in Model.Plot)
-        {
-            @Html.Partial("../Plot/ShowElementPartial", plot)
-        }
-        @if (ViewBag.HasUnfinishedPlot == true)
-        {
-            <p>
-                <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
-            </p>
-        }
-    </details>
-}
-<p>
-    @Html.ActionLink("Назад к сетке ролей", "Index", "GameGroups", new {Model.ProjectId}, null)
-</p>
+@Html.Partial("_PlotForCharacterPartial", Model.Plot)

@@ -1,29 +1,9 @@
 ﻿@using JoinRpg.Web.Models
 @model CharacterDetailsViewModel
-  @{
-      ViewBag.Title = Model.CharacterName;
-  }
 
 <div>
-    <h4>@ViewBag.Title</h4>
-    <hr />
+    @Html.Partial("CharacterNavigation", Model.Navigation)
     @* TODO: Жесточайше причесать эту страницу*@
-    @if (Model.CanAddClaim)
-    {
-    <p>@Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, null)</p>
-    }
-    @if (Model.ApprovedClaimId != null)
-    {
-    <p>
-        @Html.ActionLink("перейти на заявку", "Edit", "Claim", new { Model.ProjectId, ClaimId = Model.ApprovedClaimId }, null)
-    </p>
-    }
-    @if (Model.HasMasterAccess)
-    {
-    <p>
-        @Html.ActionLink("Редактировать персонажа", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)
-    </p>
-    }
     <dl class="dl-horizontal">
         <dt>Игрок</dt>
         <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
@@ -37,39 +17,5 @@
     <div class="form-horizontal">
         @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>
-
-    
-
-        @if (Model.DiscussedClaims.Any())
-        {
-            <hr/>
-            <h4>Обсуждаемые заявки</h4>
-            ViewBag.HideProjectColumn = true;
-            @Html.Partial(@"~/Views/Claim/Index.cshtml", Model.DiscussedClaims)
-        }
-        @if (Model.RejectedClaims.Any())
-        {
-            <details>
-                <summary><h4>Отклоненные заявки</h4></summary>
-                @{ ViewBag.HideProjectColumn = true; }
-                @Html.Partial(@"~/Views/Claim/Index.cshtml", Model.RejectedClaims)
-            </details>
-        }
-        @if (Model.Plot != null && Model.Plot.Any())
-        {
-        <hr />
-        <details>
-            <summary><h4>Загрузы</h4></summary>
-            @foreach (var plot in Model.Plot)
-        {
-            @Html.Partial("../Plot/ShowElementPartial", plot)
-            }
-            @if (ViewBag.HasUnfinishedPlot == true)
-        {
-            <p>
-                <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
-            </p>
-            }
-        </details>
-        }
-    </div>
+    @Html.Partial("_PlotForCharacterPartial", Model.Plot)
+</div>

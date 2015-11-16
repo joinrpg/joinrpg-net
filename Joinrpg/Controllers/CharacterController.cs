@@ -26,51 +26,41 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
-      return WithEntity(field) ?? await ShowCharacter(field.Project, field);
+      return WithEntity(field) ?? await ShowCharacter(field);
     }
 
-    private async Task<ActionResult> ShowCharacter(Project project, Character character)
+    private async Task<ActionResult> ShowCharacter(Character character)
     {
-      var hasMasterAccess = project.HasMasterAccess(CurrentUserIdOrDefault);
+      var hasMasterAccess = character.HasMasterAccess(CurrentUserIdOrDefault);
       var approvedClaimUser = character.ApprovedClaim?.Player;
-      var hasPlayerAccess = (User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId);
+      var hasPlayerAccess = User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId;
       var hasAnyAccess = hasMasterAccess || hasPlayerAccess;
       var viewModel = new CharacterDetailsViewModel
       {
-        CharacterName = character.CharacterName,
         Description = new MarkdownViewModel(character.Description),
-        ApprovedClaimId = character.ApprovedClaim?.ClaimId,
         Player = approvedClaimUser,
-        CanAddClaim = character.IsAvailable,
-        DiscussedClaims =
-          LoadIfMaster(project, () => character.Claims.Where(claim => claim.IsInDiscussion))
-            .Select(ClaimListItemViewModel.FromClaim),
-        RejectedClaims =
-          LoadIfMaster(project, () => character.Claims.Where(claim => !claim.IsActive))
-            .Select(ClaimListItemViewModel.FromClaim),
-        ProjectId = project.ProjectId,
-        CharacterId = character.CharacterId,
         HasAccess = hasAnyAccess,
-        HasMasterAccess = hasMasterAccess,
         ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, hasMasterAccess),
         HidePlayer = character.HidePlayerForCharacter,
+        Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CharacterFieldsViewModel()
         {
           CharacterFields = character.Fields().Select(pair => pair.Value),
           HasMasterAccess = hasMasterAccess,
           EditAllowed = false,
           HasPlayerAccessToCharacter = hasPlayerAccess
-        }
+        },
+        Plot =
+          hasAnyAccess
+            ? (await _plotRepository.GetPlotsForCharacter(character)).Select(
+              p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess))
+            : Enumerable.Empty<PlotElementViewModel>()
       };
-      if (hasAnyAccess)
-      {
-        viewModel.Plot = (await _plotRepository.GetPlotsForCharacter(character)).Select(p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
-      }
       return View("Details", viewModel);
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownViewModel description)
+    public async Task<ActionResult> Details(int projectId, int characterId, string ignoreMe)
     {
       try
       {
@@ -94,12 +84,13 @@ namespace JoinRpg.Web.Controllers
         CharacterId = field.CharacterId,
         Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
         Description = new MarkdownViewModel(field.Description),
-        IsPublic = field.IsAcceptingClaims,
+        IsPublic = field.IsPublic,
         ProjectName = field.Project.ProjectName,
         IsAcceptingClaims = field.IsAcceptingClaims,
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
         ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
+        Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing, CurrentUserIdOrDefault),
         Fields = new CharacterFieldsViewModel()
         {
           HasMasterAccess = true,

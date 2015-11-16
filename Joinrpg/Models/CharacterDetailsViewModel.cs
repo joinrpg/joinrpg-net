@@ -48,30 +48,13 @@ namespace JoinRpg.Web.Models
 
   public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel
   {
-
-    public int ProjectId { get; set; }
-    public int CharacterId { get; set;}
-
-    [Display(Name="Имя персонажа")]
-    public string CharacterName { get; set; }
-
     [Display(Name = "Описание персонажа")]
     public MarkdownViewModel Description { get; set; }
 
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
-    public bool CanAddClaim { get; set; }
-
     public User Player { get; set; }
-
-    public int? ApprovedClaimId { get; set; }
-
-    public bool HasMasterAccess { get; set; }
-
-    public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
-
-    public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
 
     public IEnumerable<PlotElementViewModel> Plot { get; set; }
 
@@ -79,5 +62,7 @@ namespace JoinRpg.Web.Models
     public bool HasAccess { get;set; }
 
     public CharacterFieldsViewModel Fields { get; set; }
+
+    public CharacterNavigationViewModel Navigation { get; set; }
   }
 }

@@ -1,0 +1,78 @@
+﻿@using JetBrains.Annotations
+@using JoinRpg.Web.Models
+@model CharacterNavigationViewModel
+
+@helper NavigationItem(CharacterNavigationPage page, string linkText, [AspMvcAction] string actionName, [AspMvcController] string controllerName, object args)
+{
+    if (Model.Page == page)
+    {
+        <li role="presentation" class="active">
+            <a href="#">@linkText</a>
+        </li>
+    }
+    else
+    {
+        <li role="presentation">
+            @Html.ActionLink(linkText, actionName, controllerName, args, null)
+        </li>
+    }
+}
+
+@{
+      ViewBag.Title = Model.Name;
+}
+    <h3>@ViewBag.Title</h3>
+<ul class="nav nav-pills">
+    @if (Model.CharacterId != null)
+    {
+        @NavigationItem(CharacterNavigationPage.Character, "Персонаж", "Details", "Character", new {Model.ProjectId, Model.CharacterId})
+        if (Model.HasMasterAccess)
+        {
+            @NavigationItem(CharacterNavigationPage.Editing, "Редактировать", "Edit", "Character", new {Model.ProjectId, Model.CharacterId})
+        }
+    }
+    @if (Model.ClaimId != null)
+    {
+        @NavigationItem(CharacterNavigationPage.Claim, "Заявка", "Edit", "Claim", new {Model.ProjectId, Model.ClaimId})
+    }
+    else if (Model.CanAddClaim)
+    {
+        @NavigationItem(CharacterNavigationPage.AddClaim, "Подать заявку", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId})
+    }
+    else
+    {
+        <li role="presentation" class="disabled">
+            <a href="#">Заявки не принимаются</a>
+        </li>
+    }
+    @if (Model.DiscussedClaims.Any())
+    {
+        <li role="presentation" class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                Обсуждаемые заявки <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                @foreach (var claim in Model.DiscussedClaims)
+                {
+                    @NavigationItem(CharacterNavigationPage.None, claim.Player.DisplayName, "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                }
+            </ul>
+        </li>
+    }
+    @if (Model.RejectedClaims.Any())
+    {
+        <li role="presentation" class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                Отклоненные заявки <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                @foreach (var claim in Model.RejectedClaims)
+                {
+                    @NavigationItem(CharacterNavigationPage.None, claim.Player.DisplayName, "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                }
+            </ul>
+        </li>
+    }
+</ul>
+<hr/>
+
