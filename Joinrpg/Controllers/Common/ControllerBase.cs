@@ -70,17 +70,18 @@ namespace JoinRpg.Web.Controllers.Common
       return RedirectToAction(routeTarget.Action, routeTarget.Controller, routeTarget.Params);
     }
 
-    protected static IDictionary<int, string> GetDynamicValuesFromPost(Dictionary<string, string> post, string prefix)
+    protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
     {
+      //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
+      var post = Request.Unvalidated.Form.ToDictionary();
       return post.Keys.UnprefixNumbers(prefix)
         .ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
     }
 
     protected ICollection<int> GetDynamicCheckBoxesFromPost(string prefix)
     {
-      //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
       return
-        GetDynamicValuesFromPost(Request.Unvalidated.Form.ToDictionary(), prefix)
+        GetDynamicValuesFromPost(prefix)
           .Where(pair => pair.Value.Contains("true"))
           .Select(pair => pair.Key)
           .ToList();

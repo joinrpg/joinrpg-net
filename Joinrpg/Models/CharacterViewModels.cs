@@ -35,6 +35,8 @@ namespace JoinRpg.Web.Models
   public class EditCharacterViewModel : CharacterViewModelBase
   {
     public int CharacterId { get; set; }
+
+    public CharacterFieldsViewModel Fields { get; set; }
   }
 
 }

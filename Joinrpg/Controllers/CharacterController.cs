@@ -5,7 +5,6 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
@@ -34,7 +33,8 @@ namespace JoinRpg.Web.Controllers
     {
       var hasMasterAccess = project.HasMasterAccess(CurrentUserIdOrDefault);
       var approvedClaimUser = character.ApprovedClaim?.Player;
-      var hasAnyAccess = hasMasterAccess || (User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId);
+      var hasPlayerAccess = (User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId);
+      var hasAnyAccess = hasMasterAccess || hasPlayerAccess;
       var viewModel = new CharacterDetailsViewModel
       {
         CharacterName = character.CharacterName,
@@ -42,16 +42,25 @@ namespace JoinRpg.Web.Controllers
         ApprovedClaimId = character.ApprovedClaim?.ClaimId,
         Player = approvedClaimUser,
         CanAddClaim = character.IsAvailable,
-        DiscussedClaims = LoadIfMaster(project, () => character.Claims.Where(claim => claim.IsInDiscussion)).Select(ClaimListItemViewModel.FromClaim),
-        RejectedClaims = LoadIfMaster(project, () => character.Claims.Where(claim => !claim.IsActive)).Select(ClaimListItemViewModel.FromClaim),
-        CharacterFields = character.Fields().Select(pair => pair.Value),
-        ProjectName = project.ProjectName,
+        DiscussedClaims =
+          LoadIfMaster(project, () => character.Claims.Where(claim => claim.IsInDiscussion))
+            .Select(ClaimListItemViewModel.FromClaim),
+        RejectedClaims =
+          LoadIfMaster(project, () => character.Claims.Where(claim => !claim.IsActive))
+            .Select(ClaimListItemViewModel.FromClaim),
         ProjectId = project.ProjectId,
         CharacterId = character.CharacterId,
-        HasPlayerAccessToCharacter = hasAnyAccess,
+        HasAccess = hasAnyAccess,
         HasMasterAccess = hasMasterAccess,
-        ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToList(),
-        HidePlayer = character.HidePlayerForCharacter
+        ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, hasMasterAccess),
+        HidePlayer = character.HidePlayerForCharacter,
+        Fields = new CharacterFieldsViewModel()
+        {
+          CharacterFields = character.Fields().Select(pair => pair.Value),
+          HasMasterAccess = hasMasterAccess,
+          EditAllowed = false,
+          HasPlayerAccessToCharacter = hasPlayerAccess
+        }
       };
       if (hasAnyAccess)
       {
@@ -61,13 +70,12 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownViewModel description,
-      FormCollection formCollection)
+    public async Task<ActionResult> Details(int projectId, int characterId, string characterName, MarkdownViewModel description)
     {
       try
       {
-        await ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId, characterName, description.Contents,
-          GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+        await ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId,
+          GetCharacterFieldValuesFromPost());
         return RedirectToAction("Details", new {projectId, characterId});
       }
       catch
@@ -92,6 +100,13 @@ namespace JoinRpg.Web.Controllers
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
         ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
+        Fields = new CharacterFieldsViewModel()
+        {
+          HasMasterAccess = true,
+          EditAllowed = true,
+          CharacterFields = field.Fields().Select(pair => pair.Value),
+          HasPlayerAccessToCharacter = false
+        }
       });
     }
 
@@ -115,7 +130,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterId,
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, viewModel.HidePlayerForCharacter);
+          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, GetCharacterFieldValuesFromPost());
 
         return RedirectToAction("Details", new {viewModel.ProjectId, viewModel.CharacterId});
       }
@@ -173,6 +188,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
+    // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int characterId, FormCollection form)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);

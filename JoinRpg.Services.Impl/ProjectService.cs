@@ -154,7 +154,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter)
+    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic,
+      List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter,
+      IDictionary<int, string> characterFields)
     {
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
@@ -165,6 +167,7 @@ namespace JoinRpg.Services.Impl
       character.Description = new MarkdownString(contents);
       character.HidePlayerForCharacter = hidePlayerForCharacter;
       character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
+      SaveCharacterFieldsImpl(currentUserId, character, characterFields);
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -413,10 +416,17 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, string characterName, string description, IDictionary<int, string> newFieldValue)
+    public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
     {
       //TODO: Prevent lazy load here - use repository 
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
+
+      SaveCharacterFieldsImpl(currentUserId, character, newFieldValue);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private static void SaveCharacterFieldsImpl(int currentUserId, Character character, IDictionary<int, string> newFieldValue)
+    {
       var fields = character.Fields();
 
       var hasMasterAccess = character.HasMasterAccess(currentUserId);
@@ -426,13 +436,6 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
-
-      if (hasMasterAccess)
-      {
-        character.CharacterName = Required(characterName);
-        character.Description.Contents = description;
-      }
-      
 
       foreach (var keyValuePair in newFieldValue)
       {
@@ -447,7 +450,7 @@ namespace JoinRpg.Services.Impl
         {
           throw new DbEntityValidationException();
         }
-        
+
         field.Value = newValue;
 
         if (!field.Field.WasEverUsed)
@@ -470,7 +473,6 @@ namespace JoinRpg.Services.Impl
           }
         }
       }
-      await UnitOfWork.SaveChangesAsync();
     }
 
     private static void ReparentChilds(CharacterGroup characterGroup, IEnumerable<IWorldObject> childs)

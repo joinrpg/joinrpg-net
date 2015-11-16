@@ -132,14 +132,14 @@ namespace JoinRpg.Web.Controllers
       }
       var hasMasterAccess = claim.Project.HasMasterAccess(CurrentUserId);
       var isMyClaim = claim.PlayerUserId == CurrentUserId;
+      var hasPlayerAccess = isMyClaim && claim.IsApproved;
       var claimViewModel = new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
         ClaimName = claim.Name,
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
-        HasPlayerAccessToCharacter = hasMasterAccess || (isMyClaim && claim.IsApproved),
-        CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] {},
+        HasPlayerAccessToCharacter = hasMasterAccess || hasPlayerAccess,
         HasApproveRejectClaim = claim.Project.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
@@ -154,13 +154,25 @@ namespace JoinRpg.Web.Controllers
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisPlayer().Count(),
-        ParentGroups = claim.Character?.Groups.Select(g => new CharacterGroupLinkViewModel(g)) ?? new CharacterGroupLinkViewModel[] {},
         Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =
           MasterListItemViewModel.FromProject(claim.Project)
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
-        ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1
+        ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
+        Fields = new CharacterFieldsViewModel()
+        {
+          CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] { },
+          HasMasterAccess = hasMasterAccess,
+          EditAllowed = true,
+          HasPlayerAccessToCharacter = hasPlayerAccess
+        }
       };
+
+      if (claim.Character !=null)
+      {
+        claimViewModel.ParentGroups = CharacterParentGroupsViewModel.FromCharacter(claim.Character, hasMasterAccess);
+
+      }
 
       if ((hasMasterAccess || isMyClaim) && claim.IsApproved)
       {
@@ -173,8 +185,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     //TODO: Put this into viewmodel
-    public async Task<ActionResult> Edit(int projectId, int claimId, string characterName, MarkdownViewModel description,
-      FormCollection formCollection)
+    public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
       var error = WithClaim(claim);
@@ -189,9 +200,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, characterName,
-            description.Contents,
-            GetCharacterFieldValuesFromPost(formCollection.ToDictionary()));
+          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, GetCharacterFieldValuesFromPost());
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
       catch

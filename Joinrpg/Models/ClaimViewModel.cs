@@ -1,23 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models
 {
-  public class ClaimViewModel : ICharacterFieldsViewModel
+  public class ClaimViewModel : ICharacterWithPlayerViewModel
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
     public string ClaimName { get; set; }
     [DisplayName("Игрок")]
     public User Player { get; set; }
-
-    
     public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
@@ -25,8 +21,6 @@ namespace JoinRpg.Web.Models
     public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
     public bool HasApproveRejectClaim { get; set; }
-
-    public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
 
     [DisplayName("Заявка на персонажа")]
@@ -44,7 +38,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Описание персонажа")]
     public MarkdownViewModel Description { get; set; }
 
-    public IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; set; }
+    [ReadOnly(true), DisplayName("Входит в группы")]
+    public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
     public IEnumerable<PlotElementViewModel> Plot { get; set; }
 
@@ -57,13 +52,13 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public bool HasOtherApprovedClaim { get; set; }
 
-
     [ReadOnly(true)]
     public CharacterGroupListViewModel Data { get; set; }
 
-    public bool HasAccess => true;
-
     public bool HidePlayer => false;
 
+    public bool HasAccess => true;
+
+    public CharacterFieldsViewModel Fields { get; set; }
   }
 }

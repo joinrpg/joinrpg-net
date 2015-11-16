@@ -87,9 +87,9 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
-    protected static IDictionary<int,string> GetCharacterFieldValuesFromPost(Dictionary<string, string> post)
+    protected IDictionary<int,string> GetCharacterFieldValuesFromPost()
     {
-      return GetDynamicValuesFromPost(post, CharacterFieldValue.HtmlIdPrefix);
+      return GetDynamicValuesFromPost(CharacterFieldValue.HtmlIdPrefix);
     }
 
     protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity

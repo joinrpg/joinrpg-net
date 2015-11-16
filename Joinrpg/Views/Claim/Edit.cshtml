@@ -96,7 +96,7 @@
             @Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null)
             @if (Model.HasMasterAccess)
             {
-              <text>(@Html.ActionLink("редактировать", "Details", "Character", new { Model.CharacterId, Model.ProjectId }, null) персонажа)</text>
+                <text>(@Html.ActionLink("редактировать", "Details", "Character", new {Model.CharacterId, Model.ProjectId}, null) персонажа)</text>
             }
         </dd>
     }
@@ -109,6 +109,17 @@
         <dd>
             @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
         </dd>
+    }
+    <dt>
+        @Html.DisplayNameFor(model => model.Description)
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Description)
+    </dd>
+    @if (Model.ParentGroups != null)
+    {
+        <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+        <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     }
     @if (Model.HasMasterAccess)
     {
@@ -277,10 +288,27 @@
 }
 
 <hr/>
-@if (Model.CharacterFields.Any())
+@if (Model.Fields.CharacterFields.Any())
 {
-    @Html.Partial("CharacterFieldsPartial", Model)
-    <hr/>
+    <h4>Поля персонажа</h4>
+    <div class="form-horizontal">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+            if (Model.Fields.AnyFieldEditable)
+            {
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <input type="submit" value="Сохранить" class="btn btn-default"/>
+                    </div>
+                </div>
+            }
+        }
+        <hr/>
+    </div>
 }
 
 <details>
