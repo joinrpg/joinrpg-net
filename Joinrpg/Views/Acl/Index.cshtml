@@ -10,11 +10,14 @@
 
 <h2>@ViewBag.Title</h2>
 
-<p>
-    Чтобы добавить мастера в проект, найдите его поиском по email, нику или ФИО.
-    <br/>
-    @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
-</p>
+@if (canGrantRights)
+{
+    <p>
+        Чтобы добавить мастера в проект, найдите его поиском по email, нику или ФИО.
+        <br/>
+        @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
+    </p>
+}
 <table class="table">
     <tr>
         <th>
