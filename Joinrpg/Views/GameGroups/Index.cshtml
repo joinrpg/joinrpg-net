@@ -1,6 +1,11 @@
 ﻿@using JoinRpg.Web.Models
 @model GameRolesViewModel
 
+@helper GetPathString(CharacterGroupListItemViewModel item)
+{
+    @(string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name)
+}
+
 @{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName;
 }
@@ -14,16 +19,16 @@
             @if (item.DeepLevel > 2)
             {
             @* Get rid of code duplication here*@
-            <h4 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h4>
+            <h4 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h4>
             }
             else if (item.DeepLevel == 2)
             {
               @* Get rid of code duplication here*@
-                <h3 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)</h3>
+                <h3 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)</h3>
             }
             else
             {
-                <h2 title="@(string.Join("→", item.Path) + item.Name)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h2>
+                <h2 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h2>
             }
 
             @if (!item.FirstCopy)

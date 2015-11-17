@@ -1,20 +1,14 @@
 ﻿@model JoinRpg.Web.Models.CharacterGroupListItemViewModel
 <span>
-    @Html.ActionLink("Список заявок", "ListForGroup", "Claim", new { Model.ProjectId, Model.CharacterGroupId }, null) |
-    @Html.ActionLink("Редактировать", "Edit", new { Model.ProjectId, Model.CharacterGroupId }, null) |
+    @Html.ActionLink("все заявки", "ListForGroup", "Claim", new { Model.ProjectId, Model.CharacterGroupId }, null)
+    <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)"><span title="изменить" class="glyphicon glyphicon-wrench"></span></a>
     @if (!Model.IsRoot && Model.ActiveClaimsCount == 0)
     {
-    <span>
-        @Html.ActionLink("Удалить", "Delete", new { Model.ProjectId, Model.CharacterGroupId }, null)
-        |
-    </span>
+        <a href="@Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)"><span title="удалить" class="glyphicon glyphicon-trash"></span></a>
     }
-    Добавить
-    @Html.ActionLink("персонажа", "Create", "Character", new { Model.ProjectId, Model.CharacterGroupId }, null) |
-    @Html.ActionLink("подгруппу", "AddGroup", new { Model.ProjectId, Model.CharacterGroupId }, null)
-    @if (!Model.FirstInGroup || !Model.LasInGroup)
+    
+    @if (!Model.IsRoot)
     {
-        <text> | Поместить </text>
         var moveParameters = new
         {
             Model.ProjectId,
@@ -24,17 +18,23 @@
         };
         if (!Model.FirstInGroup)
         {
-
-            @Html.ActionLink("выше", "MoveUp", "GameGroups", moveParameters, null)
+            <a href="@Url.Action("MoveUp", "GameGroups", moveParameters, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
         }
-        if (!Model.FirstInGroup && !Model.LasInGroup)
+        if (!Model.LastInGroup)
         {
-            <text> | </text>
-        }
-        if (!Model.LasInGroup)
-        {
-            @Html.ActionLink("ниже", "MoveDown", "GameGroups", moveParameters, null)
+            <a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
         }
     }
+    
+    <span class="dropdown dropdown-toggle" data-toggle="dropdown">
+        <button class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span title="добавить" class="glyphicon glyphicon-plus"></span>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li>@Html.ActionLink("персонажа", "Create", "Character", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
+            <li>@Html.ActionLink("подгруппу", "AddGroup", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
+        </ul>
+    </span>
 </span>
 

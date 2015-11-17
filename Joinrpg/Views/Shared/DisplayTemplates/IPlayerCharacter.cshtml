@@ -1,11 +1,20 @@
 ﻿@model JoinRpg.Web.Models.ICharacterWithPlayerViewModel
 
-@if (!Model.HidePlayer || Model.HasAccess)
+@if (Model != null && Model.Player != null)
 {
-    var hideClassName = Model.HidePlayer ? "world-object-hidden" : "";
-    <span class="@hideClassName">@Html.DisplayFor(model => Model.Player)</span>
+    if (!Model.HidePlayer || Model.HasAccess)
+    {
+        var hideClassName = Model.HidePlayer ? "world-object-hidden" : "";
+        <span class="glyphicon glyphicon-user"></span>
+        <span class="@hideClassName">@Html.DisplayFor(model => Model.Player)</span>
+    }
+    else
+    {
+        <span class="glyphicon glyphicon-user"></span>
+        <i>занято</i>
+    }
 }
 else
 {
-    <i>занято</i>
+    <span>нет</span>
 }

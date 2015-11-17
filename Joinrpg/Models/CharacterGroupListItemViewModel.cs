@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Models
     public int ActiveClaimsCount { get; set; }
 
     public bool FirstInGroup { get; set; }
-    public bool LasInGroup { get; set; }
+    public bool LastInGroup { get; set; }
 
     public int ProjectId { get; set; }
     public CharacterGroupListItemViewModel()

@@ -1,34 +1,26 @@
 ﻿@model JoinRpg.Web.Models.CharacterViewModel
 <span>
-    |
+    <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="изменить" class="glyphicon glyphicon-wrench"></span></a>
     @if (Model.ActiveClaimsCount == 0)
     {
-    @Html.ActionLink("удалить", "Delete", "Character", new { Model.ProjectId, Model.CharacterId }, null)<text> | </text>
+        <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="удалить" class="glyphicon glyphicon-trash"></span></a>
     }
-    @Html.ActionLink("редактировать", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)
+   
 
-    @if (!Model.FirstInGroup || !Model.LastInGroup)
-    {
-    <text> | Поместить </text>
-        var moveParameters = new
+       @{ var moveParameters = new
+          {
+              Model.ProjectId,
+              Model.CharacterId,
+              parentCharacterGroupId = Model.ParentCharacterGroupId,
+              currentRootGroupId = Model.RootGroupId
+          }; }
+        @if (!Model.FirstInGroup)
         {
-            Model.ProjectId,
-            Model.CharacterId,
-            parentCharacterGroupId = Model.ParentCharacterGroupId,
-            currentRootGroupId = Model.RootGroupId
-        };
-        if (!Model.FirstInGroup)
-        {
-
-        @Html.ActionLink("выше", "MoveUp", "Character", moveParameters, null)
+            <a href="@Url.Action("MoveUp", "Character", moveParameters, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
         }
-        if (!Model.FirstInGroup && !Model.LastInGroup)
+        @if (!Model.LastInGroup)
         {
-        <text> | </text>
+            <a href="@Url.Action("MoveDown", "Character", moveParameters, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
         }
-        if (!Model.LastInGroup)
-        {
-        @Html.ActionLink("ниже", "MoveDown", "Character", moveParameters, null)
-        }
-    }
+    
 </span>
