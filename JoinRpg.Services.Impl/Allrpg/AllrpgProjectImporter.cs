@@ -158,7 +158,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         {
           new Comment()
           {
-            Author = Users[roleData.sid], //Not sure its correct
+            Author = Project.ProjectAcls.Single(acl => acl.IsOwner).User, 
             ChildsComments = new List<Comment>(),
             CommentText = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>"),
             CreatedTime = DateTime.UtcNow,
