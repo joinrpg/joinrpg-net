@@ -25,13 +25,12 @@
             <a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
         }
     }
-    
-    <span class="dropdown dropdown-toggle" data-toggle="dropdown">
+    <span class="dropdown">
         <button class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             <span title="добавить" class="glyphicon glyphicon-plus"></span>
             <span class="caret"></span>
         </button>
-        <ul class="dropdown-menu">
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
             <li>@Html.ActionLink("персонажа", "Create", "Character", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
             <li>@Html.ActionLink("подгруппу", "AddGroup", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
         </ul>
