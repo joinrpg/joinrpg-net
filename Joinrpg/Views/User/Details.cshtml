@@ -11,7 +11,7 @@
     <h4>@Model.FullName</h4>
     <hr/>
 
-    @if (Model.AllrpgId != null)
+    @if (Model.AllrpgId != null && Model.AllrpgId != 0)
     {
         <p><a href="http://inf.allrpg.info/users/@Model.AllrpgId/">Профиль на allrpg</a>
         </p>
