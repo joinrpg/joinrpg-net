@@ -23,7 +23,10 @@ namespace JoinRpg.Web.Models
     ClaimNeverAnswered,
     [Display(Name="По заявке нет решения")]
     [UsedImplicitly]
-    ClaimNoDecision
+    ClaimNoDecision,
+    [UsedImplicitly]
+    [Display(Name="Персонаж уже занят")]
+    ClaimActiveButCharacterHasApprovedClaim
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel

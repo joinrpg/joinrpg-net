@@ -59,6 +59,7 @@
     <Compile Include="Allrpg\PasswordReply.cs" />
     <Compile Include="Allrpg\ProfileReply.cs" />
     <Compile Include="Allrpg\ProjectReply.cs" />
+    <Compile Include="ClaimProblemFilters\ApprovedAndOtherClaimProblemFilter.cs" />
     <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
     <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
     <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />
