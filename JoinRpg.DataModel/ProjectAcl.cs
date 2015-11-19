@@ -22,7 +22,9 @@
 
     public bool CanApproveClaims { get; set; }
 
-    public bool CanEditRoles => true;  //Think may be should be own right
+    public bool CanEditRoles { get; set; }
+    public bool CanAcceptCash { get; set; }
+    public bool CanManageMoney { get; set; }
 
     public static ProjectAcl CreateRootAcl(int userId)
     {
@@ -33,7 +35,10 @@
         UserId = userId,
         IsOwner = true,
         CanGrantRights =  true,
-        CanApproveClaims = true
+        CanApproveClaims = true,
+        CanEditRoles =  true,
+        CanAcceptCash = true,
+        CanManageMoney = true
       };
     }
   }

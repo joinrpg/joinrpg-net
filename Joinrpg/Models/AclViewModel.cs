@@ -14,22 +14,31 @@ namespace JoinRpg.Web.Models
     [Display(Name="Мастер")]
     public User Master { get; set; }
 
-    [DisplayName("Может принимать / отклонять заявки ")]
+    [DisplayName("Принимать / отклонять заявки ")]
     public bool CanApproveClaims { get; set; }
 
-    [DisplayName("Может настраивать поля персонажа")]
+    [DisplayName("Настраивать поля персонажа")]
     public bool CanChangeFields { get; set; }
 
-    [DisplayName("Может настраивать свойства базы заявок")]
+    [DisplayName("Настраивать проект")]
     public bool CanChangeProjectProperties { get; set; }
 
-    [DisplayName("Может давать доступ другим мастерам")]
+    [DisplayName("Давать доступ другим мастерам")]
     public bool CanGrantRights { get; set; }
 
-    [Display(Name = "Игра")]
+    [Display(Name="Редактировать ролевку")]
+    public bool CanEditRoles { get; set; }
+
+    [Display(Name = "Принимать взносы")]
+    public bool CanAcceptCash { get; set; }
+
+    [Display(Name = "Управлять финансами")]
+    public bool CanManageMoney { get; set; }
+
+    [Display(Name = "Игра"),ReadOnly(true)]
     public string ProjectName { get; set; }
 
-    [Display(Name = "Заявок на мастере")]
+    [Display(Name = "Заявок на мастере"), ReadOnly(true)]
     public int ClaimsCount { get; set; }
 
     public static AclViewModel FromAcl(ProjectAcl acl)
@@ -43,33 +52,13 @@ namespace JoinRpg.Web.Models
         CanChangeFields = acl.CanChangeFields,
         CanChangeProjectProperties = acl.CanChangeProjectProperties,
         CanGrantRights = acl.CanGrantRights,
+        CanEditRoles = acl.CanEditRoles,
+        CanAcceptCash = acl.CanAcceptCash,
+        CanManageMoney = acl.CanManageMoney,
         Master = acl.User, 
         ProjectName = acl.Project.ProjectName,
-        ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId)
+        ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId && claim.IsActive)
       };
     }
   }
-
-  public class CreateAclViewModel
-  {
-    public int ProjectId { get; set; }
-    public int UserId { get; set; }
-
-    [DisplayName("Может принимать / отклонять заявки ")]
-    public bool CanApproveClaims
-    { get; set; }
-
-    [DisplayName("Может настраивать поля персонажа")]
-    public bool CanChangeFields
-    { get; set; }
-
-    [DisplayName("Может настраивать свойства базы заявок")]
-    public bool CanChangeProjectProperties
-    { get; set; }
-
-    [DisplayName("Может давать доступ другим мастерам")]
-    public bool CanGrantRights
-    { get; set; }
-  }
-
 }

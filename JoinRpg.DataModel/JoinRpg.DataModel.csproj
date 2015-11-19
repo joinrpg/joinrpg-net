@@ -48,12 +48,14 @@
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
     <Compile Include="Comment.cs" />
+    <Compile Include="FinanceOperation.cs" />
     <Compile Include="IClaimSource.cs" />
     <Compile Include="IDeletableSubEntity.cs" />
     <Compile Include="IProjectEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="Links.cs" />
     <Compile Include="MarkdownString.cs" />
+    <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />
     <Compile Include="Project.cs" />

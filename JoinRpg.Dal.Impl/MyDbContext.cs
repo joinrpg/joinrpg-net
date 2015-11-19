@@ -70,6 +70,7 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Comment>().HasMany(c => c.ChildsComments).WithOptional(comment => comment.Parent).WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasOptional(comment => comment.Finance).WithRequired(finance => finance.Comment);
 
       modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups).WithMany(cg => cg.DirectlyRelatedPlotFolders);
       modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project).WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
@@ -95,7 +96,10 @@ namespace JoinRpg.Dal.Impl
         .HasForeignKey(us => us.ClaimId)
         .WillCascadeOnDelete(false);
 
-
+      modelBuilder.Entity<FinanceOperation>()
+        .HasRequired(finance => finance.MasterUser)
+        .WithMany()
+        .HasForeignKey(finance => finance.MasterUserId);
       base.OnModelCreating(modelBuilder);
     }
  }

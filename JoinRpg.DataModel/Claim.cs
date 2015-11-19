@@ -51,6 +51,8 @@ namespace JoinRpg.DataModel
       =>
         new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.WhereNotNull().Max();
 
+    public int? CurrentFee { get; set; }
+
     public enum Status
     {
       [Display(Name = "Подана")] AddedByUser,

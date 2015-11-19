@@ -145,6 +145,10 @@
     <Compile Include="Migrations\201511142027167_CharacterGroupOrdering.Designer.cs">
       <DependentUpon>201511142027167_CharacterGroupOrdering.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511190727028_Finances.cs" />
+    <Compile Include="Migrations\201511190727028_Finances.Designer.cs">
+      <DependentUpon>201511190727028_Finances.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -243,6 +247,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511142027167_CharacterGroupOrdering.resx">
       <DependentUpon>201511142027167_CharacterGroupOrdering.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511190727028_Finances.resx">
+      <DependentUpon>201511190727028_Finances.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

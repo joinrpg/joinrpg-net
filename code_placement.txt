@@ -4,6 +4,7 @@ Joinrpg.DataModel
   Data model. Classes w/o any logic or data access, but used to generate database schema. 
   Please ask LEO for review when you add/remove new field. 
   If you like to put some logic into entity, create extension method in Joinrpg.Domain
+  You can implement IValidatableObject interface that will be checked before every save to database. But remember, DB constraints is always better!
 Joinrpg.Data.Interfaces
   Interfaces that represent repositories. 
   If you want just read some data, use IXXXRepository from here. 

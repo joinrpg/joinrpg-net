@@ -46,5 +46,6 @@ namespace JoinRpg.DataModel
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
     public int? AllrpgId { get; set; }
+    public int? DefaultFee { get; set; }
   }
 }
