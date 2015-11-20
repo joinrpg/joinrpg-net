@@ -38,6 +38,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 
     Project IProjectEntity.Project => this;
+
+    public virtual ICollection<ProjectFeeSetting>  ProjectFeeSettings { get; set; }
   }
 
   public class ProjectDetails
@@ -46,6 +48,14 @@ namespace JoinRpg.DataModel
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
     public int? AllrpgId { get; set; }
-    public int? DefaultFee { get; set; }
+  }
+
+  public class ProjectFeeSetting
+  {
+    public int ProjectFeeSettingId { get; set; }
+    public int ProjectId { get; set; }
+    public virtual Project Project { get; set; }
+    public int Fee { get; set; }
+    public DateTime EndDate { get; set; }
   }
 }
