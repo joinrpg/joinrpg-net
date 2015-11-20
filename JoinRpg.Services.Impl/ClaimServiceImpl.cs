@@ -216,6 +216,12 @@ namespace JoinRpg.Services.Impl
       await _emailService.Email(email);
     }
 
+    public Task PerformMoneyOperation(int projectId, int claimId, int currentUserId, string contents, DateTime operationDate,
+      int? feeChange, int? money)
+    {
+      throw new NotImplementedException();
+    }
+
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadMyClaim(projectId, claimId, currentUserId);

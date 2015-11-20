@@ -20,6 +20,7 @@ namespace JoinRpg.Services.Interfaces
     Task<IList<ClaimProblem>> GetProblemClaims(int projectId);
     Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task MoveByMaster (int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId);
+    Task PerformMoneyOperation(int projectId, int claimId, int currentUserId, string contents, DateTime operationDate, int? feeChange, int? money);
   }
 
   public class ClaimProblem

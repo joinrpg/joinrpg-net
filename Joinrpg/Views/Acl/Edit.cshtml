@@ -65,20 +65,20 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanAcceptCash, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
+            @Html.LabelFor(model => model.CanAcceptCash, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanAcceptCash" })
             <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.CanAcceptCash, null, htmlFieldName: "CanGrantRights")
+                    @Html.EditorFor(model => model.CanAcceptCash, null, htmlFieldName: "CanAcceptCash")
                     @Html.ValidationMessageFor(model => model.CanAcceptCash, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
+            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManageMoney" })
             <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.CanManageMoney, null, htmlFieldName: "CanGrantRights")
+                    @Html.EditorFor(model => model.CanManageMoney, null, htmlFieldName: "CanManageMoney")
                     @Html.ValidationMessageFor(model => model.CanManageMoney, "", new { @class = "text-danger" })
                 </div>
             </div>

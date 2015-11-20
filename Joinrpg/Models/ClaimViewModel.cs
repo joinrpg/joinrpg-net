@@ -21,6 +21,8 @@ namespace JoinRpg.Web.Models
     public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
     public bool HasApproveRejectClaim { get; set; }
+    public bool CanAcceptCash { get; set; }
+    public bool CanManageMoney { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
 
     [DisplayName("Заявка на персонажа")]

@@ -140,7 +140,9 @@ namespace JoinRpg.Web.Controllers
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
         HasPlayerAccessToCharacter = hasMasterAccess || hasPlayerAccess,
-        HasApproveRejectClaim = claim.Project.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        CanAcceptCash = claim.HasMasterAccess(CurrentUserId, acl => acl.CanAcceptCash),
+        CanManageMoney = claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
@@ -175,7 +177,7 @@ namespace JoinRpg.Web.Controllers
 
       }
 
-      if ((hasMasterAccess || isMyClaim) && claim.IsApproved)
+      if (claim.IsApproved)
       {
         claimViewModel.Plot =
           (await _plotRepository.GetPlotsForCharacter(claim.Character)).Select(
@@ -402,6 +404,34 @@ namespace JoinRpg.Web.Controllers
     private ActionResult ReturnToClaim(int claimId, int projectId)
     {
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
+    }
+
+    public async Task<ActionResult> FinanceOperation(FinanceOperationViewModel viewModel)
+    {
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = WithMyClaim(claim);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+        }
+        
+
+        await
+          _claimService.PerformMoneyOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
+            viewModel.CommentText.Contents, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money);
+        
+        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
+      catch
+      {
+        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+      }
     }
   }
 }

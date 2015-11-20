@@ -128,7 +128,7 @@
         if (Model.OtherClaimsForThisCharacterCount > 0)
         {
             <p>Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @OtherClaimsForThisCharacterLink()
-                или переведите их на другого персонажа или в группу (пока не реализовано).</p>
+                или переведите их на другого персонажа или в группу.</p>
         }
         else
         {
@@ -244,6 +244,10 @@
                 }
             }
         </details>
+    }
+    if (Model.CanAcceptCash)
+    {
+        @Html.Partial("_ClaimFinancePartial", Model)
     }
 }
 @if (Model.IsMyClaim)

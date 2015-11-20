@@ -3,8 +3,6 @@
       Model.ActionName = Model.ActionName ?? "Добавить комментарий";
   }
 
-@using (Html.BeginForm("Create", "Comment", FormMethod.Post, new { enctype = "multipart/form-data" }))
-{
     @Html.AntiForgeryToken()
 
 <div class="form-horizontal">
@@ -40,4 +38,3 @@
         </div>
     </div>
 </div>
-}

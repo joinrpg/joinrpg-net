@@ -1,10 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Helpers.Validation;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
+  public class AcceptCashViewModel : AddCommentViewModel
+  {
+    [Display(Name="Игрок внес денег"), Required, Range(0, int.MaxValue)]
+    public int Money { get; set; }
+
+    [Display(Name="Дата внесения"), Required]
+    public DateTime OperationDate { get; set; }
+  }
+
+  public class FinanceOperationViewModel : AddCommentViewModel
+  {
+    public int? Money{ get; set; }
+    public int? FeeChange { get; set; }
+    [DateShouldBeInPast]
+    public DateTime OperationDate
+    { get; set; }
+  }
+
   public class AddCommentViewModel : IValidatableObject
   {
     public int ProjectId { get; set; }
