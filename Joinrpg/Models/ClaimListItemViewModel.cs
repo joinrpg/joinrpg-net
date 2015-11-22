@@ -83,7 +83,7 @@ namespace JoinRpg.Web.Models
       Name = claim.Name;
       Player = claim.Player;
       ProjectId = claim.ProjectId;
-      ProjectName = claim.Name;
+      ProjectName = claim.Project.ProjectName;
       UpdateDate = claim.StatusChangedDate;
       Responsible = claim.ResponsibleMasterUser;
     }

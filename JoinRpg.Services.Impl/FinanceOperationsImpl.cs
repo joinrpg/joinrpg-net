@@ -59,7 +59,6 @@ namespace JoinRpg.Services.Impl
         Changed = now,
         Claim = claim,
         Comment = comment,
-        MasterUserId = currentUserId,
         PaymentType = paymentType,
         State = state,
         ProjectId = projectId,

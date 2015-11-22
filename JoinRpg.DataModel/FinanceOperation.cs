@@ -16,8 +16,6 @@ namespace JoinRpg.DataModel
     public int MoneyAmount { get; set; }
     public int? PaymentTypeId { get; set; }
     public virtual PaymentType PaymentType { get; set; }
-    public int MasterUserId { get; set; }
-    public virtual User MasterUser { get; set; }
 
     public int CommentId { get; set; }
     public virtual Comment Comment { get; set; }

@@ -169,6 +169,10 @@
     <Compile Include="Migrations\201511222030192_Finance6.Designer.cs">
       <DependentUpon>201511222030192_Finance6.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511222239023_CleanFinanceOperation.cs" />
+    <Compile Include="Migrations\201511222239023_CleanFinanceOperation.Designer.cs">
+      <DependentUpon>201511222239023_CleanFinanceOperation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -285,6 +289,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511222030192_Finance6.resx">
       <DependentUpon>201511222030192_Finance6.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511222239023_CleanFinanceOperation.resx">
+      <DependentUpon>201511222239023_CleanFinanceOperation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

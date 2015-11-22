@@ -95,10 +95,6 @@ namespace JoinRpg.Dal.Impl
         .HasForeignKey(us => us.ClaimId)
         .WillCascadeOnDelete(false);
 
-      modelBuilder.Entity<FinanceOperation>()
-        .HasRequired(finance => finance.MasterUser)
-        .WithMany()
-        .HasForeignKey(finance => finance.MasterUserId);
       base.OnModelCreating(modelBuilder);
     }
  }
