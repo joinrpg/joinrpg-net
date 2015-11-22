@@ -85,7 +85,7 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await LoadClaim(projectId, claimId, currentUserId);
 
-      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, DateTime.UtcNow, isVisibleToPlayer, isMyClaim);
+      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, DateTime.UtcNow, isVisibleToPlayer);
       await UnitOfWork.SaveChangesAsync();
 
       var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, commentText, s => s.Comments);
@@ -108,7 +108,7 @@ namespace JoinRpg.Services.Impl
       var now = DateTime.UtcNow;
       claim.MasterAcceptedDate = now;
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
-      claim.AddCommentImpl(currentUserId, null, commentText, now, true, false);
+      claim.AddCommentImpl(currentUserId, null, commentText, now, true);
 
       foreach (var otherClaim in claim.OtherClaimsForThisPlayer())
       {
@@ -196,8 +196,8 @@ namespace JoinRpg.Services.Impl
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       var email =
         await
-          AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, true,
-            s => s.ClaimStatusChange);
+          AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, isVisibleToPlayer: true,
+            predicate: s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -224,7 +224,7 @@ namespace JoinRpg.Services.Impl
 
     private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now, bool isVisibleToPlayer, Func<UserSubscription, bool> predicate) where T : ClaimEmailModel, new()
     {
-      claim.AddCommentImpl(currentUserId, null, commentText, now, isVisibleToPlayer, isMyClaim: true);
+      claim.AddCommentImpl(currentUserId, null, commentText, now, isVisibleToPlayer);
       return await CreateClaimEmail<T>(claim, currentUserId, commentText, predicate);
     }
 
@@ -240,7 +240,7 @@ namespace JoinRpg.Services.Impl
 
       claim.AddCommentImpl(currentUserId, null,
         $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}", DateTime.UtcNow,
-        isVisibleToPlayer: false, isMyClaim: false);
+        isVisibleToPlayer: false);
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -278,13 +278,9 @@ namespace JoinRpg.Services.Impl
   internal static class ClaimStaticExtensions
   {
     public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText,
-      DateTime now, bool isVisibleToPlayer, bool isMyClaim)
+      DateTime now, bool isVisibleToPlayer)
     {
-      if (string.IsNullOrWhiteSpace(commentText))
-      {
-        throw new DbEntityValidationException();
-      }
-      if (!isVisibleToPlayer && isMyClaim)
+      if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
       {
         throw new DbEntityValidationException();
       }
@@ -296,7 +292,7 @@ namespace JoinRpg.Services.Impl
         ClaimId = claim.ClaimId,
         CommentText = new MarkdownString(commentText),
         CreatedTime = now,
-        IsCommentByPlayer = isMyClaim,
+        IsCommentByPlayer = claim.PlayerUserId == currentUserId,
         IsVisibleToPlayer = isVisibleToPlayer,
         ParentCommentId = parentCommentId,
         LastEditTime = now

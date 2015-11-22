@@ -43,6 +43,11 @@ namespace JoinRpg.DataModel
       {
         yield return new ValidationResult("Comment can't be empty");
       }
+
+      if (IsCommentByPlayer != (Claim.PlayerUserId == AuthorUserId))
+      {
+        yield return new ValidationResult("IsCommentByPlayer filled incorrectly");
+      }
     }
   }
 }

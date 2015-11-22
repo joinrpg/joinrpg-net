@@ -100,5 +100,12 @@ namespace JoinRpg.DataModel
     int? ILinkable.ProjectId => ProjectId;
 
     #endregion
+
+    #region helper properties
+
+    public IEnumerable<FinanceOperation> ApprovedFinanceOperations
+      => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
+
+    #endregion
   }
 }
