@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" title="Публичные группы показываются в сетке ролей и на карточках персонажей.">
                 @Html.LabelFor(model => model.IsPublic, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-10">
                     <div class="checkbox">
@@ -90,5 +90,5 @@
 }
 
 <div>
-    @Html.ActionLink("Назад к сетке ролей", "Index", new { @Model.ProjectId }, null)
+    @Html.ActionLink("Назад к сетке ролей группы", "Index", new { @Model.ProjectId, Model.CharacterGroupId }, null)
 </div>
