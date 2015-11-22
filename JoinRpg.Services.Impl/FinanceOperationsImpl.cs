@@ -65,6 +65,15 @@ namespace JoinRpg.Services.Impl
       comment.Finance = financeOperation;
 
       claim.FinanceOperations.Add(financeOperation);
+
+      if (claim.Project.ProjectFeeSettings.Any()    //If project has fee 
+          && claim.CurrentFee == null  //and fee not already fixed for claim
+          && claim.ClaimBalance() > claim.ClaimTotalFee(operationDate) //and current fee is payed in full
+          )
+      {
+        claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
+      }
+
       await UnitOfWork.SaveChangesAsync();
       var email = CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation);
 

@@ -64,5 +64,15 @@ namespace JoinRpg.Web.Models
     public CharacterFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
+
+    [Display(Name="Взнос")]
+    public ClaimFeeViewModel ClaimFee { get; set; }
+  }
+
+  public class ClaimFeeViewModel
+  {
+    public int CurrentFee { get; set; }
+    public int CurrentTotalFee { get; set; }
+    public int CurrentBalance { get; set; }
   }
 }

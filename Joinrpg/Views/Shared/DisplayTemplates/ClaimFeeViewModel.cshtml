@@ -1,0 +1,27 @@
+﻿@model JoinRpg.Web.Models.ClaimFeeViewModel
+<span>
+    @{
+        var modification = Model.CurrentTotalFee - Model.CurrentFee;
+    <text>@(Model.CurrentTotalFee)&#8381;</text>
+
+        if (modification != 0)
+        {
+
+            <text>(@(Model.CurrentFee)&#8381;@(modification.ToString("+#;-#;+0")) &#8381;)</text>
+
+        }
+    }
+
+    @if (Model.CurrentTotalFee < Model.CurrentBalance)
+    {
+    <span> — <b>переплата</b> @(Model.CurrentBalance - @Model.CurrentTotalFee)&#8381;</span>
+    }
+    else if (Model.CurrentTotalFee == Model.CurrentBalance)
+    {
+    <span> — оплачен целиком</span>
+    }
+    else if (Model.CurrentBalance > 0)
+    {
+        <span> — оплачен <b>частично</b> @Model.CurrentBalance &#8381;, осталось @(Model.CurrentTotalFee - Model.CurrentBalance) &#8381;</span>
+    }
+</span>

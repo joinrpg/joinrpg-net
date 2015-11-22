@@ -109,6 +109,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Character)
           .Include(c => c.Player)
           .Include(c => c.Player.Claims)
+          .Include(c => c.Comments)  //TODO c.Comment.Finances
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 

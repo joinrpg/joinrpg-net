@@ -126,7 +126,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ProjectRepository.GetClaimWithDetails(projectId, claimId);
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -170,7 +170,14 @@ namespace JoinRpg.Web.Controllers
           EditAllowed = true,
           HasPlayerAccessToCharacter = hasPlayerAccess
         },
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim)
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
+        ClaimFee = new ClaimFeeViewModel()
+        {
+          CurrentTotalFee = claim.ClaimTotalFee(),
+          CurrentBalance = claim.ClaimBalance(),
+          CurrentFee = claim.ClaimCurrentFee()
+        }
+        
       };
 
       if (claim.Character !=null)

@@ -8,7 +8,6 @@ namespace JoinRpg.DataModel
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class FinanceOperation : IProjectEntity, IValidatableObject
   {
-    public int FinanceOperationId { get; set; }
     public int ProjectId { get; set; }
     public virtual Project Project { get; set; }
     public int ClaimId { get; set; }

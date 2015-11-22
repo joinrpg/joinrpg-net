@@ -31,11 +31,10 @@ namespace JoinRpg.DataModel
 
     public bool IsCommentByPlayer { get; set; }
     public bool IsVisibleToPlayer { get; set; }
-    public int? FinanceOperationId { get; set; }
-    public FinanceOperation Finance { get; set; }
+    public virtual FinanceOperation Finance { get; set; }
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-      if ((FinanceOperationId != null || Finance != null) && !IsVisibleToPlayer)
+      if (Finance != null && !IsVisibleToPlayer)
       {
         yield return new ValidationResult("Finance operations always should be player-visible");
       }

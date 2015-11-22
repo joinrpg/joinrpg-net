@@ -533,6 +533,8 @@
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
     <Content Include="Views\Claim\_ClaimFinancePartial.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\FinanceOperation.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

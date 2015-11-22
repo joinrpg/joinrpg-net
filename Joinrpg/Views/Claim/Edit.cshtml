@@ -22,14 +22,18 @@
             {
                 if (comment.IsVisibleToPlayer)
                 {
-                <span>игроку</span>
+                    <span>игроку</span>
                 }
                 else
                 {
-                <span>другим мастерам</span>
+                    <span>другим мастерам</span>
                 }
             }
         </strong>
+        @if (comment.Finance != null)
+        {
+            @Html.DisplayFor(model => comment.Finance)
+        }
         <span>@comment.CommentText.ToHtmlString()</span>
         <details>
             <summary>Ответить...</summary>
@@ -102,6 +106,11 @@
     {
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+    }
+    @if (Model.Status == Claim.Status.Approved && Model.ClaimFee != null)
+    {
+        <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
+        <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
     }
     @if (Model.HasMasterAccess)
     {
