@@ -28,28 +28,33 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<HomeViewModel> LoadModel(int maxProjects = int.MaxValue)
     {
-      var homeViewModel = new HomeViewModel();
+      
 
-      var projects = (await _projectRepository.GetActiveProjectsWithClaimCount()).Select(p => new ProjectListItemViewModel()
-      {
-        ProjectId = p.ProjectId,
-        IsMaster = p.HasMasterAccess(CurrentUserIdOrDefault),
-        ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
-        ProjectName = p.ProjectName,
-        MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
-        ClaimCount = p.Claims.Count(c => c.IsActive),
-      }).ToList();
-      var alwaysShowProjects = projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster);
+      var projects =
+        (await _projectRepository.GetActiveProjectsWithClaimCount()).Select(p => new ProjectListItemViewModel()
+        {
+          ProjectId = p.ProjectId,
+          IsMaster = p.HasMasterAccess(CurrentUserIdOrDefault),
+          ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
+          ProjectName = p.ProjectName,
+          MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
+          ClaimCount = p.Claims.Count(c => c.IsActive),
+        }).ToList();
+      var alwaysShowProjects =
+        projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster).ThenByDescending(p => p.ClaimCount);
       var otherProjects =
         projects.Except(alwaysShowProjects)
           .OrderByDescending(p => p.ClaimCount)
           .Take(Math.Max(0, maxProjects - alwaysShowProjects.Count())); // Add more projects until we have 9 total
-      homeViewModel.ActiveProjects =
 
-        alwaysShowProjects.Union(otherProjects).ToList();
+      
+      var finalProjects = alwaysShowProjects.Union(otherProjects).ToList();
 
-      homeViewModel.HasMoreProjects = projects.Count > homeViewModel.ActiveProjects.Count();
-      return homeViewModel;
+      return new HomeViewModel
+      {
+        ActiveProjects = finalProjects,
+        HasMoreProjects = projects.Count > finalProjects.Count
+      };
     }
 
     public ActionResult About()
