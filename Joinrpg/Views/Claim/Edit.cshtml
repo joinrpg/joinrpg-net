@@ -260,21 +260,24 @@
             }
         </details>
     }
-    if (Model.CanAcceptCash)
-    {
-        var viewModel = new AcceptCashViewModel
-        {
-            ProjectId = Model.ProjectId,
-            ClaimId = Model.ClaimId,
-            ParentCommentId = null,
-            EnableHideFromUser = false,
-            HideFromUser = false,
-            ActionName = "Отметить взнос",
-            OperationDate = DateTime.Today
-        };
-        @Html.Partial("_ClaimFinancePartial", viewModel)
-    }
 }
+
+@if (Model.PaymentTypes != null && Model.PaymentTypes.Any())
+{
+    var viewModel = new FinOperationViewModel
+    {
+        ProjectId = Model.ProjectId,
+        ClaimId = Model.ClaimId,
+        ParentCommentId = null,
+        EnableHideFromUser = false,
+        HideFromUser = false,
+        ActionName = "Отметить взнос",
+        OperationDate = DateTime.Today,
+        PaymentTypes = Model.PaymentTypes
+    };
+    @Html.Partial("_ClaimFinancePartial", viewModel)
+}
+
 @if (Model.IsMyClaim)
 {
     if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)

@@ -1,7 +1,7 @@
 ﻿namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (required by LINQ)
-  public class ProjectAcl
+  public class ProjectAcl 
   {
     public int ProjectAclId { get; set; }
     public int ProjectId { get; set; }

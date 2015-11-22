@@ -67,6 +67,9 @@ namespace JoinRpg.Web.Models
 
     [Display(Name="Взнос")]
     public ClaimFeeViewModel ClaimFee { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<PaymentType> PaymentTypes { get; set; }
   }
 
   public class ClaimFeeViewModel

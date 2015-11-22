@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 
@@ -15,7 +16,7 @@ namespace JoinRpg.Domain
     public static int ClaimTotalFee(this Claim claim, DateTime operationDate)
     {
 
-      return claim.ClaimCurrentFee(operationDate) + claim.FinanceOperations.Sum(fo => fo.FeeChange);
+      return claim.ClaimCurrentFee(operationDate) + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
     }
 
     public static int ClaimCurrentFee(this Claim claim, DateTime operationDate)
@@ -26,7 +27,15 @@ namespace JoinRpg.Domain
 
     public static int ClaimBalance(this Claim claim)
     {
-      return claim.FinanceOperations.Sum(fo => fo.MoneyAmount);
+      return claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
     }
+
+    public static IEnumerable<PaymentType> GetPaymentTypes(this ProjectAcl acl)
+    {
+      return acl.Project.PaymentTypes.Where(pt => pt.UserId == acl.UserId);
+    }
+
+    //TODO[Localize]: JoinRpg.Domain should be localization-neutral. 
+    public static string GetDisplayName(this PaymentType paymentType) => paymentType.IsCash ? "Наличными — " + paymentType.User.DisplayName : paymentType.Name;
   }
 }

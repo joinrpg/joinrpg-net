@@ -13,6 +13,17 @@ namespace JoinRpg.Domain
     }
   }
 
+  public abstract class JoinRpgProjectEntityException : JoinRpgBaseException
+  {
+    protected JoinRpgProjectEntityException(IProjectEntity entity, string message) : base(message)
+    {
+      Project = entity.Project;
+    }
+
+    [PublicAPI]
+    public Project Project { get; }
+  }
+
   public class CannotPerformOperationInFuture : JoinRpgBaseException
   {
     public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
@@ -20,31 +31,34 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class NoAccessToProjectException : JoinRpgBaseException
+  public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
   {
-    [PublicAPI]
-    public Project Project { get; }
+    public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
+    {
+      
+    }
+  }
+
+  public class NoAccessToProjectException : JoinRpgProjectEntityException
+  {
     [PublicAPI]
     public int? UserId { get; }
 
     public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
-      : base($"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}")
+      : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}")
     {
-      Project = project;
       UserId = userId;
     }
 
     public NoAccessToProjectException(Project project, int? userId)
-      : base($"No access to project {project.ProjectName} for user {userId}")
+      : base(project, $"No access to project {project.ProjectName} for user {userId}")
     {
-      Project = project;
       UserId = userId;
     }
 
     public NoAccessToProjectException(IProjectEntity entity, int? userId)
-  : base($"No access to entity of {entity.Project.ProjectName} for user {userId}")
+  : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}")
     {
-      Project = entity.Project;
       UserId = userId;
     }
   }

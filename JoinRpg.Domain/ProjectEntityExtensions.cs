@@ -48,5 +48,13 @@ namespace JoinRpg.Domain
         throw new NoAccessToProjectException(field.Project, currentUserId);
       }
     }
+
+    public static void EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
+    {
+      if (!entity.IsActive)
+      {
+        throw new ProjectEntityDeactivedException(entity);
+      }
+    }
   }
 }

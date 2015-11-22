@@ -42,10 +42,6 @@ namespace JoinRpg.Services.Impl
         ProjectAcls = new List<ProjectAcl>()
         {
           ProjectAcl.CreateRootAcl(creator.UserId)
-        },
-        PaymentTypes = new List<PaymentType>()
-        {
-          PaymentType.CreateCash()
         }
       };
       UnitOfWork.GetDbSet<Project>().Add(project);
@@ -302,18 +298,24 @@ namespace JoinRpg.Services.Impl
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
 
-      AddPaymentTypeCashIfRequired(acl);
+      UpdatePaymentTypes(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }
-
-    //TODO: Now payment type = cash should be added on project creation.
-    //Remove this after all DB fixed
-    private static void AddPaymentTypeCashIfRequired(ProjectAcl acl)
+    private void UpdatePaymentTypes(ProjectAcl acl)
     {
-      if ((acl.CanAcceptCash || acl.CanManageMoney) && !acl.Project.PaymentTypes.Any())
+      var cashPaymentType = acl.GetPaymentTypes().SingleOrDefault(pt => pt.IsCash);
+
+      //User now can accept cash and should have his "payment type"
+      if (acl.CanAcceptCash && cashPaymentType == null)
       {
-        acl.Project.PaymentTypes.Add(PaymentType.CreateCash());
+        acl.Project.PaymentTypes.Add(PaymentType.CreateCash(acl.User));
+      }
+
+      //User now can't accept cash , try to delete payment type if we don't need it anymore
+      if (!acl.CanAcceptCash && cashPaymentType != null)
+      {
+        SmartDelete(cashPaymentType);
       }
     }
 
@@ -342,7 +344,7 @@ namespace JoinRpg.Services.Impl
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
 
-      AddPaymentTypeCashIfRequired(acl);
+      UpdatePaymentTypes(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }

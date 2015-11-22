@@ -23,7 +23,9 @@ namespace JoinRpg.Services.Impl
       var now = DateTime.UtcNow;
       var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
-      if (operationDate > now)
+      paymentType.EnsureActive();
+
+      if (operationDate > now.AddDays(1))//TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
       {
         throw new CannotPerformOperationInFuture();
       }
@@ -32,20 +34,22 @@ namespace JoinRpg.Services.Impl
       {
         claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
       }
+      var state = FinanceOperationState.Approved;
 
-      if (paymentType.IsCash)
+      if (paymentType.UserId != currentUserId)
       {
-        claim.RequestMasterAccess(currentUserId, acl => acl.CanAcceptCash);
-      }
-      else
-      {
-        if (paymentType.UserId != currentUserId)
+        if (claim.PlayerUserId == currentUserId)
         {
-          throw new NoAccessToProjectException(paymentType, currentUserId);
+          //Player mark that he pay fee. Put this to moderation
+          state = FinanceOperationState.Proposed;
+        }
+        else
+        {
+          claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
         }
       }
 
-      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true, isMyClaim:false);
+      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true);
 
       var financeOperation = new FinanceOperation()
       {
@@ -57,7 +61,7 @@ namespace JoinRpg.Services.Impl
         Comment = comment,
         MasterUserId = currentUserId,
         PaymentType = paymentType,
-        State = FinanceOperationState.Approved,
+        State = state,
         ProjectId = projectId,
         OperationDate = operationDate
       };

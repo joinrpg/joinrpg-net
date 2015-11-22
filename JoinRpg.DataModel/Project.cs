@@ -22,12 +22,7 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<ProjectCharacterField> ProjectFields { get; set; }
 
-    public IEnumerable<ProjectCharacterField> ActiveProjectFields => ProjectFields.Where(pf => pf.IsActive).OrderBy(pf => pf.Order);
-
-    public IEnumerable<ProjectCharacterField> AllProjectFields => ProjectFields.OrderByDescending(pf => pf.IsActive).ThenBy(pf => pf.Order);
-
     public virtual ICollection<CharacterGroup>  CharacterGroups { get; set; }
-    public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
 
     public virtual ICollection<Character>  Characters { get; set; }
 
@@ -41,6 +36,18 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<ProjectFeeSetting>  ProjectFeeSettings { get; set; }
     public virtual ICollection<PaymentType> PaymentTypes { get; set; }
+
+    #region helper properties
+    public IEnumerable<PaymentType> ActivePaymentTypes => PaymentTypes.Where(pt => pt.IsActive);
+
+    public IEnumerable<ProjectCharacterField> ActiveProjectFields
+      => ProjectFields.Where(pf => pf.IsActive).OrderBy(pf => pf.Order);
+
+    public IEnumerable<ProjectCharacterField> AllProjectFields
+      => ProjectFields.OrderByDescending(pf => pf.IsActive).ThenBy(pf => pf.Order);
+
+    public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
+    #endregion
   }
 
   public class ProjectDetails
