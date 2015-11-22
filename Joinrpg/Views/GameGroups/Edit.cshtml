@@ -59,7 +59,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.Partial("HaveDirectSlotsPartial")
+                @Html.EditorFor(model => model.HaveDirectSlots)
                 @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new {@class = "text-danger"})
             </div>
         </div>
