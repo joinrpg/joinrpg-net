@@ -2,7 +2,7 @@
 <div class="col-sm-6 col-md-4">
     <div class="thumbnail">
         <div class="caption">
-            <h4>@Model.ProjectName</h4>
+            <h4 style="text-overflow: ellipsis; white-space: nowrap;overflow-x:hidden" title="@Model.ProjectName">@Model.ProjectName</h4>
             @if (Model.IsMaster)
             {
             <p>
