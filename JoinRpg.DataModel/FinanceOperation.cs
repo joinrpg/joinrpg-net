@@ -43,6 +43,12 @@ namespace JoinRpg.DataModel
         yield return new ValidationResult("Payment type not specified for payment operatio");
       }
     }
+
+    #region helper properties
+
+    public bool RequireModeration => State != FinanceOperationState.Approved;
+
+    #endregion
   }
 
   public enum FinanceOperationState 

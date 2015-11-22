@@ -495,7 +495,6 @@
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Account\RegisterSuccess.cshtml" />
     <Content Include="Views\Account\EmailUnconfirmed.cshtml" />
-    <Content Include="Views\GameGroups\HaveDirectSlotsPartial.cshtml" />
     <Content Include="Views\Plot\Delete.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PlotFolderListItemViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />

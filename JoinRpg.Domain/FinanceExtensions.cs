@@ -37,5 +37,14 @@ namespace JoinRpg.Domain
 
     //TODO[Localize]: JoinRpg.Domain should be localization-neutral. 
     public static string GetDisplayName(this PaymentType paymentType) => paymentType.IsCash ? "Наличными — " + paymentType.User.DisplayName : paymentType.Name;
+
+    public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
+    {
+      if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+          finance.PaymentType?.UserId != currentUserId)
+      {
+        throw new NoAccessToProjectException(finance, currentUserId);
+      }
+    }
   }
 }

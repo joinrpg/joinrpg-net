@@ -81,11 +81,44 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, bool isMyClaim, string commentText)
+    public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
       var claim = await LoadClaim(projectId, claimId, currentUserId);
+      var now = DateTime.UtcNow;
 
-      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, DateTime.UtcNow, isVisibleToPlayer);
+      var parentComment = claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+
+      if (financeAction != FinanceOperationAction.None)
+      {
+        var finance = parentComment?.Finance;
+        if (finance == null)
+        {
+          throw new InvalidOperationException();
+        }
+
+        if (!finance.RequireModeration)
+        {
+          throw new ValueAlreadySetException("Finance entry is already moderated.");
+        }
+
+        finance.RequestModerationAccess(currentUserId);
+        finance.Changed = now;
+        switch (financeAction)
+        {
+          case FinanceOperationAction.Approve:
+            finance.State = FinanceOperationState.Approved;
+            break;
+          case FinanceOperationAction.Decline:
+          finance.State = FinanceOperationState.Declined;
+          break;
+          default:
+            throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
+        }
+      }
+
+      
+      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, now, isVisibleToPlayer);
+
       await UnitOfWork.SaveChangesAsync();
 
       var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, commentText, s => s.Comments);
@@ -117,12 +150,7 @@ namespace JoinRpg.Services.Impl
           throw new DbEntityValidationException();
         }
         otherClaim.MasterDeclinedDate = now;
-        await
-          EmailService.Email(
-            await
-              AddCommentWithEmail<DeclineByMasterEmail>(currentUserId,
-                "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                otherClaim, now, true, s => s.ClaimStatusChange));
+        await EmailService.Email(await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект", otherClaim, now, true, s => s.ClaimStatusChange));
       }
 
       if (claim.Group != null)
@@ -170,17 +198,13 @@ namespace JoinRpg.Services.Impl
         claim.CharacterId = null;
         claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
       }
-      var email =
-        await
-          AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, DateTime.UtcNow, true,
-            s => s.ClaimStatusChange);
+      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, DateTime.UtcNow, true, s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
     }
 
-    public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
-      int? characterId)
+    public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       await GetClaimSource(projectId, characterGroupId, characterId);
@@ -194,15 +218,11 @@ namespace JoinRpg.Services.Impl
       }
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
-      var email =
-        await
-          AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, isVisibleToPlayer: true,
-            predicate: s => s.ClaimStatusChange);
+      var email = await AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
     }
-
 
 
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
@@ -217,7 +237,7 @@ namespace JoinRpg.Services.Impl
       claim.PlayerDeclinedDate = now;
 
       var email = await AddCommentWithEmail<DeclineByPlayerEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
-     
+
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
     }
@@ -238,19 +258,15 @@ namespace JoinRpg.Services.Impl
       var newMaster = await UserRepository.GetById(responsibleMasterId);
       claim.ResponsibleMasterUserId = responsibleMasterId;
 
-      claim.AddCommentImpl(currentUserId, null,
-        $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}", DateTime.UtcNow,
-        isVisibleToPlayer: false);
+      claim.AddCommentImpl(currentUserId, null, $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}", DateTime.UtcNow, isVisibleToPlayer: false);
       await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task<IList<ClaimProblem>> GetProblemClaims(int projectId)
     {
       var project = await ClaimsRepository.GetClaims(projectId);
-      var filters = new IClaimProblemFilter[] {new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new ApprovedAndOtherClaimProblemFilter(), };
-      return
-        project.Claims.Where(claim => claim.IsActive)
-          .SelectMany(claim => filters.SelectMany(f => f.GetProblems(project, claim))).ToList();
+      var filters = new IClaimProblemFilter[] {new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new ApprovedAndOtherClaimProblemFilter(),};
+      return project.Claims.Where(claim => claim.IsActive).SelectMany(claim => filters.SelectMany(f => f.GetProblems(project, claim))).ToList();
     }
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
@@ -277,8 +293,7 @@ namespace JoinRpg.Services.Impl
 
   internal static class ClaimStaticExtensions
   {
-    public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText,
-      DateTime now, bool isVisibleToPlayer)
+    public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText, DateTime now, bool isVisibleToPlayer)
     {
       if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
       {
@@ -287,15 +302,7 @@ namespace JoinRpg.Services.Impl
 
       var comment = new Comment()
       {
-        ProjectId = claim.ProjectId,
-        AuthorUserId = currentUserId,
-        ClaimId = claim.ClaimId,
-        CommentText = new MarkdownString(commentText),
-        CreatedTime = now,
-        IsCommentByPlayer = claim.PlayerUserId == currentUserId,
-        IsVisibleToPlayer = isVisibleToPlayer,
-        ParentCommentId = parentCommentId,
-        LastEditTime = now
+        ProjectId = claim.ProjectId, AuthorUserId = currentUserId, ClaimId = claim.ClaimId, CommentText = new MarkdownString(commentText), CreatedTime = now, IsCommentByPlayer = claim.PlayerUserId == currentUserId, IsVisibleToPlayer = isVisibleToPlayer, ParentCommentId = parentCommentId, LastEditTime = now
       };
       claim.Comments.Add(comment);
 
@@ -314,11 +321,7 @@ namespace JoinRpg.Services.Impl
       }
       var character = new Character()
       {
-        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
-        ProjectId = claim.ProjectId,
-        IsAcceptingClaims = true,
-        IsPublic = claim.Group.IsPublic,
-        Groups = new List<CharacterGroup>()
+        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}", ProjectId = claim.ProjectId, IsAcceptingClaims = true, IsPublic = claim.Group.IsPublic, Groups = new List<CharacterGroup>()
         {
           claim.Group
         }

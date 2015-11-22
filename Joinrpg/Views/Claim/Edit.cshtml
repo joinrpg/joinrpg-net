@@ -45,6 +45,8 @@
                     ProjectId = Model.ProjectId,
                     ClaimId = Model.ClaimId,
                     ParentCommentId = comment.CommentId,
+                    ParentComment = comment,
+                    EnableFinanceAction = comment.Finance != null && comment.Finance.RequireModeration && (Model.CanManageMoney || comment.Finance.PaymentType.UserId.ToString() == User.Identity.GetUserId()),
                     EnableHideFromUser = !Model.IsMyClaim,
                     HideFromUser = !comment.IsVisibleToPlayer
                 })
@@ -75,6 +77,7 @@
 @using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.CommonTypes
+@using Microsoft.AspNet.Identity
 
 <div>
 @Html.Partial("CharacterNavigation", Model.Navigation)

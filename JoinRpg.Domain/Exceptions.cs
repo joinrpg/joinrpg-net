@@ -24,6 +24,7 @@ namespace JoinRpg.Domain
     public Project Project { get; }
   }
 
+
   public class CannotPerformOperationInFuture : JoinRpgBaseException
   {
     public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
