@@ -34,4 +34,11 @@ namespace JoinRpg.Web.Models
     public DateTime CreatedDate { get; set; }
     public IEnumerable<User>  Masters { get; set; }
   }
+
+  public class ProjectListItemViewModel : ProjectViewModelBase
+  {
+    public bool IsMaster { get; set; }
+    public IEnumerable<Claim>  MyClaims {get; set; }
+    public int ClaimCount { get; set; }
+  }
 }

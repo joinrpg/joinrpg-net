@@ -1,0 +1,29 @@
+﻿@model JoinRpg.Web.Models.ProjectListItemViewModel
+<div class="col-sm-6 col-md-4">
+    <div class="thumbnail">
+        <div class="caption">
+            <h4>@Model.ProjectName</h4>
+            @if (Model.IsMaster)
+            {
+            <p>
+                <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null)"
+                   class="btn btn-info btn-sm"
+                   role="button"
+                   title="У меня есть права мастера на этой игре">Мой проект</a>
+            </p>
+            }
+            else
+            {
+            <p>
+                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
+                   class="btn btn-primary btn-sm"
+                   role="button"
+                   title="Выбрать роль и заявиться">
+                    Заявиться
+                </a>
+            </p>
+            }
+        </div>
+    </div>
+</div>
+

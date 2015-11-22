@@ -3,57 +3,34 @@
 @{
     ViewBag.Title = "JoinRpg.RU";
 }
-
-<div class="jumbotron">
-    <h1>@ViewBag.Title</h1>
-    <p class="lead">Простая и универсальная база заявок на игры от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a></p>
-    <p>@Html.ActionLink("Узнать больше", "About", null, new {@class = "btn btn-primary btn-lg" })</p>
+<br/>
+<div class="panel panel-default well">
+    <div class="panel-body">
+        <h2 >@ViewBag.Title</h2>
+        <p>
+            Перезапуск базы заявок <a href="http://allrpg.info">Allrpg.Info</a> — просто, удобно, универсально. От создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+        </p>
+        @Html.ActionLink("Узнать больше", "About", null, new {@class = "btn btn-primary"})
+        @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new {@class = "btn btn-success"})
+    </div>
 </div>
 
+
+<h3>Игры</h3>
+
 <div class="row">
-    <div class="col-md-4">
-        
-        <h2>Мои заявки</h2>
-        
-            @if (@Model.MyClaims.Any())
-            {
-                <ul>
-                    @foreach (var claim in Model.MyClaims)
-                    {
-                        <li>@Html.ActionLink(claim.Name + " на «" + claim.Project.ProjectName + "»", "Edit", "Claim", new {claim.ClaimId, claim.ProjectId}, null);</li>
-                    }
-                </ul>
-            }
-            else
-            {
-              <span>Вы пока никуда не заявились</span>
-            }
-    </div>
-    <div class="col-md-4">
-        <h2>Игры, на которые открыты заявки</h2>
-        <ul>
-            @foreach (var project in Model.ActiveProjects)
-            {
-            <li>@Html.ActionLink(@project.ProjectName, "Index", "GameGroups", new { project.ProjectId }, null);</li>
-            }
-        </ul>
-    </div>
-    <div class="col-md-4">
-        @if (@Model.MyProjects.Any())
+    @foreach (var project in Model.ActiveProjects)
+    {
+        @Html.Partial("ProjectCard", project)
+    }
+        @if (Model.HasMoreProjects)
         {
-            <h2>Мои базы заявок</h2>
-            <ul>
-                @foreach (var project in Model.MyProjects)
-                {
-                    <li>@Html.ActionLink(@project.ProjectName, "Index", "GameGroups", new {project.ProjectId}, null);</li>
-                }
-            </ul>
+            <div class="col-md-12">
+                <div class="thumbnail">
+                    <div class="caption text-center">
+                         @Html.ActionLink("Еще игры...", "BrowseGames", "Home") </div>
+                </div>
+
+            </div>
         }
-        else
-        {
-            <h2>Создать базу заявок для своей игры</h2>
-            <p>JoinRpg.ru позволит вам удобно работать с сеткой персонажей и принимать заявки игроков. Использование базы заявок бесплатно.</p>
-        }
-        <p>@Html.ActionLink("Создать базу заявок", "Create", "Game", null, new {@class = "btn btn-default"})</p>
-    </div>
 </div>
