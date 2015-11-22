@@ -13,6 +13,13 @@ namespace JoinRpg.Domain
     }
   }
 
+  public class CannotPerformOperationInFuture : JoinRpgBaseException
+  {
+    public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
+    {
+    }
+  }
+
   public class NoAccessToProjectException : JoinRpgBaseException
   {
     [PublicAPI]
@@ -31,6 +38,13 @@ namespace JoinRpg.Domain
       : base($"No access to project {project.ProjectName} for user {userId}")
     {
       Project = project;
+      UserId = userId;
+    }
+
+    public NoAccessToProjectException(IProjectEntity entity, int? userId)
+  : base($"No access to entity of {entity.Project.ProjectName} for user {userId}")
+    {
+      Project = entity.Project;
       UserId = userId;
     }
   }

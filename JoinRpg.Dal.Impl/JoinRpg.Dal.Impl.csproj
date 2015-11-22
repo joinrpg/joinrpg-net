@@ -153,6 +153,10 @@
     <Compile Include="Migrations\201511202034140_Finance2.Designer.cs">
       <DependentUpon>201511202034140_Finance2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511210807101_Finance3.cs" />
+    <Compile Include="Migrations\201511210807101_Finance3.Designer.cs">
+      <DependentUpon>201511210807101_Finance3.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -257,6 +261,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511202034140_Finance2.resx">
       <DependentUpon>201511202034140_Finance2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511210807101_Finance3.resx">
+      <DependentUpon>201511210807101_Finance3.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

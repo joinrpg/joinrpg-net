@@ -18,11 +18,10 @@ namespace JoinRpg.Web.Models
 
   public class FinanceOperationViewModel : AddCommentViewModel
   {
-    public int? Money{ get; set; }
-    public int? FeeChange { get; set; }
+    public int Money{ get; set; }
+    public int FeeChange { get; set; }
     [DateShouldBeInPast]
-    public DateTime OperationDate
-    { get; set; }
+    public DateTime OperationDate { get; set; }
   }
 
   public class AddCommentViewModel : IValidatableObject

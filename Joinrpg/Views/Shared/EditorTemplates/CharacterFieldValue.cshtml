@@ -2,26 +2,27 @@
 @model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
-
     <div class="col-md-10">
+
         @if (Model.Field.FieldType == CharacterFieldType.Text)
         {
-            <textarea cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" rows="4">@(Model == null ? "" : Model.Value)</textarea>
+        <textarea class="form-control" cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" rows="4">@(Model == null ? "" : Model.Value)</textarea>
         }
         else if (Model.Field.FieldType == CharacterFieldType.Dropdown)
         {
-            <select name="@Model.FieldClientId" id="@Model.FieldClientId">
-                @foreach (var val in Model.Field.DropdownValues)
-                {
-                    <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value? "selected='selected'" : "")>@val.Label</option>
-                }
-            </select>
+        <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control">
+            @foreach (var val in Model.Field.DropdownValues)
+            {
+            <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
+            }
+        </select>
         }
         else
         {
-            <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text">
+        <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" >
 
         }
-        @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
+        @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>
+
 </div>

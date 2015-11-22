@@ -40,6 +40,7 @@ namespace JoinRpg.DataModel
     Project IProjectEntity.Project => this;
 
     public virtual ICollection<ProjectFeeSetting>  ProjectFeeSettings { get; set; }
+    public virtual ICollection<PaymentType> PaymentTypes { get; set; }
   }
 
   public class ProjectDetails

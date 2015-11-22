@@ -111,12 +111,18 @@
         <dd>
             @using (Html.BeginForm("ChangeResponsible", "Claim"))
             {
+            <div class="form-inline">
                 @Html.AntiForgeryToken()
                 @Html.HiddenFor(model => model.ProjectId)
                 @Html.HiddenFor(model => model.ClaimId)
-                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}))
-                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                <input type="submit" value="Изменить" class="btn btn-default"/>
+                @Html.DropDownListFor(
+                    model => model.ResponsibleMasterId,
+                    Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                    htmlAttributes: new { @class = "form-control" })
+
+                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
+                <input type="submit" value="Изменить" class="btn btn-default" />
+            </div>
             }
         </dd>
     }
@@ -247,7 +253,17 @@
     }
     if (Model.CanAcceptCash)
     {
-        @Html.Partial("_ClaimFinancePartial", Model)
+        var viewModel = new AcceptCashViewModel
+        {
+            ProjectId = Model.ProjectId,
+            ClaimId = Model.ClaimId,
+            ParentCommentId = null,
+            EnableHideFromUser = false,
+            HideFromUser = false,
+            ActionName = "Отметить взнос",
+            OperationDate = DateTime.Today
+        };
+        @Html.Partial("_ClaimFinancePartial", viewModel)
     }
 }
 @if (Model.IsMyClaim)

@@ -53,6 +53,8 @@ namespace JoinRpg.DataModel
 
     public int? CurrentFee { get; set; }
 
+    public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
+
     public enum Status
     {
       [Display(Name = "Подана")] AddedByUser,

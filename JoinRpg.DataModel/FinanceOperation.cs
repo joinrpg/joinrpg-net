@@ -5,6 +5,7 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class FinanceOperation : IProjectEntity, IValidatableObject
   {
     public int FinanceOperationId { get; set; }
@@ -24,6 +25,8 @@ namespace JoinRpg.DataModel
 
     public DateTime Created { get; set; }
     public DateTime Changed { get; set; }
+
+    public DateTime OperationDate { get; set; }
 
     public FinanceOperationState State { get; set; }
 

@@ -1,4 +1,6 @@
-﻿namespace JoinRpg.DataModel
+﻿using System.Linq;
+
+namespace JoinRpg.DataModel
 {
   public class UserSubscription
   {
@@ -22,5 +24,9 @@
     public bool ClaimStatusChange { get; set; }
     public bool Comments { get; set; }
     public bool FieldChange { get; set; }
+
+    //TODO: This should be indepedent subscription
+    public bool MoneyOperation
+      => Project.ProjectAcls.SingleOrDefault(acl => acl.User == this.User)?.CanManageMoney ?? false;
   }
 }

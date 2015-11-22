@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimService _claimService;
     private readonly IPlotRepository _plotRepository;
     private readonly IClaimsRepository _claimsRepository;
+    private IFinanceService FinanceService { get; }
 
     [HttpGet]
     [Authorize]
@@ -40,11 +41,12 @@ namespace JoinRpg.Web.Controllers
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository) : base(userManager, projectRepository, projectService)
+      IClaimsRepository claimsRepository, IFinanceService financeService) : base(userManager, projectRepository, projectService)
     {
       _claimService = claimService;
       _plotRepository = plotRepository;
       _claimsRepository = claimsRepository;
+      FinanceService = financeService;
     }
 
     [HttpPost]
@@ -409,7 +411,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> FinanceOperation(FinanceOperationViewModel viewModel)
     {
       var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
-      var error = WithMyClaim(claim);
+      var error = AsMaster(claim);
       if (error != null)
       {
         return error;
@@ -420,11 +422,12 @@ namespace JoinRpg.Web.Controllers
         {
           return await Edit(viewModel.ProjectId, viewModel.ClaimId);
         }
-        
+
 
         await
-          _claimService.PerformMoneyOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
-            viewModel.CommentText.Contents, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money);
+          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
+            viewModel.CommentText.Contents, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
+            claim.Project.PaymentTypes.Single(pt => pt.IsCash).PaymentTypeId);
         
         return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }

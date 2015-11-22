@@ -70,20 +70,6 @@ namespace JoinRpg.Services.Email
       await Send(message);
     }
 
-    private static string GetInitiatorString(ClaimEmailModel model)
-    {
-      switch (model.InitiatorType)
-      {
-        case ParcipantType.Nobody:
-        return "";
-        case ParcipantType.Master:
-        return $"мастером {model.Initiator.DisplayName}";
-        case ParcipantType.Player:
-        return "игроком";
-        default:
-        throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
-      }
-    }
     private async Task SendClaimEmail(ClaimEmailModel model, string text)
     {
       if (model.ProjectName.Trim().StartsWith("NOEMAIL"))
@@ -111,7 +97,7 @@ namespace JoinRpg.Services.Email
         $@"
 Добрый день, %recipient.name%!
 
-Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {GetInitiatorString(model)}.");
+Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {model.GetInitiatorString()}.");
     }
 
     public Task Email(ApproveByMasterEmail model)
@@ -120,7 +106,7 @@ namespace JoinRpg.Services.Email
   $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {GetInitiatorString(model)}.");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {model.GetInitiatorString()}.");
     }
 
     public Task Email(DeclineByMasterEmail model)
@@ -129,7 +115,7 @@ namespace JoinRpg.Services.Email
 $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {GetInitiatorString(model)}.");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {model.GetInitiatorString()}.");
     }
 
     public Task Email(DeclineByPlayerEmail model)
@@ -176,7 +162,7 @@ $@"
 
 Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
 
-Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его и все.
+Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его.
 --
 --
 {JoinRpgTeam}", _joinRpgSender);
@@ -188,8 +174,7 @@ $@"
         $@"
 Добрый день, %recipient.name%!
 
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
-          }» была восстановлена {GetInitiatorString(model)}.");
+Заявка «{model.Claim.Name}» игрока «{model.GetPlayerName()}» была восстановлена {model.GetInitiatorString()}.");
     }
 
     public Task Email(MoveByMasterEmail model)
@@ -198,12 +183,51 @@ $@"
   $@"
 Добрый день, %recipient.name%!
 
-Мастер {GetInitiatorString(model)} перенес заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
+Мастер {model.GetInitiatorString()} перенес заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
     }» на {model.Claim.GetTarget().Name}.");
+    }
+
+    public Task Email(FinanceOperationEmail model)
+    {
+      
+      
+      var message = $@"
+Добрый день, %recipient.name%!
+
+Мастер {model.GetInitiatorString()} отметил в заявке «{model.Claim.Name}» игрока «{model.GetPlayerName()}»:";
+
+      if (model.FeeChange != 0)
+      {
+        message += $@"
+
+Изменение взноса: {model.FeeChange}
+
+";
+      }
+
+      if (model.Money > 0)
+      {
+        message += $@"
+
+Оплату денег игроком: {model.Money}
+
+";
+      }
+
+      if (model.Money < 0)
+      {
+        message += $@"
+
+Возврат денег игроку: {-model.Money}
+
+";
+      }
+
+      return SendClaimEmail(model, message);
     }
   }
 
-  public static class Exts
+  internal static class Exts
   {
     public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<User> users)
     {
@@ -217,6 +241,26 @@ $@"
     public static Recipient ToRecipient(this User user)
     {
       return new Recipient() {DisplayName = user.DisplayName, Email = user.Email};
+    }
+
+    public static string GetInitiatorString(this ClaimEmailModel model)
+    {
+      switch (model.InitiatorType)
+      {
+        case ParcipantType.Nobody:
+          return "";
+        case ParcipantType.Master:
+          return $"мастером {model.Initiator.DisplayName}";
+        case ParcipantType.Player:
+          return "игроком";
+        default:
+          throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
+      }
+    }
+
+    public static string GetPlayerName(this ClaimEmailModel model)
+    {
+      return model.Claim.Player.DisplayName;
     }
   }
 }

@@ -42,6 +42,10 @@ namespace JoinRpg.Services.Impl
         ProjectAcls = new List<ProjectAcl>()
         {
           ProjectAcl.CreateRootAcl(creator.UserId)
+        },
+        PaymentTypes = new List<PaymentType>()
+        {
+          PaymentType.CreateCash()
         }
       };
       UnitOfWork.GetDbSet<Project>().Add(project);
@@ -277,7 +281,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney)
+    public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
+      bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
+      bool canAcceptCash, bool canManageMoney)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
@@ -296,7 +302,19 @@ namespace JoinRpg.Services.Impl
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
 
+      AddPaymentTypeCashIfRequired(acl);
+
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    //TODO: Now payment type = cash should be added on project creation.
+    //Remove this after all DB fixed
+    private static void AddPaymentTypeCashIfRequired(ProjectAcl acl)
+    {
+      if ((acl.CanAcceptCash || acl.CanManageMoney) && !acl.Project.PaymentTypes.Any())
+      {
+        acl.Project.PaymentTypes.Add(PaymentType.CreateCash());
+      }
     }
 
 
@@ -323,6 +341,8 @@ namespace JoinRpg.Services.Impl
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
+
+      AddPaymentTypeCashIfRequired(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }

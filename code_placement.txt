@@ -29,3 +29,11 @@ JoinRpg.Web
   JoinRpg.Web\Views\Shared\EditorTemplates — used when you are EditorFor(model => model.ComplexObject)
 Joinrpg.Dal.Impl
   Implementation of DataAccess, repositories, etc. Not be referenced from anywhere.
+
+
+Localization
+============
+For now we don't want to spend time localizing. But rule is:
+  - JoinRpg.Web can contain (for now) user-visible strings
+  - JoinRpg.Services.Email can contain (for now) user-visible strings
+  - All other projects SHOULD not contain any user-visible strings and should be localization-neutral. Use TODO[Localize] whenever you break this rule

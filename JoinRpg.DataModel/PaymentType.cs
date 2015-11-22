@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEntity
   {
     public int PaymentTypeId { get; set; }
@@ -35,8 +37,22 @@ namespace JoinRpg.DataModel
       }
       if (IsCash && (UserId != null || User != null))
       {
-        yield return new ValidationResult("Special payment type should not have name");
+        yield return new ValidationResult("Special payment type should not have user");
       }
+      if (!IsCash && UserId == null && User == null)
+      {
+        yield return new ValidationResult("Common payment types should have user");
+      }
+    }
+
+    public static PaymentType CreateCash()
+    {
+      return new PaymentType()
+      {
+        IsCash = true,
+        IsActive = true,
+        Name = "наличные", //TODO[Localize]: JoinRpg.DataModel should be localization-neutral. 
+      };
     }
   }
 }
