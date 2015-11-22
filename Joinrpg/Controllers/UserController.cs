@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models;
@@ -20,13 +21,16 @@ namespace JoinRpg.Web.Controllers
           FullName = user.FullName,
           ThisUserProjects = user.ProjectAcls,
           UserId = user.UserId,
-          AllrpgId = user.Allrpg?.Sid
+          AllrpgId = user.Allrpg?.Sid,
         };
 
         var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
         if (currentUser != null)
         {
           userProfileViewModel.CanGrantAccessProjects = currentUser.GetProjects(acl => acl.CanGrantRights);
+          userProfileViewModel.Claims =
+            user.Claims.Where(claim => claim.HasAccess(currentUser.UserId))
+              .Select(ClaimListItemViewModel.FromClaim);
         }
         return View(userProfileViewModel);
       }

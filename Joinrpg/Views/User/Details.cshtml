@@ -34,6 +34,11 @@
 
             </ul>
     }
+    @{
+      ViewBag.HideUserColumn = true;
+    }
+
+    @Html.Partial("..\\Claim\\Index", Model.Claims, new ViewDataDictionary() { {"HideUserColumn", true} })
 
     @if (Model.ProjectsToAdd.Any())
     {
