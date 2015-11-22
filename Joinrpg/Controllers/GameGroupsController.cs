@@ -125,10 +125,10 @@ namespace JoinRpg.Web.Controllers
         {
           Id = "-1",
           Name = "По умолчанию: " + GetDefaultResponsible(@group, includeSelf)
-        });
+        }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
     }
 
-    private static string GetDefaultResponsible(CharacterGroup group, bool includeSelf)
+    private static string GetDefaultResponsible(IClaimSource group, bool includeSelf)
     {
       var result = group.GetResponsibleMasters(includeSelf)
           .Select(u => u.DisplayName)
