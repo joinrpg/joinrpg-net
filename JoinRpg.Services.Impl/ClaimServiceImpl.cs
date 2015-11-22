@@ -265,7 +265,11 @@ namespace JoinRpg.Services.Impl
     public async Task<IList<ClaimProblem>> GetProblemClaims(int projectId)
     {
       var project = await ClaimsRepository.GetClaims(projectId);
-      var filters = new IClaimProblemFilter[] {new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new ApprovedAndOtherClaimProblemFilter(),};
+      var filters = new IClaimProblemFilter[]
+      {
+        new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new ApprovedAndOtherClaimProblemFilter(),
+        new FinanceProblemsFilter(),
+      };
       return project.Claims.Where(claim => claim.IsActive).SelectMany(claim => filters.SelectMany(f => f.GetProblems(project, claim))).ToList();
     }
 

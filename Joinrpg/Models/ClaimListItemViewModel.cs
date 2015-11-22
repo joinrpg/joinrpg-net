@@ -26,7 +26,13 @@ namespace JoinRpg.Web.Models
     ClaimNoDecision,
     [UsedImplicitly]
     [Display(Name="Персонаж уже занят")]
-    ClaimActiveButCharacterHasApprovedClaim
+    ClaimActiveButCharacterHasApprovedClaim,
+    [UsedImplicitly]
+    [Display(Name = "Взнос на модерации")]
+    FinanceModerationRequired,
+    [UsedImplicitly]
+    [Display(Name = "Есть переплата по взносу")]
+    TooManyMoney
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel

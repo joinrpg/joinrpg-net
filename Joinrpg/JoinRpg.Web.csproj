@@ -536,6 +536,7 @@
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
     <Content Include="Views\Home\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
+    <Content Include="Views\Game\SetupMoney.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

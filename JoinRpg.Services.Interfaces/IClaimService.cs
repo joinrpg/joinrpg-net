@@ -57,6 +57,8 @@ namespace JoinRpg.Services.Interfaces
     InvalidResponsibleMaster,
     ClaimNeverAnswered,
     ClaimNoDecision,
-    ClaimActiveButCharacterHasApprovedClaim
+    ClaimActiveButCharacterHasApprovedClaim,
+    FinanceModerationRequired,
+    TooManyMoney
   }
 }
