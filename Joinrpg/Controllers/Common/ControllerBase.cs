@@ -59,7 +59,8 @@ namespace JoinRpg.Web.Controllers.Common
     {
       if (disposing)
       {
-        UserManager?.Dispose();
+        //TODO: uncomment and fix only UserController if memory leaks
+        //UserManager?.Dispose();
       }
 
       base.Dispose(disposing);

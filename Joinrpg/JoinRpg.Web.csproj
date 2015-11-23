@@ -461,6 +461,7 @@
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.cshtml" />
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
+    <Content Include="Views\User\PreferredName.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

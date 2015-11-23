@@ -1,0 +1,3 @@
+﻿@model JoinRpg.Web.Models.UserProfileViewModel
+
+@Html.ActionLink("Привет, " + Model.DisplayName + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Профиль" })

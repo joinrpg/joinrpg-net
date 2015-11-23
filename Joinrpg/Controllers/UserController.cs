@@ -2,6 +2,7 @@
 using System.Web.Mvc;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models;
+using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -31,7 +32,27 @@ namespace JoinRpg.Web.Controllers
         return View(userProfileViewModel);
       }
 
-      public UserController(ApplicationUserManager userManager) : base(userManager)
+      [HttpGet]
+      [Authorize]
+      // GET: User
+      public ActionResult PreferredName()
+      {
+        var userId = CurrentUserId;
+        var user =   UserManager.FindById(userId);
+
+        var userProfileViewModel = new UserProfileViewModel()
+        {
+          DisplayName = user.DisplayName,
+          FullName = user.FullName,
+          ThisUserProjects = user.ProjectAcls,
+          UserId = user.UserId,
+          AllrpgId = user.Allrpg?.Sid
+        };
+
+        return PartialView(userProfileViewModel);
+      }
+
+        public UserController(ApplicationUserManager userManager) : base(userManager)
       {
       }
     }
