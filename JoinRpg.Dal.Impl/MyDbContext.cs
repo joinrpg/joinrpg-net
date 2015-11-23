@@ -24,10 +24,7 @@ namespace JoinRpg.Dal.Impl
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
 
     public IUserRepository GetUsersRepository() => new UserInfoRepository(this);
-    public IProjectRepository GetProjectRepository()
-    {
-      return new ProjectRepository(this);
-    }
+    public IProjectRepository GetProjectRepository() => new ProjectRepository(this);
 
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
 
@@ -70,6 +67,9 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Comment>().HasMany(c => c.ChildsComments).WithOptional(comment => comment.Parent).WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasRequired(c => c.Finance).WithRequiredPrincipal(fo => fo.Comment);
+
+      modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
 
       modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups).WithMany(cg => cg.DirectlyRelatedPlotFolders);
       modelBuilder.Entity<PlotFolder>().HasRequired(pf => pf.Project).WithMany(p => p.PlotFolders).WillCascadeOnDelete(false);
@@ -94,7 +94,6 @@ namespace JoinRpg.Dal.Impl
         .WithMany(c => c.Subscriptions)
         .HasForeignKey(us => us.ClaimId)
         .WillCascadeOnDelete(false);
-
 
       base.OnModelCreating(modelBuilder);
     }

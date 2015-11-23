@@ -1,0 +1,25 @@
+﻿@using JoinRpg.DataModel
+@model JoinRpg.DataModel.FinanceOperation
+    @if (Model.FeeChange != 0)
+    {
+        <br/><span><b>Изменение взноса</b>: @Model.FeeChange &#8381;</span>
+    }
+    @if (Model.MoneyAmount > 0)
+    {
+    <br /><span><b>Оплата денег игроком</b>: @Model.MoneyAmount &#8381;</span>
+    }
+    else if (Model.MoneyAmount < 0)
+    {
+        <br/>
+        <span><b>Возврат денег игроку</b>: @Model.MoneyAmount &#8381;</span>
+    }
+<br/><span><b>Дата операции</b>: @Model.OperationDate.ToShortDateString()</span>
+
+@if (Model.State == FinanceOperationState.Declined)
+{
+    <br/><span class="label label-warning">Мастер не подтверждает оплату</span>
+}
+else if (Model.State == FinanceOperationState.Proposed)
+{
+    <br/><span class="label label-default">Ждет одобрения мастером</span>
+}

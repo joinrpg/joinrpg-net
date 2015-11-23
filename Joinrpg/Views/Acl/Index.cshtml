@@ -36,6 +36,15 @@
             @Html.DisplayNameFor(model => model.CanGrantRights)
         </th>
         <th>
+            @Html.DisplayNameFor(model => model.CanEditRoles)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanAcceptCash)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CanManageMoney)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.ClaimsCount)
         </th>
         @if (canGrantRights)
@@ -61,6 +70,15 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.CanGrantRights)
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.CanEditRoles)
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.CanAcceptCash)
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.CanManageMoney)
         </td>
         <td>
             @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)

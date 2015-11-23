@@ -22,14 +22,18 @@
             {
                 if (comment.IsVisibleToPlayer)
                 {
-                <span>игроку</span>
+                    <span>игроку</span>
                 }
                 else
                 {
-                <span>другим мастерам</span>
+                    <span>другим мастерам</span>
                 }
             }
         </strong>
+        @if (comment.Finance != null)
+        {
+            @Html.DisplayFor(model => comment.Finance)
+        }
         <span>@comment.CommentText.ToHtmlString()</span>
         <details>
             <summary>Ответить...</summary>
@@ -41,6 +45,8 @@
                     ProjectId = Model.ProjectId,
                     ClaimId = Model.ClaimId,
                     ParentCommentId = comment.CommentId,
+                    ParentComment = comment,
+                    EnableFinanceAction = comment.Finance != null && comment.Finance.RequireModeration && (Model.CanManageMoney || comment.Finance.PaymentType.UserId.ToString() == User.Identity.GetUserId()),
                     EnableHideFromUser = !Model.IsMyClaim,
                     HideFromUser = !comment.IsVisibleToPlayer
                 })
@@ -71,6 +77,7 @@
 @using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.CommonTypes
+@using Microsoft.AspNet.Identity
 
 <div>
 @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -103,6 +110,11 @@
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     }
+    @if (Model.Status == Claim.Status.Approved && Model.ClaimFee != null)
+    {
+        <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
+        <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
+    }
     @if (Model.HasMasterAccess)
     {
         <dt>
@@ -111,12 +123,18 @@
         <dd>
             @using (Html.BeginForm("ChangeResponsible", "Claim"))
             {
+            <div class="form-inline">
                 @Html.AntiForgeryToken()
                 @Html.HiddenFor(model => model.ProjectId)
                 @Html.HiddenFor(model => model.ClaimId)
-                @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}))
-                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                <input type="submit" value="Изменить" class="btn btn-default"/>
+                @Html.DropDownListFor(
+                    model => model.ResponsibleMasterId,
+                    Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                    htmlAttributes: new { @class = "form-control" })
+
+                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
+                <input type="submit" value="Изменить" class="btn btn-default" />
+            </div>
             }
         </dd>
     }
@@ -128,7 +146,7 @@
         if (Model.OtherClaimsForThisCharacterCount > 0)
         {
             <p>Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @OtherClaimsForThisCharacterLink()
-                или переведите их на другого персонажа или в группу (пока не реализовано).</p>
+                или переведите их на другого персонажа или в группу.</p>
         }
         else
         {
@@ -246,6 +264,23 @@
         </details>
     }
 }
+
+@if (Model.PaymentTypes != null && Model.PaymentTypes.Any())
+{
+    var viewModel = new FinOperationViewModel
+    {
+        ProjectId = Model.ProjectId,
+        ClaimId = Model.ClaimId,
+        ParentCommentId = null,
+        EnableHideFromUser = false,
+        HideFromUser = false,
+        ActionName = "Отметить взнос",
+        OperationDate = DateTime.Today,
+        PaymentTypes = Model.PaymentTypes
+    };
+    @Html.Partial("_ClaimFinancePartial", viewModel)
+}
+
 @if (Model.IsMyClaim)
 {
     if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)

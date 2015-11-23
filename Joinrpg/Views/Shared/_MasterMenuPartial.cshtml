@@ -62,6 +62,7 @@
                             
                             <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanChangeFields)>@Html.ActionLink("Настройка полей персонажей", "Index", "GameField", new {Model.ProjectId}, null)</li>
+                            <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление финансами", "SetupMoney", "Game", new { Model.ProjectId }, null)</li>
                             <li>@Html.ActionLink("Мастера", "Index", "Acl", new {Model.ProjectId}, null)</li>
                             @if (Model.HasAllrpg && Model.AccessToProject.IsOwner)
                             {

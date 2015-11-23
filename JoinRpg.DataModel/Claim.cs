@@ -51,6 +51,10 @@ namespace JoinRpg.DataModel
       =>
         new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.WhereNotNull().Max();
 
+    public int? CurrentFee { get; set; }
+
+    public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
+
     public enum Status
     {
       [Display(Name = "Подана")] AddedByUser,
@@ -94,6 +98,13 @@ namespace JoinRpg.DataModel
 
     string ILinkable.Identification => ClaimId.ToString();
     int? ILinkable.ProjectId => ProjectId;
+
+    #endregion
+
+    #region helper properties
+
+    public IEnumerable<FinanceOperation> ApprovedFinanceOperations
+      => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
 
     #endregion
   }

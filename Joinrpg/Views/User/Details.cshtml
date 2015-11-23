@@ -34,6 +34,11 @@
 
             </ul>
     }
+    @{
+      ViewBag.HideUserColumn = true;
+    }
+
+    @Html.Partial("..\\Claim\\Index", Model.Claims, new ViewDataDictionary() { {"HideUserColumn", true} })
 
     @if (Model.ProjectsToAdd.Any())
     {
@@ -81,16 +86,46 @@
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
+                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanGrantRights"})
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanGrantRights, null, htmlFieldName: "CanGrantRights")
-                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new { @class = "text-danger" })
+                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new {@class = "text-danger"})
                         </div>
                     </div>
                 </div>
 
-            <input type="submit" value="Добавить" class="btn btn-default"/>
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanEditRoles, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanEditRoles" })
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanEditRoles, null, htmlFieldName: "CanEditRoles")
+                            @Html.ValidationMessageFor(model => acl.CanEditRoles, "", new {@class = "text-danger"})
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanAcceptCash, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanGrantRights"})
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanAcceptCash, null, htmlFieldName: "CanGrantRights")
+                            @Html.ValidationMessageFor(model => acl.CanAcceptCash, "", new {@class = "text-danger"})
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => acl.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
+                    <div class="col-md-10">
+                        <div class="checkbox">
+                            @Html.EditorFor(model => acl.CanManageMoney, null, htmlFieldName: "CanGrantRights")
+                            @Html.ValidationMessageFor(model => acl.CanManageMoney, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <input type="submit" value="Добавить" class="btn btn-default"/>
                 </div>
 </details>
         }

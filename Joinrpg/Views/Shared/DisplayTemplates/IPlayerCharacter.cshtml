@@ -5,7 +5,6 @@
     if (!Model.HidePlayer || Model.HasAccess)
     {
         var hideClassName = Model.HidePlayer ? "world-object-hidden" : "";
-        <span class="glyphicon glyphicon-user"></span>
         <span class="@hideClassName">@Html.DisplayFor(model => Model.Player)</span>
     }
     else

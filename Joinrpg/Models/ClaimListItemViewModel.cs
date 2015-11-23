@@ -23,7 +23,16 @@ namespace JoinRpg.Web.Models
     ClaimNeverAnswered,
     [Display(Name="По заявке нет решения")]
     [UsedImplicitly]
-    ClaimNoDecision
+    ClaimNoDecision,
+    [UsedImplicitly]
+    [Display(Name="Персонаж уже занят")]
+    ClaimActiveButCharacterHasApprovedClaim,
+    [UsedImplicitly]
+    [Display(Name = "Взнос на модерации")]
+    FinanceModerationRequired,
+    [UsedImplicitly]
+    [Display(Name = "Есть переплата по взносу")]
+    TooManyMoney
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel
@@ -80,7 +89,7 @@ namespace JoinRpg.Web.Models
       Name = claim.Name;
       Player = claim.Player;
       ProjectId = claim.ProjectId;
-      ProjectName = claim.Name;
+      ProjectName = claim.Project.ProjectName;
       UpdateDate = claim.StatusChangedDate;
       Responsible = claim.ResponsibleMasterUser;
     }

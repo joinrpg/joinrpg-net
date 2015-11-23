@@ -21,6 +21,8 @@ namespace JoinRpg.Web.Models
     public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
     public bool HasApproveRejectClaim { get; set; }
+    public bool CanAcceptCash { get; set; }
+    public bool CanManageMoney { get; set; }
     public IEnumerable<Comment> Comments { get; set; }
 
     [DisplayName("Заявка на персонажа")]
@@ -62,5 +64,18 @@ namespace JoinRpg.Web.Models
     public CharacterFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
+
+    [Display(Name="Взнос")]
+    public ClaimFeeViewModel ClaimFee { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<PaymentType> PaymentTypes { get; set; }
+  }
+
+  public class ClaimFeeViewModel
+  {
+    public int CurrentFee { get; set; }
+    public int CurrentTotalFee { get; set; }
+    public int CurrentBalance { get; set; }
   }
 }

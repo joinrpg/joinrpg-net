@@ -36,6 +36,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,6 +54,7 @@
     <Compile Include="StaticEnumHelpers.cs" />
     <Compile Include="StaticStringHelpers.cs" />
     <Compile Include="StaticTaskHelpers.cs" />
+    <Compile Include="Validation\DateShouldBeInPastAttribute.cs" />
     <Compile Include="VirtualOrderContainer.cs" />
   </ItemGroup>
   <ItemGroup>

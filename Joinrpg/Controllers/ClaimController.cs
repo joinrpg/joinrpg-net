@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimService _claimService;
     private readonly IPlotRepository _plotRepository;
     private readonly IClaimsRepository _claimsRepository;
+    private IFinanceService FinanceService { get; }
 
     [HttpGet]
     [Authorize]
@@ -40,11 +41,12 @@ namespace JoinRpg.Web.Controllers
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository) : base(userManager, projectRepository, projectService)
+      IClaimsRepository claimsRepository, IFinanceService financeService) : base(userManager, projectRepository, projectService)
     {
       _claimService = claimService;
       _plotRepository = plotRepository;
       _claimsRepository = claimsRepository;
+      FinanceService = financeService;
     }
 
     [HttpPost]
@@ -124,7 +126,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ProjectRepository.GetClaimWithDetails(projectId, claimId);
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -140,7 +142,9 @@ namespace JoinRpg.Web.Controllers
         Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
         HasMasterAccess = hasMasterAccess,
         HasPlayerAccessToCharacter = hasMasterAccess || hasPlayerAccess,
-        HasApproveRejectClaim = claim.Project.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        CanAcceptCash = claim.HasMasterAccess(CurrentUserId, acl => acl.CanAcceptCash),
+        CanManageMoney = claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
@@ -166,8 +170,28 @@ namespace JoinRpg.Web.Controllers
           EditAllowed = true,
           HasPlayerAccessToCharacter = hasPlayerAccess
         },
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim)
+        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
+        ClaimFee = new ClaimFeeViewModel()
+        {
+          CurrentTotalFee = claim.ClaimTotalFee(),
+          CurrentBalance = claim.ClaimBalance(),
+          CurrentFee = claim.ClaimCurrentFee()
+        }
       };
+
+      if (claim.IsApproved)
+      {
+        if (isMyClaim || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
+        {
+          //Finance admins can create any payment. User also can create any payment, but it will be moderated
+          claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
+        }
+        else
+        {
+          //All other master can create only payment from user to himself.
+          claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == CurrentUserId);
+        }
+      }
 
       if (claim.Character !=null)
       {
@@ -175,7 +199,7 @@ namespace JoinRpg.Web.Controllers
 
       }
 
-      if ((hasMasterAccess || isMyClaim) && claim.IsApproved)
+      if (claim.IsApproved)
       {
         claimViewModel.Plot =
           (await _plotRepository.GetPlotsForCharacter(claim.Character)).Select(
@@ -402,6 +426,35 @@ namespace JoinRpg.Web.Controllers
     private ActionResult ReturnToClaim(int claimId, int projectId)
     {
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
+    }
+
+    public async Task<ActionResult> FinanceOperation(FinOperationViewModel viewModel)
+    {
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = WithClaim(claim);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+        }
+
+
+        await
+          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
+            viewModel.CommentText.Contents, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
+            viewModel.PaymentTypeId);
+        
+        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
+      catch
+      {
+        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+      }
     }
   }
 }

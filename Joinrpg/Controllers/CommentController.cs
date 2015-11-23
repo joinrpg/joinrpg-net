@@ -34,8 +34,7 @@ namespace JoinRpg.Web.Controllers
           throw new DbEntityValidationException();
         }
         await ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
-          !(viewModel.HideFromUser),
-          claim.PlayerUserId == CurrentUserId, viewModel.CommentText.Contents);
+          !viewModel.HideFromUser, viewModel.CommentText.Contents, viewModel.FinanceAction);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }

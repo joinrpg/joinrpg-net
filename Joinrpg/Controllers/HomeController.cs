@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
   public class HomeController : Common.ControllerBase
   {
+    private const int projectsOnHomePage = 9;
     private readonly IProjectRepository _projectRepository;
     private readonly IClaimsRepository _claimsRepository;
 
@@ -21,26 +23,42 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> Index()
     {
-        return View(await LoadModel());
+        return View(await LoadModel(projectsOnHomePage));
     }
 
-    private async Task<HomeViewModel> LoadModel()
+    private async Task<HomeViewModel> LoadModel(int maxProjects = int.MaxValue)
     {
-      var homeViewModel = new HomeViewModel();
       
-      if (User.Identity.IsAuthenticated)
+
+      var projects =
+        (await _projectRepository.GetActiveProjectsWithClaimCount()).Select(p => new ProjectListItemViewModel()
+        {
+          ProjectId = p.ProjectId,
+          IsMaster = p.HasMasterAccess(CurrentUserIdOrDefault),
+          ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
+          ProjectName = p.ProjectName,
+          MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
+          ClaimCount = p.Claims.Count(c => c.IsActive),
+        }).ToList();
+      var alwaysShowProjects =
+        projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster).ThenByDescending(p => p.ClaimCount);
+      var otherProjects =
+        projects.Except(alwaysShowProjects)
+          .OrderByDescending(p => p.ClaimCount)
+          .Take(Math.Max(0, maxProjects - alwaysShowProjects.Count())); // Add more projects until we have 9 total
+
+      
+      var finalProjects = alwaysShowProjects.Union(otherProjects).ToList();
+
+      return new HomeViewModel
       {
-        homeViewModel.MyClaims = await _claimsRepository.GetActiveClaimsForUser(CurrentUserId);
-        homeViewModel.MyProjects = await _projectRepository.GetMyActiveProjectsAsync(CurrentUserId);
-      }
-      homeViewModel.ActiveProjects = await _projectRepository.GetActiveProjects();
-      return homeViewModel;
+        ActiveProjects = finalProjects,
+        HasMoreProjects = projects.Count > finalProjects.Count
+      };
     }
 
     public ActionResult About()
     {
-      ViewBag.Message = "Your application description page.";
-
       return View();
     }
 
@@ -54,6 +72,11 @@ namespace JoinRpg.Web.Controllers
     public ActionResult AboutTest()
     {
       return View();
+    }
+
+    public async Task<ViewResult> BrowseGames()
+    {
+      return View(await LoadModel());
     }
   }
 }

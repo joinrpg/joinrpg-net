@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -10,7 +11,7 @@ namespace JoinRpg.Services.Interfaces
     Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText);
 
     Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
-      bool isMyClaim, string commentText);
+      string commentText, FinanceOperationAction financeAction);
 
     Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
@@ -19,7 +20,20 @@ namespace JoinRpg.Services.Interfaces
 
     Task<IList<ClaimProblem>> GetProblemClaims(int projectId);
     Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
-    Task MoveByMaster (int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId);
+
+    Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
+      int? characterId);
+  }
+
+  //TODO[Localize]
+  public enum FinanceOperationAction
+  {
+    [Display(Name = "Ничего не делать")]
+    None,
+    [Display(Name = "Подтвердить операцию")]
+    Approve,
+    [Display(Name = "Отменить операцию")]
+    Decline
   }
 
   public class ClaimProblem
@@ -42,6 +56,9 @@ namespace JoinRpg.Services.Interfaces
     NoResponsibleMaster,
     InvalidResponsibleMaster,
     ClaimNeverAnswered,
-    ClaimNoDecision
+    ClaimNoDecision,
+    ClaimActiveButCharacterHasApprovedClaim,
+    FinanceModerationRequired,
+    TooManyMoney
   }
 }

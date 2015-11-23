@@ -161,10 +161,10 @@ namespace JoinRpg.Services.Impl.Allrpg
             Author = Project.ProjectAcls.Single(acl => acl.IsOwner).User, 
             ChildsComments = new List<Comment>(),
             CommentText = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>"),
-            CreatedTime = DateTime.UtcNow,
+            CreatedTime = UnixTime.ToDateTime(roleData.datesent),
             IsCommentByPlayer = false,
             IsVisibleToPlayer = false,
-            LastEditTime = DateTime.UtcNow,
+            LastEditTime = UnixTime.ToDateTime(roleData.datesent),
             ParentCommentId = null,
             Project = Project,
           }
@@ -187,7 +187,7 @@ namespace JoinRpg.Services.Impl.Allrpg
             var responsibleSid = Steam2016ResponsibleMasters[responsibleMasterIdx];
             claim.ResponsibleMasterUser = responsibleSid == null ? null : Users[(int) responsibleSid];
           }
-        } else if (ConvertToCommentVirtualFields.Contains(virtualField.Key) &&string.IsNullOrWhiteSpace(virtualField.Value))
+        } else if (ConvertToCommentVirtualFields.Contains(virtualField.Key) && !string.IsNullOrWhiteSpace(virtualField.Value))
         {
           claim.Comments.Add(new Comment()
           {
@@ -237,7 +237,7 @@ namespace JoinRpg.Services.Impl.Allrpg
     /// <summary>
     /// Allrpg virtual fields that should be converted to comments.
     /// </summary>
-    private ICollection<int> ConvertToCommentVirtualFields { get; } = new [] { 7126};
+    private IReadOnlyList<int> ConvertToCommentVirtualFields { get; } = new [] { 7126};
 
     private IReadOnlyDictionary<int, int?> Steam2016ResponsibleMasters { get; } = new Dictionary<int, int?>()
     {

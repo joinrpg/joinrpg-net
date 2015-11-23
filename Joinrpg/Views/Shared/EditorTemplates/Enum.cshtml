@@ -2,7 +2,15 @@
 @model Enum
 @foreach (Enum value in Enum.GetValues(Model.GetType()))
 {
-    @Html.RadioButtonFor(m => value, value)
-    @Html.LabelFor(m => value, value.GetDisplayName())
+    var clientId = ViewData.TemplateInfo.HtmlFieldPrefix+"_" + value;
+    if (value.Equals(Model))
+    {
+        @Html.RadioButtonFor(m => m, value, new {id = clientId, @checked = "checked" })
+    }
+    else
+    {
+        @Html.RadioButtonFor(m => m, value, new { id = clientId })
+    }
+    @Html.LabelFor(m => value, value.GetDisplayName(), new { @for = clientId })
     <br/>
 }

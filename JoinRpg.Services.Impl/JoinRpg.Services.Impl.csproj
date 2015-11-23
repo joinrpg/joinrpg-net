@@ -48,6 +48,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
   </ItemGroup>
@@ -59,11 +60,15 @@
     <Compile Include="Allrpg\PasswordReply.cs" />
     <Compile Include="Allrpg\ProfileReply.cs" />
     <Compile Include="Allrpg\ProjectReply.cs" />
+    <Compile Include="ClaimImplBase.cs" />
+    <Compile Include="ClaimProblemFilters\ApprovedAndOtherClaimProblemFilter.cs" />
+    <Compile Include="ClaimProblemFilters\FinanceProblemsFilter.cs" />
     <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
     <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
     <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
+    <Compile Include="FinanceOperationsImpl.cs" />
     <Compile Include="PlotServiceImpl.cs" />
     <Compile Include="ProjectService.cs" />
     <Compile Include="Search\PublicCharacterGroupsProvider.cs" />

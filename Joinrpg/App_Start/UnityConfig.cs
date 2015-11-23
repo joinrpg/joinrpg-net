@@ -67,6 +67,7 @@ namespace JoinRpg.Web
       container.RegisterType<IPlotService, PlotServiceImpl>();
       container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
       container.RegisterType<IUserService, UserServiceImpl>();
+      container.RegisterType<IFinanceService, FinanceOperationsImpl>();
 
       container.RegisterType<IHtmlService, HtmlServiceImpl>();
       container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(HttpContext.Current)));

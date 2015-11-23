@@ -1,0 +1,46 @@
+﻿@using JoinRpg.Web.Models
+@using JoinRpg.Domain
+@model FinOperationViewModel
+
+<details>
+    <summary>
+        Отметить взнос
+    </summary>
+    @using (Html.BeginForm("FinanceOperation", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+
+        <div class="form-horizontal">
+            <div class="form-group">
+                @Html.LabelFor(model => model.Money, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-2">
+                    @Html.EditorFor(model => model.Money, new {htmlAttributes = new {@class = "form-control"}})
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.OperationDate, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-2">
+                    <input id="OperationDate"
+                           name="OperationDate"
+                           data-provide="datepicker"
+                           class="datepicker form-control"
+                           data-date-end-date="0d"
+                           data-date-format="dd.mm.yyyy"
+                           value="@Model.OperationDate"/>
+
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.PaymentTypeId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-6">
+                    @Html.DropDownListFor(
+                    model => model.PaymentTypeId,
+                    Model.PaymentTypes.Select(paymentType => new SelectListItem() { Text = paymentType.GetDisplayName(), Value = paymentType.PaymentTypeId.ToString() }),
+                    htmlAttributes: new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        @Html.Partial("AddCommentPartial", Model)
+    }
+</details>

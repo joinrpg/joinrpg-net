@@ -17,7 +17,8 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
     }
 
-    async Task<IEnumerable<Project>> IProjectRepository.GetActiveProjects() => await ActiveProjects.ToListAsync();
+    public async Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount()
+      => await ActiveProjects.Include(p=> p.Claims).ToListAsync();
 
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls); 
@@ -109,6 +110,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Character)
           .Include(c => c.Player)
           .Include(c => c.Player.Claims)
+          .Include(c => c.Comments)  //TODO c.Comment.Finances
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 

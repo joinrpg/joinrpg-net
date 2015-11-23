@@ -26,15 +26,13 @@ namespace JoinRpg.Services.Interfaces
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
     Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce);
 
-    Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
-      bool canChangeProjectProperties, bool canApproveClaims);
+    Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney);
 
     Task SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue);
 
     Task RemoveAccess(int projectId, int currentUserId, int userId);
 
-    Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
-      bool canChangeProjectProperties, bool canApproveClaims);
+    Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney);
 
     Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic);

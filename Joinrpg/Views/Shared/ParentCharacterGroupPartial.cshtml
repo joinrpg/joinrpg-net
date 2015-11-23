@@ -13,5 +13,5 @@
         Model.PossibleParents.Select(gr =>
             new { Value = gr.CharacterGroupId.ToString(), Text = GetName(gr) }),
         "Value",
-        "Text")
+        "Text"), new {@class="form-control"}
     )

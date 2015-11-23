@@ -1,10 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.DataModel;
+using JoinRpg.Helpers.Validation;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
+  public class FinOperationViewModel : AddCommentViewModel
+  {
+    [Display(Name="Внесено денег"), Required]
+    public int Money { get; set; }
+    public int FeeChange
+    { get; set; }
+
+    [Display(Name="Дата внесения"), Required, DateShouldBeInPast]
+    public DateTime OperationDate { get; set; }
+
+    [Display(Name="Кому и как оплачено"), Required]
+    public int PaymentTypeId { get; set; }
+
+    [ReadOnly(true)]
+
+    public IEnumerable<PaymentType> PaymentTypes { get; set; }
+  }
+
   public class AddCommentViewModel : IValidatableObject
   {
     public int ProjectId { get; set; }
@@ -13,6 +35,9 @@ namespace JoinRpg.Web.Models
     /// Parent comment id
     /// </summary>
     public int? ParentCommentId { get; set; }
+
+    [ReadOnly(true)]
+    public Comment ParentComment { get; set; }
 
     [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария")] 
     public MarkdownViewModel CommentText { get; set; }
@@ -23,7 +48,12 @@ namespace JoinRpg.Web.Models
 
     public bool EnableHideFromUser { get; set; }
 
+    public bool EnableFinanceAction { get; set; }
+
     public string ActionName { get; set; }
+
+    public FinanceOperationAction FinanceAction { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (HideFromUser && !EnableHideFromUser)

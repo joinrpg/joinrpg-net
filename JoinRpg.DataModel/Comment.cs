@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
-  public class Comment : IProjectEntity
+  public class Comment : IProjectEntity, IValidatableObject
   {
     public int CommentId { get; set; }
 
@@ -30,5 +31,23 @@ namespace JoinRpg.DataModel
 
     public bool IsCommentByPlayer { get; set; }
     public bool IsVisibleToPlayer { get; set; }
+    public virtual FinanceOperation Finance { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      if (Finance != null && !IsVisibleToPlayer)
+      {
+        yield return new ValidationResult("Finance operations always should be player-visible");
+      }
+
+      if (string.IsNullOrWhiteSpace(CommentText.Contents))
+      {
+        yield return new ValidationResult("Comment can't be empty");
+      }
+
+      if (IsCommentByPlayer != (Claim.PlayerUserId == AuthorUserId))
+      {
+        yield return new ValidationResult("IsCommentByPlayer filled incorrectly");
+      }
+    }
   }
 }
