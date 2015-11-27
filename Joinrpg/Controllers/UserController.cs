@@ -36,9 +36,8 @@ namespace JoinRpg.Web.Controllers
         return View(userProfileViewModel);
       }
 
-      [HttpGet]
       [Authorize]
-      // GET: User
+      // GET: User preferred name. I.e. to display in page header.
       public ActionResult PreferredName()
       {
         var userId = CurrentUserId;
