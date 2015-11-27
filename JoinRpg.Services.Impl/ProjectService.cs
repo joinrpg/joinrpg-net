@@ -287,7 +287,12 @@ namespace JoinRpg.Services.Impl
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
       if (acl == null)
       {
-        acl = new ProjectAcl() {ProjectId = project.ProjectId, UserId = userId};
+        acl = new ProjectAcl()
+        {
+          ProjectId = project.ProjectId,
+          UserId = userId,
+          Project = project //Used inside UpdatePaymentTypes()
+        };
         project.ProjectAcls.Add(acl);
       }
       acl.CanGrantRights = canGrantRights;
