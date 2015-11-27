@@ -58,5 +58,11 @@ namespace JoinRpg.Web.Controllers
         public UserController(ApplicationUserManager userManager) : base(userManager)
       {
       }
+
+      [HttpGet,Authorize]
+      public ActionResult Me()
+      {
+        return RedirectToAction("Details", new {UserId = CurrentUserId});
+      }
     }
 }
