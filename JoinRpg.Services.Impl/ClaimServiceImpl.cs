@@ -183,13 +183,14 @@ namespace JoinRpg.Services.Impl
     public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      if (claim.MasterDeclinedDate == null || claim.PlayerAcceptedDate == null)
+      if (claim.MasterDeclinedDate == null && claim.PlayerDeclinedDate == null)
       {
         throw new DbEntityValidationException();
       }
 
-      claim.MasterAcceptedDate = null;
+      claim.PlayerDeclinedDate = null;
       claim.MasterDeclinedDate = null;
+      claim.MasterAcceptedDate = null;
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
