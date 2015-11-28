@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models
@@ -75,11 +77,14 @@ namespace JoinRpg.Web.Models
 
     public int ClaimId{ get; set; }
 
-    public static ClaimListItemViewModel FromClaim(Claim claim)
+    public int UnreadCommentsCount { get; set; }
+
+    public static ClaimListItemViewModel FromClaim(Claim claim, int currentUserId)
     {
-      var claimListItemViewModel = new ClaimListItemViewModel();
-      claimListItemViewModel.Assign(claim);
-      return claimListItemViewModel;
+      var viewModel = new ClaimListItemViewModel();
+      viewModel.Assign(claim);
+      viewModel.UnreadCommentsCount = claim.Comments.Count(comment => !comment.IsReadByUser(currentUserId));
+      return viewModel;
     }
 
     protected void Assign(Claim claim)

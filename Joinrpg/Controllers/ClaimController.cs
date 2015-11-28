@@ -103,7 +103,8 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await _claimsRepository.GetClaims(projectId);
       return AsMaster(project) ??
-             View(viewName, project.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim));
+             View(viewName, project.Claims.Where(predicate).Select(
+               claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId)));
     }
 
     [HttpGet, Authorize]

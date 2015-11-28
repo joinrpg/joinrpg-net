@@ -33,6 +33,10 @@ namespace JoinRpg.Dal.Impl.Repositories
       return
         Ctx.ProjectsSet.Include(p => p.Claims)
           .Include(p => p.ProjectAcls)
+          .Include(p => p.ProjectAcls.Select(a => a.User))
+          .Include(p => p.Claims.Select(c => c.Comments))
+          .Include(p => p.Claims.Select(c => c.Watermarks))
+          .Include(p => p.Claims.Select(c => c.Player))
           .SingleOrDefaultAsync(p => p.ProjectId == projectId);
     }
 
