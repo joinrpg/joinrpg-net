@@ -459,7 +459,7 @@ namespace JoinRpg.Web.Controllers
 
     }
 
-    [Authorize, HttpGet, ValidateAntiForgeryToken]
+    [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FinOperationViewModel viewModel)
     {
       var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);

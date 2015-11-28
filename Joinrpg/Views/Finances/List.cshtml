@@ -1,0 +1,68 @@
+﻿@using JoinRpg.Domain
+@model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
+
+@{
+    ViewBag.Title = "Список финансовых операций";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.FinanceOperationId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Money)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FeeChange)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.PaymentType)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Claim)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Claim.Player)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.OperationDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Master)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.FinanceOperationId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Money)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.FeeChange)
+        </td>
+        <td>
+            @item.PaymentType.GetDisplayName()
+        </td>
+        <td>
+            @item.Claim.Name
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.Claim.Player)
+        </td>
+        <td>
+            @item.OperationDate.ToShortDateString()
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Master)
+        </td>
+    </tr>
+}
+
+</table>

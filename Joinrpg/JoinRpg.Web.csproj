@@ -238,6 +238,7 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
+    <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -280,6 +281,7 @@
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CommonTypes\MarkdownViewModel.cs" />
+    <Compile Include="Models\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\CharacterGroupListViewModel.cs" />
@@ -536,8 +538,9 @@
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
     <Content Include="Views\Home\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
-    <Content Include="Views\Game\SetupMoney.cshtml" />
+    <Content Include="Views\Finances\Setup.cshtml" />
     <Content Include="Views\User\PreferredName.cshtml" />
+    <Content Include="Views\Finances\List.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

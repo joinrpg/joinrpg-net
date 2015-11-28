@@ -26,5 +26,6 @@ namespace JoinRpg.Data.Interfaces
     Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds);
     Task<ProjectCharacterField> GetProjectField(int projectId, int projectCharacterFieldId);
     Task<ProjectCharacterFieldDropdownValue> GetFieldValue(int projectId, int projectCharacterFieldDropdownValueId);
+    Task<Project> GetProjectWithFinances(int projectid);
   }
 }

@@ -142,6 +142,13 @@ namespace JoinRpg.Dal.Impl.Repositories
             f.ProjectId == projectId &&
             f.ProjectCharacterFieldDropdownValueId == projectCharacterFieldDropdownValueId);
     }
+
+    public Task<Project> GetProjectWithFinances(int projectid)
+      => Ctx.ProjectsSet.Include(f => f.Claims)
+        .Include(f => f.FinanceOperations)
+        //.Include(p => p.FinanceOperations.Comments)
+        //.Include users
+        .SingleOrDefaultAsync(p => p.ProjectId == projectid);
   }
 
 }

@@ -140,10 +140,5 @@ namespace JoinRpg.Web.Controllers
       }
       
     }
-
-    public async Task<ActionResult> SetupMoney(int projectid)
-    {
-      return View();
-    }
   }
 }
