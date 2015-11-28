@@ -82,7 +82,8 @@ namespace JoinRpg.Web.Controllers
                             PlayerId = ch.Player?.Id,
                             ch.ActiveClaimsCount
                           }),
-                    CanAddDirectClaim = g.AvaiableDirectSlots != 0
+                    CanAddDirectClaim = g.AvaiableDirectSlots != 0,
+                    DirectClaimsCount = g.AvaiableDirectSlots,
                   }),
         }, JsonRequestBehavior.AllowGet);
     }
