@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -37,6 +39,14 @@ namespace JoinRpg.Domain
     public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
     {
       
+    }
+  }
+
+  public class ClaimWrongStatusException : JoinRpgProjectEntityException
+  {
+    public ClaimWrongStatusException(Claim entity, IEnumerable<Claim.Status> possible) 
+      : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
+    {
     }
   }
 

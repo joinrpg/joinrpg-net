@@ -128,6 +128,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       };
       comment.IsCommentByPlayer = comment.Author == comment.Claim.Player;
       comment.Claim.Comments.Add(comment);
+      comment.Claim.LastUpdateDateTime = new DateTime[] {comment.Claim.LastUpdateDateTime, comment.CreatedTime}.Max();
     }
 
     private void ImportClaims(ICollection<RoleData> roles)
@@ -174,7 +175,8 @@ namespace JoinRpg.Services.Impl.Allrpg
         MasterDeclinedDate =
           roleData.todelete2 == 0 && roleData.status != 4 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
         PlayerDeclinedDate = roleData.todelete == 0 ? (DateTime?) null : UnixTime.ToDateTime(roleData.date),
-        PlayerAcceptedDate = UnixTime.ToDateTime(roleData.datesent)
+        PlayerAcceptedDate = UnixTime.ToDateTime(roleData.datesent),
+        LastUpdateDateTime = UnixTime.ToDateTime(roleData.date)
       };
 
       foreach (var virtualField in roleData.@virtual)
@@ -231,7 +233,26 @@ namespace JoinRpg.Services.Impl.Allrpg
         ? UnixTime.ToDateTime(roleData.date)
         : (DateTime?) null;
 
+      claim.ClaimStatus = ConvertAllrpgStatus(roleData, canbeApproved);
+
       Claims.Add(roleData.id, claim);
+    }
+
+    private Claim.Status ConvertAllrpgStatus(RoleData roleData, bool canbeApproved)
+    {
+      if (roleData.todelete == 1)
+      {
+        return Claim.Status.DeclinedByUser;
+      }
+      if (roleData.todelete2 == 1 || roleData.status == 4)
+      {
+        return Claim.Status.DeclinedByMaster;
+      }
+      if (roleData.status == 3 && canbeApproved)
+      {
+        return Claim.Status.Approved;
+      }
+      return Claim.Status.AddedByUser;
     }
 
     /// <summary>
@@ -308,6 +329,8 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     private void CleanProject()
     {
+      UnitOfWork.GetDbSet<FinanceOperation>()
+        .RemoveRange(Project.Claims.SelectMany(c => c.Comments).Select(c => c.Finance).WhereNotNull());
       UnitOfWork.GetDbSet<PlotElement>().RemoveRange(Project.PlotFolders.SelectMany(f => f.Elements).ToList());
       UnitOfWork.GetDbSet<PlotFolder>().RemoveRange(Project.PlotFolders.ToList());
       UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Comments).ToList());

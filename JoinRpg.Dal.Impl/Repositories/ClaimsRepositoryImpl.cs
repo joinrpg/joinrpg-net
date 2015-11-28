@@ -21,7 +21,10 @@ namespace JoinRpg.Dal.Impl.Repositories
         await
           Ctx.ClaimSet.Include(p => p.Character)
             .Include(p => p.Group)
-            .Where(c => c.MasterDeclinedDate == null && c.PlayerDeclinedDate == null && c.PlayerUserId == userId)
+            .Where(
+              c =>
+                c.ClaimStatus != Claim.Status.DeclinedByMaster && c.ClaimStatus != Claim.Status.DeclinedByUser &&
+                c.PlayerUserId == userId)
             .ToListAsync();
     }
 

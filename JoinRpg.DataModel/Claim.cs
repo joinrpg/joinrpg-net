@@ -41,20 +41,19 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
-    public bool IsActive => MasterDeclinedDate == null && PlayerDeclinedDate == null;
-    public bool IsInDiscussion => IsActive && !IsApproved;
-    public bool IsApproved => IsActive && PlayerAcceptedDate != null && MasterAcceptedDate != null;
+    public bool IsActive => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser;
+    public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser;
+    public bool IsApproved => ClaimStatus == Status.Approved;
 
     public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
 
-    public DateTime? StatusChangedDate
-      =>
-        new[] {PlayerAcceptedDate, PlayerDeclinedDate, MasterAcceptedDate, MasterDeclinedDate}.WhereNotNull().Max();
+    public DateTime LastUpdateDateTime { get; set; }
 
     public int? CurrentFee { get; set; }
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 
+    //TODO[Localize]
     public enum Status
     {
       [Display(Name = "Подана")] AddedByUser,
@@ -64,33 +63,7 @@ namespace JoinRpg.DataModel
       [Display(Name = "Отклонена")] DeclinedByMaster
     }
 
-    public Status ClaimStatus
-    {
-      get
-      {
-        if (MasterDeclinedDate != null)
-        {
-          return Status.DeclinedByMaster;
-        }
-        if (PlayerDeclinedDate != null)
-        {
-          return Status.DeclinedByUser;
-        }
-        if (IsApproved)
-        {
-          return Status.Approved;
-        }
-        if (MasterAcceptedDate != null)
-        {
-          return Status.AddedByMaster;
-        }
-        if (PlayerAcceptedDate != null)
-        {
-          return Status.AddedByUser;
-        }
-        throw new InvalidOperationException("Unknown claim status");
-      }
-    }
+    public Status ClaimStatus { get; set; }
 
     #region ILinkable impl
 

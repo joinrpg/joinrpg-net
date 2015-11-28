@@ -13,7 +13,7 @@ namespace JoinRpg.Domain
       return (claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId));
     }
 
-    public static IEnumerable<Claim> OtherClaimsForThisPlayer(this Claim claim)
+    public static IEnumerable<Claim> OtherActiveClaimsForThisPlayer(this Claim claim)
     {
       return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive && c.ProjectId == claim.ProjectId);
     }
@@ -46,6 +46,14 @@ namespace JoinRpg.Domain
     {
       //TODO we can do faster than this
       return cl.GetParentGroups().Any(g => g.CharacterGroupId == characterGroupId);
+    }
+
+    public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
+    {
+      if (!possibleStatus.Contains(claim.ClaimStatus))
+      {
+        throw new ClaimWrongStatusException(claim, possibleStatus);
+      }
     }
   }
 }

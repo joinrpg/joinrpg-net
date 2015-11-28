@@ -34,6 +34,7 @@ namespace JoinRpg.Services.Impl
         PlayerUserId = currentUserId,
         PlayerAcceptedDate = addClaimDate,
         CreateDate =  addClaimDate,
+        ClaimStatus = Claim.Status.AddedByUser,
         Comments = new List<Comment>()
         {
           new Comment()
@@ -49,7 +50,8 @@ namespace JoinRpg.Services.Impl
         },
         ResponsibleMasterUserId = responsibleMaster?.UserId,
         ResponsibleMasterUser = responsibleMaster,
-        Subscriptions = new List<UserSubscription>() //We need this as we are using it later
+        Subscriptions = new List<UserSubscription>(), //We need this as we are using it later
+        LastUpdateDateTime = addClaimDate
       };
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       await UnitOfWork.SaveChangesAsync();
@@ -75,7 +77,12 @@ namespace JoinRpg.Services.Impl
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
     {
+      //TODO add more validation checks, move to Domain
       if (claimSource.HasClaimForUser(currentUserId))
+      {
+        throw new DbEntityValidationException();
+      }
+      if (!claimSource.IsAvailable)
       {
         throw new DbEntityValidationException();
       }
@@ -129,27 +136,20 @@ namespace JoinRpg.Services.Impl
     public async Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      if (claim.MasterAcceptedDate != null)
-      {
-        throw new DbEntityValidationException();
-      }
-      if (claim.PlayerAcceptedDate == null)
-      {
-        throw new DbEntityValidationException();
-      }
-
       var now = DateTime.UtcNow;
+
+      claim.EnsureStatus(Claim.Status.AddedByUser);
       claim.MasterAcceptedDate = now;
+      claim.ClaimStatus = Claim.Status.Approved;
+
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, now, true);
 
-      foreach (var otherClaim in claim.OtherClaimsForThisPlayer())
+      foreach (var otherClaim in claim.OtherActiveClaimsForThisPlayer())
       {
-        if (otherClaim.IsApproved)
-        {
-          throw new DbEntityValidationException();
-        }
+        claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster);
         otherClaim.MasterDeclinedDate = now;
+        otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
         await EmailService.Email(await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект", otherClaim, now, true, s => s.ClaimStatusChange));
       }
 
@@ -166,14 +166,12 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      if (claim.MasterDeclinedDate != null)
-      {
-        throw new DbEntityValidationException();
-      }
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved);
 
       DateTime now = DateTime.UtcNow;
 
       claim.MasterDeclinedDate = now;
+      claim.ClaimStatus = Claim.Status.DeclinedByMaster;
       var email = await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
@@ -183,14 +181,11 @@ namespace JoinRpg.Services.Impl
     public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      if (claim.MasterDeclinedDate == null && claim.PlayerDeclinedDate == null)
-      {
-        throw new DbEntityValidationException();
-      }
+      var now = DateTime.UtcNow;
 
-      claim.PlayerDeclinedDate = null;
-      claim.MasterDeclinedDate = null;
-      claim.MasterAcceptedDate = null;
+      claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster);
+
+      claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
@@ -199,7 +194,8 @@ namespace JoinRpg.Services.Impl
         claim.CharacterId = null;
         claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
       }
-      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, DateTime.UtcNow, true, s => s.ClaimStatusChange);
+      
+      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -229,13 +225,11 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadMyClaim(projectId, claimId, currentUserId);
-      if (claim.PlayerDeclinedDate != null)
-      {
-        throw new DbEntityValidationException();
-      }
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved);
 
       DateTime now = DateTime.UtcNow;
       claim.PlayerDeclinedDate = now;
+      claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
       var email = await AddCommentWithEmail<DeclineByPlayerEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
 
@@ -310,6 +304,8 @@ namespace JoinRpg.Services.Impl
         ProjectId = claim.ProjectId, AuthorUserId = currentUserId, ClaimId = claim.ClaimId, CommentText = new MarkdownString(commentText), CreatedTime = now, IsCommentByPlayer = claim.PlayerUserId == currentUserId, IsVisibleToPlayer = isVisibleToPlayer, ParentCommentId = parentCommentId, LastEditTime = now
       };
       claim.Comments.Add(comment);
+
+      claim.LastUpdateDateTime = now;
 
       return comment;
     }
