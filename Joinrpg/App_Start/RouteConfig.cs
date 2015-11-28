@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace JoinRpg.Web
@@ -70,6 +69,10 @@ namespace JoinRpg.Web
 
       routes.MapRoute(name: "Character", url: "{ProjectId}/character/{CharacterId}/{action}",
         defaults: new {controller = "Character", action = "Details"});
+
+
+      routes.MapRoute(name: "Finances", url: "{ProjectId}/money/{action}",
+        defaults: new { controller = "Finances", action = "Setup" });
 
       routes.MapRoute(name: "UserMe", url: "user/me",
         defaults: new { controller = "User", action = "Me"});

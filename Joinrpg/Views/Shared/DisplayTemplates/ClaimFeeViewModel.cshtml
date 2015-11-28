@@ -2,19 +2,19 @@
 <span>
     @{
         var modification = Model.CurrentTotalFee - Model.CurrentFee;
-    <text>@(Model.CurrentTotalFee)&#8381;</text>
+    <text>@(Model.CurrentTotalFee)&nbsp;руб.</text>
 
-        if (modification != 0)
-        {
+  if (modification != 0)
+  {
 
-            <text>(@(Model.CurrentFee)&#8381;@(modification.ToString("+#;-#;+0")) &#8381;)</text>
+            <text>(@(Model.CurrentFee)&nbsp;руб.@(modification.ToString("+#;-#;+0"))&nbsp;руб.)</text>
 
         }
     }
 
     @if (Model.CurrentTotalFee < Model.CurrentBalance)
     {
-    <span> — <b>переплата</b> @(Model.CurrentBalance - @Model.CurrentTotalFee)&#8381;</span>
+    <span> — <b>переплата</b> @(Model.CurrentBalance - @Model.CurrentTotalFee)&nbsp;руб.</span>
     }
     else if (Model.CurrentTotalFee == Model.CurrentBalance)
     {
@@ -22,6 +22,6 @@
     }
     else if (Model.CurrentBalance > 0)
     {
-        <span> — оплачен <b>частично</b> @Model.CurrentBalance &#8381;, осталось @(Model.CurrentTotalFee - Model.CurrentBalance) &#8381;</span>
+        <span> — оплачен <b>частично</b> @Model.CurrentBalance&nbsp;руб., осталось @(Model.CurrentTotalFee - Model.CurrentBalance)&nbsp;руб.</span>
     }
 </span>

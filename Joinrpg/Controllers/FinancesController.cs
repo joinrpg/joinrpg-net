@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 
@@ -25,44 +24,34 @@ namespace JoinRpg.Web.Controllers
     {
     }
 
-    public async Task<ActionResult> List(int projectid, string export)
-    {
+    public async Task<ActionResult> Operations(int projectid, string export)
+      => await GetFinanceOperationsList(projectid, export, fo => !fo.RequireModeration);
 
+    public async Task<ActionResult> Moderation(int projectid, string export)
+      => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
+
+    private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
+    {
       var project = await ProjectRepository.GetProjectWithFinances(projectid);
       var errorResult = AsMaster(project);
       if (errorResult != null)
       {
         return errorResult;
       }
-      var viewModel = project.FinanceOperations.Where(fo => !fo.RequireModeration)
+      var viewModel = project.FinanceOperations.Where(predicate)
         .OrderBy(f => f.OperationDate)
         .Select(FinOperationListItemViewModel.Create);
 
-      if (export == null)
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
       {
-        return View(viewModel);
+        return View("Operations", viewModel);
       }
       else
       {
-        return await Export(viewModel, "finance-export", GetExportTypeByName(export));
+        return await Export(viewModel, "finance-export", exportType.Value);
       }
-    }
-
-    private ExportType GetExportTypeByName(string export)
-    {
-      switch (export)
-      {
-        case "csv": return ExportType.Csv;
-        case "xlsx": return ExportType.ExcelXml;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(export));
-      }
-    }
-
-    private async Task<FileContentResult> Export<T>(IEnumerable<T> @select, string fileName, ExportType exportType = ExportType.Csv)
-    {
-      var generator = ExportDataService.GetGenerator(exportType, @select);
-      return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
     }
   }
 }

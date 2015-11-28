@@ -540,7 +540,8 @@
     <Content Include="Views\Home\BrowseGames.cshtml" />
     <Content Include="Views\Finances\Setup.cshtml" />
     <Content Include="Views\User\PreferredName.cshtml" />
-    <Content Include="Views\Finances\List.cshtml" />
+    <Content Include="Views\Finances\Operations.cshtml" />
+    <Content Include="Views\Shared\_ExportInExcel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

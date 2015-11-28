@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -141,6 +142,22 @@ namespace JoinRpg.Web.Controllers.Common
       return (User.Identity.IsAuthenticated && project.HasMasterAccess(CurrentUserId))
         ? load()
         : new T[] {};
+    }
+
+    protected ExportType? GetExportTypeByName(string export)
+    {
+      switch (export)
+      {
+        case "csv": return ExportType.Csv;
+        case "xlsx": return ExportType.ExcelXml;
+        default: return null;
+      }
+    }
+
+    protected async Task<FileContentResult> Export<T>(IEnumerable<T> @select, string fileName, ExportType exportType = ExportType.Csv)
+    {
+      var generator = ExportDataService.GetGenerator(exportType, @select).BindDisplay<User>(user => user.DisplayName);
+      return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
     }
   }
 }

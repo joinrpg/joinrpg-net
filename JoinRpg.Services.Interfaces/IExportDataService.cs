@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces
@@ -19,5 +20,7 @@ namespace JoinRpg.Services.Interfaces
     Task<byte[]> Generate();
     string ContentType { get; }
     string FileExtension { get; }
+
+    IExportGenerator BindDisplay<T>(Func<T, object> displayFunc);
   }
 }

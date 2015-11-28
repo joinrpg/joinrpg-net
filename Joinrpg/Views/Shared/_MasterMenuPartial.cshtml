@@ -57,7 +57,8 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все операции", "List", "Finances", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new { Model.ProjectId }, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>

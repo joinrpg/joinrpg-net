@@ -20,19 +20,22 @@
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.PaymentType)
+            @Html.DisplayNameFor(model => model.PaymentMaster)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PaymentTypeName)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Claim)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Claim.Player)
+            @Html.DisplayNameFor(model => model.Player)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.OperationDate)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Master)
+            @Html.DisplayNameFor(model => model.MarkingMaster)
         </th>
     </tr>
 
@@ -42,27 +45,32 @@
             @Html.DisplayFor(modelItem => item.FinanceOperationId)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Money)
+            @Html.DisplayFor(modelItem => item.Money)&nbsp;руб.
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.FeeChange)
+            @Html.DisplayFor(modelItem => item.FeeChange)&nbsp;руб.
         </td>
         <td>
-            @item.PaymentType.GetDisplayName()
+            @Html.DisplayFor(modelItem => item.PaymentMaster)
         </td>
         <td>
-            @item.Claim.Name
+            @Html.DisplayFor(modelItem => item.PaymentTypeName)
         </td>
         <td>
-            @Html.DisplayFor(model => item.Claim.Player)
+            @Html.DisplayFor(modelItem => item.Claim)
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.Player)
         </td>
         <td>
             @item.OperationDate.ToShortDateString()
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Master)
+            @Html.DisplayFor(modelItem => item.MarkingMaster)
         </td>
     </tr>
 }
 
 </table>
+
+@Html.Partial("_ExportInExcel")

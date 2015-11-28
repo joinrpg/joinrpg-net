@@ -16,6 +16,9 @@ JoinRpg.Services.Interfaces
 JoinRpg.Services.Impl
   Implementation of services. Contain most business logic code. Do not trust your input, ask for currentUserId, check rights yourself. 
   Encapsulate read operations (aside of selecting by primary key) inside repositories.
+JoinRpg.Services.Export
+  Exporter of table data. Converts IEnumerable<AnyObject> to .xslx byte stream, using System.ComponentModel.DataAnnotations. Do not know nothing about JoinRpg 
+  specifics. Uses pluggable backends, now uses ClosedXML to generate .xslx. Can be improved and used as component of it own sometime later.
 JoinRpg.Services.Email
   Email service put aside in a separate project. If you got especially large service, you can put it in your own project.
 JoinRpg.Web

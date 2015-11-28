@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models
@@ -43,30 +41,39 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Изменение взноса"), Required]
     public int FeeChange { get; set; }
 
-    [Display(Name = "Кому и как оплачено"), Required]
-    public PaymentType PaymentType { get; set; }
+    [Display(Name = "Оплачено мастеру")]
+    public User PaymentMaster { get; set; }
+
+    [Display(Name = "Способ оплаты"), Required]
+    public string PaymentTypeName { get; set; }
 
     [Display(Name = "Отметил"), Required]
-    public User Master { get; set; }
+    public User MarkingMaster { get; set; }
 
     [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
     public DateTime OperationDate
     { get; set; }
 
     [Display(Name = "Заявка"), Required]
-    public ClaimListItemViewModel Claim { get; set; }
+    public string Claim { get; set; }
+
+    [Display(Name = "Игрок"), Required]
+    public User Player
+    { get; set; }
 
     public static FinOperationListItemViewModel Create(FinanceOperation fo)
     {
       return new FinOperationListItemViewModel()
       {
-        PaymentType = fo.PaymentType,
-        Claim = ClaimListItemViewModel.FromClaim(fo.Claim),
+        PaymentTypeName = fo.PaymentType.GetDisplayName(),
+        PaymentMaster = fo.PaymentType.User,
+        Claim = fo.Claim.Name,
         FeeChange = fo.FeeChange,
         Money = fo.MoneyAmount,
         OperationDate = fo.OperationDate,
         FinanceOperationId = fo.CommentId,
-        Master = fo.Comment.Author
+        MarkingMaster = fo.Comment.Author,
+        Player = fo.Claim.Player
       };
     }
   }
