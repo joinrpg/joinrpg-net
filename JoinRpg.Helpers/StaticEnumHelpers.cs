@@ -20,10 +20,7 @@ namespace JoinRpg.Helpers
       return Enum.GetValues(typeof (T)).Cast<T>();
     }
 
-    public static ICollection<T> OrEmptyList<T>(this ICollection<T> collection)
-    {
-      return collection ?? new T[] {};
-    }
+
   }
 
 }

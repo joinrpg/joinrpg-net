@@ -42,7 +42,8 @@ namespace JoinRpg.Web.Controllers
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository, IFinanceService financeService) : base(userManager, projectRepository, projectService)
+      IClaimsRepository claimsRepository, IFinanceService financeService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       _claimService = claimService;
       _plotRepository = plotRepository;

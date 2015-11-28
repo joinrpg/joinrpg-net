@@ -13,7 +13,8 @@ namespace JoinRpg.Web.Controllers
   public class GameFieldController : ControllerGameBase
   {
     public GameFieldController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
     }
 

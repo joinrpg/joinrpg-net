@@ -14,7 +14,8 @@ namespace JoinRpg.Web.Controllers
     private IClaimService ClaimService { get; }
 
     public CommentController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IClaimService claimService) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IClaimService claimService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       ClaimService = claimService;
     }

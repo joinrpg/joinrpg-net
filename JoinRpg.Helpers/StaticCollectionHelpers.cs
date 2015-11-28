@@ -54,5 +54,10 @@ namespace JoinRpg.Helpers
     {
       return source.Where(item => item != null);
     }
+
+    public static ICollection<T> OrEmptyList<T>(this ICollection<T> collection)
+    {
+      return collection ?? new T[] { };
+    }
   }
 }

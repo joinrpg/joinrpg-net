@@ -35,7 +35,8 @@ namespace JoinRpg.Web.Controllers
     }
 
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository,
+      IExportDataService exportDataService) : base(userManager, projectRepository, projectService, exportDataService)
     {
       _plotService = plotService;
       _plotRepository = plotRepository;

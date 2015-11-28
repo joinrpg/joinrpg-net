@@ -19,10 +19,12 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     #endregion
 
     #region constructor
+
     public AllrpgController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IAllrpgService allrpgService) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IAllrpgService allrpgService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
-      this._allrpgService = allrpgService;
+      _allrpgService = allrpgService;
     }
 
     #endregion

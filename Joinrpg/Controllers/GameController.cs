@@ -16,7 +16,8 @@ namespace JoinRpg.Web.Controllers
     private readonly IAllrpgService _allrpgService;
 
     public GameController(IProjectService projectService, ApplicationUserManager userManager,
-      IProjectRepository projectRepository, IAllrpgService allrpgService) : base(userManager, projectRepository, projectService)
+      IProjectRepository projectRepository, IAllrpgService allrpgService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       _allrpgService = allrpgService;
     }

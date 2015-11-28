@@ -206,8 +206,9 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IUserRepository userRepository)
-      : base(userManager, projectRepository, projectService)
+    public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IUserRepository userRepository, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       _userRepository = userRepository;
     }

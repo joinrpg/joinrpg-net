@@ -18,7 +18,9 @@ namespace JoinRpg.Web.Controllers
       return PartialView(projects);
     }
 
-    public MenuController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager, projectRepository, projectService)
+    public MenuController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
     }
   }

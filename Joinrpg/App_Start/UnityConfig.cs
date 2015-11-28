@@ -7,6 +7,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Email;
+using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
 using JoinRpg.Services.Impl.Allrpg;
 using JoinRpg.Services.Impl.Search;
@@ -68,6 +69,7 @@ namespace JoinRpg.Web
       container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
       container.RegisterType<IUserService, UserServiceImpl>();
       container.RegisterType<IFinanceService, FinanceOperationsImpl>();
+      container.RegisterType<IExportDataService, ExportDataServiceImpl>();
 
       container.RegisterType<IHtmlService, HtmlServiceImpl>();
       container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(HttpContext.Current)));

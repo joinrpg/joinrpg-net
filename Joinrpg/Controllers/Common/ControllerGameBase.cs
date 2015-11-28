@@ -16,12 +16,16 @@ namespace JoinRpg.Web.Controllers.Common
     protected const string GroupFieldPrefix = "group_";
     protected const string CharFieldPrefix = "char_";
     protected IProjectService ProjectService { get; }
+    protected IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
-    protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService) : base(userManager)
+
+    protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IExportDataService exportDataService) : base(userManager)
     {
       ProjectRepository = projectRepository;
       ProjectService = projectService;
+      ExportDataService = exportDataService;
     }
 
 

@@ -578,6 +578,10 @@
       <Project>{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}</Project>
       <Name>JoinRpg.Services.Email</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj">
+      <Project>{195112ED-B687-48D2-ADA6-2F27294EA645}</Project>
+      <Name>JoinRpg.Services.Export</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj">
       <Project>{835EB33A-F3D1-49C7-9C85-1F5F2387A052}</Project>
       <Name>JoinRpg.Services.Impl</Name>

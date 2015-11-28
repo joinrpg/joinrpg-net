@@ -17,7 +17,8 @@ namespace JoinRpg.Web.Controllers
     private readonly IPlotRepository _plotRepository;
 
     public CharacterController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService)
+      IProjectService projectService, IPlotRepository plotRepository, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       _plotRepository = plotRepository;
     }
