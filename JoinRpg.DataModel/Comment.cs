@@ -5,6 +5,7 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class Comment : IProjectEntity, IValidatableObject
   {
     public int CommentId { get; set; }

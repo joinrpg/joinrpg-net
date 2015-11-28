@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -219,6 +220,34 @@ namespace JoinRpg.Services.Impl
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
+    }
+
+    public void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId)
+    {
+      Task.Run(() =>
+      {
+        var watermark =
+          UnitOfWork.GetDbSet<ReadCommentWatermark>()
+            .SingleOrDefault(w => w.ClaimId == claimId && w.UserId == currentUserId);
+
+        if (watermark == null)
+        {
+          watermark = new ReadCommentWatermark()
+          {
+            ClaimId = claimId,
+            ProjectId = projectId,
+            UserId = currentUserId
+          };
+          UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
+        }
+
+        if (watermark.CommentId > maxCommentId)
+        {
+          return;
+        }
+        watermark.CommentId = maxCommentId;
+        UnitOfWork.SaveChangesAsync();
+      });
     }
 
 

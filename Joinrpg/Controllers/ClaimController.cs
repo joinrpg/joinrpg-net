@@ -140,22 +140,16 @@ namespace JoinRpg.Web.Controllers
       var claimViewModel = new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
-        ClaimName = claim.Name,
-        Comments = claim.Comments.Where(comment => comment.ParentCommentId == null),
+        Comments = claim.Comments.Where(comment => comment.ParentCommentId == null).Select(comment => new CommentViewModel(comment, CurrentUserId)),
         HasMasterAccess = hasMasterAccess,
-        HasPlayerAccessToCharacter = hasMasterAccess || hasPlayerAccess,
         HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
-        CanAcceptCash = claim.HasMasterAccess(CurrentUserId, acl => acl.CanAcceptCash),
-        CanManageMoney = claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney),
         IsMyClaim = isMyClaim,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
-        ProjectName = claim.Project.ProjectName,
         Status = claim.ClaimStatus,
         CharacterGroupId = claim.CharacterGroupId,
         GroupName = claim.Group?.CharacterGroupName,
         CharacterId = claim.CharacterId,
-        CharacterName = claim.Character?.CharacterName,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
@@ -180,6 +174,11 @@ namespace JoinRpg.Web.Controllers
           CurrentFee = claim.ClaimCurrentFee()
         }
       };
+
+      if (claimViewModel.Comments.Any(c => !c.IsRead))
+      {
+            _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId, claim.Comments.Max(c => c.CommentId));
+      }
 
       if (claim.IsApproved)
       {

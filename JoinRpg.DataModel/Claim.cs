@@ -38,6 +38,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
+    public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
+
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 

@@ -185,6 +185,10 @@
     <Compile Include="Migrations\201511281005520_ImproveClaimStatusModel.Designer.cs">
       <DependentUpon>201511281005520_ImproveClaimStatusModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511282208418_ReadComments.cs" />
+    <Compile Include="Migrations\201511282208418_ReadComments.Designer.cs">
+      <DependentUpon>201511282208418_ReadComments.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -313,6 +317,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511281005520_ImproveClaimStatusModel.resx">
       <DependentUpon>201511281005520_ImproveClaimStatusModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511282208418_ReadComments.resx">
+      <DependentUpon>201511282208418_ReadComments.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

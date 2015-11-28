@@ -11,22 +11,14 @@ namespace JoinRpg.Web.Models
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
-    public string ClaimName { get; set; }
     [DisplayName("Игрок")]
     public User Player { get; set; }
-    public string ProjectName { get; set; }
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
 
-    public bool HasPlayerAccessToCharacter { get; set; }
     public bool HasMasterAccess { get; set; }
     public bool HasApproveRejectClaim { get; set; }
-    public bool CanAcceptCash { get; set; }
-    public bool CanManageMoney { get; set; }
-    public IEnumerable<Comment> Comments { get; set; }
-
-    [DisplayName("Заявка на персонажа")]
-    public string CharacterName { get; set; }
+    public IEnumerable<CommentViewModel> Comments { get; set; }
 
     public int? CharacterId { get; set; }
 

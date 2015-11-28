@@ -23,6 +23,8 @@ namespace JoinRpg.Services.Interfaces
 
     Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
       int? characterId);
+
+    void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
   }
 
   //TODO[Localize]

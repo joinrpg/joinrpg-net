@@ -58,6 +58,7 @@
     <Compile Include="CharacterGroupExtensions.cs" />
     <Compile Include="ClaimSourceExtensions.cs" />
     <Compile Include="ClaimExtensions.cs" />
+    <Compile Include="CommentExtensions.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="FieldExtensions.cs" />
     <Compile Include="FinanceExtensions.cs" />

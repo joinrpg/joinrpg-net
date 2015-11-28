@@ -277,7 +277,7 @@
     <Compile Include="Models\AclViewModel.cs" />
     <Compile Include="Models\CharacterViewModels.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
-    <Compile Include="Models\AddCommentViewModel.cs" />
+    <Compile Include="Models\CommentModels.cs" />
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CommonTypes\MarkdownViewModel.cs" />
@@ -542,6 +542,7 @@
     <Content Include="Views\User\PreferredName.cshtml" />
     <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ExportInExcel.cshtml" />
+    <Content Include="Views\Claim\_CommentPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

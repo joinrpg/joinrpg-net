@@ -1,66 +1,6 @@
 ﻿@model ClaimViewModel
 
-@helper ShowCommentWithTree(Comment comment)
-{
-    if (!comment.IsVisibleToPlayer && !Model.HasMasterAccess)
-    {
-        return;
-    }
-    var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
-    <div class="@hideClassName">
-        @if (comment.IsCommentByPlayer)
-        {
-            <span>Игрок</span>
-        }
-        else
-        {
-            <span>Мастер</span>
-        }
-        @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
-        <strong>
-            @if (!comment.IsCommentByPlayer)
-            {
-                if (comment.IsVisibleToPlayer)
-                {
-                    <span>игроку</span>
-                }
-                else
-                {
-                    <span>другим мастерам</span>
-                }
-            }
-        </strong>
-        @if (comment.Finance != null)
-        {
-            @Html.DisplayFor(model => comment.Finance)
-        }
-        <span>@comment.CommentText.ToHtmlString()</span>
-        <details>
-            <summary>Ответить...</summary>
 
-            @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-            {
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ParentCommentId = comment.CommentId,
-                    ParentComment = comment,
-                    EnableFinanceAction = comment.Finance != null && comment.Finance.RequireModeration && (Model.CanManageMoney || comment.Finance.PaymentType.UserId.ToString() == User.Identity.GetUserId()),
-                    EnableHideFromUser = !Model.IsMyClaim,
-                    HideFromUser = !comment.IsVisibleToPlayer
-                })
-            }
-        </details>
-        <div style="margin-left: 1em; margin-top: 1em">
-            @foreach (var childComment in comment.ChildsComments)
-            {
-                @ShowCommentWithTree(childComment)
-            }
-        </div>
-        <hr/>
-    </div>
-}
 @helper OtherClaimsForThisCharacterLink()
 {
     @Html.ActionLink("заявки от других игроков", "Details", "Character",
@@ -74,10 +14,8 @@
 
 
 @using JoinRpg.DataModel
-@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.CommonTypes
-@using Microsoft.AspNet.Identity
 
 <div>
 @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -348,9 +286,9 @@
 
 <details open>
     <summary>Комментарии к заявке</summary>
-    @foreach (var comment in Model.Comments.Where(comment => comment.IsVisibleToPlayer || Model.HasMasterAccess))
+    @foreach (var comment in Model.Comments)
     {
-        @ShowCommentWithTree(comment)
+        @Html.Partial("_CommentPartial", comment)
     }
 </details>
 </div>
