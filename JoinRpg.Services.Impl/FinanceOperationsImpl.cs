@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Impl
         throw new CannotPerformOperationInFuture();
       }
 
-      if (feeChange != 0)
+      if (feeChange != 0 || money < 0)
       {
         claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
       }

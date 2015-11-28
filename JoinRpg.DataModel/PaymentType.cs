@@ -21,6 +21,8 @@ namespace JoinRpg.DataModel
 
     public bool IsActive { get; set; }
 
+    public bool IsDefault { get; set; }
+
     public virtual ICollection<FinanceOperation> Operations { get; set; }
 
     #region interface implementations

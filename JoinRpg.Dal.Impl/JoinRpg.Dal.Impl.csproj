@@ -173,6 +173,14 @@
     <Compile Include="Migrations\201511222239023_CleanFinanceOperation.Designer.cs">
       <DependentUpon>201511222239023_CleanFinanceOperation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201511280925147_ReplaceFeeStartWithFeeEnd.cs" />
+    <Compile Include="Migrations\201511280925147_ReplaceFeeStartWithFeeEnd.Designer.cs">
+      <DependentUpon>201511280925147_ReplaceFeeStartWithFeeEnd.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201511280930475_DefaultPaymentType.cs" />
+    <Compile Include="Migrations\201511280930475_DefaultPaymentType.Designer.cs">
+      <DependentUpon>201511280930475_DefaultPaymentType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -292,6 +300,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511222239023_CleanFinanceOperation.resx">
       <DependentUpon>201511222239023_CleanFinanceOperation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511280925147_ReplaceFeeStartWithFeeEnd.resx">
+      <DependentUpon>201511280925147_ReplaceFeeStartWithFeeEnd.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201511280930475_DefaultPaymentType.resx">
+      <DependentUpon>201511280930475_DefaultPaymentType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
