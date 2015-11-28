@@ -49,6 +49,7 @@ namespace JoinRpg.Web.Controllers
       var model = new IndexViewModel
       {
         HasPassword = HasPassword(),
+        Email = await UserManager.GetEmailAsync(userId),
         Logins = await UserManager.GetLoginsAsync(userId),
       };
       return View(model);

@@ -9,6 +9,8 @@ namespace JoinRpg.Web.Models
     {
         public bool HasPassword { get; set; }
         public IList<UserLoginInfo> Logins { get; set; }
+
+        public string Email { get; set; }
     }
 
     public class ManageLoginsViewModel
