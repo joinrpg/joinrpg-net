@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -428,6 +429,37 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
     }
 
+    [Authorize, HttpGet]
+    public async Task<ActionResult> MyClaim(int projectId)
+    {
+      var claims = (await _claimsRepository.GetMyClaimsForProject(CurrentUserId, projectId)).ToList();
+
+      if (claims.Count == 0)
+      {
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+        return RedirectToAction("AddForGroup", new {projectId, project.RootGroup.CharacterGroupId});
+      }
+
+      if (claims.Count(c => c.IsApproved) == 1)
+      {
+        return ReturnToClaim(claims.Single(c => c.IsApproved).ClaimId, projectId);
+      }
+
+      if (claims.Count(c => c.IsInDiscussion) == 1)
+      {
+        return ReturnToClaim(claims.Single(c => c.IsInDiscussion).ClaimId, projectId);
+      }
+
+      if (claims.Count == 1)
+      {
+        return ReturnToClaim(claims.Single().ClaimId, projectId);
+      }
+
+      return RedirectToAction("My", "Claim");
+
+    }
+
+    [Authorize, HttpGet, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FinOperationViewModel viewModel)
     {
       var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);

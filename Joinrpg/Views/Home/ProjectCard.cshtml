@@ -2,27 +2,37 @@
 <div class="col-sm-6 col-md-4">
     <div class="thumbnail">
         <div class="caption">
-            <h4 style="text-overflow: ellipsis; white-space: nowrap;overflow-x:hidden" title="@Model.ProjectName">@Model.ProjectName</h4>
-            @if (Model.IsMaster)
-            {
+            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden" title="@Model.ProjectName">@Model.ProjectName</h4>
             <p>
-                <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null)"
-                   class="btn btn-info btn-sm"
-                   role="button"
-                   title="У меня есть права мастера на этой игре">Мой проект</a>
+                @if (Model.IsMaster)
+                {
+                    <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null)"
+                       class="btn btn-info btn-sm"
+                       role="button"
+                       title="У меня есть права мастера на этой игре">Мой проект</a>
+                }
+                @if (Model.MyClaims.Any())
+                {
+                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId}, null)"
+                       class="btn btn-success btn-sm"
+                       role="button"
+                       title="Моя заявка">
+                        Моя заявка
+                    </a>
+                }
+
+                @if (!Model.IsMaster && !Model.MyClaims.Any())
+                {
+
+                    <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
+                       class="btn btn-primary btn-sm"
+                       role="button"
+                       title="Выбрать роль и заявиться">
+                        Заявиться
+                    </a>
+
+                }
             </p>
-            }
-            else
-            {
-            <p>
-                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
-                   class="btn btn-primary btn-sm"
-                   role="button"
-                   title="Выбрать роль и заявиться">
-                    Заявиться
-                </a>
-            </p>
-            }
         </div>
     </div>
 </div>

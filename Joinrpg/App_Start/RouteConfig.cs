@@ -56,6 +56,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
         defaults: new { controller = "Claim", action = "Edit" });
 
+      routes.MapRoute(name: "MyClaim", url: "{ProjectId}/myclaim",
+        defaults: new { controller = "Claim", action = "MyClaim" });
+
       routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claims/{action}",
         defaults: new { controller = "Claim", action = "Index" });
 

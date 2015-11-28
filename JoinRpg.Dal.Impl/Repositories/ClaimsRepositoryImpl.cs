@@ -32,5 +32,8 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(p => p.ProjectAcls)
           .SingleOrDefaultAsync(p => p.ProjectId == projectId);
     }
+
+    public async Task<IEnumerable<Claim>> GetMyClaimsForProject(int userId, int projectId)
+      => await Ctx.ClaimSet.Where(c => c.ProjectId == projectId && c.PlayerUserId == userId).ToListAsync();
   }
 }
