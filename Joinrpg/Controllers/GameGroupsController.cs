@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Controllers
                     g.Name,
                     g.DeepLevel,
                     g.FirstCopy,
-                    g.Description,
+                    Description = g.Description?.ToHtmlString(),
                     Path = g.Path.Select(gr => gr.Name),
                     Characters =
                       g.PublicCharacters.Select(
@@ -77,9 +77,10 @@ namespace JoinRpg.Web.Controllers
                             ch.IsAvailable,
                             ch.IsFirstCopy,
                             ch.CharacterName,
-                            ch.Description,
+                            Description =ch.Description?.ToHtmlString(),
                             PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-                            PlayerId = ch.Player?.Id
+                            PlayerId = ch.Player?.Id,
+                            ch.ActiveClaimsCount
                           }),
                     CanAddDirectClaim = g.AvaiableDirectSlots != 0
                   }),

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -53,6 +54,7 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsActive && c.IsPublic);
 
+    [CanBeNull]
     public HtmlString Description { get; set; }
 
     public IEnumerable<CharacterGroupListItemViewModel> Path { get; set; }
