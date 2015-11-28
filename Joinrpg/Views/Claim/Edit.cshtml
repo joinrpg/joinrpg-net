@@ -265,7 +265,7 @@
     }
 }
 
-@if (Model.PaymentTypes != null && Model.PaymentTypes.Any())
+@if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null)
 {
     var viewModel = new FinOperationViewModel
     {
@@ -276,7 +276,9 @@
         HideFromUser = false,
         ActionName = "Отметить взнос",
         OperationDate = DateTime.Today,
-        PaymentTypes = Model.PaymentTypes
+        PaymentTypes = Model.PaymentTypes,
+        Money = Math.Max(Model.ClaimFee.CurrentFee-Model.ClaimFee.CurrentBalance, 0),
+        CommentText = new MarkdownViewModel("Сдан взнос")
     };
     @Html.Partial("_ClaimFinancePartial", viewModel)
 }
