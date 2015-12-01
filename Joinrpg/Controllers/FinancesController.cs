@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
         return errorResult;
       }
       var viewModel = project.FinanceOperations.Where(predicate)
-        .OrderBy(f => f.OperationDate)
+        .OrderBy(f => f.CommentId)
         .Select(FinOperationListItemViewModel.Create);
 
       var exportType = GetExportTypeByName(export);
