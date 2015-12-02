@@ -19,15 +19,5 @@ namespace JoinRpg.Web.Helpers
     {
       return link.GetRouteTarget().GetUri(_current);
     }
-
-    public string GetHostName()
-    {
-      return "dev.joinrpg.ru";
-    }
-
-    public string GetScheme()
-    {
-      return "http";
-    }
   }
 }

@@ -40,7 +40,7 @@ namespace JoinRpg.Services.Email
       _joinRpgSender = new Recipient()
       {
         DisplayName = JoinRpgTeam,
-        Email = "support@" + uriService.GetHostName()
+        Email = "support@" + config.ApiDomain
       };
       _uriService = uriService;
       _lazyService = new Lazy<MessageService>(() => new MessageService(config.ApiKey));
@@ -163,7 +163,7 @@ $@"
 Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
 
 Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его.
---
+
 --
 {JoinRpgTeam}", _joinRpgSender);
     }
