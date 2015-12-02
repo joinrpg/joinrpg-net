@@ -123,7 +123,8 @@ namespace JoinRpg.Web.Models
           FirstInGroup = siblings.First() == arg,
           LastInGroup = siblings.Last() == arg,
           ParentCharacterGroupId = group.CharacterGroupId,
-          RootGroupId = Root.CharacterGroupId
+          RootGroupId = Root.CharacterGroupId,
+          IsHot = arg.IsHot && arg.IsAvailable
         };
         if (vm.IsFirstCopy)
         {

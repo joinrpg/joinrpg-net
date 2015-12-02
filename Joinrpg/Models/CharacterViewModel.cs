@@ -31,5 +31,7 @@ namespace JoinRpg.Web.Models
 
     public int ParentCharacterGroupId { get; set; }
     public int RootGroupId { get; set; }
+
+    public bool IsHot { get; set; }
   }
 }

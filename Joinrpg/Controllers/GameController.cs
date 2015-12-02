@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -13,13 +11,10 @@ namespace JoinRpg.Web.Controllers
 {
   public class GameController : Common.ControllerGameBase
   {
-    private readonly IAllrpgService _allrpgService;
-
     public GameController(IProjectService projectService, ApplicationUserManager userManager,
-      IProjectRepository projectRepository, IAllrpgService allrpgService, IExportDataService exportDataService)
+      IProjectRepository projectRepository, IExportDataService exportDataService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
-      _allrpgService = allrpgService;
     }
 
     // GET: Game/Details/5
@@ -108,38 +103,5 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet, Authorize]
-    public async Task<ActionResult> AllrpgUpdate(int projectId)
-    {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      var errorResult = AsMaster(project, pacl => pacl.IsOwner);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-      return View(new AllrpgUpdateViewModel() {ProjectId = projectId, ProjectName = project.ProjectName});
-    }
-
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> AllrpgUpdate(AllrpgUpdateViewModel model)
-    {
-      var project = await ProjectRepository.GetProjectAsync(model.ProjectId);
-      var errorResult = AsMaster(project, pacl => pacl.IsOwner);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-      model.ProjectName = project.ProjectName;
-      try
-      {
-        model.UpdateResult = string.Join("\n", await _allrpgService.UpdateProject(CurrentUserId, model.ProjectId));
-        return View(model);
-      }
-      catch
-      { 
-        return View(model);
-      }
-      
-    }
   }
 }

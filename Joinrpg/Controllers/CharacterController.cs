@@ -122,7 +122,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterId,
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, GetCharacterFieldValuesFromPost());
+          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, GetCharacterFieldValuesFromPost(), viewModel.IsHot);
 
         return RedirectToAction("Details", new {viewModel.ProjectId, viewModel.CharacterId});
       }
@@ -162,7 +162,7 @@ namespace JoinRpg.Web.Controllers
         await ProjectService.AddCharacter(
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, viewModel.HidePlayerForCharacter);
+          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
         return RedirectToIndex(project1);
       }

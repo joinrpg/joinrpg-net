@@ -26,10 +26,17 @@ namespace JoinRpg.Web.Models
       {
         yield return new ValidationResult("Персонаж должен принадлежать хотя бы к одной группе");
       }
+      if (!IsAcceptingClaims && IsHot)
+      {
+        yield return new ValidationResult("На горячую роль должны приниматься заявки");
+      }
     }
 
     [Display(Name="Всегда скрывать имя игрока"), Required]
     public bool HidePlayerForCharacter { get; set; }
+
+    [Display(Name = "Горячая роль"), Required]
+    public bool IsHot { get; set; }
   }
   public class AddCharacterViewModel : CharacterViewModelBase
   {

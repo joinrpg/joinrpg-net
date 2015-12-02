@@ -8,6 +8,8 @@ namespace JoinRpg.Helpers
 {
   public static class StaticCollectionHelpers
   {
+    private static readonly Random Rng = new Random();
+
     public static Dictionary<string, string> ToDictionary(this NameValueCollection collection)
     {
       return collection.AllKeys.ToDictionary(key => key, key => collection[key]);
@@ -58,6 +60,21 @@ namespace JoinRpg.Helpers
     public static ICollection<T> OrEmptyList<T>(this ICollection<T> collection)
     {
       return collection ?? new T[] { };
+    }
+
+    public static IEnumerable<T> Shuffle<T>([NotNull] this IEnumerable<T> source)
+    {
+      if (source == null) throw new ArgumentNullException(nameof(source));
+
+      var sourceArray = source.ToArray();
+
+      for (var n = 0; n < sourceArray.Length; n++)
+      {
+        var k = Rng.Next(n, sourceArray.Length);
+        yield return sourceArray[k];
+
+        sourceArray[k] = sourceArray[n];
+      }
     }
   }
 }

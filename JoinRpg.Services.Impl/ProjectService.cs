@@ -135,7 +135,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter)
+    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot)
     {
       var characterGroups = await  ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
@@ -149,14 +149,13 @@ namespace JoinRpg.Services.Impl
           IsActive = true,
           IsAcceptingClaims = isAcceptingClaims,
           Description = new MarkdownString(description),
-          HidePlayerForCharacter = hidePlayerForCharacter
+          HidePlayerForCharacter = hidePlayerForCharacter,
+          IsHot = isHot
         });
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic,
-      List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter,
-      IDictionary<int, string> characterFields)
+    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot)
     {
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
@@ -166,6 +165,8 @@ namespace JoinRpg.Services.Impl
       character.IsPublic = isPublic;
       character.Description = new MarkdownString(contents);
       character.HidePlayerForCharacter = hidePlayerForCharacter;
+      character.IsHot = isHot;
+
       character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
       SaveCharacterFieldsImpl(currentUserId, character, characterFields);
 

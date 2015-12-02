@@ -25,7 +25,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/f0fe6f62-070f-4b7b-bcd1-c4265207fead/resourcegroups/Default-ApplicationInsights-CentralUS/providers/microsoft.insights/components/Joinrpg</ApplicationInsightsResourceId>
-    <TypeScriptToolsVersion>1.6</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.7</TypeScriptToolsVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -239,6 +239,7 @@
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
+    <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -324,6 +325,7 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="external\roles-1.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -523,7 +525,7 @@
     <Content Include="Views\GameField\DeleteValue.cshtml" />
     <Content Include="Views\Shared\AvailClaimTargetsPartial.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\ProjectDropDown.cshtml" />
-    <Content Include="Views\Game\AllrpgUpdate.cshtml" />
+    <Content Include="Views\GameTools\AllrpgUpdate.cshtml" />
     <Content Include="Views\Character\Edit.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\IPlayerCharacter.cshtml" />
     <Content Include="Views\GameGroups\_GroupEditControls.cshtml" />
@@ -543,6 +545,8 @@
     <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ExportInExcel.cshtml" />
     <Content Include="Views\Claim\_CommentPartial.cshtml" />
+    <Content Include="Views\GameTools\Apis.cshtml" />
+    <Content Include="Views\GameGroups\Hot.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

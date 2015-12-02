@@ -41,7 +41,22 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
+    // GET: GameGroups
+    public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
+    {
+      if (characterGroupId == null)
+      {
+        return await RedirectToProject(projectId, "Hot");
+      }
+
+      var field = await ProjectRepository.LoadGroupAsync(projectId, (int)characterGroupId);
+      return WithEntity(field) ?? View(GetHotCharacters(field));
+    }
+
+
+
+    [HttpGet]
+    public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
     {
       var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
       if (field == null)
@@ -49,43 +64,78 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
+      var hotRoles = GetHotCharacters(field).Shuffle().Take(maxCount ?? int.MaxValue);
+
+      return ReturnJson(hotRoles.Select(ConvertCharacterToJson));
+    }
+
+    private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
+    {
+      return CharacterGroupListViewModel.FromGroup(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
+        .PublicGroups.SelectMany(
+          g => g.PublicCharacters.Where(ch => ch.IsHot));
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
+    {
+      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      if (field == null)
+      {
+        return HttpNotFound();
+
+      }
+
       var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      return ReturnJson(new
+      {
+        field.Project.ProjectId,
+        field.Project.ProjectName,
+        ShowEditControls = hasMasterAccess,
+        Groups =
+          CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
+            .PublicGroups.Select(
+              g =>
+                new
+                {
+                  g.CharacterGroupId,
+                  g.Name,
+                  g.DeepLevel,
+                  g.FirstCopy,
+                  Description = g.Description?.ToHtmlString(),
+                  Path = g.Path.Select(gr => gr.Name),
+                  Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
+                  CanAddDirectClaim = g.AvaiableDirectSlots != 0,
+                  DirectClaimsCount = g.AvaiableDirectSlots,
+                }),
+      });
+    }
+
+    private ActionResult ReturnJson(object data)
+    {
+      ControllerContext.HttpContext.Response.AddHeader("Access-Control-Allow-Origin", "*");
       return Json(
-        new
-        {
-          field.Project.ProjectId,
-          field.Project.ProjectName,
-          ShowEditControls = hasMasterAccess,
-          Groups =
-            CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
-              .PublicGroups.Select(
-                g =>
-                  new
-                  {
-                    g.CharacterGroupId,
-                    g.Name,
-                    g.DeepLevel,
-                    g.FirstCopy,
-                    Description = g.Description?.ToHtmlString(),
-                    Path = g.Path.Select(gr => gr.Name),
-                    Characters =
-                      g.PublicCharacters.Select(
-                        ch =>
-                          new
-                          {
-                            p = ch.CharacterId,
-                            ch.IsAvailable,
-                            ch.IsFirstCopy,
-                            ch.CharacterName,
-                            Description =ch.Description?.ToHtmlString(),
-                            PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-                            PlayerId = ch.Player?.Id,
-                            ch.ActiveClaimsCount
-                          }),
-                    CanAddDirectClaim = g.AvaiableDirectSlots != 0,
-                    DirectClaimsCount = g.AvaiableDirectSlots,
-                  }),
-        }, JsonRequestBehavior.AllowGet);
+        data, JsonRequestBehavior.AllowGet);
+    }
+
+    private object ConvertCharacterToJson(CharacterViewModel ch)
+    {
+      return new
+      {
+        p = ch.CharacterId,
+        ch.IsAvailable,
+        ch.IsFirstCopy,
+        ch.CharacterName,
+        Description = ch.Description?.ToHtmlString(),
+        PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
+        PlayerId = ch.Player?.Id,
+        ch.ActiveClaimsCount,
+        ClaimLink =
+          ch.IsAvailable
+            ? new UrlHelper(ControllerContext.RequestContext).Action("AddForCharacter", "Claim",
+              new {ch.ProjectId, ch.CharacterId})
+            : null,
+      };
     }
 
     // GET: GameGroups/Edit/5
@@ -120,7 +170,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    private static IEnumerable<MasterListItemViewModel>  GetMasters(CharacterGroup @group, bool includeSelf)
+    private static IEnumerable<MasterListItemViewModel>  GetMasters(IClaimSource @group, bool includeSelf)
     {
       return MasterListItemViewModel.FromProject(@group.Project)
         .Union(new MasterListItemViewModel()
@@ -182,30 +232,33 @@ namespace JoinRpg.Web.Controllers
 
     // GET: GameGroups/Delete/5
     [HttpGet,Authorize]
-    public ActionResult Delete(int projectId, int characterGroupId)
+    public async Task<ActionResult> Delete(int projectId, int characterGroupId)
     {
-      return WithGroupAsMaster(projectId, characterGroupId, (project, @group) => View(@group));
+      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+
+      return AsMaster(field, pa => pa.CanEditRoles) ?? View(field);
     }
 
     // POST: GameGroups/Delete/5
     [HttpPost,Authorize,ValidateAntiForgeryToken]
-    public ActionResult Delete(int projectId, int characterGroupId, FormCollection collection)
+    // ReSharper disable once UnusedParameter.Global
+    public async Task<ActionResult> Delete(int projectId, int characterGroupId, FormCollection collection)
     {
+      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
 
-      return WithGroupAsMaster(projectId, characterGroupId, (project, @group) =>
+      var error = AsMaster(field, pa => pa.CanEditRoles);
+      if (error != null) return error;
+
+      try
       {
-        try
-        {
-          ProjectService.DeleteCharacterGroup(
-            projectId, characterGroupId);
+        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId);
 
-          return RedirectToIndex(project);
-        }
-        catch
-        {
-          return View(group);
-        }
-      });
+        return RedirectToIndex(field.Project);
+      }
+      catch
+      {
+        return View(field);
+      }
     }
 
     public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -217,17 +270,18 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     [Authorize]
-    public ActionResult AddGroup(int projectid, int charactergroupid)
+    public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
     {
-      return WithGroupAsMaster(projectid, charactergroupid,
-        (project, @group) => View(new AddCharacterGroupViewModel()
-        {
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(project.RootGroup),
-          ProjectId = projectid,
-          ParentCharacterGroupIds = new List<int> {charactergroupid},
-          Masters = GetMasters(@group, includeSelf: true),
-          ResponsibleMasterId = -1
-        }));
+      var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
+
+      return AsMaster(field, pa => pa.CanEditRoles) ??  View(new AddCharacterGroupViewModel()
+      {
+        Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup),
+        ProjectId = projectid,
+        ParentCharacterGroupIds = new List<int> {charactergroupid},
+        Masters = GetMasters(field, includeSelf: true),
+        ResponsibleMasterId = -1
+      });
     }
 
     [HttpPost]
@@ -255,13 +309,6 @@ namespace JoinRpg.Web.Controllers
       {
         return View(viewModel);
       }
-    }
-
-    private ActionResult WithGroupAsMaster(int projectId, int? groupId, Func<Project, CharacterGroup, ActionResult> action)
-    {
-      var field = groupId == null ? null : ProjectRepository.GetCharacterGroup(projectId, (int)groupId);
-
-      return AsMaster(field, pa => pa.CanEditRoles) ?? action(field.Project, field);
     }
 
     public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)

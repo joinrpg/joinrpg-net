@@ -16,7 +16,11 @@
 
     @if (Model.IsAvailable)
     {
-    <text> </text> @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, null)
+        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, null)
+        if (Model.IsHot)
+        {
+            <span class="label label-warning">Горячая роль</span>
+        }
     }
 
     @if (Model.IsFirstCopy)

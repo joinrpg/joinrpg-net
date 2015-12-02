@@ -1,4 +1,5 @@
 ﻿/// <autosync enabled="true" />
+/// <reference path="../external/roles-1.js" />
 /// <reference path="bootstrap.min.js" />
 /// <reference path="bootstrap-datepicker.min.js" />
 /// <reference path="jquery.details.min.js" />

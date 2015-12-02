@@ -81,11 +81,6 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
-    public CharacterGroup GetCharacterGroup(int projectId, int groupId)
-    {
-      return AllProjects.Single(p => p.ProjectId == projectId).CharacterGroups.SingleOrDefault(c => c.CharacterGroupId == groupId);
-    }
-
     public Task<Claim> GetClaim(int projectId, int claimId)
     {
       return
@@ -110,7 +105,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Character)
           .Include(c => c.Player)
           .Include(c => c.Player.Claims)
-          .Include(c => c.Comments)  //TODO c.Comment.Finances
+          .Include(c => c.Comments.Select(com => com.Finance)) 
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 

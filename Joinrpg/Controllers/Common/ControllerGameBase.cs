@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -17,7 +18,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected const string GroupFieldPrefix = "group_";
     protected const string CharFieldPrefix = "char_";
     protected IProjectService ProjectService { get; }
-    protected IExportDataService ExportDataService { get; }
+    private IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
 
@@ -118,33 +119,22 @@ namespace JoinRpg.Web.Controllers.Common
 
     protected ActionResult RedirectToIndex(Project project)
     {
-      return RedirectToIndex(project.ProjectId, project.CharacterGroups.Single(cg => cg.IsRoot).CharacterGroupId);
+      return RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId);
     }
 
-    protected ActionResult RedirectToIndex(int projectId, int characterGroupId)
+    protected ActionResult RedirectToIndex(int projectId, int characterGroupId, [AspMvcAction] string action = "Index")
     {
-      return RedirectToAction("Index", "GameGroups", new {projectId, characterGroupId, area = ""});
+      return RedirectToAction(action, "GameGroups", new {projectId, characterGroupId, area = ""});
     }
 
-    protected async Task<ActionResult> RedirectToProject(int projectId)
+    protected async Task<ActionResult> RedirectToProject(int projectId, [AspMvcAction] string action = "Index")
     {
-      var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      var errorResult = WithEntity(project1);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-      return RedirectToIndex(project1);
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var errorResult = WithEntity(project);
+      return errorResult ?? RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId, action);
     }
 
-    protected IEnumerable<T> LoadIfMaster<T>(Project project, Func<IEnumerable<T>> load)
-    {
-      return (User.Identity.IsAuthenticated && project.HasMasterAccess(CurrentUserId))
-        ? load()
-        : new T[] {};
-    }
-
-    protected ExportType? GetExportTypeByName(string export)
+    protected static ExportType? GetExportTypeByName(string export)
     {
       switch (export)
       {

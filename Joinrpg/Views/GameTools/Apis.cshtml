@@ -1,0 +1,71 @@
+﻿@model JoinRpg.DataModel.Project
+
+@{
+  ViewBag.Title = "Встраивание на сайт";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>На этой странице документированы различные способы встраивания сетки ролей на сайт.</p>
+<h3>Встраивание сетки ролей</h3>
+<h4>JSON API</h4>
+<p>
+    URL метода:
+    <br />
+    <code>
+        http://@Request.Url.Host@Url.Action("IndexJson", "GameGroups", new { ProjectId = "_projectId_", CharacterGroupId = "_characterGroupId_" })
+    </code>
+    <br />
+    Где _projectId_ — ид проекта, а _characterGroupId_ ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
+    Например, для текущего проекта вызов JSON API «получить вообще все роли в проекте» будет выглядеть как:
+    <br />
+    <code>
+        http://@Request.Url.Host@Url.Action("IndexJson", "GameGroups", new { Model.ProjectId, Model.RootGroup.CharacterGroupId })
+    </code>
+</p>
+<h3>Показ горячих ролей</h3>
+<h4>Javascript библиотека</h4>
+<p>
+    Добавьте на страницу код такого вида:
+    <br/>
+    <code>
+        &lt;div class="joinrpg-hot-roles" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1"&gt;
+
+        &lt/div&gt;
+    </code>
+    <br/>
+    И подключите скрипт:
+    <br/>
+    <code>
+        &lt;script type="text/javascript" src="@Request.Url.Host/external/roles-1.js" async defer&gt;&lt;/script&gt;
+    </code>
+    <br/>
+    Пример результата:
+    <div class="panel panel-default">
+        <div class="panel-heading">Горячие роли</div>
+        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1" data-server="http://@Request.Url.Host:@Request.Url.Port">
+            Ожидайте загрузки...
+        </div>
+    </div>
+</p>
+<h4>JSON API</h4>
+<details>
+    <summary>Использовать прямой вызов JSON не рекомендуется, т.к. реализована Javascript библиотека</summary>
+    <p>
+        URL метода:
+        <br/>
+        <code>
+            http://@Request.Url.Host@Url.Action("HotJson", "GameGroups", new {ProjectId = "_projectId_", CharacterGroupId = "_characterGroupId_"})
+        </code>
+        <br/>
+        Где _projectId_ — ид проекта, а _characterGroupId_ ид группы (см. выше).
+        <br/>
+        <code>
+            http://@Request.Url.Host@Url.Action("HotJson", "GameGroups", new {Model.ProjectId, Model.RootGroup.CharacterGroupId})
+        </code>
+    </p>
+</details>
+@section Scripts
+{
+    <script type="text/javascript" src="~/external/roles-1.js" async defer></script>
+}

@@ -333,6 +333,8 @@ namespace JoinRpg.Services.Impl.Allrpg
         .RemoveRange(Project.Claims.SelectMany(c => c.Comments).Select(c => c.Finance).WhereNotNull());
       UnitOfWork.GetDbSet<PlotElement>().RemoveRange(Project.PlotFolders.SelectMany(f => f.Elements).ToList());
       UnitOfWork.GetDbSet<PlotFolder>().RemoveRange(Project.PlotFolders.ToList());
+      UnitOfWork.GetDbSet<ReadCommentWatermark>()
+        .RemoveRange(Project.Claims.SelectMany(c => c.Watermarks));
       UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Comments).ToList());
       UnitOfWork.GetDbSet<Claim>().RemoveRange(Project.Claims.ToList());
 

@@ -1,0 +1,14 @@
+﻿@model System.Collections.Generic.IEnumerable<JoinRpg.Web.Models.CharacterViewModel>
+
+@{
+    ViewBag.Title = "Горячие роли";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@foreach (var character in Model)
+{
+<li>
+    @Html.Partial("_CharacterPartial", character)
+</li>
+}

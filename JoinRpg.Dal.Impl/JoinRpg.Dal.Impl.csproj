@@ -189,6 +189,10 @@
     <Compile Include="Migrations\201511282208418_ReadComments.Designer.cs">
       <DependentUpon>201511282208418_ReadComments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201512021115324_IsHotRoles.cs" />
+    <Compile Include="Migrations\201512021115324_IsHotRoles.Designer.cs">
+      <DependentUpon>201512021115324_IsHotRoles.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -320,6 +324,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201511282208418_ReadComments.resx">
       <DependentUpon>201511282208418_ReadComments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512021115324_IsHotRoles.resx">
+      <DependentUpon>201512021115324_IsHotRoles.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,7 +6,7 @@
 <h2>@ViewBag.Title</h2>
 
 <p>Обратите внимание, что все данные будут удалены и заменены на соответствующие данные из allrpg</p>
-@using (Html.BeginForm("AllrpgUpdate", "Game"))
+@using (Html.BeginForm())
 {
     @Html.HiddenFor(model => model.ProjectId)
   @Html.AntiForgeryToken()
