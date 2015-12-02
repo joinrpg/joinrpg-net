@@ -344,8 +344,6 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
-    <None Include="Properties\PublishProfiles\joinrpg - production.pubxml" />
-    <None Include="Properties\PublishProfiles\joinrpg - dev.pubxml" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-datepicker.min.js" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
@@ -558,6 +556,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Views\Shared\" />
+    <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>
