@@ -28,6 +28,7 @@ namespace JoinRpg.Web.Models
       ClaimId = comment.ClaimId;
       IsRead = comment.IsReadByUser(currentUserId);
       ChildComments = comment.ChildsComments.Select(c => new CommentViewModel(c, currentUserId));
+      ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
     }
 
     public bool IsRead { get; set; }
@@ -54,6 +55,15 @@ namespace JoinRpg.Web.Models
     { get; set; }
     public int ClaimId
     { get; set; }
+    public CommentExtraAction? ExtraAction { get; set; }
+  }
+
+  public enum CommentExtraAction
+  {
+    [Display(Name = "Финансовая операция подтвержена")]
+    ApproveFinance,
+    [Display(Name = "Финансовая операция отклонена")]
+    RejectFinance
   }
 
   public class AddCommentViewModel : IValidatableObject

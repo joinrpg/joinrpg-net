@@ -33,6 +33,8 @@ namespace JoinRpg.DataModel
     public bool IsCommentByPlayer { get; set; }
     public bool IsVisibleToPlayer { get; set; }
     public virtual FinanceOperation Finance { get; set; }
+
+    public CommentExtraAction? ExtraAction { get; set; }
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (Finance != null && !IsVisibleToPlayer)
@@ -50,5 +52,11 @@ namespace JoinRpg.DataModel
         yield return new ValidationResult("IsCommentByPlayer filled incorrectly");
       }
     }
+  }
+
+  public enum CommentExtraAction  
+  {
+    ApproveFinance,
+    RejectFinance
   }
 }

@@ -201,6 +201,10 @@
     <Compile Include="Migrations\201512021455077_AdministratorFlag.Designer.cs">
       <DependentUpon>201512021455077_AdministratorFlag.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201512022027489_CommentExtraAction.cs" />
+    <Compile Include="Migrations\201512022027489_CommentExtraAction.Designer.cs">
+      <DependentUpon>201512022027489_CommentExtraAction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -341,6 +345,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201512021455077_AdministratorFlag.resx">
       <DependentUpon>201512021455077_AdministratorFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512022027489_CommentExtraAction.resx">
+      <DependentUpon>201512022027489_CommentExtraAction.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

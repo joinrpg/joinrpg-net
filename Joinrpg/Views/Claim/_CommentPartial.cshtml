@@ -40,6 +40,12 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
     {
     @Html.DisplayFor(model => comment.Finance)
     }
+
+    @if (comment.ExtraAction != null)
+    {
+        <br/><b>@Html.DisplayFor(model => comment.ExtraAction)</b>
+    }
+
     <span>@comment.CommentText.ToHtmlString()</span>
     <details>
         <summary>Ответить...</summary>

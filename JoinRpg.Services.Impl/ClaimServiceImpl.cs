@@ -96,6 +96,8 @@ namespace JoinRpg.Services.Impl
 
       var parentComment = claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
+      CommentExtraAction? extraAction = null;
+
       if (financeAction != FinanceOperationAction.None)
       {
         var finance = parentComment?.Finance;
@@ -115,17 +117,20 @@ namespace JoinRpg.Services.Impl
         {
           case FinanceOperationAction.Approve:
             finance.State = FinanceOperationState.Approved;
+            extraAction = CommentExtraAction.ApproveFinance;
             break;
           case FinanceOperationAction.Decline:
-          finance.State = FinanceOperationState.Declined;
-          break;
+            finance.State = FinanceOperationState.Declined;
+            extraAction = CommentExtraAction.RejectFinance;
+            break;
           default:
             throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
         }
       }
 
       
-      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, now, isVisibleToPlayer);
+      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, now, isVisibleToPlayer, extraAction);
+      
 
       await UnitOfWork.SaveChangesAsync();
 
@@ -148,7 +153,7 @@ namespace JoinRpg.Services.Impl
 
       foreach (var otherClaim in claim.OtherActiveClaimsForThisPlayer())
       {
-        claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster);
+        otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster);
         otherClaim.MasterDeclinedDate = now;
         otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
         await EmailService.Email(await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект", otherClaim, now, true, s => s.ClaimStatusChange));
@@ -321,7 +326,7 @@ namespace JoinRpg.Services.Impl
 
   internal static class ClaimStaticExtensions
   {
-    public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText, DateTime now, bool isVisibleToPlayer)
+    public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText, DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction = null)
     {
       if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
       {
@@ -330,7 +335,16 @@ namespace JoinRpg.Services.Impl
 
       var comment = new Comment()
       {
-        ProjectId = claim.ProjectId, AuthorUserId = currentUserId, ClaimId = claim.ClaimId, CommentText = new MarkdownString(commentText), CreatedTime = now, IsCommentByPlayer = claim.PlayerUserId == currentUserId, IsVisibleToPlayer = isVisibleToPlayer, ParentCommentId = parentCommentId, LastEditTime = now
+        ProjectId = claim.ProjectId,
+        AuthorUserId = currentUserId,
+        ClaimId = claim.ClaimId,
+        CommentText = new MarkdownString(commentText),
+        CreatedTime = now,
+        IsCommentByPlayer = claim.PlayerUserId == currentUserId,
+        IsVisibleToPlayer = isVisibleToPlayer,
+        ParentCommentId = parentCommentId,
+        LastEditTime = now,
+        ExtraAction = extraAction
       };
       claim.Comments.Add(comment);
 

@@ -55,6 +55,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
+      <Project>{bd1358f0-8c7b-4205-84bc-b1c954364df0}</Project>
+      <Name>JoinRpg.DataModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
       <Project>{fee778a6-b9e7-4305-b985-3c4fa5f1b1d8}</Project>
       <Name>JoinRpg.Domain</Name>
