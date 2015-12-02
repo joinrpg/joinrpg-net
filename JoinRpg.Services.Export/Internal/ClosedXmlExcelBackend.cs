@@ -15,7 +15,12 @@ namespace JoinRpg.Services.Export.Internal
 
     protected override void SetCell(int columnIndex, Cell cell)
     {
-      Sheet.Cell(CurrentRowIndex, columnIndex).Value = cell.Content;
+      var xlCell = Sheet.Cell(CurrentRowIndex, columnIndex);
+      xlCell.Value = cell.Content;
+      if (cell.IsUri)
+      {
+        xlCell.Hyperlink = new XLHyperlink(cell.Content);
+      }
     }
 
     protected override void AdjustColumnToContent(int columnIndex)

@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Controllers
       }
       var viewModel = project.FinanceOperations.Where(predicate)
         .OrderBy(f => f.CommentId)
-        .Select(FinOperationListItemViewModel.Create);
+        .Select(f => FinOperationListItemViewModel.Create(f, new UrlHelper(ControllerContext.RequestContext)));
 
       var exportType = GetExportTypeByName(export);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
@@ -57,11 +58,14 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Заявка"), Required]
     public string Claim { get; set; }
 
+    [Url,Display(Name="Ссылка на заявку")]
+    public string ClaimLink { get; set; }
+
     [Display(Name = "Игрок"), Required]
     public User Player
     { get; set; }
 
-    public static FinOperationListItemViewModel Create(FinanceOperation fo)
+    public static FinOperationListItemViewModel Create(FinanceOperation fo, UrlHelper url)
     {
       return new FinOperationListItemViewModel()
       {
@@ -73,7 +77,8 @@ namespace JoinRpg.Web.Models
         OperationDate = fo.OperationDate,
         FinanceOperationId = fo.CommentId,
         MarkingMaster = fo.Comment.Author,
-        Player = fo.Claim.Player
+        Player = fo.Claim.Player,
+        ClaimLink = url.Action("Edit", "Claim", new {fo.ProjectId, fo.ClaimId}, url.RequestContext.HttpContext.Request.Url.Scheme)
       };
     }
   }

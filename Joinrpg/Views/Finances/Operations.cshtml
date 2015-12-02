@@ -59,7 +59,7 @@
             @Html.DisplayFor(modelItem => item.PaymentTypeName)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Claim)
+            <a href="@item.ClaimLink">@item.Claim</a>
         </td>
         <td>
             @Html.DisplayFor(model => item.Player)

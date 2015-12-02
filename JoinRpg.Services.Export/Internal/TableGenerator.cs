@@ -78,6 +78,11 @@ namespace JoinRpg.Services.Export.Internal
         tableColumn.Name = displayAttribute.Name ?? tableColumn.Name;
       }
 
+      if (propertyInfo.GetCustomAttribute<UrlAttribute>() != null)
+      {
+        tableColumn.IsUri = true;
+      }
+
       foreach (var displayFunction in DisplayFunctions)
       {
         if (displayFunction.Key.IsAssignableFrom(propertyInfo.PropertyType))
@@ -104,7 +109,8 @@ namespace JoinRpg.Services.Export.Internal
       {
         return new Cell()
         {
-          Content = Converter(Getter(row)).ToString()
+          Content = Converter(Getter(row)).ToString(),
+          IsUri = IsUri
         };
       }
 
@@ -114,6 +120,7 @@ namespace JoinRpg.Services.Export.Internal
 
       public Func<object, object> Converter
       { private get; set; } = arg => arg;
+      public bool IsUri { get; set; }
     }
 
     public string ContentType => Backend.ContentType;
