@@ -35,7 +35,7 @@ namespace JoinRpg.Helpers
 
     public static IEnumerable<int> UnprefixNumbers([NotNull, ItemNotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
     {
-      return enumerable.SelectWherePrefix(prefix).Select(int.Parse);
+      return enumerable.SelectWherePrefix(prefix).Select(Int32.Parse);
     }
 
     public static int? UnprefixNumber([NotNull] this string number, [NotNull] string prefix)
@@ -56,6 +56,13 @@ namespace JoinRpg.Helpers
     public static string ToHexString(this IEnumerable<byte> bytes)
     {
       return bytes.Select(b => $"{b:x2}").AsString();
+    }
+
+    public static string RemoveFromString([NotNull] this string url, [NotNull, ItemNotNull] IEnumerable<string> tokensToRemove)
+    {
+      if (url == null) throw new ArgumentNullException(nameof(url));
+      if (tokensToRemove == null) throw new ArgumentNullException(nameof(tokensToRemove));
+      return tokensToRemove.Aggregate(url, (current, replaceToken) => current.Replace(replaceToken, ""));
     }
   }
 }

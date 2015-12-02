@@ -1,4 +1,5 @@
 ﻿using System;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.TestHelpers;
 using JoinRpg.Web.Models;
@@ -7,12 +8,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace JoinRpg.Web.Test
 {
   [TestClass]
-  public class ProblemEnumTest
+  public class EnumTests
   {
     [TestMethod]
     public void ProblemEnum()
     {
       EnumerationTestHelper.CheckEnums<ClaimProblemType, ProblemTypeViewModel>();
+    }
+
+    public void AccessEnum()
+    {
+      EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
     }
   }
 }

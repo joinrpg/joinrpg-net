@@ -193,6 +193,14 @@
     <Compile Include="Migrations\201512021115324_IsHotRoles.Designer.cs">
       <DependentUpon>201512021115324_IsHotRoles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201512021334000_MoreProfileFields.cs" />
+    <Compile Include="Migrations\201512021334000_MoreProfileFields.Designer.cs">
+      <DependentUpon>201512021334000_MoreProfileFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201512021455077_AdministratorFlag.cs" />
+    <Compile Include="Migrations\201512021455077_AdministratorFlag.Designer.cs">
+      <DependentUpon>201512021455077_AdministratorFlag.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -327,6 +335,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201512021115324_IsHotRoles.resx">
       <DependentUpon>201512021115324_IsHotRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512021334000_MoreProfileFields.resx">
+      <DependentUpon>201512021334000_MoreProfileFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512021455077_AdministratorFlag.resx">
+      <DependentUpon>201512021455077_AdministratorFlag.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

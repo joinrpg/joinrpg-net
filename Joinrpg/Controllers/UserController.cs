@@ -15,26 +15,30 @@ namespace JoinRpg.Web.Controllers
       public async Task<ActionResult> Details(int userId)
       {
         var user = await UserManager.FindByIdAsync(userId);
+        var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
 
         var userProfileViewModel = new UserProfileViewModel()
         {
           DisplayName = user.DisplayName,
-          FullName = user.FullName,
           ThisUserProjects = user.ProjectAcls,
           UserId = user.UserId,
-          AllrpgId = user.Allrpg?.Sid,
+
+          Details = UserProfileDetailsViewModel.FromUser(user, currentUser)
         };
 
-        var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
+
         if (currentUser != null)
         {
           userProfileViewModel.CanGrantAccessProjects = currentUser.GetProjects(acl => acl.CanGrantRights);
           userProfileViewModel.Claims =
             user.Claims.Where(claim => claim.HasAccess(currentUser.UserId))
               .Select(ClaimListItemViewModel.FromClaim);
+
         }
+
         return View(userProfileViewModel);
       }
+
 
       [Authorize]
       // GET: User preferred name. I.e. to display in page header.
@@ -46,10 +50,8 @@ namespace JoinRpg.Web.Controllers
         var userProfileViewModel = new UserProfileViewModel()
         {
           DisplayName = user.DisplayName,
-          FullName = user.FullName,
           ThisUserProjects = user.ProjectAcls,
-          UserId = user.UserId,
-          AllrpgId = user.Allrpg?.Sid
+          UserId = user.UserId
         };
 
         return PartialView(userProfileViewModel);

@@ -212,6 +212,8 @@ namespace JoinRpg.Web.Controllers
         PhoneNumber = user.Extra?.PhoneNumber,
         Nicknames = user.Extra?.Nicknames,
         GroupNames = user.Extra?.GroupNames,
+        Vk = user.Extra?.Vk,
+        Livejournal = user.Extra?.Livejournal,
         Skype = user.Extra?.Skype
       });
     }
@@ -224,7 +226,7 @@ namespace JoinRpg.Web.Controllers
         await
           _userService.UpdateProfile(CurrentUserId, viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
-            viewModel.GroupNames, viewModel.Skype);
+            viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal);
         return RedirectToAction("SetupProfile");
       }
       catch

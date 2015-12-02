@@ -69,6 +69,9 @@ namespace JoinRpg.DataModel
     public string PhoneNumber { get; set; }
     public string Skype { get; set; }
 
+    public string Vk { get; set; }
+    public string Livejournal { get; set; }
+
     public string Nicknames { get; set; }
 
     public string GroupNames { get; set; }
@@ -77,7 +80,7 @@ namespace JoinRpg.DataModel
 
     public override string ToString()
     {
-      return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Skype: {Skype}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate})";
+      return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate})";
     }
   }
 
@@ -90,6 +93,8 @@ namespace JoinRpg.DataModel
     public bool EmailConfirmed { get; set; }
 
     public DateTime RegisterDate { get; set; }
+
+    public bool IsAdmin { get; set; }
 
     public override string ToString()
     {

@@ -1,0 +1,32 @@
+﻿@using JoinRpg.Web.Models
+@model UserProfileDetailsViewModel
+
+@if (Model.Reason != AccessReason.NoAccess)
+{
+    <div class="col-md-5">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @Html.DisplayFor(model => model.User) (ФИО: @Model.FullName)
+                <br/>
+                @string.Join(", ", new object[]
+                {
+                    Model.PhoneNumber.Trim(), Html.DisplayFor(model => model.Skype), Html.DisplayFor(model => model.Livejournal),
+                    Html.DisplayFor(model => model.Vk)
+                }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))
+                @if (Model.AllrpgId != null && Model.AllrpgId != 0)
+                {
+                    <br/>
+                    <a href="http://inf.allrpg.info/users/@Model.AllrpgId/">Профиль на allrpg</a>
+                }
+
+            </div>
+            <div class="panel-footer" title="Почему я вижу этот профиль?">
+                 @Html.DisplayFor(model => model.Reason)
+                @if (Model.Reason == AccessReason.ItsMe)
+                {
+                  <text>[ @Html.ActionLink("Настроить", "SetupProfile", "Manage") ]</text>
+}
+            </div>
+        </div>
+    </div>
+}

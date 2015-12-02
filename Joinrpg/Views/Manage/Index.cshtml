@@ -3,7 +3,7 @@
     ViewBag.Title = "Мой аккаунт";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewBag.Title</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
@@ -11,7 +11,7 @@
     <hr />
     <dl class="dl-horizontal">
         <dt>Профиль:</dt>
-        <dd>[ @Html.ActionLink("Настроить", "SetupProfile") ] [@Html.ActionLink("Показать", "Me", "User")]</dd>
+        <dd>[ @Html.ActionLink("Настроить", "SetupProfile") ] </dd>
         <dt>Email:</dt>
         <dd> @Model.Email </dd>
         <dt>Пароль:</dt>

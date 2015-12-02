@@ -547,10 +547,15 @@
     <Content Include="Views\Claim\_CommentPartial.cshtml" />
     <Content Include="Views\GameTools\Apis.cshtml" />
     <Content Include="Views\GameGroups\Hot.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\UserProfileDetailsViewModel.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Skype.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Livejournal.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Vkontakte.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Views\Shared\" />
+    <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

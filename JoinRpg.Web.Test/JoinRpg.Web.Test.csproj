@@ -51,10 +51,14 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="ProblemEnumTest.cs" />
+    <Compile Include="EnumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
+      <Project>{fee778a6-b9e7-4305-b985-3c4fa5f1b1d8}</Project>
+      <Name>JoinRpg.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>
       <Name>JoinRpg.Services.Interfaces</Name>

@@ -46,6 +46,16 @@ namespace JoinRpg.Services.Impl.Allrpg
         user.Extra.Skype = result.skype;
       }
 
+      if (user.Extra.Vk == null)
+      {
+        user.Extra.Vk = result.vkontakte;
+      }
+
+      if (user.Extra.Livejournal == null)
+      {
+        user.Extra.Livejournal = result.livejournal;
+      }
+
       if (user.Extra.GroupNames == null)
       {
         user.Extra.GroupNames = result.ingroup;

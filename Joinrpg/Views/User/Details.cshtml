@@ -2,37 +2,32 @@
 @model UserProfileViewModel
 
 @{
-  ViewBag.Title = "Профиль " + Model.DisplayName;
+  ViewBag.Title = Model.DisplayName;
 }
 
 <h2>@ViewBag.Title</h2>
 
-<div>
-    <h4>@Model.FullName</h4>
-    <hr/>
-
-    @if (Model.AllrpgId != null && Model.AllrpgId != 0)
-    {
-        <p><a href="http://inf.allrpg.info/users/@Model.AllrpgId/">Профиль на allrpg</a>
-        </p>
-    }
+<div class="container">
+    @Html.DisplayFor(model => model.Details)
 
     @if (Model.ThisUserProjects.Any())
     {
-    <h4>Проекты этого пользователя </h4>
-            <ul>
-                @foreach (var master in Model.ThisUserProjects)
+    <div class="col-md-5">
+        <h4>Проекты этого пользователя </h4>
+        <ul>
+            @foreach (var master in Model.ThisUserProjects)
+            {
+            <li>
+                @Html.ActionLink(@master.Project.ProjectName, "Details", "Game", new { master.ProjectId }, null)
+                @if (master.IsOwner)
                 {
-                    <li>
-                        @Html.ActionLink(@master.Project.ProjectName, "Details", "Game", new {master.ProjectId}, null)
-                        @if (master.IsOwner)
-                        {
-                            <span>(создатель проекта)</span>
-                        }
-                    </li>
+                <span>(создатель проекта)</span>
                 }
+            </li>
+            }
 
-            </ul>
+        </ul>
+    </div>
     }
     @if (Model.Claims.Any())
     {
@@ -41,7 +36,8 @@
 
     @if (Model.ProjectsToAdd.Any())
     {
-        using (Html.BeginForm("Add", "Acl", FormMethod.Post))
+    <div class="col-md-10">
+        @using (Html.BeginForm("Add", "Acl", FormMethod.Post))
         {
         @Html.AntiForgeryToken()
         <details>
@@ -55,17 +51,17 @@
                 @{ var acl = new AclViewModel();}
                 @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new { Projects = Model.ProjectsToAdd })
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanApproveClaims" })
+                    @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanApproveClaims" })
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanApproveClaims, null, htmlFieldName: "CanApproveClaims")
-                            @Html.ValidationMessageFor(model => acl.CanApproveClaims, "", new {@class = "text-danger"})
+                            @Html.ValidationMessageFor(model => acl.CanApproveClaims, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2", @for= "CanChangeFields" })
+                    @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanChangeFields" })
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanChangeFields, null, htmlFieldName: "CanChangeFields")
@@ -85,31 +81,31 @@
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanGrantRights"})
+                    @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanGrantRights" })
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanGrantRights, null, htmlFieldName: "CanGrantRights")
-                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new {@class = "text-danger"})
+                            @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanEditRoles, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanEditRoles" })
+                    @Html.LabelFor(model => acl.CanEditRoles, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanEditRoles" })
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanEditRoles, null, htmlFieldName: "CanEditRoles")
-                            @Html.ValidationMessageFor(model => acl.CanEditRoles, "", new {@class = "text-danger"})
+                            @Html.ValidationMessageFor(model => acl.CanEditRoles, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    @Html.LabelFor(model => acl.CanAcceptCash, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanAcceptCash" })
+                    @Html.LabelFor(model => acl.CanAcceptCash, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanAcceptCash" })
                     <div class="col-md-10">
                         <div class="checkbox">
                             @Html.EditorFor(model => acl.CanAcceptCash, null, htmlFieldName: "CanAcceptCash")
-                            @Html.ValidationMessageFor(model => acl.CanAcceptCash, "", new {@class = "text-danger"})
+                            @Html.ValidationMessageFor(model => acl.CanAcceptCash, "", new { @class = "text-danger" })
                         </div>
                     </div>
                 </div>
@@ -124,9 +120,10 @@
                     </div>
                 </div>
 
-                <input type="submit" value="Добавить" class="btn btn-default"/>
-                </div>
-</details>
+                <input type="submit" value="Добавить" class="btn btn-default" />
+            </div>
+        </details>
         }
-    }
+    </div>
+                  }
     </div>

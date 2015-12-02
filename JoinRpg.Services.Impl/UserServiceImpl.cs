@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -14,8 +16,7 @@ namespace JoinRpg.Services.Impl
     {
     }
 
-    public async Task UpdateProfile(int currentUserId, int userId, string surName, string fatherName, string bornName,
-      string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype)
+    public async Task UpdateProfile(int currentUserId, int userId, string surName, string fatherName, string bornName, string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string vk, string livejournal)
     {
       if (currentUserId != userId)
       {
@@ -34,6 +35,9 @@ namespace JoinRpg.Services.Impl
       user.Extra.Nicknames = nicknames;
       user.Extra.GroupNames = groupNames;
       user.Extra.Skype = skype;
+      var tokensToRemove = new[] {"http://", "vk.com/", "vkontakte.ru/", ".livejournal.com", ".lj.ru", "/", "https://"};
+      user.Extra.Livejournal = livejournal.RemoveFromString(tokensToRemove);
+      user.Extra.Vk = vk.RemoveFromString(tokensToRemove);
 
       await UnitOfWork.SaveChangesAsync();
     }

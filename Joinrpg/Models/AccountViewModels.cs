@@ -137,6 +137,10 @@ namespace JoinRpg.Web.Models
     public string PhoneNumber { get; set; }
     [Display(Name = "Skype")]
     public string Skype { get; set; }
+    [Display(Name = "ЖЖ")]
+    public string Livejournal { get; set; }
+    [Display(Name = "VK")]
+    public string Vk { get; set; }
     [Display(Name = "Все ник(и)", Description = "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по другому написанный ник")]
     public string Nicknames { get; set; }
     [Display(Name = "МГ/Клубы", Description = "Все мастерские группы/клубы, через запятую, к которым вы себя относите. ")]
