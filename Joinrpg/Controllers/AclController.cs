@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return RedirectToAction("Details", "User", new {user.Id});
+        return RedirectToAction("Details", "User", new {user.UserId});
       }
       return RedirectToAction("Index", "Acl", new {viewModel.ProjectId});
     }
