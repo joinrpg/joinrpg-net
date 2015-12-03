@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Models
         Skype = user.Extra?.Skype,
         Livejournal = user.Extra?.Livejournal,
         Vk = user.Extra?.Vk,
-        PhoneNumber = user.Extra?.PhoneNumber,
+        PhoneNumber = user.Extra?.PhoneNumber ?? "",
         AllrpgId = user.Allrpg?.Sid,
         Reason = currentUser != null
           ? (AccessReason) user.GetProfileAccess(currentUser)
