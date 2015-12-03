@@ -48,7 +48,7 @@
                     {
                         Text = paymentType.GetDisplayName(),
                         Value = paymentType.PaymentTypeId.ToString()
-                    }),
+                    }).OrderBy(i => i.Text),
                     htmlAttributes: new { @class = "form-control" })
                 </div>
             </div>
