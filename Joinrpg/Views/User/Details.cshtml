@@ -48,7 +48,10 @@
                 @*TODO: Move to partial view*@
                 @Html.HiddenFor(model => Model.UserId)
 
-                @{ var acl = new AclViewModel();}
+                @{ var acl = new AclViewModel()
+                   {
+                       ProjectId = Model.ProjectsToAdd.Select(p => p.ProjectId).First();
+                   };}
                 @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new { Projects = Model.ProjectsToAdd })
                 <div class="form-group">
                     @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new { @class = "control-label col-md-5", @for = "CanApproveClaims" })
