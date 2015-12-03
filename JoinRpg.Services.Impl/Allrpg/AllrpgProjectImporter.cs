@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
@@ -71,12 +72,32 @@ namespace JoinRpg.Services.Impl.Allrpg
       ImportComments(projectReply.comments);
 
       _operationLog.Info("SUCCESS");
-      await UnitOfWork.SaveChangesAsync();
+      await SaveToDatabase();
       _operationLog.Info("DATA_SAVED");
 
       ReorderLocations(Project.RootGroup);
-      await UnitOfWork.SaveChangesAsync();
+      await SaveToDatabase();
       _operationLog.Info("DATA_REORDED_SAVED");
+    }
+
+    private async Task SaveToDatabase()
+    {
+      try
+      {
+        await UnitOfWork.SaveChangesAsync();
+      }
+      catch (DbEntityValidationException e)
+      {
+        foreach (var failure in e.EntityValidationErrors)
+        {
+          _operationLog.Error($"Validation failed: {failure.Entry.Entity} ");
+          foreach (var error in failure.ValidationErrors)
+          {
+            _operationLog.Error($"- {error.PropertyName} : {error.ErrorMessage}");
+          }
+        }
+        throw;
+      }
     }
 
     private void ReorderLocations(CharacterGroup @group)
