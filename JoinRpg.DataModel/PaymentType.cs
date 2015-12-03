@@ -39,14 +39,14 @@ namespace JoinRpg.DataModel
       }
     }
 
-    public static PaymentType CreateCash(User user)
+    public static PaymentType CreateCash(int user)
     {
       return new PaymentType()
       {
         IsCash = true,
         IsActive = true,
         Name = "cash", 
-        User = user,
+        UserId = user,
       };
     }
   }

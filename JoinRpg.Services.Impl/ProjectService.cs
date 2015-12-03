@@ -315,7 +315,7 @@ namespace JoinRpg.Services.Impl
       //User now can accept cash and should have his "payment type"
       if (acl.CanAcceptCash && cashPaymentType == null)
       {
-        acl.Project.PaymentTypes.Add(PaymentType.CreateCash(acl.User));
+        acl.Project.PaymentTypes.Add(PaymentType.CreateCash(acl.UserId));
       }
 
       //User now can't accept cash , try to delete payment type if we don't need it anymore

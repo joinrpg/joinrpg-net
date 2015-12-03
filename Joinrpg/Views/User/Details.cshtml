@@ -50,7 +50,7 @@
 
                 @{ var acl = new AclViewModel()
                    {
-                       ProjectId = Model.ProjectsToAdd.Select(p => p.ProjectId).First();
+                       ProjectId = Model.ProjectsToAdd.Select(p => p.ProjectId).First()
                    };}
                 @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new { Projects = Model.ProjectsToAdd })
                 <div class="form-group">
