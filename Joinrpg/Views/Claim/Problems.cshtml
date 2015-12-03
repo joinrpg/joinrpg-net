@@ -28,6 +28,10 @@
     <tr>
         <td>
             @Html.ActionLink(item.Name, "Edit", "Claim", new { item.ProjectId, item.ClaimId }, null)
+            @if (item.UnreadCommentsCount > 0)
+            {
+            <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+            }
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Player)

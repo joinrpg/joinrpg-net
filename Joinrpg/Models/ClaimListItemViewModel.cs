@@ -44,10 +44,10 @@ namespace JoinRpg.Web.Models
 
     public DateTime? ProblemTime { get; set; }
 
-    public static ClaimProblemListItemViewModel FromClaimProblem(ClaimProblem problem)
+    public static ClaimProblemListItemViewModel FromClaimProblem(ClaimProblem problem, int currentUserId)
     {
       var self = new ClaimProblemListItemViewModel();
-      self.Assign(problem.Claim);
+      self.Assign(problem.Claim, currentUserId);
       self.ProblemType = (ProblemTypeViewModel) problem.ProblemType;
       self.ProblemTime = problem.ProblemTime;
       return self;
@@ -82,12 +82,11 @@ namespace JoinRpg.Web.Models
     public static ClaimListItemViewModel FromClaim(Claim claim, int currentUserId)
     {
       var viewModel = new ClaimListItemViewModel();
-      viewModel.Assign(claim);
-      viewModel.UnreadCommentsCount = claim.Comments.Count(comment => !comment.IsReadByUser(currentUserId));
+      viewModel.Assign(claim, currentUserId);
       return viewModel;
     }
 
-    protected void Assign(Claim claim)
+    protected void Assign(Claim claim, int currentUserId)
     {
       ClaimId = claim.ClaimId;
       ClaimStatus = claim.ClaimStatus;
@@ -97,6 +96,7 @@ namespace JoinRpg.Web.Models
       ProjectName = claim.Project.ProjectName;
       UpdateDate = claim.LastUpdateDateTime;
       Responsible = claim.ResponsibleMasterUser;
+      UnreadCommentsCount = claim.Comments.Count(comment => !comment.IsReadByUser(currentUserId));
     }
   }
 }

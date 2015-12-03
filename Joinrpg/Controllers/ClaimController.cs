@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectId);
       return AsMaster(project) ??
              View(
-               (await _claimService.GetProblemClaims(projectId)).Select(ClaimProblemListItemViewModel.FromClaimProblem));
+               (await _claimService.GetProblemClaims(projectId)).Select(problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId)));
     }
 
     [HttpGet, Authorize]
