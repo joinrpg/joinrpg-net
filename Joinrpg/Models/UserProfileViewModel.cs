@@ -36,6 +36,8 @@ namespace JoinRpg.Web.Models
     public string Livejournal { get; set; }
     [Display(Name = "VK"), UIHint("Vkontakte")]
     public string Vk { get; set; }
+    [UIHint("Email")]
+    public string Email { get; set; }
     [DisplayName("ФИО")]
     public string FullName { get; set; }
 
@@ -50,6 +52,7 @@ namespace JoinRpg.Web.Models
     {
       return new UserProfileDetailsViewModel()
       {
+        Email = user.Email,
         FullName = user.FullName,
         User = user,
         Skype = user.Extra?.Skype,

@@ -552,6 +552,7 @@
     <Content Include="Views\Shared\DisplayTemplates\Skype.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Livejournal.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Vkontakte.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Email.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

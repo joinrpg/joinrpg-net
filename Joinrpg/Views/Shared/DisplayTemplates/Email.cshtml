@@ -1,0 +1,6 @@
+﻿@model String
+@if (!string.IsNullOrWhiteSpace(Model))
+{
+<span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> <a href="mailto:@Model">@Model</a>
+}
+
