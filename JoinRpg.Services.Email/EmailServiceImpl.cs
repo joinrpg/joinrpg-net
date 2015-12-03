@@ -183,8 +183,7 @@ $@"
   $@"
 Добрый день, %recipient.name%!
 
-Мастер {model.GetInitiatorString()} перенес заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName
-    }» на {model.Claim.GetTarget().Name}.");
+Заявка игрока «{model.Claim.Player.DisplayName}» «{model.Claim.Name}» была перенесена {model.GetInitiatorString()} на {model.Claim.GetTarget().Name}.");
     }
 
     public Task Email(FinanceOperationEmail model)
@@ -194,7 +193,7 @@ $@"
       var message = $@"
 Добрый день, %recipient.name%!
 
-Мастер {model.GetInitiatorString()} отметил в заявке «{model.Claim.Name}» игрока «{model.GetPlayerName()}»:";
+В заявке «{model.Claim.Name}»  игрока «{model.GetPlayerName()}» было отмечено {model.GetInitiatorString()}:";
 
       if (model.FeeChange != 0)
       {
