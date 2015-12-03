@@ -23,6 +23,8 @@ namespace JoinRpg.Services.Impl.Search
               || user.FatherName.Contains(searchString)
               || user.BornName.Contains(searchString)
               || user.SurName.Contains(searchString)
+              || user.PrefferedName.Contains(searchString)
+              || (user.Extra != null && user.Extra.Nicknames != null && user.Extra.Nicknames.Contains(searchString))
             )
             .ToListAsync();
 
