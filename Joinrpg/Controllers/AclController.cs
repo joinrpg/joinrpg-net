@@ -5,7 +5,6 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
-using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -19,7 +18,6 @@ namespace JoinRpg.Web.Controllers
       var error = AsMaster(project, a => a.CanGrantRights);
       if (error != null) return error;
 
-      var user = UserManager.FindById(viewModel.UserId);
       try
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
@@ -28,7 +26,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return RedirectToAction("Details", "User", new {user.UserId});
+        return RedirectToAction("Details", "User", new {viewModel.UserId});
       }
       return RedirectToAction("Index", "Acl", new {viewModel.ProjectId});
     }
