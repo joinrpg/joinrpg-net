@@ -183,7 +183,7 @@ $@"
   $@"
 Добрый день, %recipient.name%!
 
-Заявка игрока «{model.Claim.Player.DisplayName}» «{model.Claim.Name}» была перенесена {model.GetInitiatorString()} на {model.Claim.GetTarget().Name}.");
+Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}»  была перенесена {model.GetInitiatorString()} на {model.Claim.GetTarget().Name}.");
     }
 
     public Task Email(FinanceOperationEmail model)
