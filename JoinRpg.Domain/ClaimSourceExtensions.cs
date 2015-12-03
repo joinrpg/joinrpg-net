@@ -15,11 +15,16 @@ namespace JoinRpg.Domain
 
     public static IEnumerable<User> GetResponsibleMasters(this IClaimSource @group, bool includeSelf = true)
     {
-      return @group.GetParentGroups()
-        .UnionIf(@group, includeSelf)
-        .Select(g => g.ResponsibleMasterUser)
-        .Where(u => u != null)
-        .Distinct();
+      if (group.ResponsibleMasterUser != null && includeSelf)
+      {
+        yield return group.ResponsibleMasterUser;
+        yield break;
+      }
+      var directParents = group.ParentGroups.SelectMany(g => g.GetResponsibleMasters()).WhereNotNull().Distinct();
+      foreach (var directParent in directParents)
+      {
+        yield return directParent;
+      }
     }
 
     [NotNull]
