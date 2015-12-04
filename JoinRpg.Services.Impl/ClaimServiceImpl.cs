@@ -287,10 +287,11 @@ namespace JoinRpg.Services.Impl
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
       CommentExtraAction? extraAction = null) where T : ClaimEmailModel, new()
     {
-      claim.AddCommentImpl(currentUserId, parentComment, commentText, now, isVisibleToPlayer, extraAction);
+      var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != true;
+      claim.AddCommentImpl(currentUserId, parentComment, commentText, now, visibleToPlayerUpdated, extraAction);
       return
         await
-          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, isVisibleToPlayer,
+          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated,
             new[] {parentComment?.Author});
     }
 
