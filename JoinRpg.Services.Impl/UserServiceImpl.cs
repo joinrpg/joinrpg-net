@@ -35,7 +35,7 @@ namespace JoinRpg.Services.Impl
       user.Extra.Nicknames = nicknames;
       user.Extra.GroupNames = groupNames;
       user.Extra.Skype = skype;
-      var tokensToRemove = new[] {"http://", "vk.com/", "vkontakte.ru/", ".livejournal.com", ".lj.ru", "/", "https://"};
+      var tokensToRemove = new[] {"http://", "https://", "vk.com/", "vkontakte.ru/", ".livejournal.com", ".lj.ru", "/", };
       user.Extra.Livejournal = livejournal.RemoveFromString(tokensToRemove);
       user.Extra.Vk = vk.RemoveFromString(tokensToRemove);
 
