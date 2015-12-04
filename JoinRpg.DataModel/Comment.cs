@@ -42,6 +42,11 @@ namespace JoinRpg.DataModel
         yield return new ValidationResult("Finance operations always should be player-visible");
       }
 
+      if (Parent != null && !Parent.IsVisibleToPlayer && IsVisibleToPlayer)
+      {
+        yield return new ValidationResult("Child comments should not be visible if parent is not");
+      }
+
       if (string.IsNullOrWhiteSpace(CommentText.Contents))
       {
         yield return new ValidationResult("Comment can't be empty", new[] { nameof(CommentText) });
@@ -58,6 +63,12 @@ namespace JoinRpg.DataModel
   public enum CommentExtraAction  
   {
     ApproveFinance,
-    RejectFinance
+    RejectFinance,
+    ApproveByMaster,
+    DeclineByMaster,
+    RestoreByMaster,
+    MoveByMaster,
+    DeclineByPlayer,
+    ChangeResponsible
   }
 }

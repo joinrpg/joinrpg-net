@@ -32,15 +32,19 @@ namespace JoinRpg.Services.Impl
     }
 
     protected async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText,
-      Func<UserSubscription, bool> subscribePredicate) where TEmail : ClaimEmailModel, new()
+      Func<UserSubscription, bool> subscribePredicate, bool isVisibleToPlayer, IEnumerable<User> extraRecepients = null)
+      where TEmail : ClaimEmailModel, new()
     {
+      var subscriptions =
+        claim.GetSubscriptions(subscribePredicate, currentUserId, extraRecepients ?? Enumerable.Empty<User>(),
+          isVisibleToPlayer).ToList();
       return new TEmail()
       {
         Claim = claim,
         ProjectName = claim.Project.ProjectName,
         Initiator = await UserRepository.GetById(currentUserId),
         InitiatorType = currentUserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
-        Recepients = claim.GetSubscriptions(subscribePredicate, currentUserId).ToList(),
+        Recepients = subscriptions.ToList(),
         Text = new MarkdownString(commentText)
       };
     }

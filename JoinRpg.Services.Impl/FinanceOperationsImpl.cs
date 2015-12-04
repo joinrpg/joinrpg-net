@@ -49,7 +49,7 @@ namespace JoinRpg.Services.Impl
         }
       }
 
-      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true);
+      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true, extraAction: null);
 
       var financeOperation = new FinanceOperation()
       {
@@ -78,7 +78,7 @@ namespace JoinRpg.Services.Impl
       }
 
       await UnitOfWork.SaveChangesAsync();
-      var email = CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation);
+      var email = CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation, true);
 
       await EmailService.Email(await email);
 

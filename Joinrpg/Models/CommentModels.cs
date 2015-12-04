@@ -63,7 +63,19 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Финансовая операция подтвержена")]
     ApproveFinance,
     [Display(Name = "Финансовая операция отклонена")]
-    RejectFinance
+    RejectFinance,
+    [Display(Name = "Заявка одобрена мастером")]
+    ApproveByMaster,
+    [Display(Name = "Заявка отклонена мастером")]
+    DeclineByMaster,
+    [Display(Name = "Заявка восстановлена мастером")]
+    RestoreByMaster,
+    [Display(Name = "Заявка перемещена мастером")]
+    MoveByMaster,
+    [Display(Name = "Заявка отозвана игроком")]
+    DeclineByPlayer,
+    [Display(Name = "Ответственный мастер изменен")]
+    ChangeResponsible
   }
 
   public class AddCommentViewModel : IValidatableObject

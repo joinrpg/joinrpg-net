@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -10,7 +11,7 @@ namespace JoinRpg.Domain
   {
     public static bool HasAccess(this Claim claim, int? currentUserId)
     {
-      return (claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId));
+      return claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId);
     }
 
     public static IEnumerable<Claim> OtherActiveClaimsForThisPlayer(this Claim claim)
@@ -54,6 +55,24 @@ namespace JoinRpg.Domain
       {
         throw new ClaimWrongStatusException(claim, possibleStatus);
       }
+    }
+
+    public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
+      int initiatorUserId, IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
+    {
+      return claim.GetParentGroups() //Get all groups for claim
+        .SelectMany(g => g.Subscriptions) //get subscriptions on groups
+        .Union(claim.Subscriptions) //subscribtions on claim
+        .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters
+        .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
+        .Select(u => u.User) //Select users
+        .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
+        .Union(claim.Player) //...and player himself also
+        .Union(extraRecepients) //add extra recepients
+        .Where(u => isVisibleToPlayer || u != claim.Player) //remove player if we doing something not player visible
+        .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
+        .Distinct() //One user can be subscribed by multiple reasons
+        ;
     }
   }
 }

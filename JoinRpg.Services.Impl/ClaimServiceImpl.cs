@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +17,6 @@ namespace JoinRpg.Services.Impl
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
     
-
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
     {
       var source = await GetClaimSource(projectId, characterGroupId, characterId);
@@ -57,7 +55,7 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       await UnitOfWork.SaveChangesAsync();
 
-      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange);
+      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange, true);
       await EmailService.Email(email);
     }
 
@@ -128,15 +126,12 @@ namespace JoinRpg.Services.Impl
         }
       }
 
-      
-      claim.AddCommentImpl(currentUserId, parentCommentId, commentText, now, isVisibleToPlayer, extraAction);
-      
+      var email = await AddCommentWithEmail<AddCommentEmail>(currentUserId, commentText, claim, now, isVisibleToPlayer,
+        s => s.Comments, parentComment, extraAction);      
 
       await UnitOfWork.SaveChangesAsync();
 
-      var addCommentEmail = await CreateClaimEmail<AddCommentEmail>(claim, currentUserId, commentText, s => s.Comments);
-      addCommentEmail.Recepients.Add(claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId)?.Author);
-      await EmailService.Email(addCommentEmail);
+      await EmailService.Email(email);
     }
 
     public async Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText)
@@ -149,14 +144,19 @@ namespace JoinRpg.Services.Impl
       claim.ClaimStatus = Claim.Status.Approved;
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
-      claim.AddCommentImpl(currentUserId, null, commentText, now, true);
+      claim.AddCommentImpl(currentUserId, null, commentText, now, true, CommentExtraAction.ApproveByMaster);
 
       foreach (var otherClaim in claim.OtherActiveClaimsForThisPlayer())
       {
         otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster);
         otherClaim.MasterDeclinedDate = now;
         otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
-        await EmailService.Email(await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект", otherClaim, now, true, s => s.ClaimStatusChange));
+        await
+          EmailService.Email(
+            await
+              AddCommentWithEmail<DeclineByMasterEmail>(currentUserId,
+                "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                otherClaim, now, true, s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster));
       }
 
       if (claim.Group != null)
@@ -165,7 +165,9 @@ namespace JoinRpg.Services.Impl
         claim.ConvertToIndividual();
       }
 
-      await EmailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange));
+      //TODO: Reorder and save emails only after save
+
+      await EmailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange, true));
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -178,7 +180,10 @@ namespace JoinRpg.Services.Impl
 
       claim.MasterDeclinedDate = now;
       claim.ClaimStatus = Claim.Status.DeclinedByMaster;
-      var email = await AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
+      var email =
+        await
+          AddCommentWithEmail<DeclineByMasterEmail>(currentUserId, commentText, claim, now, true,
+            s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -201,7 +206,7 @@ namespace JoinRpg.Services.Impl
         claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
       }
       
-      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
+      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -221,7 +226,11 @@ namespace JoinRpg.Services.Impl
       }
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
-      var email = await AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange);
+      var email =
+        await
+          AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow,
+            isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
+            extraAction: CommentExtraAction.MoveByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -265,16 +274,24 @@ namespace JoinRpg.Services.Impl
       claim.PlayerDeclinedDate = now;
       claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
-      var email = await AddCommentWithEmail<DeclineByPlayerEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange);
+      var email =
+        await
+          AddCommentWithEmail<DeclineByPlayerEmail>(currentUserId, commentText, claim, now, true,
+            s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
     }
 
-    private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now, bool isVisibleToPlayer, Func<UserSubscription, bool> predicate) where T : ClaimEmailModel, new()
+    private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now,
+      bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
+      CommentExtraAction? extraAction = null) where T : ClaimEmailModel, new()
     {
-      claim.AddCommentImpl(currentUserId, null, commentText, now, isVisibleToPlayer);
-      return await CreateClaimEmail<T>(claim, currentUserId, commentText, predicate);
+      claim.AddCommentImpl(currentUserId, parentComment, commentText, now, isVisibleToPlayer, extraAction);
+      return
+        await
+          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, isVisibleToPlayer,
+            new[] {parentComment?.Author});
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -287,7 +304,10 @@ namespace JoinRpg.Services.Impl
       var newMaster = await UserRepository.GetById(responsibleMasterId);
       claim.ResponsibleMasterUserId = responsibleMasterId;
 
-      claim.AddCommentImpl(currentUserId, null, $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}", DateTime.UtcNow, isVisibleToPlayer: false);
+      //TODO: Maybe send email here
+      claim.AddCommentImpl(currentUserId, null,
+        $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}",
+        DateTime.UtcNow, isVisibleToPlayer: true, extraAction: CommentExtraAction.ChangeResponsible);
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -326,7 +346,7 @@ namespace JoinRpg.Services.Impl
 
   internal static class ClaimStaticExtensions
   {
-    public static Comment AddCommentImpl(this Claim claim, int currentUserId, int? parentCommentId, string commentText, DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction = null)
+    public static Comment AddCommentImpl(this Claim claim, int currentUserId, Comment parentComment, string commentText, DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
       if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
       {
@@ -342,7 +362,7 @@ namespace JoinRpg.Services.Impl
         CreatedTime = now,
         IsCommentByPlayer = claim.PlayerUserId == currentUserId,
         IsVisibleToPlayer = isVisibleToPlayer,
-        ParentCommentId = parentCommentId,
+        Parent = parentComment,
         LastEditTime = now,
         ExtraAction = extraAction
       };
@@ -365,28 +385,17 @@ namespace JoinRpg.Services.Impl
       }
       var character = new Character()
       {
-        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}", ProjectId = claim.ProjectId, IsAcceptingClaims = true, IsPublic = claim.Group.IsPublic, Groups = new List<CharacterGroup>()
+        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
+        ProjectId = claim.ProjectId,
+        IsAcceptingClaims = true,
+        IsPublic = claim.Group.IsPublic,
+        Groups = new List<CharacterGroup>()
         {
           claim.Group
         }
       };
       claim.CharacterGroupId = null;
       claim.Character = character;
-    }
-
-    public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate, int initiatorUserId)
-    {
-      return claim.GetParentGroups() //Get all groups for claim
-        .SelectMany(g => g.Subscriptions) //get subscriptions on groups
-        .Union(claim.Subscriptions) //subscribtions on claim
-        .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters
-        .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
-        .Select(u => u.User) //Select users
-        .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
-        .Union(claim.Player) //...and player himself also
-        .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
-        .Distinct() //One user can be subscribed by multiple reasons
-        ;
     }
   }
 }
