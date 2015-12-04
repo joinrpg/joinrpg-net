@@ -53,8 +53,6 @@ namespace JoinRpg.Web.Controllers
       return WithEntity(field) ?? View(GetHotCharacters(field));
     }
 
-
-
     [HttpGet]
     public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
     {
