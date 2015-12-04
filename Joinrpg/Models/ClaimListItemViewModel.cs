@@ -96,7 +96,9 @@ namespace JoinRpg.Web.Models
       ProjectName = claim.Project.ProjectName;
       UpdateDate = claim.LastUpdateDateTime;
       Responsible = claim.ResponsibleMasterUser;
-      UnreadCommentsCount = claim.Comments.Count(comment => !comment.IsReadByUser(currentUserId));
+      UnreadCommentsCount =
+        claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
+                                        && !comment.IsReadByUser(currentUserId));
     }
   }
 }
