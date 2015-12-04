@@ -287,7 +287,7 @@ namespace JoinRpg.Services.Impl
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
       CommentExtraAction? extraAction = null) where T : ClaimEmailModel, new()
     {
-      var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != true;
+      var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false; 
       claim.AddCommentImpl(currentUserId, parentComment, commentText, now, visibleToPlayerUpdated, extraAction);
       return
         await
