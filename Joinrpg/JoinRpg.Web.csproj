@@ -235,6 +235,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Code\MvcIntrinsics.cs" />
+    <Content Include="App_Code\MvcHelpers.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
