@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Controllers
         ch.CharacterName,
         Description = ch.Description?.ToHtmlString(),
         PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-        PlayerId = ch.Player?.Id,
+        PlayerId = ch.HidePlayer ? null : ch.Player?.Id,
         ch.ActiveClaimsCount,
         ClaimLink =
           ch.IsAvailable
