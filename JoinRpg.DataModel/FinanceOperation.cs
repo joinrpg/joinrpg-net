@@ -44,7 +44,9 @@ namespace JoinRpg.DataModel
 
     #region helper properties
 
-    public bool RequireModeration => State != FinanceOperationState.Approved;
+    public bool RequireModeration => State == FinanceOperationState.Proposed;
+
+    public bool Approved => State == FinanceOperationState.Approved;
 
     #endregion
   }

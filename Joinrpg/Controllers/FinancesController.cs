@@ -25,7 +25,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
-      => await GetFinanceOperationsList(projectid, export, fo => !fo.RequireModeration);
+      => await GetFinanceOperationsList(projectid, export, fo => fo.Approved);
 
     public async Task<ActionResult> Moderation(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
