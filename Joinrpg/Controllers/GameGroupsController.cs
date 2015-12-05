@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -105,8 +106,14 @@ namespace JoinRpg.Web.Controllers
                   Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
                   CanAddDirectClaim = g.AvaiableDirectSlots != 0,
                   DirectClaimsCount = g.AvaiableDirectSlots,
+                  DirectClaimLink = g.AvaiableDirectSlots != 0 ? GetClaimLink("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
                 }),
       });
+    }
+
+    private string GetClaimLink([AspMvcAction] string actionName, [AspMvcController] string controllerName, object routeValues)
+    {
+      return  Request.Url.Scheme + "://" + Request.Url.Host +  Url.Action(actionName, controllerName, routeValues);
     }
 
     private ActionResult ReturnJson(object data)
@@ -130,8 +137,7 @@ namespace JoinRpg.Web.Controllers
         ch.ActiveClaimsCount,
         ClaimLink =
           ch.IsAvailable
-            ? new UrlHelper(ControllerContext.RequestContext).Action("AddForCharacter", "Claim",
-              new {ch.ProjectId, ch.CharacterId})
+            ? GetClaimLink("AddForCharacter", "Claim", new {ch.ProjectId, ch.CharacterId})
             : null,
       };
     }
