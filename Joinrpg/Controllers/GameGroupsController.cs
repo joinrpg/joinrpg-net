@@ -127,7 +127,7 @@ namespace JoinRpg.Web.Controllers
     {
       return new
       {
-        p = ch.CharacterId,
+        ch.CharacterId,
         ch.IsAvailable,
         ch.IsFirstCopy,
         ch.CharacterName,
