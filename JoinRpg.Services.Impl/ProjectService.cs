@@ -166,6 +166,7 @@ namespace JoinRpg.Services.Impl
       character.Description = new MarkdownString(contents);
       character.HidePlayerForCharacter = hidePlayerForCharacter;
       character.IsHot = isHot;
+      character.IsActive = true;
 
       character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
       SaveCharacterFieldsImpl(currentUserId, character, characterFields);

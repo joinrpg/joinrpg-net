@@ -34,7 +34,16 @@ namespace JoinRpg.Web.Models
     FinanceModerationRequired,
     [UsedImplicitly]
     [Display(Name = "Есть переплата по взносу")]
-    TooManyMoney
+    TooManyMoney,
+    [UsedImplicitly]
+    [Display(Name = "Обсуждение по заявке остановилось")]
+    ClaimDiscussionStopped,
+    [UsedImplicitly]
+    [Display(Name = "Нет персонажа у заявки")]
+    NoCharacterOnApprovedClaim,
+    [UsedImplicitly]
+    [Display(Name = "Взнос уплачен частично")]
+    FeePaidPartially
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel
