@@ -483,10 +483,12 @@ namespace JoinRpg.Services.Impl.Allrpg
         return;
       }
 
-      user = await usersRepository.GetByEmail(allrpgUser.em) ?? await usersRepository.GetByEmail(allrpgUser.em2);
+      var email = allrpgUser.em.ToLowerInvariant();
+      var email2 = allrpgUser.em2.ToLowerInvariant();
+      user = await usersRepository.GetByEmail(email) ?? await usersRepository.GetByEmail(email2);
       if (user == null)
       {
-        user = new User {Email = new[] {allrpgUser.em, allrpgUser.em2}.WhereNotNullOrWhiteSpace().First() };
+        user = new User {Email = new[] {email, email2}.WhereNotNullOrWhiteSpace().First() };
         user.UserName = user.Email;
         _operationLog.Info($"USER.CREATE email={user.Email}");
         UnitOfWork.GetDbSet<User>().Add(user);
