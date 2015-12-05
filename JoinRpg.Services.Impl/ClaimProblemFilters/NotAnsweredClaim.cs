@@ -6,23 +6,30 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl.ClaimProblemFilters
 {
-  class NotAnsweredClaim : IClaimProblemFilter
+  internal class NotAnsweredClaim : IClaimProblemFilter
   {
     public IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim)
     {
-      if (!claim.IsInDiscussion)
+      var now = DateTime.UtcNow;
+
+      if (!claim.IsInDiscussion) // Our concern is only discussed claims
       {
         yield break;
       }
-      var now = DateTime.UtcNow;
+
+      if (now.Subtract(claim.CreateDate) < TimeSpan.FromDays(2)) //If filed only recently, do nothing
+      {
+        yield break;
+      }
+
+      
       var masterAnswers =
         claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer).ToList();
       var hasMasterCommentsInLast =
         masterAnswers
           .Any(comment => now.Subtract(comment.CreatedTime) < TimeSpan.FromDays(7));
 
-      if (!masterAnswers.Any() &&
-          now.Subtract(claim.CreateDate) > TimeSpan.FromDays(2))
+      if (!masterAnswers.Any())
       {
         yield return claim.Problem(ClaimProblemType.ClaimNeverAnswered, claim.CreateDate);
       }
