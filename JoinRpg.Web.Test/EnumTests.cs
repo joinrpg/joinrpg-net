@@ -13,7 +13,6 @@ namespace JoinRpg.Web.Test
     public void ProblemEnum()
     {
       EnumerationTestHelper.CheckEnums<ClaimProblemType, ProblemTypeViewModel>();
-      EnumerationTestHelper.CheckEnums<DataModel.CommentExtraAction, CommentExtraAction>();
       EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
     }
   }

@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
+using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
 {
@@ -58,26 +59,6 @@ namespace JoinRpg.Web.Models
     public CommentExtraAction? ExtraAction { get; set; }
   }
 
-  public enum CommentExtraAction
-  {
-    [Display(Name = "Финансовая операция подтвержена")]
-    ApproveFinance,
-    [Display(Name = "Финансовая операция отклонена")]
-    RejectFinance,
-    [Display(Name = "Заявка одобрена мастером")]
-    ApproveByMaster,
-    [Display(Name = "Заявка отклонена мастером")]
-    DeclineByMaster,
-    [Display(Name = "Заявка восстановлена мастером")]
-    RestoreByMaster,
-    [Display(Name = "Заявка перемещена мастером")]
-    MoveByMaster,
-    [Display(Name = "Заявка отозвана игроком")]
-    DeclineByPlayer,
-    [Display(Name = "Ответственный мастер изменен")]
-    ChangeResponsible
-  }
-
   public class AddCommentViewModel : IValidatableObject
   {
     public int ProjectId { get; set; }
@@ -94,8 +75,7 @@ namespace JoinRpg.Web.Models
     public MarkdownViewModel CommentText { get; set; }
 
     [DisplayName("Только другим мастерам")]
-    public bool HideFromUser
-    { get; set; }
+    public bool HideFromUser { get; set; }
 
     public bool EnableHideFromUser { get; set; }
 

@@ -78,7 +78,8 @@ namespace JoinRpg.Services.Impl
       }
 
       await UnitOfWork.SaveChangesAsync();
-      var email = CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation, true);
+      var email = CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation,
+        isVisibleToPlayer: true, commentExtraAction: null);
 
       await EmailService.Email(await email);
 

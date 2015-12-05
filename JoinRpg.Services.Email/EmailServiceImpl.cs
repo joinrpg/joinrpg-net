@@ -70,76 +70,11 @@ namespace JoinRpg.Services.Email
       await Send(message);
     }
 
-    private async Task SendClaimEmail(ClaimEmailModel model, string text)
-    {
-      if (model.ProjectName.Trim().StartsWith("NOEMAIL"))
-      {
-        return;
-      }
-      var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
-      if (!recepients.Any())
-      {
-        return;
-      }
-      await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}",
-        $@"{text}
-Перейдите на заявку, чтобы ответить на комментарий: {_uriService.Get(model.Claim)}
-
-{model.Text.Contents}
-
---
-{model.Initiator.DisplayName}", model.Initiator.ToRecipient());
-    }
-
-    public Task Email(AddCommentEmail model)
-    {
-      return SendClaimEmail(model,
-        $@"
-Добрый день, %recipient.name%!
-
-Заявку «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» откомментирована {model.GetInitiatorString()}.");
-    }
-
-    public Task Email(ApproveByMasterEmail model)
-    {
-      return SendClaimEmail(model,
-  $@"
-Добрый день, %recipient.name%!
-
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» одобрена {model.GetInitiatorString()}.");
-    }
-
-    public Task Email(DeclineByMasterEmail model)
-    {
-      return SendClaimEmail(model,
-$@"
-Добрый день, %recipient.name%!
-
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отклонена {model.GetInitiatorString()}.");
-    }
-
-    public Task Email(DeclineByPlayerEmail model)
-    {
-      return SendClaimEmail(model,
-       $@"
-Добрый день, %recipient.name%!
-
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}» отозвана игроком. ");
-    }
-
-    public Task Email(NewClaimEmail model)
-    {
-      return SendClaimEmail(model,
-       $@"
-Добрый день, %recipient.name%!
-
-Новая заявка «{model.Claim.Name}» от игрока «{model.Claim.Player.DisplayName}».");
-    }
-
+    #region Account emails
     public Task Email(RemindPasswordEmail email)
     {
       return SendEmail(email.Recepient, "Восстановление пароля на JoinRpg.Ru",
-        $@"Здравствуйте, 
+        $@"Добрый день, %recipient.name%, 
 
 вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
 Если это вы, кликните <a href=""{
@@ -167,62 +102,70 @@ $@"
 --
 {JoinRpgTeam}", _joinRpgSender);
     }
+    #endregion
 
-    public Task Email(RestoreByMasterEmail model)
+    private async Task SendClaimEmail(ClaimEmailModel model, string actionName, string text = "")
     {
-      return SendClaimEmail(model,
-        $@"
-Добрый день, %recipient.name%!
+      if (model.ProjectName.Trim().StartsWith("NOEMAIL"))
+      {
+        return;
+      }
+      var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
+      if (!recepients.Any())
+      {
+        return;
+      }
 
-Заявка «{model.Claim.Name}» игрока «{model.GetPlayerName()}» была восстановлена {model.GetInitiatorString()}.");
+      await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
+        $@"Добрый день, %recipient.name%!
+Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
+{text}
+
+{model.Text.Contents}
+
+{model.Initiator.DisplayName}
+
+Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim)}
+", model.Initiator.ToRecipient());
     }
+
+    public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
+
+    public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model, "одобрена");
+
+    public Task Email(DeclineByMasterEmail model) => SendClaimEmail(model, "отклонена");
+
+    public Task Email(DeclineByPlayerEmail model) => SendClaimEmail(model, "отозвана");
+
+    public Task Email(NewClaimEmail model) => SendClaimEmail(model, "подана");
+
+    public Task Email(RestoreByMasterEmail model) => SendClaimEmail(model, "восстановлена");
 
     public Task Email(MoveByMasterEmail model)
-    {
-      return SendClaimEmail(model,
-  $@"
-Добрый день, %recipient.name%!
-
-Заявка «{model.Claim.Name}» игрока «{model.Claim.Player.DisplayName}»  была перенесена {model.GetInitiatorString()} на {model.Claim.GetTarget().Name}.");
-    }
+      =>
+        SendClaimEmail(model, "изменена",
+          $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.GetTarget().Name}».");
 
     public Task Email(FinanceOperationEmail model)
     {
-      
-      
-      var message = $@"
-Добрый день, %recipient.name%!
-
-В заявке «{model.Claim.Name}»  игрока «{model.GetPlayerName()}» было отмечено {model.GetInitiatorString()}:";
+      var message = "";
 
       if (model.FeeChange != 0)
       {
-        message += $@"
-
-Изменение взноса: {model.FeeChange}
-
-";
+        message += $"\nИзменение взноса: {model.FeeChange}\n";
       }
 
       if (model.Money > 0)
       {
-        message += $@"
-
-Оплату денег игроком: {model.Money}
-
-";
+        message += $"\nОплата денег игроком: {model.Money}\n";
       }
 
       if (model.Money < 0)
       {
-        message += $@"
-
-Возврат денег игроку: {-model.Money}
-
-";
+        message += $"\nВозврат денег игроку: {-model.Money}\n";
       }
 
-      return SendClaimEmail(model, message);
+      return SendClaimEmail(model, "отмечена", message);
     }
   }
 

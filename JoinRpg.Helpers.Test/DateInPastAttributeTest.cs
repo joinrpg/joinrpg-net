@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 using JoinRpg.Helpers.Validation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,8 +11,8 @@ namespace JoinRpg.Helpers.Test
   {
     private class ClassToValidate
     {
-      [DateShouldBeInPast]
-      public DateTime? Time { get; set; }
+      [DateShouldBeInPast, UsedImplicitly]
+      public DateTime? Time { get; }
 
       public ClassToValidate ()
       {

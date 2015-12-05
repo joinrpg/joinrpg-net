@@ -567,6 +567,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj">
+      <Project>{81185840-6da0-440b-813a-e32d6ccad34e}</Project>
+      <Name>JoinRpg.CommonUI.Models</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj">
       <Project>{2FDC4A55-3A3D-445B-9916-2F3ED898168B}</Project>
       <Name>JoinRpg.Dal.Impl</Name>

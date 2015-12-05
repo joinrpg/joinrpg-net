@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -31,8 +30,7 @@ namespace JoinRpg.Services.Impl
       return claim;
     }
 
-    protected async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText,
-      Func<UserSubscription, bool> subscribePredicate, bool isVisibleToPlayer, IEnumerable<User> extraRecepients = null)
+    protected async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText, Func<UserSubscription, bool> subscribePredicate, bool isVisibleToPlayer, CommentExtraAction? commentExtraAction, IEnumerable<User> extraRecepients = null)
       where TEmail : ClaimEmailModel, new()
     {
       var subscriptions =
@@ -45,7 +43,8 @@ namespace JoinRpg.Services.Impl
         Initiator = await UserRepository.GetById(currentUserId),
         InitiatorType = currentUserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
         Recepients = subscriptions.ToList(),
-        Text = new MarkdownString(commentText)
+        Text = new MarkdownString(commentText),
+        CommentExtraAction = commentExtraAction
       };
     }
   }

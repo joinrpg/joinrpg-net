@@ -55,7 +55,7 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.GetDbSet<Claim>().Add(claim);
       await UnitOfWork.SaveChangesAsync();
 
-      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange, true);
+      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange, true, CommentExtraAction.NewClaim);
       await EmailService.Email(email);
     }
 
@@ -167,7 +167,11 @@ namespace JoinRpg.Services.Impl
 
       //TODO: Reorder and save emails only after save
 
-      await EmailService.Email(await CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange, true));
+      await
+        EmailService.Email(
+          await
+            CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange, true,
+              CommentExtraAction.ApproveByMaster));
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -291,8 +295,7 @@ namespace JoinRpg.Services.Impl
       claim.AddCommentImpl(currentUserId, parentComment, commentText, now, visibleToPlayerUpdated, extraAction);
       return
         await
-          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated,
-            new[] {parentComment?.Author});
+          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated, extraAction, new[] {parentComment?.Author});
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -390,6 +393,7 @@ namespace JoinRpg.Services.Impl
         ProjectId = claim.ProjectId,
         IsAcceptingClaims = true,
         IsPublic = claim.Group.IsPublic,
+        IsActive = true,
         Groups = new List<CharacterGroup>()
         {
           claim.Group

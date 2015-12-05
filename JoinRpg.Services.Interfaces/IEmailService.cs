@@ -72,6 +72,7 @@ namespace JoinRpg.Services.Interfaces
     public User Initiator { get; set; }
     public MarkdownString Text { get; set; }
     public ICollection<User> Recepients { get; set; }
+    public CommentExtraAction? CommentExtraAction { get; set; }
   }
 
   public enum ParcipantType 
