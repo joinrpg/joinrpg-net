@@ -310,7 +310,7 @@ namespace JoinRpg.Services.Impl
 
       //TODO: Maybe send email here
       claim.AddCommentImpl(currentUserId, null,
-        $"Отвественный мастер: {claim.ResponsibleMasterUser?.DisplayName ?? "нет"} → {newMaster.DisplayName}",
+        $"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}",
         DateTime.UtcNow, isVisibleToPlayer: true, extraAction: CommentExtraAction.ChangeResponsible);
       await UnitOfWork.SaveChangesAsync();
     }
