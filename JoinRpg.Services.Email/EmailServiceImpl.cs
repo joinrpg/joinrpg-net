@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -18,6 +19,7 @@ namespace JoinRpg.Services.Email
   public class EmailServiceImpl : IEmailService
   {
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
+    private const string MailGunRecepientName = "%recipient.name%";
     private readonly string _apiDomain;
 
     private readonly Recipient _joinRpgSender;
@@ -106,18 +108,19 @@ namespace JoinRpg.Services.Email
 
     private async Task SendClaimEmail(ClaimEmailModel model, string actionName, string text = "")
     {
-      if (model.ProjectName.Trim().StartsWith("NOEMAIL"))
+      var projectEmailEnabled = model.GetEmailEnabled();
+      if (!projectEmailEnabled)
       {
         return;
       }
-      var recepients = model.Recepients.Except(new [] {model.Initiator}).ToList();
+      var recepients = model.GetRecepients();
       if (!recepients.Any())
       {
         return;
       }
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
-        $@"Добрый день, %recipient.name%!
+        $@"Добрый день, {MailGunRecepientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
@@ -165,7 +168,34 @@ namespace JoinRpg.Services.Email
         message += $"\nВозврат денег игроку: {-model.Money}\n";
       }
 
-      return SendClaimEmail(model, "отмечена", message);
+      return SendClaimEmail(model, "изменена", message);
+    }
+
+    public async Task Email(MassEmailModel model)
+    {
+      if (!model.GetEmailEnabled())
+      {
+        return;
+      }
+      var recepients = model.GetRecepients();
+      if (!recepients.Any())
+      {
+        return;
+      }
+
+      if (model.Text.Contents == null)
+      {
+        throw new ArgumentNullException(nameof(model.Text.Contents));
+      }
+
+      var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MailGunRecepientName,
+        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+      await SendEmail(recepients, $"{model.ProjectName}: {model.Subject}",
+        $@"{body}
+--
+{model.Initiator.DisplayName}
+", model.Initiator.ToRecipient());
     }
   }
 
@@ -203,6 +233,16 @@ namespace JoinRpg.Services.Email
     public static string GetPlayerName(this ClaimEmailModel model)
     {
       return model.Claim.Player.DisplayName;
+    }
+
+    public static bool GetEmailEnabled(this EmailModelBase model)
+    {
+      return !model.ProjectName.Trim().StartsWith("NOEMAIL");
+    }
+
+    public static List<User> GetRecepients(this EmailModelBase model)
+    {
+      return model.Recepients.Where(u => u.UserId != model.Initiator.UserId) .ToList();
     }
   }
 }

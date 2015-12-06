@@ -16,6 +16,12 @@ namespace JoinRpg.Services.Interfaces
     Task Email(RestoreByMasterEmail createClaimEmail);
     Task Email(MoveByMasterEmail createClaimEmail);
     Task Email(FinanceOperationEmail createClaimEmail);
+    Task Email(MassEmailModel model);
+  }
+
+  public static class EmailTokens
+  {
+    public const string Name = "%NAME%";
   }
 
   public class RemindPasswordEmail 
@@ -64,15 +70,24 @@ namespace JoinRpg.Services.Interfaces
     public int Money { get; set; }
   }
 
-  public class ClaimEmailModel 
+  public class MassEmailModel : EmailModelBase
   {
-    public string ProjectName { get; set; }
+    public string Subject { get; set; }
+  }
+
+  public class ClaimEmailModel : EmailModelBase
+  {
     public ParcipantType InitiatorType { get; set; }
     public Claim Claim { get; set; }
+    public CommentExtraAction? CommentExtraAction { get; set; }
+  }
+
+  public class EmailModelBase
+  {
+    public string ProjectName { get; set; }
     public User Initiator { get; set; }
     public MarkdownString Text { get; set; }
     public ICollection<User> Recepients { get; set; }
-    public CommentExtraAction? CommentExtraAction { get; set; }
   }
 
   public enum ParcipantType 

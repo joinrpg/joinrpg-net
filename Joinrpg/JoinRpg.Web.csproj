@@ -241,6 +241,7 @@
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
+    <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -290,6 +291,7 @@
     <Compile Include="Models\EditCharacterGroupViewModel.cs" />
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
+    <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\ProjectViewModels.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldViewModel.cs" />
@@ -544,7 +546,7 @@
     <Content Include="Views\Finances\Setup.cshtml" />
     <Content Include="Views\User\PreferredName.cshtml" />
     <Content Include="Views\Finances\Operations.cshtml" />
-    <Content Include="Views\Shared\_ExportInExcel.cshtml" />
+    <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
     <Content Include="Views\Claim\_CommentPartial.cshtml" />
     <Content Include="Views\GameTools\Apis.cshtml" />
     <Content Include="Views\GameGroups\Hot.cshtml" />
@@ -553,6 +555,9 @@
     <Content Include="Views\Shared\DisplayTemplates\Livejournal.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Vkontakte.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Email.cshtml" />
+    <Content Include="Views\MassMail\ForClaims.cshtml" />
+    <Content Include="Views\MassMail\Success.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\HiddenArray.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

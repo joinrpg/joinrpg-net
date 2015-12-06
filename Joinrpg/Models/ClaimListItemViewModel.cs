@@ -62,6 +62,19 @@ namespace JoinRpg.Web.Models
       return self;
     }
   }
+
+  public class ClaimShortListItemViewModel
+  {
+    [Display(Name = "Заявка")]
+    public string Name { get; set; }
+
+    [Display(Name = "Игрок")]
+    public User Player { get; set; }
+
+    public int ClaimId { get; set; }
+    public int ProjectId { get; set; }
+  }
+
   public class ClaimListItemViewModel
   {
     [Display(Name="Заявка")]

@@ -12,5 +12,6 @@ namespace JoinRpg.Data.Interfaces
     Task<Project> GetClaims(int projectId);
 
     Task<IEnumerable<Claim>> GetMyClaimsForProject(int userId, int projectId);
+    Task<IEnumerable<Claim>>  GetClaimsByIds(int projectid, ICollection<int> claimindexes);
   }
 }

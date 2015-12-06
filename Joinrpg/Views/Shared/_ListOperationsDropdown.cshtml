@@ -1,0 +1,26 @@
+﻿<div class="btn-group" style="padding: 1em">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Операции <span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu">
+        <li>
+            <a href="?export=xlsx"
+               title="Экспорт в Excel">
+                Скачать в Excel
+            </a>
+        </li>
+        @if (ViewBag.ClaimIds != null && ViewBag.ProjectId != null)
+        {
+            <li>
+                @{
+                    var claimIds = "&claimIds=" + string.Join("&claimIds=", ((int[]) ViewBag.ClaimIds).Select(c => c.ToString()));
+                }
+                <a href="@Url.Action("ForClaims", "MassMail", new {ViewBag.ProjectId})@claimIds">
+                    Написать всем
+                </a>
+            </li>
+        }
+    </ul>
+
+</div>

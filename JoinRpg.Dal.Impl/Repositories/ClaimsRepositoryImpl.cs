@@ -44,5 +44,14 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<IEnumerable<Claim>> GetMyClaimsForProject(int userId, int projectId)
       => await Ctx.ClaimSet.Where(c => c.ProjectId == projectId && c.PlayerUserId == userId).ToListAsync();
+
+    public async Task<IEnumerable<Claim>> GetClaimsByIds(int projectid, ICollection<int> claimindexes)
+    {
+      return
+        await Ctx.ClaimSet.Include(c => c.Project.ProjectAcls.Select(pa => pa.User))
+          .Include(c => c.Player)
+          .Where(c => claimindexes.Contains(c.ClaimId))
+          .ToListAsync();
+    }
   }
 }

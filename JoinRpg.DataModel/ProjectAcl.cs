@@ -26,6 +26,8 @@
     public bool CanAcceptCash { get; set; }
     public bool CanManageMoney { get; set; }
 
+    public bool CanSendMassMails => true;
+
     public static ProjectAcl CreateRootAcl(int userId)
     {
       return new ProjectAcl
