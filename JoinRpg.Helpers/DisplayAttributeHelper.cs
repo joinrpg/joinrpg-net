@@ -1,8 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Helpers;
 
-namespace JoinRpg.Web.Helpers
+namespace JoinRpg.Helpers
 {
   public static class DisplayAttributeHelper
   {

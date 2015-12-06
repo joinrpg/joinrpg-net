@@ -269,7 +269,6 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\DisplayAttributeHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\ObjectLinkHelper.cs" />
     <Compile Include="Helpers\ApiSecretsStorage.cs" />

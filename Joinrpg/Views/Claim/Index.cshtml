@@ -2,10 +2,13 @@
 
 <h2>@ViewBag.Title</h2>
 
+@Html.Partial("_ExportInExcel")
+
 @* TODO: Решить, не добавить ли сюда каких-нибудь быстрых действий в таблицу*@
+
 <table class="table">
     <tr>
-        <th>    
+        <th>
             @Html.DisplayNameFor(model => model.Name)
         </th>
         @if (ViewBag.HideUserColumn != true) //We can't do !ViewBag.HideUserColumn, cause it can be null
@@ -32,42 +35,42 @@
         }
     </tr>
 
-@foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
-{
-    <tr>
-        <td>
-            <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
-                @item.Name
-                @if (item.UnreadCommentsCount > 0)
-                {
-                <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
-                }
-            </a>
-        </td>
-        @if (ViewBag.HideUserColumn != true)
-        {
+    @foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
+    {
+        <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Player)
+                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
+                    @item.Name
+                    @if (item.UnreadCommentsCount > 0)
+                    {
+                        <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                    }
+                </a>
             </td>
-        }
-        @if (ViewBag.HideProjectColumn != true)
-        {
+            @if (ViewBag.HideUserColumn != true)
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.Player)
+                </td>
+            }
+            @if (ViewBag.HideProjectColumn != true)
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectName)
+                </td>
+            }
             <td>
-                @Html.DisplayFor(modelItem => item.ProjectName)
+                @Html.DisplayFor(modelItem => item.ClaimStatus)
             </td>
-        }
-        <td>
-            @Html.DisplayFor(modelItem => item.ClaimStatus)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UpdateDate)
-        </td>
-       @if (ViewBag.MasterAccessColumn == true)
-        {
-        <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
-        }
-        
-    </tr>
-}
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdateDate)
+            </td>
+            @if (ViewBag.MasterAccessColumn == true)
+            {
+                <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+            }
+
+        </tr>
+    }
 
 </table>

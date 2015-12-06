@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.Internal
@@ -83,14 +84,24 @@ namespace JoinRpg.Services.Export.Internal
         tableColumn.IsUri = true;
       }
 
-      foreach (var displayFunction in DisplayFunctions)
+      if (propertyInfo.PropertyType.IsEnum)
       {
-        if (displayFunction.Key.IsAssignableFrom(propertyInfo.PropertyType))
+        tableColumn.Converter = o => ((Enum) o).GetDisplayName();
+      }
+      else
+      {
+        var df =
+          DisplayFunctions.Where(
+            displayFunction => displayFunction.Key.IsAssignableFrom(propertyInfo.PropertyType))
+            .Select(kv => kv.Value)
+            .FirstOrDefault();
+
+        if (df != null)
         {
-          tableColumn.Converter = displayFunction.Value;
-          break;
+          tableColumn.Converter = df;
         }
       }
+
       return tableColumn;
     }
 
@@ -109,7 +120,7 @@ namespace JoinRpg.Services.Export.Internal
       {
         return new Cell()
         {
-          Content = Converter(Getter(row)).ToString(),
+          Content = Converter(Getter(row))?.ToString(),
           IsUri = IsUri
         };
       }

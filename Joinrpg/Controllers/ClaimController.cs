@@ -81,49 +81,70 @@ namespace JoinRpg.Web.Controllers
     public ActionResult My() => View(GetCurrentUser().Claims.Select(ClaimListItemViewModel.FromClaim));
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ForPlayer(int projectId, int userId)
-      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, "ForPlayer");
+    public Task<ActionResult> ForPlayer(int projectId, int userId, string export)
+      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, "ForPlayer", export);
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId)
+    public Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
       ViewBag.ProjectId = projectId;
-      return MasterList(projectId, cl => cl.CharacterGroupId == characterGroupId, "ListForGroupDirect");
+      return MasterList(projectId, cl => cl.CharacterGroupId == characterGroupId, "ListForGroupDirect", export);
     }
 
-    public Task<ActionResult> ListForGroup(int projectId, int characterGroupId)
+    public Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
       ViewBag.ProjectId = projectId;
-      return MasterList(projectId, cl => cl.PartOfGroup(characterGroupId), "ListForGroup");
+      return MasterList(projectId, cl => cl.PartOfGroup(characterGroupId), "ListForGroup", export);
     }
 
-    private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName)
+    private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName, string export)
     {
       var project = await _claimsRepository.GetClaims(projectId);
-      return AsMaster(project) ??
-             View(viewName, project.Claims.Where(predicate).Select(
-               claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId)));
+
+      if (AsMaster(project) != null) return AsMaster(project);
+
+      var viewModel = project.Claims.Where(predicate).Select(
+          claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId));
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
+      {  
+        return View(viewName, viewModel);
+      }
+      else
+      {
+        return await Export(viewModel, "claims", exportType.Value);
+      }
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> Discussing(int projectid)
-      => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing");
+    public Task<ActionResult> Discussing(int projectid, string export)
+      => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing", export);
 
     [HttpGet, Authorize]
-    public Task<ActionResult> Responsible(int projectid, int responsibleMasterId)
+    public Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
       =>
         MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,
-          "Responsible");
+          "Responsible", export);
 
     [HttpGet, Authorize]
-    public async Task<ActionResult> Problems(int projectId)
+    public async Task<ActionResult> Problems(int projectId, string export)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project) ??
-             View(
-               (await _claimService.GetProblemClaims(projectId)).Select(problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId)));
+      if (AsMaster(project) != null) return AsMaster(project);
+      var viewModel = (await _claimService.GetProblemClaims(projectId)).Select(
+        problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId));
+
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
+      {
+        return View(viewModel);
+      }
+
+      return await Export(viewModel, "problem-claims", exportType.Value);
     }
 
     [HttpGet, Authorize]
@@ -382,9 +403,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ActiveList(int projectid) => MasterList(projectid, claim => claim.IsActive, "ActiveList");
+    public Task<ActionResult> ActiveList(int projectid, string export) => MasterList(projectid, claim => claim.IsActive, "ActiveList", export);
 
-    public Task<ActionResult> DeclinedList(int projectid) => MasterList(projectid, claim => !claim.IsActive, "DeclinedList");
+    public Task<ActionResult> DeclinedList(int projectid, string export) => MasterList(projectid, claim => !claim.IsActive, "DeclinedList", export);
 
     /// <summary>
     /// 
