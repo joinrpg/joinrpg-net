@@ -13,5 +13,8 @@ namespace JoinRpg.Web.Models
     public IEnumerable<User> Masters { get; set; }
 
     public ProjectAcl AccessToProject { get; set; }
+
+    public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
+    public CharacterGroupLinkViewModel MyGroups { get; set; }
   }
 }

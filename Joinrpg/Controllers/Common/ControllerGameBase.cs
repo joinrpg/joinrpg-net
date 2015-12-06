@@ -60,7 +60,8 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectName = project.ProjectName,
           HasAllrpg = project.Details?.AllrpgId != null,
           Masters = project.ProjectAcls.Select(a => a.User),
-          AccessToProject = acl
+          AccessToProject = acl,
+          BigGroups = project.RootGroup.ChildGroups.Select(cg => new CharacterGroupLinkViewModel(cg))
         };
       }
       return null;
