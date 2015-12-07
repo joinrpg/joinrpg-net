@@ -63,11 +63,10 @@ namespace JoinRpg.Dal.Impl.Repositories
       return await
         Ctx.ClaimSet.
           Include(c => c.Project)
+          .Include(c => c.Character)
           .Include(c => c.Project.ProjectAcls)
-          .Include(c => c.Project.CharacterGroups)
-          .Include(c => c.Project.Characters)
           .Include(c => c.Project.ProjectAcls.Select(a => a.User))
-          .Include(c => c.Comments)
+          .Include(c => c.Comments.Select(cm => cm.Finance))
           .Include(c => c.Watermarks)
           .Include(c => c.Player)
           .Where(expression).ToListAsync();

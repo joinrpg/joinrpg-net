@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 
@@ -12,7 +9,6 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
   {
     IEnumerable<ClaimProblem> GetProblems(Claim claim);
   }
-
 
   internal static class ClaimProblemExts
   {
