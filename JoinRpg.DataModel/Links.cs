@@ -5,7 +5,8 @@
     ResultUser,
     ResultCharacterGroup,
     ResultCharacter,
-    Claim
+    Claim,
+    Plot
   }
 
   public interface ILinkable

@@ -16,11 +16,11 @@ namespace JoinRpg.Services.Impl.Search
     {
     }
 
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
+    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
       var results = new List<ISearchResult>();
       //TODO: We like to do multiple searches in parallel. We only allowed it to do in parallel UnitOfWorks
-      foreach (var task in GetProviders().Select(p => p.SearchAsync(searchString)))
+      foreach (var task in GetProviders().Select(p => p.SearchAsync(currentUserId, searchString)))
       {
         var rGroup = await task;
         //TODO: We can stop here when we have X results.
@@ -32,8 +32,9 @@ namespace JoinRpg.Services.Impl.Search
     private IEnumerable<ISearchProvider> GetProviders()
     {
       yield return new UserSearchProvider {UnitOfWork = UnitOfWork};
-      yield return new PublicCharacterGroupsProvider { UnitOfWork = UnitOfWork };
-      yield return new PublicCharacterProvider { UnitOfWork = UnitOfWork };
+      yield return new CharacterGroupsProvider { UnitOfWork = UnitOfWork };
+      yield return new CharacterProvider { UnitOfWork = UnitOfWork };
+      yield return new PlotSearchProvider {UnitOfWork = UnitOfWork};
     }
   }
 
@@ -42,6 +43,9 @@ namespace JoinRpg.Services.Impl.Search
     public LinkType LinkType { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
+
+    public bool IsPublic { get; set; }
+
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
 
@@ -53,13 +57,14 @@ namespace JoinRpg.Services.Impl.Search
         Name = @group.Name,
         Description = "",
         Identification = @group.Id.ToString(),
-        ProjectId = @group.ProjectId
+        ProjectId = @group.ProjectId,
+        IsPublic = group.IsPublic
       };
     }
   }
 
   internal interface ISearchProvider
   {
-    Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString);
+    Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString);
   }
 }

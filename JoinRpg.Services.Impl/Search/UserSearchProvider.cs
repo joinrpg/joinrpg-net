@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl.Search
   {
     public IUnitOfWork UnitOfWork { private get; set; }
 
-    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(string searchString)
+    public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
       var results =
         await
@@ -34,7 +34,8 @@ namespace JoinRpg.Services.Impl.Search
         Name = user.DisplayName,
         Description = "",
         Identification = user.UserId.ToString(),
-        ProjectId = null  //Users not associated with any project
+        ProjectId = null, //Users not associated with any project
+        IsPublic = true
       }).ToList();
     }
   }

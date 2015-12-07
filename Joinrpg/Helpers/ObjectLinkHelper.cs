@@ -41,6 +41,8 @@ namespace JoinRpg.Web.Helpers
           return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
         case LinkType.Claim:
           return new RouteTarget("Edit", "Claim", new {ClaimId = link.Identification, link.ProjectId});
+        case LinkType.Plot:
+          return new RouteTarget("Edit", "Plot", new {PlotFolderId = link.Identification, link.ProjectId});
         default:
           throw new ArgumentOutOfRangeException();
       }

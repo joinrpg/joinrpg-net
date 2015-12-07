@@ -39,7 +39,10 @@ namespace JoinRpg.Web.Models
         return GameObjectLinkType.CharacterGroup;
         case LinkType.ResultCharacter:
         return GameObjectLinkType.Character;
+        case LinkType.Plot:
+          return GameObjectLinkType.Plot;
         case LinkType.Claim:
+          return GameObjectLinkType.Claim;
         default:
         throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
@@ -55,6 +58,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Персонаж/роль")]
     Character,
     [Display(Name = "Заявка")]
-    Claim
+    Claim,
+    [Display(Name = "Сюжет")]
+    Plot
   }
 }

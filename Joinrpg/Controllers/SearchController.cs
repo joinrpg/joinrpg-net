@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Controllers
    
     public async Task<ActionResult> Index(SuperSearchViewModel viewModel)
     {
-      var searchResults = await _searchService.SearchAsync(viewModel.SearchRequest);
+      var searchResults = await _searchService.SearchAsync(CurrentUserIdOrDefault, viewModel.SearchRequest);
       return searchResults.Count == 1
         ? RedirectToAction(searchResults.SingleOrDefault().AsObjectLink().GetRouteTarget())
         : View(new SearchResultViewModel {Results = searchResults, SearchString = viewModel.SearchRequest});
