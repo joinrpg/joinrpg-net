@@ -18,13 +18,15 @@ namespace JoinRpg.Services.Interfaces
     Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
 
-    Task<IList<ClaimProblem>> GetProblemClaims(int projectId);
     Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
 
     Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
       int? characterId);
 
     void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
+
+    //TODO: Move to separate service
+    IEnumerable<ClaimProblem> GetProblems(IEnumerable<Claim> claims);
   }
 
   //TODO[Localize]

@@ -315,15 +315,16 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task<IList<ClaimProblem>> GetProblemClaims(int projectId)
+    public IEnumerable<ClaimProblem> GetProblems(IEnumerable<Claim> claims)
     {
-      var project = await ClaimsRepository.GetClaims(projectId);
       var filters = new IClaimProblemFilter[]
       {
         new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new BrokenClaimsAndCharacters(),
         new FinanceProblemsFilter(),
       };
-      return project.Claims.Where(claim => claim.IsActive).SelectMany(claim => filters.SelectMany(f => f.GetProblems(project, claim))).ToList();
+
+
+      return claims.SelectMany(claim => filters.SelectMany(f => f.GetProblems(claim))).ToList();
     }
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)

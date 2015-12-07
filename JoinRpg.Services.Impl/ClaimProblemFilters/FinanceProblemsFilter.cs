@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
 {
   public class FinanceProblemsFilter : IClaimProblemFilter
   {
-    public IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim)
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
       if (claim.FinanceOperations.Any(fo => fo.RequireModeration))
       {

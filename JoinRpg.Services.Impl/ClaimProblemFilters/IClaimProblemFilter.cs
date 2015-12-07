@@ -8,9 +8,9 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl.ClaimProblemFilters
 {
-  interface IClaimProblemFilter
+  internal interface IClaimProblemFilter
   {
-    IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim);
+    IEnumerable<ClaimProblem> GetProblems(Claim claim);
   }
 
 

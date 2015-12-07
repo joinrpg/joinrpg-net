@@ -35,11 +35,14 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Управлять финансами")]
     public bool CanManageMoney { get; set; }
 
-    [Display(Name = "Игра"),ReadOnly(true)]
+    [Display(Name = "Игра"), ReadOnly(true)]
     public string ProjectName { get; set; }
 
-    [Display(Name = "Заявок на мастере"), ReadOnly(true)]
+    [Display(Name = "Заявок"), ReadOnly(true)]
     public int ClaimsCount { get; set; }
+
+    [Display(Name = "Проблемных"), ReadOnly(true)]
+    public int ProblemClaimsCount { get; set; }
 
     public static AclViewModel FromAcl(ProjectAcl acl)
     {
@@ -55,7 +58,7 @@ namespace JoinRpg.Web.Models
         CanEditRoles = acl.CanEditRoles,
         CanAcceptCash = acl.CanAcceptCash,
         CanManageMoney = acl.CanManageMoney,
-        Master = acl.User, 
+        Master = acl.User,
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId && claim.IsActive)
       };

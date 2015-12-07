@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -135,7 +136,22 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       if (AsMaster(project) != null) return AsMaster(project);
-      var viewModel = (await _claimService.GetProblemClaims(projectId)).Select(
+      return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaims(projectId));
+    }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      if (AsMaster(project) != null)
+        return AsMaster(project);
+      return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId));
+    }
+
+    private async Task<ActionResult> ShowProblems(int projectId, string export, IEnumerable<Claim> claims)
+    {
+      var claimProblems = _claimService.GetProblems(claims);
+      var viewModel = claimProblems.Select(
         problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId)).ToList();
 
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
@@ -145,7 +161,7 @@ namespace JoinRpg.Web.Controllers
 
       if (exportType == null)
       {
-        return View(viewModel);
+        return View("Problems", viewModel);
       }
 
       return await Export(viewModel, "problem-claims", exportType.Value);

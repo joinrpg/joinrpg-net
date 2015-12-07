@@ -6,7 +6,7 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
 {
   internal class BrokenClaimsAndCharacters : IClaimProblemFilter
   {
-    public IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim)
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
       if (claim.IsInDiscussion && claim.Character?.ApprovedClaim != null)
       {

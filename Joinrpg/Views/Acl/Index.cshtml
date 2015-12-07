@@ -13,9 +13,7 @@
 @if (canGrantRights)
 {
     <p>
-        Чтобы добавить мастера в проект, найдите его поиском по email, нику или ФИО.
-        <br/>
-        @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
+        Чтобы добавить мастера в проект, найдите его поиском (в главном меню) по email, нику или ФИО.
     </p>
 }
 <table class="table">
@@ -46,6 +44,9 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ClaimsCount)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ProblemClaimsCount)
         </th>
         @if (canGrantRights)
         {
@@ -82,6 +83,11 @@
         </td>
         <td>
             @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
+
+        </td>
+        <td>
+            @Html.ActionLink(DisplayCount.OfX(item.ProblemClaimsCount, "проблемная", "проблемные", "проблемных"), "ResponsibleProblems", "Claim", new { ResponsibleMasterId = item.Master.UserId, item.ProjectId }, null)
+
         </td>
         @if (canGrantRights)
         {

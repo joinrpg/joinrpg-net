@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
 {
   internal class NotAnsweredClaim : IClaimProblemFilter
   {
-    public IEnumerable<ClaimProblem> GetProblems(Project project, Claim claim)
+    public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
       var now = DateTime.UtcNow;
 

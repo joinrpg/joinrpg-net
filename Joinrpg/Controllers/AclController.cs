@@ -11,6 +11,8 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class AclController : ControllerGameBase
   {
+    private IClaimService ClaimSevice { get; }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
@@ -33,16 +35,23 @@ namespace JoinRpg.Web.Controllers
     }
 
     public AclController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService)
+      IProjectService projectService, IExportDataService exportDataService, IClaimService claimSevice)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
+      ClaimSevice = claimSevice;
     }
 
     [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return AsMaster(project) ?? View(project.ProjectAcls.Select(AclViewModel.FromAcl));
+      return AsMaster(project) ?? View(project.ProjectAcls.Select(acl =>
+      {
+        var result = AclViewModel.FromAcl(acl);
+        result.ProblemClaimsCount =
+          ClaimSevice.GetProblems(project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId)).Select(p => p.Claim).Distinct().Count();
+        return result;
+      }));
     }
 
     [HttpGet]
