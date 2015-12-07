@@ -14,18 +14,16 @@ using Microsoft.Owin.Security;
 namespace JoinRpg.Web.Controllers
 {
   [Authorize]
-  public class AccountController : Controller
+  public class AccountController : Common.ControllerBase
   {
-    private ApplicationSignInManager _signInManager;
-    private ApplicationUserManager _userManager;
+    private readonly ApplicationSignInManager _signInManager;
 
     private readonly IAllrpgService _allrpgService;
     private readonly IEmailService _emailService;
 
     public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager,
-      IAllrpgService allrpgService, IEmailService emailService)
+      IAllrpgService allrpgService, IEmailService emailService) : base(userManager)
     {
-      _userManager = userManager;
       _signInManager = signInManager;
       _allrpgService = allrpgService;
       _emailService = emailService;
@@ -33,9 +31,6 @@ namespace JoinRpg.Web.Controllers
 
     private ApplicationSignInManager SignInManager
       => _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
-
-    private ApplicationUserManager UserManager
-      => _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
 
     //
     // GET: /Account/Login
@@ -357,35 +352,12 @@ namespace JoinRpg.Web.Controllers
       return View();
     }
 
-    protected override void Dispose(bool disposing)
-    {
-      if (disposing)
-      {
-        if (_userManager != null)
-        {
-          _userManager.Dispose();
-          _userManager = null;
-        }
-
-        if (_signInManager != null)
-        {
-          _signInManager.Dispose();
-          _signInManager = null;
-        }
-      }
-
-      base.Dispose(disposing);
-    }
-
     #region Helpers
 
     // Used for XSRF protection when adding external logins
     private const string XsrfKey = "fsdfsadfjasdknf msdvncxmvnzxcvxfvzxcvmzxf nf berfberferfkjd";
 
-    private IAuthenticationManager AuthenticationManager
-    {
-      get { return HttpContext.GetOwinContext().Authentication; }
-    }
+    private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
 
     private void AddErrors(IdentityResult result)
     {
