@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
       {
         yield return new ClaimProblem(claim, ClaimProblemType.ClaimActiveButCharacterHasApprovedClaim);
       }
-      if (claim.IsActive &&  (claim.Character == null || !claim.Character.IsActive))
+      if (claim.IsApproved &&  (claim.Character == null || !claim.Character.IsActive))
       {
         yield return new ClaimProblem(claim, ClaimProblemType.NoCharacterOnApprovedClaim);
       }
