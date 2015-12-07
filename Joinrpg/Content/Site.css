@@ -2,6 +2,15 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.input-group-xs>.form-control,
+.input-group-xs>.input-group-addon,
+.input-group-xs>.input-group-btn>.btn {
+    height: 22px;
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 body {
     padding-top: 50px;
     padding-bottom: 20px;
