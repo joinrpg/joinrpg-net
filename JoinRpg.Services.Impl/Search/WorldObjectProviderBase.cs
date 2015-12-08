@@ -8,10 +8,10 @@ namespace JoinRpg.Services.Impl.Search
 {
   internal class WorldObjectProviderBase
   {
-    protected static List<SearchResultImpl> GetWorldObjectsResult(int? currentUserId, IEnumerable<IWorldObject> results)
+    protected static List<SearchResultImpl> GetWorldObjectsResult(int? currentUserId, IEnumerable<IWorldObject> results, LinkType linkType)
     {
       return results.Where(cg => cg.IsVisible(currentUserId))
-        .Select(@group => SearchResultImpl.FromWorldObject(@group, LinkType.ResultCharacter))
+        .Select(@group => SearchResultImpl.FromWorldObject(@group, linkType))
         .ToList();
     }
 

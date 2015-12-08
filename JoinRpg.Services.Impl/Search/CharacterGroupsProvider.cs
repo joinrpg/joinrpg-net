@@ -19,7 +19,7 @@ namespace JoinRpg.Services.Impl.Search
             )
             .ToListAsync();
 
-      return GetWorldObjectsResult(currentUserId, results);
+      return GetWorldObjectsResult(currentUserId, results, LinkType.ResultCharacterGroup);
     }
   }
 }
