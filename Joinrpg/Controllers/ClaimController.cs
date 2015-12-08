@@ -134,22 +134,21 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (AsMaster(project) != null) return AsMaster(project);
       return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaims(projectId));
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      if (AsMaster(project) != null)
-        return AsMaster(project);
       return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId));
     }
 
-    private async Task<ActionResult> ShowProblems(int projectId, string export, IEnumerable<Claim> claims)
+    private async Task<ActionResult> ShowProblems(int projectId, string export, ICollection<Claim> claims)
     {
+      var error = await AsMaster(claims, projectId);
+      if (error != null)
+        return error;
+
       var claimProblems = _claimService.GetProblems(claims);
       var viewModel = claimProblems.Select(
         problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId)).ToList();

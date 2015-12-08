@@ -56,9 +56,9 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
-    public Task<IEnumerable<Claim>> GetActiveClaims(int projectId) => GetClaimsForPredicate(p => p.ProjectId == projectId);
+    public Task<ICollection<Claim>> GetActiveClaims(int projectId) => GetClaimsForPredicate(p => p.ProjectId == projectId);
 
-    private async Task<IEnumerable<Claim>> GetClaimsForPredicate(Expression<Func<Claim, bool>> expression)
+    private async Task<ICollection<Claim>> GetClaimsForPredicate(Expression<Func<Claim, bool>> expression)
     {
       return await
         Ctx.ClaimSet.
@@ -72,7 +72,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Where(expression).ToListAsync();
     }
 
-    public Task<IEnumerable<Claim>> GetActiveClaimsForMaster(int projectId, int userId)
+    public Task<ICollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId)
       => GetClaimsForPredicate(p => p.ProjectId == projectId && p.ResponsibleMasterUserId == userId);
   }
 }
