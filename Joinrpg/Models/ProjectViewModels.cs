@@ -7,6 +7,11 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
+  public class ProjectLinkViewModel
+  {
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; }
+  }
   public abstract class ProjectViewModelBase 
   {
     public int ProjectId { get; set; }

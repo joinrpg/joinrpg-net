@@ -24,16 +24,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls); 
 
     public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
-      => ActiveProjects.Where(MyProjectPredicate(userInfoId));
-
-    public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int? userInfoId)
-    {
-      if (userInfoId == null)
-      {
-        return new Project[] {};
-      }
-      return await ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
-    }
+      => userInfoId == null ? Enumerable.Empty<Project>() :  ActiveProjects.Where(MyProjectPredicate(userInfoId));
 
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 

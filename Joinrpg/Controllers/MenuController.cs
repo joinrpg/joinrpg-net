@@ -1,6 +1,8 @@
-﻿using System.Web.Mvc;
+﻿using System.Linq;
+using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -14,7 +16,11 @@ namespace JoinRpg.Web.Controllers
       {
         return new EmptyResult();
       }
-      var projects = ProjectRepository.GetMyActiveProjects(user);
+      var projects = ProjectRepository.GetMyActiveProjects(user).Select(p => new ProjectLinkViewModel()
+      {
+        ProjectId = p.ProjectId,
+        ProjectName = p.ProjectName
+      });
       return PartialView(projects);
     }
 

@@ -11,8 +11,6 @@ namespace JoinRpg.Data.Interfaces
 
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
 
-    Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int? userInfoId);
-
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId);

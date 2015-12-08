@@ -11,7 +11,12 @@ namespace JoinRpg.Dal.Impl
   public class MyDbContext : DbContext, IUnitOfWork
   {
     public MyDbContext() : base("DefaultConnection")
-    { }
+    {
+      Database.Log = sql =>
+      {
+        System.Diagnostics.Debug.WriteLine(sql);
+      };
+    }
 
     public DbSet<Project> ProjectsSet => Set<Project>();
 

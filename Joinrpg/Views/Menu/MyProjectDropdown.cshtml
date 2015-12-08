@@ -1,7 +1,7 @@
-﻿@using JoinRpg.DataModel
-@model System.Collections.Generic.IEnumerable<JoinRpg.DataModel.Project>
+﻿@using JoinRpg.Web.Models
+@model IEnumerable<ProjectLinkViewModel>
 
-@helper ShowProjectItem(Project project)
+@helper ShowProjectItem(ProjectLinkViewModel project)
 {
     <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId}, null)</li>
 }
