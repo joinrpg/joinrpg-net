@@ -42,6 +42,20 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId ==characterGroupId && cg.ProjectId == projectId);
     }
 
+    public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId)
+    {
+      var project = await Ctx.ProjectsSet
+        .Include(p => p.Details)
+        .Include(p => p.Characters.Select(ch => ch.Claims.Select(c => c.Player)))
+        .Include(p => p.CharacterGroups.Select(cg => cg.ChildGroups))
+        .Include(p => p.CharacterGroups.Select(cg => cg.Characters))
+        .Include(p => p.CharacterGroups.Select(cg => cg.Claims))
+        .Include(p => p.ProjectAcls.Select(a => a.User))
+        .SingleOrDefaultAsync(p => p.ProjectId == projectId);
+
+      return project.CharacterGroups.SingleOrDefault(cg => cg.CharacterGroupId == characterGroupId);
+    }
+
     public Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
     {
       return

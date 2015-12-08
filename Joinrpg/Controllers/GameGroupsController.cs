@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Controllers
         return await RedirectToProject(projectId);
       }
       
-      var field = await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
       var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
       return WithEntity(field) ?? View(
         new GameRolesViewModel
@@ -50,14 +50,14 @@ namespace JoinRpg.Web.Controllers
         return await RedirectToProject(projectId, "Hot");
       }
 
-      var field = await ProjectRepository.LoadGroupAsync(projectId, (int)characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
       return WithEntity(field) ?? View(GetHotCharacters(field));
     }
 
     [HttpGet]
     public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
     {
-      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
       {
         return HttpNotFound();
@@ -78,7 +78,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
     {
-      var field = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
       {
         return HttpNotFound();
@@ -146,7 +146,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
-      var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       
       var user = await _userRepository.GetWithSubscribe(CurrentUserId);
 
