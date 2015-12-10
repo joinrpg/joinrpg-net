@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
       {
         yield return new ClaimProblem(claim, ClaimProblemType.TooManyMoney);
       }
-      if (claim.ClaimBalance() < claim.ClaimTotalFee() && claim.ClaimBalance() > 0)
+      if (!claim.ClaimPaidInFull() && claim.ClaimBalance() > 0)
       {
         yield return new ClaimProblem(claim, ClaimProblemType.FeePaidPartially);
       }

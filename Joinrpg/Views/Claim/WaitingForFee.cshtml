@@ -1,0 +1,8 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.ClaimListItemViewModel>
+
+@{
+  ViewBag.Title = "Неоплаченные принятые заявки";
+  ViewBag.HideProjectColumn = true;
+  ViewBag.MasterAccessColumn = true;
+}
+@Html.Partial("Index", Model)

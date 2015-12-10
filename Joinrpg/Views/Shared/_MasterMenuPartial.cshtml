@@ -73,6 +73,7 @@
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "Claim", new { Model.ProjectId }, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new {Model.ProjectId}, null)</li>
                         </ul>
                     </li>

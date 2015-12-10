@@ -557,7 +557,7 @@
     <Content Include="Views\Shared\DisplayTemplates\Email.cshtml" />
     <Content Include="Views\MassMail\ForClaims.cshtml" />
     <Content Include="Views\MassMail\Success.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\HiddenArray.cshtml" />
+    <Content Include="Views\Claim\WaitingForFee.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -20,9 +20,9 @@ namespace JoinRpg.Web.Controllers
     private IEmailService EmailService { get; }
 
     [HttpGet]
-    public async Task<ActionResult> ForClaims(int projectid, int[] claimIds)
+    public async Task<ActionResult> ForClaims(int projectid, string claimIds)
     {
-      var claims = (await ClaimRepository.GetClaimsByIds(projectid, claimIds)).ToList();
+      var claims = (await ClaimRepository.GetClaimsByIds(projectid, ToIntCollection(claimIds))).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       return AsMaster(project) ?? View(new MassMailViewModel()
@@ -43,10 +43,20 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
+    private static int[] ToIntCollection(string claimIds)
+    {
+      return claimIds.Split(',').Select(ConvertIntRange).ToArray();
+    }
+
+    private static int ConvertIntRange(string c)
+    {
+      return int.Parse(c);
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ForClaims(MassMailViewModel viewModel)
     {
-      var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds)).ToList();
+      var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, ToIntCollection(viewModel.ClaimIds))).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var error = AsMaster(project);

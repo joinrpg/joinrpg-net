@@ -126,6 +126,10 @@ namespace JoinRpg.Web.Controllers
       => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing", export);
 
     [HttpGet, Authorize]
+    public Task<ActionResult> WaitingForFee(int projectid, string export)
+      => MasterList(projectid, claim => claim.IsApproved && !claim.ClaimPaidInFull(), "WaitingForFee", export);
+
+    [HttpGet, Authorize]
     public Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
       =>
         MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,

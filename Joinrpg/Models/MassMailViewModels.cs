@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectId { get; set; }
     public bool ToMyClaimsOnlyWarning { get; set; }
-    public ICollection<int> ClaimIds { get; set; }
+    public string ClaimIds { get; set; }
     [Display(Name="Адресаты")]
     public IEnumerable<ClaimShortListItemViewModel> Claims { get; set; }
     [Display(Name="Тема рассылки"), Required]

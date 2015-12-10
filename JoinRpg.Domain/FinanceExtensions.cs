@@ -46,5 +46,7 @@ namespace JoinRpg.Domain
         throw new NoAccessToProjectException(finance, currentUserId);
       }
     }
+
+    public static bool ClaimPaidInFull(this Claim claim) => claim.ClaimBalance() >= claim.ClaimTotalFee();
   }
 }

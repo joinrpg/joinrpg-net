@@ -10,7 +10,7 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
-    @Html.DisplayFor(model => model.ClaimIds, "HiddenArray")
+    @Html.HiddenFor(model => model.ClaimIds)
 
 if (Model.ToMyClaimsOnlyWarning)
  {
