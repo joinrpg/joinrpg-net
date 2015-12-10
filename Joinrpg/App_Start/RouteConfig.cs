@@ -33,6 +33,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "ProjectRoles", url: "{ProjectId}/roles/{CharacterGroupId}",
         defaults: new {controller = "GameGroups", action = "Index", CharacterGroupId = UrlParameter.Optional});
 
+      routes.MapRoute(name: "ProjectGroups", url: "{ProjectId}/groups/{CharacterGroupId}",
+        defaults: new { controller = "GameGroups", action = "Locations", CharacterGroupId = UrlParameter.Optional });
+
       routes.MapRoute(name: "ProjectRolesAction", url: "{ProjectId}/roles/{CharacterGroupId}/{action}",
         defaults: new {controller = "GameGroups", action = "Index",});
 

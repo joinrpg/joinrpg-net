@@ -34,11 +34,19 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                @Html.ActionLink("Сетка ролей", "Index", "GameGroups", new {Model.ProjectId}, null)
+                                @Html.ActionLink("Персонажи", "Index", "GameGroups", new {Model.ProjectId}, null)
+                            </li>
+                            <li>
+                                @Html.ActionLink("Группы", "Locations", "GameGroups", new { Model.ProjectId }, null)
                             </li>
                             <li>
                                 @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
                             </li>
+                            <li role="separator" class="divider"></li>
+                            @foreach (var cg in Model.BigGroups)
+                            {
+                            <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                            }
                         </ul>
                     </li>
                     <li class="dropdown">

@@ -558,6 +558,7 @@
     <Content Include="Views\MassMail\ForClaims.cshtml" />
     <Content Include="Views\MassMail\Success.cshtml" />
     <Content Include="Views\Claim\WaitingForFee.cshtml" />
+    <Content Include="Views\GameGroups\Locations.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
