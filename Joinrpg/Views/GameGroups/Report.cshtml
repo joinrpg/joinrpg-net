@@ -1,0 +1,35 @@
+﻿@using JoinRpg.Web.Models
+@model GameRolesViewModel
+
+@helper GetPathString(CharacterGroupListItemViewModel item)
+{
+    @(string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name)
+}
+
+@{
+  ViewBag.Title = "Отчет по заявкам";
+}
+
+<h2>@ViewBag.Title</h2>
+<table>
+    <tr>
+        <th>Название</th>
+        <th>Персонажей</th>
+    </tr>
+    @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups : Model.Data.PublicGroups)
+    {
+        var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
+        <tr class="@hideClassName">
+            <td>@(string.Join("→", item.Path.Skip(1).Select(p => "")) + "→" + item.Name)</td>
+            <td>@item.ActiveCharacters.Count()</td>
+            <td>
+                @Html.ActionLink("Персонажи", "Index", "GameGroups", new { Model.ProjectId, item.CharacterGroupId }, null)
+                @if (Model.ShowEditControls)
+                {
+                <text>/</text>
+                @Html.Partial("_GroupEditControls", item)
+                }
+            </td>
+        </tr>
+    }
+</table>

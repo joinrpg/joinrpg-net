@@ -54,6 +54,8 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsActive && c.IsPublic);
 
+    public int TotalSlots { get; set; }
+
     [CanBeNull]
     public HtmlString Description { get; set; }
 

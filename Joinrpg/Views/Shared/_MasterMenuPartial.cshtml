@@ -69,6 +69,10 @@
                             <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Проблемные", "Problems", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("На обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
+                            @if (ViewBag.IsProduction != true)
+                            {
+                                <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new {Model.ProjectId}, null)</li>
+                            }
                             <li role="separator" class="divider"></li>
                             @foreach (var cg in Model.BigGroups)
                             {

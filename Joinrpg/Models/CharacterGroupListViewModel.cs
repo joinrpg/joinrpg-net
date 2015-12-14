@@ -86,12 +86,14 @@ namespace JoinRpg.Web.Models
           FirstInGroup = siblings.First() == characterGroup,
           LastInGroup = siblings.Last() == characterGroup,
           ProjectId = characterGroup.ProjectId,
-          RootGroupId = Root.CharacterGroupId
+          RootGroupId = Root.CharacterGroupId,
         };
         Results.Add(vm);
 
         if (!vm.FirstCopy)
+        {
           return;
+        }
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
 

@@ -65,6 +65,28 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     // GET: GameGroups
+    public async Task<ActionResult> Report(int projectId, int? characterGroupId)
+    {
+      if (characterGroupId == null)
+      {
+        return await RedirectToProject(projectId, "Report");
+      }
+
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
+      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      return WithEntity(field) ?? View(
+        new GameRolesViewModel
+        {
+          ProjectId = field.Project.ProjectId,
+          ProjectName = field.Project.ProjectName,
+          CharacterGroupId = field.CharacterGroupId,
+          ShowEditControls = hasMasterAccess,
+          Data = CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
+        });
+    }
+
+    [HttpGet]
+    // GET: GameGroups
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
       if (characterGroupId == null)
