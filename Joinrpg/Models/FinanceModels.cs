@@ -82,4 +82,14 @@ namespace JoinRpg.Web.Models
       };
     }
   }
+
+  public class PaymentTypeSummaryViewModel
+  {
+    [Display(Name="Способ приема оплаты")]
+    public string Name { get; set; }
+    [Display(Name = "Мастер")]
+    public User Master { get; set; }
+    [Display(Name = "Итого")]
+    public int Total { get; set; }
+  }
 }
