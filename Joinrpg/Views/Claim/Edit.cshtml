@@ -67,7 +67,7 @@
         <dd>
             @using (Html.BeginForm("ChangeResponsible", "Claim"))
             {
-            <div class="form-inline">
+            <div class="form-inline input-group-sm">
                 @Html.AntiForgeryToken()
                 @Html.HiddenFor(model => model.ProjectId)
                 @Html.HiddenFor(model => model.ClaimId)
