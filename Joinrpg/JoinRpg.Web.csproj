@@ -561,6 +561,8 @@
     <Content Include="Views\GameGroups\Locations.cshtml" />
     <Content Include="Views\GameGroups\Report.cshtml" />
     <Content Include="Views\Finances\MoneySummary.cshtml" />
+    <Content Include="Views\Claim\DiscussingForGroup.cshtml" />
+    <Content Include="Views\Claim\DiscussingForGroupDirect.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

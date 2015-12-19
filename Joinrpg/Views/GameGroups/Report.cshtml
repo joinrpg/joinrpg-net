@@ -11,25 +11,40 @@
 }
 
 <h2>@ViewBag.Title</h2>
-<table>
+<table class="table table-bordered">
     <tr>
-        <th>Название</th>
-        <th>Персонажей</th>
+        <th rowspan="2">Группа</th>
+        <th colspan="3">Персонажей</th>
+        <th colspan="2">Заявок</th>
+    </tr>
+    <tr>
+        <th>Всего</th>
+        <th>Занято</th>
+        <th>Свободно</th>
+        <th>Всего</th>
+        <th>Обсуждается</th>
     </tr>
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups : Model.Data.PublicGroups)
     {
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <tr class="@hideClassName">
-            <td>@(string.Join("→", item.Path.Skip(1).Select(p => "")) + "→" + item.Name)</td>
-            <td>@item.ActiveCharacters.Count()</td>
-            <td>
-                @Html.ActionLink("Персонажи", "Index", "GameGroups", new { Model.ProjectId, item.CharacterGroupId }, null)
-                @if (Model.ShowEditControls)
-                {
-                <text>/</text>
-                @Html.Partial("_GroupEditControls", item)
-                }
+            <td style="text-overflow: ellipsis">
+                @string.Join("→", item.Path.Select(p => ""))
+                @Html.ActionLink(item.Name, "Report", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
             </td>
+            
+            <td style="text-align: right">
+                @Html.ActionLink(item.TotalCharacters.ToString(), "Index", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+            </td>
+            <td style="text-align: right">@item.TotalPlayerCharacters</td>
+            <td style="text-align: right">@item.TotalSlots</td>
+            <td style="text-align: right">
+                @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
+            </td>
+            <td style="text-align: right">
+                @Html.ActionLink(item.TotalDiscussedClaims.ToString(), "DiscussingForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
+            </td>
+
         </tr>
     }
 </table>

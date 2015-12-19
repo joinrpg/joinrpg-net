@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -64,7 +66,7 @@ namespace JoinRpg.Web.Models
         return Results;
       }
 
-      private void GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
+      private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
         var immediateParent = pathToTop.LastOrDefault();
 
@@ -88,20 +90,47 @@ namespace JoinRpg.Web.Models
           ProjectId = characterGroup.ProjectId,
           RootGroupId = Root.CharacterGroupId,
         };
+        
         Results.Add(vm);
 
         if (!vm.FirstCopy)
         {
-          return;
+          var prevCopy = Results.Single(cg => cg.FirstCopy && cg.CharacterGroupId == vm.CharacterGroupId);
+          vm.ChildGroups = prevCopy.ChildGroups;
+          vm.TotalSlots = prevCopy.TotalSlots;
+          vm.TotalCharacters = prevCopy.TotalCharacters;
+          vm.TotalPlayerCharacters = prevCopy.TotalPlayerCharacters;
+          vm.TotalDiscussedClaims = prevCopy.TotalDiscussedClaims;
+          vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
+          return vm;
         }
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
 
+
+        var childs = new List<CharacterGroupListItemViewModel>();
+
         foreach (var childGroup in characterGroup.GetOrderedChildGroups())
         {
           var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
-          GenerateFrom(childGroup, deepLevel + 1, characterGroups);
+          var child = GenerateFrom(childGroup, deepLevel + 1, characterGroups);
+          childs.Add(child);
         }
+
+        vm.ChildGroups = childs;
+
+        var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
+        var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
+
+        vm.TotalSlots = vm.AvaiableDirectSlots + childs.Sum(c => c.AvaiableDirectSlots) +
+                        flatCharacters.Count(c => c.IsAvailable);
+
+        vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c => c.AvaiableDirectSlots);
+        vm.TotalPlayerCharacters = flatCharacters.Count(c => c.Player != null);
+        vm.TotalDiscussedClaims = flatCharacters.Where(c => c.Player == null).Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
+        vm.TotalActiveClaims = flatCharacters.Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
+
+        return vm;
       }
 
       private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group)

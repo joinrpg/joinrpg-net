@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
@@ -32,7 +33,7 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class CharacterGroupListItemViewModel
+  public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
   {
     public int RootGroupId
     { get; set; }
@@ -54,7 +55,16 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsActive && c.IsPublic);
 
+    public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
+
     public int TotalSlots { get; set; }
+    public int TotalCharacters { get; set; }
+
+    public int TotalPlayerCharacters { get; set; }
+
+    public int TotalDiscussedClaims { get; set; }
+
+    public int TotalActiveClaims { get; set; }
 
     [CanBeNull]
     public HtmlString Description { get; set; }
@@ -75,6 +85,8 @@ namespace JoinRpg.Web.Models
     {
       
     }
+
+    public bool Equals(CharacterGroupListItemViewModel other) => other.CharacterGroupId == this.CharacterGroupId;
   }
 
 }

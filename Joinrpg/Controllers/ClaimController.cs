@@ -97,6 +97,18 @@ namespace JoinRpg.Web.Controllers
       return MasterList(projectId, cl => cl.IsActive && cl.PartOfGroup(characterGroupId), "ListForGroup", export);
     }
 
+    public Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
+    {
+      ViewBag.CharacterGroupId = characterGroupId;
+      return MasterList(projectId, cl => cl.IsInDiscussion && cl.PartOfGroup(characterGroupId), "DiscussingForGroup", export);
+    }
+
+    public Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
+    {
+      ViewBag.CharacterGroupId = characterGroupId;
+      return MasterList(projectId, cl => cl.IsInDiscussion && cl.CharacterGroupId == characterGroupId, "DiscussingForGroupDirect", export);
+    }
+
     private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName,
       string export)
     {
