@@ -8,6 +8,10 @@
     </summary>
     @using (Html.BeginForm("FinanceOperation", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
+      if (!Model.ClaimApproved)
+      {
+        <div class="alert alert-warning" role="alert">Заявка не принята. Вы точно хотите отметить оплату взноса?</div>
+      }
 
         <div class="form-horizontal">
             <div class="form-group">

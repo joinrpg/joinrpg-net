@@ -22,6 +22,10 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
       {
         yield return new ClaimProblem(claim, ClaimProblemType.FeePaidPartially);
       }
+      if (!claim.IsApproved && claim.ClaimBalance() > 0)
+      {
+        yield return new ClaimProblem(claim, ClaimProblemType.UnApprovedClaimPayment);
+      }
     }
   }
 }

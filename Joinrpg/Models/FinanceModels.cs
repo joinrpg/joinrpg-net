@@ -29,6 +29,9 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<PaymentType> PaymentTypes
     { get; set; }
+
+    [ReadOnly(true)]
+    public bool ClaimApproved { get; set; }
   }
 
   public class FinOperationListItemViewModel

@@ -43,7 +43,10 @@ namespace JoinRpg.Web.Models
     NoCharacterOnApprovedClaim,
     [UsedImplicitly]
     [Display(Name = "Взнос уплачен частично")]
-    FeePaidPartially
+    FeePaidPartially,
+    [UsedImplicitly]
+    [Display(Name="Оплата в непринятой заявке")]
+    UnApprovedClaimPayment
   }
 
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel

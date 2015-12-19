@@ -237,19 +237,18 @@ namespace JoinRpg.Web.Controllers
             _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId, claim.Comments.Max(c => c.CommentId));
       }
 
-      if (claim.IsApproved)
+
+      if (isMyClaim || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
       {
-        if (isMyClaim || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
-        {
-          //Finance admins can create any payment. User also can create any payment, but it will be moderated
-          claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
-        }
-        else
-        {
-          //All other master can create only payment from user to himself.
-          claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == CurrentUserId);
-        }
+        //Finance admins can create any payment. User also can create any payment, but it will be moderated
+        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
       }
+      else
+      {
+        //All other master can create only payment from user to himself.
+        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == CurrentUserId);
+      }
+
 
       if (claim.Character !=null)
       {

@@ -222,7 +222,8 @@
         OperationDate = DateTime.Today,
         PaymentTypes = Model.PaymentTypes,
         Money = Math.Max(Model.ClaimFee.CurrentFee-Model.ClaimFee.CurrentBalance, 0),
-        CommentText = new MarkdownViewModel("Сдан взнос")
+        CommentText = new MarkdownViewModel("Сдан взнос"),
+        ClaimApproved = Model.Status == Claim.Status.Approved
     };
     @Html.Partial("_ClaimFinancePartial", viewModel)
 }

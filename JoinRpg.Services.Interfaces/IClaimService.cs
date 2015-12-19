@@ -66,6 +66,7 @@ namespace JoinRpg.Services.Interfaces
     TooManyMoney,
     ClaimDiscussionStopped,
     NoCharacterOnApprovedClaim,
-    FeePaidPartially
+    FeePaidPartially,
+    UnApprovedClaimPayment
   }
 }
