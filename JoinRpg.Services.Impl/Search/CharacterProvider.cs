@@ -2,9 +2,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search
@@ -17,7 +15,9 @@ namespace JoinRpg.Services.Impl.Search
         await
           UnitOfWork.GetDbSet<Character>()
             .Where(cg =>
-              cg.CharacterName.Contains(searchString)  && cg.IsActive
+              (cg.CharacterName.Contains(searchString)
+               || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
+              && cg.IsActive
             )
             .ToListAsync();
 

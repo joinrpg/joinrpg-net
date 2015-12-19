@@ -15,7 +15,9 @@ namespace JoinRpg.Services.Impl.Search
         await
           UnitOfWork.GetDbSet<CharacterGroup>()
             .Where(cg =>
-              cg.CharacterGroupName.Contains(searchString) && cg.IsActive && !cg.IsRoot
+              (cg.CharacterGroupName.Contains(searchString) 
+                || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
+              && cg.IsActive && !cg.IsRoot
             )
             .ToListAsync();
 
