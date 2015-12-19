@@ -12,10 +12,12 @@
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     </dl>
-
+@if (Model.Fields.CharacterFields.Any())
+{
     <h4>Поля персонажа</h4>
     <div class="form-horizontal">
         @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>
+}
     @Html.Partial("_PlotForCharacterPartial", Model.Plot)
 </div>
