@@ -65,12 +65,14 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     // GET: GameGroups
-    public async Task<ActionResult> Report(int projectId, int? characterGroupId)
+    public async Task<ActionResult> Report(int projectId, int? characterGroupId, int? maxDeep)
     {
       if (characterGroupId == null)
       {
         return await RedirectToProject(projectId, "Report");
       }
+
+      ViewBag.MaxDeep = maxDeep;
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
       var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);

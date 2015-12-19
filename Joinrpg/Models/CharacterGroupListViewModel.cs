@@ -99,14 +99,14 @@ namespace JoinRpg.Web.Models
           vm.ChildGroups = prevCopy.ChildGroups;
           vm.TotalSlots = prevCopy.TotalSlots;
           vm.TotalCharacters = prevCopy.TotalCharacters;
-          vm.TotalPlayerCharacters = prevCopy.TotalPlayerCharacters;
+          vm.TotalCharactersWithPlayers = prevCopy.TotalCharactersWithPlayers;
           vm.TotalDiscussedClaims = prevCopy.TotalDiscussedClaims;
           vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
+          vm.TotalNpcCharacters = prevCopy.TotalNpcCharacters;
           return vm;
         }
 
         AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
-
 
         var childs = new List<CharacterGroupListItemViewModel>();
 
@@ -122,11 +122,13 @@ namespace JoinRpg.Web.Models
         var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
         var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
 
-        vm.TotalSlots = vm.AvaiableDirectSlots + childs.Sum(c => c.AvaiableDirectSlots) +
+        vm.TotalSlots = flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
                         flatCharacters.Count(c => c.IsAvailable);
 
-        vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c => c.AvaiableDirectSlots);
-        vm.TotalPlayerCharacters = flatCharacters.Count(c => c.Player != null);
+        vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
+        vm.TotalNpcCharacters = flatCharacters.Count(c => !c.IsAcceptingClaims);
+        vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.Player != null);
+
         vm.TotalDiscussedClaims = flatCharacters.Where(c => c.Player == null).Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
         vm.TotalActiveClaims = flatCharacters.Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
 
@@ -155,7 +157,8 @@ namespace JoinRpg.Web.Models
           LastInGroup = siblings.Last() == arg,
           ParentCharacterGroupId = group.CharacterGroupId,
           RootGroupId = Root.CharacterGroupId,
-          IsHot = arg.IsHot && arg.IsAvailable
+          IsHot = arg.IsHot && arg.IsAvailable,
+          IsAcceptingClaims =  arg.IsAcceptingClaims
         };
         if (vm.IsFirstCopy)
         {

@@ -60,7 +60,9 @@ namespace JoinRpg.Web.Models
     public int TotalSlots { get; set; }
     public int TotalCharacters { get; set; }
 
-    public int TotalPlayerCharacters { get; set; }
+    public int TotalNpcCharacters { get; set; }
+
+    public int TotalCharactersWithPlayers { get; set; }
 
     public int TotalDiscussedClaims { get; set; }
 

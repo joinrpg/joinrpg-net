@@ -14,11 +14,12 @@
 <table class="table table-bordered">
     <tr>
         <th rowspan="2">Группа</th>
-        <th colspan="3">Персонажей</th>
+        <th colspan="4">Персонажей</th>
         <th colspan="2">Заявок</th>
     </tr>
     <tr>
         <th>Всего</th>
+        <th>NPC</th>
         <th>Занято</th>
         <th>Свободно</th>
         <th>Всего</th>
@@ -26,18 +27,39 @@
     </tr>
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups : Model.Data.PublicGroups)
     {
+        if (ViewBag.MaxDeep != null && item.Path.Count() > ViewBag.MaxDeep)
+        {
+            continue;
+        }
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <tr class="@hideClassName">
             <td style="text-overflow: ellipsis">
                 @string.Join("→", item.Path.Select(p => ""))
-                @Html.ActionLink(item.Name, "Report", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+                @if (item.Path.Count() == 0)
+                {
+                    <text><b>@item.Name</b> (итого)</text>
+                }
+                else if (item.ChildGroups.Any())
+                {
+                    @Html.ActionLink(item.Name, "Report", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+                }
+                else
+                {
+                    @item.Name
+                }
             </td>
-            
+
             <td style="text-align: right">
                 @Html.ActionLink(item.TotalCharacters.ToString(), "Index", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
             </td>
-            <td style="text-align: right">@item.TotalPlayerCharacters</td>
-            <td style="text-align: right">@item.TotalSlots</td>
+            <td style="text-align: right">@item.TotalNpcCharacters</td>
+            <td style="text-align: right">@item.TotalCharactersWithPlayers</td>
+            <td style="text-align: right">@item.TotalSlots
+                @if (item.AvaiableDirectSlots == -1)
+                {
+                <span title="Разрешены неограниченные прямые заявки">+</span>
+                }
+            </td>
             <td style="text-align: right">
                 @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
             </td>

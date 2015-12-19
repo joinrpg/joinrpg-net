@@ -1,9 +1,10 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-  public class CharacterViewModel  : ICharacterWithPlayerViewModel
+  public class CharacterViewModel  : ICharacterWithPlayerViewModel, IEquatable<CharacterViewModel>
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -33,5 +34,8 @@ namespace JoinRpg.Web.Models
     public int RootGroupId { get; set; }
 
     public bool IsHot { get; set; }
+
+    public bool IsAcceptingClaims { get; set; }
+    public bool Equals(CharacterViewModel other) => this.CharacterId == other.CharacterId;
   }
 }
