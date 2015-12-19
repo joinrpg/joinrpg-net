@@ -1,9 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
@@ -20,7 +19,7 @@ namespace JoinRpg.Services.Impl
     {
       if (currentUserId != userId)
       {
-        throw new Exception("Not authorized");
+        throw new JoinRpgInvalidUserException();
       }
       var user = await UserRepository.WithProfile(userId);
 

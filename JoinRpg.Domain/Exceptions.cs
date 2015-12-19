@@ -15,6 +15,13 @@ namespace JoinRpg.Domain
     }
   }
 
+  public class JoinRpgInvalidUserException : JoinRpgBaseException
+  {
+    public JoinRpgInvalidUserException() : base("Cannot perform this operation for current user")
+    {
+    }
+  }
+
   public abstract class JoinRpgProjectEntityException : JoinRpgBaseException
   {
     protected JoinRpgProjectEntityException(IProjectEntity entity, string message) : base(message)

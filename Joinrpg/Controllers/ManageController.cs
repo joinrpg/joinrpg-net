@@ -229,8 +229,9 @@ namespace JoinRpg.Web.Controllers
             viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal);
         return RedirectToAction("SetupProfile");
       }
-      catch
+      catch (Exception e)
       {
+        ModelState.AddModelError("", $"Ошибка при сохранении: {e.Message}");
         return View(viewModel);
       }
     }
