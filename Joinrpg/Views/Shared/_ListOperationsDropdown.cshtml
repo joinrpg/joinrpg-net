@@ -1,4 +1,8 @@
-﻿<div class="btn-group" style="padding: 1em">
+﻿@if (ViewBag.HideOperations == true)
+{
+    return;
+}
+<div class="btn-group" style="padding: 1em">
     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         Операции <span class="caret"></span>
     </button>

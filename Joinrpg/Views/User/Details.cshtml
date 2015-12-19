@@ -31,7 +31,7 @@
     }
     @if (Model.Claims.Any())
     {
-        @Html.Partial("..\\Claim\\Index", Model.Claims, new ViewDataDictionary() {{"HideUserColumn", true}})
+        @Html.Partial("..\\Claim\\Index", Model.Claims, new ViewDataDictionary() {{"HideUserColumn", true}, {"HideOperations", true} })
     }
 
     @if (Model.ProjectsToAdd.Any())
