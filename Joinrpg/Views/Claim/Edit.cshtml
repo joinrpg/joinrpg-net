@@ -38,6 +38,12 @@
         </dd>
     }
     <dt>
+        @Html.DisplayNameFor(model => model.Status)
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Status)
+    </dd>
+    <dt>
         @Html.DisplayNameFor(model => model.Description)
     </dt>
     <dd>
@@ -48,7 +54,7 @@
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     }
-    @if (Model.Status == Claim.Status.Approved && Model.ClaimFee != null)
+    @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
     {
         <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
         <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>

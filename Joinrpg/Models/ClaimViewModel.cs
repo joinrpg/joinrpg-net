@@ -13,6 +13,7 @@ namespace JoinRpg.Web.Models
     public int ProjectId { get; set; }
     [DisplayName("Игрок")]
     public User Player { get; set; }
+    [Display(Name="Статус заявки")]
     public Claim.Status Status { get; set; }
     public bool IsMyClaim { get; set; }
 
