@@ -32,7 +32,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [Display(Name ="Текст заявки")]
+    [Display(Name ="Текст заявки"), Required]
     public MarkdownViewModel ClaimText { get; set; }
 
     public static AddClaimViewModel Create(Character character, User user)
