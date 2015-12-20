@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Helpers
     {
       var settings = CommonMarkSettings.Default.Clone();
       settings.RenderSoftLineBreaksAsLineBreaks = true;
-      return Sanitizer.Sanitize(CommonMarkConverter.Convert(markdownString.Contents, settings));
+      return Sanitizer.Sanitize(CommonMarkConverter.Convert(markdownString.Contents, settings)).Replace("<p></p>", "");
     }
   }
 }

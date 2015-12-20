@@ -1,7 +1,9 @@
 ﻿using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 
@@ -66,5 +68,12 @@ namespace JoinRpg.Web.Controllers
       {
         return RedirectToAction("Details", new {UserId = CurrentUserId});
       }
+
+      public ActionResult GetAvatar(int userId)
+      {
+      var user = UserManager.FindById(userId);
+        var hash = user.Email.ToLowerInvariant().ToHexHash(MD5.Create());
+      return Content($"https://www.gravatar.com/avatar/{hash}?d=retro&s=64");
+    }
     }
 }

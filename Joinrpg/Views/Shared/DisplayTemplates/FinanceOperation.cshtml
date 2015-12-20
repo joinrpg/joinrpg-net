@@ -1,27 +1,26 @@
 ﻿@using JoinRpg.DataModel
 @using JoinRpg.Domain
-@model JoinRpg.DataModel.FinanceOperation
+@model FinanceOperation
     @if (Model.FeeChange != 0)
     {
-        <br/><span><b>Изменение взноса</b>: @Model.FeeChange &#8381;</span>
+        <span><b>Изменение взноса</b>: @Model.FeeChange &#8381;</span><br />
     }
     @if (Model.MoneyAmount > 0)
     {
-    <br /><span><b>Оплата денег игроком</b>: @Model.MoneyAmount &#8381;</span>
+    <span><b>Оплата денег игроком</b>: @Model.MoneyAmount &#8381;</span><br />
     }
     else if (Model.MoneyAmount < 0)
     {
-        <br/>
-        <span><b>Возврат денег игроку</b>: @Model.MoneyAmount &#8381;</span>
+        <span><b>Возврат денег игроку</b>: @Model.MoneyAmount &#8381;</span><br />
     }
-<br/><span><b>Дата операции</b>: @Model.OperationDate.ToShortDateString()</span>
-<br/><span><b>Способ оплаты</b>: @Model.PaymentType.GetDisplayName()</span>
+<span><b>Дата операции</b>: @Model.OperationDate.ToShortDateString()</span><br />
+<span><b>Способ оплаты</b>: @Model.PaymentType.GetDisplayName()</span><br />
 
 @if (Model.State == FinanceOperationState.Declined)
 {
-    <br/><span class="label label-warning">Мастер не подтверждает оплату</span>
+    <span class="label label-warning">Мастер не подтверждает оплату</span><br />
 }
 else if (Model.State == FinanceOperationState.Proposed)
 {
-    <br/><span class="label label-default">Ждет одобрения мастером</span>
+    <span class="label label-default">Ждет одобрения мастером</span><br />
 }

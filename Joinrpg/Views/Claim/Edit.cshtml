@@ -18,49 +18,50 @@
 @using JoinRpg.Web.Models.CommonTypes
 
 <div>
-@Html.Partial("CharacterNavigation", Model.Navigation)
-<dl class="dl-horizontal">
-    <dt>
-        @Html.DisplayNameFor(model => model.Player)
-    </dt>
+    @Html.Partial("CharacterNavigation", Model.Navigation)
 
-    <dd>
-        @Html.DisplayFor(model => model.Player)
-    </dd>
-    @if (Model.CharacterGroupId != null)
-    {
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Player)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Player)
+        </dd>
+        @if (Model.CharacterGroupId != null)
+        {
         <dt>
             @Html.DisplayNameFor(model => model.GroupName)
         </dt>
 
         <dd>
-            @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+            @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
         </dd>
-    }
-    <dt>
-        @Html.DisplayNameFor(model => model.Status)
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Status)
-    </dd>
-    <dt>
-        @Html.DisplayNameFor(model => model.Description)
-    </dt>
-    <dd>
-        @Html.DisplayFor(model => model.Description)
-    </dd>
-    @if (Model.ParentGroups != null)
-    {
+        }
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        @if (Model.ParentGroups != null)
+        {
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
-    }
-    @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
-    {
+        }
+        @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
+        {
         <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
         <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
-    }
-    @if (Model.HasMasterAccess)
-    {
+        }
+        @if (Model.HasMasterAccess)
+        {
         <dt>
             @Html.DisplayNameFor(model => model.ResponsibleMasterId)
         </dt>
@@ -72,231 +73,320 @@
                 @Html.HiddenFor(model => model.ProjectId)
                 @Html.HiddenFor(model => model.ClaimId)
                 @Html.DropDownListFor(
-                    model => model.ResponsibleMasterId,
-                    Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                    htmlAttributes: new { @class = "form-control" })
+                        model => model.ResponsibleMasterId,
+                        Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                        htmlAttributes: new { @class = "form-control" })
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                 <input type="submit" value="Изменить" class="btn btn-default" />
             </div>
             }
         </dd>
-    }
-</dl>
-@if (Model.HasApproveRejectClaim)
-{
-    if (Model.Status == Claim.Status.AddedByUser)
-    {
-        if (Model.OtherClaimsForThisCharacterCount > 0)
-        {
-            <p>Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @OtherClaimsForThisCharacterLink()
-                или переведите их на другого персонажа или в группу.</p>
         }
-        else
-        {
-            <details>
-                <summary>Принять заявку...</summary>
-                @if (Model.OtherClaimsFromThisPlayerCount > 0)
+    </dl>
+    <div class="panel-group">
+        <div class="btn-group">
+            @if (Model.HasApproveRejectClaim)
+            {
+                if (Model.Status == Claim.Status.AddedByUser)
                 {
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
+                        aria-expanded="false">
+                    Принять заявку
+                </button>
+                }
+                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
+                {
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
+                        aria-expanded="false">
+                    Переместить заявку
+                </button>
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declineClaimActionPanel"
+                        aria-expanded="false">
+                    Отклонить заявку
+                </button>
+                }
+                if (Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser)
+                {
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
+                        aria-expanded="false">
+                    Принять заявку
+                </button>
+                }
+            }
+            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null)
+            {
+            <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
+                    aria-expanded="false">
+                Отметить взнос
+            </button>
+            }
+            @if (Model.IsMyClaim)
+            {
+                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
+                {
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
+                        aria-expanded="false">
+                    Отозвать заявку
+                </button>
+                }
+            }
+        </div>
+
+        <div class="panel panel-default collapse" id="approveClaimActionPanel">
+
+            <div class="panel-heading">Принятие заявки</div>
+            <div class="panel-body">
+                @if (Model.OtherClaimsForThisCharacterCount > 0)
+                {
+                <p>
+                    Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @OtherClaimsForThisCharacterLink()
+                    или переведите их на другого персонажа или в группу.
+                </p>
+                }
+                else
+                {
+
+
+                    if (Model.OtherClaimsFromThisPlayerCount > 0)
+                    {
                     <p>
                         Также этим же игроком подано на этот проект еще @OtherClaimsForThisPlayerLink().
                         Если принять эту заявку, другие автоматически будут отклонены.
                     </p>
-                }
-                @using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                {
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    }
+                    using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                     {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ParentCommentId = null,
-                        EnableHideFromUser = false,
-                        HideFromUser = false,
-                        ActionName = "Принять заявку"
-                    })
+                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+               {
+                   ProjectId = Model.ProjectId,
+                   ClaimId = Model.ClaimId,
+                   ParentCommentId = null,
+                   EnableHideFromUser = false,
+                   HideFromUser = false,
+                   ActionName = "Принять заявку"
+               })
                     <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
+                    }
+
+
                 }
-            </details>
-        }
-    }
-    if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
-    {
-        <details>
-            <summary>Отклонить заявку...</summary>
-            @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-            {
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+            </div>
+        </div>
+
+        <div class="panel panel-default collapse" id="declineClaimActionPanel">
+
+            <div class="panel-heading">Отклонение заявки</div>
+            <div class="panel-body">
+                @if (Model.Status == Claim.Status.AddedByUser)
                 {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ParentCommentId = null,
-                    EnableHideFromUser = false,
-                    HideFromUser = false,
-                    ActionName = "Отклонить заявку"
-                })
-                if (Model.Status == Claim.Status.AddedByUser)
-                {
-                    <p>При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
-                        воспользовавшись функцией перевода заявки на другую роль/группу.</p>
+                <div class="alert alert-info">
+                    При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
+                    воспользовавшись функцией перевода заявки на другую роль/группу.
+                </div>
                 }
                 else
                 {
-                    <p>Добавьте разумный текст, объясняющий причины отклонения заявки.</p>
+                <div class="alert alert-info">Добавьте разумный текст, объясняющий причины отклонения заявки.</div>
                 }
-            }
-        </details>
-        <details>
-            <summary>Переместить заявку</summary>
-            @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-            {
-                if (Model.Status == Claim.Status.Approved)
+                @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
-                    <p>Принятую заявку можно переместить только на конкретную роль (нельзя переместить в локацию)</p>
+                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+           {
+               ProjectId = Model.ProjectId,
+               ClaimId = Model.ClaimId,
+               ParentCommentId = null,
+               EnableHideFromUser = false,
+               HideFromUser = false,
+               ActionName = "Отклонить заявку"
+           })
+                }
+            </div>
+        </div>
+
+        <div class="panel panel-default collapse" id="moveClaimActionPanel">
+            <div class="panel-heading">Перемещение заявки</div>
+            <div class="panel-body">
+                @if (Model.Status == Claim.Status.Approved)
+                {
+                <div class="alert alert-info">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span> Принятую заявку можно переместить только на конкретную роль (нельзя переместить в локацию).
+                </div>
                     ViewBag.ShowGroupsInAvailClaim = false;
                 }
                 else
                 {
                     ViewBag.ShowGroupsInAvailClaim = true;
                 }
+                @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
                 @Html.Partial("AvailClaimTargetsPartial", Model.Data)
                 @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ParentCommentId = null,
-                    EnableHideFromUser = false,
-                    HideFromUser = false,
-                    ActionName = "Переместить заявку"
-                })
-            }
-        </details>
-    }
-    if ((Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser))
-    {
-        <details>
-            <summary>Восстановить заявку</summary>
+           {
+               ProjectId = Model.ProjectId,
+               ClaimId = Model.ClaimId,
+               ParentCommentId = null,
+               EnableHideFromUser = false,
+               HideFromUser = false,
+               ActionName = "Переместить заявку"
+           })
+                }
+            </div>
+        </div>
 
-            @if (Model.OtherClaimsFromThisPlayerCount > 0)
-            {
-                <p>
+        <div class="panel panel-default collapse" id="restoreClaimActionPanel">
+            <div class="panel-heading">Перемещение заявки</div>
+            <div class="panel-body">
+
+                @if (Model.OtherClaimsFromThisPlayerCount > 0)
+                {
+                <div class="alert alert-danger">
                     Также этим же игроком подано на этот проект еще @OtherClaimsForThisPlayerLink().
                     Отклоните другие заявки, прежде чем восстанавливать эту.
-                </p>
-            }
-            else
+                </div>
+                }
+                else
+                {
+                    using (Html.BeginForm("RestoreByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    {
+                        if (Model.HasOtherApprovedClaim)
+                        {
+                    <div class="alert alert-warning">
+                        На этого персонажа есть другие утвержденные @OtherClaimsForThisCharacterLink().
+                        При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
+                    </div>
+                        }
+                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+               {
+                   ProjectId = Model.ProjectId,
+                   ClaimId = Model.ClaimId,
+                   ParentCommentId = null,
+                   EnableHideFromUser = false,
+                   HideFromUser = false,
+                   ActionName = "Восстановить заявку"
+               })
+
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    @{ var viewModel = new FinOperationViewModel
+      {
+          ProjectId = Model.ProjectId,
+          ClaimId = Model.ClaimId,
+          ParentCommentId = null,
+          EnableHideFromUser = false,
+          HideFromUser = false,
+          ActionName = "Отметить взнос",
+          OperationDate = DateTime.Today,
+          PaymentTypes = Model.PaymentTypes,
+          Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
+          CommentText = new MarkdownViewModel("Сдан взнос"),
+          ClaimApproved = Model.Status == Claim.Status.Approved
+      }; }
+    <div class="panel panel-default collapse" id="financeClaimActionPanel">
+        <div class="panel-heading">Отметить взнос</div>
+        <div class="panel-body">
+            @Html.Partial("_ClaimFinancePartial", viewModel)
+        </div>
+    </div>
+
+    <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
+        <div class="panel-heading">Отметить взнос</div>
+        <div class="panel-body">
+            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-                using (Html.BeginForm("RestoreByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            @Html.Partial("AddCommentPartial", new AddCommentViewModel
+       {
+           ProjectId = Model.ProjectId,
+           ClaimId = Model.ClaimId,
+           ParentCommentId = null,
+           EnableHideFromUser = false,
+           HideFromUser = false,
+           ActionName = "Отозвать заявку",
+           CommentText = new MarkdownViewModel("Извините, я передумал ехать")
+       })
+            }
+        </div>
+    </div>
+
+    @if (Model.Fields.CharacterFields.Any())
+    {
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>Поля персонажа</h4>
+        </div>
+        <div class="panel-body">
+            <div class="form-horizontal">
+                @using (Html.BeginForm())
+                {
+                @Html.AntiForgeryToken()
+
+                @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+                    if (Model.Fields.AnyFieldEditable)
+                    {
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            <input type="submit" value="Сохранить" class="btn btn-success" />
+                        </div>
+                    </div>
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+    }
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4>Комментарии к заявке</h4></div>
+
+        <div class="panel-body">
+            <a data-toggle="collapse"
+               href="#answerComment0" class="btn btn-default">
+                Добавить комментарий
+            </a> <br/><br/>
+            <div id="answerComment0" class="collapse">
+                @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
                 {
                     @Html.Partial("AddCommentPartial", new AddCommentViewModel
                     {
                         ProjectId = Model.ProjectId,
                         ClaimId = Model.ClaimId,
                         ParentCommentId = null,
-                        EnableHideFromUser = false,
-                        HideFromUser = false,
-                        ActionName = "Восстановить заявку"
+                        EnableHideFromUser = !Model.IsMyClaim,
+                        HideFromUser = false
                     })
-                    if (Model.HasOtherApprovedClaim)
-                    {
-                        <p>
-                            На этого персонажа есть другие утвержденные @OtherClaimsForThisCharacterLink().
-                            При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
-                        </p>
-                    }
                 }
-            }
-        </details>
-    }
-}
-
-@if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null)
-{
-    var viewModel = new FinOperationViewModel
-    {
-        ProjectId = Model.ProjectId,
-        ClaimId = Model.ClaimId,
-        ParentCommentId = null,
-        EnableHideFromUser = false,
-        HideFromUser = false,
-        ActionName = "Отметить взнос",
-        OperationDate = DateTime.Today,
-        PaymentTypes = Model.PaymentTypes,
-        Money = Math.Max(Model.ClaimFee.CurrentFee-Model.ClaimFee.CurrentBalance, 0),
-        CommentText = new MarkdownViewModel("Сдан взнос"),
-        ClaimApproved = Model.Status == Claim.Status.Approved
-    };
-    @Html.Partial("_ClaimFinancePartial", viewModel)
-}
-
-@if (Model.IsMyClaim)
-{
-    if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
-    {
-        <details>
-            <summary>Отозвать заявку...</summary>
-            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-            {
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+            </div>
+            <div class="media-list">
+                @foreach (var comment in Model.Comments)
                 {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ParentCommentId = null,
-                    EnableHideFromUser = false,
-                    HideFromUser = false,
-                    ActionName = "Отозвать заявку",
-                    CommentText = new MarkdownViewModel("Извините, я передумал ехать")
-                })
-            }
-        </details>
-    }
-}
-
-<hr/>
-@if (Model.Fields.CharacterFields.Any())
-{
-    <h4>Поля персонажа</h4>
-    <div class="form-horizontal">
-        @using (Html.BeginForm())
-        {
-            @Html.AntiForgeryToken()
-
-            @Html.Partial("_EditFieldsPartial", Model.Fields)
-
-            if (Model.Fields.AnyFieldEditable)
-            {
-                <div class="form-group">
-                    <div class="col-md-10">
-                        <input type="submit" value="Сохранить" class="btn btn-default"/>
-                    </div>
-                </div>
-            }
-        }
-        <hr/>
+                    @Html.Partial("_CommentPartial", comment)
+                }
+            </div>
+            <a data-toggle="collapse"
+               href="#answerComment1" class="btn btn-default">
+                Добавить комментарий
+            </a>
+            <div id="answerComment1" class="collapse">
+                @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
+                {
+                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    {
+                        ProjectId = Model.ProjectId,
+                        ClaimId = Model.ClaimId,
+                        ParentCommentId = null,
+                        EnableHideFromUser = !Model.IsMyClaim,
+                        HideFromUser = false
+                    })
+                }
+            </div>
+        </div>
     </div>
-}
-
-<details>
-    <summary>Оставить комментарий...</summary>
-
-    @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-    {
-        @Html.Partial("AddCommentPartial", new AddCommentViewModel
-        {
-            ProjectId = Model.ProjectId,
-            ClaimId = Model.ClaimId,
-            ParentCommentId = null,
-            EnableHideFromUser = !Model.IsMyClaim,
-            HideFromUser = false
-        })
-    }
-</details>
-
-<details open>
-    <summary>Комментарии к заявке</summary>
-    @foreach (var comment in Model.Comments)
-    {
-        @Html.Partial("_CommentPartial", comment)
-    }
-</details>
 </div>
+
+
+
 @Html.Partial("_PlotForCharacterPartial", Model.Plot)

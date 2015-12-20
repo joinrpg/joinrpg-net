@@ -9,68 +9,76 @@ if (!comment.IsVisibleToPlayer && !comment.HasMasterAccess)
     return;
 }
 var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
-<div class="@hideClassName">
-    @if (comment.IsCommentByPlayer)
-    {
-    <span>Игрок</span>
-    }
-    else
-    {
-    <span>Мастер</span>
-    }
-    @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
-    <strong>
-        @if (!comment.IsCommentByPlayer)
-        {
-            if (comment.IsVisibleToPlayer)
-            {
-                <span>игроку</span>
-            }
-            else
-            {
-                <span>другим мастерам</span>
-            }
-        }
-    </strong>
-    @if (!comment.IsRead)
-    {
-        <span class="label label-default" title="Новый комментарий">New</span>
-    }
-    @if (comment.Finance != null)
-    {
-    @Html.DisplayFor(model => comment.Finance)
-    }
-
-    @if (comment.ExtraAction != null)
-    {
-        <br/><b>@Html.DisplayFor(model => comment.ExtraAction)</b>
-    }
-
-    <span>@comment.CommentText.ToHtmlString()</span>
-    <details>
-        <summary>Ответить...</summary>
-
-        @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new { enctype = "multipart/form-data" }))
-        {
-        @Html.Partial("AddCommentPartial", new AddCommentViewModel
-           {
-               ProjectId = comment.ProjectId,
-               ClaimId = comment.ClaimId,
-               ParentCommentId = comment.CommentId,
-               ParentComment = comment,
-               EnableFinanceAction = comment.Finance != null && comment.Finance.RequireModeration && comment.CanModerateFinance,
-               EnableHideFromUser = comment.HasMasterAccess,
-               HideFromUser = !comment.IsVisibleToPlayer
-           })
-        }
-    </details>
-    <div style="margin-left: 1em; margin-top: 1em">
-        @foreach (var childComment in comment.ChildComments)
-        {
-        @ShowCommentWithTree(childComment)
-        }
+<div class="media">
+    <div class="media-left">
+        <img class="media-object" style="border:1px solid black" width="64" height="64" src="@Html.Action("GetAvatar", "User", new {comment.Author.UserId})"/>
     </div>
-    <hr />
+    <div class="@hideClassName media-body">
+        <div class="media-heading"> @if (comment.IsCommentByPlayer)
+                                    {
+                                        <span>Игрок</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Мастер</span>
+                                    }
+            @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
+            <strong>
+                @if (!comment.IsCommentByPlayer)
+                {
+                    if (comment.IsVisibleToPlayer)
+                    {
+                        <span>игроку</span>
+                    }
+                    else
+                    {
+                        <span>другим мастерам</span>
+                    }
+                }
+            </strong>
+            @if (!comment.IsRead)
+            {
+                <span class="label label-default" title="Новый комментарий">New</span>
+            }
+        </div>
+        @if (comment.Finance != null)
+        {
+         @Html.DisplayFor(model => comment.Finance)
+        }
+
+        @if (comment.ExtraAction != null)
+        {
+        <br /><b>@Html.DisplayFor(model => comment.ExtraAction)</b>
+        }
+
+        <span>@comment.CommentText.ToHtmlString()</span>
+        <a data-toggle="collapse"
+                 href="#answerComment@(Model.CommentId)">
+            Ответить
+        </a>
+        <div id ="answerComment@(Model.CommentId)" class="collapse">
+            @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                {
+                    ProjectId = comment.ProjectId,
+                    ClaimId = comment.ClaimId,
+                    ParentCommentId = comment.CommentId,
+                    ParentComment = comment,
+                    EnableFinanceAction = comment.Finance != null && comment.Finance.RequireModeration && comment.CanModerateFinance,
+                    EnableHideFromUser = comment.HasMasterAccess,
+                    HideFromUser = !comment.IsVisibleToPlayer
+                })
+            }
+        </div>
+
+
+        
+            @foreach (var childComment in comment.ChildComments)
+            {
+            @ShowCommentWithTree(childComment)
+            }
+    </div>
 </div>
 }
 

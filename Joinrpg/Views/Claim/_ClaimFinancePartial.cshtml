@@ -2,16 +2,12 @@
 @using JoinRpg.Domain
 @model FinOperationViewModel
 
-<details>
-    <summary>
-        Отметить взнос
-    </summary>
-    @using (Html.BeginForm("FinanceOperation", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    @using (Html.BeginForm("FinanceOperation", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
     {
-      if (!Model.ClaimApproved)
-      {
-        <div class="alert alert-warning" role="alert">Заявка не принята. Вы точно хотите отметить оплату взноса?</div>
-      }
+        if (!Model.ClaimApproved)
+        {
+            <div class="alert alert-warning" role="alert">Заявка не принята. Вы точно хотите отметить оплату взноса?</div>
+        }
 
         <div class="form-horizontal">
             <div class="form-group">
@@ -44,20 +40,19 @@
                 }
             }
             <div class="form-group">
-                @Html.LabelFor(model => model.PaymentTypeId, htmlAttributes: new { @class = "control-label col-md-2" })
+                @Html.LabelFor(model => model.PaymentTypeId, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-6">
                     @Html.DropDownListFor(
-                    model => model.PaymentTypeId,
-                    Model.PaymentTypes.Select(paymentType => new SelectListItem()
-                    {
-                        Text = paymentType.GetDisplayName(),
-                        Value = paymentType.PaymentTypeId.ToString()
-                    }).OrderBy(i => i.Text),
-                    htmlAttributes: new { @class = "form-control" })
+                        model => model.PaymentTypeId,
+                        Model.PaymentTypes.Select(paymentType => new SelectListItem()
+                        {
+                            Text = paymentType.GetDisplayName(),
+                            Value = paymentType.PaymentTypeId.ToString()
+                        }).OrderBy(i => i.Text),
+                        htmlAttributes: new {@class = "form-control"})
                 </div>
             </div>
         </div>
 
         @Html.Partial("AddCommentPartial", Model)
     }
-</details>
