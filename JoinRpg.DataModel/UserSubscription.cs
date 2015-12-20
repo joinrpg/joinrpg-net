@@ -25,8 +25,6 @@ namespace JoinRpg.DataModel
     public bool Comments { get; set; }
     public bool FieldChange { get; set; }
 
-    //TODO: This should be indepedent subscription
-    public bool MoneyOperation
-      => Project.ProjectAcls.SingleOrDefault(acl => acl.User == this.User)?.CanManageMoney ?? false;
+    public bool MoneyOperation { get; set; }
   }
 }

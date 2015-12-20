@@ -264,11 +264,11 @@ namespace JoinRpg.Web.Controllers
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
-
-        await
+        //TODO: Split to different things
+         await
           ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
             viewModel.Subscribe.ClaimStatusChangeValue, viewModel.Subscribe.CommentsValue,
-            viewModel.Subscribe.FieldChangeValue);
+            viewModel.Subscribe.FieldChangeValue, viewModel.Subscribe.MoneyOperationValue);
 
 
         return RedirectToIndex(group.Project);

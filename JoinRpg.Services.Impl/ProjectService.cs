@@ -356,12 +356,12 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue)
+    public async Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue, bool moneyOperationValue)
     {
       var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
       group.RequestMasterAccess(currentUserId);
       
-      var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue;
+      var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue || moneyOperationValue;
       var user = await UserRepository.GetWithSubscribe(currentUserId);
       var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == characterGroupId);
       if (needSubscrive)
@@ -379,6 +379,7 @@ namespace JoinRpg.Services.Impl
         direct.ClaimStatusChange = claimStatusChangeValue;
         direct.Comments = commentsValue;
         direct.FieldChange = fieldChangeValue;
+        direct.MoneyOperation = moneyOperationValue;
       }
       else
       {

@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Models
 
     private void Init(User user, IWorldObject @group, UserSubscription direct)
     {
-      ClaimStatusChangeEnabled = CommentsEnabled = FieldChangeEnabled = true;
+      ClaimStatusChangeEnabled = CommentsEnabled = FieldChangeEnabled = MoneyOperationEnabled = true;
       if (direct != null)
       {
         InitFrom(direct);
@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Models
       if (subscribe != null)
       {
         UpdateFrom(subscribe);
-        if (!ClaimStatusChangeEnabled && !FieldChangeEnabled && !CommentsEnabled)
+        if (!AnythingEnabled)
         {
           return;
         }
@@ -66,12 +66,14 @@ namespace JoinRpg.Web.Models
       foreach (var parentGroup in characterGroup.ParentGroups)
       {
         ParseCharacterGroup(parentGroup, user);
-        if (!ClaimStatusChangeEnabled && !FieldChangeEnabled && !CommentsEnabled)
+        if (!AnythingEnabled)
         {
           return;
         }
       }
     }
+
+    private bool AnythingEnabled => ClaimStatusChangeEnabled || FieldChangeEnabled || CommentsEnabled || MoneyOperationEnabled;
 
     private void UpdateFrom(UserSubscription subscribe)
     {
@@ -90,6 +92,11 @@ namespace JoinRpg.Web.Models
         Comments = true;
         CommentsEnabled = false;
       }
+      if (subscribe.MoneyOperation)
+      {
+        MoneyOperation = true;
+        MoneyOperationEnabled = false;
+      }
     }
 
     private void InitFrom(UserSubscription direct)
@@ -97,6 +104,7 @@ namespace JoinRpg.Web.Models
       ClaimStatusChange = direct.ClaimStatusChange;
       Comments = direct.Comments;
       FieldChange = direct.FieldChange;
+      MoneyOperation = direct.MoneyOperation;
     }
 
     [Display(Name = "Подписка на новые заявки/прием/отклонение")]
@@ -113,6 +121,13 @@ namespace JoinRpg.Web.Models
     public bool FieldChange { get; set; }
 
     public bool FieldChangeEnabled { get; set; }
+
+    [Display(Name = "Подписка на финансовые операции")]
+    public bool MoneyOperation { get; set; }
+
+    public bool MoneyOperationEnabled { get; set; }
+
+    public bool MoneyOperationValue => MoneyOperationEnabled && MoneyOperation;
 
     public bool ClaimStatusChangeValue => ClaimStatusChangeEnabled && ClaimStatusChange;
     public bool CommentsValue => CommentsEnabled && Comments;

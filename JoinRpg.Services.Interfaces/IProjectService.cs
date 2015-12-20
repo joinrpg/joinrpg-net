@@ -36,8 +36,7 @@ namespace JoinRpg.Services.Interfaces
     Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic);
 
-    Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue,
-      bool commentsValue, bool fieldChangeValue);
+    Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue, bool moneyOperationValue);
 
     Task DeleteCharacter(int projectId, int characterId);
 
