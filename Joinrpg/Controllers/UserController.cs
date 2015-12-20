@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Controllers
       {
       var user = UserManager.FindById(userId);
         var hash = user.Email.ToLowerInvariant().ToHexHash(MD5.Create());
-      return Content($"https://www.gravatar.com/avatar/{hash}?d=retro&s=64");
+      return Content($"https://www.gravatar.com/avatar/{hash}?d=identicon&s=64");
     }
     }
 }
