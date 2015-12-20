@@ -38,8 +38,6 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool IsRoot { get; set; }
-
-   public SubscribeSettingsViewModel Subscribe { get; set; } = new SubscribeSettingsViewModel();
   }
 
   public class MasterListItemViewModel  

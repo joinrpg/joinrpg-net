@@ -9,53 +9,66 @@
 
 }
 
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
 
-<div class="form-horizontal">
-    <h4>Настройки подписки</h4>
-    <hr/>
-    @Html.ValidationSummary(true, "", new {@class = "text-danger"})
-    <div class="form-group">
-        @Html.LabelFor(model => model.ClaimStatusChange, htmlAttributes: new {@class = "control-label col-md-4"})
-        <div class="col-md-2">
-            <div class="checkbox">
-                @Html.CheckBoxFor(model => model.ClaimStatusChange, CheckBoxEnabled(Model.ClaimStatusChangeEnabled))
-                @Html.ValidationMessageFor(model => model.ClaimStatusChange, "", new {@class = "text-danger"})
+    @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.CharacterGroupId)
+
+    <div class="form-horizontal">
+        <h4>Настройки подписки на «@Model.Name»</h4>
+        <hr/>
+        @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClaimStatusChange, htmlAttributes: new {@class = "control-label col-md-4"})
+            <div class="col-md-2">
+                <div class="checkbox">
+                    @Html.CheckBoxFor(model => model.ClaimStatusChange, CheckBoxEnabled(Model.ClaimStatusChangeEnabled))
+                    @Html.ValidationMessageFor(model => model.ClaimStatusChange, "", new {@class = "text-danger"})
+                </div>
+            </div>
+            @Html.HiddenFor(model => model.ClaimStatusChangeEnabled)
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Comments, htmlAttributes: new {@class = "control-label col-md-4"})
+            <div class="col-md-2">
+                <div class="checkbox">
+                    @Html.CheckBoxFor(model => model.Comments, CheckBoxEnabled(Model.CommentsEnabled))
+                    @Html.ValidationMessageFor(model => model.Comments, "", new {@class = "text-danger"})
+                </div>
+            </div>
+            @Html.HiddenFor(model => model.CommentsEnabled)
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.FieldChange, htmlAttributes: new {@class = "control-label col-md-4"})
+            <div class="col-md-2">
+                <div class="checkbox">
+                    @Html.CheckBoxFor(model => model.FieldChange, CheckBoxEnabled(Model.FieldChangeEnabled))
+                    @Html.ValidationMessageFor(model => model.FieldChange, "", new {@class = "text-danger"})
+                </div>
+            </div>
+            @Html.HiddenFor(model => model.FieldChangeEnabled)
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.MoneyOperation, htmlAttributes: new {@class = "control-label col-md-4"})
+            <div class="col-md-2">
+                <div class="checkbox">
+                    @Html.CheckBoxFor(model => model.MoneyOperation, CheckBoxEnabled(Model.MoneyOperationEnabled))
+                    @Html.ValidationMessageFor(model => model.MoneyOperation, "", new {@class = "text-danger"})
+                </div>
+            </div>
+            @Html.HiddenFor(model => model.MoneyOperationEnabled)
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12">
+                <input type="submit" value="Сохранить" class="btn btn-success"/>
             </div>
         </div>
-        @Html.HiddenFor(model => model.ClaimStatusChangeEnabled)
-    </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.Comments, htmlAttributes: new {@class = "control-label col-md-4"})
-        <div class="col-md-2">
-            <div class="checkbox">
-                @Html.CheckBoxFor(model => model.Comments, CheckBoxEnabled(Model.CommentsEnabled))
-                @Html.ValidationMessageFor(model => model.Comments, "", new {@class = "text-danger"})
-            </div>
-        </div>
-        @Html.HiddenFor(model => model.CommentsEnabled)
     </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.FieldChange, htmlAttributes: new {@class = "control-label col-md-4"})
-        <div class="col-md-2">
-            <div class="checkbox">
-                @Html.CheckBoxFor(model => model.FieldChange, CheckBoxEnabled(Model.FieldChangeEnabled))
-                @Html.ValidationMessageFor(model => model.FieldChange, "", new {@class = "text-danger"})
-            </div>
-        </div>
-        @Html.HiddenFor(model => model.FieldChangeEnabled)
-    </div>
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.MoneyOperation, htmlAttributes: new { @class = "control-label col-md-4" })
-        <div class="col-md-2">
-            <div class="checkbox">
-                @Html.CheckBoxFor(model => model.MoneyOperation, CheckBoxEnabled(Model.MoneyOperationEnabled))
-                @Html.ValidationMessageFor(model => model.MoneyOperation, "", new {@class = "text-danger"})
-            </div>
-        </div>
-        @Html.HiddenFor(model => model.MoneyOperationEnabled)
-    </div>
-    
-</div>
+}

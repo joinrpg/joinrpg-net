@@ -1,35 +1,36 @@
 ﻿@using JoinRpg.Web.Models
 @model GameRolesViewModel
 
-@helper GetPathString(CharacterGroupListItemViewModel item)
-{
-    @(string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name)
-}
-
 @{
-    ViewBag.Title = "Сетка ролей " + Model.ProjectName;
+    ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.ActiveGroups.Single(g => g.DeepLevel == 0).Name;
 }
-
-<h2>@ViewBag.Title</h2>
 
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups :  Model.Data.PublicGroups)
     {
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
-            @if (item.DeepLevel > 2)
-            {
-            @* Get rid of code duplication here*@
-            <h4 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h4>
+
+            @{
+                var groupLink = Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null);
+                var editControls = Model.ShowEditControls ? Html.Partial("_GroupEditControls", item) : MvcHtmlString.Empty;
+                var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
-            else if (item.DeepLevel == 2)
-            {
-              @* Get rid of code duplication here*@
-                <h3 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null)</h3>
-            }
-            else
-            {
-                <h2 title="@GetPathString(item)">@Html.ActionLink(item.Name, "Index", new { Model.ProjectId, item.CharacterGroupId }, null)</h2>
-            }
+            <div>@switch (item.DeepLevel)
+                 {
+                     case 2:
+                         <span class="h3" title="@pathString">@groupLink</span>@editControls
+                         break;
+                     case 1:
+                         <span class="h2" title="@pathString">@groupLink</span>@editControls
+                         break;
+                     case 0:
+                         <span class="h2">Сетка ролей @item.Name</span>@editControls
+                         break;
+                     default:
+                         <span class="h4" title="@pathString">@groupLink</span>@editControls
+                         break;
+                 }
+            </div>
 
             @if (!item.FirstCopy)
             {
@@ -39,10 +40,7 @@
             @if (item.FirstCopy)
             {
                 <div>
-                    @if (Model.ShowEditControls)
-                    {
-                        @Html.Partial("_GroupEditControls", item)
-                    }
+ 
                     @item.Description
                     <ul>
                         @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)

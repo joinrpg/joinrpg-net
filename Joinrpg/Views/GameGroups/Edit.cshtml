@@ -2,7 +2,7 @@
 @model EditCharacterGroupViewModel
 
 @{
-  ViewBag.Title = "Редактирование группы персонажей «" + Model.Name + "» в игре " + Model.ProjectName;
+  ViewBag.Title = "Редактирование группы персонажей «" + Model.Name + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -80,7 +80,6 @@
             </div>
         </div>
 
-        @Html.EditorFor(model => model.Subscribe)
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Сохранить" class="btn btn-default"/>

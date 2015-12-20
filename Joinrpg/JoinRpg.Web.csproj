@@ -563,6 +563,7 @@
     <Content Include="Views\Finances\MoneySummary.cshtml" />
     <Content Include="Views\Claim\DiscussingForGroup.cshtml" />
     <Content Include="Views\Claim\DiscussingForGroupDirect.cshtml" />
+    <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

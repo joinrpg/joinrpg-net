@@ -1,39 +1,53 @@
 ﻿@model JoinRpg.Web.Models.CharacterGroupListItemViewModel
-<span>
-    @Html.ActionLink("все заявки", "ListForGroup", "Claim", new { Model.ProjectId, Model.CharacterGroupId }, null)
-    <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)"><span title="изменить" class="glyphicon glyphicon-wrench"></span></a>
-    @if (!Model.IsRoot && Model.ActiveClaimsCount == 0)
-    {
-        <a href="@Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)"><span title="удалить" class="glyphicon glyphicon-trash"></span></a>
-    }
-    
-    @if (!Model.IsRoot)
-    {
-        var moveParameters = new
-        {
-            Model.ProjectId,
-            Model.CharacterGroupId,
-            parentCharacterGroupId = Model.Path.Last().CharacterGroupId,
-            currentRootGroupId = Model.RootGroupId
-        };
-        if (!Model.FirstInGroup)
-        {
-            <a href="@Url.Action("MoveUp", "GameGroups", moveParameters, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
-        }
-        if (!Model.LastInGroup)
-        {
-            <a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
-        }
-    }
-    <span class="dropdown">
-        <button class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            <span title="добавить" class="glyphicon glyphicon-plus"></span>
-            <span class="caret"></span>
+<span class="dropdown">
+        <button class="btn btn-default dropdown-toggle" style="border: none;vertical-align: central" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span title="действия" class="glyphicon glyphicon-option-vertical"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            <li>@Html.ActionLink("персонажа", "Create", "Character", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
-            <li>@Html.ActionLink("подгруппу", "AddGroup", new { Model.ProjectId, Model.CharacterGroupId }, null)</li>
+
+            <li>
+                <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
+                </a>
+            </li>
+            <li>
+                @Html.ActionLink("подписка", "EditSubscribe", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null)
+            </li>
+            <li>
+               @Html.ActionLink("список заявок", "ListForGroup", "Claim", new {Model.ProjectId, Model.CharacterGroupId}, null)
+            </li>
+            @if (!Model.IsRoot)
+            {
+                var disabled = Model.TotalActiveClaims != 0 ? "disabled" : "";
+                <li class="@disabled">
+                    <a href="@Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
+                    </a>
+                </li>
+            }
+            @if (!Model.FirstInGroup && !Model.LastInGroup && !Model.IsRoot)
+            {
+                var moveParameters = new
+                {
+                    Model.ProjectId,
+                    Model.CharacterGroupId,
+                    parentCharacterGroupId = Model.Path.Last().CharacterGroupId,
+                    currentRootGroupId = Model.RootGroupId
+                };
+                <li class="dropdown-header">Переместить</li>
+                if (!Model.FirstInGroup)
+                {
+                    <li><a href="@Url.Action("MoveUp", "GameGroups", moveParameters, null)">..выше</a></li>
+                }
+                if (!Model.LastInGroup)
+                {
+                    <li><a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)">..ниже</a></li>
+                }
+            }
+            <li class="dropdown-header">Добавить</li>
+            <li>
+                <a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a>
+            </li>
+            <li>@Html.ActionLink("..подгруппу", "AddGroup", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
         </ul>
     </span>
-</span>
-

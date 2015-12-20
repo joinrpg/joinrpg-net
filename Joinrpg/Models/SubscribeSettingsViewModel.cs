@@ -13,7 +13,12 @@ namespace JoinRpg.Web.Models
     {
       var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == group.CharacterGroupId);
       Init(user, @group, direct);
+      ProjectId = group.ProjectId;
+      CharacterGroupId = group.CharacterGroupId;
+      Name = group.CharacterGroupName;
     }
+
+    public string Name { get; set; }
 
     public SubscribeSettingsViewModel(User user, Character @group)
     {
@@ -43,13 +48,12 @@ namespace JoinRpg.Web.Models
       {
         InitFrom(direct);
       }
-      else
+
+      foreach (var characterGroup in @group.ParentGroups)
       {
-        foreach (var characterGroup in @group.ParentGroups)
-        {
-          ParseCharacterGroup(characterGroup, user);
-        }
+        ParseCharacterGroup(characterGroup, user);
       }
+
     }
 
     private void ParseCharacterGroup(CharacterGroup characterGroup, User user)
@@ -132,5 +136,8 @@ namespace JoinRpg.Web.Models
     public bool ClaimStatusChangeValue => ClaimStatusChangeEnabled && ClaimStatusChange;
     public bool CommentsValue => CommentsEnabled && Comments;
     public bool FieldChangeValue => FieldChangeEnabled && FieldChange;
+
+    public int ProjectId { get; set; }
+    public int CharacterGroupId { get; set; }
   }
 }

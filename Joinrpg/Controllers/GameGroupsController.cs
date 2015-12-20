@@ -188,13 +188,10 @@ namespace JoinRpg.Web.Controllers
       };
     }
 
-    // GET: GameGroups/Edit/5
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-      
-      var user = await _userRepository.GetWithSubscribe(CurrentUserId);
 
       var error = AsMaster(group, pa => pa.CanEditRoles);
       if (error != null)
@@ -214,7 +211,6 @@ namespace JoinRpg.Web.Controllers
         DirectSlots = Math.Max(@group.AvaiableDirectSlots, 0),
         CharacterGroupId = @group.CharacterGroupId,
         IsRoot = @group.IsRoot,
-        Subscribe = new SubscribeSettingsViewModel(user, group),
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
         Masters = GetMasters(@group, false)
       });
@@ -264,17 +260,12 @@ namespace JoinRpg.Web.Controllers
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
-        //TODO: Split to different things
-         await
-          ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
-            viewModel.Subscribe.ClaimStatusChangeValue, viewModel.Subscribe.CommentsValue,
-            viewModel.Subscribe.FieldChangeValue, viewModel.Subscribe.MoneyOperationValue);
-
 
         return RedirectToIndex(group.Project);
       }
-      catch
+      catch (Exception e)
       {
+        ModelState.AddModelError("", e);
         return View(viewModel);
       }
 
@@ -391,6 +382,43 @@ namespace JoinRpg.Web.Controllers
     public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
     {
       return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
+    }
+
+    [HttpGet,Authorize]
+    public async Task<ActionResult> EditSubscribe(int projectId, int characterGroupId)
+    {
+      var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+
+      var user = await _userRepository.GetWithSubscribe(CurrentUserId);
+
+      return AsMaster(@group) ?? View(new SubscribeSettingsViewModel(user, @group));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken, Authorize]
+    public async Task<ActionResult> EditSubscribe(SubscribeSettingsViewModel viewModel)
+    {
+      var group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
+      var error = AsMaster(group);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await
+         ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
+           viewModel.ClaimStatusChangeValue, viewModel.CommentsValue,
+           viewModel.FieldChangeValue, viewModel.MoneyOperationValue);
+
+        return RedirectToIndex(group.Project);
+      }
+      catch (Exception e)
+      {
+        ModelState.AddModelError("", e);
+        return View(viewModel);
+      }
+
     }
   }
 }
