@@ -7,7 +7,7 @@ namespace JoinRpg.Domain
   {
     public static bool IsReadByUser(this Comment comment, int userId)
     {
-      return (comment.Claim.Watermarks.SingleOrDefault(wm => wm.UserId == userId)?.CommentId  ?? 0) >= comment.CommentId;
+      return comment.AuthorUserId == userId || (comment.Claim.Watermarks.SingleOrDefault(wm => wm.UserId == userId)?.CommentId  ?? 0) >= comment.CommentId;
     }
   }
 }
