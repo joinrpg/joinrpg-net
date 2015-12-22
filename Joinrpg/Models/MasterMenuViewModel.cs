@@ -15,6 +15,9 @@ namespace JoinRpg.Web.Models
     public ProjectAcl AccessToProject { get; set; }
 
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
-    public CharacterGroupLinkViewModel MyGroups { get; set; }
+
+    public bool IsActive { get; set; }
+
+    public bool IsAcceptingClaims { get; set; }
   }
 }

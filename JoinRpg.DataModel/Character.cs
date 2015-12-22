@@ -44,7 +44,7 @@ namespace JoinRpg.DataModel
     /// <summary>
     /// Is available for claims (IsAcceptingClaims + has no approved claim)
     /// </summary>
-    public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null;
+    public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null && Project.IsAcceptingClaims;
 
     public User ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
 

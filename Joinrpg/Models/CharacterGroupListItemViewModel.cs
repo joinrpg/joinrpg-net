@@ -83,6 +83,9 @@ namespace JoinRpg.Web.Models
     public bool LastInGroup { get; set; }
 
     public int ProjectId { get; set; }
+
+    public bool IsAcceptingClaims { get; set; }
+
     public CharacterGroupListItemViewModel()
     {
       

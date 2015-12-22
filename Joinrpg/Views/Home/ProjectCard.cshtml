@@ -2,7 +2,9 @@
 <div class="col-sm-6 col-md-4">
     <div class="thumbnail">
         <div class="caption">
-            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden" title="@Model.ProjectName">@Model.ProjectName</h4>
+            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden" title="@Model.ProjectName">
+                <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null))">@Model.ProjectName</a>
+            </h4>
             <p>
                 @if (Model.IsMaster)
                 {
@@ -21,7 +23,7 @@
                     </a>
                 }
 
-                @if (!Model.IsMaster && !Model.MyClaims.Any())
+                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims)
                 {
 
                     <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"

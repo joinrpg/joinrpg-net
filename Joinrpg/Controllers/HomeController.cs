@@ -39,7 +39,8 @@ namespace JoinRpg.Web.Controllers
           ProjectName = p.ProjectName,
           MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
           ClaimCount = p.Claims.Count(c => c.IsActive),
-        }).ToList();
+          IsAcceptingClaims = p.IsAcceptingClaims
+        }).Where(p => p.IsMaster || p.MyClaims.Any() || p.IsAcceptingClaims).ToList();
       var alwaysShowProjects =
         projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster).ThenByDescending(p => p.ClaimCount);
       var otherProjects =

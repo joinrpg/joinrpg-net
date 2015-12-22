@@ -18,6 +18,8 @@ namespace JoinRpg.DataModel
 
     public bool Active { get; set; }
 
+    public bool IsAcceptingClaims { get; set; }
+
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
     public virtual ICollection<ProjectCharacterField> ProjectFields { get; set; }

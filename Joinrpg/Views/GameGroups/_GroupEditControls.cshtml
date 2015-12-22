@@ -19,8 +19,9 @@
             @if (!Model.IsRoot)
             {
                 var disabled = Model.TotalActiveClaims != 0 ? "disabled" : "";
+                var uri = Model.TotalActiveClaims != 0 ? "#" : Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null);
                 <li class="@disabled">
-                    <a href="@Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <a href="@uri">
                     <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
                     </a>
                 </li>

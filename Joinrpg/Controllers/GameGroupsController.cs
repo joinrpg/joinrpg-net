@@ -150,9 +150,9 @@ namespace JoinRpg.Web.Controllers
                   Description = g.Description?.ToHtmlString(),
                   Path = g.Path.Select(gr => gr.Name),
                   Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
-                  CanAddDirectClaim = g.AvaiableDirectSlots != 0,
+                  CanAddDirectClaim = g.IsAcceptingClaims,
                   DirectClaimsCount = g.AvaiableDirectSlots,
-                  DirectClaimLink = g.AvaiableDirectSlots != 0 ? GetClaimLink("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
+                  DirectClaimLink = g.IsAcceptingClaims ? GetClaimLink("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
                 }),
       });
     }

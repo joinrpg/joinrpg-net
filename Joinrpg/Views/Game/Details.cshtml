@@ -34,6 +34,13 @@
             @Html.DisplayFor(model => model.IsActive)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.IsAcceptingClaims)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsAcceptingClaims)
+        </dd>
     </dl>
     <Hr/>
      @Html.ActionLink("Перейти к сетке ролей", "Index", "GameGroups", new {Model.ProjectId}, null)

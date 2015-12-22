@@ -209,6 +209,10 @@
     <Compile Include="Migrations\201512191907013_MoneyOperationSubscrive.Designer.cs">
       <DependentUpon>201512191907013_MoneyOperationSubscrive.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201512222025145_EnableToStartAndStopAcceptingClaims.cs" />
+    <Compile Include="Migrations\201512222025145_EnableToStartAndStopAcceptingClaims.Designer.cs">
+      <DependentUpon>201512222025145_EnableToStartAndStopAcceptingClaims.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -355,6 +359,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201512191907013_MoneyOperationSubscrive.resx">
       <DependentUpon>201512191907013_MoneyOperationSubscrive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201512222025145_EnableToStartAndStopAcceptingClaims.resx">
+      <DependentUpon>201512222025145_EnableToStartAndStopAcceptingClaims.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

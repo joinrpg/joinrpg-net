@@ -64,7 +64,7 @@
                         {
                             @Html.ActionLink(DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"), "ListForGroupDirect", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
                         }
-                        @if (item.AvaiableDirectSlots != 0)
+                        @if (item.IsAcceptingClaims)
                         {
                             @Html.ActionLink("заявиться", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
                         }

@@ -27,6 +27,7 @@ namespace JoinRpg.Web.Controllers
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         IsActive = project.Active,
+        IsAcceptingClaims = project.IsAcceptingClaims,
         CreatedDate = project.CreatedDate,
         Masters = project.ProjectAcls.Select(acl => acl.User)
       });
@@ -73,7 +74,8 @@ namespace JoinRpg.Web.Controllers
         ProjectAnnounce = new MarkdownViewModel(project.Details?.ProjectAnnounce),
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
-        OriginalName = project.ProjectName
+        OriginalName = project.ProjectName,
+        IsAcceptingClaims = project.IsAcceptingClaims
       });
     }
 
@@ -92,7 +94,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules.Contents,
-            viewModel.ProjectAnnounce.Contents);
+            viewModel.ProjectAnnounce.Contents, viewModel.IsAcceptingClaims);
 
         return RedirectTo(project);
       }

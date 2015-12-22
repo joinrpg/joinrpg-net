@@ -26,6 +26,7 @@ namespace JoinRpg.Services.Impl
       var project = new Project()
       {
         Active = true,
+        IsAcceptingClaims = false,
         CreatedDate = DateTime.UtcNow,
         ProjectName = Required(projectName),
         CharacterGroups = new List<CharacterGroup>()
@@ -269,13 +270,14 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce)
+    public async Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims)
     {
       var project = await UnitOfWork.GetDbSet<Project>().Include(p =>p.Details).SingleOrDefaultAsync(p => p.ProjectId == projectId);
       project.Details = project.Details ?? new ProjectDetails {ProjectId = projectId};
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
       project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
       project.ProjectName = Required(projectName);
+      project.IsAcceptingClaims = isAcceptingClaims;
       await UnitOfWork.SaveChangesAsync();
     }
 

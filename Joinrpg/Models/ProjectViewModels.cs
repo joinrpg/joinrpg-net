@@ -21,6 +21,9 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Анонс проекта")]
     public MarkdownViewModel ProjectAnnounce { get; set; }
+
+    [Display(Name = "Заявки открыты?")]
+    public bool IsAcceptingClaims { get; set; }
   }
   public class EditProjectViewModel: ProjectViewModelBase
   {

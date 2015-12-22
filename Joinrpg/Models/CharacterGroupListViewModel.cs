@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -79,6 +78,7 @@ namespace JoinRpg.Web.Models
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
+          IsAcceptingClaims = characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims,
           Characters = characterGroup.GetOrderedCharacters().Select(character => GenerateCharacter(character, characterGroup)).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
@@ -158,7 +158,7 @@ namespace JoinRpg.Web.Models
           ParentCharacterGroupId = group.CharacterGroupId,
           RootGroupId = Root.CharacterGroupId,
           IsHot = arg.IsHot && arg.IsAvailable,
-          IsAcceptingClaims =  arg.IsAcceptingClaims
+          IsAcceptingClaims =  arg.IsAcceptingClaims && arg.Project.IsAcceptingClaims
         };
         if (vm.IsFirstCopy)
         {
