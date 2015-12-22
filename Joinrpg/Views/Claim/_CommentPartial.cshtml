@@ -53,10 +53,10 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
         <span>@comment.CommentText.ToHtmlString()</span>
         <a data-toggle="collapse"
-                 href="#answerComment@(Model.CommentId)">
+                 href="#answerComment@(comment.CommentId)">
             Ответить
         </a>
-        <div id ="answerComment@(Model.CommentId)" class="collapse">
+        <div id ="answerComment@(comment.CommentId)" class="collapse">
             @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
             {
                 @Html.Partial("AddCommentPartial", new AddCommentViewModel
