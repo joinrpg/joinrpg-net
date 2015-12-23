@@ -10,7 +10,7 @@ if (!comment.IsVisibleToPlayer && !comment.HasMasterAccess)
 }
 var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 <div class="media @hideClassName">
-    <div class="media-left">
+    <div class="media-left hidden-xs">
         <img class="media-object" style="border:1px solid black" width="64" height="64" src="@Html.Action("GetAvatar", "User", new {comment.Author.UserId})"/>
     </div>
     <div class="media-body">
