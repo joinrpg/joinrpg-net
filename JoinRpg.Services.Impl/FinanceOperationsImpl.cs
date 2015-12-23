@@ -71,7 +71,7 @@ namespace JoinRpg.Services.Impl
 
       if (claim.Project.ProjectFeeSettings.Any()    //If project has fee 
           && claim.CurrentFee == null  //and fee not already fixed for claim
-          && claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate) //and current fee is payed in full
+          && claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1)) //and current fee is payed in full
           )
       {
         claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
