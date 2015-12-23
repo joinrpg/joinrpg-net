@@ -48,7 +48,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
         @if (comment.ExtraAction != null)
         {
-        <br /><b>@Html.DisplayFor(model => comment.ExtraAction)</b>
+        <b>@Html.DisplayFor(model => comment.ExtraAction)</b>
         }
 
         <span>@comment.CommentText.ToHtmlString()</span>
