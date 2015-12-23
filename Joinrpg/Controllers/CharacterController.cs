@@ -92,6 +92,7 @@ namespace JoinRpg.Web.Controllers
         Name = field.CharacterName,
         ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
         Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing, CurrentUserIdOrDefault),
+        IsHot = field.IsHot,
         Fields = new CharacterFieldsViewModel()
         {
           HasMasterAccess = true,
