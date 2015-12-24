@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -20,7 +21,7 @@ namespace JoinRpg.DataModel
 
     public int? ParentCommentId { get; set; }
     public virtual Comment Parent { get; set; }
-    public virtual ICollection<Comment> ChildsComments { get; set; }
+    public IEnumerable<Comment> ChildsComments => Claim.Comments.Where(c => c.ParentCommentId == CommentId);
 
     public MarkdownString CommentText { get; set; }
 

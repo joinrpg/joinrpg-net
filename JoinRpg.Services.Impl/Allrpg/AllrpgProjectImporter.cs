@@ -145,7 +145,6 @@ namespace JoinRpg.Services.Impl.Allrpg
         CreatedTime = UnixTime.ToDateTime(data.date),
         IsVisibleToPlayer = data.type != 2,
         ParentCommentId = null,
-        ChildsComments = new List<Comment>()
       };
       comment.IsCommentByPlayer = comment.Author == comment.Claim.Player;
       comment.Claim.Comments.Add(comment);
@@ -181,7 +180,6 @@ namespace JoinRpg.Services.Impl.Allrpg
           new Comment()
           {
             Author = Project.ProjectAcls.Single(acl => acl.IsOwner).User, 
-            ChildsComments = new List<Comment>(),
             CommentText = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>"),
             CreatedTime = UnixTime.ToDateTime(roleData.datesent),
             IsCommentByPlayer = false,
@@ -215,7 +213,6 @@ namespace JoinRpg.Services.Impl.Allrpg
           claim.Comments.Add(new Comment()
           {
             Author = Users[roleData.sid],
-            ChildsComments = new List<Comment>(),
             CommentText = new MarkdownString(virtualField.Value),
             CreatedTime = claim.CreateDate,
             IsCommentByPlayer = true,
@@ -339,7 +336,6 @@ namespace JoinRpg.Services.Impl.Allrpg
         IsPublic = true,
         IsActive = true,
         CharacterName = vacancy.name,
-        Claims = new List<Claim>(),
         IsAcceptingClaims = true,
         Groups = new List<CharacterGroup>() {GetGroupByAllrpgId(vacancy.locat)},
         PlotElementOrderData = $"allrpg{vacancy.code:00000}"
@@ -428,7 +424,6 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Project = Project,
         IsRoot = false,
-        Characters = new List<Character>(),
         ParentGroups = new List<CharacterGroup>() {GetGroupByAllrpgId(locationData.locat)},
         IsActive = true,
         HaveDirectSlots = true,
@@ -456,7 +451,6 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Project = Project,
         IsRoot = false,
-        Characters = new List<Character>(),
         ParentGroups = new List<CharacterGroup>(),
         IsActive = true,
         HaveDirectSlots = false,

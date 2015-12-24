@@ -112,11 +112,13 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName,
       string export)
     {
-      var project = await _claimsRepository.GetClaims(projectId);
+      var claims = await _claimsRepository.GetClaims(projectId);
 
-      if (AsMaster(project) != null) return AsMaster(project);
+      var error = await AsMaster(claims, projectId);
 
-      var viewModel = project.Claims.Where(predicate).Select(
+      if (error != null) return error;
+
+      var viewModel = claims.Where(predicate).Select(
         claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId)).ToList();
 
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
@@ -150,7 +152,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
-      return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaims(projectId));
+      return await ShowProblems(projectId, export, await _claimsRepository.GetClaims(projectId));
     }
 
     [HttpGet, Authorize]

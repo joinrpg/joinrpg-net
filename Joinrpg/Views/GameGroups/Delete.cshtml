@@ -33,11 +33,11 @@ else
                 <ul>
                     @if (Model.Characters.Any())
                     {
-                        <li>Персонажи: @Model.Characters.Count </li>
+                        <li>Персонажи: @Model.Characters.Count() </li>
                     }
                     @if (Model.ChildGroups.Any())
                     {
-                        <li>Группы: @Model.ChildGroups.Count </li>
+                        <li>Группы: @Model.ChildGroups.Count() </li>
                     }
                 </ul>
                 Подробнее в @Html.ActionLink("сетке ролей", "Index", new {Model.ProjectId, Model.CharacterGroupId}, null) этой группы. При удалении дочерние персонажи и группы будут автоматически

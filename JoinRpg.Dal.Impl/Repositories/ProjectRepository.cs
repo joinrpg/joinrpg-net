@@ -11,7 +11,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class ProjectRepository : RepositoryImplBase, IProjectRepository
+  public class ProjectRepository : GameRepositoryImplBase, IProjectRepository
   {
     public ProjectRepository(MyDbContext ctx) : base(ctx) 
     {
@@ -44,13 +44,12 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId)
     {
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadMasters(projectId);
+      await LoadProjectClaims(projectId);
+
       var project = await Ctx.ProjectsSet
         .Include(p => p.Details)
-        .Include(p => p.Characters.Select(ch => ch.Claims.Select(c => c.Player)))
-        .Include(p => p.CharacterGroups.Select(cg => cg.ChildGroups))
-        .Include(p => p.CharacterGroups.Select(cg => cg.Characters))
-        .Include(p => p.CharacterGroups.Select(cg => cg.Claims))
-        .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == projectId);
 
       return project.CharacterGroups.SingleOrDefault(cg => cg.CharacterGroupId == characterGroupId);
@@ -98,19 +97,16 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 
-    public Task<Claim> GetClaimWithDetails(int projectId, int claimId)
+    public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
     {
-      return
+      await LoadMasters(projectId);
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadProjectClaims(projectId);
+
+      return await
         Ctx.ClaimSet
-          .Include(c => c.Project)
-          .Include(c => c.Project.ProjectAcls)
-          .Include(c => c.Project.Claims)
-          .Include(c => c.Project.CharacterGroups)
-          .Include(c => c.Project.Characters)
-          .Include(c => c.Character)
-          .Include(c => c.Player)
-          .Include(c => c.Player.Claims)
-          .Include(c => c.Comments.Select(com => com.Finance)) 
+          .Include(c => c.Comments.Select(com => com.Finance))
+          .Include(c => c.Comments.Select(com => com.Author))
           .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 

@@ -12,7 +12,7 @@ namespace JoinRpg.Helpers
 
   public interface IParentEntity<TChild> where TChild: IOrderableEntity
   {
-    ICollection<TChild> Childs { get; }
+    IEnumerable<TChild> Childs { get; }
     string Ordering { get; set; }
   }
 

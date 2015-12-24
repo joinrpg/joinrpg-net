@@ -46,18 +46,18 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
       modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
       
-      modelBuilder.Entity<CharacterGroup>().HasMany(cg => cg.ParentGroups).WithMany(cg => cg.ChildGroups);
+      modelBuilder.Entity<CharacterGroup>().HasMany(cg => cg.ParentGroups).WithMany();
       modelBuilder.Entity<CharacterGroup>()
         .HasOptional(c => c.ResponsibleMasterUser)
         .WithMany()
         .HasForeignKey(c => c.ResponsibleMasterUserId);
 
-      modelBuilder.Entity<Character>().HasMany(c => c.Groups).WithMany(cg => cg.Characters);
+      modelBuilder.Entity<Character>().HasMany(c => c.Groups).WithMany();
 
       modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project).WillCascadeOnDelete(false);
 
-      modelBuilder.Entity<CharacterGroup>().HasMany(cg =>cg.Claims).WithOptional(c => c.Group).WillCascadeOnDelete(false);
-      modelBuilder.Entity<Character>().HasMany(cg => cg.Claims).WithOptional(c => c.Character).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasOptional(c => c.Group).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
 
@@ -69,7 +69,7 @@ namespace JoinRpg.Dal.Impl
         .HasForeignKey(c => c.ResponsibleMasterUserId);
 
 
-      modelBuilder.Entity<Comment>().HasMany(c => c.ChildsComments).WithOptional(comment => comment.Parent).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(c => c.Finance).WithRequiredPrincipal(fo => fo.Comment);

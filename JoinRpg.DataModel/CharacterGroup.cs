@@ -26,9 +26,8 @@ namespace JoinRpg.DataModel
     /// 
     /// </summary>
     /// <remarks>Check may be you need to use ordered groups</remarks>
-    public virtual ICollection<CharacterGroup> ChildGroups { get; set; }
-
-    public IEnumerable<CharacterGroup> ActiveChildGroups => ChildGroups.Where(cg => cg.IsActive);
+    public virtual IEnumerable<CharacterGroup> ChildGroups
+      => Project.CharacterGroups.Where(cg => cg.ParentGroups.Contains(this));
 
     public bool IsPublic { get; set; }
 
@@ -38,7 +37,7 @@ namespace JoinRpg.DataModel
 
     public bool DirectSlotsUnlimited => AvaiableDirectSlots == -1;
 
-    public virtual ICollection<Character> Characters { get; set; }
+    public IEnumerable<Character> Characters => Project.Characters.Where(cg => cg.Groups.Contains(this));
 
     public bool IsActive { get; set; }
 
@@ -49,7 +48,7 @@ namespace JoinRpg.DataModel
     /// </summary>
     public bool IsAvailable => HaveDirectSlots && AvaiableDirectSlots != 0;
 
-    public virtual ICollection<Claim> Claims { get; set; }
+    public IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterGroupId == CharacterGroupId);
 
     public virtual User ResponsibleMasterUser { get; set; }
 

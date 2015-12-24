@@ -217,6 +217,7 @@
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />
+    <Compile Include="Repositories\GameRepositoryImplBase.cs" />
     <Compile Include="Repositories\PlotRepositoryImpl.cs" />
     <Compile Include="Repositories\ProjectRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

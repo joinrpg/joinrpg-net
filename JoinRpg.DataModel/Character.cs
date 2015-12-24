@@ -35,7 +35,7 @@ namespace JoinRpg.DataModel
 
     public MarkdownString Description { get; set; } = new MarkdownString();
 
-    public virtual ICollection<Claim> Claims { get; set; }
+    public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
 

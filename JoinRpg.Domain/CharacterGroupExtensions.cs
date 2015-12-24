@@ -20,7 +20,7 @@ namespace JoinRpg.Domain
     {
       public CharacterGroupIsCharacterContainer(CharacterGroup self) : base(self) {}
 
-      public ICollection<Character> Childs => Self.Characters;
+      public IEnumerable<Character> Childs => Self.Characters;
 
       public string Ordering
       {
@@ -34,7 +34,7 @@ namespace JoinRpg.Domain
       public CharacterGroupIsCharacterGroupContainer(CharacterGroup self) : base(self)
       { }
 
-      public ICollection<CharacterGroup> Childs => Self.ChildGroups;
+      public IEnumerable<CharacterGroup> Childs => Self.ChildGroups;
 
       public string Ordering
       {
