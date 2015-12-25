@@ -7,7 +7,7 @@ namespace JoinRpg.Domain
   {
     public static bool HasValueList(this ProjectCharacterField field)
     {
-      return field.FieldType == CharacterFieldType.Dropdown;
+      return field.FieldType == CharacterFieldType.Dropdown || field.FieldType == CharacterFieldType.MultiSelect;
     }
 
     public static ProjectCharacterFieldDropdownValue GetDropdownValueOrDefault(this CharacterFieldValue field)
