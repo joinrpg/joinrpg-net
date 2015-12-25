@@ -7,19 +7,19 @@ namespace JoinRpg.Domain
 {
   public static class FinanceExtensions
   {
-    public static int CurrentFee(this Project project, DateTime operationDate)
+    private static int CurrentFee(this Project project, DateTime operationDate)
     {
       return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
         .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
     }
 
-    public static int ClaimTotalFee(this Claim claim, DateTime operationDate)
+    private static int ClaimTotalFee(this Claim claim, DateTime operationDate)
     {
 
       return claim.ClaimCurrentFee(operationDate) + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
     }
 
-    public static int ClaimCurrentFee(this Claim claim, DateTime operationDate)
+    private static int ClaimCurrentFee(this Claim claim, DateTime operationDate)
       => claim.CurrentFee ?? claim.Project.CurrentFee(operationDate);
 
     public static int ClaimTotalFee(this Claim claim) => claim.ClaimTotalFee(DateTime.UtcNow);
@@ -48,5 +48,19 @@ namespace JoinRpg.Domain
     }
 
     public static bool ClaimPaidInFull(this Claim claim) => claim.ClaimBalance() >= claim.ClaimTotalFee();
+
+    private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate)
+      => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1));
+
+    public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate)
+    {
+      if (claim.Project.ProjectFeeSettings.Any() //If project has fee 
+          && claim.CurrentFee == null //and fee not already fixed for claim
+          && claim.ClaimPaidInFull(operationDate) //and current fee is payed in full
+        )
+      {
+        claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
+      }
+    }
   }
 }

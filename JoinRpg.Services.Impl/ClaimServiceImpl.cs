@@ -116,6 +116,7 @@ namespace JoinRpg.Services.Impl
           case FinanceOperationAction.Approve:
             finance.State = FinanceOperationState.Approved;
             extraAction = CommentExtraAction.ApproveFinance;
+            claim.UpdateClaimFeeIfRequired(finance.OperationDate);
             break;
           case FinanceOperationAction.Decline:
             finance.State = FinanceOperationState.Declined;
