@@ -7,5 +7,5 @@
 }
 <span style="font-weight: bold">
     
-    <nobr><a href="@Url.Action("Details", "User", new {Model.UserId})"><span class="glyphicon glyphicon-user"></span>@Model.DisplayName.Trim()</a></nobr>
+    <nobr><a href="@Url.Action("Details", "User", new {Model.UserId})" title="@Model.FullName"><span class="glyphicon glyphicon-user"></span>@Model.DisplayName.Trim()</a></nobr>
 </span>

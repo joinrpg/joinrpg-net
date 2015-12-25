@@ -51,6 +51,7 @@
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
+                    (@item.Player.FullName)
                 </td>
             }
             @if (ViewBag.HideProjectColumn != true)
