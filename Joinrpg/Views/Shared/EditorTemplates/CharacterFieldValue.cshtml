@@ -21,12 +21,9 @@
             case CharacterFieldType.String:
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control">
                 break;
-            case CharacterFieldType.Number:
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="number" class="form-control">
-                break;
             case CharacterFieldType.Checkbox:
-                var ch = Model.Value == "1" ? "checked" : "";
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch class="form-control">
+                var ch = Model.Value == "on" ? "checked" : "";
+                <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch >
                 break;
             case CharacterFieldType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">

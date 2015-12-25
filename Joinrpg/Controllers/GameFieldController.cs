@@ -170,7 +170,7 @@ namespace JoinRpg.Web.Controllers
           ProjectService.CreateFieldValue(field.ProjectId, field.ProjectCharacterFieldId, CurrentUserId, viewModel.Label,
             viewModel.Description);
 
-        return ReturnToIndex(field.Project);
+        return RedirectToAction("Edit", new {viewModel.ProjectId, viewModel.ProjectCharacterFieldId});
       }
       catch
       {

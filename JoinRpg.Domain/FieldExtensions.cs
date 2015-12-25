@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -10,10 +11,11 @@ namespace JoinRpg.Domain
       return field.FieldType == CharacterFieldType.Dropdown || field.FieldType == CharacterFieldType.MultiSelect;
     }
 
-    public static ProjectCharacterFieldDropdownValue GetDropdownValueOrDefault(this CharacterFieldValue field)
+    public static IEnumerable<ProjectCharacterFieldDropdownValue> GetDropdownValues(this CharacterFieldValue field)
     {
-      return field.Field.DropdownValues.SingleOrDefault(
-        v => v.ProjectCharacterFieldDropdownValueId.ToString() == field.Value);
+      var value = field.Value.Split(',').Select(int.Parse);
+      return field.Field.DropdownValues.Where(
+        v => value.Contains(v.ProjectCharacterFieldDropdownValueId));
     }
   }
 }

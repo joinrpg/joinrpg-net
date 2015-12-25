@@ -499,16 +499,9 @@ namespace JoinRpg.Services.Impl
 
         if (field.Field.HasValueList())
         {
-          var value = field.GetDropdownValueOrDefault();
-
-          if (value == null)
+          foreach (var val in field.GetDropdownValues().Where(v =>!v.WasEverUsed))
           {
-            throw new DbEntityValidationException();
-          }
-
-          if (!value.WasEverUsed)
-          {
-            value.WasEverUsed = true;
+            val.WasEverUsed = true;
           }
         }
       }

@@ -73,8 +73,6 @@ namespace JoinRpg.Web.Models
     Text,
     [Display(Name = "Выбор")]
     Dropdown,
-    [Display(Name = "Число")]
-    Number,
     [Display(Name = "Чекбокс")]
     Checkbox,
     [Display(Name = "Мультивыбор")]

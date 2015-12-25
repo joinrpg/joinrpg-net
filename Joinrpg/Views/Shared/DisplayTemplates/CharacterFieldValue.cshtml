@@ -1,18 +1,37 @@
-﻿@using JoinRpg.DataModel
+﻿@using System.ComponentModel
+@using JoinRpg.DataModel
 @using JoinRpg.Domain
-@model JoinRpg.Domain.CharacterFieldValue
+@model CharacterFieldValue
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
     <div class="col-md-10">
         @*TODO: May be also set client id here*@
-        @if (Model.Field.FieldType == CharacterFieldType.Dropdown)
+        @switch (Model.Field.FieldType)
         {
-            var projectCharacterFieldDropdownValue = Model.GetDropdownValueOrDefault();
-            @(projectCharacterFieldDropdownValue == null ? null : projectCharacterFieldDropdownValue.Label)
-        }
-        else
-        {
-            @Html.DisplayFor(model => model.Value, new {htmlAttributes = new {@class = "form-control"}})
+            case CharacterFieldType.Dropdown:
+            case CharacterFieldType.MultiSelect:
+                foreach (var value in Model.GetDropdownValues())
+                {
+                    @value.Label
+                    <text> </text>
+                }
+                break;
+            case CharacterFieldType.Checkbox:
+                if (Model.Value == "on")
+                {
+                    <span class="glyphicon glyphicon-ok"></span>
+                }
+                else
+                {
+                    <span class="glyphicon glyphicon-remove"></span>
+                }
+                break;
+            case CharacterFieldType.String:
+            case CharacterFieldType.Text:
+            @Html.DisplayFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
+                break;
+            default:
+                throw new InvalidEnumArgumentException();
         }
     </div>
 </div>

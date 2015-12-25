@@ -42,7 +42,6 @@ namespace JoinRpg.DataModel
     String,
     Text,
     Dropdown,
-    Number,
     Checkbox,
     MultiSelect
   }
