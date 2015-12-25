@@ -6,7 +6,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
-using CharacterFieldType = JoinRpg.DataModel.CharacterFieldType;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -62,7 +61,7 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await ProjectService.AddCharacterField(project.ProjectId, CurrentUserId, (CharacterFieldType) viewModel.FieldType, viewModel.Name,
+        await ProjectService.AddCharacterField(project.ProjectId, CurrentUserId, viewModel.FieldType, viewModel.Name,
           viewModel.FieldHint,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView, viewModel.IsPublic);
 

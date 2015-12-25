@@ -64,23 +64,6 @@ namespace JoinRpg.Web.Models
     public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; set; }
   }
 
-
-  public enum CharacterFieldType
-  {
-    [Display(Name="Строка")]
-    String,
-    [Display(Name = "Текст")]
-    Text,
-    [Display(Name = "Выбор")]
-    Dropdown,
-    [Display(Name = "Число")]
-    Number,
-    [Display(Name = "Чекбокс")]
-    Checkbox,
-    [Display(Name = "Мультивыбор")]
-    MultiSelect
-  }
-
   public class GameFieldCreateViewModel : GameFieldViewModelBase
   {
     [Display(Name="Тип поля")]
