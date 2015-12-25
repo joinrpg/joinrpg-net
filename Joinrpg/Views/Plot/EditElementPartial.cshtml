@@ -22,7 +22,10 @@
 {
     <p><b style="color: orange">TODO:</b> @Model.TodoField</p>
 }
-<div title="@Model.Content.Contents" style="max-height: 5em; overflow-y: hidden">
+@{
+  var hideClassName = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
+}
+<div title="@Model.Content.Contents" style="max-height: 5em; overflow-y: hidden" class="@hideClassName">
     @Html.DisplayFor(model => Model.Content)
     @if (string.IsNullOrWhiteSpace(Model.Content.Contents))
     {
