@@ -81,7 +81,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         Ctx.Set<Character>()
           .Include(c => c.Project)
           .Include(c => c.Project.ProjectFields)
-          .Include(c => c.Claims.Select(claim => claim.Player))
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
