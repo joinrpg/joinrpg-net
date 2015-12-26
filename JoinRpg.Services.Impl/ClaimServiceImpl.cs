@@ -94,6 +94,7 @@ namespace JoinRpg.Services.Impl
 
       var parentComment = claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
+      Func<UserSubscription, bool> predicate = s => s.Comments;
       CommentExtraAction? extraAction = null;
 
       if (financeAction != FinanceOperationAction.None)
@@ -125,10 +126,12 @@ namespace JoinRpg.Services.Impl
           default:
             throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
         }
+        predicate = s => s.Comments || s.MoneyOperation;
       }
 
+      
       var email = await AddCommentWithEmail<AddCommentEmail>(currentUserId, commentText, claim, now, isVisibleToPlayer,
-        s => s.Comments, parentComment, extraAction);      
+        predicate, parentComment, extraAction);      
 
       await UnitOfWork.SaveChangesAsync();
 
@@ -296,7 +299,7 @@ namespace JoinRpg.Services.Impl
       claim.AddCommentImpl(currentUserId, parentComment, commentText, now, visibleToPlayerUpdated, extraAction);
       return
         await
-          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated, extraAction, new[] {parentComment?.Author});
+          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated, extraAction, new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User});
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
