@@ -13,9 +13,19 @@ namespace JoinRpg.Domain
 
     public static IEnumerable<ProjectCharacterFieldDropdownValue> GetDropdownValues(this CharacterFieldValue field)
     {
-      var value = field.Value.Split(',').Select(int.Parse);
+      var value = field.Value?.Split(',').Select(int.Parse);
       return field.Field.DropdownValues.Where(
-        v => value.Contains(v.ProjectCharacterFieldDropdownValueId));
+        v => value?.Contains(v.ProjectCharacterFieldDropdownValueId) ?? false);
+    }
+
+    public static string GetSpecialGroupName(this ProjectCharacterFieldDropdownValue fieldValue)
+    {
+      return $"${fieldValue.ProjectCharacterField.FieldName} = {fieldValue.Label}";
+    }
+
+    public static string GetSpecialGroupName(this ProjectCharacterField field)
+    {
+      return $"${field.FieldName}";
     }
   }
 }

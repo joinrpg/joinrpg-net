@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
-  public class ProjectCharacterField : IProjectEntity, IDeletableSubEntity
+  public class ProjectCharacterField : IProjectEntity, IDeletableSubEntity, IValidatableObject
   {
     public int ProjectCharacterFieldId
     { get; set; }
@@ -19,7 +20,7 @@ namespace JoinRpg.DataModel
 
     public bool CanPlayerEdit { get; set; }
 
-    public string FieldHint { get; set; }
+    public MarkdownString FieldHint { get; set; }
 
     public int Order { get; set; }
 
@@ -35,6 +36,26 @@ namespace JoinRpg.DataModel
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectCharacterFieldDropdownValue> DropdownValues { get; set; }
+
+    public virtual CharacterGroup CharacterGroup { get; set; }
+    public int CharacterGroupId { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      if (IsPublic && !CanPlayerView)
+      {
+        yield return
+          new ValidationResult("Public fields must be player visible",
+            new List<string> {nameof(IsPublic), nameof(CanPlayerView)});
+      }
+
+      if (!CanPlayerView && CanPlayerEdit)
+      {
+        yield return
+          new ValidationResult("It's incosistent that player can edt but can't see field.",
+            new List<string> {nameof(IsPublic), nameof(CanPlayerView)});
+      }
+    }
   }
 
   public enum CharacterFieldType

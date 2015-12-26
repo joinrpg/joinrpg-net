@@ -8,8 +8,7 @@ namespace JoinRpg.Services.Interfaces
   {
     Task<Project> AddProject(string projectName, User creator);
 
-    Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit,
-      bool canPlayerView, bool isPublic);
+    Task UpdateCharacterField(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
 
     Task DeleteField(int projectCharacterFieldId);
 

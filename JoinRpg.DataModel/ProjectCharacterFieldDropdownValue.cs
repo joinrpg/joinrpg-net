@@ -14,7 +14,7 @@
 
     public virtual Project Project { get; set; }
 
-    bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
+    bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed; 
 
     public bool IsActive { get; set; }
 
@@ -22,6 +22,9 @@
 
     public string Label { get; set; }
 
-    public string Description { get; set; }
+    public MarkdownString Description { get; set; }
+
+    public virtual CharacterGroup CharacterGroup { get; set; }
+    public int CharacterGroupId  { get; set; }
   }
 }

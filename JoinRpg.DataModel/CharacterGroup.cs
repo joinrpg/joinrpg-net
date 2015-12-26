@@ -30,6 +30,7 @@ namespace JoinRpg.DataModel
       => Project.CharacterGroups.Where(cg => cg.ParentGroups.Contains(this));
 
     public bool IsPublic { get; set; }
+    public bool IsSpecial { get; set; }
 
     public int AvaiableDirectSlots { get; set; }
 

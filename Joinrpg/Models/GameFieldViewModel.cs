@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -24,7 +25,7 @@ namespace JoinRpg.Web.Models
     public bool CanPlayerEdit { get; set; }
 
     [Display(Name = "Описание")]
-    public string FieldHint { get; set; }
+    public MarkdownViewModel FieldHint { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -47,7 +48,7 @@ namespace JoinRpg.Web.Models
     {
       CanPlayerView = field.CanPlayerView;
       CanPlayerEdit = field.CanPlayerEdit;
-      FieldHint = field.FieldHint;
+      FieldHint = new MarkdownViewModel(field.FieldHint);
       ProjectCharacterFieldId = field.ProjectCharacterFieldId;
       IsPublic = field.IsPublic;
       Name = field.FieldName;
@@ -96,8 +97,8 @@ namespace JoinRpg.Web.Models
     [Display(Name="Значение"), Required]
     public string Label { get; set; }
 
-    [Display(Name = "Описание"),DataType(DataType.MultilineText)]
-    public string Description { get; set; }
+    [Display(Name = "Описание")]
+    public MarkdownViewModel Description { get; set; }
 
     public int ProjectId { get; set; }
     public int ProjectCharacterFieldId { get; set; }
@@ -112,7 +113,7 @@ namespace JoinRpg.Web.Models
     public GameFieldDropdownValueListItemViewModel(ProjectCharacterFieldDropdownValue value)
     {
       Label = value.Label;
-      Description = value.Description;
+      Description = new MarkdownViewModel(value.Description);
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
       ProjectCharacterFieldId = value.ProjectCharacterFieldId;
@@ -131,7 +132,7 @@ namespace JoinRpg.Web.Models
     public GameFieldDropdownValueEditViewModel(ProjectCharacterFieldDropdownValue value)
     {
       Label = value.Label;
-      Description = value.Description;
+      Description = new MarkdownViewModel(value.Description);
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
       ProjectCharacterFieldId = value.ProjectCharacterFieldId;

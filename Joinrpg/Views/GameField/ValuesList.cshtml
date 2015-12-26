@@ -8,27 +8,29 @@
         <th>
             @Html.DisplayNameFor(model => model.Description)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.IsActive)
-        </th>
         <th></th>
     </tr>
 
 @foreach (var item in Model) {
     <tr>
         <td class="@(item.IsActive ? "" : "deleted")">
-            
+
             @Html.DisplayFor(modelItem => item.Label)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Description)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.IsActive)
-        </td>
-        <td>            
-    @Html.ActionLink("изменить", "EditValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId}) |
-    @Html.ActionLink("удалить", "DeleteValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+            @if (item.IsActive)
+            {
+                @Html.ActionLink("изменить", "EditValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+                <text> | </text>
+                @Html.ActionLink("удалить", "DeleteValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+            }
+            else
+            {
+                @Html.ActionLink("восстановить", "EditValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+            }
         </td>
     </tr>
 }

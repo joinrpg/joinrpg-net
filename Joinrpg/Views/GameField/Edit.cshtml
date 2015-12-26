@@ -16,16 +16,16 @@
     <div class="form-horizontal">
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
                 @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
+            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.IsPublic)
                     @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
@@ -34,8 +34,8 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10"><div class="checkbox">
+            @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9"><div class="checkbox">
                     @Html.EditorFor(model => model.CanPlayerView)
                     @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
                 </div>
@@ -43,8 +43,8 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
+            @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.CanPlayerEdit)
                     @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
@@ -53,16 +53,16 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.FieldHint, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
+            @Html.LabelFor(model => model.FieldHint, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
                 @Html.EditorFor(model => model.FieldHint, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.FieldHint, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-default" />
+            <div class="col-md-offset-3 col-md-9">
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success" />
             </div>
         </div>
     </div>
@@ -70,6 +70,7 @@
 
 @if (Model.HasValueList)
 {
+    <hr/>
     <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectCharacterFieldId})</p>
     Html.RenderPartial("ValuesList", Model.DropdownValues, null);
 }

@@ -52,12 +52,6 @@ namespace JoinRpg.DataModel
       {
         yield return new ValidationResult("Comment can't be empty", new[] { nameof(CommentText) });
       }
-
-      if (false) 
-        //TODO: it works uncorrectly in AllprojectImporter (IsCommentByPlayer != (Claim.PlayerUserId == AuthorUserId))
-      {
-        yield return new ValidationResult("IsCommentByPlayer filled incorrectly", new[] {nameof(IsCommentByPlayer)});
-      }
     }
   }
 

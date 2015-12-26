@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await ProjectService.AddCharacterField(project.ProjectId, CurrentUserId, (CharacterFieldType) viewModel.FieldType, viewModel.Name,
-          viewModel.FieldHint,
+          viewModel.FieldHint.Contents,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView, viewModel.IsPublic);
 
         return ReturnToIndex(project);
@@ -83,7 +83,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     // POST: GameFields/Edit/5
-    [HttpPost]
+    [HttpPost, Authorize]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
     {
@@ -101,9 +101,10 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await ProjectService.UpdateCharacterField(project.ProjectId, field.ProjectCharacterFieldId, viewModel.Name,
-          viewModel.FieldHint,
-          viewModel.CanPlayerEdit, viewModel.CanPlayerView, viewModel.IsPublic);
+        await
+          ProjectService.UpdateCharacterField(CurrentUserId, project.ProjectId, field.ProjectCharacterFieldId,
+            viewModel.Name, viewModel.FieldHint.Contents, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
+            viewModel.IsPublic);
 
         return ReturnToIndex(project);
       }
@@ -168,7 +169,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           ProjectService.CreateFieldValue(field.ProjectId, field.ProjectCharacterFieldId, CurrentUserId, viewModel.Label,
-            viewModel.Description);
+            viewModel.Description.Contents);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, viewModel.ProjectCharacterFieldId});
       }
@@ -201,7 +202,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           ProjectService.UpdateFieldValue(value.ProjectId, value.ProjectCharacterFieldDropdownValueId, CurrentUserId,
-            viewModel.Label, viewModel.Description);
+            viewModel.Label, viewModel.Description.Contents);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, viewModel.ProjectCharacterFieldId});
       }

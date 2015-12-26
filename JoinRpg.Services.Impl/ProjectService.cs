@@ -55,14 +55,12 @@ namespace JoinRpg.Services.Impl
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
-      if (!project.HasMasterAccess(currentUserId, acl => acl.CanChangeFields))
-      {
-        throw new Exception();
-      }
+      project.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      
       var field = new ProjectCharacterField
       {
         FieldName = Required(name),
-        FieldHint = fieldHint,
+        FieldHint = new MarkdownString(fieldHint),
         CanPlayerEdit = canPlayerEdit,
         CanPlayerView = canPlayerView,
         IsPublic = isPublic,
@@ -71,36 +69,33 @@ namespace JoinRpg.Services.Impl
         IsActive = true,
         Order = project.AllProjectFields.Count(),
       };
-      CheckField(field);
+
+      CreateOrUpdateSpecialGroup(field);
+
       UnitOfWork.GetDbSet<ProjectCharacterField>().Add(field);
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void CheckField(ProjectCharacterField field)
-    {
-      if (!field.IsPublic || field.CanPlayerView) return;
-      throw new DbEntityValidationException();
-    }
-
-    public async Task UpdateCharacterField(int projectId, int fieldId, string name, string fieldHint,
-      bool canPlayerEdit, bool canPlayerView, bool isPublic)
+    public async Task UpdateCharacterField(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic)
     {
       var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(fieldId);
       if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
-      
+
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+
       field.FieldName = Required(name);
-      field.FieldHint = fieldHint;
+      field.FieldHint.Contents = fieldHint;
       field.CanPlayerEdit = canPlayerEdit;
       field.CanPlayerView = canPlayerView;
       field.IsPublic = isPublic;
       field.IsActive = true;
 
-      CheckField(field);
+      CreateOrUpdateSpecialGroup(field);
 
       await UnitOfWork.SaveChangesAsync();
     }
 
-    //TODO: pass projectId 
+    //TODO: pass projectId & CurrentUserId
     public async Task DeleteField(int projectCharacterFieldId)
     {
       var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(projectCharacterFieldId);
@@ -116,6 +111,7 @@ namespace JoinRpg.Services.Impl
       if (responsibleMasterId != null &&
           project.ProjectAcls.All(acl => acl.UserId != responsibleMasterId))
       {
+        //TODO: Move this check into ChGroup validation
         throw new Exception("No such master");
       }
 
@@ -127,6 +123,7 @@ namespace JoinRpg.Services.Impl
         ParentGroups = characterGroups,
         ProjectId = projectId,
         IsRoot = false,
+        IsSpecial = false,
         IsPublic = isPublic,
         IsActive = true,
         Description = new MarkdownString(description),
@@ -418,18 +415,68 @@ namespace JoinRpg.Services.Impl
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
-      field.DropdownValues.Add(new ProjectCharacterFieldDropdownValue()
+      var fieldValue = new ProjectCharacterFieldDropdownValue()
       {
-        Description = description,
+        Description = new MarkdownString(description),
         Label = label,
         IsActive = true,
         WasEverUsed = false,
         ProjectId = field.ProjectId,
-        ProjectCharacterFieldId = field.ProjectCharacterFieldId
-      }
-        );
+        ProjectCharacterFieldId = field.ProjectCharacterFieldId,
+        Project = field.Project,
+        ProjectCharacterField = field
+      };
+
+      CreateOrUpdateSpecialGroup(fieldValue);
+
+      field.DropdownValues.Add(fieldValue);
 
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    private static void CreateOrUpdateSpecialGroup(ProjectCharacterFieldDropdownValue fieldValue)
+    {
+      CreateOrUpdateSpecialGroup(fieldValue.ProjectCharacterField);
+
+      fieldValue.CharacterGroup = fieldValue.CharacterGroup ?? new CharacterGroup()
+      {
+        AvaiableDirectSlots = 0,
+        HaveDirectSlots = false,
+        ParentGroups = new List<CharacterGroup> {fieldValue.ProjectCharacterField.CharacterGroup},
+        ProjectId = fieldValue.ProjectId,
+        IsRoot = false,
+        IsSpecial = true,
+        IsPublic = fieldValue.ProjectCharacterField.IsPublic,
+        IsActive = true,
+        Description = new MarkdownString(),
+        ResponsibleMasterUserId = null,
+      };
+
+      fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
+    }
+
+    private static void CreateOrUpdateSpecialGroup(ProjectCharacterField field)
+    {
+      if (!field.HasValueList())
+      {
+        return;
+      }
+
+      field.CharacterGroup = field.CharacterGroup ?? new CharacterGroup()
+      {
+        AvaiableDirectSlots = 0,
+        HaveDirectSlots = false,
+        ParentGroups = new List<CharacterGroup> { field.Project.RootGroup },
+        ProjectId = field.ProjectId,
+        IsRoot = false,
+        IsSpecial = true,
+        IsPublic = field.IsPublic,
+        IsActive = true,
+        Description = new MarkdownString(),
+        ResponsibleMasterUserId = null,
+      };
+
+      field.CharacterGroup.CharacterGroupName = field.GetSpecialGroupName();
     }
 
     public async Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label,
@@ -439,9 +486,12 @@ namespace JoinRpg.Services.Impl
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
-      field.Description = description;
+      field.Description = new MarkdownString( description);
       field.Label = label;
       field.IsActive = true;
+
+      CreateOrUpdateSpecialGroup(field);
+
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -499,7 +549,20 @@ namespace JoinRpg.Services.Impl
 
         if (field.Field.HasValueList())
         {
-          foreach (var val in field.GetDropdownValues().Where(v =>!v.WasEverUsed))
+          var valuesToAdd = field.GetDropdownValues().ToList();
+          var valuesToRemove = field.Field.DropdownValues.Except(valuesToAdd);
+
+          foreach (var value in valuesToRemove.Select(v => v.CharacterGroup).Where(c => character.Groups.Contains(c)))
+          {
+            character.Groups.Remove(value);
+          }
+
+          foreach (var value in valuesToAdd.Select(v => v.CharacterGroup).WhereNotNull().Where(c => !character.Groups.Contains(c)))
+          {
+            character.Groups.Add(value);
+          }
+          
+          foreach (var val in valuesToAdd.Where(v =>!v.WasEverUsed))
           {
             val.WasEverUsed = true;
           }
