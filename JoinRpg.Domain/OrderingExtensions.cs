@@ -4,7 +4,7 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
-  public static class CharacterGroupExtensions
+  public static class OrderingExtensions
   {
     private abstract class CharacterGroupContainerBase
     {
@@ -43,7 +43,27 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static VirtualOrderContainer<TChild> GetVirtualOrderContainer<TChild>(IParentEntity<TChild> characterSource) where TChild : class, IOrderableEntity
+    private class CharacterIsPlotElementContainer : IParentEntity<PlotElement>
+    {
+      private Character character;
+      private ICollection<PlotElement> plots;
+
+      public CharacterIsPlotElementContainer(Character character, ICollection<PlotElement> plots)
+      {
+        this.character = character;
+        this.plots = plots;
+      }
+
+      public IEnumerable<PlotElement> Childs => plots;
+
+      public string Ordering
+      {
+        get { return character.PlotElementOrderData; }
+        set { character.PlotElementOrderData = value; }
+      }
+    }
+
+    private static VirtualOrderContainer<TChild> GetContainer<TChild>(IParentEntity<TChild> characterSource) where TChild : class, IOrderableEntity
     {
       return new VirtualOrderContainer<TChild>(characterSource.Ordering, characterSource.Childs);
     }
@@ -55,7 +75,7 @@ namespace JoinRpg.Domain
 
     public static VirtualOrderContainer<Character> GetCharactersContainer(this CharacterGroup characterGroup)
     {
-      return GetVirtualOrderContainer(new CharacterGroupIsCharacterContainer(characterGroup));
+      return GetContainer(new CharacterGroupIsCharacterContainer(characterGroup));
     }
 
     public static IReadOnlyList<CharacterGroup> GetOrderedChildGroups(this CharacterGroup characterGroup)
@@ -65,7 +85,18 @@ namespace JoinRpg.Domain
 
     public static VirtualOrderContainer<CharacterGroup> GetCharacterGroupsContainer(this CharacterGroup characterGroup)
     {
-      return GetVirtualOrderContainer(new CharacterGroupIsCharacterGroupContainer(characterGroup));
+      return GetContainer(new CharacterGroupIsCharacterGroupContainer(characterGroup));
+    }
+
+    public static IReadOnlyList<PlotElement> GetOrderedPlots(this Character character, ICollection<PlotElement> elements)
+    {
+      return character.GetCharacterPlotContainer(elements).OrderedItems;
+    }
+
+    public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
+      ICollection<PlotElement> plots)
+    {
+      return GetContainer(new CharacterIsPlotElementContainer(character, plots));
     }
   }
 }

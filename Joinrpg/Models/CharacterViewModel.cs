@@ -37,5 +37,21 @@ namespace JoinRpg.Web.Models
 
     public bool IsAcceptingClaims { get; set; }
     public bool Equals(CharacterViewModel other) => this.CharacterId == other.CharacterId;
+
+    public override bool Equals(object obj)
+    {
+      var cg = obj as CharacterViewModel;
+      return cg != null && Equals(cg);
+    }
+
+    public override int GetHashCode()
+    {
+      return CharacterId;
+    }
+
+    public override string ToString()
+    {
+      return $"Char(Name={CharacterName})";
+    }
   }
 }

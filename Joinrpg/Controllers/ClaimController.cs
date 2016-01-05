@@ -260,8 +260,9 @@ namespace JoinRpg.Web.Controllers
 
       if (claim.IsApproved)
       {
+        var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
         claimViewModel.Plot =
-          (await _plotRepository.GetPlotsForCharacter(claim.Character)).Select(
+          claim.Character.GetOrderedPlots(plotElements).Select(
             p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
       }
       else

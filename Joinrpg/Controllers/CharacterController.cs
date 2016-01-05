@@ -53,11 +53,16 @@ namespace JoinRpg.Web.Controllers
         },
         Plot =
           hasAnyAccess
-            ? (await _plotRepository.GetPlotsForCharacter(character)).Select(
-              p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess))
+            ? await GetPlots(character, hasMasterAccess)
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);
+    }
+
+    private async Task<IEnumerable<PlotElementViewModel>> GetPlots(Character character, bool hasMasterAccess)
+    {
+      return character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).Select(
+        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]

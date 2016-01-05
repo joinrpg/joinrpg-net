@@ -310,12 +310,13 @@ namespace JoinRpg.Services.Impl
 
 
       var newMaster = await UserRepository.GetById(responsibleMasterId);
-      claim.ResponsibleMasterUserId = responsibleMasterId;
 
       //TODO: Maybe send email here
       claim.AddCommentImpl(currentUserId, null,
         $"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}",
         DateTime.UtcNow, isVisibleToPlayer: true, extraAction: CommentExtraAction.ChangeResponsible);
+      claim.ResponsibleMasterUserId = responsibleMasterId;
+
       await UnitOfWork.SaveChangesAsync();
     }
 

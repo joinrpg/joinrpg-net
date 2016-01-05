@@ -59,9 +59,8 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       return
         Ctx.Set<CharacterGroup>()
-          .Include(cg => cg.Project)
-          .Include(cg => cg.Characters)
-          .Include(cg => cg.ChildGroups)
+          .Include(cg => cg.Project.Characters)
+          .Include(cg => cg.ParentGroups)
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
 

@@ -91,7 +91,23 @@ namespace JoinRpg.Web.Models
       
     }
 
-    public bool Equals(CharacterGroupListItemViewModel other) => other.CharacterGroupId == this.CharacterGroupId;
+    public bool Equals(CharacterGroupListItemViewModel other) => other.CharacterGroupId == CharacterGroupId;
+
+    public override bool Equals(object obj)
+    {
+      var cg = obj as CharacterGroupListItemViewModel;
+      return cg != null && Equals(cg);
+    }
+
+    public override int GetHashCode()
+    {
+      return CharacterGroupId;
+    }
+
+    public override string ToString()
+    {
+      return $"ChGroup(Name={Name})";
+    }
   }
 
 }

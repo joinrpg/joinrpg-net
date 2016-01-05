@@ -119,7 +119,8 @@ namespace JoinRpg.Web.Models
 
         vm.ChildGroups = childs;
 
-        var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
+        var totalChildsBeforeFlat = vm.FlatTree(model => model.ChildGroups).ToList();
+        var flatChilds = totalChildsBeforeFlat.Distinct().ToList();
         var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
 
         vm.TotalSlots = flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
