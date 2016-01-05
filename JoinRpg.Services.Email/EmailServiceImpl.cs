@@ -149,6 +149,12 @@ namespace JoinRpg.Services.Email
         SendClaimEmail(model, "изменена",
           $@"Заявка перенесена {model.GetInitiatorString()} на новую роль «{model.Claim.GetTarget().Name}».");
 
+
+    public Task Email(ChangeResponsibleMasterEmail model)
+     =>
+        SendClaimEmail(model, "изменена",
+          $@"В заявке изменен ответственный мастер.");
+
     public Task Email(FinanceOperationEmail model)
     {
       var message = "";
@@ -197,6 +203,7 @@ namespace JoinRpg.Services.Email
 {model.Initiator.DisplayName}
 ", model.Initiator.ToRecipient());
     }
+
   }
 
   internal static class Exts

@@ -248,9 +248,17 @@ namespace JoinRpg.Services.Impl
     {
       Task.Run(() =>
       {
-        var watermark =
+        var watermarks =
           UnitOfWork.GetDbSet<ReadCommentWatermark>()
-            .SingleOrDefault(w => w.ClaimId == claimId && w.UserId == currentUserId);
+            .Where(w => w.ClaimId == claimId && w.UserId == currentUserId).OrderByDescending(wm => wm.ReadCommentWatermarkId).ToList();
+
+        //Sometimes watermarks can duplicate. If so, let's remove them.
+        foreach (var wm in watermarks.Skip(1))
+        {
+          UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
+        }
+
+        var watermark = watermarks.FirstOrDefault();
 
         if (watermark == null)
         {
@@ -308,16 +316,19 @@ namespace JoinRpg.Services.Impl
       claim.RequestMasterAccess(currentUserId);
       claim.RequestMasterAccess(responsibleMasterId);
 
-
       var newMaster = await UserRepository.GetById(responsibleMasterId);
 
-      //TODO: Maybe send email here
-      claim.AddCommentImpl(currentUserId, null,
-        $"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}",
-        DateTime.UtcNow, isVisibleToPlayer: true, extraAction: CommentExtraAction.ChangeResponsible);
+      var email = await
+        AddCommentWithEmail<ChangeResponsibleMasterEmail>(currentUserId,
+          $"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}", claim, DateTime.UtcNow,
+          isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
+          extraAction: CommentExtraAction.ChangeResponsible);
+      
       claim.ResponsibleMasterUserId = responsibleMasterId;
 
       await UnitOfWork.SaveChangesAsync();
+
+      await EmailService.Email(email);
     }
 
     public IEnumerable<ClaimProblem> GetProblems(IEnumerable<Claim> claims)

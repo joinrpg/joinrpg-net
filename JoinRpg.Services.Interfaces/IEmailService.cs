@@ -17,6 +17,7 @@ namespace JoinRpg.Services.Interfaces
     Task Email(MoveByMasterEmail createClaimEmail);
     Task Email(FinanceOperationEmail createClaimEmail);
     Task Email(MassEmailModel model);
+    Task Email(ChangeResponsibleMasterEmail createClaimEmail);
   }
 
   public static class EmailTokens
@@ -58,6 +59,11 @@ namespace JoinRpg.Services.Interfaces
 
   public class MoveByMasterEmail : ClaimEmailModel
   {
+  }
+
+  public class ChangeResponsibleMasterEmail : ClaimEmailModel
+  {
+    public User NewMaster { get; set; }
   }
 
   public class DeclineByPlayerEmail : ClaimEmailModel
