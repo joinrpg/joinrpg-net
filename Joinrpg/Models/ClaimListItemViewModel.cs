@@ -55,6 +55,8 @@ namespace JoinRpg.Web.Models
     [Display (Name = "Ответственный")]
     public User Responsible { get; set; }
 
+    public User LastModifiedBy { get; set; }
+
     public int ProjectId { get; set; }
 
     public int ClaimId{ get; set; }
@@ -78,6 +80,7 @@ namespace JoinRpg.Web.Models
       ProjectName = claim.Project.ProjectName;
       UpdateDate = claim.LastUpdateDateTime;
       Responsible = claim.ResponsibleMasterUser;
+      LastModifiedBy = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault()?.Author ?? claim.Player;
       UnreadCommentsCount =
         claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
                                         && !comment.IsReadByUser(currentUserId));
