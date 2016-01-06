@@ -24,6 +24,9 @@ namespace JoinRpg.Web.Models
     public IEnumerable<ClaimListItemViewModel> Claims { get; set; } = new List<ClaimListItemViewModel>();
 
     public UserProfileDetailsViewModel Details { get; set; }
+
+    [ReadOnly(true)]
+    public AccessReason Reason { get; set; }
   }
 
   public class UserProfileDetailsViewModel
@@ -43,9 +46,6 @@ namespace JoinRpg.Web.Models
 
     public int? AllrpgId { get; set; }
 
-    [ReadOnly(true)]
-    public AccessReason Reason { get; set; }
-
     public User User { get; set; } //TODO: Start using ViewModel here
 
     public static UserProfileDetailsViewModel FromUser(User user, User currentUser)
@@ -60,9 +60,6 @@ namespace JoinRpg.Web.Models
         Vk = user.Extra?.Vk,
         PhoneNumber = user.Extra?.PhoneNumber ?? "",
         AllrpgId = user.Allrpg?.Sid,
-        Reason = currentUser != null
-          ? (AccessReason) user.GetProfileAccess(currentUser)
-          : AccessReason.NoAccess
       };
     }
   }

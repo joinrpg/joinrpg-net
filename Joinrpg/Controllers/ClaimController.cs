@@ -233,7 +233,8 @@ namespace JoinRpg.Web.Controllers
           CurrentBalance = claim.ClaimBalance(),
           CurrentFee = claim.ClaimCurrentFee()
         },
-        Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList()
+        Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList(),
+        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player, GetCurrentUser())
       };
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))

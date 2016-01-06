@@ -24,7 +24,9 @@ namespace JoinRpg.Web.Controllers
           DisplayName = user.DisplayName,
           ThisUserProjects = user.ProjectAcls,
           UserId = user.UserId,
-
+          Reason = currentUser != null
+          ? (AccessReason)user.GetProfileAccess(currentUser)
+          : AccessReason.NoAccess,
           Details = UserProfileDetailsViewModel.FromUser(user, currentUser)
         };
 
