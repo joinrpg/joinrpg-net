@@ -1,6 +1,6 @@
 ﻿@model JoinRpg.Web.Models.EditCharacterViewModel
 
-@Html.Partial("CharacterNavigation", Model.Navigation)
+@Html.Partial("CharacterNavigation", Model.Navigation, new ViewDataDictionary())
 
 @using (Html.BeginForm())
 {

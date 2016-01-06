@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -6,6 +7,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
@@ -84,11 +86,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Edit(int projectId, int characterId)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      return AsMaster(field) ?? View(new EditCharacterViewModel()
+      return AsMaster(field, s => s.CanEditRoles) ?? View(new EditCharacterViewModel()
       {
         ProjectId = field.ProjectId,
         CharacterId = field.CharacterId,
-        Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
         Description = new MarkdownViewModel(field.Description),
         IsPublic = field.IsPublic,
         ProjectName = field.Project.ProjectName,
@@ -96,23 +97,15 @@ namespace JoinRpg.Web.Controllers
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
         ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
-        Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing, CurrentUserIdOrDefault),
         IsHot = field.IsHot,
-        Fields = new CharacterFieldsViewModel()
-        {
-          HasMasterAccess = true,
-          EditAllowed = true,
-          CharacterFields = field.Fields().Select(pair => pair.Value),
-          HasPlayerAccessToCharacter = false
-        }
-      });
+      }.Fill(field, CurrentUserId));
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
     {
-      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project1);
+      var field = await ProjectRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
+      var error = AsMaster(field, s => s.CanEditRoles);
       if (error != null)
       {
         return error;
@@ -121,7 +114,7 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return View(viewModel);
+          return View(viewModel.Fill(field, CurrentUserId));
         }
         await ProjectService.EditCharacter(
           CurrentUserId,
@@ -132,9 +125,10 @@ namespace JoinRpg.Web.Controllers
 
         return RedirectToAction("Details", new {viewModel.ProjectId, viewModel.CharacterId});
       }
-      catch
+      catch (Exception exception)
       {
-        return View(viewModel);
+        ModelState.AddException(exception);
+        return View(viewModel.Fill(field, CurrentUserId));
       }
     }
 

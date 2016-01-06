@@ -49,6 +49,21 @@ namespace JoinRpg.Web.Models
     public CharacterFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
+
+    public EditCharacterViewModel Fill(Character field, int currentUserId)
+    {
+      Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
+      Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing,
+        currentUserId);
+      Fields = new CharacterFieldsViewModel()
+      {
+        HasMasterAccess = true,
+        EditAllowed = true,
+        CharacterFields = field.Fields().Select(pair => pair.Value),
+        HasPlayerAccessToCharacter = false
+      };
+      return this;
+    }
   }
 
   public enum CharacterNavigationPage
@@ -63,6 +78,7 @@ namespace JoinRpg.Web.Models
   {
     public CharacterNavigationPage Page { get; private set; }
     public bool HasMasterAccess { get; private set; }
+    public bool CanEditRoles { get; private set; }
 
     public bool CanAddClaim { get; private set; }
 
@@ -98,6 +114,7 @@ namespace JoinRpg.Web.Models
         CanAddClaim = field.IsAvailable,
         ClaimId = claimId,
         HasMasterAccess = masterAccess,
+        CanEditRoles = field.HasMasterAccess(currentUserId, s => s.CanEditRoles),
         CharacterId = field.CharacterId,
         ProjectId = field.ProjectId,
         Page = page,
