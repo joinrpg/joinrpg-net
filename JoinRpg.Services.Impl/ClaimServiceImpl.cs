@@ -8,7 +8,6 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Impl.ClaimProblemFilters;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -329,18 +328,6 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
 
       await EmailService.Email(email);
-    }
-
-    public IEnumerable<ClaimProblem> GetProblems(IEnumerable<Claim> claims)
-    {
-      var filters = new IClaimProblemFilter[]
-      {
-        new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new BrokenClaimsAndCharacters(),
-        new FinanceProblemsFilter(),
-      };
-
-
-      return claims.SelectMany(claim => filters.SelectMany(f => f.GetProblems(claim))).ToList();
     }
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)

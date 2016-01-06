@@ -1,0 +1,8 @@
+﻿@model JoinRpg.Web.Models.ProblemViewModel
+<div style="white-space: nowrap">
+    @Html.DisplayFor(modelItem => Model.ProblemType)
+    @if (Model.ProblemTime != null)
+    {
+    @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")
+    }
+</div>

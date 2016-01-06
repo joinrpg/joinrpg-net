@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -24,9 +21,6 @@ namespace JoinRpg.Services.Interfaces
       int? characterId);
 
     void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
-
-    //TODO: Move to separate service
-    IEnumerable<ClaimProblem> GetProblems(IEnumerable<Claim> claims);
   }
 
   //TODO[Localize]
@@ -40,33 +34,4 @@ namespace JoinRpg.Services.Interfaces
     Decline
   }
 
-  public class ClaimProblem
-  {
-    public Claim Claim { get; }
-    public ClaimProblemType ProblemType{ get; }
-
-    public DateTime? ProblemTime { get; }
-
-    public ClaimProblem(Claim claim, ClaimProblemType problemType, DateTime? problemTime = null)
-    {
-      Claim = claim;
-      ProblemType = problemType;
-      ProblemTime = problemTime;
-    }
-  }
-
-  public enum ClaimProblemType 
-  {
-    NoResponsibleMaster,
-    InvalidResponsibleMaster,
-    ClaimNeverAnswered,
-    ClaimNoDecision,
-    ClaimActiveButCharacterHasApprovedClaim,
-    FinanceModerationRequired,
-    TooManyMoney,
-    ClaimDiscussionStopped,
-    NoCharacterOnApprovedClaim,
-    FeePaidPartially,
-    UnApprovedClaimPayment
-  }
 }

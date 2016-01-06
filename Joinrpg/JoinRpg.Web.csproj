@@ -292,6 +292,7 @@
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
+    <Compile Include="Models\ProblemViewModel.cs" />
     <Compile Include="Models\ProjectViewModels.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
     <Compile Include="Models\GameFieldViewModel.cs" />
@@ -564,6 +565,7 @@
     <Content Include="Views\Claim\DiscussingForGroup.cshtml" />
     <Content Include="Views\Claim\DiscussingForGroupDirect.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

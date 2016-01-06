@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Services.Impl.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters
 {
   class ResponsibleMasterProblemFilter : IClaimProblemFilter
   {
@@ -11,11 +9,11 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
     {
       if (claim.ResponsibleMasterUser == null)
       {
-        yield return claim.Problem(ClaimProblemType.NoResponsibleMaster);
+        yield return new ClaimProblem(ClaimProblemType.NoResponsibleMaster, null);
       }
       else if (!claim.HasMasterAccess(claim.ResponsibleMasterUserId))
       {
-        yield return claim.Problem(ClaimProblemType.InvalidResponsibleMaster);
+        yield return new ClaimProblem(ClaimProblemType.InvalidResponsibleMaster, null);
       }
     }
   }

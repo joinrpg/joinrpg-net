@@ -20,6 +20,18 @@
 <div>
     @Html.Partial("CharacterNavigation", Model.Navigation)
 
+    @if (Model.HasMasterAccess && Model.Problems.Any())
+    {
+        <div class="alert-warning alert">
+            <h4>Проблемы в заявке</h4>
+            
+                @foreach (var pr in Model.Problems)
+                {
+                    @Html.DisplayFor(modelItem => pr)
+                }
+            
+        </div>
+    }
 <div class="panel panel-default">
     <div class="panel-heading"><h4>Заявка</h4></div>
     <div class="panel-body"><dl class="dl-horizontal">

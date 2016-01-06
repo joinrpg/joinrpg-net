@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
-using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Services.Impl.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters
 {
   internal class NotAnsweredClaim : IClaimProblemFilter
   {
@@ -31,16 +30,16 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
 
       if (!masterAnswers.Any())
       {
-        yield return claim.Problem(ClaimProblemType.ClaimNeverAnswered, claim.CreateDate);
+        yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, claim.CreateDate);
       }
       else if (!hasMasterCommentsInLast)
       {
-        yield return claim.Problem(ClaimProblemType.ClaimDiscussionStopped, masterAnswers.Max(comment => comment.CreatedTime));
+        yield return new ClaimProblem(ClaimProblemType.ClaimDiscussionStopped, masterAnswers.Max(comment => comment.CreatedTime));
       }
 
         if (now.Subtract(claim.CreateDate) > TimeSpan.FromDays(30))
       {
-        yield return claim.Problem(ClaimProblemType.ClaimNoDecision, claim.CreateDate);
+        yield return new ClaimProblem(ClaimProblemType.ClaimNoDecision, claim.CreateDate);
       }
     }
   }

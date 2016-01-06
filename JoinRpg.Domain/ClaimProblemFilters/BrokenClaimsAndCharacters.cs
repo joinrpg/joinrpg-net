@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
-using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Services.Impl.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters
 {
   internal class BrokenClaimsAndCharacters : IClaimProblemFilter
   {
@@ -10,11 +9,11 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
     {
       if (claim.IsInDiscussion && claim.Character?.ApprovedClaim != null)
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.ClaimActiveButCharacterHasApprovedClaim);
+        yield return new ClaimProblem(ClaimProblemType.ClaimActiveButCharacterHasApprovedClaim);
       }
       if (claim.IsApproved &&  (claim.Character == null || !claim.Character.IsActive))
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.NoCharacterOnApprovedClaim);
+        yield return new ClaimProblem(ClaimProblemType.NoCharacterOnApprovedClaim);
       }
     }
   }

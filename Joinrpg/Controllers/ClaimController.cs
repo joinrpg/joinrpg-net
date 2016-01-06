@@ -167,9 +167,10 @@ namespace JoinRpg.Web.Controllers
       if (error != null)
         return error;
 
-      var claimProblems = _claimService.GetProblems(claims);
-      var viewModel = claimProblems.Select(
-        problem => ClaimProblemListItemViewModel.FromClaimProblem(problem, CurrentUserId)).ToList();
+      var viewModel =
+        claims.Select(c => ClaimProblemListItemViewModel.FromClaimProblem(c.GetProblems(), CurrentUserId, c))
+          .Where(vm => vm.Problems.Any())
+          .ToList();
 
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
       ViewBag.ProjectId = projectId;
@@ -231,7 +232,8 @@ namespace JoinRpg.Web.Controllers
           CurrentTotalFee = claim.ClaimTotalFee(),
           CurrentBalance = claim.ClaimBalance(),
           CurrentFee = claim.ClaimCurrentFee()
-        }
+        },
+        Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList()
       };
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))

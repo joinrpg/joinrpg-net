@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -49,7 +50,7 @@ namespace JoinRpg.Web.Controllers
       {
         var result = AclViewModel.FromAcl(acl);
         result.ProblemClaimsCount =
-          ClaimSevice.GetProblems(project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId)).Select(p => p.Claim).Distinct().Count();
+          project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId).Count(claim => claim.GetProblems().Any());
         return result;
       }));
     }

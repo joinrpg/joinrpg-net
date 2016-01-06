@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Services.Impl.ClaimProblemFilters
+namespace JoinRpg.Domain.ClaimProblemFilters
 {
   public class FinanceProblemsFilter : IClaimProblemFilter
   {
@@ -12,19 +10,19 @@ namespace JoinRpg.Services.Impl.ClaimProblemFilters
     {
       if (claim.FinanceOperations.Any(fo => fo.RequireModeration))
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.FinanceModerationRequired);
+        yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired);
       }
       if (claim.ClaimTotalFee() < claim.ClaimBalance())
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.TooManyMoney);
+        yield return new ClaimProblem(ClaimProblemType.TooManyMoney);
       }
       if (!claim.ClaimPaidInFull() && claim.ClaimBalance() > 0)
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.FeePaidPartially);
+        yield return new ClaimProblem(ClaimProblemType.FeePaidPartially);
       }
       if (!claim.IsApproved && claim.ClaimBalance() > 0)
       {
-        yield return new ClaimProblem(claim, ClaimProblemType.UnApprovedClaimPayment);
+        yield return new ClaimProblem(ClaimProblemType.UnApprovedClaimPayment);
       }
     }
   }

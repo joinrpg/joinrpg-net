@@ -63,6 +63,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public IEnumerable<PaymentType> PaymentTypes { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<ProblemViewModel> Problems { get; set; }
   }
 
   public class ClaimFeeViewModel

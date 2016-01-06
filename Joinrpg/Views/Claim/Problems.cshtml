@@ -21,7 +21,7 @@
             @Html.DisplayNameFor(model => model.UpdateDate)
         </th>
         <th>@Html.DisplayNameFor(model => model.Responsible)</th>
-        <th>@Html.DisplayNameFor(model => model.ProblemType)</th>
+        <th>@Html.DisplayNameFor(model => model.Problems)</th>
     </tr>
 
     @foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
@@ -47,11 +47,11 @@
         </td>
         <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
         <td>
-            @Html.DisplayFor(modelItem => item.ProblemType)
-            @if (item.ProblemTime != null)
+            @foreach (var pr in item.Problems)
             {
-               @Html.DisplayFor(modelItem => item.ProblemTime, "EventTime");
+                @Html.DisplayFor(modelItem => pr)
             }
+            
         </td>
 
     </tr>

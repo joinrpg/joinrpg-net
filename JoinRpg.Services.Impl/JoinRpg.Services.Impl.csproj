@@ -61,11 +61,6 @@
     <Compile Include="Allrpg\ProfileReply.cs" />
     <Compile Include="Allrpg\ProjectReply.cs" />
     <Compile Include="ClaimImplBase.cs" />
-    <Compile Include="ClaimProblemFilters\BrokenClaimsAndCharacters.cs" />
-    <Compile Include="ClaimProblemFilters\FinanceProblemsFilter.cs" />
-    <Compile Include="ClaimProblemFilters\IClaimProblemFilter.cs" />
-    <Compile Include="ClaimProblemFilters\NotAnsweredClaim.cs" />
-    <Compile Include="ClaimProblemFilters\ResponsibleMasterProblemFilter.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
     <Compile Include="FinanceOperationsImpl.cs" />

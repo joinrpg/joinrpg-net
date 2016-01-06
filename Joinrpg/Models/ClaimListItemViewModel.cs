@@ -1,67 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models
 {
 
-  /// <summary>
-  /// <see cref="ClaimProblemType"/>
-  /// </summary>
-  public enum ProblemTypeViewModel
-  {
-    [Display(Name="Нет ответственного мастера")]
-    [UsedImplicitly]
-    NoResponsibleMaster,
-    [Display(Name="Неверный ответственный мастер")]
-    [UsedImplicitly]
-    InvalidResponsibleMaster,
-    [Display(Name="Заявка без ответа")]
-    [UsedImplicitly]
-    ClaimNeverAnswered,
-    [Display(Name="По заявке нет решения")]
-    [UsedImplicitly]
-    ClaimNoDecision,
-    [UsedImplicitly]
-    [Display(Name="Персонаж уже занят")]
-    ClaimActiveButCharacterHasApprovedClaim,
-    [UsedImplicitly]
-    [Display(Name = "Взнос на модерации")]
-    FinanceModerationRequired,
-    [UsedImplicitly]
-    [Display(Name = "Есть переплата по взносу")]
-    TooManyMoney,
-    [UsedImplicitly]
-    [Display(Name = "Обсуждение по заявке остановилось")]
-    ClaimDiscussionStopped,
-    [UsedImplicitly]
-    [Display(Name = "Нет персонажа у заявки")]
-    NoCharacterOnApprovedClaim,
-    [UsedImplicitly]
-    [Display(Name = "Взнос уплачен частично")]
-    FeePaidPartially,
-    [UsedImplicitly]
-    [Display(Name="Оплата в непринятой заявке")]
-    UnApprovedClaimPayment
-  }
-
   public class ClaimProblemListItemViewModel : ClaimListItemViewModel
   {
-    [Display(Name="Проблема")]
-    public ProblemTypeViewModel ProblemType { get; set; }
+    [Display(Name = "Проблема")]
+    public ICollection<ProblemViewModel> Problems { get; set; }
 
-    public DateTime? ProblemTime { get; set; }
-
-    public static ClaimProblemListItemViewModel FromClaimProblem(ClaimProblem problem, int currentUserId)
+    public static ClaimProblemListItemViewModel FromClaimProblem(IEnumerable<ClaimProblem> problem, int currentUserId, Claim claim)
     {
       var self = new ClaimProblemListItemViewModel();
-      self.Assign(problem.Claim, currentUserId);
-      self.ProblemType = (ProblemTypeViewModel) problem.ProblemType;
-      self.ProblemTime = problem.ProblemTime;
+      self.Assign(claim, currentUserId);
+      self.Problems =
+        problem.Select(p => new ProblemViewModel(p)).ToList();
       return self;
     }
   }
