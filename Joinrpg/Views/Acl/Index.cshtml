@@ -3,7 +3,7 @@
 @model IEnumerable<AclViewModel>
 
 @{
-    ViewBag.Title = "Мастера " + Model.First().ProjectName;
+    ViewBag.Title = "Мастера";
     var countOfCanGrantRights = Model.Count(acl => acl.CanGrantRights);
     var canGrantRights = Model.Single(acl => acl.UserId == User.Identity.GetUserId<int>()).CanGrantRights;
 }
@@ -81,11 +81,10 @@
         <td>
             @Html.DisplayFor(model => item.CanManageMoney)
         </td>
-        <td>
+        <td style="white-space: nowrap">
             @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
-
         </td>
-        <td>
+        <td style="white-space: nowrap">
             @Html.ActionLink(DisplayCount.OfX(item.ProblemClaimsCount, "проблемная", "проблемные", "проблемных"), "ResponsibleProblems", "Claim", new { ResponsibleMasterId = item.Master.UserId, item.ProjectId }, null)
 
         </td>
