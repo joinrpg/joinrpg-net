@@ -2,7 +2,7 @@
 @model JoinRpg.Web.Models.Plot.EditPlotFolderViewModel
 
 @{
-    ViewBag.Title = "Сюжет " + @Model.PlotFolderMasterTitle;
+    ViewBag.Title = "Сюжет «" + @Model.PlotFolderMasterTitle + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -43,10 +43,8 @@
         </div>
     </div>
 }
-
-<p>
-    @Html.ActionLink("Добавить новую вводную", "CreateElement", new { Model.PlotFolderId, Model.ProjectId})
-</p>
+<h3>Вводные</h3>
+<a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить новую вводную</a>
 
 @Html.Partial("Elements", Model.Elements)
 
