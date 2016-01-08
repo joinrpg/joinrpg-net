@@ -31,47 +31,47 @@
 
         <div class="form-group">
             @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-1">
+            <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.IsPublic, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.EditorFor(model => model.IsPublic)
                 </div>
+                <p class="help-block">Публичные персонажи показываются в сетке ролей.</p>
             </div>
-        </div>
 
-        <div class="form-group">
+
             @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-1">
+            <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.IsAcceptingClaims, new {htmlAttributes = new {@class = "form-control"}})
+                    @Html.EditorFor(model => model.IsAcceptingClaims)
                 </div>
+                <p class="help-block">Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.</p>
             </div>
-        </div>
 
-        <div class="form-group">
             @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-1">
+            <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.HidePlayerForCharacter, new {htmlAttributes = new {@class = "form-control"}})
+                    @Html.EditorFor(model => model.HidePlayerForCharacter)
                 </div>
+                <p class="help-block">Скрыть личность игрока, который играет данного персонажа.</p>
             </div>
         </div>
 
-        <div class="form-group">
+        
             @Html.LabelFor(model => model.IsHot, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-1">
+            <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.IsHot, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.IsHot, "", new {@class = "text-danger"})
+                    @Html.EditorFor(model => model.IsHot)
                 </div>
+                <p class="help-block">Горячая роль специальным образом выделяется в ролевке.</p>
             </div>
-        </div>
-
+            
+        
         <div class="form-group">
-            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <div class="checkbox">
                     @Html.Partial("ParentCharacterGroupPartial")
-                    @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
+                    @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>
