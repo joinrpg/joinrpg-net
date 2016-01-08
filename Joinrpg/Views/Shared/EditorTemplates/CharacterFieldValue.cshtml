@@ -12,9 +12,17 @@
                 break;
             case CharacterFieldType.Dropdown:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control">
-                    @foreach (var val in Model.Field.DropdownValues)
-                    {
-                        <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
+                    @{
+                        var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
+                    @*if (isEmpty || !Model.Field.IsRequired)*@
+                        if (true)
+                        {
+                            <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
+                        }
+                        foreach (var val in Model.Field.DropdownValues)
+                        {
+                            <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
+                        }
                     }
                 </select>
                 break;
@@ -23,7 +31,7 @@
                 break;
             case CharacterFieldType.Checkbox:
                 var ch = Model.Value == "on" ? "checked" : "";
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch >
+                <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
                 break;
             case CharacterFieldType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">
@@ -32,9 +40,14 @@
                         <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
                     }
                 </select>
+                <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;
             default:
-                throw new InvalidEnumArgumentException("Unkonwn field type name");
+                throw new InvalidEnumArgumentException("Unknown field type name");
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.Field.FieldHint.Contents))
+        {
+            <div class="help-block">@Html.DisplayFor(model => model.Field.FieldHint.Contents) </div>
         }
         @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>
