@@ -1,6 +1,33 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.Plot.EditPlotElementViewModel>
+@if (Model.Any())
+{
+    <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
+        @foreach (var item in Model)
+        {
+            @Html.Partial("EditElementPartial", item)
+        }
+    </div>
 
-@foreach (var item in Model) {
-    @Html.Partial("EditElementPartial", item)
-    <hr>
+    var first = Model.First();
+    <div class="modal fade" id="deleteElementModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @using (Html.BeginForm("DeleteElement", "Plot", new {first.PlotFolderId, first.ProjectId}, FormMethod.Post))
+                {
+                    <input type="hidden" name="PlotElementId" id="deletePlotElementId" value="0"/>
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Удаление вводной</h4>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-danger">Удалить</button>
+                    </div>
+                }
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
 }

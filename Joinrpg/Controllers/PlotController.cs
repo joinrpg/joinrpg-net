@@ -211,7 +211,6 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var dict = new FormCollection(Request.Unvalidated.Form).ToDictionary();
         var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
         var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
         await

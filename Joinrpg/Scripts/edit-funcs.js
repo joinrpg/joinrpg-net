@@ -38,3 +38,11 @@ $(".datepicker").datepicker({
     },
     autoclose: true
 });
+
+
+$('#deleteElementModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);
+    var plotElementId = button.data('element');
+    var modal = $(this);
+    modal.find('#deletePlotElementId').val(plotElementId);
+});

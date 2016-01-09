@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Web;
 using CommonMark;
 using JoinRpg.DataModel;
@@ -24,14 +25,26 @@ namespace JoinRpg.Web.Helpers
     /// </summary>
     public static HtmlString ToHtmlString(this MarkdownString markdownString)
     {
-      return markdownString?.Contents == null ? null : new HtmlString(Convert(markdownString));
+      return markdownString?.Contents == null ? null : new HtmlString(Convert(markdownString.Contents));
     }
 
-    private static string Convert(MarkdownString markdownString)
+    private static string Convert(string mdContents)
     {
       var settings = CommonMarkSettings.Default.Clone();
       settings.RenderSoftLineBreaksAsLineBreaks = true;
-      return Sanitizer.Sanitize(CommonMarkConverter.Convert(markdownString.Contents, settings)).Replace("<p></p>", "");
+      return Sanitizer.Sanitize(CommonMarkConverter.Convert(mdContents, settings)).Replace("<p></p>", "");
+    }
+
+    public static HtmlString TakeWords(this MarkdownString markdownString, int words)
+    {
+      
+      if (markdownString?.Contents == null)
+      {
+        return null;
+      }
+      var idx = markdownString.Contents.TakeWhile(c => (words -= (char.IsWhiteSpace(c) ? 1 : 0)) > 0).Count();
+      var mdContents = markdownString.Contents.Substring(0, idx);
+      return new HtmlString(Convert(mdContents));
     }
   }
 }

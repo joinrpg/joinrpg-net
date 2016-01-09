@@ -43,8 +43,9 @@
         </div>
     </div>
 }
-<h3>Вводные</h3>
-<a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить новую вводную</a>
+<h3>Вводные
+    <a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить новую</a>
+    </h3>
 
 @Html.Partial("Elements", Model.Elements)
 

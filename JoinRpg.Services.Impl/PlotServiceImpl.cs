@@ -103,6 +103,7 @@ namespace JoinRpg.Services.Impl
       plotElement.TargetGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, targetGroups));
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;
+      plotElement.IsActive = true;
       await UnitOfWork.SaveChangesAsync();
     }
 
