@@ -62,14 +62,28 @@
                     }
                 </td>
                 <td>
-                    @if (item.IsActive)
-                    {
-                        @Html.ActionLink("Изменить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})<text> | </text>
-                        @Html.ActionLink("Удалить", "Delete", new {item.ProjectCharacterFieldId, item.ProjectId})
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Восстановить", "Edit", new { item.ProjectCharacterFieldId, item.ProjectId })
+                    @{
+                        if (item.IsActive)
+                        {
+                            @Html.ActionLink("Изменить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})<text> | </text>
+                            @Html.ActionLink("Удалить", "Delete", new {item.ProjectCharacterFieldId, item.ProjectId})
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Восстановить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})
+                        }
+                        var moveParameters = new
+                        {
+                            item.ProjectCharacterFieldId, Model.ProjectId,
+                        };
+                        if (!item.First)
+                        {
+                            <a href="@Url.Action("MoveUp", moveParameters)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
+                        }
+                        if (!item.Last)
+                        {
+                            <a href="@Url.Action("MoveDown", moveParameters)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
+                        }
                     }
                 </td>
             </tr>

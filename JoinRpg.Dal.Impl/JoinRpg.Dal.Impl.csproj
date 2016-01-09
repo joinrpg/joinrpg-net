@@ -221,6 +221,10 @@
     <Compile Include="Migrations\201512261954180_FieldsImprovement2.Designer.cs">
       <DependentUpon>201512261954180_FieldsImprovement2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201601091848544_FieldsOrdering.cs" />
+    <Compile Include="Migrations\201601091848544_FieldsOrdering.Designer.cs">
+      <DependentUpon>201601091848544_FieldsOrdering.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -377,6 +381,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201512261954180_FieldsImprovement2.resx">
       <DependentUpon>201512261954180_FieldsImprovement2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601091848544_FieldsOrdering.resx">
+      <DependentUpon>201601091848544_FieldsOrdering.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,7 +1,21 @@
 ﻿@using System.ComponentModel
 @using JoinRpg.DataModel
+@using JoinRpg.Domain
 @using JoinRpg.Web.Helpers
-@model JoinRpg.Domain.CharacterFieldValue
+@model CharacterFieldValue
+
+@helper ShowOptions()
+{
+    var selectedValues = Model.GetDropdownValues();
+    foreach (var val in Model.GetPossibleValues())
+    {
+        <option value="@val.ProjectCharacterFieldDropdownValueId"
+                @(selectedValues.Contains(val) ? "selected='selected'" : "")
+                title='@val.Description.ToHtmlString()'>
+            @val.Label
+        </option>
+    }
+}
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
     <div class="col-md-10">
@@ -20,14 +34,7 @@
                         {
                             <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
                         }
-                        foreach (var val in Model.Field.DropdownValues)
-                        {
-                            <option value="@val.ProjectCharacterFieldDropdownValueId"
-                                    @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")
-                                    title='@val.Description.ToHtmlString()'>
-                                @val.Label
-                            </option>
-                        }
+                        @ShowOptions()
                     }
                 </select>
                 break;
@@ -40,14 +47,8 @@
                 break;
             case CharacterFieldType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">
-                    @foreach (var val in Model.Field.DropdownValues)
-                    {
-                        <option value="@val.ProjectCharacterFieldDropdownValueId"
-                                @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")
-                                title='@val.Description.ToHtmlString()'>
-                            @val.Label
-                        </option>
-                    }
+                    @ShowOptions()
+
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;

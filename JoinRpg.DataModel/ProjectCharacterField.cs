@@ -22,8 +22,6 @@ namespace JoinRpg.DataModel
 
     public MarkdownString FieldHint { get; set; }
 
-    public int Order { get; set; }
-
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }
@@ -36,6 +34,8 @@ namespace JoinRpg.DataModel
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectCharacterFieldDropdownValue> DropdownValues { get; set; }
+
+    public string ValuesOrdering { get; set; }
 
     public virtual CharacterGroup CharacterGroup { get; set; }
     public int CharacterGroupId { get; set; }

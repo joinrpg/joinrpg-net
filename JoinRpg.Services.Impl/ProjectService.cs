@@ -50,58 +50,7 @@ namespace JoinRpg.Services.Impl
       return project;
     }
 
-    public async Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
-      bool canPlayerEdit, bool canPlayerView, bool isPublic)
-    {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
 
-      project.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
-      
-      var field = new ProjectCharacterField
-      {
-        FieldName = Required(name),
-        FieldHint = new MarkdownString(fieldHint),
-        CanPlayerEdit = canPlayerEdit,
-        CanPlayerView = canPlayerView,
-        IsPublic = isPublic,
-        ProjectId = projectId,
-        FieldType = fieldType,
-        IsActive = true,
-        Order = project.AllProjectFields.Count(),
-      };
-
-      CreateOrUpdateSpecialGroup(field);
-
-      UnitOfWork.GetDbSet<ProjectCharacterField>().Add(field);
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task UpdateCharacterField(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic)
-    {
-      var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(fieldId);
-      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
-
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
-
-      field.FieldName = Required(name);
-      field.FieldHint.Contents = fieldHint;
-      field.CanPlayerEdit = canPlayerEdit;
-      field.CanPlayerView = canPlayerView;
-      field.IsPublic = isPublic;
-      field.IsActive = true;
-
-      CreateOrUpdateSpecialGroup(field);
-
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    //TODO: pass projectId & CurrentUserId
-    public async Task DeleteField(int projectCharacterFieldId)
-    {
-      var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(projectCharacterFieldId);
-      SmartDelete(field);
-      await UnitOfWork.SaveChangesAsync();
-    }
 
     public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
@@ -172,52 +121,25 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId,
-      int direction)
+    public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)
     {
       var parentCharacterGroup = await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
       parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
 
       var thisCharacterGroup = parentCharacterGroup.ChildGroups.Single(i => i.CharacterGroupId == charactergroupId);
 
-      var voc = parentCharacterGroup.GetCharacterGroupsContainer();
-      switch (direction)
-      {
-        case -1:
-          voc.MoveUp(thisCharacterGroup);
-          break;
-        case 1:
-          voc.MoveDown(thisCharacterGroup);
-          break;
-        default:
-          throw new ArgumentException(nameof(direction));
-      }
-
-      parentCharacterGroup.ChildGroupsOrdering = voc.GetStoredOrder();
+      parentCharacterGroup.ChildGroupsOrdering = parentCharacterGroup.GetCharacterGroupsContainer().Move(thisCharacterGroup, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, int direction)
+    public async Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, short direction)
     {
       var parentCharacterGroup = await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
       parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
 
-      var thisCharacterGroup = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);
+      var item = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);
 
-      var voc = parentCharacterGroup.GetCharactersContainer();
-      switch (direction)
-      {
-        case -1:
-          voc.MoveUp(thisCharacterGroup);
-          break;
-        case 1:
-          voc.MoveDown(thisCharacterGroup);
-          break;
-        default:
-          throw new ArgumentException(nameof(direction));
-      }
-
-      parentCharacterGroup.ChildCharactersOrdering = voc.GetStoredOrder();
+      parentCharacterGroup.ChildCharactersOrdering = parentCharacterGroup.GetCharactersContainer().Move(item, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -409,101 +331,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateFieldValue(int projectId, int projectCharacterFieldId, int currentUserId, string label, string description)
-    {
-      var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
-
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
-
-      var fieldValue = new ProjectCharacterFieldDropdownValue()
-      {
-        Description = new MarkdownString(description),
-        Label = label,
-        IsActive = true,
-        WasEverUsed = false,
-        ProjectId = field.ProjectId,
-        ProjectCharacterFieldId = field.ProjectCharacterFieldId,
-        Project = field.Project,
-        ProjectCharacterField = field
-      };
-
-      CreateOrUpdateSpecialGroup(fieldValue);
-
-      field.DropdownValues.Add(fieldValue);
-
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    private static void CreateOrUpdateSpecialGroup(ProjectCharacterFieldDropdownValue fieldValue)
-    {
-      CreateOrUpdateSpecialGroup(fieldValue.ProjectCharacterField);
-
-      fieldValue.CharacterGroup = fieldValue.CharacterGroup ?? new CharacterGroup()
-      {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = false,
-        ParentGroups = new List<CharacterGroup> {fieldValue.ProjectCharacterField.CharacterGroup},
-        ProjectId = fieldValue.ProjectId,
-        IsRoot = false,
-        IsSpecial = true,
-        IsPublic = fieldValue.ProjectCharacterField.IsPublic,
-        IsActive = true,
-        Description = fieldValue.Description,
-        ResponsibleMasterUserId = null,
-      };
-
-      fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
-    }
-
-    private static void CreateOrUpdateSpecialGroup(ProjectCharacterField field)
-    {
-      if (!field.HasValueList())
-      {
-        return;
-      }
-
-      field.CharacterGroup = field.CharacterGroup ?? new CharacterGroup()
-      {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = false,
-        ParentGroups = new List<CharacterGroup> { field.Project.RootGroup },
-        ProjectId = field.ProjectId,
-        IsRoot = false,
-        IsSpecial = true,
-        IsPublic = field.IsPublic,
-        IsActive = true,
-        Description = field.FieldHint,
-        ResponsibleMasterUserId = null,
-      };
-
-      field.CharacterGroup.CharacterGroupName = field.GetSpecialGroupName();
-    }
-
-    public async Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label,
-      string description)
-    {
-      var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
-
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
-
-      field.Description = new MarkdownString( description);
-      field.Label = label;
-      field.IsActive = true;
-
-      CreateOrUpdateSpecialGroup(field);
-
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId)
-    {
-      var field = await ProjectRepository.GetFieldValue(projectId, projectCharacterFieldDropdownValueId);
-
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
-
-      SmartDelete(field);
-      await UnitOfWork.SaveChangesAsync();
-    }
+    
 
     public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
     {
@@ -516,7 +344,7 @@ namespace JoinRpg.Services.Impl
 
     private static void SaveCharacterFieldsImpl(int currentUserId, Character character, IDictionary<int, string> newFieldValue)
     {
-      var fields = character.Fields();
+      var fields = character.GetAllFields().ToDictionary(f => f.Field.ProjectCharacterFieldId);
 
       var hasMasterAccess = character.HasMasterAccess(currentUserId);
       var hasPlayerAccess = character.ApprovedClaim?.PlayerUserId == currentUserId;
@@ -567,6 +395,7 @@ namespace JoinRpg.Services.Impl
             val.WasEverUsed = true;
           }
         }
+        character.JsonData = fields.Values.SerializeFields();
       }
     }
 

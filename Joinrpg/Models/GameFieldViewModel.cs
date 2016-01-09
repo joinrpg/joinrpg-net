@@ -36,7 +36,7 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class GameFieldEditViewModel : GameFieldViewModelBase
+  public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
   {
     public int ProjectCharacterFieldId { get; set; }
 
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Models
       ProjectId = field.ProjectId;
       IsActive = field.IsActive;
       HasValueList = field.HasValueList();
-      DropdownValues = field.DropdownValues.Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
+      DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
     }
 
     public GameFieldEditViewModel()
@@ -63,6 +63,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; set; }
+
+    public bool First { get; set; }
+    public bool Last { get; set; }
   }
 
 
@@ -153,5 +156,13 @@ namespace JoinRpg.Web.Models
     }
 
     public GameFieldDropdownValueCreateViewModel() { }//For binding
+  }
+
+  public static class GameFieldViewModelsExtensions
+  {
+    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectCharacterField> projectCharacterFields)
+    {
+      return projectCharacterFields.Select(pf => new GameFieldEditViewModel(pf)).ToList().MarkFirstAndLast();
+    }
   }
 }

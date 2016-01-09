@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -10,17 +11,14 @@ namespace JoinRpg.Helpers
     int Id { get; }
   }
 
-  public interface IParentEntity<TChild> where TChild: IOrderableEntity
+  public static class VirtualOrderContainerFacade
   {
-    IEnumerable<TChild> Childs { get; }
-    string Ordering { get; set; }
+    //Factory function enable type inference
+    public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs, string ordering) where TChild : class, IOrderableEntity
+    {
+      return new VirtualOrderContainer<TChild>(ordering, childs);
+    }
   }
-
-  public static class OrderedChildExtensions
-  {
-
-  }
-
 
   public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
   {
@@ -28,7 +26,8 @@ namespace JoinRpg.Helpers
 
 
     [NotNull, ItemNotNull]
-    private List<TItem>  Items { get; } = new List<TItem>();
+    private List<TItem> Items { get; } = new List<TItem>();
+
 
     public VirtualOrderContainer([CanBeNull] string storedOrder, [ItemNotNull] [NotNull] IEnumerable<TItem> entites)
     {
@@ -75,12 +74,12 @@ namespace JoinRpg.Helpers
 
     public void MoveDown(TItem item)
     {
-      MoveImpl(item, 1);
+      Move(item, 1);
     }
 
     public void MoveUp(TItem item)
     {
-      MoveImpl(item, -1);
+      Move(item, -1);
     }
 
     private void MoveImpl(TItem item, int direction)
@@ -99,6 +98,21 @@ namespace JoinRpg.Helpers
       var nextItem = Items[targetIndex];
       Items[targetIndex] = item;
       Items[index] = nextItem;
+    }
+
+    public ReadOnlyCollection<TItem> GetOrderedItemsWithFilter(Func<TItem, bool> predicate)
+    {
+      return Items.Where(predicate).ToList().AsReadOnly();
+    }
+
+    public VirtualOrderContainer<TItem> Move(TItem field, short direction)
+    {
+      if (direction != -1 && direction != 1)
+      {
+        throw new ArgumentException(nameof(direction));
+      }
+      MoveImpl(field, direction);
+      return this;
     }
   }
 }

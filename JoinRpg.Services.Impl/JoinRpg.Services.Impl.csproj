@@ -63,6 +63,7 @@
     <Compile Include="ClaimImplBase.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
+    <Compile Include="FieldSetupServiceImpl.cs" />
     <Compile Include="FinanceOperationsImpl.cs" />
     <Compile Include="PlotServiceImpl.cs" />
     <Compile Include="ProjectService.cs" />

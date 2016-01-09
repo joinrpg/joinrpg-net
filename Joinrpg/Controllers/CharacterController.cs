@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Controllers
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CharacterFieldsViewModel()
         {
-          CharacterFields = character.Fields().Select(pair => pair.Value),
+          CharacterFields = character.GetPresentFields(),
           HasMasterAccess = hasMasterAccess,
           EditAllowed = false,
           HasPlayerAccessToCharacter = hasPlayerAccess
@@ -192,7 +192,7 @@ namespace JoinRpg.Web.Controllers
       return MoveImpl(projectid, characterid, parentcharactergroupid, currentrootgroupid, +1);
     }
 
-    private async Task<ActionResult> MoveImpl(int projectId, int characterId, int parentCharacterGroupId, int currentRootGroupId, int direction)
+    private async Task<ActionResult> MoveImpl(int projectId, int characterId, int parentCharacterGroupId, int currentRootGroupId, short direction)
     {
       var group = await ProjectRepository.GetCharacterAsync(projectId, characterId);
       var error = AsMaster(@group, acl => acl.CanEditRoles);

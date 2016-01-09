@@ -293,6 +293,7 @@
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
+    <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\ProblemViewModel.cs" />
     <Compile Include="Models\ProjectViewModels.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />

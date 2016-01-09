@@ -36,6 +36,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 
+    public string ProjectFieldsOrdering { get; set; }
+
     Project IProjectEntity.Project => this;
 
     public virtual ICollection<ProjectFeeSetting>  ProjectFeeSettings { get; set; }
@@ -43,12 +45,6 @@ namespace JoinRpg.DataModel
 
     #region helper properties
     public IEnumerable<PaymentType> ActivePaymentTypes => PaymentTypes.Where(pt => pt.IsActive);
-
-    public IEnumerable<ProjectCharacterField> ActiveProjectFields
-      => ProjectFields.Where(pf => pf.IsActive).OrderBy(pf => pf.Order);
-
-    public IEnumerable<ProjectCharacterField> AllProjectFields
-      => ProjectFields.OrderByDescending(pf => pf.IsActive).ThenBy(pf => pf.Order);
 
     public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
     #endregion
@@ -62,6 +58,7 @@ namespace JoinRpg.DataModel
     public int? AllrpgId { get; set; }
   }
 
+  // ReSharper disable once ClassNeverInstantiated.Global see #218
   public class ProjectFeeSetting
   {
     public int ProjectFeeSettingId { get; set; }

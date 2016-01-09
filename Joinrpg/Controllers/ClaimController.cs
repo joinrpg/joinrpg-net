@@ -221,7 +221,7 @@ namespace JoinRpg.Web.Controllers
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
         Fields = new CharacterFieldsViewModel()
         {
-          CharacterFields = claim.Character?.Fields().Select(pair => pair.Value) ?? new CharacterFieldValue[] { },
+          CharacterFields = claim.Character?.GetPresentFields() ?? new CharacterFieldValue[] { },
           HasMasterAccess = hasMasterAccess,
           EditAllowed = true,
           HasPlayerAccessToCharacter = hasPlayerAccess

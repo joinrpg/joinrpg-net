@@ -345,7 +345,7 @@ namespace JoinRpg.Web.Controllers
       return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
     }
 
-    private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, int direction)
+    private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
     {
       var group = await ProjectRepository.LoadGroupAsync(projectId, charactergroupId);
       var error = AsMaster(@group);

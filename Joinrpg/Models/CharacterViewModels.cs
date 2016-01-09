@@ -59,7 +59,7 @@ namespace JoinRpg.Web.Models
       {
         HasMasterAccess = true,
         EditAllowed = true,
-        CharacterFields = field.Fields().Select(pair => pair.Value),
+        CharacterFields = field.GetPresentFields(),
         HasPlayerAccessToCharacter = false
       };
       return this;

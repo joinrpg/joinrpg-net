@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
-  public class PlotElementViewModel
+  public class PlotElementViewModel : IMovableListItem
   {
     public PlotStatus Status { get; set; }
     public MarkdownString Content { get; set; }
@@ -35,15 +36,8 @@ namespace JoinRpg.Web.Models.Plot
   {
     public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots, bool hasMasterAccess)
     {
-      var plotElementViewModels =
-        plots.Select(
-          p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess)).ToList();
-      if (plotElementViewModels.Any())
-      {
-        plotElementViewModels.First().First = true;
-        plotElementViewModels.Last().Last = true;
-      }
-      return plotElementViewModels;
+      return plots.Select(
+        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess)).ToList().MarkFirstAndLast();
     }
   }
 }

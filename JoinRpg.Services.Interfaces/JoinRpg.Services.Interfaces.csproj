@@ -55,6 +55,7 @@
     <Compile Include="IClaimService.cs" />
     <Compile Include="IEmailService.cs" />
     <Compile Include="IExportDataService.cs" />
+    <Compile Include="IFieldSetupService.cs" />
     <Compile Include="IHtmlService.cs" />
     <Compile Include="IMailGunConfig.cs" />
     <Compile Include="IFinanceService.cs" />

@@ -4,13 +4,9 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
-  public interface IProjectService
+  public interface IProjectService 
   {
     Task<Project> AddProject(string projectName, User creator);
-
-    Task UpdateCharacterField(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
-
-    Task DeleteField(int projectCharacterFieldId);
 
     Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
       string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
@@ -32,26 +28,14 @@ namespace JoinRpg.Services.Interfaces
 
     Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney);
 
-    Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
-      bool canPlayerEdit, bool canPlayerView, bool isPublic);
-
     Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue, bool moneyOperationValue);
 
     Task DeleteCharacter(int projectId, int characterId);
 
-    Task CreateFieldValue(int projectId, int projectCharacterFieldId, int currentUserId, string label,
-      string description);
-
-    Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label,
-      string description);
-
-    Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId);
-
     Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot);
 
-    Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId,
-      int direction);
+    Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction);
 
-    Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, int direction);
+    Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, short direction);
   }
 }

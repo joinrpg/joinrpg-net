@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharacterFields\CharacterFieldsContainter.cs" />
+    <Compile Include="CharacterFields\CharacterFieldsExtensions.cs" />
     <Compile Include="CharacterFields\CharacterFieldValue.cs" />
     <Compile Include="ClaimProblemExtensions.cs" />
     <Compile Include="ClaimProblemFilters\BrokenClaimsAndCharacters.cs" />
