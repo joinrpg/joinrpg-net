@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel
 @using JoinRpg.DataModel
+@using JoinRpg.Web.Helpers
 @model JoinRpg.Domain.CharacterFieldValue
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
@@ -21,7 +22,11 @@
                         }
                         foreach (var val in Model.Field.DropdownValues)
                         {
-                            <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
+                            <option value="@val.ProjectCharacterFieldDropdownValueId"
+                                    @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")
+                                    title='@val.Description.ToHtmlString()'>
+                                @val.Label
+                            </option>
                         }
                     }
                 </select>
@@ -37,7 +42,11 @@
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">
                     @foreach (var val in Model.Field.DropdownValues)
                     {
-                        <option value="@val.ProjectCharacterFieldDropdownValueId" @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")>@val.Label</option>
+                        <option value="@val.ProjectCharacterFieldDropdownValueId"
+                                @(val.ProjectCharacterFieldDropdownValueId.ToString() == Model.Value ? "selected='selected'" : "")
+                                title='@val.Description.ToHtmlString()'>
+                            @val.Label
+                        </option>
                     }
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>

@@ -17,6 +17,9 @@
                 foreach (var value in Model.GetDropdownValues())
                 {
                     @value.Label
+                    <div class="help-block">
+                            @Html.DisplayFor(model => value.Description)
+                    </div>
                     <text> </text>
                 }
                 break;
