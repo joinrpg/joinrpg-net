@@ -2,6 +2,7 @@
 /// <reference path="../external/roles-1.js" />
 /// <reference path="bootstrap.min.js" />
 /// <reference path="bootstrap-datepicker.min.js" />
+/// <reference path="edit-funcs.js" />
 /// <reference path="jquery.details.min.js" />
 /// <reference path="jquery.validate.min.js" />
 /// <reference path="jquery.validate.unobtrusive.js" />
