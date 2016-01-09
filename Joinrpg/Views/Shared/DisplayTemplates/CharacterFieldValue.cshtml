@@ -2,6 +2,10 @@
 @using JoinRpg.DataModel
 @using JoinRpg.Domain
 @model CharacterFieldValue
+  @if (string.IsNullOrWhiteSpace(Model.Value))
+  {
+      return;
+  }
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
     <div class="col-md-10">
