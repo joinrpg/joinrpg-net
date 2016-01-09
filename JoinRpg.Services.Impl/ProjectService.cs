@@ -448,7 +448,7 @@ namespace JoinRpg.Services.Impl
         IsSpecial = true,
         IsPublic = fieldValue.ProjectCharacterField.IsPublic,
         IsActive = true,
-        Description = new MarkdownString(),
+        Description = fieldValue.Description,
         ResponsibleMasterUserId = null,
       };
 
@@ -472,7 +472,7 @@ namespace JoinRpg.Services.Impl
         IsSpecial = true,
         IsPublic = field.IsPublic,
         IsActive = true,
-        Description = new MarkdownString(),
+        Description = field.FieldHint,
         ResponsibleMasterUserId = null,
       };
 
