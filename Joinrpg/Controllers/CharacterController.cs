@@ -55,31 +55,10 @@ namespace JoinRpg.Web.Controllers
         },
         Plot =
           hasAnyAccess
-            ? await GetPlots(character, hasMasterAccess)
+            ? character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).ToViewModels(hasMasterAccess)
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);
-    }
-
-    private async Task<IEnumerable<PlotElementViewModel>> GetPlots(Character character, bool hasMasterAccess)
-    {
-      return character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).Select(
-        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess));
-    }
-
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> Details(int projectId, int characterId, string ignoreMe)
-    {
-      try
-      {
-        await ProjectService.SaveCharacterFields(projectId, characterId, CurrentUserId,
-          GetCharacterFieldValuesFromPost());
-        return RedirectToAction("Details", new {projectId, characterId});
-      }
-      catch
-      {
-        return await Details(projectId, characterId);
-      }
     }
 
     [HttpGet, Authorize]
@@ -216,7 +195,7 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> MoveImpl(int projectId, int characterId, int parentCharacterGroupId, int currentRootGroupId, int direction)
     {
       var group = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      var error = AsMaster(@group);
+      var error = AsMaster(@group, acl => acl.CanEditRoles);
       if (error != null)
       {
         return error;

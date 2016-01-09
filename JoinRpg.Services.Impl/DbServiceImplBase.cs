@@ -13,6 +13,7 @@ namespace JoinRpg.Services.Impl
   //TODO: Split on specific and not specific to domain helpers
   public class DbServiceImplBase
   {
+
     protected readonly IUnitOfWork UnitOfWork;
     protected IUserRepository UserRepository => _userRepository.Value;
 
@@ -25,12 +26,16 @@ namespace JoinRpg.Services.Impl
     protected IClaimsRepository ClaimsRepository => _claimRepository.Value;
     private readonly Lazy<IClaimsRepository> _claimRepository;
 
+    private readonly Lazy<IPlotRepository> _plotRepository;
+    protected IPlotRepository PlotRepository => _plotRepository.Value;
+
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
       UnitOfWork = unitOfWork;
       _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
       _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
       _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
+      _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository); _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
     }
 
     [NotNull]

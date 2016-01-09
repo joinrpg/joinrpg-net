@@ -5,11 +5,6 @@
  {
      return;
  }
-@if (Model.Status == PlotStatus.InWork && !Model.HasMasterAccess)
-{
-    ViewBag.HasUnfinishedPlot = true;
-    return;
-}
 
 @{
     var hideClass = "";
@@ -17,6 +12,11 @@
 
 @if (Model.Status == PlotStatus.InWork)
 {
+    if (!Model.HasMasterAccess)
+    {
+        return;
+    }
+
     <b>Не готов</b>
 
     hideClass = "world-object-hidden";
@@ -28,8 +28,21 @@
 </div>
 
 @if (Model.HasMasterAccess)
-{
+{ var moveParameters = new
+  {
+      Model.ProjectId,
+      Model.PlotElementId,
+      ViewBag.CharacterId,
+  }; 
     <div>
         @Html.ActionLink("Изменить", "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)
+        @if (!Model.First)
+        {
+        <a href="@Url.Action("MoveUpElementForCharacter", "Plot", moveParameters, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
+        }
+        @if (!Model.Last)
+        {
+        <a href="@Url.Action("MoveDownElementForCharacter", "Plot", moveParameters, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
+        }
     </div>
 }

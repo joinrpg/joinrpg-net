@@ -208,13 +208,13 @@ namespace JoinRpg.Services.Impl
       switch (direction)
       {
         case -1:
-        voc.MoveUp(thisCharacterGroup);
-        break;
+          voc.MoveUp(thisCharacterGroup);
+          break;
         case 1:
-        voc.MoveDown(thisCharacterGroup);
-        break;
+          voc.MoveDown(thisCharacterGroup);
+          break;
         default:
-        throw new ArgumentException(nameof(direction));
+          throw new ArgumentException(nameof(direction));
       }
 
       parentCharacterGroup.ChildCharactersOrdering = voc.GetStoredOrder();

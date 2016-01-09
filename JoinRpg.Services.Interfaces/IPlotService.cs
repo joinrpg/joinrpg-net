@@ -12,5 +12,6 @@ namespace JoinRpg.Services.Interfaces
     Task DeleteFolder(int projectId, int plotFolderId, int currentUserId);
     Task DeleteElement(int projectId, int plotFolderId, int plotelementid, int currentUserId);
     Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars, bool isCompleted, int currentUserId);
+    Task MoveElement(int currentUserId, int projectId, int plotElementId, int parentCharacterId, int direction);
   }
 }

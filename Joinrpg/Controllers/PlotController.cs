@@ -230,5 +230,37 @@ namespace JoinRpg.Web.Controllers
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
       return AsMaster(project1) ?? action(project1);
     }
+
+    public Task<ActionResult> MoveUpElementForCharacter(int projectid, int plotelementid, int characterid)
+    {
+      return MoveElementImpl(projectid, plotelementid, characterid, -1);
+    }
+
+    private async Task<ActionResult> MoveElementImpl(int projectId, int plotElementId, int parentCharacterId, int direction)
+    {
+      var field = await ProjectRepository.GetCharacterAsync(projectId, parentCharacterId);
+      var error = AsMaster(field, acl => acl.CanEditRoles);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await _plotService.MoveElement(CurrentUserId, projectId, plotElementId, parentCharacterId, direction);
+
+
+        return RedirectToAction("Details", "Character", new {projectId, characterId = parentCharacterId});
+      }
+      catch
+      {
+        return RedirectToAction("Details", "Character", new { projectId, characterId = parentCharacterId });
+      }
+    }
+
+    public Task<ActionResult> MoveDownElementForCharacter(int projectid, int plotelementid, int characterid)
+    {
+      return MoveElementImpl(projectid, plotelementid, characterid, +1);
+    }
   }
 }

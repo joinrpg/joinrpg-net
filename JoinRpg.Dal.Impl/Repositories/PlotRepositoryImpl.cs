@@ -27,7 +27,11 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<IList<PlotElement>> GetPlotsForCharacter(Character character)
     {
-      var ids = character.Groups.SelectMany(@group => @group.FlatTree(g => g.ParentGroups)).Select(g => g.CharacterGroupId).Distinct();
+      var ids =
+        character.Groups.SelectMany(@group => @group.FlatTree(g => g.ParentGroups))
+          .Select(g => g.CharacterGroupId)
+          .Distinct()
+          .ToList(); //ToList required here so all lazy loads are finished before we are starting making condition below.
       return
         await Ctx.Set<PlotElement>()
           .Where(

@@ -16,6 +16,7 @@ namespace JoinRpg.Services.Impl
   public class PlotServiceImpl : DbServiceImplBase, IPlotService
   {
 
+
     public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
     {
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
@@ -102,6 +103,31 @@ namespace JoinRpg.Services.Impl
       plotElement.TargetGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, targetGroups));
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task MoveElement(int currentUserId, int projectId, int plotElementId, int parentCharacterId, int direction)
+    {
+      var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
+      character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+
+      var plots = await PlotRepository.GetPlotsForCharacter(character);
+
+      var voc = character.GetCharacterPlotContainer(plots);
+      var element = plots.Single(p => p.PlotElementId == plotElementId);
+      switch (direction)
+      {
+        case -1:
+          voc.MoveUp(element);
+          break;
+        case 1:
+          voc.MoveDown(element);
+          break;
+        default:
+          throw new ArgumentException(nameof(direction));
+      }
+
+      character.PlotElementOrderData = voc.GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
 

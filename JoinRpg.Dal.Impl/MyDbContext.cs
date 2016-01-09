@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Threading.Tasks;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
@@ -32,6 +31,7 @@ namespace JoinRpg.Dal.Impl
     public IProjectRepository GetProjectRepository() => new ProjectRepository(this);
 
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
+    public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
 
     public static MyDbContext Create()
     {
