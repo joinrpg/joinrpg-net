@@ -84,6 +84,7 @@ namespace JoinRpg.Web.Models
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
           IsPublic = characterGroup.IsPublic,
+          IsSpecial = characterGroup.IsSpecial,
           IsActive = characterGroup.IsActive,
           FirstInGroup = siblings.First() == characterGroup,
           LastInGroup = siblings.Last() == characterGroup,

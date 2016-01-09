@@ -4,12 +4,14 @@
             <span title="действия" class="glyphicon glyphicon-option-vertical"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-
-            <li>
-                <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
-                    <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
-                </a>
-            </li>
+            @if (!Model.IsSpecial)
+            {
+                <li>
+                    <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                        <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
+                    </a>
+                </li>
+            }
             <li>
                 @Html.ActionLink("подписка", "EditSubscribe", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null)
             </li>

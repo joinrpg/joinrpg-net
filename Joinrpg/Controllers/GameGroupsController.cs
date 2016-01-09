@@ -177,6 +177,11 @@ namespace JoinRpg.Web.Controllers
         return error;
       }
 
+      if (group.IsSpecial)
+      {
+        return Content("Can't edit special group");
+      }
+
       return View(new EditCharacterGroupViewModel
       {
         Data = CharacterGroupListViewModel.FromGroupAsMaster(group.Project.RootGroup),
@@ -224,11 +229,16 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, ValidateAntiForgeryToken, Authorize]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
-      CharacterGroup group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
+      var group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
       var error = AsMaster(group);
       if (error != null)
       {
         return error;
+      }
+
+      if (group.IsSpecial)
+      {
+        return Content("Can't edit special group");
       }
 
       try

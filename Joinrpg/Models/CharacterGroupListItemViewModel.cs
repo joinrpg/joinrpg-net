@@ -77,6 +77,8 @@ namespace JoinRpg.Web.Models
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
 
+    public bool IsSpecial { get; set; }
+
     public int ActiveClaimsCount { get; set; }
 
     public bool FirstInGroup { get; set; }
