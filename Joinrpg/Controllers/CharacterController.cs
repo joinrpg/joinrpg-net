@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int characterId)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      var field = await ProjectRepository.GetCharacterWithDetails(projectId, characterId);
       return AsMaster(field, s => s.CanEditRoles) ?? View(new EditCharacterViewModel()
       {
         ProjectId = field.ProjectId,
