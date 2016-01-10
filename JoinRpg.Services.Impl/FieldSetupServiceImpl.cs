@@ -27,6 +27,7 @@ namespace JoinRpg.Services.Impl
         CanPlayerView = canPlayerView,
         IsPublic = isPublic,
         ProjectId = projectId,
+        Project = project, //We requireit for CreateOrUpdateSpecailGroup
         FieldType = fieldType,
         IsActive = true
       };
@@ -60,7 +61,11 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteField(int projectCharacterFieldId)
     {
       var field = await UnitOfWork.GetDbSet<ProjectCharacterField>().FindAsync(projectCharacterFieldId);
-      SmartDelete(field);
+      var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
+      if (SmartDelete(field))
+      {
+        SmartDelete(characterGroup);
+      }
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -105,12 +110,12 @@ namespace JoinRpg.Services.Impl
         ProjectId = fieldValue.ProjectId,
         IsRoot = false,
         IsSpecial = true,
-        IsPublic = fieldValue.ProjectCharacterField.IsPublic,
-        IsActive = true,
-        Description = fieldValue.Description,
         ResponsibleMasterUserId = null,
       };
 
+      fieldValue.CharacterGroup.IsPublic = fieldValue.ProjectCharacterField.IsPublic;
+      fieldValue.CharacterGroup.IsActive = fieldValue.IsActive;
+      fieldValue.CharacterGroup.Description = fieldValue.Description;
       fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
     }
 
@@ -129,11 +134,12 @@ namespace JoinRpg.Services.Impl
         ProjectId = field.ProjectId,
         IsRoot = false,
         IsSpecial = true,
-        IsPublic = field.IsPublic,
-        IsActive = true,
-        Description = field.FieldHint,
         ResponsibleMasterUserId = null,
       };
+
+      field.CharacterGroup.IsPublic = field.IsPublic;
+      field.CharacterGroup.IsActive = field.IsActive;
+      field.CharacterGroup.Description = field.FieldHint;
 
       field.CharacterGroup.CharacterGroupName = field.GetSpecialGroupName();
     }
@@ -160,7 +166,11 @@ namespace JoinRpg.Services.Impl
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
-      SmartDelete(field);
+      var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
+      if (SmartDelete(field))
+      {
+        SmartDelete(characterGroup);
+      }
       await UnitOfWork.SaveChangesAsync();
     }
 

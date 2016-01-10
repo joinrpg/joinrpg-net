@@ -70,15 +70,21 @@ namespace JoinRpg.Services.Impl
       return items;
     }
 
-    protected void SmartDelete<T>(T field) where T : class, IDeletableSubEntity
+    protected bool SmartDelete<T>(T field) where T : class, IDeletableSubEntity
     {
+      if (field == null)
+      {
+        return false;
+      }
       if (field.CanBePermanentlyDeleted)
       {
         UnitOfWork.GetDbSet<T>().Remove(field);
+        return true;
       }
       else
       {
         field.IsActive = false;
+        return false;
       }
     }
 
