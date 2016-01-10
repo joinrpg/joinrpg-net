@@ -33,7 +33,12 @@
         <td>
             @Html.DisplayFor(modelItem => item.Status)
         </td>
-        <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</td>
+        <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")
+        @if (!string.IsNullOrWhiteSpace(item.ElementTodos))
+        {
+            <span title="@item.ElementTodos">TODO</span>
+        }
+        </td>
         <td>
            @if (item.Status != PlotStatus.Deleted)
            {

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -33,6 +33,7 @@ namespace JoinRpg.Web.Models.Plot
   {
     public int PlotFolderId { get; set; }
     public int ElementsCount { get; set; }
+    public string ElementTodos { get; set; }
 
     public static PlotFolderListItemViewModel FromFolder(PlotFolder folder)
     {
@@ -43,6 +44,7 @@ namespace JoinRpg.Web.Models.Plot
         ProjectId = folder.ProjectId,
         Status = GetStatus(folder),
         ElementsCount = folder.Elements.Count(),
+        ElementTodos = string.Join("\n", folder.Elements.Select(e => e.TodoField).WhereNotNullOrWhiteSpace()),
         TodoField = folder.TodoField
       };
     }
