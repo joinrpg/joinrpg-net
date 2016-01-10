@@ -364,7 +364,8 @@ namespace JoinRpg.Services.Impl
 
   internal static class ClaimStaticExtensions
   {
-    public static Comment AddCommentImpl(this Claim claim, int currentUserId, Comment parentComment, string commentText, DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction)
+    public static Comment AddCommentImpl(this Claim claim, int currentUserId, Comment parentComment, string commentText,
+      DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
       if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
       {
@@ -387,6 +388,7 @@ namespace JoinRpg.Services.Impl
       claim.Comments.Add(comment);
 
       claim.LastUpdateDateTime = now;
+
 
       return comment;
     }

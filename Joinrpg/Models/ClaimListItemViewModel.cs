@@ -72,15 +72,18 @@ namespace JoinRpg.Web.Models
 
     protected void Assign(Claim claim, int currentUserId)
     {
+      var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
+
       ClaimId = claim.ClaimId;
       ClaimStatus = claim.ClaimStatus;
       Name = claim.Name;
       Player = claim.Player;
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;
-      UpdateDate = claim.LastUpdateDateTime;
+      UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
-      LastModifiedBy = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault()?.Author ?? claim.Player;
+      
+      LastModifiedBy = lastComment?.Author ?? claim.Player;
       UnreadCommentsCount =
         claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
                                         && !comment.IsReadByUser(currentUserId));
