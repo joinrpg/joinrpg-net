@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Helpers
       {
         return null;
       }
-      var idx = markdownString.Contents.TakeWhile(c => (words -= (char.IsWhiteSpace(c) ? 1 : 0)) > 0).Count();
+      var idx = markdownString.Contents.TakeWhile(c => (words -= (char.IsWhiteSpace(c)? 1 : 0)) > 0 && c != '\n').Count();
       var mdContents = markdownString.Contents.Substring(0, idx);
       return new HtmlString(Convert(mdContents));
     }
