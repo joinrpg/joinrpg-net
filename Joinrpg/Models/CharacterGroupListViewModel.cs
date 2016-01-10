@@ -122,11 +122,11 @@ namespace JoinRpg.Web.Models
 
         var totalChildsBeforeFlat = vm.FlatTree(model => model.ChildGroups).ToList();
         var flatChilds = totalChildsBeforeFlat.Distinct().ToList();
-        var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
+        var flatCharacters = flatChilds.SelectMany(c => c.Characters.Where(ch => ch.IsActive)).Distinct().ToList();
 
         vm.TotalSlots = flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
                         flatCharacters.Count(c => c.IsAvailable);
-
+        
         vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
         vm.TotalNpcCharacters = flatCharacters.Count(c => !c.IsAcceptingClaims);
         vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.Player != null);
@@ -160,7 +160,7 @@ namespace JoinRpg.Web.Models
           ParentCharacterGroupId = group.CharacterGroupId,
           RootGroupId = Root.CharacterGroupId,
           IsHot = arg.IsHot && arg.IsAvailable,
-          IsAcceptingClaims =  arg.IsAcceptingClaims && arg.Project.IsAcceptingClaims
+          IsAcceptingClaims =  arg.IsAcceptingClaims
         };
         if (vm.IsFirstCopy)
         {
