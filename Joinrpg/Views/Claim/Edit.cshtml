@@ -105,14 +105,14 @@
         <div class="btn-group">
             @if (Model.HasApproveRejectClaim)
             {
-                if (Model.Status == Claim.Status.AddedByUser)
+                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Discussed)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
                         aria-expanded="false">
                     Принять заявку
                 </button>
                 }
-                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
+                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved || Model.Status == Claim.Status.Discussed || Model.Status == Claim.Status.OnHold)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
                         aria-expanded="false">
@@ -123,7 +123,7 @@
                     Отклонить заявку
                 </button>
                 }
-                if (Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser)
+                if (Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser || Model.Status == Claim.Status.OnHold)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
                         aria-expanded="false">
