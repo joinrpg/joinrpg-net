@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      var field = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
       return WithEntity(field) ?? await ShowCharacter(field);
     }
 

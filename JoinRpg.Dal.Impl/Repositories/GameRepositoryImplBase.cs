@@ -6,7 +6,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 {
   public class GameRepositoryImplBase : RepositoryImplBase
   {
-    public GameRepositoryImplBase(MyDbContext ctx) : base(ctx)
+    protected GameRepositoryImplBase(MyDbContext ctx) : base(ctx)
     {
     }
 
@@ -28,6 +28,14 @@ namespace JoinRpg.Dal.Impl.Repositories
       return Ctx.ProjectsSet
         .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
         .Include(p => p.Characters.Select(cg => cg.Groups))
+        .Where(p => p.ProjectId == projectId)
+        .LoadAsync();
+    }
+
+    protected Task LoadProjectGroups(int projectId)
+    {
+      return Ctx.ProjectsSet
+        .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
         .Where(p => p.ProjectId == projectId)
         .LoadAsync();
     }

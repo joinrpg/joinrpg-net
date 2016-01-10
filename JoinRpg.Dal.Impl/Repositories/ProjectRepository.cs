@@ -83,6 +83,17 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
+    public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
+    {
+      await LoadProjectGroups(projectId);
+
+      return
+        await Ctx.Set<Character>()
+          .Include(c => c.Groups)
+          .Include(c => c.Project.ProjectFields.Select(pf => pf.DropdownValues))
+          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
+    }
+
     public Task<Claim> GetClaim(int projectId, int claimId)
     {
       return
