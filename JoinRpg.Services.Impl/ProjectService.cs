@@ -351,7 +351,7 @@ namespace JoinRpg.Services.Impl
 
       if (!hasMasterAccess && !hasPlayerAccess)
       {
-        throw new DbEntityValidationException();
+        throw new NoAccessToProjectException(character, currentUserId);
       }
 
       foreach (var keyValuePair in newFieldValue)
@@ -359,13 +359,13 @@ namespace JoinRpg.Services.Impl
         CharacterFieldValue field;
         if (!fields.TryGetValue(keyValuePair.Key, out field))
         {
-          throw new DbEntityValidationException();
+          throw new JoinRpgEntityNotFoundException(keyValuePair.Key, nameof(ProjectCharacterField));
         }
         var newValue = keyValuePair.Value;
 
         if (!field.Field.CanPlayerEdit && !hasMasterAccess)
         {
-          throw new DbEntityValidationException();
+          throw new NoAccessToProjectException(character, currentUserId);
         }
 
         field.Value = newValue;

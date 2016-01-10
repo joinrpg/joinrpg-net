@@ -88,7 +88,8 @@ namespace JoinRpg.Services.Impl
 
       if (characterGroups.Count != groupIds.Distinct().Count())
       {
-        throw new DbEntityValidationException();
+        var missing = string.Join(", ", groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+        throw new Exception($"Groups {missing} doesn't belong to project");
       }
       return characterGroups;
     }
