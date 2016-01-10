@@ -91,6 +91,16 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadClaim(projectId, claimId, currentUserId);
       var now = DateTime.UtcNow;
 
+      if (claim.ClaimStatus == Claim.Status.AddedByMaster && currentUserId == claim.PlayerUserId)
+      {
+        claim.ClaimStatus = Claim.Status.Discussed;
+      }
+
+      if (claim.ClaimStatus == Claim.Status.AddedByUser && currentUserId != claim.PlayerUserId)
+      {
+        claim.ClaimStatus = Claim.Status.Discussed;
+      }
+
       var parentComment = claim.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
       Func<UserSubscription, bool> predicate = s => s.Comments;

@@ -43,10 +43,11 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
-    public bool IsActive => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser;
-    public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser;
+    public bool IsActive => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser && ClaimStatus != Status.OnHold;
+    public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser || ClaimStatus == Status.Discussed;
     public bool IsApproved => ClaimStatus == Status.Approved;
 
+    //TODO[Localize]
     public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
 
     public DateTime LastUpdateDateTime { get; set; }
@@ -62,7 +63,9 @@ namespace JoinRpg.DataModel
       [Display(Name = "Предложена")] AddedByMaster,
       [Display(Name = "Принята")] Approved,
       [Display(Name = "Отозвана")] DeclinedByUser,
-      [Display(Name = "Отклонена")] DeclinedByMaster
+      [Display(Name = "Отклонена")] DeclinedByMaster,
+      [Display(Name = "Обсуждается")] Discussed,
+      [Display(Name = "В листе ожидания")] OnHold,
     }
 
     public Status ClaimStatus { get; set; }
