@@ -9,6 +9,7 @@
 
 @using (Html.BeginForm())
 {
+  @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.AntiForgeryToken()
   @Html.HiddenFor(model => model.ProjectId)
   @Html.HiddenFor(model => model.ProjectCharacterFieldId)

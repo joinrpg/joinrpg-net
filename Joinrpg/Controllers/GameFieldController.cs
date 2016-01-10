@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -6,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using CharacterFieldType = JoinRpg.DataModel.CharacterFieldType;
 
@@ -72,8 +74,9 @@ namespace JoinRpg.Web.Controllers
 
         return ReturnToIndex(project);
       }
-      catch
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return View(viewModel);
       }
     }
@@ -112,8 +115,9 @@ namespace JoinRpg.Web.Controllers
 
         return ReturnToIndex(project);
       }
-      catch
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return View(viewModel);
       }
     }

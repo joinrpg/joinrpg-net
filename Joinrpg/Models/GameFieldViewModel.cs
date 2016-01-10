@@ -31,7 +31,14 @@ namespace JoinRpg.Web.Models
     {
       if (IsPublic && !CanPlayerView)
       {
-        yield return new ValidationResult("Нельзя скрыть публичное поле от игрока");
+        yield return new ValidationResult("Нельзя скрыть публичное поле от игрока.",
+          new[] {nameof(CanPlayerView), nameof(IsPublic)});
+      }
+      if (CanPlayerEdit && !CanPlayerView)
+      {
+        yield return
+          new ValidationResult("Нельзя скрыть поле от игрока и одновременно разрешить редактирование поля.",
+            new[] {nameof(CanPlayerView), nameof(CanPlayerEdit)});
       }
     }
   }
