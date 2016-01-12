@@ -2,6 +2,7 @@
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Web.Mvc;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Helpers
 {
@@ -21,6 +22,12 @@ namespace JoinRpg.Web.Helpers
           }
           return;
         }
+      }
+      var wrongStatus = exception as ClaimWrongStatusException;
+      if (wrongStatus != null)
+      {
+        dict.AddModelError("", exception.Message);
+        return;
       }
       dict.AddModelError("", exception.ToString());
     }

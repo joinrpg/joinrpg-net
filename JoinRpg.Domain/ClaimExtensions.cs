@@ -14,9 +14,9 @@ namespace JoinRpg.Domain
       return claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId);
     }
 
-    public static IEnumerable<Claim> OtherActiveClaimsForThisPlayer(this Claim claim)
+    public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
     {
-      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsActive && c.ProjectId == claim.ProjectId);
+      return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
     }
 
     /// <summary>

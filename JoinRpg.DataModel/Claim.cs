@@ -44,6 +44,8 @@ namespace JoinRpg.DataModel
     public int? ResponsibleMasterUserId { get; set; }
 
     public bool IsActive => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser && ClaimStatus != Status.OnHold;
+
+    public bool IsPending => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser;
     public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser || ClaimStatus == Status.Discussed;
     public bool IsApproved => ClaimStatus == Status.Approved;
 

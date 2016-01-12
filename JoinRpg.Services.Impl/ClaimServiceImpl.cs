@@ -96,7 +96,7 @@ namespace JoinRpg.Services.Impl
         claim.ClaimStatus = Claim.Status.Discussed;
       }
 
-      if (claim.ClaimStatus == Claim.Status.AddedByUser && currentUserId != claim.PlayerUserId)
+      if (claim.ClaimStatus == Claim.Status.AddedByUser && currentUserId != claim.PlayerUserId && isVisibleToPlayer)
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }
@@ -152,16 +152,16 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       var now = DateTime.UtcNow;
 
-      claim.EnsureStatus(Claim.Status.AddedByUser);
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.Discussed);
       claim.MasterAcceptedDate = now;
       claim.ClaimStatus = Claim.Status.Approved;
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, now, true, CommentExtraAction.ApproveByMaster);
 
-      foreach (var otherClaim in claim.OtherActiveClaimsForThisPlayer())
+      foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
       {
-        otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster);
+        otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold);
         otherClaim.MasterDeclinedDate = now;
         otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
         await
@@ -191,7 +191,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved);
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold);
 
       DateTime now = DateTime.UtcNow;
 
@@ -211,7 +211,7 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       var now = DateTime.UtcNow;
 
-      claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster);
+      claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold);
 
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
 
@@ -293,7 +293,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadMyClaim(projectId, claimId, currentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved);
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved, Claim.Status.OnHold, Claim.Status.Discussed);
 
       DateTime now = DateTime.UtcNow;
       claim.PlayerDeclinedDate = now;

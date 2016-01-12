@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
@@ -189,6 +190,11 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
       var claim = await ProjectRepository.GetClaimWithDetails(projectId, claimId);
+      return await ShowClaim(claim);
+    }
+
+    private async Task<ActionResult> ShowClaim(Claim claim)
+    {
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -200,7 +206,9 @@ namespace JoinRpg.Web.Controllers
       var claimViewModel = new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
-        Comments = claim.Comments.Where(comment => comment.ParentCommentId == null).Select(comment => new CommentViewModel(comment, CurrentUserId)),
+        Comments =
+          claim.Comments.Where(comment => comment.ParentCommentId == null)
+            .Select(comment => new CommentViewModel(comment, CurrentUserId)),
         HasMasterAccess = hasMasterAccess,
         HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
         IsMyClaim = isMyClaim,
@@ -213,7 +221,7 @@ namespace JoinRpg.Web.Controllers
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
-        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherActiveClaimsForThisPlayer().Count(),
+        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count(),
         Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =
           MasterListItemViewModel.FromProject(claim.Project)
@@ -221,7 +229,7 @@ namespace JoinRpg.Web.Controllers
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
         Fields = new CharacterFieldsViewModel()
         {
-          CharacterFields = claim.Character?.GetPresentFields() ?? new CharacterFieldValue[] { },
+          CharacterFields = claim.Character?.GetPresentFields() ?? new CharacterFieldValue[] {},
           HasMasterAccess = hasMasterAccess,
           EditAllowed = true,
           HasPlayerAccessToCharacter = hasPlayerAccess
@@ -239,7 +247,8 @@ namespace JoinRpg.Web.Controllers
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))
       {
-            _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId, claim.Comments.Max(c => c.CommentId));
+        _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
+          claim.Comments.Max(c => c.CommentId));
       }
 
 
@@ -255,10 +264,9 @@ namespace JoinRpg.Web.Controllers
       }
 
 
-      if (claim.Character !=null)
+      if (claim.Character != null)
       {
         claimViewModel.ParentGroups = CharacterParentGroupsViewModel.FromCharacter(claim.Character, hasMasterAccess);
-
       }
 
       if (claim.IsApproved)
@@ -271,7 +279,7 @@ namespace JoinRpg.Web.Controllers
       {
         claimViewModel.Plot = Enumerable.Empty<PlotElementViewModel>();
       }
-      return View(claimViewModel);
+      return View("Edit", claimViewModel);
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
@@ -312,19 +320,15 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        if (viewModel.HideFromUser)
-        {
-          throw new DbEntityValidationException();
-        }
         await
           _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
-      catch
+      catch (Exception exception)
       {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
       }
     }
 
