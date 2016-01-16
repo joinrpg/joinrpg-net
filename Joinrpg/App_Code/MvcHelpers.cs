@@ -17,10 +17,8 @@ namespace JoinRpg.Web.App_Code
         return MvcHtmlString.Empty;
       }
 
-      return
-        // ReSharper disable once UseStringInterpolation we are inside Razor
-        MvcHtmlString.Create(string.Format(@"<span class=""input-group-addon""><span class=""glyphicon glyphicon-info-sign"" title=""{0}""></span></span>",
-          description));
+      // ReSharper disable once UseStringInterpolation we are inside Razor
+      return MvcHtmlString.Create(string.Format(@"<div class=""help-block"">{0}</div>", description));
     }
   }
 }
