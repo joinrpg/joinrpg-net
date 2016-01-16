@@ -14,7 +14,6 @@
 @if (Model.Fields.CharacterFields.Any())
 {
     ViewBag.CharacterId = Model.Navigation.CharacterId;
-    <h4>Поля персонажа</h4>
     <div class="form-horizontal">
         @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>

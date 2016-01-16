@@ -64,6 +64,7 @@ namespace JoinRpg.DataModel
     Text,
     Dropdown,
     Checkbox,
-    MultiSelect
+    MultiSelect,
+    Header
   }
 }

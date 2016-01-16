@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.CommonTypes;
@@ -47,8 +48,6 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectCharacterFieldId { get; set; }
 
-    public bool IsActive { get; set; }
-
     public bool HasValueList { get; }
 
     public GameFieldEditViewModel(ProjectCharacterField field)
@@ -63,13 +62,21 @@ namespace JoinRpg.Web.Models
       IsActive = field.IsActive;
       HasValueList = field.HasValueList();
       DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
+      FieldType = (CharacterFieldType) field.FieldType;
     }
 
     public GameFieldEditViewModel()
     { }
 
     [ReadOnly(true)]
-    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; set; }
+    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; }
+
+    [Display(Name = "Тип поля"), ReadOnly(true)]
+    public CharacterFieldType FieldType { get; }
+
+    [ReadOnly(true)]
+    public bool IsActive { get; }
+
 
     public bool First { get; set; }
     public bool Last { get; set; }
@@ -78,16 +85,18 @@ namespace JoinRpg.Web.Models
 
   public enum CharacterFieldType
   {
-    [Display(Name="Строка")]
+    [Display(Name="Строка"), UsedImplicitly]
     String,
-    [Display(Name = "Текст")]
+    [Display(Name = "Текст"), UsedImplicitly]
     Text,
-    [Display(Name = "Выбор")]
+    [Display(Name = "Выбор"), UsedImplicitly]
     Dropdown,
-    [Display(Name = "Чекбокс")]
+    [Display(Name = "Чекбокс"), UsedImplicitly]
     Checkbox,
-    [Display(Name = "Мультивыбор")]
-    MultiSelect
+    [Display(Name = "Мультивыбор"), UsedImplicitly]
+    MultiSelect,
+    [Display(Name = "Заголовок"), UsedImplicitly]
+    Header
   }
 
   public class GameFieldCreateViewModel : GameFieldViewModelBase

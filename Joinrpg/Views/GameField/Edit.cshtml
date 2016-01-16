@@ -17,10 +17,15 @@
     <div class="form-horizontal">
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3" })
+            @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-9">
-                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+            </div>
+
+            @Html.LabelFor(model => model.FieldType, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.DisplayFor(model => model.FieldType)
             </div>
         </div>
 
@@ -63,7 +68,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success" />
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success" /> @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId })
             </div>
         </div>
     </div>
@@ -75,10 +80,6 @@
     <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectCharacterFieldId})</p>
     Html.RenderPartial("ValuesList", Model.DropdownValues, null);
 }
-
-<div>
-    @Html.ActionLink("Назад к списку полей", "Index", new {Model.ProjectId})
-</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

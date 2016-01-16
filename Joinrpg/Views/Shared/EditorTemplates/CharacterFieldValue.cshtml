@@ -9,13 +9,21 @@
     var selectedValues = Model.GetDropdownValues();
     foreach (var val in Model.GetPossibleValues())
     {
-        <option value="@val.ProjectCharacterFieldDropdownValueId"
+        <option value="@val.ProjectCharacterFieldDropdownValueId"b
                 @(selectedValues.Contains(val) ? "selected='selected'" : "")
                 title='@val.Description.ToHtmlString()'>
             @val.Label
         </option>
     }
 }
+  @if (Model.Field.FieldType == CharacterFieldType.Header)
+  {
+      <h4>@Model.Field.FieldName</h4>
+      <div class="help-block">
+          @Html.DisplayFor(model => model.Field.FieldHint)
+      </div>
+      return;
+  }
 <div class="form-group">
     <label class="control-label col-md-2">@Model.Field.FieldName</label>
     <div class="col-md-10">
