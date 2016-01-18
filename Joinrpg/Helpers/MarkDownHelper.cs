@@ -15,6 +15,7 @@ namespace JoinRpg.Web.Helpers
     {
       var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
       sanitizer.Tag("br");
+      sanitizer.Tag("hr");
       return sanitizer;
     }
 
