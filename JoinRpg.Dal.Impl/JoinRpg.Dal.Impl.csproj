@@ -225,6 +225,14 @@
     <Compile Include="Migrations\201601091848544_FieldsOrdering.Designer.cs">
       <DependentUpon>201601091848544_FieldsOrdering.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201601162117427_ClaimFields.cs" />
+    <Compile Include="Migrations\201601162117427_ClaimFields.Designer.cs">
+      <DependentUpon>201601162117427_ClaimFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201601162218558_ClaimFields2.cs" />
+    <Compile Include="Migrations\201601162218558_ClaimFields2.Designer.cs">
+      <DependentUpon>201601162218558_ClaimFields2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -384,6 +392,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201601091848544_FieldsOrdering.resx">
       <DependentUpon>201601091848544_FieldsOrdering.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601162117427_ClaimFields.resx">
+      <DependentUpon>201601162117427_ClaimFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201601162218558_ClaimFields2.resx">
+      <DependentUpon>201601162218558_ClaimFields2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

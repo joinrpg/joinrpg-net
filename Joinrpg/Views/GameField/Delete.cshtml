@@ -1,4 +1,4 @@
-﻿@model JoinRpg.DataModel.ProjectCharacterField
+﻿@model JoinRpg.DataModel.ProjectField
 
 @{
     ViewBag.Title = "Удалить поле персонажа «" + Model.FieldName +"»";
@@ -19,7 +19,7 @@
     {
         @Html.AntiForgeryToken()
         @Html.HiddenFor(model => model.ProjectId)
-        @Html.HiddenFor(model => model.ProjectCharacterFieldId)
+        @Html.HiddenFor(model => model.ProjectFieldId)
 
         <div class="form-actions no-color">
             <input type="submit" value="Удалить" class="btn btn-default"/> |

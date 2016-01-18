@@ -54,7 +54,7 @@ namespace JoinRpg.Web.Models
 
     public bool HasAccess => true;
 
-    public CharacterFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
 

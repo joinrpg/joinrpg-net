@@ -5,19 +5,17 @@ namespace JoinRpg.Services.Interfaces
 {
   public interface IFieldSetupService
   {
-    Task UpdateCharacterField(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
+    Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic);
     Task DeleteField(int projectCharacterFieldId);
 
-    Task AddCharacterField(int projectId, int currentUserId, CharacterFieldType fieldType, string name, string fieldHint,
-      bool canPlayerEdit, bool canPlayerView, bool isPublic);
+    Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo);
 
-    Task CreateFieldValue(int projectId, int projectCharacterFieldId, int currentUserId, string label,
+    Task CreateFieldValueVariant(int projectId, int projectCharacterFieldId, int currentUserId, string label,
       string description);
 
-    Task UpdateFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId, string label,
-      string description);
+    Task UpdateFieldValueVariant(int projectId, int projectFieldDropdownValueId, int currentUserId, string label, string description, int projectFieldId);
 
-    Task DeleteFieldValue(int projectId, int projectCharacterFieldDropdownValueId, int currentUserId);
+    Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int currentUserId, int projectFieldId);
     Task MoveField(int currentUserId, int projectid, int projectcharacterfieldid, short direction);
   }
 }

@@ -1,16 +1,16 @@
 ﻿namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-  public class ProjectCharacterFieldDropdownValue : IDeletableSubEntity, IProjectEntity
+  public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity
   {
-    public int ProjectCharacterFieldDropdownValueId { get; set; }
-    public int ProjectCharacterFieldId { get; set; }
+    public int ProjectFieldDropdownValueId { get; set; }
+    public int ProjectFieldId { get; set; }
 
-    public virtual ProjectCharacterField ProjectCharacterField { get; set; }
+    public virtual ProjectField ProjectField { get; set; }
 
     public int ProjectId { get; set; }
 
-    public int Id => ProjectCharacterFieldDropdownValueId;
+    public int Id => ProjectFieldDropdownValueId;
 
     public virtual Project Project { get; set; }
 

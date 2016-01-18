@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models
   {
     public int CharacterId { get; set; }
 
-    public CharacterFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
 
@@ -55,13 +55,7 @@ namespace JoinRpg.Web.Models
       Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
       Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing,
         currentUserId);
-      Fields = new CharacterFieldsViewModel()
-      {
-        HasMasterAccess = true,
-        EditAllowed = true,
-        CharacterFields = field.GetPresentFields(),
-        HasPlayerAccessToCharacter = false
-      };
+      Fields = new CustomFieldsViewModel(currentUserId, field.Project).FillFromCharacter(field).OnlyCharacterFields();
       return this;
     }
   }
@@ -148,7 +142,8 @@ namespace JoinRpg.Web.Models
         CharacterId = claim.Character?.CharacterId,
         ProjectId = claim.ProjectId,
         Page = characterNavigationPage,
-        Name = claim.GetTarget().Name
+        Name = claim.GetTarget().Name,
+        CanEditRoles = claim.HasMasterAccess(currentUserId, acl => acl.CanEditRoles)
       };
       vm.LoadClaims(claim.Character);
       if (vm.RejectedClaims.Any(c => c.ClaimId ==  claim.ClaimId))

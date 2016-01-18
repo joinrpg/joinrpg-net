@@ -23,13 +23,13 @@
         <td>
             @if (item.IsActive)
             {
-                @Html.ActionLink("изменить", "EditValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
-                <text> | </text>
-                @Html.ActionLink("удалить", "DeleteValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+                @Html.ActionLink("изменить", "EditValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
+                <br/>
+                @Html.ActionLink("удалить", "DeleteValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
             }
             else
             {
-                @Html.ActionLink("восстановить", "EditValue", new {item.ProjectCharacterFieldDropdownValueId, item.ProjectId, item.ProjectCharacterFieldId})
+                @Html.ActionLink("восстановить", "EditValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
             }
         </td>
     </tr>

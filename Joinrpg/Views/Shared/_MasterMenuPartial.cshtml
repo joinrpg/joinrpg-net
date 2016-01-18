@@ -90,12 +90,12 @@
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Встроить ролевку на сайт", "Apis", "GameTools", new {Model.ProjectId}, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
-                            <li @GetDisabled(Model.AccessToProject.CanChangeFields)>@Html.ActionLink("Настройка полей персонажей", "Index", "GameField", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Мастера", "Index", "Acl", new {Model.ProjectId}, null)</li>
-                            @if (Model.HasAllrpg && Model.AccessToProject.IsOwner)
+                            @*if (Model.HasAllrpg && Model.AccessToProject.IsOwner)
                             {
                                 <li>@Html.ActionLink("Обновить из allrpg", "AllrpgUpdate", "GameTools", new {Model.ProjectId}, null)</li>
-                            }
+                            }*@
                         </ul>
                     </li>
                 </ul>

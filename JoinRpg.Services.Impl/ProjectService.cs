@@ -116,7 +116,7 @@ namespace JoinRpg.Services.Impl
       character.IsActive = true;
 
       character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
-      SaveCharacterFieldsImpl(currentUserId, character, characterFields);
+      FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, characterFields);
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -329,75 +329,7 @@ namespace JoinRpg.Services.Impl
       }
       SmartDelete(character);
       await UnitOfWork.SaveChangesAsync();
-    }
-
-    
-
-    public async Task SaveCharacterFields(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
-    {
-      //TODO: Prevent lazy load here - use repository 
-      var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
-
-      SaveCharacterFieldsImpl(currentUserId, character, newFieldValue);
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    private static void SaveCharacterFieldsImpl(int currentUserId, Character character, IDictionary<int, string> newFieldValue)
-    {
-      var fields = character.GetAllFields().ToDictionary(f => f.Field.ProjectCharacterFieldId);
-
-      var hasMasterAccess = character.HasMasterAccess(currentUserId);
-      var hasPlayerAccess = character.ApprovedClaim?.PlayerUserId == currentUserId;
-
-      if (!hasMasterAccess && !hasPlayerAccess)
-      {
-        throw new NoAccessToProjectException(character, currentUserId);
-      }
-
-      foreach (var keyValuePair in newFieldValue)
-      {
-        CharacterFieldValue field;
-        if (!fields.TryGetValue(keyValuePair.Key, out field))
-        {
-          throw new JoinRpgEntityNotFoundException(keyValuePair.Key, nameof(ProjectCharacterField));
-        }
-        var newValue = keyValuePair.Value;
-
-        if (!field.Field.CanPlayerEdit && !hasMasterAccess)
-        {
-          throw new NoAccessToProjectException(character, currentUserId);
-        }
-
-        field.Value = newValue;
-
-        if (!field.Field.WasEverUsed)
-        {
-          field.Field.WasEverUsed = true;
-        }
-
-        if (field.Field.HasValueList())
-        {
-          var valuesToAdd = field.GetDropdownValues().ToList();
-          var valuesToRemove = field.Field.DropdownValues.Except(valuesToAdd);
-
-          foreach (var value in valuesToRemove.Select(v => v.CharacterGroup).Where(c => character.Groups.Contains(c)))
-          {
-            character.Groups.Remove(value);
-          }
-
-          foreach (var value in valuesToAdd.Select(v => v.CharacterGroup).WhereNotNull().Where(c => !character.Groups.Contains(c)))
-          {
-            character.Groups.Add(value);
-          }
-          
-          foreach (var val in valuesToAdd.Where(v =>!v.WasEverUsed))
-          {
-            val.WasEverUsed = true;
-          }
-        }
-        character.JsonData = fields.Values.SerializeFields();
-      }
-    }
+    } 
 
     private static void ReparentChilds(CharacterGroup characterGroup, IEnumerable<IWorldObject> childs)
     {

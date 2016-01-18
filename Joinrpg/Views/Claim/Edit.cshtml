@@ -328,7 +328,7 @@
         </div>
     </div>
 
-    @if (Model.Fields.CharacterFields.Any())
+    @if (Model.Fields.Fields.Any())
     {
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -345,7 +345,7 @@
                     if (Model.Fields.AnyFieldEditable)
                     {
                     <div class="form-group">
-                        <div class="col-md-10">
+                        <div class="col-md-offset-2 col-md-10">
                             <input type="submit" value="Сохранить" class="btn btn-success" />
                         </div>
                     </div>

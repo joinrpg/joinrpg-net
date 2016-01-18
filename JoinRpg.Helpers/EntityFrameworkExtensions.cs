@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace JoinRpg.Helpers
 {
-  public static class LinqStaticExtensions
+  public static class EntityFrameworkExtensions
   {
     /// <summary>
     /// This is required by LINQ to correctly change links list. Simple <code>entity.TargetList = newValue</code> will not work (LINQ will add NEW links).
@@ -31,6 +31,14 @@ namespace JoinRpg.Helpers
     public static void CleanLinksList<T>(this ICollection<T> target)
     {
       target.AssignLinksList(new List<T>());
+    }
+
+    public static void RemoveFromLinkList<T>(this ICollection<T> target, IEnumerable<T> linksToRemove)
+    {
+      foreach (var value in linksToRemove.Intersect(target).ToList())
+      {
+        target.Remove(value);
+      }
     }
   }
 }

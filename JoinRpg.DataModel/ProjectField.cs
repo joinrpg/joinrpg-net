@@ -5,14 +5,15 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (used by LINQ)
-  public class ProjectCharacterField : IProjectEntity, IDeletableSubEntity, IValidatableObject
+  public class ProjectField : IProjectEntity, IDeletableSubEntity, IValidatableObject
   {
-    public int ProjectCharacterFieldId
-    { get; set; }
+    public int ProjectFieldId { get; set; }
 
     public string FieldName { get; set; }
 
-    public CharacterFieldType FieldType { get; set; }
+    public ProjectFieldType FieldType { get; set; }
+
+    public FieldBoundTo FieldBoundTo { get; set; }
 
     public bool IsPublic { get; set; }
 
@@ -20,12 +21,12 @@ namespace JoinRpg.DataModel
 
     public bool CanPlayerEdit { get; set; }
 
-    public MarkdownString FieldHint { get; set; }
+    public MarkdownString Description { get; set; }
 
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }
-    int IOrderableEntity.Id => ProjectCharacterFieldId;
+    int IOrderableEntity.Id => ProjectFieldId;
 
     public bool IsActive { get; set; }
 
@@ -33,7 +34,7 @@ namespace JoinRpg.DataModel
 
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
-    public virtual ICollection<ProjectCharacterFieldDropdownValue> DropdownValues { get; set; }
+    public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; }
 
     public string ValuesOrdering { get; set; }
 
@@ -52,13 +53,13 @@ namespace JoinRpg.DataModel
       if (!CanPlayerView && CanPlayerEdit)
       {
         yield return
-          new ValidationResult("It's incosistent that player can edt but can't see field.",
+          new ValidationResult("It's incosistent that player can edit but can't see field.",
             new List<string> {nameof(IsPublic), nameof(CanPlayerView)});
       }
     }
   }
 
-  public enum CharacterFieldType
+  public enum ProjectFieldType
   {
     String,
     Text,
@@ -66,5 +67,11 @@ namespace JoinRpg.DataModel
     Checkbox,
     MultiSelect,
     Header
+  }
+
+  public enum FieldBoundTo
+  {
+    Character,
+    Claim
   }
 }

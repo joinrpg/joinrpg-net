@@ -1,20 +1,22 @@
 ﻿@model JoinRpg.Web.Models.GameFieldListViewModel
 
 @{
-    ViewBag.Title = "Поля персонажа";
+    ViewBag.Title = "Поля персонажа / заявки";
 }
 
-<h2>@ViewBag.Title</h2>
-
-<p>
-    @Html.ActionLink("Добавить новое поле персонажа", "Create", new {Model.ProjectId})
-</p>
+<h2>
+    @ViewBag.Title
+@if (Model.CanEditFields)
+{
+<a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-info"><span class="glyphicon glyphicon-plus"></span>Добавить новое поле</a>
+}
+</h2>
 @{
     var firstItem = Model.Items.FirstOrDefault();
 }
 @if (firstItem != null)
 {
-    <table class="table">
+    <table class="table" style="margin-top: 1em">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => firstItem.Name)
@@ -29,12 +31,18 @@
                 @Html.DisplayNameFor(model => firstItem.CanPlayerEdit)
             </th>
             <th>
-                @Html.DisplayNameFor(model => firstItem.FieldHint)
+                @Html.DisplayNameFor(model => firstItem.FieldBoundTo)
             </th>
             <th>
-                
+                @Html.DisplayNameFor(model => firstItem.Description)
             </th>
-            <th></th>
+            <th>
+
+            </th>
+            @if (Model.CanEditFields)
+            {
+                <th></th>
+            }
         </tr>
 
         @foreach (var item in Model.Items)
@@ -53,7 +61,10 @@
                     @Html.DisplayFor(modelItem => item.CanPlayerEdit)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.FieldHint)
+                    @Html.DisplayFor(model => item.FieldBoundTo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
                     @if (!item.IsActive)
@@ -61,31 +72,34 @@
                         <span>удалено</span>
                     }
                 </td>
-                <td>
-                    @{
-                        if (item.IsActive)
-                        {
-                            @Html.ActionLink("Изменить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})<text> | </text>
-                            @Html.ActionLink("Удалить", "Delete", new {item.ProjectCharacterFieldId, item.ProjectId})
+                @if (Model.CanEditFields)
+                {
+                    <td>
+                        @{
+                            if (item.IsActive)
+                            {
+                                @Html.ActionLink("Изменить", "Edit", new { item.ProjectFieldId, item.ProjectId})<text> | </text>
+                                @Html.ActionLink("Удалить", "Delete", new { item.ProjectFieldId, item.ProjectId})
+                            }
+                            else
+                            {
+                                @Html.ActionLink("Восстановить", "Edit", new { item.ProjectFieldId, item.ProjectId})
+                            }
+                            var moveParameters = new
+                            {
+                                 item.ProjectFieldId, Model.ProjectId,
+                            };
+                            if (!item.First)
+                            {
+                                <a href="@Url.Action("MoveUp", moveParameters)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
+                            }
+                            if (!item.Last)
+                            {
+                                <a href="@Url.Action("MoveDown", moveParameters)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
+                            }
                         }
-                        else
-                        {
-                            @Html.ActionLink("Восстановить", "Edit", new {item.ProjectCharacterFieldId, item.ProjectId})
-                        }
-                        var moveParameters = new
-                        {
-                            item.ProjectCharacterFieldId, Model.ProjectId,
-                        };
-                        if (!item.First)
-                        {
-                            <a href="@Url.Action("MoveUp", moveParameters)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
-                        }
-                        if (!item.Last)
-                        {
-                            <a href="@Url.Action("MoveDown", moveParameters)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
-                        }
-                    }
-                </td>
+                    </td>
+                }
             </tr>
         }
 

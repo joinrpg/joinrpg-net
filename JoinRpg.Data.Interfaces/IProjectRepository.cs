@@ -23,8 +23,8 @@ namespace JoinRpg.Data.Interfaces
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds);
     Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds);
-    Task<ProjectCharacterField> GetProjectField(int projectId, int projectCharacterFieldId);
-    Task<ProjectCharacterFieldDropdownValue> GetFieldValue(int projectId, int projectCharacterFieldDropdownValueId);
+    Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
+    Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId);
     Task<Project> GetProjectWithFinances(int projectid);
   }
 }

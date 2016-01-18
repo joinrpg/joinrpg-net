@@ -67,7 +67,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-          CurrentUserId, viewModel.ClaimText.Contents);
+          CurrentUserId, viewModel.ClaimText.Contents, 
+          GetCustomFieldValuesFromPost());
 
         return RedirectToAction("My", "Claim");
       }
@@ -200,18 +201,16 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      var hasMasterAccess = claim.Project.HasMasterAccess(CurrentUserId);
-      var isMyClaim = claim.PlayerUserId == CurrentUserId;
-      var hasPlayerAccess = isMyClaim && claim.IsApproved;
+
       var claimViewModel = new ClaimViewModel()
       {
         ClaimId = claim.ClaimId,
         Comments =
           claim.Comments.Where(comment => comment.ParentCommentId == null)
             .Select(comment => new CommentViewModel(comment, CurrentUserId)),
-        HasMasterAccess = hasMasterAccess,
+        HasMasterAccess = claim.HasMasterAccess(CurrentUserId),
         HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
-        IsMyClaim = isMyClaim,
+        IsMyClaim = claim.PlayerUserId == CurrentUserId,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
         Status = claim.ClaimStatus,
@@ -227,13 +226,7 @@ namespace JoinRpg.Web.Controllers
           MasterListItemViewModel.FromProject(claim.Project)
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
-        Fields = new CharacterFieldsViewModel()
-        {
-          CharacterFields = claim.Character?.GetPresentFields() ?? new CharacterFieldValue[] {},
-          HasMasterAccess = hasMasterAccess,
-          EditAllowed = true,
-          HasPlayerAccessToCharacter = hasPlayerAccess
-        },
+        Fields = new CustomFieldsViewModel(CurrentUserId, claim.Project).FillFromClaim(claim),
         Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
         ClaimFee = new ClaimFeeViewModel()
         {
@@ -252,7 +245,7 @@ namespace JoinRpg.Web.Controllers
       }
 
 
-      if (isMyClaim || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
+      if (claim.PlayerUserId == CurrentUserId || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
       {
         //Finance admins can create any payment. User also can create any payment, but it will be moderated
         claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
@@ -266,14 +259,14 @@ namespace JoinRpg.Web.Controllers
 
       if (claim.Character != null)
       {
-        claimViewModel.ParentGroups = CharacterParentGroupsViewModel.FromCharacter(claim.Character, hasMasterAccess);
+        claimViewModel.ParentGroups = CharacterParentGroupsViewModel.FromCharacter(claim.Character, claim.HasMasterAccess(CurrentUserId));
       }
 
       if (claim.IsApproved)
       {
         var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
         claimViewModel.Plot =
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(hasMasterAccess);
+          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId));
       }
       else
       {
@@ -292,18 +285,15 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      if ((!claim.IsApproved && !claim.Project.HasMasterAccess(CurrentUserId)) || claim.CharacterId == null)
-      {
-        return await Edit(projectId, claimId);
-      }
       try
       {
         await
-          ProjectService.SaveCharacterFields(projectId, (int) claim.CharacterId, CurrentUserId, GetCharacterFieldValuesFromPost());
+          _claimService.SaveFieldsFromClaim(projectId, claimId, CurrentUserId, GetCustomFieldValuesFromPost());
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
-      catch
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return await Edit(projectId, claimId);
       }
     }

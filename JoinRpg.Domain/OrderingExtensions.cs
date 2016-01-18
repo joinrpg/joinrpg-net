@@ -26,22 +26,20 @@ namespace JoinRpg.Domain
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
       ICollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots, character.PlotElementOrderData);
 
-    public static IReadOnlyList<ProjectCharacterFieldDropdownValue> GetOrderedValues(this ProjectCharacterField field)
+    public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
       => field.GetFieldValuesContainer().OrderedItems;
 
-    public static VirtualOrderContainer<ProjectCharacterFieldDropdownValue> GetFieldValuesContainer(
-      this ProjectCharacterField field)
+    public static VirtualOrderContainer<ProjectFieldDropdownValue> GetFieldValuesContainer(
+      this ProjectField field)
       => VirtualOrderContainerFacade.Create(field.DropdownValues, field.ValuesOrdering);
 
-    public static IReadOnlyList<ProjectCharacterField> GetActiveOrderedFields(this Project field)
+    public static IReadOnlyList<ProjectField> GetActiveOrderedFields(this Project field)
   => field.GetFieldsContainer().GetOrderedItemsWithFilter(f => f.IsActive);
 
-    public static IReadOnlyList<ProjectCharacterField> GetOrderedFields(this Project field)
-      =>
-        field.GetFieldsContainer()
-          .OrderedItems;
+    public static IReadOnlyList<ProjectField> GetOrderedFields(this Project field)
+      => field.GetFieldsContainer().OrderedItems;
 
-    public static VirtualOrderContainer<ProjectCharacterField> GetFieldsContainer(
+    public static VirtualOrderContainer<ProjectField> GetFieldsContainer(
       this Project field)
       => VirtualOrderContainerFacade.Create(field.ProjectFields, field.ProjectFieldsOrdering);
   }

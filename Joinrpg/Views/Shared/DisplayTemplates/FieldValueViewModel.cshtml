@@ -1,12 +1,11 @@
 ﻿@using System.ComponentModel
-@using JoinRpg.DataModel
-@using JoinRpg.Domain
-@model CharacterFieldValue
-  @if (Model.Field.FieldType == CharacterFieldType.Header)
+@using JoinRpg.Web.Models
+@model FieldValueViewModel
+  @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
-      <h4>@Model.Field.FieldName</h4>
+      <h4>@Model.FieldName</h4>
       <div class="help-block">
-          @Html.DisplayFor(model => model.Field.FieldHint)
+          @Html.DisplayFor(model => model.Description)
       </div>
       return;
   }
@@ -16,23 +15,22 @@
     return;
 }
 <div class="form-group">
-    <label class="control-label col-md-2">@Model.Field.FieldName</label>
+    <label class="control-label col-md-2">@Model.FieldName</label>
     <div class="col-md-10">
         @*TODO: May be also set client id here*@
-        @switch (Model.Field.FieldType)
+        @switch (Model.FieldViewType)
         {
-            case CharacterFieldType.Dropdown:
-            case CharacterFieldType.MultiSelect:
-                foreach (var value in Model.GetDropdownValues())
+            case ProjectFieldViewType.Dropdown:
+            case ProjectFieldViewType.MultiSelect:
+                foreach (var value in Model.ValueList)
                 {
                     @value.Label
                     <div class="help-block">
                             @Html.DisplayFor(model => value.Description)
                     </div>
-                    <text> </text>
                 }
                 break;
-            case CharacterFieldType.Checkbox:
+            case ProjectFieldViewType.Checkbox:
                 if (Model.Value == "on")
                 {
                     <span class="glyphicon glyphicon-ok"></span>
@@ -42,8 +40,8 @@
                     <span class="glyphicon glyphicon-remove"></span>
                 }
                 break;
-            case CharacterFieldType.String:
-            case CharacterFieldType.Text:
+            case ProjectFieldViewType.String:
+            case ProjectFieldViewType.Text:
             @Html.DisplayFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
                 break;
             default:

@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectId { get; set; }
 
-    [Display(Name="Название поля")]
+    [Display(Name="Название поля"), Required]
     public string Name { get; set; }
 
     [Display(Name = "Публичное (видно всем)")]
@@ -26,7 +26,7 @@ namespace JoinRpg.Web.Models
     public bool CanPlayerEdit { get; set; }
 
     [Display(Name = "Описание")]
-    public MarkdownViewModel FieldHint { get; set; }
+    public MarkdownViewModel Description { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -46,23 +46,24 @@ namespace JoinRpg.Web.Models
 
   public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
   {
-    public int ProjectCharacterFieldId { get; set; }
+    public int ProjectFieldId { get; set; }
 
     public bool HasValueList { get; }
 
-    public GameFieldEditViewModel(ProjectCharacterField field)
+    public GameFieldEditViewModel(ProjectField field)
     {
       CanPlayerView = field.CanPlayerView;
       CanPlayerEdit = field.CanPlayerEdit;
-      FieldHint = new MarkdownViewModel(field.FieldHint);
-      ProjectCharacterFieldId = field.ProjectCharacterFieldId;
+      Description = new MarkdownViewModel(field.Description);
+      ProjectFieldId = field.ProjectFieldId;
       IsPublic = field.IsPublic;
       Name = field.FieldName;
       ProjectId = field.ProjectId;
       IsActive = field.IsActive;
       HasValueList = field.HasValueList();
       DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
-      FieldType = (CharacterFieldType) field.FieldType;
+      FieldViewType = (ProjectFieldViewType) field.FieldType;
+      FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
     }
 
     public GameFieldEditViewModel()
@@ -72,18 +73,20 @@ namespace JoinRpg.Web.Models
     public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; }
 
     [Display(Name = "Тип поля"), ReadOnly(true)]
-    public CharacterFieldType FieldType { get; }
+    public ProjectFieldViewType FieldViewType { get; }
+
+    [Display(Name = "Привязано к"), ReadOnly(true)]
+    public FieldBoundToViewModel FieldBoundTo { get; }
 
     [ReadOnly(true)]
     public bool IsActive { get; }
-
 
     public bool First { get; set; }
     public bool Last { get; set; }
   }
 
 
-  public enum CharacterFieldType
+  public enum ProjectFieldViewType
   {
     [Display(Name="Строка"), UsedImplicitly]
     String,
@@ -99,16 +102,29 @@ namespace JoinRpg.Web.Models
     Header
   }
 
+  public enum FieldBoundToViewModel
+  {
+    [Display(Name="К персонажу"), UsedImplicitly]
+    Character,
+    [Display(Name = "К заявке"), UsedImplicitly]
+    Claim,
+  }
+
   public class GameFieldCreateViewModel : GameFieldViewModelBase
   {
     [Display(Name="Тип поля")]
-    public CharacterFieldType FieldType { get; set; }
+    public ProjectFieldViewType FieldViewType { get; set; }
+
+    [Display(Name = "Привязано к")]
+    public FieldBoundToViewModel FieldBoundTo { get; set; }
   }
 
   public class GameFieldListViewModel
   {
     public int ProjectId { get; set; }
     public IEnumerable<GameFieldEditViewModel> Items { get; set; }
+
+    public bool CanEditFields { get; set; }
   }
 
   public abstract class GameFieldDropdownValueViewModelBase
@@ -120,23 +136,23 @@ namespace JoinRpg.Web.Models
     public MarkdownViewModel Description { get; set; }
 
     public int ProjectId { get; set; }
-    public int ProjectCharacterFieldId { get; set; }
+    public int ProjectFieldId { get; set; }
   }
 
   public class GameFieldDropdownValueListItemViewModel : GameFieldDropdownValueViewModelBase
   {
-    public bool IsActive { get; set; }
+    public bool IsActive { get; }
 
-    public int ProjectCharacterFieldDropdownValueId { get; set; }
+    public int ProjectFieldDropdownValueId { get;  }
 
-    public GameFieldDropdownValueListItemViewModel(ProjectCharacterFieldDropdownValue value)
+    public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
     {
       Label = value.Label;
       Description = new MarkdownViewModel(value.Description);
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
-      ProjectCharacterFieldId = value.ProjectCharacterFieldId;
-      ProjectCharacterFieldDropdownValueId = value.ProjectCharacterFieldDropdownValueId;
+      ProjectFieldId = value.ProjectFieldId;
+      ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
     }
   }
 
@@ -145,17 +161,17 @@ namespace JoinRpg.Web.Models
     public bool IsActive
     { get; set; }
 
-    public int ProjectCharacterFieldDropdownValueId
+    public int ProjectFieldDropdownValueId
     { get; set; }
 
-    public GameFieldDropdownValueEditViewModel(ProjectCharacterFieldDropdownValue value)
+    public GameFieldDropdownValueEditViewModel(ProjectFieldDropdownValue value)
     {
       Label = value.Label;
       Description = new MarkdownViewModel(value.Description);
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
-      ProjectCharacterFieldId = value.ProjectCharacterFieldId;
-      ProjectCharacterFieldDropdownValueId = value.ProjectCharacterFieldDropdownValueId;
+      ProjectFieldId = value.ProjectFieldId;
+      ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
     }
 
     public GameFieldDropdownValueEditViewModel() { }//For binding
@@ -164,11 +180,11 @@ namespace JoinRpg.Web.Models
 
   public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewModelBase
   {
-    public GameFieldDropdownValueCreateViewModel(ProjectCharacterField field)
+    public GameFieldDropdownValueCreateViewModel(ProjectField field)
     {
       ProjectId = field.ProjectId;
-      ProjectCharacterFieldId = field.ProjectCharacterFieldId;
-      Label = $"Вариант {(field.DropdownValues.Count + 1)}";
+      ProjectFieldId = field.ProjectFieldId;
+      Label = $"Вариант {field.DropdownValues.Count + 1}";
     }
 
     public GameFieldDropdownValueCreateViewModel() { }//For binding
@@ -176,9 +192,9 @@ namespace JoinRpg.Web.Models
 
   public static class GameFieldViewModelsExtensions
   {
-    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectCharacterField> projectCharacterFields)
+    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields)
     {
-      return projectCharacterFields.Select(pf => new GameFieldEditViewModel(pf)).ToList().MarkFirstAndLast();
+      return gameFields.Select(pf => new GameFieldEditViewModel(pf)).ToList().MarkFirstAndLast();
     }
   }
 }

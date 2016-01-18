@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Impl
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
     
-    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText)
+    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await GetClaimSource(projectId, characterGroupId, characterId);
 
@@ -52,6 +52,9 @@ namespace JoinRpg.Services.Impl
         LastUpdateDateTime = addClaimDate
       };
       UnitOfWork.GetDbSet<Claim>().Add(claim);
+
+      FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, null, claim, fields);
+
       await UnitOfWork.SaveChangesAsync();
 
       var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange, true, CommentExtraAction.NewClaim);
@@ -253,40 +256,39 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
-    public void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId)
+    public async Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId)
     {
-      Task.Run(() =>
+      var watermarks =
+        UnitOfWork.GetDbSet<ReadCommentWatermark>()
+          .Where(w => w.ClaimId == claimId && w.UserId == currentUserId)
+          .OrderByDescending(wm => wm.ReadCommentWatermarkId)
+          .ToList();
+
+      //Sometimes watermarks can duplicate. If so, let's remove them.
+      foreach (var wm in watermarks.Skip(1))
       {
-        var watermarks =
-          UnitOfWork.GetDbSet<ReadCommentWatermark>()
-            .Where(w => w.ClaimId == claimId && w.UserId == currentUserId).OrderByDescending(wm => wm.ReadCommentWatermarkId).ToList();
+        UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
+      }
 
-        //Sometimes watermarks can duplicate. If so, let's remove them.
-        foreach (var wm in watermarks.Skip(1))
+      var watermark = watermarks.FirstOrDefault();
+
+      if (watermark == null)
+      {
+        watermark = new ReadCommentWatermark()
         {
-          UnitOfWork.GetDbSet<ReadCommentWatermark>().Remove(wm);
-        }
+          ClaimId = claimId,
+          ProjectId = projectId,
+          UserId = currentUserId
+        };
+        UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
+      }
 
-        var watermark = watermarks.FirstOrDefault();
-
-        if (watermark == null)
-        {
-          watermark = new ReadCommentWatermark()
-          {
-            ClaimId = claimId,
-            ProjectId = projectId,
-            UserId = currentUserId
-          };
-          UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
-        }
-
-        if (watermark.CommentId > maxCommentId)
-        {
-          return;
-        }
-        watermark.CommentId = maxCommentId;
-        UnitOfWork.SaveChangesAsync();
-      });
+      if (watermark.CommentId > maxCommentId)
+      {
+        return;
+      }
+      watermark.CommentId = maxCommentId;
+      await UnitOfWork.SaveChangesAsync();
     }
 
 
@@ -357,6 +359,15 @@ namespace JoinRpg.Services.Impl
       return claim;
     }
 
+    public async Task SaveFieldsFromClaim(int projectId, int characterId, int currentUserId, IDictionary<int, string> newFieldValue)
+    {
+      //TODO: Prevent lazy load here - use repository 
+      var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
+
+      FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork, emailService)
     {
     }
@@ -405,6 +416,7 @@ namespace JoinRpg.Services.Impl
       }
       var character = new Character()
       {
+        //TODO LOcalize
         CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
         ProjectId = claim.ProjectId,
         IsAcceptingClaims = true,

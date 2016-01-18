@@ -51,6 +51,7 @@
     <Compile Include="FinanceOperation.cs" />
     <Compile Include="IClaimSource.cs" />
     <Compile Include="IDeletableSubEntity.cs" />
+    <Compile Include="IFieldContainter.cs" />
     <Compile Include="IProjectEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="Links.cs" />
@@ -60,8 +61,8 @@
     <Compile Include="PlotFolder.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />
-    <Compile Include="ProjectCharacterField.cs" />
-    <Compile Include="ProjectCharacterFieldDropdownValue.cs" />
+    <Compile Include="ProjectField.cs" />
+    <Compile Include="ProjectFieldDropdownValue.cs" />
     <Compile Include="ReadCommentWatermark.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

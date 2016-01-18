@@ -1,25 +1,13 @@
 ﻿@using JoinRpg.Domain
-@model JoinRpg.Web.Models.CharacterFieldsViewModel
-@functions {
-  private bool CanView(CharacterFieldValue field)
-  {
-      return field.Field.IsPublic || (Model.HasMasterAccess || (Model.HasPlayerAccessToCharacter && field.Field.CanPlayerView));
-  }
+@model JoinRpg.Web.Models.CustomFieldsViewModel
 
-  private bool CanEdit(CharacterFieldValue field)
-  {
-      return (Model.HasMasterAccess || (Model.HasPlayerAccessToCharacter && field.Field.CanPlayerEdit)) && Model.EditAllowed;
-  }
-
-}
-
-@foreach (var field in Model.CharacterFields.Where(CanView))
+@foreach (var field in Model.Fields)
 {
-    if (CanEdit(field))
+    if (field.CanEdit)
     {
         @Html.EditorFor(model => field)
     }
-    else
+    else if (field.CanView)
     {
         @Html.DisplayFor(model => field)
     }

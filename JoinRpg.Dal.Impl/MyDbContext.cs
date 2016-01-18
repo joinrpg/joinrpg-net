@@ -100,11 +100,11 @@ namespace JoinRpg.Dal.Impl
         .HasForeignKey(us => us.ClaimId)
         .WillCascadeOnDelete(false);
 
-      modelBuilder.Entity<ProjectCharacterFieldDropdownValue>()
+      modelBuilder.Entity<ProjectFieldDropdownValue>()
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 
-      modelBuilder.Entity<ProjectCharacterField>()
+      modelBuilder.Entity<ProjectField>()
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 

@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces
 {
   public interface IClaimService
   {
-    Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText);
+    Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields);
 
     Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
       string commentText, FinanceOperationAction financeAction);
@@ -20,7 +21,9 @@ namespace JoinRpg.Services.Interfaces
     Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
       int? characterId);
 
-    void UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
+    Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
+
+    Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
   }
 
   //TODO[Localize]

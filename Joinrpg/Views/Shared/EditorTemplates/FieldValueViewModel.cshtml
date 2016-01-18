@@ -1,39 +1,38 @@
 ﻿@using System.ComponentModel
-@using JoinRpg.DataModel
-@using JoinRpg.Domain
 @using JoinRpg.Web.Helpers
-@model CharacterFieldValue
+@using JoinRpg.Web.Models
+@model FieldValueViewModel
 
 @helper ShowOptions()
 {
-    var selectedValues = Model.GetDropdownValues();
-    foreach (var val in Model.GetPossibleValues())
+    var selectedValues = Model.ValueList;
+    foreach (var val in Model.PossibleValueList)
     {
-        <option value="@val.ProjectCharacterFieldDropdownValueId"b
+        <option value="@val.ProjectFieldDropdownValueId"
                 @(selectedValues.Contains(val) ? "selected='selected'" : "")
                 title='@val.Description.ToHtmlString()'>
             @val.Label
         </option>
     }
 }
-  @if (Model.Field.FieldType == CharacterFieldType.Header)
+  @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
-      <h4>@Model.Field.FieldName</h4>
+      <h4>@Model.FieldName</h4>
       <div class="help-block">
-          @Html.DisplayFor(model => model.Field.FieldHint)
+          @Html.DisplayFor(model => model.Description)
       </div>
       return;
   }
 <div class="form-group">
-    <label class="control-label col-md-2">@Model.Field.FieldName</label>
+    <label class="control-label col-md-2">@Model.FieldName</label>
     <div class="col-md-10">
 
-        @switch (Model.Field.FieldType)
+        @switch (Model.FieldViewType)
         {
-            case CharacterFieldType.Text:
+            case ProjectFieldViewType.Text:
                 <textarea class="form-control" cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" rows="4">@(Model == null ? "" : Model.Value)</textarea>
                 break;
-            case CharacterFieldType.Dropdown:
+            case ProjectFieldViewType.Dropdown:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control">
                     @{
                         var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
@@ -46,14 +45,14 @@
                     }
                 </select>
                 break;
-            case CharacterFieldType.String:
+            case ProjectFieldViewType.String:
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control">
                 break;
-            case CharacterFieldType.Checkbox:
+            case ProjectFieldViewType.Checkbox:
                 var ch = Model.Value == "on" ? "checked" : "";
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
                 break;
-            case CharacterFieldType.MultiSelect:
+            case ProjectFieldViewType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">
                     @ShowOptions()
 
@@ -63,9 +62,9 @@
             default:
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
-        @if (!string.IsNullOrWhiteSpace(Model.Field.FieldHint.Contents))
+        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
         {
-            <div class="help-block">@Html.DisplayFor(model => model.Field.FieldHint.Contents) </div>
+            <div class="help-block">@Html.DisplayFor(model => model.Description) </div>
         }
         @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>

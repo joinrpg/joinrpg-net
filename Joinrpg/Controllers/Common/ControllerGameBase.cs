@@ -58,8 +58,6 @@ namespace JoinRpg.Web.Controllers.Common
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
-          HasAllrpg = project.Details?.AllrpgId != null,
-          Masters = project.ProjectAcls.Select(a => a.User),
           AccessToProject = acl,
           BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
@@ -96,9 +94,9 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
-    protected IDictionary<int,string> GetCharacterFieldValuesFromPost()
+    protected IDictionary<int,string> GetCustomFieldValuesFromPost()
     {
-      return GetDynamicValuesFromPost(CharacterFieldValue.HtmlIdPrefix);
+      return GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
     }
 
     protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity

@@ -7,7 +7,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-  public class Claim : IProjectEntity, ILinkable
+  public class Claim : IProjectEntity, ILinkable, IFieldContainter
   {
     public int ClaimId { get; set; }
     public int? CharacterId { get; set; }
@@ -33,6 +33,11 @@ namespace JoinRpg.DataModel
     public DateTime? MasterDeclinedDate { get; set; }
 
     public DateTime CreateDate { get; set; }
+
+    /// <summary>
+    /// Contains values of fields for this claim
+    /// </summary>
+    public string JsonData { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; }
 

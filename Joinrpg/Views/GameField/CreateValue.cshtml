@@ -10,7 +10,7 @@
 {
     @Html.AntiForgeryToken()
    @Html.HiddenFor(model => model.ProjectId)
-@Html.HiddenFor(model => model.ProjectCharacterFieldId)
+@Html.HiddenFor(model => model.ProjectFieldId)
 
     <div class="form-horizontal">
         <h4>Добавление нового значения</h4>
@@ -34,12 +34,8 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Добавить" class="btn btn-default" />
+                <input type="submit" value="Добавить" class="btn btn-success" /> @Html.ActionLink("Назад к списку значений", "Edit", new { Model.ProjectFieldId, Model.ProjectId }, new {@class ="btn btn-default"})
             </div>
         </div>
     </div>
 }
-
-<div>
-    @Html.ActionLink("Назад к списку значений", "Edit", new {Model.ProjectCharacterFieldId, Model.ProjectId})
-</div>

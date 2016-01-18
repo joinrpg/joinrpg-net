@@ -140,30 +140,30 @@ namespace JoinRpg.Dal.Impl.Repositories
       return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
     }
 
-    public Task<ProjectCharacterField> GetProjectField(int projectId, int projectCharacterFieldId)
+    public Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId)
     {
-      return Ctx.Set<ProjectCharacterField>()
+      return Ctx.Set<ProjectField>()
         .Include(f => f.Project)
         .Include(f => f.DropdownValues)
-        .SingleOrDefaultAsync(f => f.ProjectCharacterFieldId == projectCharacterFieldId && f.ProjectId == projectId);
+        .SingleOrDefaultAsync(f => f.ProjectFieldId == projectCharacterFieldId && f.ProjectId == projectId);
     }
 
-    public async Task<ProjectCharacterFieldDropdownValue> GetFieldValue(int projectId, int projectCharacterFieldDropdownValueId)
+    public async Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId)
     {
-      return await Ctx.Set<ProjectCharacterFieldDropdownValue>()
+      return await Ctx.Set<ProjectFieldDropdownValue>()
         .Include(f => f.Project)
-        .Include(f => f.ProjectCharacterField)
+        .Include(f => f.ProjectField)
         .SingleOrDefaultAsync(
           f =>
             f.ProjectId == projectId &&
-            f.ProjectCharacterFieldDropdownValueId == projectCharacterFieldDropdownValueId);
+            f.ProjectFieldId == projectFieldId &&
+            f.ProjectFieldDropdownValueId == projectCharacterFieldDropdownValueId);
     }
 
     public Task<Project> GetProjectWithFinances(int projectid)
       => Ctx.ProjectsSet.Include(f => f.Claims)
         .Include(f => f.FinanceOperations)
-        //.Include(p => p.FinanceOperations.Comments)
-        //.Include users
+        .Include(p => p.FinanceOperations.Select(fo => fo.Comment.Author))
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
   }
 

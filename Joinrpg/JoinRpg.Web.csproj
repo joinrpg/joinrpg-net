@@ -284,6 +284,7 @@
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CommonTypes\MarkdownViewModel.cs" />
+    <Compile Include="Models\CustomFieldsViewModels.cs" />
     <Compile Include="Models\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\CharacterDetailsViewModel.cs" />
@@ -484,8 +485,8 @@
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
     <Content Include="Views\User\Details.cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\CharacterFieldValue.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\CharacterFieldValue.cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
     <Content Include="Views\Shared\ParentCharacterGroupPartial.cshtml" />
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />

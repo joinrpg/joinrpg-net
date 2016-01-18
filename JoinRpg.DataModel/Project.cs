@@ -22,7 +22,7 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
-    public virtual ICollection<ProjectCharacterField> ProjectFields { get; set; }
+    public virtual ICollection<ProjectField> ProjectFields { get; set; }
 
     public virtual ICollection<CharacterGroup>  CharacterGroups { get; set; }
 

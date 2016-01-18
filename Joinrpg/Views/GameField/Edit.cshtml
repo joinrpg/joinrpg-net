@@ -12,7 +12,7 @@
   @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.AntiForgeryToken()
   @Html.HiddenFor(model => model.ProjectId)
-  @Html.HiddenFor(model => model.ProjectCharacterFieldId)
+  @Html.HiddenFor(model => model.ProjectFieldId)
     
     <div class="form-horizontal">
 
@@ -22,10 +22,20 @@
                 @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
                 @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
             </div>
+        </div>
 
-            @Html.LabelFor(model => model.FieldType, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="form-group">
+
+            @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.DisplayFor(model => model.FieldType)
+                @Html.DisplayFor(model => model.FieldViewType)
+            </div>
+        </div>
+        <div class="form-group">
+
+            @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
+            <div class="col-md-9">
+                @Html.DisplayFor(model => model.FieldBoundTo)
             </div>
         </div>
 
@@ -59,16 +69,17 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.FieldHint, htmlAttributes: new { @class = "control-label col-md-3" })
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.EditorFor(model => model.FieldHint, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.FieldHint, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success" /> @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId })
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/>
+                 @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new {@class="btn btn-default"})
             </div>
         </div>
     </div>
@@ -77,7 +88,7 @@
 @if (Model.HasValueList)
 {
     <hr/>
-    <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectCharacterFieldId})</p>
+    <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectFieldId})</p>
     Html.RenderPartial("ValuesList", Model.DropdownValues, null);
 }
 

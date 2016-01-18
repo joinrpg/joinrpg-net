@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Test
     {
       EnumerationTestHelper.CheckEnums<ClaimProblemType, ProblemTypeViewModel>();
       EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
-      EnumerationTestHelper.CheckEnums<CharacterFieldType, DataModel.CharacterFieldType>();
+      EnumerationTestHelper.CheckEnums<ProjectFieldViewType, DataModel.ProjectFieldType>();
     }
   }
 }

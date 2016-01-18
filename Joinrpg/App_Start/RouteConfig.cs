@@ -52,8 +52,8 @@ namespace JoinRpg.Web
           action = "Create"
         });
 
-      routes.MapRoute(name: "ProjectFields", url: "{ProjectId}/fields/{ProjectCharacterFieldId}/{action}",
-        defaults: new {controller = "GameField", action = "Index", ProjectCharacterFieldId = UrlParameter.Optional});
+      routes.MapRoute(name: "ProjectFields", url: "{ProjectId}/fields/{ProjectFieldId}/{action}",
+        defaults: new {controller = "GameField", action = "Index", ProjectFieldId = UrlParameter.Optional});
 
       routes.MapRoute(name: "CharacterAddClaim", url: "{ProjectId}/character/{CharacterId}/apply",
         defaults: new {controller = "Claim", action = "AddForCharacter"});

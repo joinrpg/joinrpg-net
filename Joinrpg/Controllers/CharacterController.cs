@@ -34,28 +34,18 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> ShowCharacter(Character character)
     {
-      var hasMasterAccess = character.HasMasterAccess(CurrentUserIdOrDefault);
-      var approvedClaimUser = character.ApprovedClaim?.Player;
-      var hasPlayerAccess = User.Identity.IsAuthenticated && approvedClaimUser?.UserId == CurrentUserId;
-      var hasAnyAccess = hasMasterAccess || hasPlayerAccess;
       var viewModel = new CharacterDetailsViewModel
       {
         Description = new MarkdownViewModel(character.Description),
-        Player = approvedClaimUser,
-        HasAccess = hasAnyAccess,
-        ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, hasMasterAccess),
+        Player = character.ApprovedClaim?.Player,
+        HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
+        ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
         HidePlayer = character.HidePlayerForCharacter,
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
-        Fields = new CharacterFieldsViewModel()
-        {
-          CharacterFields = character.GetPresentFields(),
-          HasMasterAccess = hasMasterAccess,
-          EditAllowed = false,
-          HasPlayerAccessToCharacter = hasPlayerAccess
-        },
+        Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character.Project).FillFromCharacter(character).OnlyCharacterFields().DisableEdit(),
         Plot =
-          hasAnyAccess
-            ? character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).ToViewModels(hasMasterAccess)
+          character.HasAnyAccess(CurrentUserIdOrDefault)
+            ? character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault))
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);
@@ -100,7 +90,10 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterId,
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, GetCharacterFieldValuesFromPost(), viewModel.IsHot);
+          viewModel.Description.Contents, 
+          viewModel.HidePlayerForCharacter,
+          GetCustomFieldValuesFromPost(), 
+          viewModel.IsHot);
 
         return RedirectToAction("Details", new {viewModel.ProjectId, viewModel.CharacterId});
       }

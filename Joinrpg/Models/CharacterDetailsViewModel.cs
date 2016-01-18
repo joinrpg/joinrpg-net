@@ -5,23 +5,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models
 {
-  public class CharacterFieldsViewModel
-  {
-    public bool HasPlayerAccessToCharacter { get; set; }
-    public bool HasMasterAccess { get; set; }
-    public bool EditAllowed { get; set; }
-    public IEnumerable<CharacterFieldValue> CharacterFields { get; set; }
-
-    public bool AnyFieldEditable
-      => EditAllowed && (HasMasterAccess || CharacterFields.Any(field => field.Field.CanPlayerEdit));
-  }
-
+  
   public class CharacterParentGroupsViewModel
   {
     public bool HasMasterAccess { get; private set; }
@@ -61,7 +50,7 @@ namespace JoinRpg.Web.Models
     public bool HidePlayer { get; set; }
     public bool HasAccess { get;set; }
 
-    public CharacterFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; set; }
 
     public CharacterNavigationViewModel Navigation { get; set; }
   }

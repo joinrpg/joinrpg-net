@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
-using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
@@ -35,6 +34,9 @@ namespace JoinRpg.Web.Models
     [Display(Name ="Текст заявки"), Required]
     public MarkdownViewModel ClaimText { get; set; }
 
+    [ReadOnly(true)]
+    public CustomFieldsViewModel Fields { get; private set; }
+
     public static AddClaimViewModel Create(Character character, User user)
     {
       var vm = CreateImpl(character, user);
@@ -60,7 +62,8 @@ namespace JoinRpg.Web.Models
         TargetName = obj.Name,
         Description = obj.Description.ToHtmlString(),
         IsAvailable = obj.IsAvailable,
-        ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString()
+        ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString(),
+        Fields = new CustomFieldsViewModel(user.UserId, obj.Project).OnlyClaimFields().EnableClaimAccess()
       };
       return addClaimViewModel;
     }
