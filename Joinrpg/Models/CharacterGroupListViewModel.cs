@@ -78,7 +78,7 @@ namespace JoinRpg.Web.Models
           Name = characterGroup.CharacterGroupName,
           FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
-          IsAcceptingClaims = characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims,
+          IsAcceptingClaims = characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims && characterGroup.AvaiableDirectSlots != 0,
           Characters = characterGroup.GetOrderedCharacters().Select(character => GenerateCharacter(character, characterGroup)).ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
