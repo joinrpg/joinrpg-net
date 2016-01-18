@@ -10,6 +10,7 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers.Common
 {
+  [ValidateInput(false)]
   public class ControllerBase : Controller 
   {
     protected readonly ApplicationUserManager UserManager;
