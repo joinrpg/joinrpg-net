@@ -48,7 +48,11 @@ namespace JoinRpg.Web.Models
         PossibleValueList = ch.GetPossibleValues();
       }
       ProjectFieldId = ch.Field.ProjectFieldId;
+
+      FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
     }
+
+    public FieldBoundToViewModel FieldBound { get; }
 
 
     public const string HtmlIdPrefix = "field_";
