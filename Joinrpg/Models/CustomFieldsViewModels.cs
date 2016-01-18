@@ -90,7 +90,7 @@ namespace JoinRpg.Web.Models
       HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
       HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
       FieldsWithValues.FillIfEnabled(claim, claim.Character, CurrentUserId);
-      return this;
+      return claim.IsApproved ? this : this.OnlyClaimFields();
     }
 
     public CustomFieldsViewModel FillFromCharacter(Character character)

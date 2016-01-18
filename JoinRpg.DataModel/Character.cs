@@ -41,6 +41,7 @@ namespace JoinRpg.DataModel
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
+    public bool IsRoot => false; //Character is not "root group"
 
     /// <summary>
     /// Is available for claims (IsAcceptingClaims + has no approved claim)

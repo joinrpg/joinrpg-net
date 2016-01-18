@@ -8,5 +8,6 @@ namespace JoinRpg.DataModel
     bool  IsAvailable { get; }
     User ResponsibleMasterUser { get; }
     ICollection<UserSubscription>  Subscriptions { get; }
+    bool IsRoot { get; }
   }
 }

@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
     public string TargetName { get; set; }
 
     [Display(Name="Описание")]
-    public HtmlString Description { get; set; }
+    public MarkdownViewModel Description { get; set; }
 
     public bool HasApprovedClaim { get; set; }
 
@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [Display(Name ="Текст заявки"), Required]
+    [Display(Name ="Комментарий к заявке", Description="Все, что вы хотите сообщить мастерам дополнительно"), Required]
     public MarkdownViewModel ClaimText { get; set; }
 
     [ReadOnly(true)]
@@ -60,12 +60,15 @@ namespace JoinRpg.Web.Models
         HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsActive),
         HasApprovedClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsApproved),
         TargetName = obj.Name,
-        Description = obj.Description.ToHtmlString(),
+        Description = new MarkdownViewModel(obj.Description),
         IsAvailable = obj.IsAvailable,
         ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString(),
-        Fields = new CustomFieldsViewModel(user.UserId, obj.Project).OnlyClaimFields().EnableClaimAccess()
+        Fields = new CustomFieldsViewModel(user.UserId, obj.Project).OnlyClaimFields().EnableClaimAccess(),
+        IsRoot = obj.IsRoot
       };
       return addClaimViewModel;
     }
+
+    public bool IsRoot { get; private set; }
   }
 }
