@@ -88,17 +88,17 @@ namespace JoinRpg.Web.Models
 
   public enum ProjectFieldViewType
   {
-    [Display(Name="Строка"), UsedImplicitly]
+    [Display(Name="Строка", Order =1), UsedImplicitly]
     String,
-    [Display(Name = "Текст"), UsedImplicitly]
+    [Display(Name = "Текст", Order = 2), UsedImplicitly]
     Text,
-    [Display(Name = "Выбор"), UsedImplicitly]
+    [Display(Name = "Выбор", Order=3 ), UsedImplicitly]
     Dropdown,
-    [Display(Name = "Чекбокс"), UsedImplicitly]
+    [Display(Name = "Чекбокс", Order = 4), UsedImplicitly]
     Checkbox,
-    [Display(Name = "Мультивыбор"), UsedImplicitly]
+    [Display(Name = "Мультивыбор", Order = 5), UsedImplicitly]
     MultiSelect,
-    [Display(Name = "Заголовок"), UsedImplicitly]
+    [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
     Header
   }
 
