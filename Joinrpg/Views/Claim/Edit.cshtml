@@ -328,11 +328,11 @@
         </div>
     </div>
 
-    @if (Model.Fields.Fields.Any())
+    @if (Model.Fields.Fields.Any(f => f.CanView))
     {
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h4>Поля персонажа</h4>
+            <h4>Поля персонажа / заявки </h4>
         </div>
         <div class="panel-body">
             <div class="form-horizontal">
@@ -340,9 +340,9 @@
                 {
                 @Html.AntiForgeryToken()
 
-                @Html.Partial("_EditFieldsPartial", Model.Fields)
+                    @Html.Partial("_EditFieldsPartial", Model.Fields)
 
-                    if (Model.Fields.AnyFieldEditable)
+                    if (Model.Fields.Fields.Any(f => f.CanEdit))
                     {
                     <div class="form-group">
                         <div class="col-md-offset-2 col-md-10">

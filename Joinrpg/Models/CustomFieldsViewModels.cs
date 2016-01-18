@@ -68,9 +68,6 @@ namespace JoinRpg.Web.Models
       get { return FieldsWithValues.Select(ch => new FieldValueViewModel(this, ch)); }
     }
 
-    public bool AnyFieldEditable
-      => EditAllowed && (HasMasterAccess || FieldsWithValues.Any(field => field.Field.CanPlayerEdit));
-
     public CustomFieldsViewModel DisableEdit()
     {
       EditAllowed = false;
