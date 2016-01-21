@@ -39,9 +39,9 @@ namespace JoinRpg.DataModel
     /// </summary>
     public string JsonData { get; set; }
 
-    public virtual ICollection<Comment> Comments { get; set; }
+    public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
 
-    public virtual ICollection<UserSubscription> Subscriptions { get; set; }
+    public virtual ICollection<UserSubscription> Subscriptions { get; set; } = new HashSet<UserSubscription>();
 
     public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
 

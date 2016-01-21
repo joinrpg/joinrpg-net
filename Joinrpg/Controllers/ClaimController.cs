@@ -67,7 +67,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-          CurrentUserId, viewModel.ClaimText.Contents, 
+          CurrentUserId, viewModel.ClaimText?.Contents, 
           GetCustomFieldValuesFromPost());
 
         return RedirectToAction("My", "Claim");

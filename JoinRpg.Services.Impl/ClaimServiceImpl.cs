@@ -33,32 +33,35 @@ namespace JoinRpg.Services.Impl
         PlayerAcceptedDate = addClaimDate,
         CreateDate =  addClaimDate,
         ClaimStatus = Claim.Status.AddedByUser,
-        Comments = new List<Comment>()
-        {
-          new Comment()
-          {
-            AuthorUserId = currentUserId,
-            CommentText = new MarkdownString(claimText),
-            CreatedTime = addClaimDate,
-            IsCommentByPlayer = true,
-            IsVisibleToPlayer = true,
-            ProjectId = projectId,
-            LastEditTime = addClaimDate,
-          }
-        },
         ResponsibleMasterUserId = responsibleMaster?.UserId,
         ResponsibleMasterUser = responsibleMaster,
-        Subscriptions = new List<UserSubscription>(), //We need this as we are using it later
         LastUpdateDateTime = addClaimDate
       };
+
+      if (!string.IsNullOrWhiteSpace(claimText))
+      {
+        claim.Comments.Add(new Comment()
+        {
+          AuthorUserId = currentUserId,
+          CommentText = new MarkdownString(claimText),
+          CreatedTime = addClaimDate,
+          IsCommentByPlayer = true,
+          IsVisibleToPlayer = true,
+          ProjectId = projectId,
+          LastEditTime = addClaimDate,
+        });
+      }
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
       FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, null, claim, fields);
 
       await UnitOfWork.SaveChangesAsync();
 
-      var email = await CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText, s => s.ClaimStatusChange, true, CommentExtraAction.NewClaim);
-      await EmailService.Email(email);
+      await
+        EmailService.Email(
+          await
+            CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText ?? "", s => s.ClaimStatusChange, true,
+              CommentExtraAction.NewClaim));
     }
 
     private async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)

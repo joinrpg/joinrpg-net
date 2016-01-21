@@ -118,5 +118,7 @@ namespace JoinRpg.Web.Models
       HasPlayerClaimAccess = true;
       return this;
     }
+
+    public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
   }
 }

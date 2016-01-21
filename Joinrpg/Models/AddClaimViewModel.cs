@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [Display(Name ="Комментарий к заявке", Description="Все, что вы хотите сообщить мастерам дополнительно"), Required]
+    [Display(Name ="Комментарий к заявке", Description="Все, что вы хотите сообщить мастерам дополнительно")]
     public MarkdownViewModel ClaimText { get; set; }
 
     [ReadOnly(true)]

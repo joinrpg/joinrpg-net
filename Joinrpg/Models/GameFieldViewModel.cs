@@ -94,9 +94,9 @@ namespace JoinRpg.Web.Models
     Text,
     [Display(Name = "Выбор", Order=3 ), UsedImplicitly]
     Dropdown,
-    [Display(Name = "Чекбокс", Order = 4), UsedImplicitly]
+    [Display(Name = "Чекбокс", Order = 5), UsedImplicitly]
     Checkbox,
-    [Display(Name = "Мультивыбор", Order = 5), UsedImplicitly]
+    [Display(Name = "Мультивыбор", Order = 4), UsedImplicitly]
     MultiSelect,
     [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
     Header
@@ -104,9 +104,9 @@ namespace JoinRpg.Web.Models
 
   public enum FieldBoundToViewModel
   {
-    [Display(Name="К персонажу"), UsedImplicitly]
+    [Display(Name="персонажу"), UsedImplicitly]
     Character,
-    [Display(Name = "К заявке"), UsedImplicitly]
+    [Display(Name = "заявке"), UsedImplicitly]
     Claim,
   }
 

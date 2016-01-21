@@ -328,7 +328,7 @@
         </div>
     </div>
 
-    @if (Model.Fields.Fields.Any(f => f.CanView))
+    @if (Model.Fields.AnythingAccessible)
     {
     <div class="panel panel-default">
         <div class="panel-heading">
