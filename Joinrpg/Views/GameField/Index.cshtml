@@ -22,6 +22,12 @@
                 @Html.DisplayNameFor(model => firstItem.Name)
             </th>
             <th>
+                @Html.DisplayNameFor(model => firstItem.FieldViewType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.FieldBoundTo)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => firstItem.IsPublic)
             </th>
             <th>
@@ -29,9 +35,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => firstItem.CanPlayerEdit)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => firstItem.FieldBoundTo)
             </th>
             <th>
                 @Html.DisplayNameFor(model => firstItem.Description)
@@ -52,6 +55,12 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
+                    @Html.DisplayFor(modelItem => item.FieldViewType)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => item.FieldBoundTo)
+                </td>
+                <td>
                     @Html.DisplayFor(modelItem => item.IsPublic)
                 </td>
                 <td>
@@ -59,9 +68,6 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.CanPlayerEdit)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => item.FieldBoundTo)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
