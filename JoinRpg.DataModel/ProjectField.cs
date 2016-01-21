@@ -34,7 +34,8 @@ namespace JoinRpg.DataModel
 
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
-    public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; }
+    public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; } =
+      new HashSet<ProjectFieldDropdownValue>();
 
     public string ValuesOrdering { get; set; }
 

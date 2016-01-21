@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Data.Entity.Validation;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -142,6 +144,10 @@ namespace JoinRpg.Services.Impl
       };
 
       field.CharacterGroup.IsPublic = field.IsPublic;
+      foreach (var characterGroup in field.DropdownValues.Select(dv => dv.CharacterGroup).WhereNotNull())
+      {
+        characterGroup.IsPublic = field.IsPublic;
+      }
       field.CharacterGroup.IsActive = field.IsActive;
       field.CharacterGroup.Description = field.Description;
 
