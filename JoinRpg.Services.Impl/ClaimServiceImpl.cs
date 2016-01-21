@@ -197,7 +197,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold);
+      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold, Claim.Status.Approved);
 
       DateTime now = DateTime.UtcNow;
 
