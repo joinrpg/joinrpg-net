@@ -16,15 +16,19 @@
     <div class="form-horizontal">
         @if (!Model.IsAvailable)
         {
-            <div class="text-danger">Заявки не принимаются</div>
+            <div class="alert alert-danger">Заявки не принимаются</div>
         }
         else if (Model.HasApprovedClaim)
         {
-            <div class="text-danger">У вас уже есть утвержденная заявка на проект. Невозможно иметь более одной утвержденной заявки</div>
+            <div class="alert alert-danger">У вас уже есть утвержденная заявка на проект. Невозможно иметь более одной утвержденной заявки</div>
+        }
+        else if (Model.HasMyClaim)
+        {
+            <div class="alert alert-danger">У вас уже есть заявка на эту роль. Невозможно отправить еще одну. </div>
         }
         else if (Model.HasAnyClaim)
         {
-            <div>У вас уже есть заявка на проект. Утверждена может быть только одна заявка</div>
+            <div class="alert alert-warning">У вас уже есть заявка на проект. Утверждена может быть только одна заявка</div>
         }
 
         @if (Model.ClaimApplyRules != null)
@@ -80,7 +84,7 @@
             </div>
         </div>
 
-        @if (!Model.HasApprovedClaim && Model.IsAvailable)
+        @if (!Model.HasApprovedClaim && Model.IsAvailable && !Model.HasMyClaim)
         {
             <div class="form-group">
                 <div class="col-md-offset-2 col-md-10">

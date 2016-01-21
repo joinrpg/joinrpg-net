@@ -30,9 +30,9 @@ namespace JoinRpg.Web.Controllers
       if (error != null) return error;
       try
       {
-        if (viewModel.HideFromUser && !claim.Project.HasMasterAccess(CurrentUserId))
+        if (viewModel.HideFromUser)
         {
-          throw new DbEntityValidationException();
+          claim.Project.RequestMasterAccess(CurrentUserId);
         }
         await ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
           !viewModel.HideFromUser, viewModel.CommentText.Contents, viewModel.FinanceAction);

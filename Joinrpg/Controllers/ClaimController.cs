@@ -72,11 +72,26 @@ namespace JoinRpg.Web.Controllers
 
         return RedirectToAction("My", "Claim");
       }
-      catch
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
+        var source = await GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
         //TODO: Отображать ошибки верно
-        return View(viewModel);
+        return View(viewModel.Fill(source, GetCurrentUser()));
       }
+    }
+
+    private async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
+    {
+      if (characterGroupId != null)
+      {
+        return await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+      }
+      if (characterId != null)
+      {
+        return await ProjectRepository.GetCharacterAsync(projectId, (int) characterId);
+      }
+      throw new InvalidOperationException();
     }
 
     [HttpGet, Authorize]
