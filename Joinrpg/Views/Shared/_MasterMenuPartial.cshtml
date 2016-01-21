@@ -39,7 +39,7 @@
                             <li>
                                 @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
                             </li>
-                            <li role="separator" class="divider"></li>
+                            <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
                                 <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
@@ -67,7 +67,7 @@
                             <li>@Html.ActionLink("Проблемные", "Problems", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("На обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new {Model.ProjectId}, null)</li>
-                            <li role="separator" class="divider"></li>
+                            <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
                                 <li>@Html.ActionLink(cg.Name, "ListForGroup", "Claim", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
