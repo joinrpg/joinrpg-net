@@ -37,7 +37,9 @@ namespace JoinRpg.Services.Impl
             IsRoot = true,
             CharacterGroupName = "Все роли",
             IsActive = true,
-            ResponsibleMasterUserId = creator.UserId
+            ResponsibleMasterUserId = creator.UserId,
+            HaveDirectSlots = true,
+            AvaiableDirectSlots = -1
           }
         },
         ProjectAcls = new List<ProjectAcl>()
