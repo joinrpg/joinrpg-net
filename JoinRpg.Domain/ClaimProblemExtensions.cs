@@ -15,13 +15,13 @@ namespace JoinRpg.Domain
       return Filters.SelectMany(f => f.GetProblems(claim));
     }
 
-    static ClaimProblemExtensions ()
+    static ClaimProblemExtensions()
     {
       Filters = new IClaimProblemFilter[]
-{
+      {
         new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new BrokenClaimsAndCharacters(),
-        new FinanceProblemsFilter(),
-};
+        new FinanceProblemsFilter(), new ClaimWorkStopped(),
+      };
     }
   }
 
@@ -51,6 +51,7 @@ namespace JoinRpg.Domain
     ClaimDiscussionStopped,
     NoCharacterOnApprovedClaim,
     FeePaidPartially,
-    UnApprovedClaimPayment
+    UnApprovedClaimPayment,
+    ClaimWorkStopped
   }
 }

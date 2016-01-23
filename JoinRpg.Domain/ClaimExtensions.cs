@@ -94,5 +94,11 @@ namespace JoinRpg.Domain
       }
       return claim;
     }
+
+
+    public static IEnumerable<Comment> GetMasterAnswers(this Claim claim)
+    {
+      return claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
+    }
   }
 }
