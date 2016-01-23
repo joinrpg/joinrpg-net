@@ -57,6 +57,9 @@ namespace JoinRpg.Web.Models
     FeePaidPartially,
     [UsedImplicitly]
     [Display(Name = "Оплата в непринятой заявке")]
-    UnApprovedClaimPayment
+    UnApprovedClaimPayment,
+    [UsedImplicitly]
+    [Display(Name = "Работа по заявке остановлена")]
+    ClaimWorkStopped
   }
 }

@@ -21,7 +21,12 @@ namespace JoinRpg.Domain.ClaimProblemFilters
         yield break;
       }
 
-      if (!claim.GetMasterAnswers().InLastXDays(30).Any())
+      if (!claim.GetMasterAnswers().Any())
+      {
+        yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered);
+      }
+
+      else if (!claim.GetMasterAnswers().InLastXDays(30).Any())
       {
         yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, claim.GetMasterAnswers().Last().CreatedTime);
       }
