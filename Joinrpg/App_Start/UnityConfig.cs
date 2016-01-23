@@ -73,7 +73,7 @@ namespace JoinRpg.Web
       container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
 
       container.RegisterType<IHtmlService, HtmlServiceImpl>();
-      container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(HttpContext.Current)));
+      container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
 
       container.RegisterType<IEmailService, EmailServiceImpl>();
 

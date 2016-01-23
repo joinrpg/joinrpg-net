@@ -86,7 +86,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (!claim.HasAccess(CurrentUserId))
+      if (!claim.HasAnyAccess(CurrentUserId))
       {
         return NoAccesToProjectView(claim.Project);
       }

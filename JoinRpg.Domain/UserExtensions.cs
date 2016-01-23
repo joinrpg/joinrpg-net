@@ -18,7 +18,7 @@ namespace JoinRpg.Domain
       {
         return AccessReason.ItsMe;
       }
-      if (user.Claims.Any(claim => claim.HasAccess(currentUser.UserId) && claim.ClaimStatus != Claim.Status.AddedByMaster))
+      if (user.Claims.Any(claim => claim.HasAnyAccess(currentUser.UserId) && claim.ClaimStatus != Claim.Status.AddedByMaster))
       {
         return AccessReason.Master;
       }

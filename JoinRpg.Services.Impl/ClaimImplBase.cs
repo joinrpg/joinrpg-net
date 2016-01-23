@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
@@ -17,17 +16,6 @@ namespace JoinRpg.Services.Impl
     protected ClaimImplBase(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
     {
       EmailService = emailService;
-    }
-
-    protected async Task<Claim> LoadClaim(int projectId, int claimId, int currentUserId)
-    {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      if (claim == null || claim.ProjectId != projectId) throw new DbEntityValidationException();
-      if (!claim.HasAccess(currentUserId))
-      {
-        throw new NoAccessToProjectException(claim, currentUserId);
-      }
-      return claim;
     }
 
     protected async Task<TEmail> CreateClaimEmail<TEmail>(Claim claim, int currentUserId, string commentText, Func<UserSubscription, bool> subscribePredicate, bool isVisibleToPlayer, CommentExtraAction? commentExtraAction, IEnumerable<User> extraRecepients = null)

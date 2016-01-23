@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
 
@@ -10,27 +10,40 @@ namespace JoinRpg.Web.Helpers
 {
   public class RouteTarget
   {
-    public RouteTarget([AspMvcAction] string action, [AspMvcController] string controller, object @params)
+    public RouteTarget(
+      [AspMvcAction] [NotNull] string action, 
+      [AspMvcController] [NotNull] string controller,
+      [NotNull] object @params,
+      [NotNull] string anchor = "")
     {
+      if (action == null) throw new ArgumentNullException(nameof(action));
+      if (controller == null) throw new ArgumentNullException(nameof(controller));
+      if (@params == null) throw new ArgumentNullException(nameof(@params));
+      if (anchor == null) throw new ArgumentNullException(nameof(anchor));
       Action = action;
       Controller = controller;
       Params = @params;
+      Anchor = anchor;
     }
 
-    public string Action { get; }
-    public string Controller { get; }
-    public object Params { get; }
+    private string Action { get; }
+    private string Controller { get; }
+    private object Params { get; }
+    private string Anchor { get; }
 
-    public string GetUri(HttpContext context)
+    public string GetUri(UrlHelper urlHelper)
     {
-      return new UrlHelper(context.Request.RequestContext).Action(Action, Controller, Params, context.Request.Url.Scheme);
+      //TODO[https]
+      var uri = urlHelper.Action(Action, Controller, Params, "http");
+      return string.Join("#", uri, Anchor);
     }
   }
 
   public static class ObjectLinkHelper
   {
-    public static RouteTarget GetRouteTarget(this ILinkable link)
+    public static RouteTarget GetRouteTarget([NotNull] this ILinkable link)
     {
+      if (link == null) throw new ArgumentNullException(nameof(link));
       switch (link.LinkType)
       {
         case LinkType.ResultUser:
@@ -40,9 +53,13 @@ namespace JoinRpg.Web.Helpers
         case LinkType.ResultCharacter:
           return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
         case LinkType.Claim:
-          return new RouteTarget("Edit", "Claim", new {ClaimId = link.Identification, link.ProjectId});
+          return new RouteTarget("Edit", "Claim", new {link.ProjectId, ClaimId = link.Identification});
         case LinkType.Plot:
           return new RouteTarget("Edit", "Plot", new {PlotFolderId = link.Identification, link.ProjectId});
+          case LinkType.Comment:
+          return new RouteTarget("Edit", "Claim",
+            new {link.ProjectId, ClaimId = link.Identification.BeforeSeparator('.')},
+            anchor: $"comment{link.Identification.AfterSeparator('.')}");
         default:
           throw new ArgumentOutOfRangeException();
       }

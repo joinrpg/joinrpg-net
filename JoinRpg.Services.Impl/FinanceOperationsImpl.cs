@@ -19,7 +19,7 @@ namespace JoinRpg.Services.Impl
     public async Task FeeAcceptedOperation(int projectId, int claimId, int currentUserId, string contents, DateTime operationDate,
   int feeChange, int money, int paymentTypeId)
     {
-      var claim = await LoadClaim(projectId, claimId, currentUserId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
       var now = DateTime.UtcNow;
       var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 

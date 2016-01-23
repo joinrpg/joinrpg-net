@@ -60,6 +60,7 @@
     <Compile Include="Allrpg\PasswordReply.cs" />
     <Compile Include="Allrpg\ProfileReply.cs" />
     <Compile Include="Allrpg\ProjectReply.cs" />
+    <Compile Include="ClaEx.cs" />
     <Compile Include="ClaimImplBase.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />

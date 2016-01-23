@@ -2,6 +2,6 @@
 @using JoinRpg.Web.Helpers
 @helper GetUrl(RouteTarget target)
 {
-    @MvcIntrinsics.Url.Action(target.Action, target.Controller, target.Params);
+    @MvcIntrinsics.Url.Action(target.GetUri(MvcIntrinsics.Url));
 }
 

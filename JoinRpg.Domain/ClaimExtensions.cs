@@ -9,7 +9,7 @@ namespace JoinRpg.Domain
 {
   public static class ClaimExtensions
   {
-    public static bool HasAccess(this Claim claim, int? currentUserId)
+    public static bool HasAnyAccess(this Claim claim, int? currentUserId)
     {
       return claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId);
     }
@@ -73,6 +73,26 @@ namespace JoinRpg.Domain
         .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
         .Distinct() //One user can be subscribed by multiple reasons
         ;
+    }
+
+    public static Claim RequestAccess([NotNull] this Claim claim, int currentUserId)
+    {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      if (!claim.HasAnyAccess(currentUserId))
+      {
+        throw new NoAccessToProjectException(claim, currentUserId);
+      }
+      return claim;
+    }
+
+    public static Claim RequestPlayerAccess([NotNull] this Claim claim, int currentUserId)
+    {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      if (!claim.HasPlayerAccesToClaim(currentUserId))
+      {
+        throw new NoAccessToProjectException(claim, currentUserId);
+      }
+      return claim;
     }
   }
 }

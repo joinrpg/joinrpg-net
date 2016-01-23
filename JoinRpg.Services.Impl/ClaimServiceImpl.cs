@@ -94,7 +94,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-      var claim = await LoadClaim(projectId, claimId, currentUserId);
+      var claim = (await ProjectRepository.GetClaim(projectId, claimId)).RequestAccess(currentUserId);
       var now = DateTime.UtcNow;
 
       if (claim.ClaimStatus == Claim.Status.AddedByMaster && currentUserId == claim.PlayerUserId)
@@ -297,10 +297,12 @@ namespace JoinRpg.Services.Impl
 
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = await LoadMyClaim(projectId, claimId, currentUserId);
+      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      claim.RequestPlayerAccess(currentUserId);
       claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved, Claim.Status.OnHold, Claim.Status.Discussed);
 
       DateTime now = DateTime.UtcNow;
+
       claim.PlayerDeclinedDate = now;
       claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
@@ -349,16 +351,6 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
       claim.RequestMasterAccess(currentUserId, acl => acl.CanApproveClaims);
-      return claim;
-    }
-
-    private async Task<Claim> LoadMyClaim(int projectId, int claimId, int currentUserId)
-    {
-      var claim = await LoadClaim(projectId, claimId, currentUserId);
-      if (claim.PlayerUserId != currentUserId)
-      {
-        throw new DbEntityValidationException();
-      }
       return claim;
     }
 

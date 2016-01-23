@@ -9,7 +9,7 @@ if (!comment.IsVisibleToPlayer && !comment.HasMasterAccess)
     return;
 }
 var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
-    <div class="" style="clear: both">
+    <div class="" style="clear: both" id="comment@(comment.CommentId)">
         <table>
             <tr>
                 <td class="hidden-xs" style="vertical-align: text-top">
@@ -37,8 +37,9 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
                             @if (!comment.IsRead)
                             {
-                                <span class="label label-default" title="Новый комментарий">New</span>
+                                <span class="label label-default" title="Новый комментарий" id="unread">New</span>
                             }
+                            <a href="@Url.Action("Edit", "Claim", new {comment.ProjectId, comment.ClaimId})#comment@(comment.CommentId)">#</a>
                         </div>
                         @if (comment.Finance != null)
                         {

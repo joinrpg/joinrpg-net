@@ -128,7 +128,7 @@ namespace JoinRpg.Services.Email
 
 {model.Initiator.DisplayName}
 
-Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim)}
+Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get((ILinkable) model.Claim.Comments.LastOrDefault() ?? model.Claim)}
 ", model.Initiator.ToRecipient());
     }
 

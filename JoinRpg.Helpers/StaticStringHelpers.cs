@@ -12,19 +12,19 @@ namespace JoinRpg.Helpers
     [NotNull]
     public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
-      return String.Join(separator, strings.WhereNotNullOrWhiteSpace());
+      return string.Join(separator, strings.WhereNotNullOrWhiteSpace());
     }
 
     [NotNull, ItemNotNull]
     public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull] this IEnumerable<string> strings)
     {
       if (strings == null) throw new ArgumentNullException(nameof(strings));
-      return strings.Where(s => !String.IsNullOrWhiteSpace(s));
+      return strings.Where(s => !string.IsNullOrWhiteSpace(s));
     }
 
     public static string Join([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
-      return String.Join(separator, strings);
+      return string.Join(separator, strings);
     }
 
     /// <summary>
@@ -47,12 +47,12 @@ namespace JoinRpg.Helpers
 
     public static string AsString(this IEnumerable<string> enumerable)
     {
-      return String.Join("", enumerable);
+      return string.Join("", enumerable);
     }
 
     public static string AsString(this IEnumerable<char> enumerable)
     {
-      return String.Join("", enumerable);
+      return string.Join("", enumerable);
     }
 
     public static string ToHexString(this IEnumerable<byte> bytes)
@@ -71,6 +71,16 @@ namespace JoinRpg.Helpers
     {
       var bytes = Encoding.UTF8.GetBytes(str); //TODO: In what encoding Allrpg.info saves passwords? Do not want to think about it....
       return hashAlgorithm.ComputeHash(bytes).ToHexString();
+    }
+
+    public static string AfterSeparator(this string str, char separator)
+    {
+      return str.SkipWhile(c => c!=separator).Skip(1).AsString();
+    }
+
+    public static string BeforeSeparator(this string str, char separator)
+    {
+      return str.TakeWhile(c=> c!=separator).AsString();
     }
   }
 }

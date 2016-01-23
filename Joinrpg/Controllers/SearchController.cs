@@ -15,7 +15,7 @@ namespace JoinRpg.Web.Controllers
     {
       var searchResults = await _searchService.SearchAsync(CurrentUserIdOrDefault, viewModel.SearchRequest);
       return searchResults.Count == 1
-        ? RedirectToAction(searchResults.SingleOrDefault().AsObjectLink().GetRouteTarget())
+        ? RedirectToAction(searchResults.Single().GetRouteTarget())
         : View(new SearchResultViewModel {Results = searchResults, SearchString = viewModel.SearchRequest});
     }
 

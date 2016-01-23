@@ -7,11 +7,18 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-  public class Comment : IProjectEntity, IValidatableObject
+  public class Comment : IProjectEntity, IValidatableObject, ILinkable
   {
     public int CommentId { get; set; }
 
     public virtual  Project Project { get; set; }
+
+    public LinkType LinkType => LinkType.Comment;
+
+    public string Identification => $"{ClaimId}.{CommentId}";
+
+    int? ILinkable.ProjectId => ProjectId;
+
     public int ProjectId { get; set; }
 
     int IOrderableEntity.Id => CommentId;
