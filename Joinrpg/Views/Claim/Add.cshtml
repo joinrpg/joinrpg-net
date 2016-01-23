@@ -73,6 +73,8 @@
             </div>
         }
 
+        @{ ViewBag.HideCharacterClaimFieldsIcon = true; }
+
         @Html.Partial("_EditFieldsPartial", Model.Fields)
 
         <div class="form-group">

@@ -25,14 +25,17 @@
   }
 <div class="form-group">
     <label class="control-label col-md-2">@Model.FieldName
-        @if (Model.FieldBound == FieldBoundToViewModel.Claim)
-        {
-            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-        }
-        @if (Model.FieldBound == FieldBoundToViewModel.Character)
-        {
-        <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
-        }
+    @if (ViewBag.HideCharacterClaimFieldsIcon != true)
+    {
+        if (Model.FieldBound == FieldBoundToViewModel.Claim)
+         {
+             <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+         }
+        if (Model.FieldBound == FieldBoundToViewModel.Character)
+         {
+             <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
+         }
+    }
 
     </label>
     <div class="col-md-10">
