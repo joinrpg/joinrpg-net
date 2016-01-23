@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Models
     Master,
     [Display(Name = "Со-мастер")]
     CoMaster,
-    [Display(Name = "Я администратор сайта")]
+    [Display(Name = "Я вижу все, т.к. администратор сайта")]
     Administrator
   }
 }
