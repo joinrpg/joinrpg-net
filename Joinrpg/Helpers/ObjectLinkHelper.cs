@@ -35,7 +35,12 @@ namespace JoinRpg.Web.Helpers
     {
       //TODO[https]
       var uri = urlHelper.Action(Action, Controller, Params, "http");
-      return string.Join("#", uri, Anchor);
+
+      if (Anchor != "")
+      {
+        uri += "#" + Anchor;
+      }
+      return uri;
     }
   }
 
