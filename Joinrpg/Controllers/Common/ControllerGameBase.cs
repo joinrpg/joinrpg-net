@@ -61,7 +61,21 @@ namespace JoinRpg.Web.Controllers.Common
           AccessToProject = acl,
           BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
-          IsActive = project.Active
+          IsActive = project.Active,
+          CurrentUserId = CurrentUserId
+        };
+      }
+      else
+      {
+        ViewBag.PlayerMenu = new PlayerMenuViewModel
+        {
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName,
+          Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+          IsAcceptingClaims = project.IsAcceptingClaims,
+          IsActive = project.Active,
+          CurrentUserId = CurrentUserIdOrDefault,
+          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null
         };
       }
       return null;

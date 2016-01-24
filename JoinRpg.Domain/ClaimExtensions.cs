@@ -95,10 +95,19 @@ namespace JoinRpg.Domain
       return claim;
     }
 
-
     public static IEnumerable<Comment> GetMasterAnswers(this Claim claim)
     {
       return claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
+    }
+
+    public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId)
+    {
+      return enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsActive);
+    }
+
+    public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId)
+    {
+      return enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
     }
   }
 }

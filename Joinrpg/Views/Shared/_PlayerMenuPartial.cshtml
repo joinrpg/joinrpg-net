@@ -1,0 +1,66 @@
+﻿@model JoinRpg.Web.Models.PlayerMenuViewModel
+
+<div class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#master-menu-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new { Model.ProjectId }, null)</span>
+        </div>
+        <div class="navbar-collapse collapse" id="master-menu-collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сетка ролей <span class="caret"></span></a>
+
+                    <ul class="dropdown-menu">
+                        <li>
+                            @Html.ActionLink("Персонажи", "Index", "GameGroups", new {Model.ProjectId}, null)
+                        </li>
+                        <li>
+                            @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
+                        </li>
+                    </ul>
+                </li>
+                @if (Model.Claims.Count == 1)
+                {
+                    var claim = Model.Claims.Single();
+                    <li>
+                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new {claim.ProjectId, claim.ClaimId}, null)
+                    </li>
+                }
+                else if (Model.Claims.Count > 0)
+                {
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои заявки <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            @foreach (var claim in Model.Claims)
+                            {
+                                <li>
+                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new {claim.ProjectId, claim.ClaimId}, null)
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+                else if (Model.RootGroupId != null)
+                {
+                <li>
+                    @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new { Model.ProjectId, CharacterGroupId = Model.RootGroupId}, null)
+                </li>
+                }
+
+            </ul>
+            @if (!Model.IsActive)
+            {
+            <p class="navbar-text"><b>Проект в архиве</b></p>
+            }
+            else if (!Model.IsAcceptingClaims)
+            {
+            <p class="navbar-text"><b>Прием заявок закрыт</b></p>
+            }
+        </div>
+    </div>
+</div>

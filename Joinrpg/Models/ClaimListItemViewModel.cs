@@ -26,13 +26,21 @@ namespace JoinRpg.Web.Models
   public class ClaimShortListItemViewModel
   {
     [Display(Name = "Заявка")]
-    public string Name { get; set; }
+    public string Name { get; }
 
     [Display(Name = "Игрок")]
-    public User Player { get; set; }
+    public User Player { get; }
 
-    public int ClaimId { get; set; }
-    public int ProjectId { get; set; }
+    public int ClaimId { get; }
+    public int ProjectId { get;}
+
+    public ClaimShortListItemViewModel (Claim claim)
+    {
+      ClaimId = claim.ClaimId;
+      Name = claim.Name;
+      Player = claim.Player;
+      ProjectId = claim.ProjectId;
+    }
   }
 
   public class ClaimListItemViewModel

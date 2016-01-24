@@ -60,6 +60,9 @@
 @if (ViewBag.MasterMenu != null)
 {
     @Html.Partial("_MasterMenuPartial", (MasterMenuViewModel) ViewBag.MasterMenu)
+} else if (ViewBag.PlayerMenu != null)
+{
+    @Html.Partial("_PlayerMenuPartial", (PlayerMenuViewModel) ViewBag.PlayerMenu)
 }
     <div class="container body-content">
         @RenderBody()

@@ -569,6 +569,7 @@
     <Content Include="Views\Claim\DiscussingForGroupDirect.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
+    <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

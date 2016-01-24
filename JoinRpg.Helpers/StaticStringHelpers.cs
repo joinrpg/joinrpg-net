@@ -37,7 +37,7 @@ namespace JoinRpg.Helpers
 
     public static IEnumerable<int> UnprefixNumbers([NotNull, ItemNotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
     {
-      return enumerable.SelectWherePrefix(prefix).Select(Int32.Parse);
+      return enumerable.SelectWherePrefix(prefix).Select(int.Parse);
     }
 
     public static int? UnprefixNumber([NotNull] this string number, [NotNull] string prefix)
@@ -81,6 +81,11 @@ namespace JoinRpg.Helpers
     public static string BeforeSeparator(this string str, char separator)
     {
       return str.TakeWhile(c=> c!=separator).AsString();
+    }
+
+    public static int[] ToIntList(this string claimIds)
+    {
+      return claimIds.Split(',').Select(int.Parse).ToArray();
     }
   }
 }
