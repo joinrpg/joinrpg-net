@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -32,6 +33,7 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 
+    [CanBeNull]
     public virtual ProjectDetails Details { get; set; }
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
@@ -55,6 +57,8 @@ namespace JoinRpg.DataModel
     public int ProjectId { get; set; }
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
+
+    public bool EnableManyCharacters { get; set; }
     public int? AllrpgId { get; set; }
   }
 

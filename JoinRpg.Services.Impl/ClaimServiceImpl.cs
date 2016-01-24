@@ -71,12 +71,7 @@ namespace JoinRpg.Services.Impl
         : null;
       var character = characterId != null ? await ProjectRepository.GetCharacterAsync(projectId, characterId.Value) : null;
 
-      var source = new IClaimSource[] {characterGroup, character}.WhereNotNull().Single();
-      if (!source.IsAvailable)
-      {
-        throw new DbEntityValidationException();
-      }
-      return source;
+      return new IClaimSource[] {characterGroup, character}.WhereNotNull().Single();
     }
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
@@ -238,7 +233,9 @@ namespace JoinRpg.Services.Impl
     public async Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId, int? characterId)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      await GetClaimSource(projectId, characterGroupId, characterId);
+      var source = await GetClaimSource(projectId, characterGroupId, characterId);
+
+      EnsureCanAddClaim(currentUserId, source);
 
       claim.CharacterGroupId = characterGroupId;
       claim.CharacterId = characterId;

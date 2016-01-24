@@ -59,7 +59,7 @@ namespace JoinRpg.Web.Models
       ProjectId = obj.ProjectId;
       ProjectName = obj.Project.ProjectName;
       HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsPending);
-      HasApprovedClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsApproved);
+      HasApprovedClaim = !(obj.Project.Details?.EnableManyCharacters ?? false) && obj.Project.Claims.OfUserApproved(user.UserId).Any();
       HasMyClaim = obj.HasClaimForUser(user.UserId);
       TargetName = obj.Name;
       Description = new MarkdownViewModel(obj.Description);

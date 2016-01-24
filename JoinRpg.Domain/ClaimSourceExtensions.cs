@@ -8,9 +8,9 @@ namespace JoinRpg.Domain
 {
   public static class ClaimSourceExtensions
   {
-    public static bool HasClaimForUser<T>(this T claimSource, int currentUserId) where T : IClaimSource
+    public static bool HasClaimForUser(this IClaimSource claimSource, int currentUserId)
     {
-      return claimSource.Claims.Any(c => c.PlayerUserId == currentUserId && c.IsActive);
+      return claimSource.Claims.OfUserActive(currentUserId).Any();
     }
 
     public static IEnumerable<User> GetResponsibleMasters(this IClaimSource @group, bool includeSelf = true)
