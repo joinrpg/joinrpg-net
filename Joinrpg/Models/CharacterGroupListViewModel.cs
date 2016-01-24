@@ -86,6 +86,7 @@ namespace JoinRpg.Web.Models
           IsPublic = characterGroup.IsPublic,
           IsSpecial = characterGroup.IsSpecial,
           IsActive = characterGroup.IsActive,
+          IsRootGroup = characterGroup.IsRoot,
           FirstInGroup = siblings.First() == characterGroup,
           LastInGroup = siblings.Last() == characterGroup,
           ProjectId = characterGroup.ProjectId,

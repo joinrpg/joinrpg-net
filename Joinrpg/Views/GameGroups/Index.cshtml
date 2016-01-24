@@ -18,16 +18,29 @@
             <div>@switch (item.DeepLevel)
                  {
                      case 2:
-                         <span class="h3" title="@pathString">@groupLink</span>@editControls
+                         <span class="h3" title="@pathString">@groupLink</span>
+                         @editControls
                          break;
                      case 1:
-                         <span class="h2" title="@pathString">@groupLink</span>@editControls
+                         <span class="h2" title="@pathString">@groupLink</span>
+                         @editControls
                          break;
                      case 0:
-                         <span class="h2">Сетка ролей @item.Name</span>@editControls
+                         <span class="h2">
+                             @if (!item.IsRootGroup)
+                             {
+                                 <text>Сетка ролей: </text>
+                                 @item.Name
+                             }
+                             else
+                             {<text>Сетка ролей</text>
+                             }
+                         </span>
+                         @editControls
                          break;
                      default:
-                         <span class="h4" title="@pathString">@groupLink</span>@editControls
+                         <span class="h4" title="@pathString">@groupLink</span>
+                         @editControls
                          break;
                  }
             </div>

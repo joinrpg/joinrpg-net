@@ -74,6 +74,8 @@ namespace JoinRpg.Web.Models
     public IEnumerable<CharacterGroupListItemViewModel> Path { get; set; }
 
     public bool IsRoot => DeepLevel == 0;
+
+    public bool IsRootGroup { get; set; }
     public bool IsActive { get; set; }
     public bool IsPublic { get; set; }
 

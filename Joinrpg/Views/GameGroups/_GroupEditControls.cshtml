@@ -4,17 +4,6 @@
             <span title="действия" class="glyphicon glyphicon-option-vertical"></span>
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            @if (!Model.IsSpecial)
-            {
-                <li>
-                    <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
-                        <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
-                    </a>
-                </li>
-            }
-            <li>
-                @Html.ActionLink("подписка", "EditSubscribe", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null)
-            </li>
             <li>
                @Html.ActionLink(
                    DisplayCount.OfX(Model.TotalActiveClaims, "заявка", "заявки", "заявок") + " всего",
@@ -23,7 +12,7 @@
                    new {Model.ProjectId, Model.CharacterGroupId},
                    null)
             </li>
-            @if (Model.ActiveClaimsCount > 0)
+            @if (Model.ActiveClaimsCount != Model.TotalActiveClaims && Model.ActiveClaimsCount > 0)
             {
                 <li>
                 @Html.ActionLink(
@@ -34,13 +23,23 @@
                     null)
             </li>
             }
-            else
+            
+            @if (!Model.IsSpecial)
             {
-            <li class="disabled">
-                <a href="#">нет заявок напрямую</a></li>
+            <li>
+                <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
+                </a>
+            </li>
             }
+            <li>
+                <a href="@Url.Action("EditSubscribe", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                    <span class="glyphicon glyphicon-pushpin"></span> подписка
+                </a>
 
-            @if (!Model.IsRoot)
+            </li>
+
+            @if (!Model.IsRootGroup && !Model.IsSpecial)
             {
                 var disabled = Model.TotalActiveClaims != 0 ? "disabled" : "";
                 var uri = Model.TotalActiveClaims != 0 ? "#" : Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null);
@@ -50,7 +49,7 @@
                     </a>
                 </li>
             }
-            @if (!Model.FirstInGroup && !Model.LastInGroup && !Model.IsRoot)
+            @if (!Model.FirstInGroup && !Model.LastInGroup && !Model.IsRoot && !Model.IsSpecial)
             {
                 var moveParameters = new
                 {
@@ -69,10 +68,13 @@
                     <li><a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)">..ниже</a></li>
                 }
             }
-            <li class="dropdown-header">Добавить</li>
-            <li>
+            @if (!Model.IsSpecial)
+            {
+                <li class="dropdown-header">Добавить</li>
+                <li>
                 <a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a>
             </li>
-            <li>@Html.ActionLink("..подгруппу", "AddGroup", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
+                <li>@Html.ActionLink("..подгруппу", "AddGroup", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
+            }
         </ul>
     </span>
