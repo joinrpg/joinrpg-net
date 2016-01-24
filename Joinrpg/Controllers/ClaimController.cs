@@ -255,8 +255,9 @@ namespace JoinRpg.Web.Controllers
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))
       {
-        _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
-          claim.Comments.Max(c => c.CommentId));
+        await
+          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
+            claim.Comments.Max(c => c.CommentId));
       }
 
 
