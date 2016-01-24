@@ -39,40 +39,39 @@
 
             @if (item.FirstCopy)
             {
-                <div>
- 
-                    @item.Description
-                    <ul>
-                        @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
-                        {
-                            <li>
-                                @Html.Partial("_CharacterPartial", character)
-                            </li>
-                        }
-                    </ul>
-                    <div>
-                        @if (item.AvaiableDirectSlots > 0)
-                        {
-                            <strong>+@item.AvaiableDirectSlots вакансий: </strong>
-                        }
-                        else if (item.AvaiableDirectSlots < 0)
-                        {
-                            <strong>есть вакансии: </strong>
-                        }
-                        @if (Model.ShowEditControls &&
-                             item.ActiveClaimsCount > 0)
-                        {
-                            @Html.ActionLink(DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"), "ListForGroupDirect", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
-                        }
-                        @if (item.IsAcceptingClaims)
-                        {
-                            @Html.ActionLink("заявиться", "AddForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
-                        }
+            <div>
 
-                    </div>
-
-
-                </div>
+                @item.Description
+                <ul>
+                    @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
+                    {
+                    <li>
+                        @Html.Partial("_CharacterPartial", character)
+                    </li>
+                    }
+                </ul>
+            </div>
             }
+            <div>
+                @if (item.AvaiableDirectSlots > 0)
+                {
+                    <strong>+@item.AvaiableDirectSlots вакансий / @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок") </strong>
+                }
+                else if (item.AvaiableDirectSlots < 0)
+                {
+                    <strong>есть вакансии / @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок") </strong>
+                }
+                @if (item.IsAcceptingClaims)
+                {
+                    @Html.ActionLink(
+                        "заявиться",
+                        "AddForGroup",
+                        "Claim",
+                        new {Model.ProjectId, item.CharacterGroupId},
+                        new {@class = "btn btn-default btn-xs"})
+                }
+
+            </div>
+
         </div>
     }

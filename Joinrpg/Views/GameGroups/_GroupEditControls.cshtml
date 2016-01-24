@@ -16,8 +16,30 @@
                 @Html.ActionLink("подписка", "EditSubscribe", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null)
             </li>
             <li>
-               @Html.ActionLink("список заявок", "ListForGroup", "Claim", new {Model.ProjectId, Model.CharacterGroupId}, null)
+               @Html.ActionLink(
+                   DisplayCount.OfX(Model.TotalActiveClaims, "заявка", "заявки", "заявок") + " всего",
+                   "ListForGroup",
+                   "Claim",
+                   new {Model.ProjectId, Model.CharacterGroupId},
+                   null)
             </li>
+            @if (Model.ActiveClaimsCount > 0)
+            {
+                <li>
+                @Html.ActionLink(
+                    DisplayCount.OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок") + " напрямую",
+                    "ListForGroupDirect",
+                    "Claim",
+                    new {Model.ProjectId, Model.CharacterGroupId},
+                    null)
+            </li>
+            }
+            else
+            {
+            <li class="disabled">
+                <a href="#">нет заявок напрямую</a></li>
+            }
+
             @if (!Model.IsRoot)
             {
                 var disabled = Model.TotalActiveClaims != 0 ? "disabled" : "";
