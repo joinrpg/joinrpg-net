@@ -48,5 +48,9 @@ namespace JoinRpg.Web.Models
     public bool IsMaster { get; set; }
     public IEnumerable<Claim>  MyClaims {get; set; }
     public int ClaimCount { get; set; }
+
+    public int ProjectRootGroupId { get; set; }
+
+    public bool IsRootGroupAccepting { get; set; }
   }
 }

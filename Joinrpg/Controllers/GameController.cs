@@ -17,7 +17,6 @@ namespace JoinRpg.Web.Controllers
     {
     }
 
-    // GET: Game/Details/5
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -33,7 +32,6 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    // GET: Game/Create
     [Authorize]
     public ActionResult Create()
     {
@@ -64,7 +62,6 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, Authorize]
-    // GET: Game/Edit/5
     public async Task<ActionResult> Edit(int projectId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);

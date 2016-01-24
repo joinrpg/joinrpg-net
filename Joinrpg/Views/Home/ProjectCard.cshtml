@@ -23,16 +23,20 @@
                     </a>
                 }
 
-                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims)
-                {
+                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
+                   class="btn btn-primary btn-sm"
+                   role="button"
+                   title="Выбрать роль и заявиться">
+                    Сетка ролей
+                </a>
 
-                    <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
-                       class="btn btn-primary btn-sm"
-                       role="button"
-                       title="Выбрать роль и заявиться">
+                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims && Model.IsRootGroupAccepting)
+                {
+                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.ProjectRootGroupId}, null)"
+                       class="btn btn-info btn-sm"
+                       role="button">
                         Заявиться
                     </a>
-
                 }
             </p>
         </div>

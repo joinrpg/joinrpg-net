@@ -39,7 +39,9 @@ namespace JoinRpg.Web.Controllers
           ProjectName = p.ProjectName,
           MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
           ClaimCount = p.Claims.Count(c => c.IsActive),
-          IsAcceptingClaims = p.IsAcceptingClaims
+          IsAcceptingClaims = p.IsAcceptingClaims,
+          ProjectRootGroupId = p.RootGroup.CharacterGroupId,
+          IsRootGroupAccepting = p.RootGroup.IsAvailable
         }).Where(p => p.IsMaster || p.MyClaims.Any() || p.IsAcceptingClaims).ToList();
       var alwaysShowProjects =
         projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster).ThenByDescending(p => p.ClaimCount);
@@ -48,7 +50,6 @@ namespace JoinRpg.Web.Controllers
           .OrderByDescending(p => p.ClaimCount)
           .Take(Math.Max(0, maxProjects - alwaysShowProjects.Count())); // Add more projects until we have 9 total
 
-      
       var finalProjects = alwaysShowProjects.Union(otherProjects).ToList();
 
       return new HomeViewModel
