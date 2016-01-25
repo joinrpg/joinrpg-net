@@ -81,9 +81,9 @@ namespace JoinRpg.Domain
       switch (projectField.FieldBoundTo)
       {
         case FieldBoundTo.Character:
-          return character.HasPlayerAccess(currentUserId);
+          return character.HasPlayerAccess(currentUserId) && projectField.CanPlayerEdit;
         case FieldBoundTo.Claim:
-          return claim.HasPlayerAccesToClaim(currentUserId);
+          return claim.HasPlayerAccesToClaim(currentUserId) && projectField.CanPlayerEdit;
         default:
           throw new ArgumentOutOfRangeException();
       }
