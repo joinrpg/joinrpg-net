@@ -14,6 +14,8 @@ namespace JoinRpg.Web.Models
     public bool CanView { get; }
     public bool CanEdit { get; }
 
+    public bool IsPlayerVisible { get; }
+
     public string Value { get; }
     public string FieldName { get; }
 
@@ -29,6 +31,8 @@ namespace JoinRpg.Web.Models
       FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
       FieldName = ch.Field.FieldName;
       Description = new MarkdownViewModel(ch.Field.Description);
+
+      IsPlayerVisible = ch.Field.CanPlayerView;
 
       CanView = !string.IsNullOrWhiteSpace(ch.Value) && (
             ch.Field.IsPublic

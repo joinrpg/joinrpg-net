@@ -23,19 +23,22 @@
       </div>
       return;
   }
-<div class="form-group">
-    <label class="control-label col-md-2">@Model.FieldName
-    @if (ViewBag.HideCharacterClaimFieldsIcon != true)
-    {
-        if (Model.FieldBound == FieldBoundToViewModel.Claim)
-         {
-             <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-         }
-        if (Model.FieldBound == FieldBoundToViewModel.Character)
-         {
-             <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
-         }
-    }
+@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
+<div class="form-group @hideClassName">
+
+    <label class="control-label col-md-2">
+        @Model.FieldName
+        @if (ViewBag.HideCharacterClaimFieldsIcon != true)
+        {
+            if (Model.FieldBound == FieldBoundToViewModel.Claim)
+            {
+                <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+            }
+            if (Model.FieldBound == FieldBoundToViewModel.Character)
+            {
+                <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
+            }
+        }
 
     </label>
     <div class="col-md-10">
@@ -49,7 +52,7 @@
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control">
                     @{
                         var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
-                    @*if (isEmpty || !Model.Field.IsRequired)*@
+                @*if (isEmpty || !Model.Field.IsRequired)*@
                         if (true)
                         {
                             <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
@@ -79,7 +82,7 @@
         {
             <div class="help-block">@Html.DisplayFor(model => model.Description) </div>
         }
-        @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
+        @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
     </div>
 
 </div>

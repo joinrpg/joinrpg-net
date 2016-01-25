@@ -14,7 +14,8 @@
 {
     return;
 }
-<div class="form-group">
+@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
+<div class="form-group @hideClassName">
     <label class="control-label col-md-2">@Model.FieldName</label>
     <div class="col-md-10">
         @*TODO: May be also set client id here*@
