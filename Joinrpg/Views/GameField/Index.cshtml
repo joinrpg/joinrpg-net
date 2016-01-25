@@ -24,7 +24,7 @@
             <th>
                 @Html.DisplayNameFor(model => firstItem.FieldViewType)
             </th>
-            <th>
+            <th style="white-space: nowrap">
                 @Html.DisplayNameFor(model => firstItem.FieldBoundTo)
             </th>
             <th>
@@ -39,9 +39,6 @@
             <th>
                 @Html.DisplayNameFor(model => firstItem.Description)
             </th>
-            <th>
-
-            </th>
             @if (Model.CanEditFields)
             {
                 <th></th>
@@ -50,8 +47,8 @@
 
         @foreach (var item in Model.Items)
         {
-            <tr>
-                <td class="@(item.IsActive ? "" : "deleted")">
+            <tr class="@(item.IsActive ? "" : "deleted")">
+                <td >
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
@@ -71,12 +68,6 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @if (!item.IsActive)
-                    {
-                        <span>удалено</span>
-                    }
                 </td>
                 @if (Model.CanEditFields)
                 {
