@@ -373,9 +373,9 @@ namespace JoinRpg.Services.Impl
     public static Comment AddCommentImpl(this Claim claim, int currentUserId, Comment parentComment, string commentText,
       DateTime now, bool isVisibleToPlayer, CommentExtraAction? extraAction)
     {
-      if (!isVisibleToPlayer && claim.PlayerUserId == currentUserId)
+      if (!isVisibleToPlayer)
       {
-        throw new DbEntityValidationException();
+        claim.RequestMasterAccess(currentUserId);
       }
 
       var comment = new Comment()
