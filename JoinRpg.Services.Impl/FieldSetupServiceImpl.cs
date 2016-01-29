@@ -154,9 +154,10 @@ namespace JoinRpg.Services.Impl
       };
 
       field.CharacterGroup.IsPublic = field.IsPublic;
-      foreach (var characterGroup in field.DropdownValues.Select(dv => dv.CharacterGroup).WhereNotNull())
+      foreach (var fieldValue in field.DropdownValues.Where(dv => dv.CharacterGroup != null))
       {
-        characterGroup.IsPublic = field.IsPublic;
+        fieldValue.CharacterGroup.IsPublic = field.IsPublic;
+        fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
       }
       field.CharacterGroup.IsActive = field.IsActive;
       field.CharacterGroup.Description = field.Description;

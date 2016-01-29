@@ -34,7 +34,7 @@ namespace JoinRpg.Domain
 
     public static string GetSpecialGroupName(this ProjectFieldDropdownValue fieldValue)
     {
-      return $"${fieldValue.Label}";
+      return $"{fieldValue.Label}";
     }
 
     public static string GetSpecialGroupName(this ProjectField field)

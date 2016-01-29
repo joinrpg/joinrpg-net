@@ -92,6 +92,18 @@ namespace JoinRpg.Web.Models
           ProjectId = characterGroup.ProjectId,
           RootGroupId = Root.CharacterGroupId,
         };
+
+        if (vm.IsSpecial)
+        {
+          var variant =
+            characterGroup.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
+              .SingleOrDefault(pfv => pfv.CharacterGroup == characterGroup);
+
+          if (variant != null)
+          {
+            vm.BoundExpression = $"{variant.ProjectField.FieldName} = {variant.Label}";
+          }
+        }
         
         Results.Add(vm);
 

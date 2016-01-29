@@ -81,6 +81,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsSpecial { get; set; }
 
+    public string BoundExpression { get; set; } = "";
+
     public int ActiveClaimsCount { get; set; }
 
     public bool FirstInGroup { get; set; }

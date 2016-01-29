@@ -43,6 +43,10 @@
                          @editControls
                          break;
                  }
+            @if (item.IsSpecial)
+            {
+                <span class="label label-default" title="Эта группа автоматически заполняется в зависимости от полей персонажа. @item.BoundExpression">Спецгруппа</span>
+            }
             </div>
 
             @if (!item.FirstCopy)
