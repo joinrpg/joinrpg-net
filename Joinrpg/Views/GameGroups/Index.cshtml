@@ -68,11 +68,16 @@
             <div>
                 @if (item.AvaiableDirectSlots > 0)
                 {
-                    <strong>+@item.AvaiableDirectSlots вакансий / @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок") </strong>
+                    <strong>+@item.AvaiableDirectSlots вакансий / </strong>
                 }
                 else if (item.AvaiableDirectSlots < 0)
                 {
-                    <strong>есть вакансии / @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок") </strong>
+                    <strong>есть вакансии /  </strong>
+                }
+
+                @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
+                {
+                    <strong> @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")</strong>
                 }
                 @if (item.IsAcceptingClaims)
                 {
