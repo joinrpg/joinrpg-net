@@ -63,10 +63,20 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteField(int projectCharacterFieldId)
     {
       var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(projectCharacterFieldId);
+
+      foreach (var fieldValueVariant in field.DropdownValues)
+      {
+        DeleteFieldVariantValueImpl(fieldValueVariant);
+      }
+
       var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
       if (SmartDelete(field))
       {
         SmartDelete(characterGroup);
+      }
+      else
+      {
+        characterGroup.IsActive = false;
       }
       await UnitOfWork.SaveChangesAsync();
     }
@@ -175,12 +185,21 @@ namespace JoinRpg.Services.Impl
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
+      DeleteFieldVariantValueImpl(field);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private void DeleteFieldVariantValueImpl(ProjectFieldDropdownValue field)
+    {
       var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
       if (SmartDelete(field))
       {
         SmartDelete(characterGroup);
       }
-      await UnitOfWork.SaveChangesAsync();
+      else
+      {
+        characterGroup.IsActive = false;
+      }
     }
 
     public async Task MoveField(int currentUserId, int projectId, int projectcharacterfieldid, short direction)
