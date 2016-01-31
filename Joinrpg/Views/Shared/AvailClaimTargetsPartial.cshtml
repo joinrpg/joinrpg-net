@@ -19,7 +19,7 @@
         @Html.Label("", "Переместить заявку", htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
             <select name="claimTarget" id="claimTarget" class="form-control col-md-10">
-                @foreach (var element in Model.ActiveGroups.Where(g => g.FirstCopy))
+                @foreach (var element in Model.ActiveGroups.Where(g => g.FirstCopy && !g.IsSpecial))
                 {
                     if (element.AvaiableDirectSlots != 0 && ViewBag.ShowGroupsInAvailClaim == true)
                     {
