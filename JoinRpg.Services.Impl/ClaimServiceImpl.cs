@@ -398,10 +398,6 @@ namespace JoinRpg.Services.Impl
 
     public static void ConvertToIndividual(this Claim claim)
     {
-      if (claim.Group.AvaiableDirectSlots == 0)
-      {
-        throw new DbEntityValidationException();
-      }
       if (claim.Group.AvaiableDirectSlots > 0)
       {
         claim.Group.AvaiableDirectSlots -= 1;
