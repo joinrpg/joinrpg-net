@@ -27,6 +27,9 @@
                             <li>
                                 @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
                             </li>
+                            <li>
+                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "Claim", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
+                            </li>
                         </ul>
                     </li>
                     <li class="dropdown">
