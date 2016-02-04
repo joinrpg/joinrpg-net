@@ -6,7 +6,14 @@
 
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
-                @Model.Content.TakeWords(10)
+                @{
+                  var header = Model.Content.TakeWords(10);
+                    if (header == null || string.IsNullOrWhiteSpace(header.ToString()))
+                    {
+                        header = new MvcHtmlString("<p>***</p>");
+                    }
+                }
+                @header
             </a>
                 @switch (Model.Status)
                 {
