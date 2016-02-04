@@ -1,17 +1,35 @@
 ﻿@model JoinRpg.Web.Models.HomeViewModel
 
 @{
-    ViewBag.Title = "JoinRpg.RU";
+    ViewBag.Title = ViewBag.IsProduction ?  "JoinRpg.RU" : "Dev.JoinRpg.RU";
 }
 <br/>
 <div class="panel panel-default well">
     <div class="panel-body">
         <h2 >@ViewBag.Title</h2>
-        <p>
-            Перезапуск базы заявок <a href="http://allrpg.info">Allrpg.Info</a> — просто, удобно, универсально. От создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
-        </p>
-        @Html.ActionLink("Узнать больше", "About", null, new {@class = "btn btn-primary"})
-        @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new {@class = "btn btn-success"})
+        @if (ViewBag.IsProduction)
+        {
+        <div>
+            <p>
+                Перезапуск базы заявок <a href="http://allrpg.info">Allrpg.Info</a> — просто, удобно, универсально. От создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+            </p>
+            @Html.ActionLink("Узнать больше", "About", null, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+        </div>
+        }
+        else
+        {
+        <div>
+            <div class="alert alert-danger">
+                Это тестовая версия JoinRpg.ru.<br/>Не используйте ее для реальной работы с игроками<br/>
+            Если вы игрок, и забрели сюда случайно, вам <a href="http://joinrpg.ru">на основной сервер</a> 
+            </div>. 
+            @Html.ActionLink("Узнать больше", "About", null, new { @class = "btn btn-primary" })
+            @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+            <a href="http://joinrpg.ru" class="btn btn-info"> Перейти на основной сервер</a>
+        </div>
+        }
+        
     </div>
 </div>
 
