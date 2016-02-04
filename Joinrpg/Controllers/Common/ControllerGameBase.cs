@@ -59,7 +59,7 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           AccessToProject = acl,
-          BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial).Select(cg => new CharacterGroupLinkViewModel(cg)),
+          BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           CurrentUserId = CurrentUserId
