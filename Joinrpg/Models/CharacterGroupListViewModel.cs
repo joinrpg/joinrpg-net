@@ -18,7 +18,8 @@ namespace JoinRpg.Web.Models
         ActiveGroups.Where(
           listItem =>
             listItem.CharacterGroupId != characterGroupId &&
-            listItem.Path.All(cg => cg.CharacterGroupId != characterGroupId));
+            listItem.Path.All(cg => cg.CharacterGroupId != characterGroupId) &&
+            !listItem.IsSpecial);
     }
 
     public IEnumerable<CharacterGroupListItemViewModel> PublicGroups

@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Models
     [DisplayName("Имя персонажа"), Required]
     public string Name
     { get; set; }
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups;
+    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups.Where(g => !g.IsSpecial);
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

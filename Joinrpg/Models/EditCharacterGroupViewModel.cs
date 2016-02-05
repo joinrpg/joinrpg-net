@@ -64,6 +64,6 @@ namespace JoinRpg.Web.Models
 
   public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
   {
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups;
+    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups.Where(g => !g.IsSpecial);
   }
 }
