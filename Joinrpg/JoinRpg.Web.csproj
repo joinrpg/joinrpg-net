@@ -330,6 +330,7 @@
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="external\roles-1.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -505,7 +506,6 @@
     <Content Include="Views\Plot\Elements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
     <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
-    <Content Include="Views\Home\AboutTest.cshtml" />
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
@@ -575,6 +575,7 @@
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
     <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
     <Content Include="Views\Claim\ResponsibleDiscussing.cshtml" />
+    <Content Include="Views\Home\HowToHelp.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -4,12 +4,27 @@
 <h2>@ViewBag.Title</h2>
 <h3>@ViewBag.Message</h3>
 
+@if (!ViewBag.IsProduction)
+{
+    <div class="alert alert-danger">
+        Это тестовая версия JoinRpg.ru.<br />Не используйте ее для реальной работы с игроками<br />
+        Если вы игрок, и забрели сюда случайно, вам <a href="http://joinrpg.ru">на основной сервер</a>
+    </div>
+}
+
 <div class="panel panel-default">
     <div class="panel-heading">Команда сайта</div>
     <div class="panel-body">
         <a href="http://bastilia.ru">#</a><b>ЛеоЦарев</b> — создатель сайта, программист
-        <br /><b>Товер</b> — поддержка сайта allrpg.info
+        <br/><b>Товер</b> — поддержка сайта allrpg.info
         <br/><b>Айка</b> — техподдержка игроков
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Как помочь?</div>
+    <div class="panel-body">
+        В первую очередь нужны программисты. Пригодятся пожертвования деньгами. Подробности на @Html.ActionLink("на отдельной странице", "HowToHelp").
     </div>
 </div>
 

@@ -11,20 +11,15 @@ namespace JoinRpg.Web.Controllers
 {
   public class HomeController : Common.ControllerBase
   {
-    private const int projectsOnHomePage = 9;
+    private const int ProjectsOnHomePage = 9;
     private readonly IProjectRepository _projectRepository;
-    private readonly IClaimsRepository _claimsRepository;
 
-    public HomeController(IProjectRepository projectRepository, ApplicationUserManager userManager, IClaimsRepository claimsRepository) : base (userManager)
+    public HomeController(IProjectRepository projectRepository, ApplicationUserManager userManager) : base (userManager)
     {
       _projectRepository = projectRepository;
-      _claimsRepository = claimsRepository;
     }
 
-    public async Task<ActionResult> Index()
-    {
-        return View(await LoadModel(projectsOnHomePage));
-    }
+    public async Task<ActionResult> Index() => View(await LoadModel(ProjectsOnHomePage));
 
     private async Task<HomeViewModel> LoadModel(int maxProjects = int.MaxValue)
     {
@@ -59,10 +54,7 @@ namespace JoinRpg.Web.Controllers
       };
     }
 
-    public ActionResult About()
-    {
-      return View();
-    }
+    public ActionResult About() => View();
 
     public ActionResult Contact()
     {
@@ -71,10 +63,7 @@ namespace JoinRpg.Web.Controllers
       return View();
     }
 
-    public ActionResult AboutTest()
-    {
-      return View();
-    }
+    public ActionResult HowToHelp() => View();
 
     public async Task<ViewResult> BrowseGames()
     {
