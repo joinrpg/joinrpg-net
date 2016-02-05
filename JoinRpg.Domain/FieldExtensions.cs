@@ -26,11 +26,14 @@ namespace JoinRpg.Domain
 
     private static IEnumerable<int> GetSelectedIds(this FieldWithValue field)
     {
-      return string.IsNullOrWhiteSpace(field.Value) ? Enumerable.Empty<int>() : field.Value.Split(',').Select(Int32.Parse);
+      return string.IsNullOrWhiteSpace(field.Value) ? Enumerable.Empty<int>() : field.Value.Split(',').Select(int.Parse);
     }
 
     public static IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(this FieldWithValue field)
-      => field.Field.GetOrderedValues();
+    {
+      var value = field.GetSelectedIds();
+      return field.Field.GetOrderedValues().Where(v => v.IsActive || value.Contains(v.ProjectFieldDropdownValueId));
+    }
 
     public static string GetSpecialGroupName(this ProjectFieldDropdownValue fieldValue)
     {
