@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Models
 
       IsPlayerVisible = ch.Field.CanPlayerView;
 
-      CanView = !string.IsNullOrWhiteSpace(ch.Value) && (
+      CanView = ch.HasValue() && (
             ch.Field.IsPublic
             || model.HasMasterAccess
             || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Character)

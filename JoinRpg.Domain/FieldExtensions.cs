@@ -26,7 +26,7 @@ namespace JoinRpg.Domain
 
     private static IEnumerable<int> GetSelectedIds(this FieldWithValue field)
     {
-      return string.IsNullOrWhiteSpace(field.Value) ? Enumerable.Empty<int>() : field.Value.Split(',').Select(int.Parse);
+      return String.IsNullOrWhiteSpace(field.Value) ? Enumerable.Empty<int>() : field.Value.Split(',').Select(Int32.Parse);
     }
 
     public static IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(this FieldWithValue field)
@@ -43,6 +43,11 @@ namespace JoinRpg.Domain
     public static string GetSpecialGroupName(this ProjectField field)
     {
       return $"{field.FieldName}";
+    }
+
+    public static bool HasValue(this FieldWithValue ch)
+    {
+      return !String.IsNullOrWhiteSpace(ch.Value) || ch.Field.FieldType == ProjectFieldType.Header;
     }
   }
 }

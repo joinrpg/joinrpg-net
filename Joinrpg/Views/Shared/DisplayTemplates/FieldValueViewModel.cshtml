@@ -10,10 +10,6 @@
       return;
   }
 
-@if (string.IsNullOrWhiteSpace(Model.Value))
-{
-    return;
-}
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 <div class="form-group @hideClassName">
     <label class="control-label col-md-2">@Model.FieldName</label>
