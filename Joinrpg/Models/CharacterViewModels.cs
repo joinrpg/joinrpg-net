@@ -149,6 +149,7 @@ namespace JoinRpg.Web.Models
       if (vm.RejectedClaims.Any(c => c.ClaimId ==  claim.ClaimId))
       {
         vm.Page = CharacterNavigationPage.RejectedClaim;
+        vm.ClaimId = null;
       }
       return vm;
     }

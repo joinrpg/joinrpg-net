@@ -70,7 +70,9 @@ else
         }
         @if (Model.RejectedClaims.Any())
         {
-            <li role="presentation" class="dropdown">
+            var active = Model.Page == CharacterNavigationPage.RejectedClaim ? "active" : "";
+
+            <li role="presentation" class="dropdown @active">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                     Отклоненные заявки <span class="caret"></span>
                 </a>
