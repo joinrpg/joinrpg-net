@@ -14,7 +14,7 @@
     }
 
 }
-@helper CreateCheckBox( string prefix, string name, int elementId, bool @checked)
+@helper CreateCheckBox(string prefix, int elementId, string name, bool @checked)
 {
     @Html.CheckBox(prefix + elementId, @checked)
     @Html.Label(prefix + elementId, name, null)
@@ -26,10 +26,10 @@
         <p>Этот контрол смотрится ужасно, но он временный. Сделаем тут нормальный</p>
         @foreach (var element in Model.Data.ActiveGroups.Where(g => g.FirstCopy))
         {
-        @CreateCheckBox("group_", GetName(element), element.CharacterGroupId, Model.For.Any(f => f.IsGroup(element.CharacterGroupId)))
-            foreach (var character in element.Characters)
+            @CreateCheckBox("group_", element.CharacterGroupId, GetName(element), Model.For.Any(f => f.IsGroup(element.CharacterGroupId)))
+            foreach (var character in element.Characters.Where(c => c.IsFirstCopy))
             {
-            @CreateCheckBox("char_", Deep(element) + " " + character.CharacterName, character.CharacterId, Model.For.Any(f => f.IsCharacter(element.CharacterGroupId)))
+                @CreateCheckBox("char_", character.CharacterId, Deep(element) + " " + character.CharacterName, Model.For.Any(f => f.IsCharacter(element.CharacterGroupId)))
             }
         }
     </details>

@@ -10,10 +10,12 @@
                   var header = Model.Content.TakeWords(10);
                     if (header == null || string.IsNullOrWhiteSpace(header.ToString()))
                     {
-                        header = new MvcHtmlString("<p>***</p>");
-                    }
+                        <text>***</text>
+                  }
+                  else
+                  { @header}
                 }
-                @header
+                
             </a>
                 @switch (Model.Status)
                 {
