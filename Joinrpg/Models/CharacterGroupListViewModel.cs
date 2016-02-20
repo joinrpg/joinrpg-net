@@ -118,6 +118,8 @@ namespace JoinRpg.Web.Models
           vm.TotalDiscussedClaims = prevCopy.TotalDiscussedClaims;
           vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
           vm.TotalNpcCharacters = prevCopy.TotalNpcCharacters;
+          vm.Unlimited = prevCopy.Unlimited;
+          vm.TotalAcceptedClaims = prevCopy.TotalAcceptedClaims;
           return vm;
         }
 
@@ -147,6 +149,8 @@ namespace JoinRpg.Web.Models
 
         vm.TotalDiscussedClaims = flatCharacters.Where(c => c.Player == null).Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
         vm.TotalActiveClaims = flatCharacters.Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
+        vm.TotalAcceptedClaims = flatCharacters.Count(c => c.Player != null);
+        vm.Unlimited = vm.AvaiableDirectSlots == -1 || flatChilds.Any(c => c.AvaiableDirectSlots == -1);
 
         return vm;
       }

@@ -92,6 +92,10 @@ namespace JoinRpg.Web.Models
 
     public bool IsAcceptingClaims { get; set; }
 
+    public int TotalAcceptedClaims { get; set; }
+
+    public bool Unlimited  { get; set; }
+
     public CharacterGroupListItemViewModel()
     {
       

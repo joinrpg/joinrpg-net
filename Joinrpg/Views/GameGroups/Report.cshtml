@@ -15,7 +15,7 @@
     <tr>
         <th rowspan="2">Группа</th>
         <th colspan="4">Персонажей</th>
-        <th colspan="2">Заявок</th>
+        <th colspan="3">Заявок</th>
     </tr>
     <tr>
         <th>Всего</th>
@@ -23,6 +23,7 @@
         <th>Занято</th>
         <th>Свободно</th>
         <th>Всего</th>
+        <th>Принято</th>
         <th>Обсуждается</th>
     </tr>
     @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups : Model.Data.PublicGroups)
@@ -58,11 +59,18 @@
             <td style="text-align: right">@item.TotalSlots
                 @if (item.AvaiableDirectSlots == -1)
                 {
-                <span title="Разрешены неограниченные прямые заявки">+</span>
+                    <span title="Разрешены неограниченные прямые заявки">∞</span>
+                }
+                else if (item.Unlimited)
+                {
+                <span title="В подгруппу разрешены неограниченные прямые заявки">+</span>
                 }
             </td>
             <td style="text-align: right">
-                @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
+                @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "Claim", new {Model.ProjectId, item.CharacterGroupId}, null)
+            </td>
+            <td style="text-align: right">
+                @item.TotalAcceptedClaims
             </td>
             <td style="text-align: right">
                 @Html.ActionLink(item.TotalDiscussedClaims.ToString(), "DiscussingForGroup", "Claim", new { Model.ProjectId, item.CharacterGroupId }, null)
