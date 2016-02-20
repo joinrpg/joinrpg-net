@@ -96,7 +96,7 @@ namespace JoinRpg.Web.Controllers
     {
       return CharacterGroupListViewModel.FromGroup(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
         .PublicGroups.SelectMany(
-          g => g.PublicCharacters.Where(ch => ch.IsHot));
+          g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
 
     [HttpGet]
