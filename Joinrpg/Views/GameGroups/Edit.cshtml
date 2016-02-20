@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
 @model EditCharacterGroupViewModel
 
 @{
@@ -61,15 +62,16 @@
             @Html.LabelFor(model => model.HaveDirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
                 @Html.EditorFor(model => model.HaveDirectSlots)
+                @Html.DescriptionFor(model => model.HaveDirectSlots)
                 @Html.ValidationMessageFor(model => model.HaveDirectSlots, "", new {@class = "text-danger"})
-                <p class="help-block">Прямые заявки — заявки не на прописанных персонажей, а на абстрактных членов группы — не на Арагорна, а на «какого-то следопыта».</p>
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.DirectSlots, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-2">
+            <div class="col-md-3">
                 @Html.EditorFor(model => model.DirectSlots, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.DescriptionFor(model => model.DirectSlots)
                 @Html.ValidationMessageFor(model => model.DirectSlots, "", new {@class = "text-danger"})
             </div>
         </div>

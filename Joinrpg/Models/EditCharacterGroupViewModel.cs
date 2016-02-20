@@ -12,10 +12,10 @@ namespace JoinRpg.Web.Models
     [DisplayName("Название группы"), Required]
     public string Name { get; set; }
 
-    [DisplayName("Лимит прямых заявок"), Range(0, 100)]
+    [Display(Name = "Лимит заявок", Description= "Не включает уже прописанных в сетке ролей"), Range(0, 100)]
     public int DirectSlots { get; set; }
 
-    [DisplayName("Прямые заявки"),Description("Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
+    [Display(Name = "Заявки в группу", Description = "Разрешены ли персонажи, кроме прописанных в сетке ролей АКА «И еще три стражника»")]
     public DirectClaimSettings HaveDirectSlots { get; set; }
 
 
@@ -54,11 +54,11 @@ namespace JoinRpg.Web.Models
 
   public enum DirectClaimSettings
   {
-    [Display(Name="Прямые заявки запрещены (только прописанные персонажи)")]
+    [Display(Name= "Заявки вне прописанных мастерами персонажей запрещены")]
     NoDirectClaims,
-    [Display(Name = "Прямые заявки разрешены")]
+    [Display(Name = "Разрешены заявки в группу (без лимита)")]
     DirectClaimsUnlimited,
-    [Display(Name = "Прямые заявки разрешены, но не более лимита")]
+    [Display(Name = "Разрешены заявки в группу, но не более лимита")]
     DirectClaimsLimited
   }
 
