@@ -613,6 +613,10 @@
       <Project>{fee778a6-b9e7-4305-b985-3c4fa5f1b1d8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
+      <Project>{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}</Project>
+      <Name>JoinRpg.Helpers.Web</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
       <Name>JoinRpg.Helpers</Name>

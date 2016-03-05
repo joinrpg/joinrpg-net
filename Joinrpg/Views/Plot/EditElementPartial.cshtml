@@ -7,7 +7,7 @@
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @{
-                  var header = Model.Content.TakeWords(10);
+                  var header = (HtmlString) Model.Content.TakeWords(10).ToHtmlString();
                     if (header == null || string.IsNullOrWhiteSpace(header.ToString()))
                     {
                         <text>***</text>

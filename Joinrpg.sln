@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.CommonUI.Models", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.CommonUI.Models.Test", "JoinRpg.CommonUI.Models.Test\JoinRpg.CommonUI.Models.Test.csproj", "{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Helpers.Web", "JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj", "{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

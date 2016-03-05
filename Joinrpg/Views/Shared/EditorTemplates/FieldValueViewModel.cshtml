@@ -10,7 +10,7 @@
     {
         <option value="@val.ProjectFieldDropdownValueId"
                 @(selectedValues.Contains(val) ? "selected='selected'" : "")
-                title='@val.Description.ToHtmlString()'>
+p                title='@val.Description.ToPlainText()'>
             @val.Label
         </option>
     }
