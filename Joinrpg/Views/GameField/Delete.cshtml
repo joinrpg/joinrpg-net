@@ -20,9 +20,10 @@
         @Html.AntiForgeryToken()
         @Html.HiddenFor(model => model.ProjectId)
         @Html.HiddenFor(model => model.ProjectFieldId)
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
         <div class="form-actions no-color">
-            <input type="submit" value="Удалить" class="btn btn-default"/> |
+            <input type="submit" value="Удалить" class="btn btn-danger"/> |
             @Html.ActionLink("Назад к списку", "Index", new {Model.ProjectId})
         </div>
     }

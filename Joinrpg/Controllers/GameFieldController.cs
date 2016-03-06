@@ -151,8 +151,9 @@ namespace JoinRpg.Web.Controllers
 
           return ReturnToIndex(field.Project);
         }
-        catch
+        catch (Exception exception)
         {
+          ModelState.AddException(exception);
           return View(field);
         }
       }

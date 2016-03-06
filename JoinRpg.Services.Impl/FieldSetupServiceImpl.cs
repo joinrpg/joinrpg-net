@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
       {
         SmartDelete(characterGroup);
       }
-      else
+      else if (characterGroup != null)
       {
         characterGroup.IsActive = false;
       }
