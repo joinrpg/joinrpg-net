@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -132,8 +133,9 @@ namespace JoinRpg.Web.Models
         : Enumerable.Empty<ClaimListItemViewModel>();
     }
 
-    public static CharacterNavigationViewModel FromClaim(Claim claim, int currentUserId, CharacterNavigationPage characterNavigationPage)
+    public static CharacterNavigationViewModel FromClaim([NotNull] Claim claim, int currentUserId, CharacterNavigationPage characterNavigationPage)
     {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
       var vm = new CharacterNavigationViewModel
       {
         CanAddClaim = false,

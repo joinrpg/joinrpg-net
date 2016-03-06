@@ -52,6 +52,7 @@ namespace JoinRpg.Domain
     NoCharacterOnApprovedClaim,
     FeePaidPartially,
     UnApprovedClaimPayment,
-    ClaimWorkStopped
+    ClaimWorkStopped,
+    ClaimDontHaveTarget
   }
 }

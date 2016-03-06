@@ -15,6 +15,10 @@ namespace JoinRpg.Domain.ClaimProblemFilters
       {
         yield return new ClaimProblem(ClaimProblemType.NoCharacterOnApprovedClaim);
       }
+      if (claim.Character == null && claim.Group == null)
+      {
+        yield return new ClaimProblem(ClaimProblemType.ClaimDontHaveTarget);
+      }
     }
   }
 }

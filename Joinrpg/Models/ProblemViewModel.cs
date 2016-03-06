@@ -60,6 +60,9 @@ namespace JoinRpg.Web.Models
     UnApprovedClaimPayment,
     [UsedImplicitly]
     [Display(Name = "Работа по заявке остановлена")]
-    ClaimWorkStopped
+    ClaimWorkStopped,
+    [UsedImplicitly]
+    [Display(Name = "Заявка не привязана ни к чему")]
+    ClaimDontHaveTarget
   }
 }
