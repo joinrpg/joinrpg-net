@@ -576,6 +576,8 @@
     <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
     <Content Include="Views\Claim\ResponsibleDiscussing.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
+    <Content Include="Views\Claim\ResponsibleOnHold.cshtml" />
+    <Content Include="Views\Claim\OnHoldList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -72,6 +72,7 @@ namespace JoinRpg.DataModel
     MoveByMaster,
     DeclineByPlayer,
     ChangeResponsible,
-    NewClaim
+    NewClaim,
+    OnHoldByMaster
   }
 }

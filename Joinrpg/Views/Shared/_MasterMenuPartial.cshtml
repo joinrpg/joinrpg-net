@@ -28,7 +28,10 @@
                                 @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "Claim", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
+                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                            </li>
+                            <li>
+                                @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "Claim", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
                         </ul>
                     </li>
@@ -66,9 +69,10 @@
 
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Все активные", "ActiveList", "Claim", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Проблемные", "Problems", "Claim", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("На обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "Claim", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "Claim", new { Model.ProjectId }, null)</li>
                             <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new {Model.ProjectId}, null)</li>
                             <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)

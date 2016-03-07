@@ -155,6 +155,9 @@ namespace JoinRpg.Services.Email
         SendClaimEmail(model, "изменена",
           $@"В заявке изменен ответственный мастер.");
 
+    public Task Email(OnHoldByMasterEmail createClaimEmail)
+      => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
+
     public Task Email(FinanceOperationEmail model)
     {
       var message = "";

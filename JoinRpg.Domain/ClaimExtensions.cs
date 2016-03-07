@@ -62,6 +62,27 @@ namespace JoinRpg.Domain
       }
     }
 
+    public static bool CanChangeTo(this Claim.Status fromStatus, Claim.Status targetStatus)
+    {
+      switch (targetStatus)
+      {
+        case Claim.Status.Approved:
+          return new[] {Claim.Status.AddedByUser, Claim.Status.Discussed}.Contains(fromStatus);
+        case Claim.Status.OnHold:
+          return
+            new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}.Contains(fromStatus);
+      }
+      throw new ArgumentException("Not implemented for target status", nameof(targetStatus));
+    }
+
+    public static void EnsureCanChangeStatus(this Claim claim, Claim.Status targetStatus)
+    {
+      if (!claim.ClaimStatus.CanChangeTo(targetStatus))
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
+    }
+
     public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
       int initiatorUserId, IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
     {
@@ -113,6 +134,12 @@ namespace JoinRpg.Domain
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId)
     {
       return enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
+    }
+
+    public static void ChangeStatusWithCheck(this Claim claim, Claim.Status targetStatus)
+    {
+      claim.EnsureCanChangeStatus(targetStatus);
+      claim.ClaimStatus = targetStatus;
     }
   }
 }

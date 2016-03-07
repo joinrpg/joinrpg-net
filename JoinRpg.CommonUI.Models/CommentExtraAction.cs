@@ -31,6 +31,9 @@ namespace JoinRpg.CommonUI.Models
     ChangeResponsible,
     [Display(Name = "Новая заявка", ShortName = "подана")]
     [UsedImplicitly]
-    NewClaim
+    NewClaim,
+    [Display(Name = "Заявка поставлена в лист ожидания", ShortName = "изменена")]
+    [UsedImplicitly]
+    OnHoldByMaster
   }
 }

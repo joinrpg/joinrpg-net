@@ -153,9 +153,8 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       var now = DateTime.UtcNow;
 
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.Discussed);
       claim.MasterAcceptedDate = now;
-      claim.ClaimStatus = Claim.Status.Approved;
+      claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, now, true, CommentExtraAction.ApproveByMaster);
@@ -358,6 +357,21 @@ namespace JoinRpg.Services.Impl
 
       FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents)
+    {
+      
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
+      claim.ChangeStatusWithCheck(Claim.Status.OnHold);
+
+      var email =
+        await
+          AddCommentWithEmail<OnHoldByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow, true,
+            s => s.ClaimStatusChange, null, CommentExtraAction.OnHoldByMaster);
+
+      await UnitOfWork.SaveChangesAsync();
+      await EmailService.Email(email);
     }
 
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork, emailService)

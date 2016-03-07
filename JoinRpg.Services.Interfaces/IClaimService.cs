@@ -15,6 +15,7 @@ namespace JoinRpg.Services.Interfaces
     Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
+    Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents);
 
     Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText);
 

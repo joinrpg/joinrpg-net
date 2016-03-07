@@ -135,6 +135,12 @@ namespace JoinRpg.Web.Controllers
         MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsInDiscussion,
           "ResponsibleDiscussing", export);
 
+    [HttpGet, Authorize]
+    public Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
+          =>
+        MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsiblemasterid && claim.ClaimStatus == Claim.Status.OnHold,
+          "ResponsibleOnHold", export);
+
     private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName,
       string export)
     {
@@ -164,6 +170,10 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public Task<ActionResult> Discussing(int projectid, string export)
       => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing", export);
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> OnHoldList(int projectid, string export)
+      => MasterList(projectid, claim => claim.ClaimStatus == Claim.Status.OnHold, "OnHoldList", export);
 
     [HttpGet, Authorize]
     public Task<ActionResult> WaitingForFee(int projectid, string export)
@@ -339,6 +349,30 @@ namespace JoinRpg.Web.Controllers
           _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+      }
+      catch (Exception exception)
+      {
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
+      }
+    }
+
+    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    public async Task<ActionResult> OnHoldByMaster(AddCommentViewModel viewModel)
+    {
+      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var error = AsMaster(claim);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await
+          _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+
+        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
       catch (Exception exception)
       {

@@ -66,6 +66,11 @@ namespace JoinRpg.Domain
       : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
     {
     }
+
+    public ClaimWrongStatusException(Claim entity)
+      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}")
+    {
+    }
   }
 
   public class NoAccessToProjectException : JoinRpgProjectEntityException
