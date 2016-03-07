@@ -367,7 +367,7 @@ namespace JoinRpg.Services.Impl
       {
         throw new ArgumentNullException(nameof(claim));
       }
-      if (((IProjectEntity) claim).Project == null)
+      if (claim.Project == null)
       {
         throw new ArgumentNullException(nameof(IProjectEntity.Project));
       }
