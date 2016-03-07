@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -324,7 +325,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       claim.RequestMasterAccess(currentUserId);
       claim.RequestMasterAccess(responsibleMasterId);
 
@@ -346,7 +347,18 @@ namespace JoinRpg.Services.Impl
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = await ProjectRepository.GetClaim(projectId, claimId);
-      claim.RequestMasterAccess(currentUserId, acl => acl.CanApproveClaims);
+      if (claim == null)
+      {
+        throw new ArgumentNullException(nameof(claim));
+      }
+      if (((IProjectEntity) claim).Project == null)
+      {
+        throw new ArgumentNullException(nameof(IProjectEntity.Project));
+      }
+      if (!claim.CanManageClaim(currentUserId))
+      {
+        throw new NoAccessToProjectException(claim.Project, currentUserId, acl => acl.CanManageClaims);
+      }
       return claim;
     }
 

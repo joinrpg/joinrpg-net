@@ -20,7 +20,7 @@
 
     public bool CanGrantRights { get; set; }
 
-    public bool CanApproveClaims { get; set; }
+    public bool CanManageClaims { get; set; }
 
     public bool CanEditRoles { get; set; }
     public bool CanAcceptCash { get; set; }
@@ -37,7 +37,7 @@
         UserId = userId,
         IsOwner = true,
         CanGrantRights =  true,
-        CanApproveClaims = true,
+        CanManageClaims = true,
         CanEditRoles =  true,
         CanAcceptCash = true,
         CanManageMoney = true

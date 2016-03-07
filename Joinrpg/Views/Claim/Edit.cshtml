@@ -38,53 +38,55 @@
 <div class="panel panel-default">
     <div class="panel-heading"><h4>Заявка</h4></div>
     <div class="panel-body"><dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Player)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Player) 
-            <button type="button" class="btn btn-xs btn-default" data-toggle="popover" title="Контакты" data-html="true" data-content='@Html.DisplayFor(model => model.PlayerDetails)'>контакты</button>
-        </dd>
-        @if (Model.CharacterGroupId != null)
-        {
             <dt>
-                @Html.DisplayNameFor(model => model.GroupName)
+                @Html.DisplayNameFor(model => model.Player)
             </dt>
 
             <dd>
-                @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+                @Html.DisplayFor(model => model.Player)
+                <button type="button" class="btn btn-xs btn-default" data-toggle="popover" title="Контакты" data-html="true" data-content='@Html.DisplayFor(model => model.PlayerDetails)'>контакты</button>
             </dd>
-        }
-        <dt>
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        @if (Model.ParentGroups != null)
-        {
-            <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-            <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
-        }
-        @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
-        {
-            <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
-            <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
-        }
-        @if (Model.HasMasterAccess)
-        {
+            @if (Model.CharacterGroupId != null)
+            {
+                <dt>
+                    @Html.DisplayNameFor(model => model.GroupName)
+                </dt>
+
+                <dd>
+                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+                </dd>
+            }
             <dt>
-                @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+                @Html.DisplayNameFor(model => model.Status)
             </dt>
             <dd>
-                @using (Html.BeginForm("ChangeResponsible", "Claim"))
+                @Html.DisplayFor(model => model.Status)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+            @if (Model.ParentGroups != null)
+            {
+                <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+                <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+            }
+            @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
+            {
+                <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
+                <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
+            }
+
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+        </dt>
+        <dd>
+            @if (Model.CanManageThisClaim)
+            {
+                using (Html.BeginForm("ChangeResponsible", "Claim"))
                 {
                     <div class="form-inline input-group-sm">
                         @Html.AntiForgeryToken()
@@ -99,14 +101,22 @@
                         <input type="submit" value="Изменить" class="btn btn-default btn-sm"/>
                     </div>
                 }
-            </dd>
-        }
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.ResponsibleMaster)
+                if (Model.HasMasterAccess)
+                {
+                    <span class="help-block">Изменять ответственного мастера для чужих заявок могут только администраторы.</span>
+                }
+            }
+        </dd>
         </dl>
     </div>
 </div>
     <div class="panel-group">
         <div class="btn-group">
-            @if (Model.HasApproveRejectClaim)
+            @if (Model.CanManageThisClaim)
             {
                 if (Model.Status.CanChangeTo(Claim.Status.Approved))
                 {

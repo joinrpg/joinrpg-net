@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
-          viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanApproveClaims,
+          viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
           viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
       }
       catch
@@ -105,7 +105,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           ProjectService.ChangeAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
-            viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanApproveClaims,
+            viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
             viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
       }
       catch

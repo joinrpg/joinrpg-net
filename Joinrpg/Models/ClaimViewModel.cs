@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Models
     public bool IsMyClaim { get; set; }
 
     public bool HasMasterAccess { get; set; }
-    public bool HasApproveRejectClaim { get; set; }
+    public bool CanManageThisClaim { get; set; }
     public IEnumerable<CommentViewModel> Comments { get; set; }
 
     public int? CharacterId { get; set; }
@@ -40,6 +40,9 @@ namespace JoinRpg.Web.Models
 
     [Display(Name = "Ответственный мастер")]
     public int ResponsibleMasterId { get; set; }
+
+    [Display(Name = "Ответственный мастер"), ReadOnly(true)]
+    public User ResponsibleMaster { get; set; }
 
     [ReadOnly(true)]
     public IEnumerable<MasterListItemViewModel> Masters { get; set; }

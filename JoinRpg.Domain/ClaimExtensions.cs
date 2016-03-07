@@ -141,5 +141,11 @@ namespace JoinRpg.Domain
       claim.EnsureCanChangeStatus(targetStatus);
       claim.ClaimStatus = targetStatus;
     }
+
+    public static bool CanManageClaim(this Claim claim, int currentUserId)
+    {
+      return claim.HasMasterAccess(currentUserId, acl => acl.CanManageClaims) ||
+             claim.ResponsibleMasterUserId == currentUserId;
+    }
   }
 }

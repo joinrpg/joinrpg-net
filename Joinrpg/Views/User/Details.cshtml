@@ -72,11 +72,11 @@
                            };}
                         @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new {Projects = Model.ProjectsToAdd})
                         <div class="form-group">
-                            @Html.LabelFor(model => acl.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanApproveClaims"})
+                            @Html.LabelFor(model => acl.CanManageClaims, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanManageClaims"})
                             <div class="col-md-1">
                                 <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanApproveClaims, null, htmlFieldName: "CanApproveClaims")
-                                    @Html.ValidationMessageFor(model => acl.CanApproveClaims, "", new {@class = "text-danger"})
+                                    @Html.EditorFor(model => acl.CanManageClaims, null, htmlFieldName: "CanManageClaims")
+                                    @Html.ValidationMessageFor(model => acl.CanManageClaims, "", new {@class = "text-danger"})
                                 </div>
                             </div>
                         </div>

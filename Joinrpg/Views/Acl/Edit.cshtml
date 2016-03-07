@@ -15,11 +15,11 @@
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new {@class = "text-danger"})
         <div class="form-group">
-            @Html.LabelFor(model => model.CanApproveClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.CanManageClaims, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.EditorFor(model => model.CanApproveClaims)
-                    @Html.ValidationMessageFor(model => model.CanApproveClaims, "", new {@class = "text-danger"})
+                    @Html.EditorFor(model => model.CanManageClaims)
+                    @Html.ValidationMessageFor(model => model.CanManageClaims, "", new {@class = "text-danger"})
                 </div>
             </div>
         </div>

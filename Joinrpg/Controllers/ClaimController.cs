@@ -243,7 +243,7 @@ namespace JoinRpg.Web.Controllers
           claim.Comments.Where(comment => comment.ParentCommentId == null)
             .Select(comment => new CommentViewModel(comment, CurrentUserId)),
         HasMasterAccess = claim.HasMasterAccess(CurrentUserId),
-        HasApproveRejectClaim = claim.HasMasterAccess(CurrentUserId, acl => acl.CanApproveClaims),
+        CanManageThisClaim = claim.CanManageClaim(CurrentUserId),
         IsMyClaim = claim.PlayerUserId == CurrentUserId,
         Player = claim.Player,
         ProjectId = claim.ProjectId,
@@ -260,6 +260,7 @@ namespace JoinRpg.Web.Controllers
           MasterListItemViewModel.FromProject(claim.Project)
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
+        ResponsibleMaster = claim.ResponsibleMasterUser,
         Fields = new CustomFieldsViewModel(CurrentUserId, claim.Project).FillFromClaim(claim),
         Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
         ClaimFee = new ClaimFeeViewModel()

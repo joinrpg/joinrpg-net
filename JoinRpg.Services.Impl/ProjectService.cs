@@ -223,7 +223,7 @@ namespace JoinRpg.Services.Impl
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
       acl.CanChangeProjectProperties = canChangeProjectProperties;
-      acl.CanApproveClaims = canApproveClaims;
+      acl.CanManageClaims = canApproveClaims;
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
@@ -269,7 +269,7 @@ namespace JoinRpg.Services.Impl
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
       acl.CanChangeProjectProperties = canChangeProjectProperties;
-      acl.CanApproveClaims = canApproveClaims;
+      acl.CanManageClaims = canApproveClaims;
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;

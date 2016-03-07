@@ -14,8 +14,8 @@ namespace JoinRpg.Web.Models
     [Display(Name="Мастер")]
     public User Master { get; set; }
 
-    [DisplayName("Принимать / отклонять заявки ")]
-    public bool CanApproveClaims { get; set; }
+    [DisplayName("Администратор заявок")]
+    public bool CanManageClaims { get; set; }
 
     [DisplayName("Настраивать поля персонажа")]
     public bool CanChangeFields { get; set; }
@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Models
         ProjectId = acl.ProjectId,
         ProjectAclId = acl.ProjectAclId,
         UserId = acl.UserId,
-        CanApproveClaims = acl.CanApproveClaims,
+        CanManageClaims = acl.CanManageClaims,
         CanChangeFields = acl.CanChangeFields,
         CanChangeProjectProperties = acl.CanChangeProjectProperties,
         CanGrantRights = acl.CanGrantRights,
