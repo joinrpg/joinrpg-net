@@ -160,7 +160,7 @@
             }
             @if (Model.IsMyClaim)
             {
-                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved)
+                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved || Model.Status == Claim.Status.Discussed)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
                         aria-expanded="false">
