@@ -242,10 +242,15 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
       var source = await GetClaimSource(projectId, characterGroupId, characterId);
 
+      //Grab subscribtions before change 
+      var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange, currentUserId, null, true);
+
       EnsureCanAddClaim(currentUserId, source);
 
       claim.CharacterGroupId = characterGroupId;
       claim.CharacterId = characterId;
+      claim.Group = source as CharacterGroup; //That fields is required later
+      claim.Character = source as Character; //That fields is required later
 
       if (claim.IsApproved && claim.CharacterId == null)
       {
@@ -257,7 +262,7 @@ namespace JoinRpg.Services.Impl
         await
           AddCommentWithEmail<MoveByMasterEmail>(currentUserId, contents, claim, DateTime.UtcNow,
             isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
-            extraAction: CommentExtraAction.MoveByMaster);
+            extraAction: CommentExtraAction.MoveByMaster, extraSubscriptions: subscribe);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
@@ -321,13 +326,17 @@ namespace JoinRpg.Services.Impl
 
     private async Task<T> AddCommentWithEmail<T>(int currentUserId, string commentText, Claim claim, DateTime now,
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
-      CommentExtraAction? extraAction = null) where T : ClaimEmailModel, new()
+      CommentExtraAction? extraAction = null, IEnumerable<User> extraSubscriptions = null) where T : ClaimEmailModel, new()
     {
       var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false; 
       claim.AddCommentImpl(currentUserId, parentComment, commentText, now, visibleToPlayerUpdated, extraAction);
+
+      var extraRecepients =
+        new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User}.
+        Union(extraSubscriptions ?? Enumerable.Empty<User>());
       return
         await
-          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated, extraAction, new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User});
+          CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated, extraAction, extraRecepients);
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -342,7 +351,7 @@ namespace JoinRpg.Services.Impl
         AddCommentWithEmail<ChangeResponsibleMasterEmail>(currentUserId,
           $"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}", claim, DateTime.UtcNow,
           isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
-          extraAction: CommentExtraAction.ChangeResponsible);
+          extraAction: CommentExtraAction.ChangeResponsible, extraSubscriptions: new [] {newMaster});
       
       claim.ResponsibleMasterUserId = responsibleMasterId;
 

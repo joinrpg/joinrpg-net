@@ -84,7 +84,7 @@ namespace JoinRpg.Domain
     }
 
     public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
-      int initiatorUserId, IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
+      int initiatorUserId, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
     {
       return claim.GetParentGroups() //Get all groups for claim
         .SelectMany(g => g.Subscriptions) //get subscriptions on groups
@@ -94,7 +94,7 @@ namespace JoinRpg.Domain
         .Select(u => u.User) //Select users
         .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
         .Union(claim.Player) //...and player himself also
-        .Union(extraRecepients) //add extra recepients
+        .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
         .Where(u => isVisibleToPlayer || u != claim.Player) //remove player if we doing something not player visible
         .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
         .Distinct() //One user can be subscribed by multiple reasons
