@@ -316,6 +316,12 @@
                         При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
                     </div>
                         }
+                        if (Model.CharacterActive == false)
+                        {
+                            <div class="alert alert-info">
+                                Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
+                            </div>
+                        }
                     @Html.Partial("AddCommentPartial", new AddCommentViewModel
                {
                    ProjectId = Model.ProjectId,

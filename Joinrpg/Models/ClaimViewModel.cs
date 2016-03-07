@@ -71,6 +71,9 @@ namespace JoinRpg.Web.Models
     public IEnumerable<ProblemViewModel> Problems { get; set; }
 
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
+
+    [ReadOnly(true)]
+    public bool? CharacterActive { get; set; }
   }
 
   public class ClaimFeeViewModel

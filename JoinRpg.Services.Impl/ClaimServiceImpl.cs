@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -213,18 +212,26 @@ namespace JoinRpg.Services.Impl
       var now = DateTime.UtcNow;
 
       claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold);
-
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
-
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
-      if (claim.CharacterId != null && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved))
+
+      if (claim.CharacterId != null)
       {
-        claim.CharacterId = null;
-        claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
+        if (claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved))
+        {
+          claim.CharacterId = null;
+          claim.CharacterGroupId = claim.Project.RootGroup.CharacterGroupId;
+        } else if (claim.Character.IsActive == false)
+        {
+          claim.Character.IsActive = true;
+        }
       }
-      
-      var email = await AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, now, true, s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster);
+
+      var email =
+        await
+          AddCommentWithEmail<RestoreByMasterEmail>(currentUserId, commentText, claim, now, true,
+            s => s.ClaimStatusChange, null, CommentExtraAction.RestoreByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);

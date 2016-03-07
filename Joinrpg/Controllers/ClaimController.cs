@@ -251,6 +251,7 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = claim.CharacterGroupId,
         GroupName = claim.Group?.CharacterGroupName,
         CharacterId = claim.CharacterId,
+        CharacterActive = claim.Character?.IsActive,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
         Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
