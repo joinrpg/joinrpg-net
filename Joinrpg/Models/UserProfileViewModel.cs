@@ -27,6 +27,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public AccessReason Reason { get; set; }
+
+    [ReadOnly(true)]
+    public string Hash { get; set; }
   }
 
   public class UserProfileDetailsViewModel

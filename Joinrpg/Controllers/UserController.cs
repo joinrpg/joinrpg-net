@@ -2,8 +2,10 @@
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 
@@ -55,7 +57,8 @@ namespace JoinRpg.Web.Controllers
         {
           DisplayName = user.DisplayName,
           ThisUserProjects = user.ProjectAcls,
-          UserId = user.UserId
+          UserId = user.UserId,
+          Hash = user.Email.GravatarHash()
         };
 
         return PartialView(userProfileViewModel);
@@ -73,8 +76,7 @@ namespace JoinRpg.Web.Controllers
 
       public ActionResult GetAvatar(int userId)
       {
-      var user = UserManager.FindById(userId);
-        var hash = user.Email.ToLowerInvariant().ToHexHash(MD5.Create());
+        var hash = UserManager.FindById(userId).Email.GravatarHash();
       return Content($"https://www.gravatar.com/avatar/{hash}?d=identicon&s=64");
     }
     }
