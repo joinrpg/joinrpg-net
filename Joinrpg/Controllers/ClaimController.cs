@@ -528,10 +528,10 @@ namespace JoinRpg.Web.Controllers
 
         return ReturnToClaim(viewModel);
       }
-      catch
+      catch (Exception exception)
       {
-        //TODO: Message that comment is not added
-        return ReturnToClaim(viewModel);
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
       }
     }
 
