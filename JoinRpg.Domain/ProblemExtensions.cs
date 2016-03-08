@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.CharacterProblemFilters;
 using JoinRpg.Domain.ClaimProblemFilters;
 
 namespace JoinRpg.Domain
 {
   public static class ClaimProblemExtensions
   {
-    private static IClaimProblemFilter[] Filters { get; }
+    private static IProblemFilter<Claim>[] Filters { get; }
 
     public static IEnumerable<ClaimProblem> GetProblems(this Claim claim, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
     {
@@ -17,10 +18,28 @@ namespace JoinRpg.Domain
 
     static ClaimProblemExtensions()
     {
-      Filters = new IClaimProblemFilter[]
+      Filters = new IProblemFilter<Claim>[]
       {
         new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new BrokenClaimsAndCharacters(),
-        new FinanceProblemsFilter(), new ClaimWorkStopped(),
+        new FinanceProblemsFilter(), new ClaimWorkStopped(), new FieldNotSetFilterClaim()
+      };
+    }
+  }
+
+  public static class CharacterProblemExtensions
+  {
+    private static IProblemFilter<Character>[] Filters { get; }
+
+    public static IEnumerable<ClaimProblem> GetProblems(this Character claim, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
+    {
+      return Filters.SelectMany(f => f.GetProblems(claim)).Where(p => p.Severity >= minimalSeverity);
+    }
+
+    static CharacterProblemExtensions()
+    {
+      Filters = new IProblemFilter<Character>[]
+      {
+        new FieldNotSetFilterCharacter()
       };
     }
   }
@@ -31,14 +50,16 @@ namespace JoinRpg.Domain
     public ClaimProblemType ProblemType { get; }
 
     public DateTime? ProblemTime { get; }
+    public string ExtraInfo { get;  }
 
     public ProblemSeverity Severity { get;  }
 
-    public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null)
+    public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string extraInfo = null)
     {
       ProblemType = problemType;
       Severity = severity;
       ProblemTime = problemTime;
+      ExtraInfo = extraInfo;
     }
   }
 
@@ -56,7 +77,9 @@ namespace JoinRpg.Domain
     FeePaidPartially,
     UnApprovedClaimPayment,
     ClaimWorkStopped,
-    ClaimDontHaveTarget
+    ClaimDontHaveTarget,
+    DeletedFieldHasValue,
+    FieldIsEmpty
   }
 
   public enum ProblemSeverity

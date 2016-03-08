@@ -4,7 +4,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.ClaimProblemFilters
 {
-  public class FinanceProblemsFilter : IClaimProblemFilter
+  public class FinanceProblemsFilter : IProblemFilter<Claim>
   {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {

@@ -23,6 +23,16 @@ namespace JoinRpg.Dal.Impl.Repositories
       return Ctx.ProjectsSet.Include(p => p.Claims.Select(c => c.Player)).Where(p => p.ProjectId == projectId).LoadAsync();
     }
 
+    protected Task LoadProjectClaimsAndComments(int projectId)
+    {
+      return Ctx.ClaimSet
+        .Include(c => c.Comments.Select(cm => cm.Finance))
+        .Include(c => c.Watermarks)
+        .Include(c => c.Player)
+        .Include(c => c.FinanceOperations)
+        .Where(c => c.ProjectId == projectId).LoadAsync();
+    }
+
     protected Task LoadProjectCharactersAndGroups(int projectId)
     {
       return Ctx.ProjectsSet

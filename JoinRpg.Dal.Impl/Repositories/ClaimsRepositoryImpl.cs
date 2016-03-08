@@ -33,14 +33,10 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
+      await LoadProjectClaimsAndComments(projectId);
 
-      return await
-        Ctx.ClaimSet    
-          .Include(c => c.Comments.Select(cm => cm.Finance))
-          .Include(c => c.Watermarks)
-          .Include(c => c.Player)
-          .Include(c => c.FinanceOperations)
-          .Where(c => c.ProjectId == projectId).ToListAsync();
+      //Sync operation, as anything should be loaded already
+      return Ctx.ProjectsSet.Find(projectId).Claims;
     }
 
     public async Task<ICollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId)

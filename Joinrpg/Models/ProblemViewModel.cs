@@ -12,13 +12,16 @@ namespace JoinRpg.Web.Models
       ProblemType = (ProblemTypeViewModel) problem.ProblemType;
       ProblemTime = problem.ProblemTime;
       Severity = problem.Severity;
+      Extra = problem.ExtraInfo;
     }
 
-    public ProblemTypeViewModel ProblemType { get; set; }
+    public ProblemTypeViewModel ProblemType { get;  }
 
-    public DateTime? ProblemTime { get; set; }
+    public DateTime? ProblemTime { get; }
 
-    public ProblemSeverity Severity { get; set; }
+    public ProblemSeverity Severity { get;  }
+
+    public string Extra { get; }
   }
 
 
@@ -65,6 +68,12 @@ namespace JoinRpg.Web.Models
     ClaimWorkStopped,
     [UsedImplicitly]
     [Display(Name = "Заявка не привязана ни к чему")]
-    ClaimDontHaveTarget
+    ClaimDontHaveTarget,
+    [UsedImplicitly]
+    [Display(Name = "Значение в удаленном поле")]
+    DeletedFieldHasValue,
+    [UsedImplicitly]
+    [Display(Name = "Поле не заполнено")]
+    FieldIsEmpty
   }
 }

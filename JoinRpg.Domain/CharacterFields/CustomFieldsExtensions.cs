@@ -47,7 +47,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    private static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, IFieldContainter container)
+    public static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, IFieldContainter container)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (container == null)

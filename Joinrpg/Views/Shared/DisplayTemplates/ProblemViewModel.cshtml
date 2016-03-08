@@ -31,4 +31,7 @@
     {
         @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")
     }
+    @if (!string.IsNullOrWhiteSpace(Model.Extra))
+    {<text>: @Model.Extra</text>
+    }
 </span>

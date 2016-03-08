@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.ClaimProblemFilters
 {
-  internal interface IClaimProblemFilter
+  internal interface IProblemFilter<in TObject>
   {
-    IEnumerable<ClaimProblem> GetProblems(Claim claim);
+    IEnumerable<ClaimProblem> GetProblems(TObject claim);
   }
 }

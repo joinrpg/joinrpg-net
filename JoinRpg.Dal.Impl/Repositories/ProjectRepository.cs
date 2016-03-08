@@ -146,6 +146,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
+      await LoadProjectClaimsAndComments(projectId);
 
       //This is sync operation becase Project should be already loaded here
       return Ctx.Set<Project>().Find(projectId).Characters;

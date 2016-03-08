@@ -67,7 +67,7 @@ namespace JoinRpg.Web.Controllers
       var error = await AsMaster(claims, projectId);
       if (error != null) return error;
 
-      var viewModel = claims.Select(claim => ClaimListItemViewModel.FromCharacter(claim, CurrentUserId)).ToList();
+      var viewModel = claims.Select(claim => ClaimListItemViewModel.FromCharacter(claim, CurrentUserId).AddProblems(claim.GetProblems())).ToList();
       return await ShowMasterList(viewName, export, viewModel, title);
     }
 
