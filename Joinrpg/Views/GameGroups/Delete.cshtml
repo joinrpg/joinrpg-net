@@ -5,7 +5,7 @@
 
 
 @{
-  ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "» из игры " + Model.Project.ProjectName;
+  ViewBag.Title = "Удаление группы персонажей «" + Model.CharacterGroupName + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -68,8 +68,8 @@ else
         @Html.HiddenFor(model => model.CharacterGroupId)
         @Html.HiddenFor(model => model.ProjectId)
         <div class="form-actions no-color">
-            <input type="submit" value="Удалить" class="btn btn-default"/>
-            <br/>
+            <input type="submit" value="Удалить" class="btn btn-danger"/>
+            | 
             @Html.ActionLink("Назад к сетке ролей", "Index", new {@Model.ProjectId}, null)
         </div>
     }

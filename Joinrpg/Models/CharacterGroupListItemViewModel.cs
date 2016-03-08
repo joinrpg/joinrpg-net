@@ -8,21 +8,13 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-
-  public interface ICharacterGroupLinkViewModel
-  {
-    int CharacterGroupId { get; }
-    string Name { get; }
-    bool IsPublic { get; }
-    int ProjectId { get; }
-  }
-
-  public class CharacterGroupLinkViewModel : ICharacterGroupLinkViewModel
+  public class CharacterGroupLinkViewModel
   {
     public int CharacterGroupId { get; }
     public string Name { get; }
     public bool IsPublic { get; }
     public int ProjectId { get; }
+    public bool IsActive { get; }
 
     public CharacterGroupLinkViewModel(CharacterGroup group)
     {
@@ -30,6 +22,7 @@ namespace JoinRpg.Web.Models
       Name = group.CharacterGroupName;
       IsPublic = group.IsPublic;
       ProjectId = group.ProjectId;
+      IsActive = group.IsActive;
     }
   }
 

@@ -1,6 +1,13 @@
 ﻿@model JoinRpg.Web.Models.CharacterParentGroupsViewModel
-@foreach (var gr in Model.ParentGroups.Where(g => Model.HasMasterAccess || g.IsPublic))
+@foreach (var gr in Model.ParentGroups.Where(g => Model.HasMasterAccess || (g.IsPublic && g.IsActive)))
 {
-    @Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, null)
+    if (gr.IsActive)
+    {
+        @Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, null)
+    }
+    else
+    {
+        <s>@Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, null)</s>
+    }
     <br/>
 }

@@ -15,7 +15,7 @@ namespace JoinRpg.Web.Models
   {
     public bool HasMasterAccess { get; private set; }
     [ReadOnly(true), DisplayName("Входит в группы")]
-    public IEnumerable<ICharacterGroupLinkViewModel> ParentGroups { get; private set; }
+    public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; private set; }
 
     public static CharacterParentGroupsViewModel FromCharacter([NotNull] Character character, bool hasMasterAccess)
     {
