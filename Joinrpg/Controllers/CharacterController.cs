@@ -137,7 +137,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
           viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
-        return RedirectToIndex(project1);
+        return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.First());
       }
       catch
       {

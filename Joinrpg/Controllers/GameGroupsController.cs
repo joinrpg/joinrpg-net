@@ -332,7 +332,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-        return RedirectToIndex(project);
+        return RedirectToIndex(project.ProjectId, viewModel.ParentCharacterGroupIds.First());
       }
       catch
       {
