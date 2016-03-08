@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using JoinRpg.Domain;
@@ -30,50 +30,50 @@ namespace JoinRpg.Web.Models
   /// </summary>
   public enum ProblemTypeViewModel
   {
-    [Display(Name = "Не назначен мастер")]
+    [Display(Name = "РќРµ РЅР°Р·РЅР°С‡РµРЅ РјР°СЃС‚РµСЂ")]
     [UsedImplicitly]
     NoResponsibleMaster,
-    [Display(Name = "Неверный мастер")]
+    [Display(Name = "РќРµРІРµСЂРЅС‹Р№ РјР°СЃС‚РµСЂ")]
     [UsedImplicitly]
     InvalidResponsibleMaster,
-    [Display(Name = "Заявка без ответа")]
+    [Display(Name = "Р—Р°СЏРІРєР° Р±РµР· РѕС‚РІРµС‚Р°")]
     [UsedImplicitly]
     ClaimNeverAnswered,
-    [Display(Name = "По заявке нет решения")]
+    [Display(Name = "РџРѕ Р·Р°СЏРІРєРµ РЅРµС‚ СЂРµС€РµРЅРёСЏ")]
     [UsedImplicitly]
     ClaimNoDecision,
     [UsedImplicitly]
-    [Display(Name = "Персонаж уже занят")]
+    [Display(Name = "РџРµСЂСЃРѕРЅР°Р¶ СѓР¶Рµ Р·Р°РЅСЏС‚")]
     ClaimActiveButCharacterHasApprovedClaim,
     [UsedImplicitly]
-    [Display(Name = "Взнос на модерации")]
+    [Display(Name = "Р’Р·РЅРѕСЃ РЅР° РјРѕРґРµСЂР°С†РёРё")]
     FinanceModerationRequired,
     [UsedImplicitly]
-    [Display(Name = "Есть переплата по взносу")]
+    [Display(Name = "Р•СЃС‚СЊ РїРµСЂРµРїР»Р°С‚Р° РїРѕ РІР·РЅРѕСЃСѓ")]
     TooManyMoney,
     [UsedImplicitly]
-    [Display(Name = "Обсуждение остановилось")]
+    [Display(Name = "РћР±СЃСѓР¶РґРµРЅРёРµ РѕСЃС‚Р°РЅРѕРІРёР»РѕСЃСЊ")]
     ClaimDiscussionStopped,
     [UsedImplicitly]
-    [Display(Name = "Нет персонажа у заявки")]
+    [Display(Name = "РќРµС‚ РїРµСЂСЃРѕРЅР°Р¶Р° Сѓ Р·Р°СЏРІРєРё")]
     NoCharacterOnApprovedClaim,
     [UsedImplicitly]
-    [Display(Name = "Взнос уплачен частично")]
+    [Display(Name = "Р’Р·РЅРѕСЃ СѓРїР»Р°С‡РµРЅ С‡Р°СЃС‚РёС‡РЅРѕ")]
     FeePaidPartially,
     [UsedImplicitly]
-    [Display(Name = "Оплата в непринятой заявке")]
+    [Display(Name = "РћРїР»Р°С‚Р° РІ РЅРµРїСЂРёРЅСЏС‚РѕР№ Р·Р°СЏРІРєРµ")]
     UnApprovedClaimPayment,
     [UsedImplicitly]
-    [Display(Name = "Работа по заявке остановлена")]
+    [Display(Name = "Р Р°Р±РѕС‚Р° РїРѕ Р·Р°СЏРІРєРµ РѕСЃС‚Р°РЅРѕРІР»РµРЅР°")]
     ClaimWorkStopped,
     [UsedImplicitly]
-    [Display(Name = "Заявка не привязана ни к чему")]
+    [Display(Name = "Р—Р°СЏРІРєР° РЅРµ РїСЂРёРІСЏР·Р°РЅР° РЅРё Рє С‡РµРјСѓ")]
     ClaimDontHaveTarget,
     [UsedImplicitly]
-    [Display(Name = "Значение в удаленном поле")]
+    [Display(Name = "Р—РЅР°С‡РµРЅРёРµ РІ СѓРґР°Р»РµРЅРЅРѕРј РїРѕР»Рµ")]
     DeletedFieldHasValue,
     [UsedImplicitly]
-    [Display(Name = "Поле не заполнено")]
+    [Display(Name = "РџРѕР»Рµ РЅРµ Р·Р°РїРѕР»РЅРµРЅРѕ")]
     FieldIsEmpty
   }
 }
