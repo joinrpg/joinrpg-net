@@ -28,6 +28,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Описание")]
     public MarkdownViewModel Description { get; set; }
 
+    [Display(Name = "Обязательное?")]
+    public MandatoryStatusViewType MandatoryStatus { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)
@@ -64,6 +67,7 @@ namespace JoinRpg.Web.Models
       DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
       FieldViewType = (ProjectFieldViewType) field.FieldType;
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
+      MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
     }
 
     public GameFieldEditViewModel()
@@ -108,6 +112,19 @@ namespace JoinRpg.Web.Models
     Character,
     [Display(Name = "заявке"), UsedImplicitly]
     Claim,
+  }
+
+  public enum MandatoryStatusViewType
+  {
+    [Display(Name = "Опциональное"), UsedImplicitly] Optional,
+
+    [Display(Name = "Рекомендованное",
+      Description =
+        "При незаполненном поле будет выдаваться предупреждение, а заявка или персонаж — помечаться как проблемные"),
+     UsedImplicitly] Recommended,
+    [Display(Name = "Обязательное", Description =
+        "Сохранение с незаполенным полем будет невозможно."), 
+      UsedImplicitly] Required
   }
 
   public class GameFieldCreateViewModel : GameFieldViewModelBase

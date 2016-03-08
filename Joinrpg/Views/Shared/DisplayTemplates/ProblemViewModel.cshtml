@@ -5,26 +5,23 @@
   switch (Model.Severity)
   {
       case ProblemSeverity.Hint:
-          style = "bg-info";
+          style = "label-info";
           break;
       case ProblemSeverity.Warning:
-          style = "bg-warning";
+          style = "label-warning";
           break;
       case ProblemSeverity.Error:
       case ProblemSeverity.Fatal:
-          style = "bg-danger";
+          style = "label-danger";
           break;
       default:
           throw new ArgumentOutOfRangeException();
   }
 }
-<span style="white-space: nowrap" class="@style">
+<div class="label @style">
     @if (Model.Severity == ProblemSeverity.Fatal)
     {
-        <span class="label label-danger">
-<span class="glyphicon glyphicon-exclamation-sign"></span>
-            Обратитесь в поддержку сайта
-</span>
+<span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
     }
     @Html.DisplayFor(modelItem => Model.ProblemType)
     @if (Model.ProblemTime != null)
@@ -34,4 +31,4 @@
     @if (!string.IsNullOrWhiteSpace(Model.Extra))
     {<text>: @Model.Extra</text>
     }
-</span>
+</div><br/>

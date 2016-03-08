@@ -241,6 +241,10 @@
     <Compile Include="Migrations\201603071838222_CanManageClaims.Designer.cs">
       <DependentUpon>201603071838222_CanManageClaims.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603081354491_FieldsMandatory.cs" />
+    <Compile Include="Migrations\201603081354491_FieldsMandatory.Designer.cs">
+      <DependentUpon>201603081354491_FieldsMandatory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -412,6 +416,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603071838222_CanManageClaims.resx">
       <DependentUpon>201603071838222_CanManageClaims.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603081354491_FieldsMandatory.resx">
+      <DependentUpon>201603081354491_FieldsMandatory.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

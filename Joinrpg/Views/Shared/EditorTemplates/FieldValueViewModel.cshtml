@@ -10,12 +10,20 @@
     {
         <option value="@val.ProjectFieldDropdownValueId"
                 @(selectedValues.Contains(val) ? "selected='selected'" : "")
-p                title='@val.Description.ToPlainText()'>
+                title='@val.Description.ToPlainText()'>
             @val.Label
         </option>
     }
 }
-  @if (Model.FieldViewType == ProjectFieldViewType.Header)
+@helper ValidationMessage()
+{
+    if (Model.MandatoryStatus != MandatoryStatusViewType.Optional)
+    {
+        <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
+    }
+}
+
+@if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
       <h4>@Model.FieldName</h4>
       <div class="help-block">
@@ -28,10 +36,23 @@ p                title='@val.Description.ToPlainText()'>
 
     <label class="control-label col-md-2">
         @Model.FieldName
-        @if (ViewBag.HideCharacterClaimFieldsIcon != true)
+        @switch (Model.MandatoryStatus)
         {
-            if (Model.FieldBound == FieldBoundToViewModel.Claim)
-            {
+            case MandatoryStatusViewType.Optional:
+                break;
+            case MandatoryStatusViewType.Recommended:
+            <span class="text-info" title="Рекомендуется заполнить это поле">*</span>
+                break;
+            case MandatoryStatusViewType.Required:
+            <span class="text-danger" title="Поле обязательно к заполнению">*</span>
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        @if (ViewBag.HideCharacterClaimFieldsIcon != true)
+        {<text>&nbsp;</text>
+    if (Model.FieldBound == FieldBoundToViewModel.Claim)
+    {
                 <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
             }
             if (Model.FieldBound == FieldBoundToViewModel.Character)
@@ -39,21 +60,37 @@ p                title='@val.Description.ToPlainText()'>
                 <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
             }
         }
-
     </label>
     <div class="col-md-10">
+        @{
+            var requiredMsg = new MvcHtmlString("");
+            switch (Model.MandatoryStatus)
+            {
+                case MandatoryStatusViewType.Optional:
+                    requiredMsg = new MvcHtmlString("");
+                    break;
+                case MandatoryStatusViewType.Recommended:
+                    //TODO improve
+                    requiredMsg = new MvcHtmlString("");
+                    break;
+                case MandatoryStatusViewType.Required:
+                    requiredMsg = new MvcHtmlString("data-val=true data-val-required=\"Необходимо заполнить поле.\"");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         @switch (Model.FieldViewType)
         {
             case ProjectFieldViewType.Text:
-                <textarea class="form-control" cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" rows="4">@(Model == null ? "" : Model.Value)</textarea>
+                <textarea class="form-control" cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" @requiredMsg rows="4">@(Model == null ? "" : Model.Value)</textarea>
                 break;
             case ProjectFieldViewType.Dropdown:
-                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control">
+                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" @requiredMsg>
                     @{
                         var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
-                @*if (isEmpty || !Model.Field.IsRequired)*@
-                        if (true)
+                        if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
                         {
                             <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
                         }
@@ -62,22 +99,22 @@ p                title='@val.Description.ToPlainText()'>
                 </select>
                 break;
             case ProjectFieldViewType.String:
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control">
+                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" @requiredMsg>
                 break;
             case ProjectFieldViewType.Checkbox:
                 var ch = Model.Value == "on" ? "checked" : "";
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
                 break;
             case ProjectFieldViewType.MultiSelect:
-                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple">
+                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple" @requiredMsg>
                     @ShowOptions()
-
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;
             default:
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
+        @ValidationMessage()
         @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
         {
             <div class="help-block">@Html.DisplayFor(model => model.Description) </div>

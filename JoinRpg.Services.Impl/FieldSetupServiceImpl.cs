@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -14,7 +13,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
   {
-    public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo)
+    public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -31,7 +30,8 @@ namespace JoinRpg.Services.Impl
         Project = project, //We require it for CreateOrUpdateSpecailGroup
         FieldType = fieldType,
         FieldBoundTo = fieldBoundTo,
-        IsActive = true
+        IsActive = true,
+        MandatoryStatus = mandatoryStatus
       };
 
       CreateOrUpdateSpecialGroup(field);
@@ -40,10 +40,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic)
+    public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus)
     {
-      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(fieldId);
-      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
+      var field = await GetFieldAsync(projectId, fieldId);
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
@@ -53,10 +52,19 @@ namespace JoinRpg.Services.Impl
       field.CanPlayerView = canPlayerView;
       field.IsPublic = isPublic;
       field.IsActive = true;
+      field.MandatoryStatus = mandatoryStatus;
 
       CreateOrUpdateSpecialGroup(field);
 
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    //TODO: Move to repository
+    private async Task<ProjectField> GetFieldAsync(int projectId, int fieldId)
+    {
+      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(fieldId);
+      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
+      return field;
     }
 
     //TODO: pass projectId & CurrentUserId

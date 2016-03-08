@@ -1,19 +1,22 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
 {
   public static class ProjectEntityExtensions
   {
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
+    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
     {
+      if (entity == null) throw new ArgumentNullException(nameof(entity));
       return entity.Project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
     }
 
-    public static bool HasMasterAccess(this IProjectEntity entity, int? currentUserId)
+    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId)
     {
+      if (entity == null) throw new ArgumentNullException(nameof(entity));
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 

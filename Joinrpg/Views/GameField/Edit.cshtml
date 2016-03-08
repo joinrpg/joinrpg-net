@@ -40,6 +40,14 @@
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.MandatoryStatus, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.MandatoryStatus)
+                @Html.ValidationMessageFor(model => model.MandatoryStatus, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
             @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
                 <div class="checkbox">

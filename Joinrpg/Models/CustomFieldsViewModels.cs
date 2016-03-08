@@ -54,7 +54,10 @@ namespace JoinRpg.Web.Models
       ProjectFieldId = ch.Field.ProjectFieldId;
 
       FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
+      MandatoryStatus = (MandatoryStatusViewType) ch.Field.MandatoryStatus;
     }
+
+    public MandatoryStatusViewType MandatoryStatus { get; }
 
     public FieldBoundToViewModel FieldBound { get; }
 
@@ -94,7 +97,7 @@ namespace JoinRpg.Web.Models
       HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
       HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
       FieldsWithValues.FillIfEnabled(claim, claim.Character, CurrentUserId);
-      return claim.IsApproved ? this : this.OnlyClaimFields();
+      return claim.IsApproved ? this : OnlyClaimFields();
     }
 
     public CustomFieldsViewModel FillFromCharacter(Character character)

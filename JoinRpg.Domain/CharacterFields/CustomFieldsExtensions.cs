@@ -47,7 +47,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, IFieldContainter container)
+    public static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (container == null)
@@ -65,8 +65,10 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static ICollection<FieldWithValue> FillIfEnabled(this ICollection<FieldWithValue> characterFieldValues, Claim claim, Character character, int? currentUserId)
+    public static ICollection<FieldWithValue> FillIfEnabled(
+      [NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character, int? currentUserId)
     {
+      if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (claim != null && (claim.HasMasterAccess(currentUserId) || claim.HasPlayerAccesToClaim(currentUserId)))
       {
         characterFieldValues.FillFrom(claim);

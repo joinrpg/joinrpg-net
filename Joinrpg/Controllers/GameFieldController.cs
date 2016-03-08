@@ -71,7 +71,7 @@ namespace JoinRpg.Web.Controllers
         await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.Description.Contents,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo);
+          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus);
 
         return ReturnToIndex(project);
       }
@@ -112,7 +112,7 @@ namespace JoinRpg.Web.Controllers
         await
           FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
             viewModel.Name, viewModel.Description.Contents, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-            viewModel.IsPublic);
+            viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus);
 
         return ReturnToIndex(project);
       }

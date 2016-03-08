@@ -15,6 +15,8 @@ namespace JoinRpg.DataModel
 
     public FieldBoundTo FieldBoundTo { get; set; }
 
+    public MandatoryStatus MandatoryStatus { get; set; }
+
     public bool IsPublic { get; set; }
 
     public bool CanPlayerView { get; set; }
@@ -47,7 +49,7 @@ namespace JoinRpg.DataModel
       if (IsPublic && !CanPlayerView)
       {
         yield return
-          new ValidationResult("Public fields must be player visible",
+          new ValidationResult("Public fields must be player visible.",
             new List<string> {nameof(IsPublic), nameof(CanPlayerView)});
       }
 
@@ -74,5 +76,12 @@ namespace JoinRpg.DataModel
   {
     Character,
     Claim
+  }
+
+  public enum MandatoryStatus
+  {
+    Optional, 
+    Recommended,
+    Required
   }
 }
