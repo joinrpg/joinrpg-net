@@ -10,19 +10,19 @@ namespace JoinRpg.Domain.ClaimProblemFilters
     {
       if (claim.FinanceOperations.Any(fo => fo.RequireModeration))
       {
-        yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired);
+        yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired, ProblemSeverity.Warning);
       }
       if (claim.ClaimTotalFee() < claim.ClaimBalance())
       {
-        yield return new ClaimProblem(ClaimProblemType.TooManyMoney);
+        yield return new ClaimProblem(ClaimProblemType.TooManyMoney, ProblemSeverity.Error);
       }
       if (!claim.ClaimPaidInFull() && claim.ClaimBalance() > 0)
       {
-        yield return new ClaimProblem(ClaimProblemType.FeePaidPartially);
+        yield return new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint);
       }
       if (!claim.IsApproved && claim.ClaimBalance() > 0)
       {
-        yield return new ClaimProblem(ClaimProblemType.UnApprovedClaimPayment);
+        yield return new ClaimProblem(ClaimProblemType.UnApprovedClaimPayment, ProblemSeverity.Warning);
       }
     }
   }

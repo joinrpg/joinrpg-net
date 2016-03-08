@@ -11,12 +11,14 @@ namespace JoinRpg.Web.Models
     {
       ProblemType = (ProblemTypeViewModel) problem.ProblemType;
       ProblemTime = problem.ProblemTime;
+      Severity = problem.Severity;
     }
 
-    
     public ProblemTypeViewModel ProblemType { get; set; }
 
     public DateTime? ProblemTime { get; set; }
+
+    public ProblemSeverity Severity { get; set; }
   }
 
 

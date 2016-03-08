@@ -521,7 +521,6 @@
     <Content Include="Views\Acl\Edit.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\SubscribeSettingsViewModel.cshtml" />
     <Content Include="Views\ClaimList\Responsible.cshtml" />
-    <Content Include="Views\ClaimList\Problems.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\EventTime.cshtml" />
     <Content Include="Views\GameGroups\_GroupHelpTextPartial.cshtml" />
     <Content Include="Views\Character\Delete.cshtml" />

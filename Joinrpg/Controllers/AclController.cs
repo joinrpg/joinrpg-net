@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Controllers
       {
         var result = AclViewModel.FromAcl(acl);
         result.ProblemClaimsCount =
-          project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId).Count(claim => claim.GetProblems().Any());
+          project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId).Count(claim => claim.GetProblems(ProblemSeverity.Warning).Any());
         return result;
       }));
     }

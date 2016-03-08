@@ -1,8 +1,34 @@
-﻿@model JoinRpg.Web.Models.ProblemViewModel
-<div style="white-space: nowrap">
+﻿@using JoinRpg.Domain
+@model JoinRpg.Web.Models.ProblemViewModel
+@{
+  var style = "";
+  switch (Model.Severity)
+  {
+      case ProblemSeverity.Hint:
+          style = "bg-info";
+          break;
+      case ProblemSeverity.Warning:
+          style = "bg-warning";
+          break;
+      case ProblemSeverity.Error:
+      case ProblemSeverity.Fatal:
+          style = "bg-danger";
+          break;
+      default:
+          throw new ArgumentOutOfRangeException();
+  }
+}
+<span style="white-space: nowrap" class="@style">
+    @if (Model.Severity == ProblemSeverity.Fatal)
+    {
+        <span class="label label-danger">
+<span class="glyphicon glyphicon-exclamation-sign"></span>
+            Обратитесь в поддержку сайта
+</span>
+    }
     @Html.DisplayFor(modelItem => Model.ProblemType)
     @if (Model.ProblemTime != null)
     {
-    @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")
+        @Html.DisplayFor(modelItem => Model.ProblemTime, "EventTime")
     }
-</div>
+</span>

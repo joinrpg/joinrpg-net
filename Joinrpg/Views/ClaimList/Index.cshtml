@@ -33,6 +33,7 @@
         @if (ViewBag.MasterAccessColumn == true)
         {
             <th>@Html.DisplayNameFor(model => model.Responsible)</th>
+            <th>@Html.DisplayNameFor(model => model.Problems)</th>
         }
     </tr>
 
@@ -66,9 +67,8 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
                     @if (item.Player != null)
-                    {
-                        @item.Player.FullName
-                    }
+                    {<text>(@item.Player.FullName)                    </text>
+}
                 </td>
             }
             @if (ViewBag.HideProjectColumn != true)
@@ -105,6 +105,12 @@
             @if (ViewBag.MasterAccessColumn == true)
             {
                 <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+                <td>
+                    @foreach (var pr in item.Problems)
+                    {
+                    @Html.DisplayFor(modelItem => pr)
+                    }
+                </td>
             }
 
         </tr>

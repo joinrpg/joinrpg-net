@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.ClaimProblemFilters
@@ -11,7 +9,6 @@ namespace JoinRpg.Domain.ClaimProblemFilters
   {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
-      yield break;
       if (!claim.IsApproved) // Our concern is only approved claims
       {
         yield break;
@@ -24,12 +21,12 @@ namespace JoinRpg.Domain.ClaimProblemFilters
 
       if (!claim.GetMasterAnswers().Any())
       {
-        yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered);
+        yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Error);
       }
 
-      else if (!claim.GetMasterAnswers().InLastXDays(30).Any())
+      else if (!claim.GetMasterAnswers().InLastXDays(60).Any())
       {
-        yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, claim.GetMasterAnswers().Last().CreatedTime);
+        yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, ProblemSeverity.Hint, claim.GetMasterAnswers().Last().CreatedTime);
       }
     }
   }

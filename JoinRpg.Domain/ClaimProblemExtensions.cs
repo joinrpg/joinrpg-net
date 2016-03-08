@@ -10,9 +10,9 @@ namespace JoinRpg.Domain
   {
     private static IClaimProblemFilter[] Filters { get; }
 
-    public static IEnumerable<ClaimProblem> GetProblems(this Claim claim)
+    public static IEnumerable<ClaimProblem> GetProblems(this Claim claim, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
     {
-      return Filters.SelectMany(f => f.GetProblems(claim));
+      return Filters.SelectMany(f => f.GetProblems(claim)).Where(p => p.Severity >= minimalSeverity);
     }
 
     static ClaimProblemExtensions()
@@ -32,9 +32,12 @@ namespace JoinRpg.Domain
 
     public DateTime? ProblemTime { get; }
 
-    public ClaimProblem(ClaimProblemType problemType, DateTime? problemTime = null)
+    public ProblemSeverity Severity { get;  }
+
+    public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null)
     {
       ProblemType = problemType;
+      Severity = severity;
       ProblemTime = problemTime;
     }
   }
@@ -54,5 +57,13 @@ namespace JoinRpg.Domain
     UnApprovedClaimPayment,
     ClaimWorkStopped,
     ClaimDontHaveTarget
+  }
+
+  public enum ProblemSeverity
+  {
+    Hint,
+    Warning,
+    Error,
+    Fatal
   }
 }

@@ -33,17 +33,17 @@ namespace JoinRpg.Web.Controllers
 
       var viewModel =
         claims.Select(c => ClaimListItemViewModel.FromClaim(c, CurrentUserId).AddProblems(c.GetProblems()))
-          .Where(vm => vm.Problems.Any())
+          .Where(vm => vm.Problems.Any(p => p.Severity >= ProblemSeverity.Warning))
           .ToList();
 
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-      ViewBag.ProjectId = projectId;
+      ViewBag.Title = "Проблемные заявки";
 
       var exportType = GetExportTypeByName(export);
 
       if (exportType == null)
       {
-        return View("Problems", viewModel);
+        return View("Index", viewModel);
       }
 
       return await Export(viewModel, "problem-claims", exportType.Value);
@@ -56,7 +56,7 @@ namespace JoinRpg.Web.Controllers
       var error = await AsMaster(claims, projectId);
       if (error != null) return error;
 
-      var viewModel = claims.Select(claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId)).ToList();
+      var viewModel = claims.Select(claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId).AddProblems(claim.GetProblems())).ToList();
       return await ShowMasterList(viewName, export, viewModel, title);
     }
 
