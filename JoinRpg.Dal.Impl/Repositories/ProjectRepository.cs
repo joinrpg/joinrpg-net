@@ -105,30 +105,6 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
-    public Task<Claim> GetClaim(int projectId, int claimId)
-    {
-      return
-        Ctx.ClaimSet
-          .Include(c => c.Project)
-          .Include(c => c.Project.ProjectAcls)
-          .Include(c => c.Character)
-          .Include(c => c.Player)
-          .Include(c => c.Player.Claims)
-          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
-    }
-
-    public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
-    {
-      await LoadMasters(projectId);
-      await LoadProjectCharactersAndGroups(projectId);
-      await LoadProjectClaims(projectId);
-
-      return await
-        Ctx.ClaimSet
-          .Include(c => c.Comments.Select(com => com.Finance))
-          .Include(c => c.Comments.Select(com => com.Author))
-          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
-    }
 
     public async Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds)
     {
@@ -165,6 +141,15 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(f => f.FinanceOperations)
         .Include(p => p.FinanceOperations.Select(fo => fo.Comment.Author))
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
+
+    public async Task<ICollection<Character>> GetCharacters(int projectId)
+    {
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadMasters(projectId);
+
+      //This is sync operation becase Project should be already loaded here
+      return Ctx.Set<Project>().Find(projectId).Characters;
+    }
   }
 
 }

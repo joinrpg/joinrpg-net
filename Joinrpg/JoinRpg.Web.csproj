@@ -231,6 +231,7 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
+    <Compile Include="Controllers\ClaimListController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
@@ -478,13 +479,11 @@
     <Content Include="Views\GameGroups\AddGroup.cshtml" />
     <Content Include="Views\Character\Create.cshtml" />
     <Content Include="Views\Claim\Add.cshtml" />
-    <Content Include="Views\Claim\Index.cshtml" />
+    <Content Include="Views\ClaimList\Index.cshtml" />
     <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
-    <Content Include="Views\Claim\My.cshtml" />
-    <Content Include="Views\Claim\Discussing.cshtml" />
+    <Content Include="Views\ClaimList\My.cshtml" />
     <Content Include="Views\Claim\Edit.cshtml" />
     <Content Include="Views\Character\Details.cshtml" />
-    <Content Include="Views\Claim\ForPlayer.cshtml" />
     <Content Include="Views\Claim\AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
@@ -521,15 +520,13 @@
     <Content Include="Views\Acl\Delete.cshtml" />
     <Content Include="Views\Acl\Edit.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\SubscribeSettingsViewModel.cshtml" />
-    <Content Include="Views\Claim\Responsible.cshtml" />
-    <Content Include="Views\Claim\Problems.cshtml" />
+    <Content Include="Views\ClaimList\Responsible.cshtml" />
+    <Content Include="Views\ClaimList\Problems.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\EventTime.cshtml" />
     <Content Include="Views\GameGroups\_GroupHelpTextPartial.cshtml" />
     <Content Include="Views\Character\Delete.cshtml" />
-    <Content Include="Views\Claim\ListForGroupDirect.cshtml" />
-    <Content Include="Views\Claim\ListForGroup.cshtml" />
-    <Content Include="Views\Claim\ActiveList.cshtml" />
-    <Content Include="Views\Claim\DeclinedList.cshtml" />
+    <Content Include="Views\ClaimList\ListForGroupDirect.cshtml" />
+    <Content Include="Views\ClaimList\ListForGroup.cshtml" />
     <Content Include="Views\GameField\ValuesList.cshtml" />
     <Content Include="Views\GameField\CreateValue.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
@@ -566,18 +563,15 @@
     <Content Include="Views\Shared\DisplayTemplates\Email.cshtml" />
     <Content Include="Views\MassMail\ForClaims.cshtml" />
     <Content Include="Views\MassMail\Success.cshtml" />
-    <Content Include="Views\Claim\WaitingForFee.cshtml" />
     <Content Include="Views\GameGroups\Report.cshtml" />
     <Content Include="Views\Finances\MoneySummary.cshtml" />
-    <Content Include="Views\Claim\DiscussingForGroup.cshtml" />
-    <Content Include="Views\Claim\DiscussingForGroupDirect.cshtml" />
+    <Content Include="Views\ClaimList\DiscussingForGroup.cshtml" />
+    <Content Include="Views\ClaimList\DiscussingForGroupDirect.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
     <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
-    <Content Include="Views\Claim\ResponsibleDiscussing.cshtml" />
+    <Content Include="Views\ClaimList\ResponsibleDiscussing.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
-    <Content Include="Views\Claim\ResponsibleOnHold.cshtml" />
-    <Content Include="Views\Claim\OnHoldList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

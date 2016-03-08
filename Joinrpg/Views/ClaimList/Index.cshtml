@@ -40,19 +40,35 @@
     {
         <tr>
             <td>
-                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
+                @if (item.ClaimId != null)
+                {
+                    <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
+                        @item.Name
+                        @if (item.UnreadCommentsCount > 0)
+                        {
+                            <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                        }
+                    </a>
+                }
+                else if (item.CharacterId != null)
+                {
+                    <a href="@Url.Action("Edit", "Character", new {item.ProjectId, item.CharacterId}, null)">
+                        @item.Name
+                    </a>
+                }
+                else
+                {
                     @item.Name
-                    @if (item.UnreadCommentsCount > 0)
-                    {
-                        <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
-                    }
-                </a>
+                }
             </td>
             @if (ViewBag.HideUserColumn != true)
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
-                    (@item.Player.FullName)
+                    @if (item.Player != null)
+                    {
+                        @item.Player.FullName
+                    }
                 </td>
             }
             @if (ViewBag.HideProjectColumn != true)
@@ -66,20 +82,24 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdateDate)
-                @if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
+                @if (item.LastModifiedBy != null)
                 {
-                    <text>мной</text>
-                }
-                else if (item.LastModifiedBy == item.Player)
-                {
-                    <text>игроком</text>
-                }
-                else if (item.LastModifiedBy == item.Responsible)
-                {<text>отв. мастером</text>
-                }
-                else
-                {
-                    @Html.DisplayFor(modelItem => item.LastModifiedBy)
+                    if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
+                     {
+                         <text>мной</text>
+                     }
+                     else if (item.LastModifiedBy == item.Player)
+                     {
+                         <text>игроком</text>
+                     }
+                     else if (item.LastModifiedBy == item.Responsible)
+                     {
+                         <text>отв. мастером</text>
+                     }
+                     else
+                     {
+                         @Html.DisplayFor(modelItem => item.LastModifiedBy)
+                     }
                 }
             </td>
             @if (ViewBag.MasterAccessColumn == true)

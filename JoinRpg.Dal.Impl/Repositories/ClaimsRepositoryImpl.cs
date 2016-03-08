@@ -45,5 +45,30 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<ICollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId)
       => (await GetClaimsImpl_(projectId)).Where(c => c.ResponsibleMasterUserId == userId).ToList();
+
+    public Task<Claim> GetClaim(int projectId, int claimId)
+    {
+      return
+        Ctx.ClaimSet
+          .Include(c => c.Project)
+          .Include(c => c.Project.ProjectAcls)
+          .Include(c => c.Character)
+          .Include(c => c.Player)
+          .Include(c => c.Player.Claims)
+          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+    }
+
+    public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
+    {
+      await LoadMasters(projectId);
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadProjectClaims(projectId);
+
+      return await
+        Ctx.ClaimSet
+          .Include(c => c.Comments.Select(com => com.Finance))
+          .Include(c => c.Comments.Select(com => com.Author))
+          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+    }
   }
 }

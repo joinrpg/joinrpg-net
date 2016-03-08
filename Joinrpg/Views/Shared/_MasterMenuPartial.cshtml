@@ -22,16 +22,16 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                @Html.ActionLink("Мои игроки", "Responsible", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои игроки", "Responsible", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "Claim", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "Claim", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
+                                @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
                         </ul>
                     </li>
@@ -40,16 +40,33 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                @Html.ActionLink("Персонажи", "Index", "GameGroups", new {Model.ProjectId}, null)
+                                @Html.ActionLink("Сетка ролей", "Index", "GameGroups", new {Model.ProjectId, Model.RootGroupId}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
+                                @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                             </li>
+                            <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new { Model.ProjectId }, null)</li>
                             <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
                                 <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
                             }
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Персонажи <span class="caret"></span></a>
+
+                        <ul class="dropdown-menu">
+                            <li>
+                                @Html.ActionLink("Все персонажи", "CharList", "ClaimList", new { Model.ProjectId }, null)
+                            </li>
+                            @*
+    <li role="separator" class="dropdown-header">По группам:</li>
+    @foreach (var cg in Model.BigGroups)
+    {
+    <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+    }
+                            *@
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -68,16 +85,15 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Заявки <span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все активные", "ActiveList", "Claim", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Проблемные", "Problems", "Claim", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("На обсуждении", "Discussing", "Claim", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "Claim", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "Claim", new { Model.ProjectId }, null)</li>
-                            <li>@Html.ActionLink("Сводный отчет", "Report", "GameGroups", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Все активные", "ActiveList", "ClaimList", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Проблемные", "Problems", "ClaimList", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("На обсуждении", "Discussing", "ClaimList", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Отклоненные/отозванные", "DeclinedList", "ClaimList", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Лист ожидания", "OnHoldList", "ClaimList", new { Model.ProjectId }, null)</li>
                             <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
-                                <li>@Html.ActionLink(cg.Name, "ListForGroup", "Claim", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
+                                <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
                             }
                         </ul>
                     </li>
@@ -86,7 +102,7 @@
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "Claim", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new {Model.ProjectId}, null)</li>
                             <li role="separator" class="divider"></li>
                             <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new {Model.ProjectId}, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new {Model.ProjectId}, null)</li>

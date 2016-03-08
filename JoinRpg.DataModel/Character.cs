@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -38,6 +39,7 @@ namespace JoinRpg.DataModel
 
     public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
+    [CanBeNull]
     public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }

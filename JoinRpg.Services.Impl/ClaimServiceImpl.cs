@@ -89,7 +89,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-      var claim = (await ProjectRepository.GetClaim(projectId, claimId)).RequestAccess(currentUserId);
+      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(currentUserId);
       var now = DateTime.UtcNow;
 
       if (claim.ClaimStatus == Claim.Status.AddedByMaster && currentUserId == claim.PlayerUserId)
@@ -306,7 +306,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task DeclineByPlayer(int projectId, int claimId, int currentUserId, string commentText)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
       claim.RequestPlayerAccess(currentUserId);
       claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved, Claim.Status.OnHold, Claim.Status.Discussed);
 
@@ -362,7 +362,7 @@ namespace JoinRpg.Services.Impl
 
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
       if (claim == null)
       {
         throw new ArgumentNullException(nameof(claim));

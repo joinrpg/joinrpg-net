@@ -38,7 +38,7 @@
             <ul class="nav navbar-nav">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <li>@Html.ActionLink("Мои заявки", "My", "Claim")</li>
+                    <li>@Html.ActionLink("Мои заявки", "My", "ClaimList")</li>
                 }
                 @Html.Action("MyProjectDropdown", "Menu")
                 @if (ViewBag.IsProduction != true)

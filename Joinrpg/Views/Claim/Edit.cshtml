@@ -8,7 +8,7 @@
 }
 @helper OtherClaimsForThisPlayerLink()
 {
-    @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "Claim",
+    @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
         new {Model.ProjectId, Model.Player.UserId}, null)
 }
 

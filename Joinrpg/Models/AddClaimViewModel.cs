@@ -15,6 +15,7 @@ namespace JoinRpg.Web.Models
 
     public string ProjectName { get; set; }
 
+    //TODO[MarkdownViewModel]
     public HtmlString ClaimApplyRules { get; set; }
 
     public int? CharacterId { get; set; }

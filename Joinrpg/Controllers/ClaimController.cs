@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,7 +69,7 @@ namespace JoinRpg.Web.Controllers
           CurrentUserId, viewModel.ClaimText?.Contents, 
           GetCustomFieldValuesFromPost());
 
-        return RedirectToAction("My", "Claim");
+        return RedirectToAction("My", "ClaimList");
       }
       catch (Exception exception)
       {
@@ -94,137 +93,14 @@ namespace JoinRpg.Web.Controllers
       throw new InvalidOperationException();
     }
 
-    [HttpGet, Authorize]
-    public ActionResult My() => View(GetCurrentUser().Claims.Select(ClaimListItemViewModel.FromClaim));
+    
 
-    [HttpGet, Authorize]
-    public Task<ActionResult> ForPlayer(int projectId, int userId, string export)
-      => MasterList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, "ForPlayer", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
-    {
-      ViewBag.CharacterGroupId = characterGroupId;
-      return MasterList(projectId, cl => cl.IsActive && cl.CharacterGroupId == characterGroupId, "ListForGroupDirect", export);
-    }
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
-    {
-      ViewBag.CharacterGroupId = characterGroupId;
-      return MasterList(projectId, cl => cl.IsActive && cl.PartOfGroup(characterGroupId), "ListForGroup", export);
-    }
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
-    {
-      ViewBag.CharacterGroupId = characterGroupId;
-      return MasterList(projectId, cl => cl.IsInDiscussion && cl.PartOfGroup(characterGroupId), "DiscussingForGroup", export);
-    }
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
-    {
-      ViewBag.CharacterGroupId = characterGroupId;
-      return MasterList(projectId, cl => cl.IsInDiscussion && cl.CharacterGroupId == characterGroupId, "DiscussingForGroupDirect", export);
-    }
-
-    [HttpGet,Authorize]
-    public Task<ActionResult> ResponsibleDiscussing (int projectid, int responsibleMasterId, string export)
-      =>
-        MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsInDiscussion,
-          "ResponsibleDiscussing", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
-          =>
-        MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsiblemasterid && claim.ClaimStatus == Claim.Status.OnHold,
-          "ResponsibleOnHold", export);
-
-    private async Task<ActionResult> MasterList(int projectId, Func<Claim, bool> predicate, [AspMvcView] string viewName,
-      string export)
-    {
-      var claims = await _claimsRepository.GetClaims(projectId);
-
-      var error = await AsMaster(claims, projectId);
-
-      if (error != null) return error;
-
-      var viewModel = claims.Where(predicate).Select(
-        claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId)).ToList();
-
-      ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-      ViewBag.ProjectId = projectId;
-      var exportType = GetExportTypeByName(export);
-
-      if (exportType == null)
-      {
-        return View(viewName, viewModel);
-      }
-      else
-      {
-        return await Export(viewModel, "claims", exportType.Value);
-      }
-    }
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> Discussing(int projectid, string export)
-      => MasterList(projectid, claim => claim.IsInDiscussion, "Discussing", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> OnHoldList(int projectid, string export)
-      => MasterList(projectid, claim => claim.ClaimStatus == Claim.Status.OnHold, "OnHoldList", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> WaitingForFee(int projectid, string export)
-      => MasterList(projectid, claim => claim.IsApproved && !claim.ClaimPaidInFull(), "WaitingForFee", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
-      =>
-        MasterList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,
-          "Responsible", export);
-
-    [HttpGet, Authorize]
-    public async Task<ActionResult> Problems(int projectId, string export)
-    {
-      return await ShowProblems(projectId, export, await _claimsRepository.GetClaims(projectId));
-    }
-
-    [HttpGet, Authorize]
-    public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
-    {
-      return await ShowProblems(projectId, export, await _claimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId));
-    }
-
-    private async Task<ActionResult> ShowProblems(int projectId, string export, ICollection<Claim> claims)
-    {
-      var error = await AsMaster(claims, projectId);
-      if (error != null)
-        return error;
-
-      var viewModel =
-        claims.Select(c => ClaimProblemListItemViewModel.FromClaimProblem(c.GetProblems(), CurrentUserId, c))
-          .Where(vm => vm.Problems.Any())
-          .ToList();
-
-      ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-      ViewBag.ProjectId = projectId;
-
-      var exportType = GetExportTypeByName(export);
-
-      if (exportType == null)
-      {
-        return View("Problems", viewModel);
-      }
-
-      return await Export(viewModel, "problem-claims", exportType.Value);
-    }
+    
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-      var claim = await ProjectRepository.GetClaimWithDetails(projectId, claimId);
+      var claim = await _claimsRepository.GetClaimWithDetails(projectId, claimId);
       return await ShowClaim(claim);
     }
 
@@ -313,10 +189,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    // ReSharper disable once UnusedParameter.Global
-    public async Task<ActionResult> Edit(int projectId, int claimId, string ignoreMe)
+    public async Task<ActionResult> Edit(int projectId, int claimId, [UsedImplicitly] string ignoreMe)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await _claimsRepository.GetClaim(projectId, claimId);
       var error = WithClaim(claim);
       if (error != null)
       {
@@ -338,7 +213,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -362,7 +237,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -388,7 +263,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -419,7 +294,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -449,7 +324,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = WithMyClaim(claim);
       if (error != null)
       {
@@ -477,7 +352,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
     {
-      var claim = await ProjectRepository.GetClaim(projectId, claimId);
+      var claim = await _claimsRepository.GetClaim(projectId, claimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -496,19 +371,12 @@ namespace JoinRpg.Web.Controllers
       
     }
 
-    [HttpGet, Authorize]
-    public Task<ActionResult> ActiveList(int projectid, string export) 
-      => MasterList(projectid, claim => claim.IsActive, "ActiveList", export);
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> DeclinedList(int projectid, string export)
-      => MasterList(projectid, claim => !claim.IsActive, "DeclinedList", export);
 
     /// <param name="viewModel"></param>
     /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
     public async Task<ActionResult> Move(AddCommentViewModel viewModel, string claimTarget)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -571,14 +439,14 @@ namespace JoinRpg.Web.Controllers
         return ReturnToClaim(claims.Single().ClaimId, projectId);
       }
 
-      return RedirectToAction("My", "Claim");
+      return RedirectToAction("My", "ClaimList");
 
     }
 
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FinOperationViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       var error = WithClaim(claim);
       if (error != null)
       {

@@ -51,6 +51,9 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
+
+      ViewBag.ProjectId = project.ProjectId;
+
       var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
       if (acl != null)
       {
@@ -62,7 +65,8 @@ namespace JoinRpg.Web.Controllers.Common
           BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
-          CurrentUserId = CurrentUserId
+          CurrentUserId = CurrentUserId,
+          RootGroupId = project.RootGroup.CharacterGroupId
         };
       }
       else

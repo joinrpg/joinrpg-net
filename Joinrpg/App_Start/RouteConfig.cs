@@ -19,13 +19,13 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "ProjectTools", url: "{ProjectId}/tools/{action}",
         defaults: new { controller = "GameTools", action = "Index" });
 
-      routes.MapRoute(name: "MyClaims", url: "my/claims", defaults: new {controller = "Claim", action = "my"});
+      routes.MapRoute(name: "MyClaims", url: "my/claims", defaults: new {controller = "ClaimList", action = "my"});
 
       routes.MapRoute(name: "GroupAddClaim", url: "{ProjectId}/roles/{CharacterGroupId}/apply",
         defaults: new {controller = "Claim", action = "AddForGroup"});
 
       routes.MapRoute(name: "GroupListClaim", url: "{ProjectId}/roles/{CharacterGroupId}/claims",
-        defaults: new {controller = "Claim", action = "ListForGroup"});
+        defaults: new {controller = "ClaimList", action = "ListForGroup"});
 
       routes.MapRoute(name: "AddCharacter", url: "{ProjectId}/roles/{CharacterGroupId}/add-char",
         defaults: new {controller = "Character", action = "Create",});
@@ -59,10 +59,10 @@ namespace JoinRpg.Web
         defaults: new {controller = "Claim", action = "AddForCharacter"});
 
       routes.MapRoute(name: "ClaimResp", url: "{ProjectId}/claims/for-master/{ResponsibleMasterId}",
-        defaults: new {controller = "Claim", action = "Responsible"});
+        defaults: new {controller = "ClaimList", action = "Responsible"});
 
       routes.MapRoute(name: "ClaimRespMaster", url: "{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}",
-        defaults: new { controller = "Claim", action = "ResponsibleProblems" });
+        defaults: new { controller = "ClaimList", action = "ResponsibleProblems" });
 
       routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
         defaults: new { controller = "Claim", action = "Edit" });
@@ -71,7 +71,7 @@ namespace JoinRpg.Web
         defaults: new { controller = "Claim", action = "MyClaim" });
 
       routes.MapRoute(name: "ClaimActions", url: "{ProjectId}/claims/{action}",
-        defaults: new { controller = "Claim", action = "Index" });
+        defaults: new { controller = "ClaimList", action = "Index" });
 
       routes.MapRoute(name: "PlotWithId", url: "{ProjectId}/plot/{PlotFolderId}/{action}",
         defaults: new {controller = "Plot", action = "Index"});

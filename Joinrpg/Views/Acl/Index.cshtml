@@ -82,10 +82,10 @@
             @Html.DisplayFor(model => item.CanManageMoney)
         </td>
         <td style="white-space: nowrap">
-            @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "Claim", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
+            @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "ClaimList", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
         </td>
         <td style="white-space: nowrap">
-            @Html.ActionLink(DisplayCount.OfX(item.ProblemClaimsCount, "проблемная", "проблемные", "проблемных"), "ResponsibleProblems", "Claim", new { ResponsibleMasterId = item.Master.UserId, item.ProjectId }, null)
+            @Html.ActionLink(DisplayCount.OfX(item.ProblemClaimsCount, "проблемная", "проблемные", "проблемных"), "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.Master.UserId, item.ProjectId }, null)
 
         </td>
         @if (canGrantRights)

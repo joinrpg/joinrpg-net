@@ -1,9 +1,4 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.ClaimListItemViewModel>
 
-@{
-  ViewBag.Title = "Заявки";
-  ViewBag.HideProjectColumn = true;
-  ViewBag.MasterAccessColumn = true;
-}
 <p>Вы смотрите все заявки, поданные поданные на персонажей и подгруппы этой группы. Возможно, вы хотите посмотреть только @Html.ActionLink("заявки напрямую в эту группу персонажей.", "ListForGroupDirect", new { ViewBag.ProjectId, ViewBag.CharacterGroupId })</p>
 @Html.Partial("Index", Model)

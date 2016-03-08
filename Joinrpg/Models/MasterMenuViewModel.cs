@@ -10,12 +10,12 @@ namespace JoinRpg.Web.Models
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
     public int? CurrentUserId { get; set; }
+    public int? RootGroupId { get; internal set; }
   }
 
   public class PlayerMenuViewModel : MenuViewModelBase
   {
     public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
-    public int? RootGroupId { get; internal set; }
   }
   public class MasterMenuViewModel : MenuViewModelBase
   {

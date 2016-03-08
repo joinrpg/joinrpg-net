@@ -1,5 +1,4 @@
-﻿using System.Data.Entity.Validation;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
@@ -12,19 +11,21 @@ namespace JoinRpg.Web.Controllers
   public class CommentController : Common.ControllerGameBase
   {
     private IClaimService ClaimService { get; }
+    public IClaimsRepository ClaimsRepository { get; }
 
     public CommentController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IClaimService claimService, IExportDataService exportDataService)
+      IProjectService projectService, IClaimService claimService, IExportDataService exportDataService, IClaimsRepository claimsRepository)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       ClaimService = claimService;
+      ClaimsRepository = claimsRepository;
     }
 
     [HttpPost]
    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(AddCommentViewModel viewModel)
     {
-      var claim = await ProjectRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await ClaimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
 
       var error = WithClaim(claim);
       if (error != null) return error;
@@ -46,5 +47,7 @@ namespace JoinRpg.Web.Controllers
       }
 
     }
+
+ 
   }
 }

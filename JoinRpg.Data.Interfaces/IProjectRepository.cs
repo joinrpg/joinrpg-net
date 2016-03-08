@@ -19,12 +19,11 @@ namespace JoinRpg.Data.Interfaces
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
-    Task<Claim> GetClaim(int projectId, int claimId);
-    Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds);
     Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds);
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
     Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId);
     Task<Project> GetProjectWithFinances(int projectid);
+    Task<ICollection<Character>> GetCharacters(int projectId);
   }
 }

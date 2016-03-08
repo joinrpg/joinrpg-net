@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -152,8 +153,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize, ValidateAntiForgeryToken]
-    // ReSharper disable once UnusedParameter.Global
-    public async Task<ActionResult> Delete(int projectId, int characterId, FormCollection form)
+    public async Task<ActionResult> Delete(int projectId, int characterId, [UsedImplicitly] FormCollection form)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
       var error = AsMaster(field);
@@ -198,11 +198,11 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.MoveCharacter(CurrentUserId, projectId, characterId, parentCharacterGroupId, direction);
 
-
         return RedirectToIndex(projectId, currentRootGroupId);
       }
       catch
       {
+        //TODO Show Error
         return RedirectToIndex(projectId, currentRootGroupId);
       }
     }

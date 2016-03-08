@@ -8,7 +8,7 @@
                @Html.ActionLink(
                    DisplayCount.OfX(Model.TotalActiveClaims, "заявка", "заявки", "заявок") + " всего",
                    "ListForGroup",
-                   "Claim",
+                   "ClaimList",
                    new {Model.ProjectId, Model.CharacterGroupId},
                    null)
             </li>
@@ -18,7 +18,7 @@
                 @Html.ActionLink(
                     DisplayCount.OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок") + " напрямую",
                     "ListForGroupDirect",
-                    "Claim",
+                    "ClaimList",
                     new {Model.ProjectId, Model.CharacterGroupId},
                     null)
             </li>
