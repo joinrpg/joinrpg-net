@@ -38,6 +38,8 @@ namespace JoinRpg.Web.Controllers
 
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
       ViewBag.Title = "Проблемные заявки";
+      ViewBag.HideProjectColumn = true;
+      ViewBag.MasterAccessColumn = true;
 
       var exportType = GetExportTypeByName(export);
 
