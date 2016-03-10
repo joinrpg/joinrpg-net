@@ -68,26 +68,48 @@ namespace JoinRpg.Web.Controllers
       // This doesn't count login failures towards account lockout
       // To enable password failures to trigger account lockout, change to shouldLockout: true
       var result =
-        await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+        await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
 
       if (result == SignInStatus.Failure)
       {
-        if (await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password) == LegacyLoginResult.Success)
+        var legacyLoginResult = await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password);
+        switch (legacyLoginResult)
         {
-          //Change password to imported
-          var changePasswordResult = await UserManager.SetPasswordWithoutValidationAsync(user.Id, model.Password);
-
-          //Login again
-          result =
-            await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
+          case LegacyLoginResult.NoSuchUserOrPassword:
+          case LegacyLoginResult.ImportDisabled:
+            ModelState.AddModelError("", "Не найден логин или пароль");
+            return View(model);
+          case LegacyLoginResult.Success:
+            //Change password to imported
+            var changePasswordResult = await UserManager.SetPasswordWithoutValidationAsync(user.Id, model.Password);
+            //Login again
+            result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
+            break;
+          case LegacyLoginResult.NetworkError:
+          case LegacyLoginResult.ParseError:
+          case LegacyLoginResult.WrongKey:
+            ModelState.AddModelError("", $"Не удалось установить связь с сервером allrpg.info: {legacyLoginResult}.");
+            return View(model);
+          case LegacyLoginResult.RegisterNewUser:
+            user = new User { UserName = model.Email, Email = model.Email };
+            var registerResult = await UserManager.CreateAsync(user, model.Password);
+            if (registerResult.Succeeded)
+            {
+              string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+              if (await UserManager.ConfirmEmailAsync(user.UserId, code) == IdentityResult.Success)
+              {
+                result = SignInStatus.Success;
+              }
+            }
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
         }
       }
 
       if (result == SignInStatus.Success)
       {
-        var allrpgImport =
-          await
-            _allrpgService.DownloadAllrpgProfile(user.UserId);
+        await _allrpgService.DownloadAllrpgProfile(user.UserId);
       }
       switch (result)
       {
@@ -235,7 +257,7 @@ namespace JoinRpg.Web.Controllers
       if (user == null)
       {
         // Don't reveal that the user does not exist
-         return RedirectToAction("ResetPasswordConfirmation", "Account");
+        return RedirectToAction("ResetPasswordConfirmation", "Account");
       }
       var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
       if (result.Succeeded)

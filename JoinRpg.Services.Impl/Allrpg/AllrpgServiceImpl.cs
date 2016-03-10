@@ -60,13 +60,8 @@ namespace JoinRpg.Services.Impl.Allrpg
     public async Task<LegacyLoginResult> TryToLoginWithOldPassword(string email, string password)
     {
       var user = await UserRepository.GetByEmail(email);
-      if (user == null)
-      {
-        //TODO: try to import user from scratch
-        return LegacyLoginResult.NoSuchUserOrPassword;
-      }
 
-      if (user.PasswordHash != null || user.Allrpg?.Sid == null || user.Allrpg?.PreventAllrpgPassword == true)
+      if (user !=null && (user.PasswordHash != null || user.Allrpg?.Sid == null || user.Allrpg?.PreventAllrpgPassword == true))
       {
         return LegacyLoginResult.ImportDisabled;
       }
@@ -77,7 +72,12 @@ namespace JoinRpg.Services.Impl.Allrpg
       switch (reply.Status)
       {
         case AllrpgApi.Status.Success:
-          return reply.Result.Success ? LegacyLoginResult.Success : LegacyLoginResult.NoSuchUserOrPassword;
+
+          if (!reply.Result.Success)
+          {
+            return LegacyLoginResult.NoSuchUserOrPassword;
+          }
+          return user == null ? LegacyLoginResult.RegisterNewUser : LegacyLoginResult.Success;
         case AllrpgApi.Status.NetworkError:
           return LegacyLoginResult.NetworkError;
         case AllrpgApi.Status.ParseError:
@@ -85,7 +85,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         case AllrpgApi.Status.NoSuchUser:
           return LegacyLoginResult.NoSuchUserOrPassword;
         case AllrpgApi.Status.WrongKey:
-          return LegacyLoginResult.WrongKey;
+          return LegacyLoginResult.NoSuchUserOrPassword; //There is a limitation that allrpg.info doesn't distiguish between wrong api key and wrong password. Probably fine.
         default:
           throw new ArgumentOutOfRangeException();
       }

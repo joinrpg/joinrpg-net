@@ -1,7 +1,6 @@
 using System;
 using System.Net;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using JoinRpg.Helpers;
 using Newtonsoft.Json;
@@ -76,28 +75,28 @@ namespace JoinRpg.Services.Impl.Allrpg
       }
     }
 
-    private static string SignPayload(string payload, string key) => (payload + key).ToHexHash(SHA1.Create());
+    private string SignPayload(string payload) => (payload + _apiKey).ToHexHash(SHA1.Create());
 
     //Yes, yes, MD5 without salt. Send you complaints to Cetb
     private static string AllrpgLegacyHash(string password) => password.ToHexHash(MD5.Create());
 
     public Task<Reply<ProfileReply>> GetProfile(string email)
     {
-      var key = SignPayload(email, _apiKey);
+      var key = SignPayload(email);
 
-      return Call<ProfileReply>("profile", $"email={email}&key={key}");
+      return Call<ProfileReply>("profile", $"email={Uri.EscapeDataString(email)}&key={key}");
     }
 
     public Task<Reply<PasswordReply>> CheckPassword(string email, string password)
     {
-      var key = SignPayload(email + "@" + AllrpgLegacyHash(password), _apiKey);
+      var key = SignPayload(email + "@" + AllrpgLegacyHash(password));
 
-      return Call<PasswordReply>("checkpassword", $"email={email}&key={key}");
+      return Call<PasswordReply>("checkpassword", $"email={Uri.EscapeDataString(email)}&key={key}");
     }
 
     public Task<Reply<ProjectReply>>  DownloadProject(int allrpgId)
     {
-      var key = SignPayload(allrpgId.ToString(), _apiKey);
+      var key = SignPayload(allrpgId.ToString());
       return Call<ProjectReply>("importproject", $"id={allrpgId}&key={key}");
     }
   }

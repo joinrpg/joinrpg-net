@@ -19,7 +19,8 @@ namespace JoinRpg.Services.Interfaces.Allrpg
     ImportDisabled,
     NetworkError,
     ParseError,
-    WrongKey
+    WrongKey,
+    RegisterNewUser
   }
 
 }
