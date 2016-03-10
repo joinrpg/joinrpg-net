@@ -65,6 +65,8 @@ namespace JoinRpg.Web.Controllers
 
     public ActionResult HowToHelp() => View();
 
+    public ActionResult FromAllrpgInfo() => View();
+
     public async Task<ViewResult> BrowseGames()
     {
       return View(await LoadModel());
