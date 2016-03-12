@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Controllers
       if (result == SignInStatus.Failure)
       {
         var legacyLoginResult = await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password);
-        switch (legacyLoginResult)
+        switch (legacyLoginResult)            
         {
           case LegacyLoginResult.NoSuchUserOrPassword:
           case LegacyLoginResult.ImportDisabled:
@@ -140,6 +140,14 @@ namespace JoinRpg.Web.Controllers
     {
       if (ModelState.IsValid)
       {
+        var currentUser = await UserManager.FindByNameAsync(model.Email);
+
+        if (currentUser != null)
+        {
+          ModelState.AddModelError("", "Вы уже зарегистрировались. Если пароль не по, нажмите «Забыли пароль?»");
+          return View("Login", new LoginViewModel() {Email = model.Email});
+        }
+
         var user = new User {UserName = model.Email, Email = model.Email};
         var result = await UserManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
@@ -256,8 +264,8 @@ namespace JoinRpg.Web.Controllers
       var user = await UserManager.FindByNameAsync(model.Email);
       if (user == null)
       {
-        // Don't reveal that the user does not exist
-        return RedirectToAction("ResetPasswordConfirmation", "Account");
+        ModelState.AddModelError("", "Email не найден");
+        return View();
       }
       var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
       if (result.Succeeded)
