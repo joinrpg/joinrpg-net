@@ -46,6 +46,8 @@ namespace JoinRpg.DataModel
     public virtual UserExtra Extra { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions{ get; set; }
+
+    public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; }
   }
 
   public enum Gender : byte
@@ -53,6 +55,15 @@ namespace JoinRpg.DataModel
     Unknown = 0,
     Male = 1,
     Female = 2
+  }
+
+  public class UserExternalLogin
+  {
+    public int UserExternalLoginId { get; set; }
+    public int UserId { get; set; }
+    public User User { get; set; }
+    public string Provider { get; set; }
+    public string Key { get; set; }
   }
 
   public class UserExtra

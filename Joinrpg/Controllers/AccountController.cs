@@ -307,7 +307,19 @@ namespace JoinRpg.Web.Controllers
       }
 
       // Sign in the user with this external login provider if the user already has a login
-      var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
+      var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: true);
+
+      // If sign in failed, may be we have user with same email. Let's bind.
+      if (result == SignInStatus.Failure && !string.IsNullOrWhiteSpace(loginInfo.Email))
+      {
+        var user = await UserManager.FindByEmailAsync(loginInfo.Email);
+        if (user != null)
+        {
+          await UserManager.AddLoginAsync(user.UserId, loginInfo.Login);
+          result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: true);
+        }
+      }
+
       switch (result)
       {
         case SignInStatus.Success:

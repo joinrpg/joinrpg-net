@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Dal.Impl
 {
-  public class MyUserStore : 
-    IUserStore<User, int>, IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>, IUserLoginStore<User, int>
+  public class MyUserStore : IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>, IUserLoginStore<User, int>
   {
     private readonly MyDbContext _ctx;
 
@@ -70,8 +70,6 @@ namespace JoinRpg.Dal.Impl
       {
         throw new ArgumentNullException(nameof(user));
       }
-      var entry = _ctx.Entry(user);
-      
       user.PasswordHash = passwordHash;
       if (user.Allrpg != null)
       {
@@ -79,6 +77,12 @@ namespace JoinRpg.Dal.Impl
         user.Allrpg.PreventAllrpgPassword = true;
       }
 
+      return SaveUserIfRequired(user);
+    }
+
+    private Task SaveUserIfRequired(User user)
+    {
+      var entry = _ctx.Entry(user);
       if (entry.State != EntityState.Detached)
       {
         return _ctx.SaveChangesAsync();
@@ -172,26 +176,38 @@ namespace JoinRpg.Dal.Impl
       return _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == email);
     }
 
-    //External logins are not implemented yet
-
     public Task AddLoginAsync(User user, UserLoginInfo login)
     {
-      throw new NotImplementedException();
+      user.ExternalLogins.Add(new UserExternalLogin() {Key = login.ProviderKey, Provider = login.LoginProvider});
+      return _ctx.SaveChangesAsync();
     }
 
     public Task RemoveLoginAsync(User user, UserLoginInfo login)
     {
-      throw new NotImplementedException();
+      var el =
+        user.ExternalLogins.First(
+          externalLogin => externalLogin.Key == login.ProviderKey && externalLogin.Provider == login.ProviderKey);
+      user.ExternalLogins.Remove(el);
+      return Task.FromResult(0);
     }
 
-    public Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
+    public async Task<IList<UserLoginInfo>> GetLoginsAsync(User user)
     {
-      return Task.FromResult<IList<UserLoginInfo>>(new UserLoginInfo[] {});
+      var result =
+        await
+          _ctx.Set<UserExternalLogin>()
+            .Where(uel => uel.UserId == user.UserId)
+            .ToListAsync();
+      return result.Select(uel => new UserLoginInfo(uel.Provider, uel.Key)).ToList();
     }
 
-    public Task<User> FindAsync(UserLoginInfo login)
+    public async Task<User> FindAsync(UserLoginInfo login)
     {
-      throw new NotImplementedException();
+      var uel =
+        await _ctx.Set<UserExternalLogin>()
+          .SingleOrDefaultAsync(u => u.Key == login.ProviderKey && u.Provider == login.LoginProvider);
+
+      return uel?.User;
     }
   }
 }

@@ -2,11 +2,11 @@
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.Google;
 using Owin;
 
 namespace JoinRpg.Web
@@ -40,25 +40,25 @@ namespace JoinRpg.Web
             });            
             app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
 
-            // Uncomment the following lines to enable logging in with third party login providers
-            //app.UseMicrosoftAccountAuthentication(
-            //    clientId: "",
-            //    clientSecret: "");
+      // Uncomment the following lines to enable logging in with third party login providers
+      //app.UseMicrosoftAccountAuthentication(
+      //    clientId: "",
+      //    clientSecret: "");
 
-            //app.UseTwitterAuthentication(
-            //   consumerKey: "",
-            //   consumerSecret: "");
+      //app.UseTwitterAuthentication(
+      //   consumerKey: "",
+      //   consumerSecret: "");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+      //app.UseFacebookAuthentication(
+      //   appId: "",
+      //   appSecret: "");
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+      app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+      {
+        ClientId = ApiSecretsStorage.GoogleClientId,
+        ClientSecret = ApiSecretsStorage.GoogleClientSecret
+      });
 
-        }
+    }
     }
 }

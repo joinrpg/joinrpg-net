@@ -245,6 +245,10 @@
     <Compile Include="Migrations\201603081354491_FieldsMandatory.Designer.cs">
       <DependentUpon>201603081354491_FieldsMandatory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201603120815515_ExternalLogins.cs" />
+    <Compile Include="Migrations\201603120815515_ExternalLogins.Designer.cs">
+      <DependentUpon>201603120815515_ExternalLogins.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -419,6 +423,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603081354491_FieldsMandatory.resx">
       <DependentUpon>201603081354491_FieldsMandatory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201603120815515_ExternalLogins.resx">
+      <DependentUpon>201603120815515_ExternalLogins.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
