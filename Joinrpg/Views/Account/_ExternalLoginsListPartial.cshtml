@@ -1,24 +1,33 @@
 ﻿@model JoinRpg.Web.Models.ExternalLoginListViewModel
 @using Microsoft.Owin.Security
 
-<h4>Вход через социальные сети.</h4>
+<h4>Вход через социальные сети</h4>
 <hr />
 @{
     var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().ToList();
-    if (!loginProviders.Any()) {
+    if (!loginProviders.Any())
+    {
         <div>
             <p>
                 К сожалению, логин через социальные сети пока не настроен. @*(<a href="http://go.microsoft.com/fwlink/?LinkId=403804">вот статья</a>)*@
             </p>
         </div>
     }
-    else {
-        using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = Model.ReturnUrl })) {
+    else
+    {
+        using (Html.BeginForm("ExternalLogin", "Account", new {ReturnUrl = Model.ReturnUrl}))
+        {
             @Html.AntiForgeryToken()
             <div id="socialLoginList">
                 <p>
-                    @foreach (AuthenticationDescription p in loginProviders) {
-                        <button type="submit" class="btn btn-default" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
+                    @foreach (var p in loginProviders)
+                    {
+                        var style = "btn-default";
+                        if (p.AuthenticationType == "Google")
+                        {
+                            style = "btn-danger";
+                        }
+                        <button type="submit" class="btn @style" id="@p.AuthenticationType" name="provider" value="@p.AuthenticationType" title="Log in using your @p.Caption account">@p.AuthenticationType</button>
                     }
                 </p>
             </div>
