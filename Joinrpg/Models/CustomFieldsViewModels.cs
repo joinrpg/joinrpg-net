@@ -19,6 +19,8 @@ namespace JoinRpg.Web.Models
     public string Value { get; }
     public string FieldName { get; }
 
+    public bool IsDeleted { get; }
+
     public MarkdownViewModel Description { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
@@ -33,6 +35,7 @@ namespace JoinRpg.Web.Models
       Description = new MarkdownViewModel(ch.Field.Description);
 
       IsPlayerVisible = ch.Field.CanPlayerView;
+      IsDeleted = !ch.Field.IsActive;
 
       CanView = ch.HasValue() && (
             ch.Field.IsPublic
@@ -53,8 +56,8 @@ namespace JoinRpg.Web.Models
       }
       ProjectFieldId = ch.Field.ProjectFieldId;
 
-      FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
-      MandatoryStatus = (MandatoryStatusViewType) ch.Field.MandatoryStatus;
+      FieldBound =  (FieldBoundToViewModel) ch.Field.FieldBoundTo;
+      MandatoryStatus = IsDeleted ? MandatoryStatusViewType.Optional : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
     }
 
     public MandatoryStatusViewType MandatoryStatus { get; }

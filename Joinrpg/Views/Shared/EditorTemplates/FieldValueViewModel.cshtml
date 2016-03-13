@@ -31,28 +31,36 @@
       </div>
       return;
   }
-@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
+@{
+    var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; 
+}
 <div class="form-group @hideClassName">
-
     <label class="control-label col-md-2">
-        @Model.FieldName
+        @if (Model.IsDeleted)
+        {
+            <del>@Model.FieldName</del>
+        }
+        else
+        {
+            @Model.FieldName
+        }
         @switch (Model.MandatoryStatus)
         {
             case MandatoryStatusViewType.Optional:
                 break;
             case MandatoryStatusViewType.Recommended:
-            <span class="text-info" title="Рекомендуется заполнить это поле">*</span>
+                <span class="text-info" title="Рекомендуется заполнить это поле">*</span>
                 break;
             case MandatoryStatusViewType.Required:
-            <span class="text-danger" title="Поле обязательно к заполнению">*</span>
+                <span class="text-danger" title="Поле обязательно к заполнению">*</span>
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
         @if (ViewBag.HideCharacterClaimFieldsIcon != true)
         {<text>&nbsp;</text>
-    if (Model.FieldBound == FieldBoundToViewModel.Claim)
-    {
+            if (Model.FieldBound == FieldBoundToViewModel.Claim)
+            {
                 <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
             }
             if (Model.FieldBound == FieldBoundToViewModel.Character)
