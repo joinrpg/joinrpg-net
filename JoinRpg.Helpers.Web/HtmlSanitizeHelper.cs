@@ -13,7 +13,7 @@ namespace JoinRpg.Helpers.Web
     {
       return new HtmlSanitizer()
         .FlattenTags("p", "h1", "h2", "h3", "h4", "h5", "strong", "b", "i", "em", "br", "p", "div", "span", "ul", "ol",
-          "li", "a");
+          "li", "a", "blockquote");
     }
 
     private static void FlattenTag(this HtmlSanitizer htmlSanitizer, string tagName)
@@ -34,8 +34,10 @@ namespace JoinRpg.Helpers.Web
     {
       var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
       sanitizer.Tag("br");
+      sanitizer.Tag("img");
       sanitizer.Tag("hr");
       sanitizer.Tag("p").RemoveEmpty();
+      sanitizer.Tag("blockquote");
       return sanitizer;
     }
 
