@@ -1,4 +1,5 @@
-﻿ using System.Collections.Generic;
+﻿ using System;
+ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -13,24 +14,53 @@ namespace JoinRpg.Domain
       return claimSource.Claims.OfUserActive(currentUserId).Any();
     }
 
-    public static IEnumerable<User> GetResponsibleMasters(this IClaimSource @group, bool includeSelf = true)
+    [NotNull, ItemNotNull]
+    public static IEnumerable<User> GetResponsibleMasters([NotNull] this IClaimSource @group, bool includeSelf = true)
     {
+      if (@group == null) throw new ArgumentNullException(nameof(@group));
+
       if (group.ResponsibleMasterUser != null && includeSelf)
       {
-        yield return group.ResponsibleMasterUser;
-        yield break;
+        return new[] {group.ResponsibleMasterUser};
       }
-      var directParents = group.ParentGroups.SelectMany(g => g.GetResponsibleMasters()).WhereNotNull().Distinct();
-      foreach (var directParent in directParents)
+      var candidates = new HashSet<CharacterGroup>();
+      var removedGroups = new HashSet<CharacterGroup>();
+      var lookupGroups = new HashSet<CharacterGroup>(group.ParentGroups);
+      while (lookupGroups.Any())
       {
-        yield return directParent;
+        var currentGroup = lookupGroups.First();
+        lookupGroups.Remove(currentGroup); //Get next group
+
+        if (removedGroups.Contains(currentGroup) || candidates.Contains(currentGroup))
+        {
+          continue;
+        }
+
+        if (currentGroup.ResponsibleMasterUserId != null)
+        {
+          candidates.Add(currentGroup);
+          removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups)); //Some group with set responsible master will shadow out all parents.
+        }
+        else
+        {
+          lookupGroups.AddRange(currentGroup.ParentGroups);
+        }
+      }
+      return candidates.Except(removedGroups).Select(c => c.ResponsibleMasterUser);
+    }
+
+    private static void AddRange<T>(this ISet<T> set, IEnumerable<T> objectsToAdd)
+    {
+      foreach (var parentGroup in objectsToAdd)
+      {
+        set.Add(parentGroup);
       }
     }
 
     [NotNull]
     public static IEnumerable<CharacterGroup> GetParentGroups([CanBeNull] this IClaimSource @group)
     {
-      return @group.FlatTree(g => g.ParentGroups, false).Cast<CharacterGroup>();
+      return @group.FlatTree(g => g.ParentGroups, includeSelf: false).Cast<CharacterGroup>();
     }
 
     public static bool HasActiveClaims(this IClaimSource characterGroup)
