@@ -39,7 +39,8 @@ namespace JoinRpg.Domain
         if (currentGroup.ResponsibleMasterUserId != null)
         {
           candidates.Add(currentGroup);
-          removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups)); //Some group with set responsible master will shadow out all parents.
+          removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false)); 
+          //Some group with set responsible master will shadow out all parents.
         }
         else
         {
