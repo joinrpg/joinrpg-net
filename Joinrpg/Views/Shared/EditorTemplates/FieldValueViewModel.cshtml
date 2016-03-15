@@ -44,19 +44,8 @@
         {
             @Model.FieldName
         }
-        @switch (Model.MandatoryStatus)
-        {
-            case MandatoryStatusViewType.Optional:
-                break;
-            case MandatoryStatusViewType.Recommended:
-                <span class="text-info" title="Рекомендуется заполнить это поле">*</span>
-                break;
-            case MandatoryStatusViewType.Required:
-                <span class="text-danger" title="Поле обязательно к заполнению">*</span>
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+
+        @Html.DisplayFor(model => model.MandatoryStatus)
         @if (ViewBag.HideCharacterClaimFieldsIcon != true)
         {<text>&nbsp;</text>
             if (Model.FieldBound == FieldBoundToViewModel.Claim)

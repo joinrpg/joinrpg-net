@@ -573,6 +573,7 @@
     <Content Include="Views\ClaimList\ResponsibleDiscussing.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
     <Content Include="Views\Home\FromAllrpgInfo.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\MandatoryStatusViewType.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

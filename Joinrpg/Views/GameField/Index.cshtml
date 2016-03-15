@@ -50,6 +50,7 @@
             <tr class="@(item.IsActive ? "" : "deleted")">
                 <td >
                     @Html.DisplayFor(modelItem => item.Name)
+                    @Html.DisplayFor(modelItem => item.MandatoryStatus)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.FieldViewType)
