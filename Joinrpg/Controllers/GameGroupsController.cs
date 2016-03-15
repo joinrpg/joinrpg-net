@@ -127,6 +127,7 @@ namespace JoinRpg.Web.Controllers
                   g.FirstCopy,
                   Description = g.Description?.ToHtmlString(),
                   Path = g.Path.Select(gr => gr.Name),
+                  PathIds = g.Path.Select(gr => gr.CharacterGroupId),
                   Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
                   CanAddDirectClaim = g.IsAcceptingClaims,
                   DirectClaimsCount = g.AvaiableDirectSlots,
