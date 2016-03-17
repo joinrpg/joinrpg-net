@@ -186,8 +186,8 @@ namespace JoinRpg.Dal.Impl
     {
       var el =
         user.ExternalLogins.First(
-          externalLogin => externalLogin.Key == login.ProviderKey && externalLogin.Provider == login.ProviderKey);
-      user.ExternalLogins.Remove(el);
+          externalLogin => externalLogin.Key == login.ProviderKey && externalLogin.Provider == login.LoginProvider);
+      _ctx.Set<UserExternalLogin>().Remove(el);
       return Task.FromResult(0);
     }
 

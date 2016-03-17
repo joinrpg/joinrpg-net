@@ -53,11 +53,13 @@ namespace JoinRpg.Web
       //   appId: "",
       //   appSecret: "");
 
-      app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-      {
-        ClientId = ApiSecretsStorage.GoogleClientId,
-        ClientSecret = ApiSecretsStorage.GoogleClientSecret
-      });
+          var googleOAuth2AuthenticationOptions = new GoogleOAuth2AuthenticationOptions()
+          {
+            ClientId = ApiSecretsStorage.GoogleClientId,
+            ClientSecret = ApiSecretsStorage.GoogleClientSecret,
+          };
+          googleOAuth2AuthenticationOptions.Scope.Add("email");
+          app.UseGoogleAuthentication(googleOAuth2AuthenticationOptions);
 
     }
     }

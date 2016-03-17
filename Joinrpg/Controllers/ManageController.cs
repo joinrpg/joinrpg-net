@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -185,7 +186,7 @@ namespace JoinRpg.Web.Controllers
     // GET: /Manage/LinkLoginCallback
     public async Task<ActionResult> LinkLoginCallback()
     {
-      var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+      var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(ApiSecretsStorage.XsrfKey, User.Identity.GetUserId());
       if (loginInfo == null)
       {
         return RedirectToAction("ManageLogins", new {Message = ManageMessageId.Error});

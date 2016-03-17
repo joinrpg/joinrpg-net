@@ -395,10 +395,6 @@ namespace JoinRpg.Web.Controllers
     }
 
     #region Helpers
-
-    // Used for XSRF protection when adding external logins
-    private const string XsrfKey = "fsdfsadfjasdknf msdvncxmvnzxcvxfvzxcvmzxf nf berfberferfkjd";
-
     private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
 
     private void AddErrors(IdentityResult result)
@@ -441,7 +437,7 @@ namespace JoinRpg.Web.Controllers
         var properties = new AuthenticationProperties {RedirectUri = RedirectUri};
         if (UserId != null)
         {
-          properties.Dictionary[XsrfKey] = UserId;
+          properties.Dictionary[ApiSecretsStorage.XsrfKey] = UserId;
         }
         context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
       }

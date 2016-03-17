@@ -17,5 +17,7 @@ namespace JoinRpg.Web.Helpers
     internal static string GoogleClientId => ConfigurationManager.AppSettings["GoogleClientId"];
 
     internal static string GoogleClientSecret => ConfigurationManager.AppSettings["GoogleClientSecret"];
+
+    internal static string XsrfKey => ConfigurationManager.AppSettings["XsrfKey"];
   }
 }

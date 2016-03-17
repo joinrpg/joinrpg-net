@@ -29,9 +29,8 @@
         </dd>
         <dt>Логин через соцсети:</dt>
         <dd>
-            Пока не поддерживается
-            @* @Model.Logins.Count [
-            @Html.ActionLink("Manage", "ManageLogins") ] *@
+            @DisplayCount.OfX(Model.Logins.Count, "соцсеть", "соцсети", "соцсетей")
+            [@Html.ActionLink("Настроить", "ManageLogins") ]
         </dd>
         @*
             Phone Numbers can used as a second factor of verification in a two-factor authentication system.
