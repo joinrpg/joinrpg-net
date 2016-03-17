@@ -58,7 +58,10 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                @Html.ActionLink("Все персонажи", "CharList", "ClaimList", new { Model.ProjectId }, null)
+                                @Html.ActionLink("Все персонажи", "CharList", "ClaimList", new {Model.ProjectId}, null)
+                            </li>
+                            <li>
+                                @Html.ActionLink("Удаленные персонажи", "DeletedCharList", "ClaimList", new { Model.ProjectId }, null)
                             </li>
                             @*
     <li role="separator" class="dropdown-header">По группам:</li>
