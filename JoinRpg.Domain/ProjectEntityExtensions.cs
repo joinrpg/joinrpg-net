@@ -62,7 +62,7 @@ namespace JoinRpg.Domain
 
     public static bool HasPlayerAccess(this Character character, int? currentUserId)
     {
-      return character.ApprovedClaim?.PlayerUserId == currentUserId;
+      return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
     }
 
     public static bool HasAnyAccess(this Character character, int? currentUserIdOrDefault)
