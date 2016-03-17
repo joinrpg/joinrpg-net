@@ -7,7 +7,7 @@ namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
 
-  public class Character : IClaimSource, IDeletableSubEntity, IFieldContainter
+  public class Character : IClaimSource, IFieldContainter
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }

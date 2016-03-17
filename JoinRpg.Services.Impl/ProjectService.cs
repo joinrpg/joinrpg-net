@@ -329,7 +329,7 @@ namespace JoinRpg.Services.Impl
         character.DirectlyRelatedPlotElements.CleanLinksList();
         character.Groups.CleanLinksList();
       }
-      SmartDelete(character);
+      character.IsActive = false;
       await UnitOfWork.SaveChangesAsync();
     } 
 
