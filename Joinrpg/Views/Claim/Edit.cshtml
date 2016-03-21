@@ -337,7 +337,7 @@
             </div>
         </div>
     </div>
-    @{ var viewModel = new FinOperationViewModel
+    @{ var viewModel = new FeeAcceptanceViewModel
       {
           ProjectId = Model.ProjectId,
           ClaimId = Model.ClaimId,
@@ -351,14 +351,34 @@
           CommentText = new MarkdownViewModel("Сдан взнос"),
           ClaimApproved = Model.Status == Claim.Status.Approved
       }; }
-    <div class="panel panel-default collapse" id="financeClaimActionPanel">
-        <div class="panel-heading">Отметить взнос</div>
+<div class="panel panel-default collapse" id="financeClaimActionPanel">
+    <div class="panel-heading">Отметить взнос</div>
+    <div class="panel-body">
+        @Html.Partial("_ClaimFinancePartial", viewModel)
+    </div>
+</div>
+
+    @{ var viewModelFinChange = new FeeAcceptanceViewModel
+      {
+          ProjectId = Model.ProjectId,
+          ClaimId = Model.ClaimId,
+          ParentCommentId = null,
+          EnableHideFromUser = false,
+          HideFromUser = false,
+          ActionName = "Изменить взнос",
+          OperationDate = DateTime.Today,
+          PaymentTypes = Model.PaymentTypes,
+          CommentText = new MarkdownViewModel(),
+          ClaimApproved = Model.Status == Claim.Status.Approved
+      }; }
+    <div class="panel panel-default collapse" id="financeChangeClaimActionPanel">
+        <div class="panel-heading">Изменить взнос</div>
         <div class="panel-body">
             @Html.Partial("_ClaimFinancePartial", viewModel)
         </div>
     </div>
 
-    <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
+<div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
         <div class="panel-heading">Отозвать заявку</div>
         <div class="panel-body">
             @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))

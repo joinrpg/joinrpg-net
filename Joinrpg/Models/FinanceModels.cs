@@ -9,16 +9,22 @@ using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models
 {
-  public class FinOperationViewModel : AddCommentViewModel
+  public class FinanceViewModelBase : AddCommentViewModel
+  {
+    [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
+    public DateTime OperationDate
+    { get; set; }
+
+    [ReadOnly(true)]
+    public bool ClaimApproved { get; set; }
+  }
+
+  public class FeeAcceptanceViewModel : FinanceViewModelBase
   {
     [Display(Name = "Внесено денег"), Required]
     public int Money
     { get; set; }
     public int FeeChange
-    { get; set; }
-
-    [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
-    public DateTime OperationDate
     { get; set; }
 
     [Display(Name = "Кому и как оплачено"), Required]
@@ -29,9 +35,6 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<PaymentType> PaymentTypes
     { get; set; }
-
-    [ReadOnly(true)]
-    public bool ClaimApproved { get; set; }
   }
 
   public class FinOperationListItemViewModel
