@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -14,8 +15,10 @@ namespace JoinRpg.DataModel
 
     public int? CharacterGroupId { get; set; }
 
+    [CanBeNull]
     public virtual CharacterGroup Group { get; set; }
 
+    [CanBeNull]
     public virtual Character Character { get; set; }
 
     public int PlayerUserId { get; set; }
