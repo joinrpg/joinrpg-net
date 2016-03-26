@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
@@ -52,5 +54,30 @@ namespace JoinRpg.Web.Models
     public int ProjectRootGroupId { get; set; }
 
     public bool IsRootGroupAccepting { get; set; }
+
+    public static ProjectListItemViewModel FromProject(Project p, int? user)
+    {
+      return new ProjectListItemViewModel()
+      {
+        ProjectId = p.ProjectId,
+        IsMaster = p.HasMasterAccess(user),
+        ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
+        ProjectName = p.ProjectName,
+        MyClaims = p.Claims.Where(c => c.PlayerUserId == user),
+        ClaimCount = p.Claims.Count(c => c.IsActive),
+        IsAcceptingClaims = p.IsAcceptingClaims,
+        ProjectRootGroupId = p.RootGroup.CharacterGroupId,
+        IsRootGroupAccepting = p.RootGroup.IsAvailable
+      };
+    }
+
+    public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
+      IEnumerable<T> collectionToSort,
+      Func<T, ProjectListItemViewModel> getProjectFunc)
+    {
+      return collectionToSort
+        .OrderByDescending(p => getProjectFunc(p)?.IsMaster)
+        .ThenByDescending(p => getProjectFunc(p)?.ClaimCount);
+    }
   }
 }

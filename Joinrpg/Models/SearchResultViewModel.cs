@@ -7,5 +7,6 @@ namespace JoinRpg.Web.Models
   {
     public string SearchString { get; set; }
     public IReadOnlyCollection<ISearchResult> Results { get; set; }
+    public IReadOnlyDictionary<int, ProjectListItemViewModel> ProjectDetails { get; set; }
   }
 }

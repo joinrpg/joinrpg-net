@@ -35,7 +35,8 @@ namespace JoinRpg.Services.Impl.Search
         Description = "",
         Identification = user.UserId.ToString(),
         ProjectId = null, //Users not associated with any project
-        IsPublic = true
+        IsPublic = true,
+        IsActive = true
       }).ToList();
     }
   }
