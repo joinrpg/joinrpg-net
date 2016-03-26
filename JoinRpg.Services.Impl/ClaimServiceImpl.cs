@@ -85,6 +85,11 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
+
+      if (!claimSource.Project.IsAcceptingClaims)
+      {
+        throw new DbEntityValidationException();
+      }
     }
 
     public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)

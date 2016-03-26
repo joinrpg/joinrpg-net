@@ -47,7 +47,7 @@ namespace JoinRpg.DataModel
     /// <summary>
     /// Can add claim directly to character group (not individual characters)
     /// </summary>
-    public bool IsAvailable => HaveDirectSlots && AvaiableDirectSlots != 0;
+    public bool IsAvailable => HaveDirectSlots && AvaiableDirectSlots != 0 && Project.IsAcceptingClaims;
 
     public IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterGroupId == CharacterGroupId);
 

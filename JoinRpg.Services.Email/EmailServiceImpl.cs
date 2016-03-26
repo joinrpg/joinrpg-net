@@ -29,6 +29,7 @@ namespace JoinRpg.Services.Email
 
     private readonly IHtmlService _htmlService;
     private readonly IUriService _uriService;
+    private bool _emailEnabled;
 
     private Task Send(IMessage message)
     {
@@ -37,6 +38,7 @@ namespace JoinRpg.Services.Email
 
     public EmailServiceImpl(IHtmlService htmlService, IUriService uriService, IMailGunConfig config)
     {
+      _emailEnabled = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
       _apiDomain = config.ApiDomain;
       _htmlService = htmlService;
       _joinRpgSender = new Recipient()
@@ -69,7 +71,10 @@ namespace JoinRpg.Services.Email
         .GetMessage();
       message.RecipientVariables =
         JObject.Parse("{" +string.Join(", ", recepients.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
-      await Send(message);
+      if (_emailEnabled)
+      {
+        await Send(message);
+      }
     }
 
     #region Account emails
