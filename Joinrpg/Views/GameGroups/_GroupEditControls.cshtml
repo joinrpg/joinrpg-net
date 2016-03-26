@@ -49,7 +49,7 @@
                     </a>
                 </li>
             }
-            @if (!Model.FirstInGroup && !Model.LastInGroup && !Model.IsRoot && !Model.IsSpecial)
+            @if ((!Model.FirstInGroup || !Model.LastInGroup) && !Model.IsRoot && !Model.IsSpecial)
             {
                 var moveParameters = new
                 {
