@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -57,11 +58,13 @@ namespace JoinRpg.DataModel
     Female = 2
   }
 
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
   public class UserExternalLogin
   {
     public int UserExternalLoginId { get; set; }
     public int UserId { get; set; }
-    public User User { get; set; }
+    [NotNull]
+    public virtual User User { get; set; }
     public string Provider { get; set; }
     public string Key { get; set; }
   }
