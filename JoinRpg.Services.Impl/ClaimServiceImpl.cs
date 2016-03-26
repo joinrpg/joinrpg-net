@@ -345,6 +345,11 @@ namespace JoinRpg.Services.Impl
       claim.RequestMasterAccess(currentUserId);
       claim.RequestMasterAccess(responsibleMasterId);
 
+      if (responsibleMasterId == claim.ResponsibleMasterUserId)
+      {
+        return; // Just do nothing
+      }
+
       var newMaster = await UserRepository.GetById(responsibleMasterId);
 
       var email = await
