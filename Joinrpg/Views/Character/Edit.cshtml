@@ -80,7 +80,13 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить персонажа" class="btn btn-success" />
+                <input type="submit" value="Сохранить персонажа" class="btn btn-success"/>
+                @if (Model.ActiveClaimsCount == 0)
+                {
+                    <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
+                        <span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить персонажа
+                    </a>
+                }
             </div>
         </div>
     </div>

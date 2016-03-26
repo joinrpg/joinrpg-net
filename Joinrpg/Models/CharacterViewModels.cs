@@ -51,12 +51,17 @@ namespace JoinRpg.Web.Models
 
     public CharacterNavigationViewModel Navigation { get; set; }
 
+    [ReadOnly(true)]
+    public int ActiveClaimsCount { get; private set; }
+
     public EditCharacterViewModel Fill(Character field, int currentUserId)
     {
       Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
       Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing,
         currentUserId);
       Fields = new CustomFieldsViewModel(currentUserId, field.Project).FillFromCharacter(field).OnlyCharacterFields();
+      ActiveClaimsCount = field.Claims.Count(claim => claim.IsActive);
+
       return this;
     }
   }
