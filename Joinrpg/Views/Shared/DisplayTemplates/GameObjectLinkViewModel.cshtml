@@ -1,4 +1,8 @@
 ﻿@using JoinRpg.Helpers
 @using JoinRpg.Web.Helpers
 @model JoinRpg.Web.Models.GameObjectLinkViewModel
-<a href="@RouteHelper.GetUrl(Model.GetRouteTarget())">@Model.Type.GetDisplayName() @Model.DisplayName</a>
+
+@Model.Type.GetDisplayName()
+<a
+   style="@(Model.IsActive ? "" : "text-decoration: line-through");"
+   href="@RouteHelper.GetUrl(Model.GetRouteTarget())"> @Model.DisplayName</a>
