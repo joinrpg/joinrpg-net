@@ -13,6 +13,8 @@ namespace JoinRpg.Web.Models
     public string DisplayName { get; set; }
     public int? ProjectId { get; set; }
 
+    public bool IsActive { get; set; }
+
     public bool IsGroup(int characterGroupId)
     {
       return IsObject(GameObjectLinkType.CharacterGroup, characterGroupId);

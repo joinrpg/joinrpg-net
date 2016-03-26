@@ -31,7 +31,7 @@ namespace JoinRpg.DataModel
     /// </summary>
     public string JsonData { get; set; }
 
-    public bool CanBePermanentlyDeleted => !Claims.Any();
+    public bool CanBePermanentlyDeleted = false;//TODO: remove the property as well.
 
     public bool IsActive { get; set; }
 

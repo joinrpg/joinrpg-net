@@ -78,7 +78,8 @@ namespace JoinRpg.Web.Helpers
         DisplayName = c.Name,
         Identification = c.Id.ToString(),
         ProjectId = c.ProjectId,
-        LinkType = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? LinkType.ResultCharacterGroup : LinkType.ResultCharacter
+        LinkType = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? LinkType.ResultCharacterGroup : LinkType.ResultCharacter,
+        IsActive = c.IsActive
       };
     }
 
@@ -89,7 +90,8 @@ namespace JoinRpg.Web.Helpers
         LinkType = result.LinkType,
         Identification = result.Identification,
         DisplayName = result.Name,
-        ProjectId = result.ProjectId
+        ProjectId = result.ProjectId,
+        IsActive = result.IsActive
       };
     }
   }
