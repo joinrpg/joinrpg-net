@@ -14,7 +14,7 @@ namespace JoinRpg.Web
     public partial class Startup
     {
         // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
-        public void ConfigureAuth(IAppBuilder app)
+      private void ConfigureAuth(IAppBuilder app)
         {
             // Configure the db context, user manager and signin manager to use a single instance per request
             app.CreatePerOwinContext(MyDbContext.Create);
@@ -53,14 +53,17 @@ namespace JoinRpg.Web
       //   appId: "",
       //   appSecret: "");
 
-          var googleOAuth2AuthenticationOptions = new GoogleOAuth2AuthenticationOptions()
+          if (!string.IsNullOrWhiteSpace(ApiSecretsStorage.GoogleClientId) &&
+              !string.IsNullOrWhiteSpace(ApiSecretsStorage.GoogleClientSecret))
           {
-            ClientId = ApiSecretsStorage.GoogleClientId,
-            ClientSecret = ApiSecretsStorage.GoogleClientSecret,
-          };
-          googleOAuth2AuthenticationOptions.Scope.Add("email");
-          app.UseGoogleAuthentication(googleOAuth2AuthenticationOptions);
-
-    }
+            var googleOAuth2AuthenticationOptions = new GoogleOAuth2AuthenticationOptions()
+            {
+              ClientId = ApiSecretsStorage.GoogleClientId,
+              ClientSecret = ApiSecretsStorage.GoogleClientSecret,
+            };
+            googleOAuth2AuthenticationOptions.Scope.Add("email");
+            app.UseGoogleAuthentication(googleOAuth2AuthenticationOptions);
+          }
+        }
     }
 }
