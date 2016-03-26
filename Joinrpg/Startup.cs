@@ -1,4 +1,5 @@
-﻿using JoinRpg.Web;
+﻿using JetBrains.Annotations;
+using JoinRpg.Web;
 using Microsoft.Owin;
 using Owin;
 
@@ -7,7 +8,8 @@ namespace JoinRpg.Web
 {
     public partial class Startup
     {
-        public void Configuration(IAppBuilder app)
+      [UsedImplicitly]
+      public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
         }
