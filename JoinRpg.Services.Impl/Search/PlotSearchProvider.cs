@@ -29,7 +29,8 @@ namespace JoinRpg.Services.Impl.Search
         Description = "",
         Identification = plot.PlotFolderId.ToString(),
         ProjectId = plot.ProjectId,
-        IsPublic = false
+        IsPublic = false,
+        IsActive = plot.IsActive
       }).ToList();
     }
   }

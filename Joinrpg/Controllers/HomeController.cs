@@ -23,23 +23,14 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<HomeViewModel> LoadModel(int maxProjects = int.MaxValue)
     {
-      
-
       var projects =
-        (await _projectRepository.GetActiveProjectsWithClaimCount()).Select(p => new ProjectListItemViewModel()
-        {
-          ProjectId = p.ProjectId,
-          IsMaster = p.HasMasterAccess(CurrentUserIdOrDefault),
-          ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
-          ProjectName = p.ProjectName,
-          MyClaims = p.Claims.Where(c => c.PlayerUserId == CurrentUserIdOrDefault),
-          ClaimCount = p.Claims.Count(c => c.IsActive),
-          IsAcceptingClaims = p.IsAcceptingClaims,
-          ProjectRootGroupId = p.RootGroup.CharacterGroupId,
-          IsRootGroupAccepting = p.RootGroup.IsAvailable
-        }).Where(p => p.IsMaster || p.MyClaims.Any() || p.IsAcceptingClaims).ToList();
-      var alwaysShowProjects =
-        projects.Where(p => p.IsMaster || p.MyClaims.Any()).OrderByDescending(p => p.IsMaster).ThenByDescending(p => p.ClaimCount);
+        (await _projectRepository.GetActiveProjectsWithClaimCount())
+        .Select(p => ProjectListItemViewModel.FromProject(p, CurrentUserIdOrDefault))
+        .Where(p => p.IsMaster || p.MyClaims.Any() || p.IsAcceptingClaims)
+        .ToList();
+
+      var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
+        projects.Where(p => p.IsMaster || p.MyClaims.Any()), p => p);
       var otherProjects =
         projects.Except(alwaysShowProjects)
           .OrderByDescending(p => p.ClaimCount)

@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.SearchResultViewModel
+﻿@using JoinRpg.Web.Models
+@model SearchResultViewModel
 @{
   ViewBag.Title = "Результаты поиска";
 }
@@ -7,11 +8,33 @@
 <p>Вы искали: @Model.SearchString</p>
 @if (Model.Results.Any())
 {
-    foreach (var result in Model.Results)
-
+    var resultsByProject = ProjectListItemViewModel
+        .OrderByDisplayPriority(
+          Model.Results.GroupBy(r => r.ProjectId),
+          g => g.Key == null ? null : Model.ProjectDetails[g.Key.Value])
+        .OrderByDescending(x => x.Key == null);
+    
+    foreach (var resultsForProject in resultsByProject)
     {
-        @*TODO: Can't find template for interface, so damned hard-coded template name*@
-        @Html.DisplayFor(m => result, "ISearchResult")
+        <div class="panel panel-default">
+            @if (resultsForProject.Key != null)
+            {
+                <div
+                    class="panel-heading"
+                    style="@(Model.ProjectDetails[resultsForProject.Key.Value].IsActive ? "" : "text-decoration: line-through")">
+                    @Model.ProjectDetails[resultsForProject.Key.Value].ProjectName
+                </div>
+            }
+
+            <div class="panel-body">
+                @foreach(var result in resultsForProject)
+{
+                    @*TODO: Can't find template for interface, so damned hard-coded template name*@
+                    @Html.DisplayFor(m => result, "ISearchResult")
+                }
+            </div>
+        </div>
+        
     }
 }
 else
