@@ -52,6 +52,9 @@ namespace JoinRpg.Web.Models
     public CharacterNavigationViewModel Navigation { get; set; }
 
     [ReadOnly(true)]
+    public bool IsActive { get; private set; }
+
+    [ReadOnly(true)]
     public int ActiveClaimsCount { get; private set; }
 
     public EditCharacterViewModel Fill(Character field, int currentUserId)
@@ -60,7 +63,9 @@ namespace JoinRpg.Web.Models
       Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing,
         currentUserId);
       Fields = new CustomFieldsViewModel(currentUserId, field.Project).FillFromCharacter(field).OnlyCharacterFields();
+
       ActiveClaimsCount = field.Claims.Count(claim => claim.IsActive);
+      IsActive = field.IsActive;
 
       return this;
     }
@@ -74,6 +79,9 @@ namespace JoinRpg.Web.Models
     AddClaim
   }
 
+  /// <summary>
+  /// TODO: LEO describe the meaning of this tricky class properly
+  /// </summary>
   public class CharacterNavigationViewModel
   {
     public CharacterNavigationPage Page { get; private set; }
@@ -87,6 +95,9 @@ namespace JoinRpg.Web.Models
     public int ProjectId { get; private set; }
 
     public string Name { get; private set; }
+
+    [ReadOnly(true)]
+    public bool IsActive { get; private set; }
 
     public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
     public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
@@ -118,7 +129,8 @@ namespace JoinRpg.Web.Models
         CharacterId = field.CharacterId,
         ProjectId = field.ProjectId,
         Page = page,
-        Name = field.CharacterName
+        Name = field.CharacterName,
+        IsActive = field.IsActive
       };
 
       vm.LoadClaims(field);
@@ -150,7 +162,8 @@ namespace JoinRpg.Web.Models
         ProjectId = claim.ProjectId,
         Page = characterNavigationPage,
         Name = claim.GetTarget().Name,
-        CanEditRoles = claim.HasMasterAccess(currentUserId, acl => acl.CanEditRoles)
+        CanEditRoles = claim.HasMasterAccess(currentUserId, acl => acl.CanEditRoles),
+        IsActive = claim.GetTarget().IsActive
       };
       vm.LoadClaims(claim.Character);
       if (vm.RejectedClaims.Any(c => c.ClaimId ==  claim.ClaimId))

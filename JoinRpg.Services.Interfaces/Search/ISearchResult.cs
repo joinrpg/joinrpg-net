@@ -10,5 +10,6 @@ namespace JoinRpg.Services.Interfaces.Search
     [NotNull]
     string Description { get; }
     bool IsPublic { get; }
+    bool IsActive { get; }
   }
 }

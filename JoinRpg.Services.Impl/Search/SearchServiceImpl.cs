@@ -46,6 +46,8 @@ namespace JoinRpg.Services.Impl.Search
 
     public bool IsPublic { get; set; }
 
+    public bool IsActive { get; set; }
+
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
 
@@ -58,7 +60,8 @@ namespace JoinRpg.Services.Impl.Search
         Description = "",
         Identification = @group.Id.ToString(),
         ProjectId = @group.ProjectId,
-        IsPublic = group.IsPublic
+        IsPublic = group.IsPublic,
+        IsActive = group.IsActive
       };
     }
   }
