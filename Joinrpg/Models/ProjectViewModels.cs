@@ -48,6 +48,7 @@ namespace JoinRpg.Web.Models
   public class ProjectListItemViewModel : ProjectViewModelBase
   {
     public bool IsMaster { get; set; }
+    public bool IsActive { get; set; }
     public IEnumerable<Claim>  MyClaims {get; set; }
     public int ClaimCount { get; set; }
 
@@ -61,6 +62,7 @@ namespace JoinRpg.Web.Models
       {
         ProjectId = p.ProjectId,
         IsMaster = p.HasMasterAccess(user),
+        IsActive = p.Active,
         ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
         ProjectName = p.ProjectName,
         MyClaims = p.Claims.Where(c => c.PlayerUserId == user),
@@ -76,7 +78,8 @@ namespace JoinRpg.Web.Models
       Func<T, ProjectListItemViewModel> getProjectFunc)
     {
       return collectionToSort
-        .OrderByDescending(p => getProjectFunc(p)?.IsMaster)
+        .OrderByDescending(p => getProjectFunc(p)?.IsActive)
+        .ThenByDescending(p => getProjectFunc(p)?.IsMaster)
         .ThenByDescending(p => getProjectFunc(p)?.ClaimCount);
     }
   }

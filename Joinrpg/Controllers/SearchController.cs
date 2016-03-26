@@ -20,7 +20,7 @@ namespace JoinRpg.Web.Controllers
       var searchResults = await _searchService.SearchAsync(CurrentUserIdOrDefault, viewModel.SearchRequest);
 
       Dictionary<int, ProjectListItemViewModel> projectDetails =
-        (await _projectRepository.GetActiveProjectsWithClaimCount())
+        (await _projectRepository.GetAllProjects())
         .ToDictionary(
           p => p.ProjectId,
           p => ProjectListItemViewModel.FromProject(p, CurrentUserIdOrDefault));

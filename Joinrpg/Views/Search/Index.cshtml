@@ -19,7 +19,11 @@
         <div class="panel panel-default">
             @if (resultsForProject.Key != null)
             {
-                <div class="panel-heading">@Model.ProjectDetails[resultsForProject.Key.Value].ProjectName</div>
+                <div
+                    class="panel-heading"
+                    style="@(Model.ProjectDetails[resultsForProject.Key.Value].IsActive ? "" : "text-decoration: line-through")">
+                    @Model.ProjectDetails[resultsForProject.Key.Value].ProjectName
+                </div>
             }
 
             <div class="panel-body">
