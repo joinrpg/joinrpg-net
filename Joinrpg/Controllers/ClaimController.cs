@@ -69,7 +69,10 @@ namespace JoinRpg.Web.Controllers
           CurrentUserId, viewModel.ClaimText?.Contents, 
           GetCustomFieldValuesFromPost());
 
-        return RedirectToAction("My", "ClaimList");
+        return RedirectToAction(
+          "SetupProfile",
+          "Manage",
+          new { greetingMessage = "ddd"});
       }
       catch (Exception exception)
       {

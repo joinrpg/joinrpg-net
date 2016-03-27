@@ -198,8 +198,13 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult> SetupProfile()
+    public async Task<ActionResult> SetupProfile(string greetingMessage = null)
     {
+      if (!string.IsNullOrEmpty(greetingMessage))
+      {
+        ViewBag.GreetingMessage = greetingMessage;
+      }
+
       var user = await _userRepository.WithProfile(CurrentUserId);
       return View(new EditUserProfileViewModel()
       {
