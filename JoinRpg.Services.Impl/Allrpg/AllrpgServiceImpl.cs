@@ -93,8 +93,10 @@ namespace JoinRpg.Services.Impl.Allrpg
 
     public async Task AssociateProject(int currentUserId, int projectId, int allrpgProjectId)
     {
+      var user = await UserRepository.GetById(currentUserId);
+      user.RequestAdminAccess();
+      
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.IsOwner);
       project.Details = project.Details ?? new ProjectDetails();
       if (project.Details.AllrpgId != null)
       {

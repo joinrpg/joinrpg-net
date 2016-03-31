@@ -41,5 +41,14 @@ namespace JoinRpg.Domain
       CoMaster,
       Administrator
     }
+
+    // ReSharper disable once UnusedParameter.Global
+    public static void RequestAdminAccess(this User user)
+    {
+      if (!user.Auth.IsAdmin)
+      {
+        throw new MustBeAdminException();
+      }
+    }
   }
 }
