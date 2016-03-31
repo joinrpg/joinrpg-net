@@ -22,5 +22,7 @@ namespace JoinRpg.Web.Models
     public ProjectAcl AccessToProject { get; set; }
 
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
+
+    public bool HasAllrpg { get; set; }
   }
 }

@@ -66,7 +66,8 @@ namespace JoinRpg.Web.Controllers.Common
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           CurrentUserId = CurrentUserId,
-          RootGroupId = project.RootGroup.CharacterGroupId
+          RootGroupId = project.RootGroup.CharacterGroupId,
+          HasAllrpg = project.Details?.AllrpgId != null
         };
       }
       else
