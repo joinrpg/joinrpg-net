@@ -5,13 +5,15 @@
 
 <h2>@ViewBag.Title</h2>
 
-<p>Обратите внимание, что все данные будут удалены и заменены на соответствующие данные из allrpg</p>
+<div class="alert alert-danger">
+    Все данные в проекте будут удалены и заменены на данные c allrpg. Все данные, которые возможно есть в данном проекте, будут безвовзратно потеряны.
+</div>
 @using (Html.BeginForm())
 {
     @Html.HiddenFor(model => model.ProjectId)
   @Html.AntiForgeryToken()
 
-<input type="submit" value="Импорт" class="btn btn-default" onclick="return confirm('Вы действительно хотите импортировать проект из ALLRPG?\nВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ')"/>
+<input type="submit" value="Импорт" class="btn btn-danger" onclick="return confirm('Вы действительно хотите импортировать проект из ALLRPG?\nВСЕ ДАННЫЕ БУДУТ УДАЛЕНЫ')"/>
 }
 
 <p>Результаты:</p>

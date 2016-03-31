@@ -29,12 +29,18 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
 
     #endregion
 
+    [Authorize]
     // GET: Admin/Joinrpg
     public async Task<ActionResult> Index()
     {
+      var user = await GetCurrentUserAsync();
+      if (!user.Auth.IsAdmin)
+      {
+        throw new JoinRpgInvalidUserException();
+      }
       return View(new AllrpgIndexViewModel
       {
-        Projects = (await GetCurrentUserAsync()).GetProjects(acl => acl.IsOwner).Where(p => p.Active && p.Details?.AllrpgId == null)
+        Projects = user.GetProjects(acl => acl.IsOwner || user.Auth.IsAdmin).Where(p => p.Active && p.Details?.AllrpgId == null)
       });
     }
 
