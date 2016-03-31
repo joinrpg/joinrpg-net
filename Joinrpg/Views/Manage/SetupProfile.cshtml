@@ -15,9 +15,9 @@
 
 
     <div class="form-horizontal">
-        @if (!string.IsNullOrEmpty(ViewBag.GreetingMessage))
+        @if (ViewBag.CheckContactsMessage)
         {
-            <div class="alert alert-info">Проверьте свои контакты, чтобы мастера смогли с вами связаться. Ваш телефон, email и skype будут видны только мастерам игр,
+            <div class="alert alert-info">Проверьте и дополните свои контакты, чтобы мастера смогли с вами связаться. Ваш телефон, email и skype будут видны только мастерам игр,
                 на которые вы заявились.</div>
         }
         else

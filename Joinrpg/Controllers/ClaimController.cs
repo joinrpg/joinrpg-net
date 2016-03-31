@@ -72,7 +72,7 @@ namespace JoinRpg.Web.Controllers
         return RedirectToAction(
           "SetupProfile",
           "Manage",
-          new { greetingMessage = "ddd"});
+          new { checkContactsMessage = true});
       }
       catch (Exception exception)
       {
