@@ -198,8 +198,10 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult> SetupProfile()
+    public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false)
     {
+      ViewBag.CheckContactsMessage = checkContactsMessage;
+
       var user = await _userRepository.WithProfile(CurrentUserId);
       return View(new EditUserProfileViewModel()
       {

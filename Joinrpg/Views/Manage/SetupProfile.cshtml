@@ -13,9 +13,18 @@
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.UserId)
 
+
     <div class="form-horizontal">
+        @if (ViewBag.CheckContactsMessage)
+        {
+            <div class="alert alert-info">Проверьте и дополните свои контакты, чтобы мастера смогли с вами связаться. Ваш телефон, email и skype будут видны только мастерам игр,
+                на которые вы заявились.</div>
+        }
+        else
+        {
         <p>Введите контакты, чтобы мастерам было легче с вами связаться или найти вас. Ваш телефон, email и skype будут видны только мастерам игр,
             на которые вы заявились.</p>
+        }
         <p>Загрузить аватарку пока можно при помощи сервиса <a href="https://ru.gravatar.com/">GrAvatar</a>.</p>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
