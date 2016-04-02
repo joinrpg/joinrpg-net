@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.AddCharacterViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.AddCharacterViewModel
 
 @{
     ViewBag.Title = "Добавление персонажа в игру " + Model.ProjectName;
@@ -24,10 +25,8 @@
         <div class="form-group">
             @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.Partial("ParentCharacterGroupPartial")
+                    @Html.MagicSelectFor(model => model.ParentCharacterGroupIds, Model.ProjectId, Model.RootGroupId, false)
                     @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
-                </div>
             </div>
         </div>
 
