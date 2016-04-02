@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Models
       ProjectId = field.ProjectId;
       IsActive = field.IsActive;
       HasValueList = field.HasValueList();
-      DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv));
+      DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv)).MarkFirstAndLast();
       FieldViewType = (ProjectFieldViewType) field.FieldType;
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
       MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
@@ -87,6 +87,7 @@ namespace JoinRpg.Web.Models
 
     public bool First { get; set; }
     public bool Last { get; set; }
+    int IMovableListItem.ItemId => ProjectFieldId;
   }
 
 
@@ -156,7 +157,7 @@ namespace JoinRpg.Web.Models
     public int ProjectFieldId { get; set; }
   }
 
-  public class GameFieldDropdownValueListItemViewModel : GameFieldDropdownValueViewModelBase
+  public class GameFieldDropdownValueListItemViewModel : GameFieldDropdownValueViewModelBase, IMovableListItem
   {
     public bool IsActive { get; }
 
@@ -171,6 +172,12 @@ namespace JoinRpg.Web.Models
       ProjectFieldId = value.ProjectFieldId;
       ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
     }
+
+    #region Implementation of IMovableListItem
+    public bool First { get; set; }
+    public bool Last { get; set; }
+    int IMovableListItem.ItemId => ProjectFieldDropdownValueId;
+    #endregion
   }
 
   public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewModelBase
@@ -211,7 +218,7 @@ namespace JoinRpg.Web.Models
   {
     public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields)
     {
-      return gameFields.Select(pf => new GameFieldEditViewModel(pf)).ToList().MarkFirstAndLast();
+      return gameFields.Select(pf => new GameFieldEditViewModel(pf)).MarkFirstAndLast();
     }
   }
 }

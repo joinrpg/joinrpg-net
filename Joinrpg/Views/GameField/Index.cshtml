@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.GameFieldListViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.GameFieldListViewModel
 
 @{
     ViewBag.Title = "Поля персонажа / заявки";
@@ -83,18 +84,7 @@
                             {
                                 @Html.ActionLink("Восстановить", "Edit", new { item.ProjectFieldId, item.ProjectId})
                             }
-                            var moveParameters = new
-                            {
-                                 item.ProjectFieldId, Model.ProjectId,
-                            };
-                            if (!item.First)
-                            {
-                                <a href="@Url.Action("MoveUp", moveParameters)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
-                            }
-                            if (!item.Last)
-                            {
-                                <a href="@Url.Action("MoveDown", moveParameters)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
-                            }
+                            @Html.MoveControl(model => item, "Move")
                         }
                     </td>
                 }
