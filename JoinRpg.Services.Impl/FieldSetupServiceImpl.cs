@@ -72,7 +72,7 @@ namespace JoinRpg.Services.Impl
     {
       var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(projectCharacterFieldId);
 
-      foreach (var fieldValueVariant in field.DropdownValues)
+      foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
       {
         DeleteFieldVariantValueImpl(fieldValueVariant);
       }
@@ -162,8 +162,9 @@ namespace JoinRpg.Services.Impl
       };
 
       field.CharacterGroup.IsPublic = field.IsPublic;
-      foreach (var fieldValue in field.DropdownValues.Where(dv => dv.CharacterGroup != null))
+      foreach (var fieldValue in field.DropdownValues)
       {
+        if (fieldValue.CharacterGroup == null) continue; //We can't convert to LINQ because of RSRP-457084
         fieldValue.CharacterGroup.IsPublic = field.IsPublic;
         fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
       }
@@ -207,7 +208,10 @@ namespace JoinRpg.Services.Impl
       }
       else
       {
-        characterGroup.IsActive = false;
+        if (characterGroup != null)
+        {
+          characterGroup.IsActive = false;
+        }
       }
     }
 
