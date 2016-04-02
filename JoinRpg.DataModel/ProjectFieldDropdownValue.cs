@@ -1,4 +1,6 @@
-﻿namespace JoinRpg.DataModel
+﻿using JetBrains.Annotations;
+
+namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
   public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity
@@ -24,6 +26,7 @@
 
     public MarkdownString Description { get; set; }
 
+    [CanBeNull]
     public virtual CharacterGroup CharacterGroup { get; set; }
     public int CharacterGroupId  { get; set; }
   }
