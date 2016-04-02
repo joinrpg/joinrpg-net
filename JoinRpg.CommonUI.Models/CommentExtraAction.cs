@@ -1,38 +1,38 @@
-using System.ComponentModel.DataAnnotations;
+п»їusing System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 
 namespace JoinRpg.CommonUI.Models
 {
   public enum CommentExtraAction
   {
-    [Display(Name = "Финансовая операция подтверждена", ShortName = "отмечено")]
+    [Display(Name = "Р¤РёРЅР°РЅСЃРѕРІР°СЏ РѕРїРµСЂР°С†РёСЏ РїРѕРґС‚РІРµСЂР¶РґРµРЅР°", ShortName = "РѕС‚РјРµС‡РµРЅРѕ")]
     [UsedImplicitly]
     ApproveFinance,
-    [Display(Name = "Финансовая операция отклонена", ShortName = "отмечено")]
+    [Display(Name = "Р¤РёРЅР°РЅСЃРѕРІР°СЏ РѕРїРµСЂР°С†РёСЏ РѕС‚РєР»РѕРЅРµРЅР°", ShortName = "РѕС‚РјРµС‡РµРЅРѕ")]
     [UsedImplicitly]
     RejectFinance,
-    [Display(Name = "Заявка одобрена мастером", ShortName = "одобрена")]
+    [Display(Name = "Р—Р°СЏРІРєР° РѕРґРѕР±СЂРµРЅР° РјР°СЃС‚РµСЂРѕРј", ShortName = "РѕРґРѕР±СЂРµРЅР°")]
     [UsedImplicitly]
     ApproveByMaster,
-    [Display(Name = "Заявка отклонена мастером", ShortName = "отклонена")]
+    [Display(Name = "Р—Р°СЏРІРєР° РѕС‚РєР»РѕРЅРµРЅР° РјР°СЃС‚РµСЂРѕРј", ShortName = "РѕС‚РєР»РѕРЅРµРЅР°")]
     [UsedImplicitly]
     DeclineByMaster,
-    [Display(Name = "Заявка восстановлена мастером", ShortName = "восстановлена")]
+    [Display(Name = "Р—Р°СЏРІРєР° РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР° РјР°СЃС‚РµСЂРѕРј", ShortName = "РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР°")]
     [UsedImplicitly]
     RestoreByMaster,
-    [Display(Name = "Заявка перемещена мастером", ShortName = "изменена")]
+    [Display(Name = "Р—Р°СЏРІРєР° РїРµСЂРµРјРµС‰РµРЅР° РјР°СЃС‚РµСЂРѕРј", ShortName = "РёР·РјРµРЅРµРЅР°")]
     [UsedImplicitly]
     MoveByMaster,
-    [Display(Name = "Заявка отозвана игроком", ShortName = "отозвана")]
+    [Display(Name = "Р—Р°СЏРІРєР° РѕС‚РѕР·РІР°РЅР° РёРіСЂРѕРєРѕРј", ShortName = "РѕС‚РѕР·РІР°РЅР°")]
     [UsedImplicitly]
     DeclineByPlayer,
-    [Display(Name = "Ответственный мастер изменен", ShortName = "изменена")]
+    [Display(Name = "РћС‚РІРµС‚СЃС‚РІРµРЅРЅС‹Р№ РјР°СЃС‚РµСЂ РёР·РјРµРЅРµРЅ", ShortName = "РёР·РјРµРЅРµРЅР°")]
     [UsedImplicitly]
     ChangeResponsible,
-    [Display(Name = "Новая заявка", ShortName = "подана")]
+    [Display(Name = "РќРѕРІР°СЏ Р·Р°СЏРІРєР°", ShortName = "РїРѕРґР°РЅР°")]
     [UsedImplicitly]
     NewClaim,
-    [Display(Name = "Заявка поставлена в лист ожидания", ShortName = "изменена")]
+    [Display(Name = "Р—Р°СЏРІРєР° РїРѕСЃС‚Р°РІР»РµРЅР° РІ Р»РёСЃС‚ РѕР¶РёРґР°РЅРёСЏ", ShortName = "РёР·РјРµРЅРµРЅР°")]
     [UsedImplicitly]
     OnHoldByMaster
   }
