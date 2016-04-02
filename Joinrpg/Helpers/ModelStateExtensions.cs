@@ -23,6 +23,13 @@ namespace JoinRpg.Web.Helpers
           return;
         }
       }
+      var required = exception as FieldRequiredException;
+      if (required != null)
+      {
+        dict.AddModelError("", required.FieldName + "is required");
+        dict.AddModelError(required.FieldName, "required");
+        return;
+      }
       var wrongStatus = exception as ClaimWrongStatusException;
       if (wrongStatus != null)
       {

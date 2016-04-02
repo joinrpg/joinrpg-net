@@ -10,6 +10,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -183,10 +184,8 @@ namespace JoinRpg.Web.Controllers
         return Content("Can't edit special group");
       }
 
-      return View(new EditCharacterGroupViewModel
+      return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
       {
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(group.Project.RootGroup),
-        ProjectId = group.Project.ProjectId,
         ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
         Description = new MarkdownViewModel(@group.Description),
         IsPublic = @group.IsPublic,
@@ -196,8 +195,7 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = @group.CharacterGroupId,
         IsRoot = @group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
-        Masters = GetMasters(@group, false)
-      });
+      }, group));
     }
 
     private static IEnumerable<MasterListItemViewModel>  GetMasters(IClaimSource @group, bool includeSelf)
@@ -226,15 +224,20 @@ namespace JoinRpg.Web.Controllers
       return @group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
-    // POST: GameGroups/Edit/5
     [HttpPost, ValidateAntiForgeryToken, Authorize]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
       var group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-      var error = AsMaster(group);
+      var error = AsMaster(group, acl => acl.CanEditRoles);
       if (error != null)
       {
         return error;
+      }
+
+      if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
+      {
+        viewModel.IsRoot = group.IsRoot;
+        return View(FillFromCharacterGroup(viewModel, group));
       }
 
       if (group.IsSpecial)
@@ -255,7 +258,9 @@ namespace JoinRpg.Web.Controllers
       catch (Exception e)
       {
         ModelState.AddModelError("", e);
-        return View(viewModel);
+        viewModel.IsRoot = group.IsRoot;
+        return View(FillFromCharacterGroup(viewModel, group));
+
       }
 
     }
@@ -304,23 +309,24 @@ namespace JoinRpg.Web.Controllers
     {
       var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
 
-      return AsMaster(field, pa => pa.CanEditRoles) ??  View(new AddCharacterGroupViewModel()
+      return AsMaster(field, pa => pa.CanEditRoles) ??  View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup),
-        ProjectId = projectid,
         ParentCharacterGroupIds = new List<int> {charactergroupid},
-        Masters = GetMasters(field, includeSelf: true),
         ResponsibleMasterId = -1
-      });
+      }, field));
     }
 
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel)
+    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project);
+      var field = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, charactergroupid);
+      var error = AsMaster(field);
+      if (!ModelState.IsValid)
+      {
+        return View(FillFromCharacterGroup(viewModel, field));
+      }
       if (error != null)
       {
         return error;
@@ -333,12 +339,24 @@ namespace JoinRpg.Web.Controllers
           viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-        return RedirectToIndex(project.ProjectId, viewModel.ParentCharacterGroupIds.First());
+        return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.First());
       }
-      catch
+      catch (Exception exception)
       {
-        return View(viewModel);
+        ModelState.AddException(exception);
+        return View(FillFromCharacterGroup(viewModel, field));
       }
+    }
+
+    private static T FillFromCharacterGroup<T>(T viewModel, IClaimSource field)
+      where T: CharacterGroupViewModelBase
+    {
+      viewModel.Masters = GetMasters(field, includeSelf: true);
+      viewModel.RootGroupId = field.Project.RootGroup.CharacterGroupId;
+      viewModel.ProjectName = field.Project.ProjectName;
+      viewModel.ProjectId = field.Project.ProjectId;
+      viewModel.Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup);
+      return viewModel;
     }
 
     public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
