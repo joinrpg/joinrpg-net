@@ -506,7 +506,6 @@
     <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
-    <Content Include="Views\Shared\ParentCharacterGroupPartial.cshtml" />
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
