@@ -77,5 +77,6 @@
 /// <reference path="locales/bootstrap-datepicker.zh-cn.min.js" />
 /// <reference path="locales/bootstrap-datepicker.zh-tw.min.js" />
 /// <reference path="modernizr-2.8.3.js" />
+/// <reference path="multicontrol.js" />
 /// <reference path="respond.matchmedia.addlistener.min.js" />
 /// <reference path="respond.min.js" />

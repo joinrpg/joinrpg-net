@@ -1,18 +1,41 @@
 ﻿@using JoinRpg.Web.Models
 @model GameObjectViewModelBase
 
-@functions {
-    private static string GetName(CharacterGroupListItemViewModel gr)
-    {
-        return new string('—', gr.DeepLevel) + gr.Name;
-    }
+@{
+    var characterGroups = new HtmlString(
+        string.Join(", ", Model.ParentCharacterGroupIds.Select(id => string.Format("'{0}'", id))));
 }
 
-@Html.ListBoxFor(m => m.ParentCharacterGroupIds,
-    new MultiSelectList(
-        Model.PossibleParents.Select(gr =>
-            new { Value = gr.CharacterGroupId.ToString(), Text = GetName(gr) }),
-        "Value",
-        "Text"), new {@class="form-control"}
-    )
-<p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
+<div id="ParentCharacterGroupIds_control"></div>
+<script type="text/javascript">
+        $(function() {
+            var options = {
+                //путь к json, откуда берутся данные
+                url: '/' + @Model.ProjectId +  '/roles/' + @Model.RootGroupId +  '/indexjson',
+                //разрешить или не разрешать множественный выбор. По умолчанию разрешен
+                multiselect: true,
+                //показывать ли персонажей или только группы (по умолчанию показываются)
+                showcharacters: false,
+                //функция, вызываемая на каждое добавление/удаление элемента.
+                //получает список Id выбранных элементов (группы и персонажи не различаются,
+                //но можно добавить этот функционал)
+                onitemselected: function(items) {
+                },
+                //если нужно отправлять данные как форму, можно прицепить к контролу
+                //скрытый элемент select. Ему нужны настройки id и name
+                //Поле multiple ставится в соответствии с настройкой multiselect
+               hiddenselect: {
+                   id: 'ParentCharacterGroupIds',
+                   name: 'ParentCharacterGroupIds'
+                },
+                //id элемент(ов), для которых показывает мультивыбор
+                //т.к. по определению для любого элемента его родители
+                //1 уровня являются выбранными группами
+                //то чтобы получить исходный список групп
+                //достаточно передать список элементов, для которых показан контрол
+                keyelements: [@characterGroups]
+            };
+            var c = $('#ParentCharacterGroupIds_control');
+            c.multicontrol(options);
+        });
+</script>

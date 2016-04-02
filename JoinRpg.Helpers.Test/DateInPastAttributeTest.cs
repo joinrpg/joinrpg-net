@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using JoinRpg.Helpers.Validation;
@@ -9,22 +10,34 @@ namespace JoinRpg.Helpers.Test
   [TestClass]
   public class DateInPastAttributeTest
   {
-    private class ClassToValidate
+    private class ClassToValidateInPast
     {
       [DateShouldBeInPast, UsedImplicitly]
-      public DateTime? Time { get; }
-
-      public ClassToValidate ()
-      {
-        Time = DateTime.MaxValue;
-      }
+      public DateTime? Time { get; } = DateTime.MaxValue;
     }
-    [TestMethod, ExpectedException(typeof(ValidationException))]
-    public void TestValidationFailure()
+
+    private class ClassToValidateEmpty
     {
-      var classToValidate = new ClassToValidate();
+      [CannotBeEmpty, UsedImplicitly]
+      public IEnumerable<int> List { get; } = new List<int>();
+    }
+
+    [TestMethod, ExpectedException(typeof(ValidationException))]
+    public void TestShouldBeInPastFailure()
+    {
+      Validate(new ClassToValidateInPast());
+    }
+
+    private static void Validate(object classToValidate)
+    {
       var validationContext = new ValidationContext(classToValidate, null, null);
       Validator.ValidateObject(classToValidate, validationContext, true);
+    }
+
+    [TestMethod, ExpectedException(typeof(ValidationException))]
+    public void TestCantBeEmptyFailure()
+    {
+      Validate(new ClassToValidateEmpty());
     }
   }
 }

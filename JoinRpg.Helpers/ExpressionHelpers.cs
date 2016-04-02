@@ -9,5 +9,10 @@ namespace JoinRpg.Helpers
     {
       return ((MemberExpression)expression.Body).Member.Name;
     }
+
+    public static string AsPropertyName<T1>(this Expression<Func<T1>> expression)
+    {
+      return ((MemberExpression)expression.Body).Member.Name;
+    }
   }
 }
