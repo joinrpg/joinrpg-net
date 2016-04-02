@@ -60,22 +60,23 @@
     </label>
     <div class="col-md-10">
         @{
-            var requiredMsg = new MvcHtmlString("");
-            switch (Model.MandatoryStatus)
-            {
-                case MandatoryStatusViewType.Optional:
-                    requiredMsg = new MvcHtmlString("");
-                    break;
-                case MandatoryStatusViewType.Recommended:
-                    //TODO improve
-                    requiredMsg = new MvcHtmlString("");
-                    break;
-                case MandatoryStatusViewType.Required:
-                    requiredMsg = new MvcHtmlString("data-val=true data-val-required=\"Необходимо заполнить поле.\"");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+          var requiredMsg = new MvcHtmlString("");
+          switch (Model.MandatoryStatus)
+          {
+              case MandatoryStatusViewType.Optional:
+                  requiredMsg = new MvcHtmlString("");
+                  break;
+              case MandatoryStatusViewType.Recommended:
+                  //TODO improve
+                  requiredMsg = new MvcHtmlString("");
+                  break;
+              case MandatoryStatusViewType.Required:
+                  requiredMsg = new MvcHtmlString("data-val=true data-val-required=\"Необходимо заполнить поле.\"");
+                  break;
+              default:
+                  throw new ArgumentOutOfRangeException();
+          }
+          var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
         }
 
         @switch (Model.FieldViewType)
@@ -86,7 +87,6 @@
             case ProjectFieldViewType.Dropdown:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" @requiredMsg>
                     @{
-                        var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
                         if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
                         {
                             <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
@@ -104,7 +104,13 @@
                 break;
             case ProjectFieldViewType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple" @requiredMsg>
-                    @ShowOptions()
+                    @{
+                        if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
+                        {
+                            <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
+                        }
+                        @ShowOptions()
+                    }
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;
