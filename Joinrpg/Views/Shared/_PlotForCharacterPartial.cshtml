@@ -11,7 +11,7 @@
                 </a>
             </h4>
         </div>
-        <div id="collapseOne" class="panel-collapse collapse" aria-labelledby="headingOne">
+        <div id="collapseOne" class="panel-collapse collapse in" aria-labelledby="headingOne">
             <div class="panel-body">
                 @if (Model.Any(item => item.Status == PlotStatus.InWork && !item.HasMasterAccess))
                 {

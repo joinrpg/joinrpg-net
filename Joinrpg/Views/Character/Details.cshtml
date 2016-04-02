@@ -11,9 +11,11 @@
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     </dl>
+@{
+  ViewBag.CharacterId = Model.Navigation.CharacterId;
+}
 @if (Model.Fields.AnythingAccessible)
 {
-    ViewBag.CharacterId = Model.Navigation.CharacterId;
     <div class="form-horizontal">
         @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>

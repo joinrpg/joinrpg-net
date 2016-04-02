@@ -17,5 +17,6 @@ namespace JoinRpg.Services.Interfaces
 
     Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int currentUserId, int projectFieldId);
     Task MoveField(int currentUserId, int projectid, int projectcharacterfieldid, short direction);
+    Task MoveFieldValue(int currentUserId, int projectid, int projectFieldId, int projectFieldVariantId, short direction);
   }
 }

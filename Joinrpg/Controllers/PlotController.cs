@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models;
@@ -230,9 +229,9 @@ namespace JoinRpg.Web.Controllers
       return AsMaster(project1) ?? action(project1);
     }
 
-    public Task<ActionResult> MoveUpElementForCharacter(int projectid, int plotelementid, int characterid)
+    public Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
     {
-      return MoveElementImpl(projectid, plotelementid, characterid, -1);
+      return MoveElementImpl(projectid, listItemId, parentObjectId, direction);
     }
 
     private async Task<ActionResult> MoveElementImpl(int projectId, int plotElementId, int parentCharacterId, int direction)
@@ -255,11 +254,6 @@ namespace JoinRpg.Web.Controllers
       {
         return RedirectToAction("Details", "Character", new { projectId, characterId = parentCharacterId });
       }
-    }
-
-    public Task<ActionResult> MoveDownElementForCharacter(int projectid, int plotelementid, int characterid)
-    {
-      return MoveElementImpl(projectid, plotelementid, characterid, +1);
     }
   }
 }

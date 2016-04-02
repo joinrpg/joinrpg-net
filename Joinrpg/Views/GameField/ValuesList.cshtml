@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.GameFieldDropdownValueListItemViewModel>
+@using JoinRpg.Web.App_Code
 
 <table class="table">
     <tr>
@@ -31,6 +32,7 @@
             {
                 @Html.ActionLink("восстановить", "EditValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
             }
+            @Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)
         </td>
     </tr>
 }
