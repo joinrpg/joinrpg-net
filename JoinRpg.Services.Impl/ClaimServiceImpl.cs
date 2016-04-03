@@ -57,6 +57,13 @@ namespace JoinRpg.Services.Impl
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
       FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
+      var updatedFields = FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, null, claim, fields);
+
+      var newClaimEmail = await
+        CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText ?? "", s => s.ClaimStatusChange, true,
+          CommentExtraAction.NewClaim);
+
+      newClaimEmail.UpdatedFields = updatedFields.ToDictionary(fv => fv.Field.FieldName, fv => fv.Value);
 
       await UnitOfWork.SaveChangesAsync();
 

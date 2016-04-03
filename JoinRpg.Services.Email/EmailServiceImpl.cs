@@ -138,11 +138,19 @@ namespace JoinRpg.Services.Email
         return;
       }
 
+      var fields = string.Join("",
+        model.UpdatedFields.Select(updatedField => $@"{updatedField.Key}
+
+{updatedField.Value}
+
+"));
+
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
         $@"Добрый день, {MailGunRecepientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
+{fields}
 {model.Text.Contents}
 
 {model.Initiator.DisplayName}

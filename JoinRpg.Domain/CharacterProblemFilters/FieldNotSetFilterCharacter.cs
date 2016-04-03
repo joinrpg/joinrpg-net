@@ -65,12 +65,9 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     #region Implementation of IProblemFilter<in Character>
     public IEnumerable<ClaimProblem> GetProblems(Character character)
     {
-      return
-        CheckFields(
-          character.GetFields()
-            .Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Character || character.ApprovedClaim != null)
-            .ToList(), character);
-    }
+      var projectFields = character.Project.GetFields();
+      projectFields.FillFrom(character.ApprovedClaim);
+      projectFields.FillFrom(character);
 
     #endregion
   }
@@ -80,7 +77,9 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     #region Implementation of IProblemFilter<in Character>
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
-      var projectFields = claim.GetFields();
+      var projectFields = claim.Project.GetFields();
+      projectFields.FillFrom(claim);
+      projectFields.FillFrom(claim.Character);
 
       return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }

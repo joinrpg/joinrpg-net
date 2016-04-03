@@ -70,7 +70,6 @@ namespace JoinRpg.Services.Interfaces
 
   public class ChangeResponsibleMasterEmail : ClaimEmailModel
   {
-    public User NewMaster { get; set; }
   }
 
   public class DeclineByPlayerEmail : ClaimEmailModel
@@ -98,6 +97,7 @@ namespace JoinRpg.Services.Interfaces
     public ParcipantType InitiatorType { get; set; }
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
+    public IReadOnlyDictionary<string, string> UpdatedFields { get; set; } = new Dictionary<string, string>();
   }
 
   public class EmailModelBase
