@@ -53,7 +53,7 @@
 }
 
 .hidden{
-  display: none;
+  display: none !important;
 }
 
 .multicontrol{
@@ -62,7 +62,7 @@
   line-height: 24px;
 }
 
-.multicontrol .taginput{
+.multicontrol .mlc-taginput{
   display: inline-block;
   max-width: 100%;
   width: auto;
@@ -82,7 +82,11 @@
   transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 
-ul.all-groups{
+.multicontrol.disabled .mlc-taginput{
+  background-color: #ddd;
+}
+
+.multicontrol ul.mlc-all-groups{
   z-index: 1001;
   position: relative;
   list-style: none;
@@ -90,13 +94,23 @@ ul.all-groups{
   float: left;
 }
 
-ul.all-groups li{
+.multicontrol ul.mlc-all-groups li{
   display: inline-block;
   padding: 2px 4px;
   color: #bbb;
 }
 
-.list{
+.multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:link,
+.multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:visited{
+  color: rgb(44, 105, 158);
+  text-decoration: none;
+}
+.multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:hover{
+  text-decoration: underline;
+  color: rgb(20, 48, 73);
+}
+
+.multicontrol .mlc-list{
   border: 1px solid #ddd;
   max-height: 250px;
   overflow: auto;
@@ -108,59 +122,56 @@ ul.all-groups li{
   clear: both;
 }
 
-.list>ul{
+.multicontrol .mlc-list>ul{
   padding: 3px 8px !important;
   margin: 0;
 }
 
-.list ul{
+.multicontrol .mlc-list ul{
   list-style-type: none;
   padding-left: 20px;
 }
 
-.list ul li, .list ul li>span{
+.multicontrol .mlc-list ul li, .multicontrol .mlc-list ul li>span{
   width: 100%;
 }
 
-.list ul li>span{
+.multicontrol .mlc-list ul li>span{
   display: inline-block;
   padding: 2px 4px;
   border-radius: 5px;
   color: #333;
 }
 
-.list ul li .collapser{
+.multicontrol .mlc-list ul li .mlc-collapser{
   padding: 2px 5px 3px 4px;
-  border: 1px solid #ccc;
-  border-radius: 30px;
   font-weight: lighter;
   font-size: 12px !important;
   cursor: pointer;
   color: #ccc;
-  margin: 0 15px;
+  margin: 1px 12px 0 5px
 }
 
-.list ul li>span.title:hover, .list ul li.focused>span.title{
+.multicontrol .mlc-list ul li>span.title:hover, .multicontrol .mlc-list ul li.focused>span.title{
   background-color: rgba(44, 105, 158, 0.54);
   cursor: pointer;
 }
 
-.list ul li>span.title:hover>.collapser{
+.multicontrol .mlc-list ul li>span.title:hover>.mlc-collapser{
   color: black;
-  border-color: black;
 }
 
-.list ul li.selected>span.title{
+.multicontrol .mlc-list ul li.selected>span.title{
   background-color: rgba(47, 115, 172, 0.83);
   cursor: pointer;
   color: white;
 }
 
-.list ul .group>.title{
+.multicontrol .mlc-list ul .group>.title{
   font-weight: bold;
 }
 
-.input-group{
+.multicontrol .mlc-input-group{
   display: block;
   width: 100%;
   padding: 3px 8px;
@@ -176,15 +187,26 @@ ul.all-groups li{
   float: left;
 }
 
-.input-group.focused{
+.multicontrol.disabled .mlc-input-group{
+  background: #ddd;
+  cursor: default;
+  transition: none;
+  -webkit-transition: none;
+  -o-transition: none;
+}
+.multicontrol .mlc-input-group.focused{
   border: 2px solid lightskyblue;
 }
 
-.tags{
+.multicontrol.disabled .mlc-input-group.focused{
+  border: 1px solid #ccc;
+}
+
+.multicontrol .mlc-tags{
   float: left;
 }
 
-.tags .tag{
+.multicontrol .mlc-tags .mlc-tag{
   display: inline-block;
   padding: 2px 6px;
   margin: 2px;
@@ -194,7 +216,7 @@ ul.all-groups li{
   background-color: #eee;
 }
 
-.tags .tag>.name{
+.multicontrol .mlc-tags .mlc-tag>.name{
   max-width: 250px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -204,14 +226,14 @@ ul.all-groups li{
   cursor: default;
 }
 
-.tags .tag>.close{
+.multicontrol .mlc-tags .mlc-tag>.close{
   color: #555;
   cursor: pointer;
   float:right;
   padding-left: 5px;
 }
 
-.tags .tag .close:hover{
+.multicontrol .mlc-tags .mlc-tag .close:hover{
   color: #333;
 }
 /*
