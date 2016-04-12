@@ -9,6 +9,8 @@ namespace JoinRpg.Data.Interfaces
   {
     Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount();
 
+    Task<IEnumerable<Project>> GetActiveProjectsWithoutAllrpg();
+
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
 
     Task<Project> GetProjectAsync(int project);

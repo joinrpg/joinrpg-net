@@ -14,19 +14,16 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
   public class AllrpgController : Web.Controllers.Common.ControllerGameBase
   {
     #region services & repositories
-
     private readonly IAllrpgService _allrpgService;
     #endregion
 
     #region constructor
-
     public AllrpgController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IAllrpgService allrpgService, IExportDataService exportDataService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       _allrpgService = allrpgService;
     }
-
     #endregion
 
     // GET: Admin/Joinrpg
@@ -34,7 +31,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     {
       return View(new AllrpgIndexViewModel
       {
-        Projects = (await GetCurrentUserAsync()).GetProjects(acl => acl.IsOwner).Where(p => p.Active && p.Details?.AllrpgId == null)
+        Projects = (await ProjectRepository.GetActiveProjectsWithoutAllrpg())
       });
     }
 
