@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
@@ -39,15 +37,14 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
       {
         throw new JoinRpgInvalidUserException();
       }
-      return ShowIndex(user);
+      return await ShowIndex();
     }
 
-    private ActionResult ShowIndex(User user)
+    private async Task<ActionResult> ShowIndex()
     {
       return View(new AllrpgIndexViewModel
       {
-        Projects =
-          user.GetProjects(acl => acl.IsOwner || user.Auth.IsAdmin).Where(p => p.Active && p.Details?.AllrpgId == null)
+        Projects = await ProjectRepository.GetProjectsWithoutAllrpgAsync()
       });
     }
 
@@ -63,7 +60,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
       }
       catch (Exception)
       {
-        return ShowIndex(user);
+        return await ShowIndex();
       }
     }
   }
