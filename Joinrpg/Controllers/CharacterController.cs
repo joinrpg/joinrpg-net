@@ -67,7 +67,7 @@ namespace JoinRpg.Web.Controllers
         IsAcceptingClaims = field.IsAcceptingClaims,
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
-        ParentCharacterGroupIds = field.Groups.Select(pg => pg.CharacterGroupId).ToList(),
+        ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToList(),
         IsHot = field.IsHot,
       }.Fill(field, CurrentUserId));
     }

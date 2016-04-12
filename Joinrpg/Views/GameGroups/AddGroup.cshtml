@@ -31,7 +31,7 @@
             @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <div class="checkbox">
-                    @Html.MagicSelectFor(model => model.ParentCharacterGroupIds, Model.ProjectId, Model.RootGroupId, false)
+                    @Html.MagicSelectFor(model => model.ParentCharacterGroupIds, Model.ProjectId, Model.RootGroupId, false, true, MvcHtmlHelpers.ShowImplicitGroups.Parents)
                     @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
                 </div>
             </div>
