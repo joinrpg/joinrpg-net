@@ -6,7 +6,7 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
-  public abstract class GameObjectViewModelBase 
+  public abstract class GameObjectViewModelBase  : IRootGroupAware
   {
     public int ProjectId { get; set; }
     

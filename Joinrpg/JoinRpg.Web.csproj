@@ -291,6 +291,7 @@
     <Compile Include="Models\EditCharacterGroupViewModel.cs" />
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
+    <Compile Include="Models\IRootGroupAware.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
