@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
@@ -24,9 +26,12 @@ namespace JoinRpg.Domain
         v => value.Contains(v.ProjectFieldDropdownValueId)).ToList().AsReadOnly();
     }
 
-    private static IEnumerable<int> GetSelectedIds(this FieldWithValue field)
+    private static IEnumerable<int> GetSelectedIds([NotNull] this FieldWithValue field)
     {
-      return String.IsNullOrWhiteSpace(field.Value) ? Enumerable.Empty<int>() : field.Value.Split(',').Select(Int32.Parse);
+      if (field == null) throw new ArgumentNullException(nameof(field));
+      return string.IsNullOrWhiteSpace(field.Value)
+        ? Enumerable.Empty<int>()
+        : field.Value.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse);
     }
 
     public static IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(this FieldWithValue field)

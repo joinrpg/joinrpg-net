@@ -223,5 +223,18 @@ namespace JoinRpg.Services.Impl
       field.Project.ProjectFieldsOrdering = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
+
+    public async Task MoveFieldValue(int currentUserId, int projectid, int projectFieldId, int projectFieldVariantId, short direction)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+
+      field.ValuesOrdering =
+        field.GetFieldValuesContainer()
+          .Move(field.DropdownValues.Single(v => v.ProjectFieldDropdownValueId == projectFieldVariantId), direction)
+          .GetStoredOrder();
+
+      await UnitOfWork.SaveChangesAsync();
+    }
   }
 }

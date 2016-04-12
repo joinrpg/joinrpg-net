@@ -1,0 +1,24 @@
+﻿@model JoinRpg.Web.Models.MoveControlParametersViewModel
+<span>
+    @if (!Model.Item.First)
+    {
+        <a href="@Url.Action(Model.ActionName, Model.ControllerName, new
+                 {
+                     Model.ProjectId,
+                     Model.ListItemId,
+                     Model.ParentObjectId,
+                     Direction = -1
+                 }, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
+    }
+    @if (!Model.Item.Last)
+    {
+        <a href="@Url.Action(Model.ActionName, Model.ControllerName, new
+                 {
+                     Model.ProjectId,
+                     Model.ListItemId,
+                     Model.ParentObjectId,
+                     Direction = 1
+                 }, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
+    }
+</span>
+

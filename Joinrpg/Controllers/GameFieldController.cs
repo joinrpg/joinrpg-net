@@ -247,7 +247,7 @@ namespace JoinRpg.Web.Controllers
         await
           FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId, viewModel.ProjectFieldId);
 
-        return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
+        return ReturnToField(value.ProjectField);
       }
       catch
       {
@@ -255,23 +255,20 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    public Task<ActionResult> MoveUp(int projectfieldid, int projectid)
+    private ActionResult ReturnToField(ProjectField value)
     {
-      return MoveImpl(projectfieldid, projectid, -1);
+      return RedirectToAction("Edit", new {value.ProjectId, projectFieldId = value.ProjectFieldId});
     }
 
-    public Task<ActionResult> MoveDown(int projectfieldid, int projectid)
+    public Task<ActionResult> Move(int projectid, int listItemId, short direction)
     {
-      return MoveImpl(projectfieldid, projectid, +1);
+      return MoveImpl(listItemId, projectid, direction);
     }
-
 
     private async Task<ActionResult> MoveImpl(int projectfieldid, int projectid, short direction)
     {
-      var value =
-        await
-          ProjectRepository.GetProjectField(projectid, projectfieldid);
-      var error = AsMaster(value, acl => acl.CanEditRoles);
+      var value = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      var error = AsMaster(value, acl => acl.CanChangeFields);
       if (error != null)
       {
         return error;
@@ -281,12 +278,36 @@ namespace JoinRpg.Web.Controllers
       {
         await FieldSetupService.MoveField(CurrentUserId, projectid, projectfieldid, direction);
 
-
         return ReturnToIndex(value.Project);
       }
       catch
       {
         return ReturnToIndex(value.Project);
+      }
+    }
+
+    public async Task<ActionResult> MoveValue(int projectid, int listItemId, int parentObjectId, short direction)
+    {
+      var value =
+       await
+         ProjectRepository.GetProjectField(projectid, parentObjectId);
+
+      var error = AsMaster(value, acl => acl.CanChangeFields);
+      if (error != null)
+      {
+        return error;
+      }
+
+      try
+      {
+        await FieldSetupService.MoveFieldValue(CurrentUserId, projectid, parentObjectId, listItemId, direction);
+
+
+        return ReturnToField(value);
+      }
+      catch
+      {
+        return ReturnToField(value);
       }
     }
   }

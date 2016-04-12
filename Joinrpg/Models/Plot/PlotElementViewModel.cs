@@ -30,6 +30,8 @@ namespace JoinRpg.Web.Models.Plot
         Status = PlotFolderViewModelBase.GetStatus(p)
       };
     }
+
+    int IMovableListItem.ItemId => PlotElementId;
   }
 
   public static class PlotElementViewModelExtensions
@@ -37,7 +39,7 @@ namespace JoinRpg.Web.Models.Plot
     public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots, bool hasMasterAccess)
     {
       return plots.Select(
-        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess)).ToList().MarkFirstAndLast();
+        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess)).MarkFirstAndLast();
     }
   }
 }
