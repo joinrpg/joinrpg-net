@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
 
     private async Task<ActionResult> ShowIndex()
     {
-      return View(new AllrpgIndexViewModel
+      return View("Index", new AllrpgIndexViewModel
       {
         Projects = await ProjectRepository.GetProjectsWithoutAllrpgAsync()
       });

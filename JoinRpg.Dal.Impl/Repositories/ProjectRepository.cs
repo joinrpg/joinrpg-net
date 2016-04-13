@@ -156,7 +156,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     }
 
     public async Task<IEnumerable<Project>> GetProjectsWithoutAllrpgAsync()
-      => await ActiveProjects.Where(p => p.Details.AllrpgId != null).ToListAsync();
+      => await ActiveProjects.Where(p => p.Details.AllrpgId == null).ToListAsync();
   }
 
 }
