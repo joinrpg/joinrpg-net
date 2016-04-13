@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -403,13 +404,17 @@ namespace JoinRpg.Services.Impl.Allrpg
       UnitOfWork.GetDbSet<CharacterGroup>().AddRange(sortedLocations);
     }
 
+    [NotNull]
     private CharacterGroup GetGroupByAllrpgId(int parentAllrpgId)
     {
-      return parentAllrpgId == 0
-        ? Project.RootGroup
-        : Locations[parentAllrpgId];
+      if (parentAllrpgId == 0) return Project.RootGroup;
+      if (Locations.ContainsKey(parentAllrpgId))
+      {
+        return Locations[parentAllrpgId];
+      }
+      _operationLog.Info($"LOCATION NOT FOUND ALLRPG_ID = {parentAllrpgId}");
+      return Project.RootGroup;
     }
-
 
     private void ImportLocation(VacancyData locationData)
     {
@@ -417,6 +422,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       {
         return;
       }
+      _operationLog.Info($"GROUP FROM VACANCY {locationData}");
       var characterGroup = new CharacterGroup()
       {
         AvaiableDirectSlots = locationData.kolvo,
@@ -472,7 +478,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       var user = await usersRepository.GetByAllRpgId(allrpgUser.sid);
       if (user != null)
       {
-        _operationLog.Info("USER.FOUND: " + user);
+        _operationLog.Info($"USER.FOUND: Id = {user.Id}, Email = {user.Email}, Allrpg = {user.Allrpg.Sid}");
         Users.Add(allrpgUser.sid, user);
         return;
       }
@@ -480,23 +486,29 @@ namespace JoinRpg.Services.Impl.Allrpg
       var email = allrpgUser.em.ToLowerInvariant();
       var email2 = allrpgUser.em2.ToLowerInvariant();
       user = await usersRepository.GetByEmail(email) ?? await usersRepository.GetByEmail(email2);
+
+      string action;
       if (user == null)
       {
-        user = new User {Email = new[] {email, email2}.WhereNotNullOrWhiteSpace().First() };
-        user.UserName = user.Email;
-        _operationLog.Info($"USER.CREATE email={user.Email}");
+        var username = new[] {email, email2}.WhereNotNullOrWhiteSpace().First();
+        user = new User
+        {
+          Email = username,
+          UserName = username
+        };
         UnitOfWork.GetDbSet<User>().Add(user);
+        action = "CREATE";
       }
       else
       {
-        _operationLog.Info($"USER.UPDATE user={user}");
+        action = "UPDATE";
       }
       Users.Add(allrpgUser.sid, user);
       user.Allrpg = user.Allrpg ?? new AllrpgUserDetails();
       user.Allrpg.Sid = allrpgUser.sid;
       AllrpgImportUtilities.ImportUserFromResult(user, allrpgUser);
 
-      _operationLog.Info($"USER.RESULT user={user}");
+      _operationLog.Info($"USER.{action} Id = {user.Id}, Email = {user.Email}, Allrpg = {user.Allrpg.Sid}");
     }
   }
 
