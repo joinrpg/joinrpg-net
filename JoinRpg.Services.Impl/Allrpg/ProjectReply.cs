@@ -58,6 +58,11 @@ namespace JoinRpg.Services.Impl.Allrpg
     public int kolvo { get; set; }
     public int autonewrole { get; set; }
     public string content { get; set; }
+
+    public override string ToString()
+    {
+      return $"id: {id}, locat: {locat}, name: {name}, code: {code}, kolvo: {kolvo}, autonewrole: {autonewrole}, content: {content}";
+    }
   }
 
   internal class RoleData
