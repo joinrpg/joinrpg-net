@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
 
 @{
     ViewBag.Title = "Добавить вводную";
@@ -34,13 +35,18 @@
             </div>
         </div>
 
-        <p>Тех, кому предназначена эта вводная, можно добавить сейчас или позже.</p>
-
-        @Html.Partial("AllWorldObjectsPartial", Model)
+        <div class="form-group">
+            @Html.LabelFor(model => model.Targets, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-8">
+                @Html.MagicSelectBind(model => model.Targets)
+                @Html.ValidationMessageFor(model => model.Targets, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.Targets)
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Добавить вводную" class="btn btn-default" />
+                <input type="submit" value="Добавить вводную" class="btn btn-success" />
             </div>
         </div>
     </div>

@@ -52,6 +52,10 @@
   font-feature-settings: "liga" 1, "dlig" 1;
 }
 
+.multicontrol{
+  width: 50%;
+  margin: 0 auto;
+}
 .hidden{
   display: none !important;
 }
@@ -250,6 +254,5 @@
 
 
 /*
-
 
 */

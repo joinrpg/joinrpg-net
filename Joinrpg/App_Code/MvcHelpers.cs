@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.Mvc;
-using System.Web.Mvc.Html;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.App_Code
@@ -25,98 +25,66 @@ namespace JoinRpg.Web.App_Code
       return MvcHtmlString.Create(string.Format(@"<div class=""help-block"">{0}</div>", description));
     }
 
-    public enum ShowImplicitGroups
+    public static TValue GetValue<TModel, TValue>(this HtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
     {
-      None, Children, Parents
+      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
+      return (TValue)metadata.Model;
+    }
+
+    public static TModel GetModel<TModel>(this HtmlHelper<TModel> self)
+    {
+      return (TModel) ModelMetadata.FromLambdaExpression(m => m, self.ViewData).Model;
     }
 
     public static MvcHtmlString MagicSelectParent<TModel>(this HtmlHelper<TModel> self,
-      Expression<Func<TModel, IEnumerable<int>>> expression)
-      where TModel : IRootGroupAware
+  Expression<Func<TModel, IEnumerable<int>>> expression)
+  where TModel : IRootGroupAware
     {
-      var container = (IRootGroupAware) ModelMetadata.FromLambdaExpression(m => m, self.ViewData).Model;
+      var container = (IRootGroupAware)self.GetModel();
+
+      var value = self.GetValue(expression).ToList();
+      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
+
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false,
+        ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, value, metadata.PropertyName, value.PrefixAsGroups());
+    }
+
+    public static MvcHtmlString MagicSelectGroupParent<TModel>(this HtmlHelper<TModel> self,
+  Expression<Func<TModel, IEnumerable<int>>> expression)
+  where TModel : EditCharacterGroupViewModel
+    {
+      var container =(EditCharacterGroupViewModel)  self.GetModel();
 
       var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-      var value = metadata.Model as IEnumerable<int>;
-      
-      string key = ConvertToIdString(value);
 
-      MvcHtmlString magicSelectFor = GetMagicSelect(container.ProjectId, container.RootGroupId, false, false,
-        ShowImplicitGroups.Parents, metadata, key);
-      return magicSelectFor;
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false, ShowImplicitGroups.Parents, MagicControlStrategy.Changer,
+        new[] { container.CharacterGroupId } , metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups());
     }
 
-    public static MvcHtmlString MagicSelectFor<TModel>(this HtmlHelper<TModel> self,
-      Expression<Func<TModel, IEnumerable<int>>> expression, int projectId, int rootGroupId, bool showCharacters, bool checkCicleForParents, ShowImplicitGroups showGroups)
+    public static MvcHtmlString MagicSelectTarget<TModel>(this HtmlHelper<TModel> self,
+Expression<Func<TModel, IEnumerable<int>>> expression, bool showGroups)
+where TModel : EditCharacterGroupViewModel
     {
+      var container = (EditCharacterGroupViewModel)self.GetModel();
+
       var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-      var value = metadata.Model as IEnumerable<int>;
-      string key = ConvertToIdString(value);
 
-      MvcHtmlString magicSelectFor = GetMagicSelect(projectId, rootGroupId, showCharacters, checkCicleForParents, showGroups, metadata, key);
-      return magicSelectFor;
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false, ShowImplicitGroups.None, MagicControlStrategy.NonChanger,
+        new[] { container.CharacterGroupId }, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups());
     }
 
-    private static string ConvertToIdString(IEnumerable<int> value)
+    public static MvcHtmlString MagicSelectBind<TModel>(this HtmlHelper<TModel> self,
+Expression<Func<TModel, IEnumerable<string>>> expression)
+where TModel : IRootGroupAware
     {
-      string key;
-      if (value != null)
-      {
-        key = string.Join(", ", value.Select(id => string.Format("'group^{0}'", id)));
-      }
-      else
-      {
-        key = "";
-      }
+      var container = self.GetModel();
 
-      return key;
-    }
+      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
 
-    private static MvcHtmlString GetMagicSelect(int projectId, int rootGroupId, bool showCharacters, bool checkCicleForParents, ShowImplicitGroups showGroups, ModelMetadata metadata, string key)
-    {
-      string implicitGroupsString = GetImplicitGroupString(showGroups);
+      var value = self.GetValue(expression);
 
-      // ReSharper disable once UseStringInterpolation we are inside Razor
-      var magicSelectFor = MvcHtmlString.Create(string.Format(@"
-<div id=""{0}_control"" style=""max-width: 700px;""></div>
-<script type=""text/javascript"">
-        $(function() {{
-        var options = {{
-                url: '/' + {1} + '/roles/' + {2} + '/indexjson',
-                multiselect: true,
-                showcharacters: {3},
-                hiddenselect: {{ id: '{0}', name: '{0}' }},
-                keyelements: [{4}],
-                implicitGroups: {5},
-                checkcircles: {6}
-            }};
-      var c = $('#{0}_control');
-      c.multicontrol(options);
-    }});
-</script>", metadata.PropertyName, projectId, rootGroupId, showCharacters ? "true" : "false", key, implicitGroupsString,
-        checkCicleForParents ? "'parents'" : "'none'"));
-      return magicSelectFor;
-    }
-
-    private static string GetImplicitGroupString(ShowImplicitGroups showGroups)
-    {
-      string implicitGroupsString;
-      switch (showGroups)
-      {
-        case ShowImplicitGroups.None:
-          implicitGroupsString = "'none'";
-          break;
-        case ShowImplicitGroups.Children:
-          implicitGroupsString = "'children'";
-          break;
-        case ShowImplicitGroups.Parents:
-          implicitGroupsString = "'parents'";
-          break;
-        default:
-          throw new ArgumentOutOfRangeException("showGroups", showGroups, null);
-      }
-
-      return implicitGroupsString;
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, true, ShowImplicitGroups.Children, MagicControlStrategy.NonChanger,
+        new[] { 0 }, metadata.PropertyName, value);
     }
   }
 }

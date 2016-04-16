@@ -23,12 +23,12 @@
                 {
                     if (element.AvaiableDirectSlots != 0 && ViewBag.ShowGroupsInAvailClaim == true)
                     {
-                    @CreateValue("group_", element.CharacterGroupId, "Группа " + GetName(element))
+                    @CreateValue("group^", element.CharacterGroupId, "Группа " + GetName(element))
                     }
 
                     foreach (var character in element.Characters.Where(ch => ch.IsAvailable))
                     {
-                    @CreateValue("char_", character.CharacterId, string.Join("→", element.Path.Skip(1).Union(new[] { element }).Select(p => p.Name)) + "→" + character.CharacterName)
+                    @CreateValue("char^", character.CharacterId, string.Join("→", element.Path.Skip(1).Union(new[] { element }).Select(p => p.Name)) + "→" + character.CharacterName)
                     }
                 }
             </select>

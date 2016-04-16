@@ -29,7 +29,7 @@
             <div class="form-group">
                 @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-8">
-                    @Html.MagicSelectParent(model => model.ParentCharacterGroupIds)
+                    @Html.MagicSelectGroupParent(model => model.ParentCharacterGroupIds)
                     @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
                 </div>
             </div>
