@@ -239,6 +239,7 @@
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
+    <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -267,6 +268,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\MagicControlHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\ModelStateExtensions.cs" />
     <Compile Include="Helpers\ObjectLinkHelper.cs" />
@@ -516,7 +518,6 @@
     <Content Include="Views\Plot\Edit.cshtml" />
     <Content Include="Views\Plot\Elements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
-    <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />

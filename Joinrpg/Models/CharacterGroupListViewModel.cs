@@ -40,8 +40,6 @@ namespace JoinRpg.Web.Models
       }; 
     }
 
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group, true);
-
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
     {
@@ -188,6 +186,6 @@ namespace JoinRpg.Web.Models
       }
     }
 
-    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroupAsMaster(project.RootGroup);
+    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroup(project.RootGroup, true);
   }
 }

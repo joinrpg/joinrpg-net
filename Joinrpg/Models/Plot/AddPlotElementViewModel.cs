@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
-  public interface IEditablePlotElementViewModel
-  {
-    CharacterGroupListViewModel Data { get; }
-    IEnumerable<GameObjectLinkViewModel> For { get;  }
-  }
 
-  public class AddPlotElementViewModel : IEditablePlotElementViewModel
+  public class AddPlotElementViewModel : IRootGroupAware
   {
+    [ReadOnly(true)]
     public int ProjectId { get; set; }
+    [ReadOnly(true)]
+    public int RootGroupId { get; set; }
     public int PlotFolderId{ get; set; }
     [Display(Name = "Текст вводной")]
     public MarkdownViewModel Content { get; set; }
@@ -20,8 +19,8 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; set; }
 
-    public CharacterGroupListViewModel Data { get; set; }
-    public IEnumerable<GameObjectLinkViewModel> For => new GameObjectLinkViewModel[] {};
+    [Display(Name = "Для кого", Description = "Тех, кому предназначена эта вводная, можно добавить сейчас или позже.")]
+    public IEnumerable<string> Targets { get; set; } = new string[] {};
     public string PlotFolderName { get; set; }
   }
 }

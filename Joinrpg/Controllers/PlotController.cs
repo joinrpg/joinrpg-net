@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
@@ -111,11 +111,11 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup)
+        RootGroupId = folder.Project.RootGroup.CharacterGroupId
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField )
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField, ICollection<string> targets)
     { 
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -125,8 +125,8 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
+        var targetGroups = targets.GetUnprefixedGroups();
+        var targetChars = targets.GetUnprefixedChars();
         await
           _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
         return ReturnToPlot(plotFolderId, projectId);
@@ -138,9 +138,9 @@ namespace JoinRpg.Web.Controllers
           ProjectId = projectId,
           PlotFolderId = plotFolderId,
           PlotFolderName = folder.MasterTitle,
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup),
           Content = content,
-          TodoField = todoField
+          TodoField = todoField,
+          RootGroupId = folder.Project.RootGroup.CharacterGroupId
         });
       }
     }
@@ -201,7 +201,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
-      bool isCompleted)
+      bool isCompleted, ICollection<string> targets)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -211,8 +211,8 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
+        var targetGroups = targets.GetUnprefixedGroups();
+        var targetChars = targets.GetUnprefixedChars();
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
         return ReturnToPlot(plotFolderId, projectId);

@@ -355,7 +355,7 @@ namespace JoinRpg.Web.Controllers
       viewModel.RootGroupId = field.Project.RootGroup.CharacterGroupId;
       viewModel.ProjectName = field.Project.ProjectName;
       viewModel.ProjectId = field.Project.ProjectId;
-      viewModel.Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup);
+      viewModel.Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
       return viewModel;
     }
 

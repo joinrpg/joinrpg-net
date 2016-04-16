@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Helpers
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
 <div class="panel panel-default">
@@ -7,7 +8,7 @@
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @{
-                  var header = (HtmlString) Model.Content.TakeWords(10).ToHtmlString();
+                  var header = Model.Content.TakeWords(10).ToHtmlString();
                     if (header == null || string.IsNullOrWhiteSpace(header.ToString()))
                     {
                         <text>***</text>
@@ -41,18 +42,7 @@
         <div class="panel-body">
 
             <p>
-                <b>Для</b>:
-                @if (Model.For.Any())
-                {
-                    foreach (var target in Model.For)
-                    {
-                        @Html.DisplayFor(model => target)
-                    }
-                }
-                else
-                {
-                    <span>Не установлено</span>
-                }
+                <b>Для</b> (TODO: поправить)
             </p>
             @if (!string.IsNullOrWhiteSpace(Model.TodoField))
             {
@@ -107,7 +97,14 @@
                         </div>
                     </div>
 
-                    @Html.Partial("AllWorldObjectsPartial", Model)
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Targets, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-8">
+                            @Html.MagicSelectBind(model => model.Targets)
+                            @Html.ValidationMessageFor(model => model.Targets, "", new { @class = "text-danger" })
+                            @Html.DescriptionFor(model => model.Targets)
+                        </div>
+                    </div>
 
 
                     <div class="form-group">
