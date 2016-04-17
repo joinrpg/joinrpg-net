@@ -55,7 +55,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     [MustUseReturnValue]
     private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue)
     {
-      return new ClaimProblem(problemType, severity, null, fieldWithValue.Field.FieldName);
+      return new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
     }
   }
 

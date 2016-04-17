@@ -205,5 +205,14 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public Task<ActionResult> DeletedCharList(int projectId, string export)
       => MasterCharacterList(projectId, character => !character.IsActive, "Index", export, "Удаленные персонажи");
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> CharListByField(int projectfieldid, int projectid, string export)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      return await MasterCharacterList(projectid,
+        character => character.HasProblemsForField(field),
+        "Index", export, "Поле (социальный статус): " + field.FieldName);
+    }
   }
 }
