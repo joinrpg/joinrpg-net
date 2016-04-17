@@ -74,6 +74,9 @@ namespace JoinRpg.Web.Models
     DeletedFieldHasValue,
     [UsedImplicitly]
     [Display(Name = "Поле не заполнено")]
-    FieldIsEmpty
+    FieldIsEmpty,
+    [UsedImplicitly]
+    [Display(Name="Поле не должно быть заполнено для этой группы")]
+    FieldShouldNotHaveValue
   }
 }

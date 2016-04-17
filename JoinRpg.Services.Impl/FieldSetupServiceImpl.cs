@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -42,7 +41,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus)
     {
-      var field = await GetFieldAsync(projectId, fieldId);
+      var field = await ProjectRepository.GetProjectField(projectId, fieldId);
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
@@ -60,17 +59,11 @@ namespace JoinRpg.Services.Impl
     }
 
     //TODO: Move to repository
-    private async Task<ProjectField> GetFieldAsync(int projectId, int fieldId)
-    {
-      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(fieldId);
-      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
-      return field;
-    }
 
-    //TODO: pass projectId & CurrentUserId
-    public async Task DeleteField(int projectCharacterFieldId)
+    public async Task DeleteField(int currentUserId, int projectId, int projectFieldId)
     {
-      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(projectCharacterFieldId);
+      var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
       foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
       {

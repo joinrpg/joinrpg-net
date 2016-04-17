@@ -40,18 +40,40 @@ namespace JoinRpg.Domain
       return (IClaimSource) claim.Character ?? claim.Group;
     }
 
-    public static IEnumerable<CharacterGroup> GetParentGroups(this Claim claim)
+    private static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource claimSource)
     {
-      return claim.GetTarget() //Character or group
+      var sourceAsGroup = claimSource as CharacterGroup;
+      return claimSource
         .GetParentGroups() //Get parents
-        .Union(claim.Group) //Don't forget group himself
+        .Union(sourceAsGroup) //Don't forget group himself
         .WhereNotNull();
     }
 
-    public static bool PartOfGroup(this Claim cl, int characterGroupId)
+    public static bool IsPartOfGroup(this Claim cl, int characterGroupId)
+    {
+      return cl.GetTarget().IsPartOfGroup(characterGroupId);
+    }
+
+    public static bool IsPartOfGroup(this IClaimSource claimSource, CharacterGroup group)
+    {
+      if (group.IsRoot)
+      {
+        return true;
+      }
+      //TODO we can do faster than this
+      return claimSource.GetGroupsPartOf().Contains(group);
+    }
+
+    public static bool IsPartOfAnyOfGroups(this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
     {
       //TODO we can do faster than this
-      return cl.GetParentGroups().Any(g => g.CharacterGroupId == characterGroupId);
+      return claimSource.GetGroupsPartOf().Intersect(groups).Any();
+    }
+
+    public static bool IsPartOfGroup(this IClaimSource claimSource, int characterGroupId)
+    {
+//TODO we can do faster than this
+      return claimSource.GetGroupsPartOf().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
     public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
@@ -86,7 +108,7 @@ namespace JoinRpg.Domain
     public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
       int initiatorUserId, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
     {
-      return claim.GetParentGroups() //Get all groups for claim
+      return ((IEnumerable<CharacterGroup>) claim.GetTarget().GetGroupsPartOf()) //Get all groups for claim
         .SelectMany(g => g.Subscriptions) //get subscriptions on groups
         .Union(claim.Subscriptions) //subscribtions on claim
         .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters

@@ -79,7 +79,8 @@ namespace JoinRpg.Domain
     ClaimWorkStopped,
     ClaimDontHaveTarget,
     DeletedFieldHasValue,
-    FieldIsEmpty
+    FieldIsEmpty,
+    FieldShouldNotHaveValue
   }
 
   public enum ProblemSeverity

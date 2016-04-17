@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.ClaimProblemFilters;
 
@@ -8,37 +9,53 @@ namespace JoinRpg.Domain.CharacterProblemFilters
 {
   internal class FieldNotSetFilterBase
   {
-    protected static IEnumerable<ClaimProblem> CheckFields(IReadOnlyCollection<FieldWithValue> fieldsToCheck)
+    protected static IEnumerable<ClaimProblem> CheckFields(IEnumerable<FieldWithValue> fieldsToCheck, IClaimSource target)
     {
-      foreach (var fieldWithValue in fieldsToCheck)
-      {
-        if (!fieldWithValue.Field.IsActive && fieldWithValue.HasValue())
-        {
-          yield return
-            new ClaimProblem(ClaimProblemType.DeletedFieldHasValue, ProblemSeverity.Hint, null,
-              fieldWithValue.Field.FieldName);
-        }
-      }
+      return fieldsToCheck.SelectMany(fieldWithValue => CheckField(target, fieldWithValue));
+    }
 
-      foreach (var fieldWithValue in fieldsToCheck)
+    private static IEnumerable<ClaimProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
+    {
+      var isAvailableForTarget = fieldWithValue.Field.IsAvailableForTarget(target);
+      var hasValue = fieldWithValue.HasValue();
+
+      if (hasValue)
       {
-        if (fieldWithValue.Field.IsActive && !fieldWithValue.HasValue())
+        if (isAvailableForTarget) yield break;
+
+        if (!fieldWithValue.Field.IsActive)
         {
-          switch (fieldWithValue.Field.MandatoryStatus)
-          {
-            case MandatoryStatus.Optional:
-              break;
-            case MandatoryStatus.Recommended:
-              yield return new ClaimProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Hint, null, fieldWithValue.Field.FieldName);
-              break;
-            case MandatoryStatus.Required:
-              yield return new ClaimProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Warning, null, fieldWithValue.Field.FieldName);
-              break;
-            default:
-              throw new ArgumentOutOfRangeException();
-          }
+          yield return FieldProblem(ClaimProblemType.DeletedFieldHasValue, ProblemSeverity.Hint, fieldWithValue);
+        }
+        else
+        {
+          yield return FieldProblem(ClaimProblemType.FieldShouldNotHaveValue, ProblemSeverity.Hint, fieldWithValue);
         }
       }
+      else
+      {
+        if (!isAvailableForTarget) yield break;
+
+        switch (fieldWithValue.Field.MandatoryStatus)
+        {
+          case MandatoryStatus.Optional:
+            break;
+          case MandatoryStatus.Recommended:
+            yield return FieldProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Hint, fieldWithValue);
+            break;
+          case MandatoryStatus.Required:
+            yield return FieldProblem(ClaimProblemType.FieldIsEmpty, ProblemSeverity.Warning, fieldWithValue);
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+      }
+    }
+
+    [MustUseReturnValue]
+    private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue)
+    {
+      return new ClaimProblem(problemType, severity, null, fieldWithValue.Field.FieldName);
     }
   }
 
@@ -51,7 +68,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       projectFields.FillFrom(character.ApprovedClaim);
       projectFields.FillFrom(character);
 
-      return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Character || character.ApprovedClaim != null).ToList());
+      return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Character || character.ApprovedClaim != null).ToList(), character);
     }
     #endregion
   }
@@ -65,7 +82,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       projectFields.FillFrom(claim);
       projectFields.FillFrom(claim.Character);
 
-      return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList());
+      return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }
     #endregion
   }

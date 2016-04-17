@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Controllers
         ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
         HidePlayer = character.HidePlayerForCharacter,
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
-        Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character.Project).FillFromCharacter(character).OnlyCharacterFields().DisableEdit(),
+        Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character).DisableEdit(),
         Plot =
           character.HasAnyAccess(CurrentUserIdOrDefault)
             ? character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault))

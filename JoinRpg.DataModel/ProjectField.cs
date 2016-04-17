@@ -44,6 +44,8 @@ namespace JoinRpg.DataModel
     public virtual CharacterGroup CharacterGroup { get; set; }
     public int CharacterGroupId { get; set; }
 
+    public virtual ICollection<CharacterGroup> GroupsAvailableFor { get; set; } = new HashSet<CharacterGroup>();
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)

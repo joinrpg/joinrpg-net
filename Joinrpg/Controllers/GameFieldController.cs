@@ -144,18 +144,16 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      try
       {
-        try
-        {
-          await FieldSetupService.DeleteField(field.ProjectFieldId);
+        await FieldSetupService.DeleteField(CurrentUserId, projectId, field.ProjectFieldId);
 
-          return ReturnToIndex(field.Project);
-        }
-        catch (Exception exception)
-        {
-          ModelState.AddException(exception);
-          return View(field);
-        }
+        return ReturnToIndex(field.Project);
+      }
+      catch (Exception exception)
+      {
+        ModelState.AddException(exception);
+        return View(field);
       }
     }
 
