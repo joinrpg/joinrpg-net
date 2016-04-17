@@ -64,16 +64,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
-    public IEnumerable<Character> CharactersWithOnlyParent => WithOnlyParent(Characters);
-    public IEnumerable<CharacterGroup> ChildGroupsWithOnlyParent => WithOnlyParent(ChildGroups);
-
     public bool CanBePermanentlyDeleted
-      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any();
-
-    private IEnumerable<T> WithOnlyParent<T>(IEnumerable<T> worldObjects) where T:IWorldObject
-    {
-      return worldObjects.Where(obj => obj.ParentGroups.All(group => @group.CharacterGroupId == CharacterGroupId));
-    }
+      => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any() && !Claims.Any();
   }
 
 }
