@@ -56,17 +56,6 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    protected override void Dispose(bool disposing)
-    {
-      if (disposing)
-      {
-        //TODO: uncomment and fix only UserController if memory leaks
-        //UserManager?.Dispose();
-      }
-
-      base.Dispose(disposing);
-    }
-
     protected ActionResult RedirectToAction(RouteTarget routeTarget)
     {
       return Redirect(routeTarget.GetUri(Url));
@@ -78,15 +67,6 @@ namespace JoinRpg.Web.Controllers.Common
       var post = Request.Unvalidated.Form.ToDictionary();
       return post.Keys.UnprefixNumbers(prefix)
         .ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
-    }
-
-    protected ICollection<int> GetDynamicCheckBoxesFromPost(string prefix)
-    {
-      return
-        GetDynamicValuesFromPost(prefix)
-          .Where(pair => pair.Value.Contains("true"))
-          .Select(pair => pair.Key)
-          .ToList();
     }
   }
 }

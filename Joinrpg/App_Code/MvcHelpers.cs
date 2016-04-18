@@ -37,7 +37,7 @@ namespace JoinRpg.Web.App_Code
     }
 
     public static MvcHtmlString MagicSelectParent<TModel>(this HtmlHelper<TModel> self,
-  Expression<Func<TModel, IEnumerable<int>>> expression)
+  Expression<Func<TModel, IEnumerable<string>>> expression)
   where TModel : IRootGroupAware
     {
       var container = (IRootGroupAware)self.GetModel();
@@ -46,31 +46,18 @@ namespace JoinRpg.Web.App_Code
       var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
 
       return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false,
-        ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, value, metadata.PropertyName, value.PrefixAsGroups());
+        ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value);
     }
 
     public static MvcHtmlString MagicSelectGroupParent<TModel>(this HtmlHelper<TModel> self,
-  Expression<Func<TModel, IEnumerable<int>>> expression)
+  Expression<Func<TModel, IEnumerable<string>>> expression)
   where TModel : EditCharacterGroupViewModel
     {
       var container =(EditCharacterGroupViewModel)  self.GetModel();
 
       var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
 
-      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false, ShowImplicitGroups.Parents, MagicControlStrategy.Changer,
-        new[] { container.CharacterGroupId } , metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups());
-    }
-
-    public static MvcHtmlString MagicSelectTarget<TModel>(this HtmlHelper<TModel> self,
-Expression<Func<TModel, IEnumerable<int>>> expression, bool showGroups)
-where TModel : EditCharacterGroupViewModel
-    {
-      var container = (EditCharacterGroupViewModel)self.GetModel();
-
-      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false, ShowImplicitGroups.None, MagicControlStrategy.NonChanger,
-        new[] { container.CharacterGroupId }, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups());
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false, ShowImplicitGroups.Parents, MagicControlStrategy.Changer, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups());
     }
 
     public static MvcHtmlString MagicSelectBind<TModel>(this HtmlHelper<TModel> self,
@@ -83,8 +70,7 @@ where TModel : IRootGroupAware
 
       var value = self.GetValue(expression);
 
-      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, true, ShowImplicitGroups.Children, MagicControlStrategy.NonChanger,
-        new[] { 0 }, metadata.PropertyName, value);
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, true, ShowImplicitGroups.Children, MagicControlStrategy.NonChanger, metadata.PropertyName, value);
     }
   }
 }

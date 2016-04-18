@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Helpers
       return implicitGroupsString;
     }
 
-    public static MvcHtmlString GetMagicSelect(int projectId, int rootGroupId, bool showCharacters, ShowImplicitGroups showGroups, MagicControlStrategy strategy, IEnumerable<int> groupIds, string propertyName, IEnumerable<string> elements)
+    public static MvcHtmlString GetMagicSelect(int projectId, int rootGroupId, bool showCharacters, ShowImplicitGroups showGroups, MagicControlStrategy strategy, string propertyName, IEnumerable<string> elements)
     {
       var implicitGroupsString = GetImplicitGroupString(showGroups);
 
@@ -64,8 +64,7 @@ namespace JoinRpg.Web.Helpers
               elements: [{6}]
             }},
           }};
-      var c = $('#{0}_control');
-      c.multicontrol(options);
+      $('#{0}_control').multicontrol(options);
     }});
 </script>", propertyName, projectId, rootGroupId, showCharacters ? "true" : "false", implicitGroupsString, strategyString, elements.Join(", ")));
       return magicSelectFor;

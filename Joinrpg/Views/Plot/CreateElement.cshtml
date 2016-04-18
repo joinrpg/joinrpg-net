@@ -38,9 +38,9 @@
         <div class="form-group">
             @Html.LabelFor(model => model.Targets, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-8">
-                @Html.MagicSelectBind(model => model.Targets)
-                @Html.ValidationMessageFor(model => model.Targets, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.Targets)
+                @Html.MagicSelectBind(model => model.Targets)
+                @Html.ValidationMessageFor(model => model.Targets, "", new {@class = "text-danger"})
             </div>
         </div>
 

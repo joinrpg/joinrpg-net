@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Helpers
@@ -29,6 +30,21 @@ namespace JoinRpg.Web.Helpers
     public static List<int> GetUnprefixedGroups(this IEnumerable<string> targets)
     {
       return targets.UnprefixNumbers(GroupFieldPrefix).ToList();
+    }
+
+    public static List<string> GetParentGroupsForEdit(this IWorldObject field)
+    {
+      return field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
+    }
+
+    public static List<string> AsPossibleParentForEdit(this CharacterGroup field)
+    {
+      return new List<int> {field.CharacterGroupId}.PrefixAsGroups().ToList();
+    }
+
+    public static IEnumerable<string> GetElementBindingsForEdit(this PlotElement e)
+    {
+      return e.TargetGroups.Select(g => g.CharacterGroupId).PrefixAsGroups().Union(e.TargetCharacters.Select(c => c.CharacterId).PrefixAsCharacters());
     }
   }
 }

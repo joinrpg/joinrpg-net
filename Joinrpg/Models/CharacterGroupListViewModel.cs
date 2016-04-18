@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -186,6 +187,7 @@ namespace JoinRpg.Web.Models
       }
     }
 
+    [MustUseReturnValue]
     public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroup(project.RootGroup, true);
   }
 }
