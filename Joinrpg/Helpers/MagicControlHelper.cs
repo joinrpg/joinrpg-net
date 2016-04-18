@@ -18,6 +18,7 @@ namespace JoinRpg.Web.Helpers
 
   public static class MagicControlHelper
   {
+    private static readonly Random Random = new Random();
 
 
     private static string GetImplicitGroupString(ShowImplicitGroups showGroups)
@@ -49,7 +50,7 @@ namespace JoinRpg.Web.Helpers
 
       //TODO: convert to verbatim
       var magicSelectFor = MvcHtmlString.Create(string.Format(@"
-<div id=""{0}_control"" style=""max-width: 700px;width:100%""></div>
+<div id=""{0}_control_{7}"" style=""max-width: 700px;width:100%""></div>
 <script type=""text/javascript"">
         $(function() {{
         var options = 
@@ -64,9 +65,10 @@ namespace JoinRpg.Web.Helpers
               elements: [{6}]
             }},
           }};
-      $('#{0}_control').multicontrol(options);
+      $('#{0}_control_{7}').multicontrol(options);
     }});
-</script>", propertyName, projectId, rootGroupId, showCharacters ? "true" : "false", implicitGroupsString, strategyString, elements.Join(", ")));
+</script>", propertyName, projectId, rootGroupId, showCharacters ? "true" : "false", implicitGroupsString,
+        strategyString, elements.Join(", "), Random.Next()));
       return magicSelectFor;
     }
 
