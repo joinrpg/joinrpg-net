@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Models.Plot
       return new EditPlotElementViewModel()
       {
         PlotElementId = e.PlotElementId,
-        Targets = e.TargetGroups.Select(g => g.CharacterGroupId).PrefixAsGroups().Union(e.TargetCharacters.Select(c => c.CharacterId).PrefixAsCharacters()),
+        Targets = e.GetElementBindingsForEdit(),
         Content =new MarkdownViewModel(e.Content),
         TodoField = e.TodoField,
         ProjectId = e.PlotFolder.ProjectId,

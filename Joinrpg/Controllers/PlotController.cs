@@ -45,11 +45,12 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Create(int projectId)
     {
-      return await WithProjectAsMasterAsync(projectId, project => View(new AddPlotFolderViewModel
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1) ??  View(new AddPlotFolderViewModel
       {
-        ProjectId = project.ProjectId,
-        ProjectName = project.ProjectName
-      }));
+        ProjectId = project1.ProjectId,
+        ProjectName = project1.ProjectName
+      });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -223,12 +224,6 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-
-    private async Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
-    {
-      var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project1) ?? action(project1);
-    }
 
     public Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
     {

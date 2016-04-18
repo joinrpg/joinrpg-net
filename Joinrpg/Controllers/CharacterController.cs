@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -67,7 +66,7 @@ namespace JoinRpg.Web.Controllers
         IsAcceptingClaims = field.IsAcceptingClaims,
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
-        ParentCharacterGroupIds = field.Groups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).ToList(),
+        ParentCharacterGroupIds = field.GetParentGroupsForEdit(),
         IsHot = field.IsHot,
       }.Fill(field, CurrentUserId));
     }
@@ -91,7 +90,7 @@ namespace JoinRpg.Web.Controllers
           CurrentUserId,
           viewModel.CharacterId,
           viewModel.ProjectId,
-          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
           viewModel.Description.Contents, 
           viewModel.HidePlayerForCharacter,
           GetCustomFieldValuesFromPost(), 
@@ -114,11 +113,10 @@ namespace JoinRpg.Web.Controllers
 
       return AsMaster(field, pa => pa.CanEditRoles) ?? View(new AddCharacterViewModel()
       {
-        Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project),
         ProjectId = projectid,
         ProjectName = field.Project.ProjectName,
         RootGroupId = field.Project.RootGroup.CharacterGroupId,
-        ParentCharacterGroupIds = new List<int> {charactergroupid}
+        ParentCharacterGroupIds = field.AsPossibleParentForEdit()
       });
     }
 
@@ -137,10 +135,10 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.AddCharacter(
           viewModel.ProjectId,
-          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds, viewModel.IsAcceptingClaims,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
           viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
-        return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.First());
+        return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }
       catch
       {

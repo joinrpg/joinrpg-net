@@ -139,7 +139,11 @@ namespace JoinRpg.Web.Controllers
 
     private string GetClaimLink([AspMvcAction] string actionName, [AspMvcController] string controllerName, object routeValues)
     {
-      return  Request.Url.Scheme + "://" + Request.Url.Host +  Url.Action(actionName, controllerName, routeValues);
+      if (Request.Url == null)
+      {
+        throw new InvalidOperationException("Request.Url is unexpectedly null");
+      }
+      return Request.Url.Scheme + "://" + Request.Url.Host + Url.Action(actionName, controllerName, routeValues);
     }
 
     private ActionResult ReturnJson(object data)
@@ -186,7 +190,7 @@ namespace JoinRpg.Web.Controllers
 
       return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
       {
-        ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
+        ParentCharacterGroupIds = @group.GetParentGroupsForEdit(),
         Description = new MarkdownViewModel(@group.Description),
         IsPublic = @group.IsPublic,
         Name = @group.CharacterGroupName,
@@ -250,7 +254,7 @@ namespace JoinRpg.Web.Controllers
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(group.Project);
@@ -311,7 +315,7 @@ namespace JoinRpg.Web.Controllers
 
       return AsMaster(field, pa => pa.CanEditRoles) ??  View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
-        ParentCharacterGroupIds = new List<int> {charactergroupid},
+        ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
         ResponsibleMasterId = -1
       }, field));
     }
@@ -336,10 +340,10 @@ namespace JoinRpg.Web.Controllers
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
           viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-        return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.First());
+        return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }
       catch (Exception exception)
       {
@@ -355,7 +359,6 @@ namespace JoinRpg.Web.Controllers
       viewModel.RootGroupId = field.Project.RootGroup.CharacterGroupId;
       viewModel.ProjectName = field.Project.ProjectName;
       viewModel.ProjectId = field.Project.ProjectId;
-      viewModel.Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
       return viewModel;
     }
 

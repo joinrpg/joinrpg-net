@@ -36,8 +36,6 @@ namespace JoinRpg.Web.Models
   {
     public int CharacterGroupId { get; set; }
 
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.PossibleParentsForGroup(CharacterGroupId);
-
     [ReadOnly(true)]
     public bool IsRoot { get; set; }
   }
@@ -66,6 +64,5 @@ namespace JoinRpg.Web.Models
 
   public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
   {
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups.Where(g => !g.IsSpecial);
   }
 }
