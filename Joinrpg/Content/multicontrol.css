@@ -52,10 +52,6 @@
   font-feature-settings: "liga" 1, "dlig" 1;
 }
 
-.multicontrol{
-  width: 50%;
-  margin: 0 auto;
-}
 .hidden{
   display: none !important;
 }
@@ -220,7 +216,7 @@
   background-color: #eee;
 }
 
-.multicontrol .mlc-tags .mlc-tag>.name{
+.multicontrol .mlc-tags .mlc-tag>.mlc-name{
   max-width: 250px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -230,15 +226,23 @@
   cursor: default;
 }
 
-.multicontrol .mlc-tags .mlc-tag>.close{
+.multicontrol .mlc-tags .mlc-tag>.mlc-close{
   color: #555;
   cursor: pointer;
   float:right;
   padding-left: 5px;
 }
 
-.multicontrol .mlc-tags .mlc-tag .close:hover{
+.multicontrol .mlc-tags .mlc-tag .mlc-close:hover{
   color: #333;
+}
+
+.multicontrol .mlc-tags .mlc-tag .mlc-tag-group{
+  font-weight: bold;
+}
+
+.multicontrol .mlc-list .mcl-autocomplete-block>span{
+  font-weight: bold;
 }
 /*
  * This is a manifest file that'll be compiled into application.css, which will include all the files
@@ -254,5 +258,6 @@
 
 
 /*
+
 
 */
