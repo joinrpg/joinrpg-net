@@ -54,9 +54,10 @@ namespace JoinRpg.Services.Impl
 
 
 
-    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
+      string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
-      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var characterGroups = await ValidateCharacterGroupList(projectId, Required(() => parentCharacterGroupIds));
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
       if (responsibleMasterId != null &&
@@ -80,7 +81,7 @@ namespace JoinRpg.Services.Impl
         Description = new MarkdownString(description),
         ResponsibleMasterUserId = responsibleMasterId,
       });
-      
+
       await UnitOfWork.SaveChangesAsync();
     }
 

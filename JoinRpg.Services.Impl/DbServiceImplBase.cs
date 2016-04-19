@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Impl
 {
@@ -65,6 +69,18 @@ namespace JoinRpg.Services.Impl
       if (items.Count == 0)
       {
         throw new DbEntityValidationException();
+      }
+
+      return items;
+    }
+
+    protected static ICollection<T> Required<T>(Expression<Func<ICollection<T>>> itemsLambda)
+    {
+      var name = itemsLambda.AsPropertyName();
+      var items = itemsLambda.Compile()();
+      if (items.Count == 0)
+      {
+        throw new FieldRequiredException(name);
       }
 
       return items;

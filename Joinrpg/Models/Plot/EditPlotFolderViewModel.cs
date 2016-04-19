@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -15,46 +16,49 @@ namespace JoinRpg.Web.Models.Plot
 
     public static EditPlotFolderViewModel FromFolder(PlotFolder folder)
     {
-      var groupsView = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup);
       return new EditPlotFolderViewModel()
       {
         PlotFolderMasterTitle = folder.MasterTitle,
         PlotFolderId = folder.PlotFolderId,
         TodoField = folder.TodoField,
         ProjectId = folder.ProjectId,
-        Elements = folder.Elements. Select(e => FromElement(e, groupsView)).OrderBy(e => e.Status),
+        Elements = folder.Elements. Select(FromElement).OrderBy(e => e.Status),
         Status = GetStatus(folder)
       };
     }
 
-    private static EditPlotElementViewModel FromElement(PlotElement e, CharacterGroupListViewModel groupsView)
+    private static EditPlotElementViewModel FromElement(PlotElement e)
     {
       return new EditPlotElementViewModel()
       {
         PlotElementId = e.PlotElementId,
-        For = e.Targets.Select(t => t.AsObjectLink()),
+        Targets = e.GetElementBindingsForEdit(),
+        TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList(),
         Content =new MarkdownViewModel(e.Content),
         TodoField = e.TodoField,
         ProjectId = e.PlotFolder.ProjectId,
         PlotFolderId = e.PlotFolderId,
         Status = GetStatus(e),
-        Data = groupsView,
-        IsCompleted = e.IsCompleted
+        IsCompleted = e.IsCompleted,
+        RootGroupId = e.Project.RootGroup.CharacterGroupId
       };
     }
   }
 
-  public class EditPlotElementViewModel  : IEditablePlotElementViewModel
+  public class EditPlotElementViewModel  : IRootGroupAware
   {
+    [ReadOnly(true)]
     public int ProjectId { get; set; }
-
+    [ReadOnly(true)]
+    public int RootGroupId { get; set; }
+    [ReadOnly(true)]
     public int PlotFolderId { get; set; }
-
+    [ReadOnly(true)]
     public int PlotElementId { get; set; }
 
 
     [Display(Name="Для кого")]
-    public IEnumerable<GameObjectLinkViewModel> For {  get; set;}
+    public IEnumerable<string> Targets {  get; set;}
     [Display(Name = "Текст вводной")]
     public MarkdownViewModel Content { get; set; }
 
@@ -68,6 +72,6 @@ namespace JoinRpg.Web.Models.Plot
     public bool IsCompleted { get; set; }
 
     [ReadOnly(true)]
-    public CharacterGroupListViewModel Data { get; set; }
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; set; }
   }
 }

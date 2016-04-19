@@ -28,11 +28,9 @@
 
             <div class="form-group">
                 @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
-                <div class="col-md-10">
-                    <div class="checkbox">
-                        @Html.Partial("ParentCharacterGroupPartial")
-                        @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
-                    </div>
+                <div class="col-md-8">
+                    @Html.MagicSelectGroupParent(model => model.ParentCharacterGroupIds)
+                    @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
                 </div>
             </div>
 
@@ -42,9 +40,8 @@
                     <div class="checkbox">
                         @Html.EditorFor(model => model.IsPublic)
                         @Html.ValidationMessageFor(model => model.IsPublic, "", new {@class = "text-danger"})
-
+                        @Html.DescriptionFor(model => model.IsPublic)
                     </div>
-                    <p class="help-block">Публичные группы показываются в сетке ролей и на карточках персонажей.</p>
                 </div>
             </div>
 
@@ -52,8 +49,8 @@
                 @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-10">
                     @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "form-control"}})
+                    @Html.DescriptionFor(model => model.Description)
                     @Html.ValidationMessageFor(model => model.Description, "", new {@class = "text-danger"})
-                    <p class="help-block">Если группа публична, будет доступно всем. Если нет — только членам группы.</p>
                 </div>
             </div>
         }
@@ -80,15 +77,15 @@
             @Html.LabelFor(model => model.ResponsibleMasterId, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-6">
                 @Html.DropDownListFor(model => model.ResponsibleMasterId, Model.Masters.Select(project => new SelectListItem() { Text = project.Name, Value = project.Id }), new {@class="form-control"})
+                @Html.DescriptionFor(model => model.ResponsibleMasterId)
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                <p class="help-block">Ответственный мастер, который будет назначен новым заявкам. Может быть переопределен в дочерних группах. Если ответственный мастер не установлен, он берется из родительской группы. Изменение этого поля не изменит существующие заявки.</p>
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Сохранить" class="btn btn-success"/>
-                @Html.ActionLink("Назад к сетке ролей группы", "Index", new { @Model.ProjectId, Model.CharacterGroupId }, new { @class = "btn btn-default" })
+                @Html.ActionLink("Назад к сетке ролей группы", "Index", new { @Model.ProjectId, Model.CharacterGroupId }, null)
             </div>
         </div>
     </div>

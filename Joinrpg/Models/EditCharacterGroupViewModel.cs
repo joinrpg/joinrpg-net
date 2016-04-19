@@ -19,7 +19,9 @@ namespace JoinRpg.Web.Models
     public DirectClaimSettings HaveDirectSlots { get; set; }
 
 
-    [Display(Name = "Ответственный мастер для новых заявок")]
+    [Display(
+      Name = "Ответственный мастер для новых заявок", 
+      Description = "Ответственный мастер, который будет назначен новым заявкам. Может быть переопределен в дочерних группах. Если ответственный мастер не установлен, он берется из родительской группы. Изменение этого поля не изменит существующие заявки.")]
     public int ResponsibleMasterId { get; set; }
 
     [ReadOnly(true)]
@@ -33,8 +35,6 @@ namespace JoinRpg.Web.Models
   public class EditCharacterGroupViewModel : CharacterGroupViewModelBase
   {
     public int CharacterGroupId { get; set; }
-
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.PossibleParentsForGroup(CharacterGroupId);
 
     [ReadOnly(true)]
     public bool IsRoot { get; set; }
@@ -64,6 +64,5 @@ namespace JoinRpg.Web.Models
 
   public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
   {
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups.Where(g => !g.IsSpecial);
   }
 }

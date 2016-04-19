@@ -8,6 +8,9 @@
     @Styles.Render("~/Content/css")
     <link href="https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic" rel="stylesheet"/>
     @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    <script src="~/Scripts/multicontrol.js"></script>
+    <link href="~/Content/multicontrol.css" rel="stylesheet"/>
 
     <script type="text/javascript">
         var appInsights=window.appInsights||function(config){
@@ -77,7 +80,6 @@
         </footer>
     </div>
 
-    @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
     @Scripts.Render("~/bundles/jqueryval")

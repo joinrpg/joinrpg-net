@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="CharacterFields\CustomFieldsExtensions.cs" />
     <Compile Include="CharacterFields\FieldWithValue.cs" />
+    <Compile Include="PlotExtensions.cs" />
     <Compile Include="ProblemExtensions.cs" />
     <Compile Include="ClaimProblemFilters\BrokenClaimsAndCharacters.cs" />
     <Compile Include="ClaimProblemFilters\ClaimWorkStopped.cs" />

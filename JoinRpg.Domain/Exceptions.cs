@@ -104,6 +104,16 @@ namespace JoinRpg.Domain
     }
   }
 
+  public class FieldRequiredException : JoinRpgBaseException
+  {
+    public string FieldName { get; }
+
+    public FieldRequiredException(string fieldName) : base($"{fieldName}")
+    {
+      FieldName = fieldName;
+    }
+  }
+
   public class ValueAlreadySetException : JoinRpgBaseException
   {
     public ValueAlreadySetException(string message) : base(message)

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -39,8 +40,6 @@ namespace JoinRpg.Web.Models
         Groups = new CharacterGroupHierarchyBuilder(@group, hasMasterAccess).Generate(),
       }; 
     }
-
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group, true);
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -188,6 +187,7 @@ namespace JoinRpg.Web.Models
       }
     }
 
-    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroupAsMaster(project.RootGroup);
+    [MustUseReturnValue]
+    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroup(project.RootGroup, true);
   }
 }

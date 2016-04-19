@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -133,7 +134,7 @@ namespace JoinRpg.Web.Controllers
         CharacterActive = claim.Character?.IsActive,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(claim.Project.RootGroup),
+        Data = CharacterGroupListViewModel.FromProjectAsMaster(claim.Project),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count(),
         Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =
@@ -390,10 +391,10 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          throw new DbEntityValidationException();
+          return await ShowClaim(claim);
         }
-        var characterGroupId = claimTarget.UnprefixNumber(GroupFieldPrefix);
-        var characterId = claimTarget.UnprefixNumber(CharFieldPrefix);
+        var characterGroupId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.GroupFieldPrefix);
+        var characterId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.CharFieldPrefix);
         await
           _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents, characterGroupId, characterId);
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -40,7 +39,5 @@ namespace JoinRpg.DataModel
 
     public bool CanBePermanentlyDeleted => false;
     public bool IsActive { get; set; }
-
-    public IEnumerable<IWorldObject> Targets => TargetCharacters.Cast<IWorldObject>().Union(TargetGroups);
   }
 }
