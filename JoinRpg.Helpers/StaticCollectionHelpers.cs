@@ -58,7 +58,7 @@ namespace JoinRpg.Helpers
 
     public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T> collection)
     {
-      return collection ?? new T[] { };
+      return collection ?? Enumerable.Empty<T>();
     }
 
     public static IEnumerable<T> Shuffle<T>([NotNull] this IEnumerable<T> source)
@@ -74,6 +74,17 @@ namespace JoinRpg.Helpers
 
         sourceArray[k] = sourceArray[n];
       }
+    }
+
+    public static IEnumerable<T> UnionUntilTotalCount<T>([NotNull] this IReadOnlyCollection<T> alreadyTaken,
+      [NotNull] IEnumerable<T> toAdd, int totalLimit)
+    {
+      if (alreadyTaken == null) throw new ArgumentNullException(nameof(alreadyTaken));
+      if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
+      return alreadyTaken.Union(
+        toAdd
+          .Except(alreadyTaken)
+          .Take(Math.Max(0, totalLimit - alreadyTaken.Count)));
     }
   }
 }
