@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -32,6 +33,7 @@ namespace JoinRpg.Web.Models.Plot
       {
         PlotElementId = e.PlotElementId,
         Targets = e.GetElementBindingsForEdit(),
+        TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList(),
         Content =new MarkdownViewModel(e.Content),
         TodoField = e.TodoField,
         ProjectId = e.PlotFolder.ProjectId,
@@ -68,5 +70,8 @@ namespace JoinRpg.Web.Models.Plot
 
     [Display(Name="Готов", Description = "Готовые загрузы показываются игрокам")]
     public bool IsCompleted { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; set; }
   }
 }

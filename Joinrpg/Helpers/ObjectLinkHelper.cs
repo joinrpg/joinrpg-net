@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -56,12 +58,12 @@ namespace JoinRpg.Web.Helpers
         case LinkType.ResultCharacterGroup:
           return new RouteTarget("Index", "GameGroups", new {CharacterGroupId = link.Identification, link.ProjectId});
         case LinkType.ResultCharacter:
-          return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId });
+          return new RouteTarget("Details", "Character", new {CharacterId = link.Identification, link.ProjectId});
         case LinkType.Claim:
           return new RouteTarget("Edit", "Claim", new {link.ProjectId, ClaimId = link.Identification});
         case LinkType.Plot:
           return new RouteTarget("Edit", "Plot", new {PlotFolderId = link.Identification, link.ProjectId});
-          case LinkType.Comment:
+        case LinkType.Comment:
           return new RouteTarget("Edit", "Claim",
             new {link.ProjectId, ClaimId = link.Identification.BeforeSeparator('.')},
             anchor: $"comment{link.Identification.AfterSeparator('.')}");
@@ -70,16 +72,17 @@ namespace JoinRpg.Web.Helpers
       }
     }
 
-    public static GameObjectLinkViewModel AsObjectLink(this IWorldObject c)
+    public static GameObjectLinkViewModel AsObjectLink([NotNull] this IWorldObject obj)
     {
+      if (obj == null) throw new ArgumentNullException(nameof(obj));
       //TODO ugly hack
       return new GameObjectLinkViewModel()
       {
-        DisplayName = c.Name,
-        Identification = c.Id.ToString(),
-        ProjectId = c.ProjectId,
-        LinkType = c.GetType().IsSubclassOf(typeof(CharacterGroup)) ? LinkType.ResultCharacterGroup : LinkType.ResultCharacter,
-        IsActive = c.IsActive
+        DisplayName = obj.Name,
+        Identification = obj.Id.ToString(),
+        ProjectId = obj.ProjectId,
+        LinkType = obj.GetType().IsSubclassOf(typeof(CharacterGroup)) ? LinkType.ResultCharacterGroup : LinkType.ResultCharacter,
+        IsActive = obj.IsActive
       };
     }
 
@@ -93,6 +96,12 @@ namespace JoinRpg.Web.Helpers
         ProjectId = result.ProjectId,
         IsActive = result.IsActive
       };
+    }
+
+    public static IEnumerable<GameObjectLinkViewModel> AsObjectLinks([NotNull, ItemNotNull] this IEnumerable<IWorldObject> objects)
+    {
+      if (objects == null) throw new ArgumentNullException(nameof(objects));
+      return objects.Select(t => t.AsObjectLink());
     }
   }
 }
