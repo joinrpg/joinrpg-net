@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -26,17 +24,15 @@ namespace JoinRpg.Web.Controllers
       var projects =
         (await _projectRepository.GetActiveProjectsWithClaimCount())
         .Select(p => ProjectListItemViewModel.FromProject(p, CurrentUserIdOrDefault))
-        .Where(p => p.IsMaster || p.MyClaims.Any() || p.IsAcceptingClaims)
+        .Where(p => p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
         .ToList();
 
       var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
-        projects.Where(p => p.IsMaster || p.MyClaims.Any()), p => p);
-      var otherProjects =
-        projects.Except(alwaysShowProjects)
-          .OrderByDescending(p => p.ClaimCount)
-          .Take(Math.Max(0, maxProjects - alwaysShowProjects.Count())); // Add more projects until we have 9 total
+        projects.Where(p => p.IsMaster || p.MyClaims.Any()), p => p).ToList();
 
-      var finalProjects = alwaysShowProjects.Union(otherProjects).ToList();
+      var projectListItemViewModels = alwaysShowProjects.UnionUntilTotalCount(projects.OrderByDescending(p => p.ClaimCount), maxProjects);
+
+      var finalProjects = projectListItemViewModels.ToList();
 
       return new HomeViewModel
       {
