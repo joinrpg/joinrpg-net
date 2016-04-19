@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.GameFieldEditViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.GameFieldEditViewModel
 
 @{
     ViewBag.Title = "Редактирование поля персонажа";
@@ -77,10 +78,19 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-3" })
+            @Html.LabelFor(model => model.Description, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-9">
-                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.Description, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.Description, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.MagicSelectBindGroups(model => model.ShowForGroups)
+                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.ShowForGroups)
             </div>
         </div>
 
