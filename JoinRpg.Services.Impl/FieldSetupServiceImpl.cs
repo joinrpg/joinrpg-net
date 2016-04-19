@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -13,7 +13,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
   {
-    public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus)
+    public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -31,8 +31,10 @@ namespace JoinRpg.Services.Impl
         FieldType = fieldType,
         FieldBoundTo = fieldBoundTo,
         IsActive = true,
-        MandatoryStatus = mandatoryStatus
+        MandatoryStatus = mandatoryStatus,
       };
+
+      field.GroupsAvailableFor.AssignLinksList(await ValidateCharacterGroupList(projectId, showForGroups));
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -40,9 +42,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus)
+    public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups)
     {
-      var field = await GetFieldAsync(projectId, fieldId);
+      var field = await ProjectRepository.GetProjectField(projectId, fieldId);
 
       field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
@@ -53,6 +55,7 @@ namespace JoinRpg.Services.Impl
       field.IsPublic = isPublic;
       field.IsActive = true;
       field.MandatoryStatus = mandatoryStatus;
+      field.GroupsAvailableFor.AssignLinksList(await ValidateCharacterGroupList(projectId, showForGroups));
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -60,17 +63,11 @@ namespace JoinRpg.Services.Impl
     }
 
     //TODO: Move to repository
-    private async Task<ProjectField> GetFieldAsync(int projectId, int fieldId)
-    {
-      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(fieldId);
-      if (field == null || field.ProjectId != projectId) throw new DbEntityValidationException();
-      return field;
-    }
 
-    //TODO: pass projectId & CurrentUserId
-    public async Task DeleteField(int projectCharacterFieldId)
+    public async Task DeleteField(int currentUserId, int projectId, int projectFieldId)
     {
-      var field = await UnitOfWork.GetDbSet<ProjectField>().FindAsync(projectCharacterFieldId);
+      var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
 
       foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
       {

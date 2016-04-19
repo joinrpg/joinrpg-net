@@ -142,7 +142,7 @@ namespace JoinRpg.Web.Controllers
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
         ResponsibleMaster = claim.ResponsibleMasterUser,
-        Fields = new CustomFieldsViewModel(CurrentUserId, claim.Project).FillFromClaim(claim),
+        Fields = new CustomFieldsViewModel(CurrentUserId, claim),
         Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
         ClaimFee = new ClaimFeeViewModel()
         {

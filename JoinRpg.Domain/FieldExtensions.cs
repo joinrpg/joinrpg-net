@@ -52,7 +52,12 @@ namespace JoinRpg.Domain
 
     public static bool HasValue(this FieldWithValue ch)
     {
-      return !String.IsNullOrWhiteSpace(ch.Value) || ch.Field.FieldType == ProjectFieldType.Header;
+      return !string.IsNullOrWhiteSpace(ch.Value) || ch.Field.FieldType == ProjectFieldType.Header;
+    }
+
+    public static bool IsAvailableForTarget(this ProjectField field, IClaimSource target)
+    {
+      return field.IsActive && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
     }
   }
 }

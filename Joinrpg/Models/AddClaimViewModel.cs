@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models
       Description = new MarkdownViewModel(obj.Description);
       IsAvailable = obj.IsAvailable;
       ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString();
-      Fields = new CustomFieldsViewModel(user.UserId, obj.Project).OnlyClaimFields().EnableClaimAccess();
+      Fields = new CustomFieldsViewModel(user.UserId, obj);
       IsRoot = obj.IsRoot;
       return this;
     }

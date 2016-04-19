@@ -49,6 +49,19 @@ namespace JoinRpg.Web.App_Code
         ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value);
     }
 
+    public static MvcHtmlString MagicSelectBindGroups<TModel>(this HtmlHelper<TModel> self,
+      Expression<Func<TModel, IEnumerable<string>>> expression)
+      where TModel : IRootGroupAware
+    {
+      var container = (IRootGroupAware) self.GetModel();
+
+      var value = self.GetValue(expression).ToList();
+      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
+
+      return MagicControlHelper.GetMagicSelect(container.ProjectId, container.RootGroupId, false,
+        ShowImplicitGroups.Children, MagicControlStrategy.NonChanger, metadata.PropertyName, value);
+    }
+
     public static MvcHtmlString MagicSelectGroupParent<TModel>(this HtmlHelper<TModel> self,
   Expression<Func<TModel, IEnumerable<string>>> expression)
   where TModel : EditCharacterGroupViewModel
