@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 namespace JoinRpg.Dal.Impl.Migrations
 {
   [UsedImplicitly]
-  internal sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
+  public sealed class Configuration : DbMigrationsConfiguration<MyDbContext>
   {
     public Configuration()
     {
