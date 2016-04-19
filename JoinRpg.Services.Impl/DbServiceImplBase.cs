@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
@@ -39,7 +38,7 @@ namespace JoinRpg.Services.Impl
       _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
       _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
       _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
-      _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository); _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
+      _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
     }
 
     [NotNull]

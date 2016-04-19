@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-  public class CharacterGroup : IClaimSource, IDeletableSubEntity
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject
   {
 
     public int CharacterGroupId { get; set; }
@@ -66,6 +67,30 @@ namespace JoinRpg.DataModel
 
     public bool CanBePermanentlyDeleted
       => !ChildGroups.Any() && !Characters.Any() && !DirectlyRelatedPlotFolders.Any() && !Claims.Any();
+
+    #region Implementation of IValidatableObject
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+      if (ParentGroups == null)
+      {
+        yield break; //Prevent validation
+      }
+      if (IsSpecial)
+      {
+        if (ParentGroups.Any(pg => !pg.IsRoot && !pg.IsSpecial))
+        {
+          yield return new ValidationResult("Special group can only be child of root group or another special group");
+        }
+      }
+      else
+      {
+        if (ParentGroups.Any(pg => pg.IsSpecial))
+        {
+          yield return new ValidationResult("Non-special group can't be child of special group");
+        }
+      }
+    }
+    #endregion
   }
 
 }
