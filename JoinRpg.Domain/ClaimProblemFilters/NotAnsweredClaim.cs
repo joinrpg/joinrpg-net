@@ -37,7 +37,7 @@ namespace JoinRpg.Domain.ClaimProblemFilters
 
       if (now.Subtract(claim.CreateDate) > TimeSpan.FromDays(60))
       {
-        yield return new ClaimProblem(ClaimProblemType.ClaimNoDecision, ProblemSeverity.Warning, claim.CreateDate);
+        yield return new ClaimProblem(ClaimProblemType.ClaimNoDecision, ProblemSeverity.Error, claim.CreateDate);
       }
       else if (now.Subtract(claim.CreateDate) > TimeSpan.FromDays(30))
       {
