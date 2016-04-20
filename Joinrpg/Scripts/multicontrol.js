@@ -2082,10 +2082,10 @@ MultiControl.Views.AllGroupsView = function (all_groups, el, actionManager, impl
     $el.empty();
 
     if (groups.length > 0) {
-      if (implicit_groups == 'parents') {
-        $el.append('<li>Также имплицитно добавлен в группы:</li>');
+	  if (implicit_groups == 'parents') {
+        $el.append('<li>А также в их родителей</li>');
       } else if (implicit_groups == 'children') {
-        $el.append('<li>В выбранные группы также добавлены персонажи:</li>');
+        $el.append('<li>Включая персонажей:</li>');
       }
       this.draw(groups);
     }
