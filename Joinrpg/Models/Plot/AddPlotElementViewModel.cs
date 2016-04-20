@@ -6,12 +6,10 @@ using JoinRpg.Web.Models.CommonTypes;
 namespace JoinRpg.Web.Models.Plot
 {
 
-  public class AddPlotElementViewModel : IRootGroupAware
+  public class AddPlotElementViewModel : IProjectIdAware
   {
     [ReadOnly(true)]
     public int ProjectId { get; set; }
-    [ReadOnly(true)]
-    public int RootGroupId { get; set; }
     public int PlotFolderId{ get; set; }
     [Display(Name = "Текст вводной")]
     public MarkdownViewModel Content { get; set; }

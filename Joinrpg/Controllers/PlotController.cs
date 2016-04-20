@@ -114,7 +114,6 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        RootGroupId = folder.Project.RootGroup.CharacterGroupId
       });
     }
 
@@ -143,7 +142,6 @@ namespace JoinRpg.Web.Controllers
           PlotFolderName = folder.MasterTitle,
           Content = content,
           TodoField = todoField,
-          RootGroupId = folder.Project.RootGroup.CharacterGroupId
         });
       }
     }

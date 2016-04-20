@@ -2083,7 +2083,7 @@ MultiControl.Views.AllGroupsView = function (all_groups, el, actionManager, impl
 
     if (groups.length > 0) {
 	  if (implicit_groups == 'parents') {
-        $el.append('<li>А также в их родителей</li>');
+        $el.append('<li>А также их родителей:</li>');
       } else if (implicit_groups == 'children') {
         $el.append('<li>Включая персонажей:</li>');
       }

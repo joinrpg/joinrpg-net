@@ -51,12 +51,10 @@ namespace JoinRpg.Web.Controllers
              View(FillFromProject(project1, new GameFieldCreateViewModel()));
     }
 
-    private static GameFieldCreateViewModel FillFromProject(Project project1, GameFieldCreateViewModel viewModel)
+    private static GameFieldCreateViewModel FillFromProject(Project project, GameFieldCreateViewModel viewModel)
     {
-      var gameFieldCreateViewModel = viewModel;
-      gameFieldCreateViewModel.ProjectId = project1.ProjectId;
-      gameFieldCreateViewModel.RootGroupId = project1.RootGroup.CharacterGroupId;
-      return gameFieldCreateViewModel;
+      viewModel.ProjectId = project.ProjectId;
+      return viewModel;
     }
 
     [HttpPost]
