@@ -1,8 +1,7 @@
 ﻿namespace JoinRpg.Web.Models
 {
-  public interface IRootGroupAware
+  public interface IProjectIdAware
   {
     int ProjectId { get; }
-    int RootGroupId { get; }
   }
 }

@@ -40,17 +40,14 @@ namespace JoinRpg.Web.Models.Plot
         PlotFolderId = e.PlotFolderId,
         Status = GetStatus(e),
         IsCompleted = e.IsCompleted,
-        RootGroupId = e.Project.RootGroup.CharacterGroupId
       };
     }
   }
 
-  public class EditPlotElementViewModel  : IRootGroupAware
+  public class EditPlotElementViewModel  : IProjectIdAware
   {
     [ReadOnly(true)]
     public int ProjectId { get; set; }
-    [ReadOnly(true)]
-    public int RootGroupId { get; set; }
     [ReadOnly(true)]
     public int PlotFolderId { get; set; }
     [ReadOnly(true)]

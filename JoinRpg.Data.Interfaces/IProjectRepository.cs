@@ -9,13 +9,12 @@ namespace JoinRpg.Data.Interfaces
   {
     Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount();
     Task<IEnumerable<Project>> GetAllProjectsWithClaimCount();
-
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
-
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId);
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId);
+    Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);

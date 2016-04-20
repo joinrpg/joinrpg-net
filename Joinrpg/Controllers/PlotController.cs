@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
@@ -112,11 +114,10 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        RootGroupId = folder.Project.RootGroup.CharacterGroupId
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField, ICollection<string> targets)
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField, [CanBeNull] ICollection<string> targets)
     { 
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -126,8 +127,8 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = targets.GetUnprefixedGroups();
-        var targetChars = targets.GetUnprefixedChars();
+        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
           _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
         return ReturnToPlot(plotFolderId, projectId);
@@ -141,7 +142,6 @@ namespace JoinRpg.Web.Controllers
           PlotFolderName = folder.MasterTitle,
           Content = content,
           TodoField = todoField,
-          RootGroupId = folder.Project.RootGroup.CharacterGroupId
         });
       }
     }
@@ -202,7 +202,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
-      bool isCompleted, ICollection<string> targets)
+      bool isCompleted, [CanBeNull] ICollection<string> targets)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -212,8 +212,9 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = targets.GetUnprefixedGroups();
-        var targetChars = targets.GetUnprefixedChars();
+
+        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
         return ReturnToPlot(plotFolderId, projectId);

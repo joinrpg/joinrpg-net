@@ -6,7 +6,7 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
-  public abstract class GameObjectViewModelBase  : IRootGroupAware
+  public abstract class GameObjectViewModelBase  : IProjectIdAware
   {
     public int ProjectId { get; set; }
     
@@ -21,8 +21,5 @@ namespace JoinRpg.Web.Models
 
     [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем. Если нет — только членам группы.")]
     public MarkdownViewModel Description { get; set; }
-
-    [ReadOnly(true)]
-    public int RootGroupId { get; set; }
   }
 }

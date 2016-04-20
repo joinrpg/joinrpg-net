@@ -95,8 +95,8 @@ namespace JoinRpg.Web.Controllers
 
     private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
     {
-      return CharacterGroupListViewModel.FromGroup(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
-        .PublicGroups.SelectMany(
+      return CharacterGroupListViewModel.GetGroups(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
+        .SelectMany(
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
 
@@ -110,15 +110,13 @@ namespace JoinRpg.Web.Controllers
 
       }
 
-      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
       return ReturnJson(new
       {
         field.Project.ProjectId,
         field.Project.ProjectName,
         ShowEditControls = hasMasterAccess,
-        Groups =
-          CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
-            .PublicGroups.Select(
+        Groups = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess).Select(
               g =>
                 new
                 {
@@ -133,6 +131,37 @@ namespace JoinRpg.Web.Controllers
                   CanAddDirectClaim = g.IsAcceptingClaims,
                   DirectClaimsCount = g.AvaiableDirectSlots,
                   DirectClaimLink = g.IsAcceptingClaims ? GetClaimLink("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
+                }),
+      });
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
+    {
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+      if (field == null)
+      {
+        return HttpNotFound();
+      }
+
+      var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
+      return ReturnJson(new
+      {
+        field.Project.ProjectId,
+        Groups =
+          CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+            .Where(g => includeSpecial || !g.IsSpecial)
+            .Select(
+              g =>
+                new
+                {
+                  g.CharacterGroupId,
+                  g.Name,
+                  g.DeepLevel,
+                  g.FirstCopy,
+                  Path = g.Path.Select(gr => gr.Name),
+                  PathIds = g.Path.Select(gr => gr.CharacterGroupId),
+                  Characters = g.PublicCharacters.Select(ConvertCharacterToJsonSlim),
                 }),
       });
     }
@@ -169,6 +198,17 @@ namespace JoinRpg.Web.Controllers
           ch.IsAvailable
             ? GetClaimLink("AddForCharacter", "Claim", new {ch.ProjectId, ch.CharacterId})
             : null,
+      };
+    }
+
+    private object ConvertCharacterToJsonSlim(CharacterViewModel ch)
+    {
+      return new
+      {
+        ch.CharacterId,
+        ch.IsAvailable,
+        ch.IsFirstCopy,
+        ch.CharacterName
       };
     }
 
@@ -356,7 +396,6 @@ namespace JoinRpg.Web.Controllers
       where T: CharacterGroupViewModelBase
     {
       viewModel.Masters = GetMasters(field, includeSelf: true);
-      viewModel.RootGroupId = field.Project.RootGroup.CharacterGroupId;
       viewModel.ProjectName = field.Project.ProjectName;
       viewModel.ProjectId = field.Project.ProjectId;
       return viewModel;

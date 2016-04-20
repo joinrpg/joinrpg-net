@@ -17,8 +17,7 @@ namespace JoinRpg.Web.Models
     { get; set; } = true;
 
     [DisplayName("Имя персонажа"), Required]
-    public string Name
-    { get; set; }
+    public string Name { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

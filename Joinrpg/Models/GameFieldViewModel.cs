@@ -10,11 +10,9 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
-  public class GameFieldViewModelBase : IValidatableObject, IRootGroupAware
+  public class GameFieldViewModelBase : IValidatableObject, IProjectIdAware
   {
     public int ProjectId { get; set; }
-    [ReadOnly(true)]
-    public int RootGroupId { get; set; }
 
     [Display(Name="Название поля"), Required]
     public string Name { get; set; }
@@ -75,7 +73,6 @@ namespace JoinRpg.Web.Models
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
       MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
       ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
-      RootGroupId = field.Project.RootGroup.CharacterGroupId;
     }
 
     public GameFieldEditViewModel()

@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Helpers
       return implicitGroupsString;
     }
 
-    public static MvcHtmlString GetMagicSelect(int projectId, int rootGroupId, bool showCharacters, ShowImplicitGroups showGroups, MagicControlStrategy strategy, string propertyName, IEnumerable<string> elements)
+    public static MvcHtmlString GetMagicSelect(int projectId, bool showCharacters, ShowImplicitGroups showGroups, MagicControlStrategy strategy, string propertyName, IEnumerable<string> elements, bool showSpecial)
     {
       var implicitGroupsString = GetImplicitGroupString(showGroups);
 
@@ -50,25 +50,25 @@ namespace JoinRpg.Web.Helpers
 
       //TODO: convert to verbatim
       var magicSelectFor = MvcHtmlString.Create(string.Format(@"
-<div id=""{0}_control_{7}"" style=""max-width: 700px;width:100%""></div>
+<div id=""{0}_control_{6}"" style=""max-width: 700px;width:100%""></div>
 <script type=""text/javascript"">
         $(function() {{
         var options = 
           {{
-            url: '/' + {1} + '/roles/' + {2} + '/indexjson',
+            url: '/' + {1} + '/roles/{7}',
             multiselect: true,
-            showcharacters: {3},
+            showcharacters: {2},
             hiddenselect: {{ id: '{0}', name: '{0}' }},
-            implicitgroups: {4},
+            implicitgroups: {3},
             strategy: {{
-              type: '{5}',
-              elements: [{6}]
+              type: '{4}',
+              elements: [{5}]
             }},
           }};
-      $('#{0}_control_{7}').multicontrol(options);
+      $('#{0}_control_{6}').multicontrol(options);
     }});
-</script>", propertyName, projectId, rootGroupId, showCharacters ? "true" : "false", implicitGroupsString,
-        strategyString, elements.Join(", "), Random.Next()));
+</script>", propertyName, projectId, showCharacters ? "true" : "false", implicitGroupsString,
+        strategyString, elements.Join(", "), Random.Next(), showSpecial ? "json_full" : "json_real"));
       return magicSelectFor;
     }
 

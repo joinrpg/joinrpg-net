@@ -13,16 +13,6 @@ namespace JoinRpg.Web.Models
   {
     private IList<CharacterGroupListItemViewModel> Groups { get; set; }
 
-    public IEnumerable<CharacterGroupListItemViewModel> PossibleParentsForGroup(int characterGroupId)
-    {
-      return
-        ActiveGroups.Where(
-          listItem =>
-            listItem.CharacterGroupId != characterGroupId &&
-            listItem.Path.All(cg => cg.CharacterGroupId != characterGroupId) &&
-            !listItem.IsSpecial);
-    }
-
     public IEnumerable<CharacterGroupListItemViewModel> PublicGroups
     {
       get { return Groups.Where(listItem => listItem.IsPublic && listItem.IsActive); }
@@ -39,6 +29,15 @@ namespace JoinRpg.Web.Models
       {
         Groups = new CharacterGroupHierarchyBuilder(@group, hasMasterAccess).Generate(),
       }; 
+    }
+
+    [MustUseReturnValue]
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, bool hasMasterAccess)
+    {
+      var viewModel = FromGroup(field, hasMasterAccess);
+      return hasMasterAccess
+        ? viewModel.ActiveGroups
+        : viewModel.PublicGroups;
     }
 
     //TODO: unit tests

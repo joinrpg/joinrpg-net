@@ -62,7 +62,6 @@ namespace JoinRpg.Web.Controllers
         Description = new MarkdownViewModel(field.Description),
         IsPublic = field.IsPublic,
         ProjectName = field.Project.ProjectName,
-        RootGroupId = field.Project.RootGroup.CharacterGroupId,
         IsAcceptingClaims = field.IsAcceptingClaims,
         HidePlayerForCharacter = field.HidePlayerForCharacter,
         Name = field.CharacterName,
@@ -115,7 +114,6 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectid,
         ProjectName = field.Project.ProjectName,
-        RootGroupId = field.Project.RootGroup.CharacterGroupId,
         ParentCharacterGroupIds = field.AsPossibleParentForEdit()
       });
     }
