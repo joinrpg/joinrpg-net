@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -16,19 +18,18 @@ namespace JoinRpg.Web.Helpers
     public static IEnumerable<string> PrefixAsGroups(this int groupId)
       => new[] {groupId}.PrefixAsGroups();
 
-    public static IEnumerable<string> PrefixAsCharacters(this IEnumerable<int> characterId)
+    private static IEnumerable<string> PrefixAsCharacters(this IEnumerable<int> characterId)
       => characterId.Select(id => $"'{CharFieldPrefix}{id}'");
 
-    public static IEnumerable<string> PrefixAsCharacters(this int characterId)
-      => new[] { characterId }.PrefixAsCharacters();
-
-    public static List<int> GetUnprefixedChars(this IEnumerable<string> targets)
+    public static List<int> GetUnprefixedChars([NotNull] this IEnumerable<string> targets)
     {
+      if (targets == null) throw new ArgumentNullException(nameof(targets));
       return targets.UnprefixNumbers(CharFieldPrefix).ToList();
     }
 
-    public static List<int> GetUnprefixedGroups(this IEnumerable<string> targets)
+    public static List<int> GetUnprefixedGroups([NotNull] this IEnumerable<string> targets)
     {
+      if (targets == null) throw new ArgumentNullException(nameof(targets));
       return targets.UnprefixNumbers(GroupFieldPrefix).ToList();
     }
 
