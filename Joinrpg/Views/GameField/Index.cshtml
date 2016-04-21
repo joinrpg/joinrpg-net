@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
 @model JoinRpg.Web.Models.GameFieldListViewModel
 
 @{
@@ -9,7 +10,7 @@
     @ViewBag.Title
 @if (Model.CanEditFields)
 {
-<a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-info"><span class="glyphicon glyphicon-plus"></span>Добавить новое поле</a>
+<a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить новое поле</a>
 }
 </h2>
 @{
@@ -40,10 +41,7 @@
             <th>
                 @Html.DisplayNameFor(model => firstItem.Description)
             </th>
-            @if (Model.CanEditFields)
-            {
-                <th></th>
-            }
+            <th></th>
         </tr>
 
         @foreach (var item in Model.Items)
@@ -71,23 +69,30 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
-                @if (Model.CanEditFields)
-                {
-                    <td>
-                        @{
-                            if (item.IsActive)
-                            {
-                                @Html.ActionLink("Изменить", "Edit", new { item.ProjectFieldId, item.ProjectId})<text> | </text>
-                                @Html.ActionLink("Удалить", "Delete", new { item.ProjectFieldId, item.ProjectId})
-                            }
-                            else
-                            {
-                                @Html.ActionLink("Восстановить", "Edit", new { item.ProjectFieldId, item.ProjectId})
-                            }
-                            @Html.MoveControl(model => item, "Move")
+
+                <td>
+                    @if (item.MandatoryStatus != MandatoryStatusViewType.Optional)
+                    {
+                        @Html.ActionLink("Отчет (непроставленные)", "CharListByField", "ClaimList", new {item.ProjectFieldId, item.ProjectId}, null)
+                    }
+                    @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && Model.CanEditFields)
+                    {
+                        <text> | </text>
+                    }
+                    @if (Model.CanEditFields)
+                    {
+                        if (item.IsActive)
+                        {
+                            @Html.ActionLink("Изменить", "Edit", new {item.ProjectFieldId, item.ProjectId})<text> | </text>
+                            @Html.ActionLink("Удалить", "Delete", new {item.ProjectFieldId, item.ProjectId})
                         }
-                    </td>
-                }
+                        else
+                        {
+                            @Html.ActionLink("Восстановить", "Edit", new {item.ProjectFieldId, item.ProjectId})
+                        }<text> </text>
+                        @Html.MoveControl(model => item, "Move")
+                    }
+                </td>
             </tr>
         }
 

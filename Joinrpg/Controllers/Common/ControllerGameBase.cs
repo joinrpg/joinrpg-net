@@ -15,8 +15,6 @@ namespace JoinRpg.Web.Controllers.Common
 {
   public class ControllerGameBase : ControllerBase
   {
-    protected const string GroupFieldPrefix = "group_";
-    protected const string CharFieldPrefix = "char_";
     protected IProjectService ProjectService { get; }
     private IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
@@ -77,6 +75,7 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+          BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           CurrentUserId = CurrentUserIdOrDefault,

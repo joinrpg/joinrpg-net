@@ -22,6 +22,11 @@
                         <li>
                             @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
                         </li>
+                        <li role="separator" class="dropdown-header">По группам:</li>
+                        @foreach (var cg in Model.BigGroups)
+                        {
+                        <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
+                        }
                     </ul>
                 </li>
                 @if (Model.Claims.Count == 1)

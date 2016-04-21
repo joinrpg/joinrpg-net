@@ -12,6 +12,7 @@ namespace JoinRpg.Web.Helpers
     /// <summary>
     /// Converts markdown to HtmlString with all sanitization
     /// </summary>
+    [CanBeNull]
     public static HtmlString ToHtmlString([CanBeNull] this MarkdownString markdownString)
     {
       return markdownString?.Contents == null ? null : markdownString.RenderMarkDownToHtmlUnsafe().SanitizeHtml();

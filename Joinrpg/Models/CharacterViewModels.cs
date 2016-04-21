@@ -17,9 +17,7 @@ namespace JoinRpg.Web.Models
     { get; set; } = true;
 
     [DisplayName("Имя персонажа"), Required]
-    public string Name
-    { get; set; }
-    public override IEnumerable<CharacterGroupListItemViewModel> PossibleParents => Data.ActiveGroups.Where(g => !g.IsSpecial);
+    public string Name { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -59,10 +57,9 @@ namespace JoinRpg.Web.Models
 
     public EditCharacterViewModel Fill(Character field, int currentUserId)
     {
-      Data = CharacterGroupListViewModel.FromProjectAsMaster(field.Project);
       Navigation = CharacterNavigationViewModel.FromCharacter(field, CharacterNavigationPage.Editing,
         currentUserId);
-      Fields = new CustomFieldsViewModel(currentUserId, field.Project).FillFromCharacter(field).OnlyCharacterFields();
+      Fields = new CustomFieldsViewModel(currentUserId, field);
 
       ActiveClaimsCount = field.Claims.Count(claim => claim.IsActive);
       IsActive = field.IsActive;

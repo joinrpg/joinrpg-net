@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -32,9 +29,6 @@ namespace JoinRpg.Domain
     public static VirtualOrderContainer<ProjectFieldDropdownValue> GetFieldValuesContainer(
       this ProjectField field)
       => VirtualOrderContainerFacade.Create(field.DropdownValues, field.ValuesOrdering);
-
-    public static IReadOnlyList<ProjectField> GetActiveOrderedFields(this Project field)
-  => field.GetFieldsContainer().GetOrderedItemsWithFilter(f => f.IsActive);
 
     public static IReadOnlyList<ProjectField> GetOrderedFields(this Project field)
       => field.GetFieldsContainer().OrderedItems;

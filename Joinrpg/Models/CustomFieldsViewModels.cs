@@ -43,7 +43,8 @@ namespace JoinRpg.Web.Models
             || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Character)
             || (model.HasPlayerClaimAccess && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
             );
-      CanEdit = (ch.Field.IsActive || !string.IsNullOrWhiteSpace(ch.Value)) && model.EditAllowed && (
+
+      CanEdit = (ch.Field.IsAvailableForTarget(model.Target) || ch.HasValue()) && model.EditAllowed && (
            model.HasMasterAccess
            || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Character)
            || (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
@@ -71,10 +72,11 @@ namespace JoinRpg.Web.Models
   public class CustomFieldsViewModel
   {
     private int? CurrentUserId { get; }
-    public bool HasPlayerAccessToCharacter { get; private set; }
-    public bool HasPlayerClaimAccess { get; private set; }
+    public bool HasPlayerAccessToCharacter { get; }
+    public bool HasPlayerClaimAccess { get; }
     public bool HasMasterAccess { get; }
     public bool EditAllowed { get; private set; } = true;
+    public IClaimSource Target { get;  }
     private ICollection<FieldWithValue> FieldsWithValues { get; set; }
 
     public IEnumerable<FieldValueViewModel> Fields
@@ -88,45 +90,50 @@ namespace JoinRpg.Web.Models
       return this;
     }
 
-    public CustomFieldsViewModel(int? currentUserId, Project project)
+    public CustomFieldsViewModel(int? currentUserId, IClaimSource target)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = project.HasMasterAccess(currentUserId);
-      FieldsWithValues = project.GetFields().ToList();
+      HasMasterAccess = target.Project.HasMasterAccess(currentUserId);
+      FieldsWithValues = target.Project.GetFields().ToList();
+
+      Target = target;
+
+      OnlyClaimFields();
+      HasPlayerClaimAccess = true;
+     
     }
 
-    public CustomFieldsViewModel FillFromClaim(Claim claim)
+    public CustomFieldsViewModel(int? currentUserId, Character character)
     {
-      HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
-      HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
-      FieldsWithValues.FillIfEnabled(claim, claim.Character, CurrentUserId);
-      return claim.IsApproved ? this : OnlyClaimFields();
-    }
+      CurrentUserId = currentUserId;
+      HasMasterAccess = character.HasMasterAccess(currentUserId);
+      FieldsWithValues = character.Project.GetFields().ToList();
+      Target = character;
 
-    public CustomFieldsViewModel FillFromCharacter(Character character)
-    {
       HasPlayerAccessToCharacter = character.HasPlayerAccess(CurrentUserId);
       HasPlayerClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
       FieldsWithValues.FillIfEnabled(character.ApprovedClaim, character, CurrentUserId);
-      return this;
-    }
-
-    public CustomFieldsViewModel OnlyCharacterFields()
-    {
       FieldsWithValues = FieldsWithValues.Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character).ToList();
-      return this;
     }
 
-    public CustomFieldsViewModel OnlyClaimFields()
+    public CustomFieldsViewModel(int? currentUserId, Claim claim)
+    {
+
+      CurrentUserId = currentUserId;
+      HasMasterAccess = claim.HasMasterAccess(currentUserId);
+      FieldsWithValues = claim.Project.GetFields().ToList();
+      Target = claim.GetTarget();
+
+      HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
+      HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
+      FieldsWithValues.FillIfEnabled(claim, claim.Character, CurrentUserId);
+      if (!claim.IsApproved)
+        OnlyClaimFields();
+    }
+
+    private void OnlyClaimFields()
     {
       FieldsWithValues = FieldsWithValues.Where(f => f.Field.FieldBoundTo == FieldBoundTo.Claim).ToList();
-      return this;
-    }
-
-    public CustomFieldsViewModel EnableClaimAccess()
-    {
-      HasPlayerClaimAccess = true;
-      return this;
     }
 
     public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);

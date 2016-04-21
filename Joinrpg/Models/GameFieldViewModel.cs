@@ -5,11 +5,12 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
-  public class GameFieldViewModelBase : IValidatableObject
+  public class GameFieldViewModelBase : IValidatableObject, IProjectIdAware
   {
     public int ProjectId { get; set; }
 
@@ -30,6 +31,9 @@ namespace JoinRpg.Web.Models
 
     [Display(Name = "Обязательное?")]
     public MandatoryStatusViewType MandatoryStatus { get; set; }
+
+    [Display(Name="Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
+    public ICollection<string> ShowForGroups { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -68,6 +72,7 @@ namespace JoinRpg.Web.Models
       FieldViewType = (ProjectFieldViewType) field.FieldType;
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
       MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
+      ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
     }
 
     public GameFieldEditViewModel()

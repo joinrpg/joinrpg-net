@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.EditCharacterViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.EditCharacterViewModel
 
 @Html.Partial("CharacterNavigation", Model.Navigation, new ViewDataDictionary())
 
@@ -64,15 +65,13 @@
                 </div>
                 <p class="help-block">Горячая роль специальным образом выделяется в ролевке.</p>
             </div>
-            
-        
+
+
         <div class="form-group">
-            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.Partial("ParentCharacterGroupPartial")
-                    @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
-                </div>
+            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-8">
+                @Html.MagicSelectParent(model => model.ParentCharacterGroupIds)
+                @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
             </div>
         </div>
 
