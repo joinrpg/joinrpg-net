@@ -10,6 +10,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -94,8 +95,8 @@ namespace JoinRpg.Web.Controllers
 
     private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
     {
-      return CharacterGroupListViewModel.FromGroup(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
-        .PublicGroups.SelectMany(
+      return CharacterGroupListViewModel.GetGroups(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
+        .SelectMany(
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
 
@@ -109,15 +110,13 @@ namespace JoinRpg.Web.Controllers
 
       }
 
-      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
       return ReturnJson(new
       {
         field.Project.ProjectId,
         field.Project.ProjectName,
         ShowEditControls = hasMasterAccess,
-        Groups =
-          CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
-            .PublicGroups.Select(
+        Groups = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess).Select(
               g =>
                 new
                 {
@@ -136,9 +135,44 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
+    [HttpGet]
+    public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
+    {
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+      if (field == null)
+      {
+        return HttpNotFound();
+      }
+
+      var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
+      return ReturnJson(new
+      {
+        field.Project.ProjectId,
+        Groups =
+          CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+            .Where(g => includeSpecial || !g.IsSpecial)
+            .Select(
+              g =>
+                new
+                {
+                  g.CharacterGroupId,
+                  g.Name,
+                  g.DeepLevel,
+                  g.FirstCopy,
+                  Path = g.Path.Select(gr => gr.Name),
+                  PathIds = g.Path.Select(gr => gr.CharacterGroupId),
+                  Characters = g.PublicCharacters.Select(ConvertCharacterToJsonSlim),
+                }),
+      });
+    }
+
     private string GetClaimLink([AspMvcAction] string actionName, [AspMvcController] string controllerName, object routeValues)
     {
-      return  Request.Url.Scheme + "://" + Request.Url.Host +  Url.Action(actionName, controllerName, routeValues);
+      if (Request.Url == null)
+      {
+        throw new InvalidOperationException("Request.Url is unexpectedly null");
+      }
+      return Request.Url.Scheme + "://" + Request.Url.Host + Url.Action(actionName, controllerName, routeValues);
     }
 
     private ActionResult ReturnJson(object data)
@@ -167,6 +201,17 @@ namespace JoinRpg.Web.Controllers
       };
     }
 
+    private object ConvertCharacterToJsonSlim(CharacterViewModel ch)
+    {
+      return new
+      {
+        ch.CharacterId,
+        ch.IsAvailable,
+        ch.IsFirstCopy,
+        ch.CharacterName
+      };
+    }
+
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
@@ -183,11 +228,9 @@ namespace JoinRpg.Web.Controllers
         return Content("Can't edit special group");
       }
 
-      return View(new EditCharacterGroupViewModel
+      return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
       {
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(group.Project.RootGroup),
-        ProjectId = group.Project.ProjectId,
-        ParentCharacterGroupIds = @group.ParentGroups.Select(pg => pg.CharacterGroupId).ToList(),
+        ParentCharacterGroupIds = @group.GetParentGroupsForEdit(),
         Description = new MarkdownViewModel(@group.Description),
         IsPublic = @group.IsPublic,
         Name = @group.CharacterGroupName,
@@ -196,8 +239,7 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = @group.CharacterGroupId,
         IsRoot = @group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
-        Masters = GetMasters(@group, false)
-      });
+      }, group));
     }
 
     private static IEnumerable<MasterListItemViewModel>  GetMasters(IClaimSource @group, bool includeSelf)
@@ -226,15 +268,20 @@ namespace JoinRpg.Web.Controllers
       return @group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
-    // POST: GameGroups/Edit/5
     [HttpPost, ValidateAntiForgeryToken, Authorize]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
       var group = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-      var error = AsMaster(group);
+      var error = AsMaster(group, acl => acl.CanEditRoles);
       if (error != null)
       {
         return error;
+      }
+
+      if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
+      {
+        viewModel.IsRoot = group.IsRoot;
+        return View(FillFromCharacterGroup(viewModel, group));
       }
 
       if (group.IsSpecial)
@@ -247,7 +294,7 @@ namespace JoinRpg.Web.Controllers
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
           group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(group.Project);
@@ -255,7 +302,9 @@ namespace JoinRpg.Web.Controllers
       catch (Exception e)
       {
         ModelState.AddModelError("", e);
-        return View(viewModel);
+        viewModel.IsRoot = group.IsRoot;
+        return View(FillFromCharacterGroup(viewModel, group));
+
       }
 
     }
@@ -304,23 +353,24 @@ namespace JoinRpg.Web.Controllers
     {
       var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
 
-      return AsMaster(field, pa => pa.CanEditRoles) ??  View(new AddCharacterGroupViewModel()
+      return AsMaster(field, pa => pa.CanEditRoles) ??  View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(field.Project.RootGroup),
-        ProjectId = projectid,
-        ParentCharacterGroupIds = new List<int> {charactergroupid},
-        Masters = GetMasters(field, includeSelf: true),
+        ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
         ResponsibleMasterId = -1
-      });
+      }, field));
     }
 
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel)
+    public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project);
+      var field = await ProjectRepository.LoadGroupAsync(viewModel.ProjectId, charactergroupid);
+      var error = AsMaster(field);
+      if (!ModelState.IsValid)
+      {
+        return View(FillFromCharacterGroup(viewModel, field));
+      }
       if (error != null)
       {
         return error;
@@ -330,15 +380,25 @@ namespace JoinRpg.Web.Controllers
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
           viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds, viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-        return RedirectToIndex(project.ProjectId, viewModel.ParentCharacterGroupIds.First());
+        return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }
-      catch
+      catch (Exception exception)
       {
-        return View(viewModel);
+        ModelState.AddException(exception);
+        return View(FillFromCharacterGroup(viewModel, field));
       }
+    }
+
+    private static T FillFromCharacterGroup<T>(T viewModel, IClaimSource field)
+      where T: CharacterGroupViewModelBase
+    {
+      viewModel.Masters = GetMasters(field, includeSelf: true);
+      viewModel.ProjectName = field.Project.ProjectName;
+      viewModel.ProjectId = field.Project.ProjectId;
+      return viewModel;
     }
 
     public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)

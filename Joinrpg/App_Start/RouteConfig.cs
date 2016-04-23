@@ -30,11 +30,17 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "AddCharacter", url: "{ProjectId}/roles/{CharacterGroupId}/add-char",
         defaults: new {controller = "Character", action = "Create",});
 
-      routes.MapRoute(name: "ProjectRoles", url: "{ProjectId}/roles/{CharacterGroupId}",
-        defaults: new {controller = "GameGroups", action = "Index", CharacterGroupId = UrlParameter.Optional});
+      routes.MapRoute(name: "json_full", url: "{ProjectId}/roles/json_full",
+        defaults: new {controller = "GameGroups", action = "AllGroupsJson", includeSpecial = true});
+
+      routes.MapRoute(name: "json_real", url: "{ProjectId}/roles/json_real",
+        defaults: new { controller = "GameGroups", action = "AllGroupsJson", includeSpecial = false });
 
       routes.MapRoute(name: "ProjectGroups", url: "{ProjectId}/groups/{CharacterGroupId}",
         defaults: new { controller = "GameGroups", action = "Locations", CharacterGroupId = UrlParameter.Optional });
+
+      routes.MapRoute(name: "ProjectRoles", url: "{ProjectId}/roles/{CharacterGroupId}",
+        defaults: new { controller = "GameGroups", action = "Index", CharacterGroupId = UrlParameter.Optional });
 
       routes.MapRoute(name: "ProjectRolesAction", url: "{ProjectId}/roles/{CharacterGroupId}/{action}",
         defaults: new {controller = "GameGroups", action = "Index",});

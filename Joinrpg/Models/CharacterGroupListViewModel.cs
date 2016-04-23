@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -11,16 +12,6 @@ namespace JoinRpg.Web.Models
   public class CharacterGroupListViewModel
   {
     private IList<CharacterGroupListItemViewModel> Groups { get; set; }
-
-    public IEnumerable<CharacterGroupListItemViewModel> PossibleParentsForGroup(int characterGroupId)
-    {
-      return
-        ActiveGroups.Where(
-          listItem =>
-            listItem.CharacterGroupId != characterGroupId &&
-            listItem.Path.All(cg => cg.CharacterGroupId != characterGroupId) &&
-            !listItem.IsSpecial);
-    }
 
     public IEnumerable<CharacterGroupListItemViewModel> PublicGroups
     {
@@ -40,7 +31,14 @@ namespace JoinRpg.Web.Models
       }; 
     }
 
-    public static CharacterGroupListViewModel FromGroupAsMaster(CharacterGroup group) => FromGroup(@group, true);
+    [MustUseReturnValue]
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, bool hasMasterAccess)
+    {
+      var viewModel = FromGroup(field, hasMasterAccess);
+      return hasMasterAccess
+        ? viewModel.ActiveGroups
+        : viewModel.PublicGroups;
+    }
 
     //TODO: unit tests
     private class CharacterGroupHierarchyBuilder
@@ -188,6 +186,7 @@ namespace JoinRpg.Web.Models
       }
     }
 
-    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroupAsMaster(project.RootGroup);
+    [MustUseReturnValue]
+    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroup(project.RootGroup, true);
   }
 }

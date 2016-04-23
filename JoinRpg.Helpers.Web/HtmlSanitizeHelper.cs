@@ -34,9 +34,9 @@ namespace JoinRpg.Helpers.Web
     {
       var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
       sanitizer.Tag("br");
-      sanitizer.Tag("img");
+      sanitizer.Tag("img").AllowAttributes("src");
       sanitizer.Tag("hr");
-      sanitizer.Tag("p").RemoveEmpty();
+      sanitizer.Tag("p");
       sanitizer.Tag("blockquote");
       return sanitizer;
     }

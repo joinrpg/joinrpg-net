@@ -44,14 +44,19 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    // GET: GameFields/Create
     public async Task<ActionResult> Create(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project1, pa => pa.CanChangeFields) ?? View(new GameFieldCreateViewModel() {ProjectId = projectId});
+      return AsMaster(project1, pa => pa.CanChangeFields) ??
+             View(FillFromProject(project1, new GameFieldCreateViewModel()));
     }
 
-    // POST: GameFields/Create
+    private static GameFieldCreateViewModel FillFromProject(Project project, GameFieldCreateViewModel viewModel)
+    {
+      viewModel.ProjectId = project.ProjectId;
+      return viewModel;
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
@@ -64,21 +69,22 @@ namespace JoinRpg.Web.Controllers
       }
       if (!ModelState.IsValid)
       {
-        return View(viewModel);
+        return View(FillFromProject(project, viewModel));
       }
       try
       {
         await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.Description.Contents,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus);
+          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
+          viewModel.ShowForGroups.GetUnprefixedGroups());
 
         return ReturnToIndex(project);
       }
       catch (Exception exception)
       {
         ModelState.AddException(exception);
-        return View(viewModel);
+        return View(FillFromProject(project, viewModel));
       }
     }
 
@@ -112,7 +118,8 @@ namespace JoinRpg.Web.Controllers
         await
           FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
             viewModel.Name, viewModel.Description.Contents, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-            viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus);
+            viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
+            viewModel.ShowForGroups.GetUnprefixedGroups());
 
         return ReturnToIndex(project);
       }
@@ -144,18 +151,16 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      try
       {
-        try
-        {
-          await FieldSetupService.DeleteField(field.ProjectFieldId);
+        await FieldSetupService.DeleteField(CurrentUserId, projectId, field.ProjectFieldId);
 
-          return ReturnToIndex(field.Project);
-        }
-        catch (Exception exception)
-        {
-          ModelState.AddException(exception);
-          return View(field);
-        }
+        return ReturnToIndex(field.Project);
+      }
+      catch (Exception exception)
+      {
+        ModelState.AddException(exception);
+        return View(field);
       }
     }
 

@@ -249,6 +249,10 @@
     <Compile Include="Migrations\201603120815515_ExternalLogins.Designer.cs">
       <DependentUpon>201603120815515_ExternalLogins.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201604171516480_SelectiveFields.cs" />
+    <Compile Include="Migrations\201604171516480_SelectiveFields.Designer.cs">
+      <DependentUpon>201604171516480_SelectiveFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -426,6 +430,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201603120815515_ExternalLogins.resx">
       <DependentUpon>201603120815515_ExternalLogins.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201604171516480_SelectiveFields.resx">
+      <DependentUpon>201604171516480_SelectiveFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

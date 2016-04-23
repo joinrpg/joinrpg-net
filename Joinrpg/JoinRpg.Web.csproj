@@ -25,7 +25,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/f0fe6f62-070f-4b7b-bcd1-c4265207fead/resourcegroups/Default-ApplicationInsights-CentralUS/providers/microsoft.insights/components/Joinrpg</ApplicationInsightsResourceId>
-    <TypeScriptToolsVersion>1.7</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>1.8</TypeScriptToolsVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -240,6 +240,7 @@
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
+    <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -268,6 +269,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\MagicControlHelper.cs" />
     <Compile Include="Helpers\MarkDownHelper.cs" />
     <Compile Include="Helpers\ModelStateExtensions.cs" />
     <Compile Include="Helpers\ObjectLinkHelper.cs" />
@@ -291,6 +293,7 @@
     <Compile Include="Models\EditCharacterGroupViewModel.cs" />
     <Compile Include="Models\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
+    <Compile Include="Models\IProjectIdAware.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
@@ -318,6 +321,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
     <Content Include="Content\bootstrap-datepicker.css" />
     <Content Include="Content\bootstrap-datepicker.min.css" />
     <Content Include="Content\bootstrap-datepicker.standalone.css" />
@@ -331,6 +335,7 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\Images\vk_icon.png" />
+    <Content Include="Content\multicontrol.css" />
     <Content Include="external\roles-1.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -358,6 +363,10 @@
     <Content Include="Content\bootstrap-datepicker.standalone.css.map" />
     <Content Include="Content\bootstrap-datepicker.min.css.map" />
     <Content Include="Content\bootstrap-datepicker.css.map" />
+    <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-27098c9a.woff" />
+    <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-86884cb5.ttf" />
+    <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-96f41a7f.eot" />
+    <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-c0a8173a.otf" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-datepicker.min.js" />
@@ -440,6 +449,7 @@
     <Content Include="Scripts\locales\bootstrap-datepicker.zh-CN.min.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.zh-TW.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\multicontrol.js" />
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
@@ -499,7 +509,6 @@
     <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
-    <Content Include="Views\Shared\ParentCharacterGroupPartial.cshtml" />
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
@@ -511,7 +520,6 @@
     <Content Include="Views\Plot\Edit.cshtml" />
     <Content Include="Views\Plot\Elements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
-    <Content Include="Views\Plot\AllWorldObjectsPartial.cshtml" />
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />

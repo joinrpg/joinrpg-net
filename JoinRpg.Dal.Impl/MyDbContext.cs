@@ -113,6 +113,8 @@ namespace JoinRpg.Dal.Impl
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 
+      modelBuilder.Entity<ProjectField>().HasMany(f => f.GroupsAvailableFor).WithMany();
+
       base.OnModelCreating(modelBuilder);
     }
  }

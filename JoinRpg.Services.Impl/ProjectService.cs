@@ -54,9 +54,10 @@ namespace JoinRpg.Services.Impl
 
 
 
-    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
+      string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
-      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var characterGroups = await ValidateCharacterGroupList(projectId, Required(() => parentCharacterGroupIds));
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
       if (responsibleMasterId != null &&
@@ -80,7 +81,7 @@ namespace JoinRpg.Services.Impl
         Description = new MarkdownString(description),
         ResponsibleMasterUserId = responsibleMasterId,
       });
-      
+
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -117,7 +118,12 @@ namespace JoinRpg.Services.Impl
       character.IsHot = isHot;
       character.IsActive = true;
 
-      character.Groups.AssignLinksList(await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)));
+      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      if (characterGroups.Any(cg => cg.IsSpecial))
+      {
+        throw new DbEntityValidationException();
+      }
+      character.Groups.AssignLinksList(characterGroups);
       FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, characterFields);
 
       await UnitOfWork.SaveChangesAsync();
@@ -144,18 +150,22 @@ namespace JoinRpg.Services.Impl
       parentCharacterGroup.ChildCharactersOrdering = parentCharacterGroup.GetCharactersContainer().Move(item, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
-
+    
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
       int? responsibleMasterId)
     {
-      var characterGroup = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
+      var characterGroup = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
       if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
       {
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
-        var characterGroupIds = Required(parentCharacterGroupIds);
-        characterGroup.ParentGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, characterGroupIds));
+        var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+        characterGroup.ParentGroups.AssignLinksList(characterGroups);
+        if (characterGroups.Any(cg => cg.IsSpecial))
+        {
+          throw new DbEntityValidationException();
+        }
         characterGroup.Description = new MarkdownString(description);
       }
       if (responsibleMasterId != null &&
@@ -172,7 +182,8 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
       var characterGroup = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
-      if (characterGroup == null || characterGroup.ProjectId != projectId) throw new DbEntityValidationException();
+
+      if (characterGroup == null) throw new DbEntityValidationException();
 
       if (characterGroup.HasActiveClaims())
       {

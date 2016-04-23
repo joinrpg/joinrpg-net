@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
@@ -44,11 +47,12 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Create(int projectId)
     {
-      return await WithProjectAsMasterAsync(projectId, project => View(new AddPlotFolderViewModel
+      var project1 = await ProjectRepository.GetProjectAsync(projectId);
+      return AsMaster(project1) ??  View(new AddPlotFolderViewModel
       {
-        ProjectId = project.ProjectId,
-        ProjectName = project.ProjectName
-      }));
+        ProjectId = project1.ProjectId,
+        ProjectName = project1.ProjectName
+      });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -110,11 +114,10 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup)
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField )
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField, [CanBeNull] ICollection<string> targets)
     { 
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -124,8 +127,8 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
+        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
           _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
         return ReturnToPlot(plotFolderId, projectId);
@@ -137,9 +140,8 @@ namespace JoinRpg.Web.Controllers
           ProjectId = projectId,
           PlotFolderId = plotFolderId,
           PlotFolderName = folder.MasterTitle,
-          Data = CharacterGroupListViewModel.FromGroupAsMaster(folder.Project.RootGroup),
           Content = content,
-          TodoField = todoField
+          TodoField = todoField,
         });
       }
     }
@@ -200,7 +202,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
-      bool isCompleted)
+      bool isCompleted, [CanBeNull] ICollection<string> targets)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
@@ -210,8 +212,9 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = GetDynamicCheckBoxesFromPost(GroupFieldPrefix);
-        var targetChars = GetDynamicCheckBoxesFromPost(CharFieldPrefix);
+
+        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content.Contents, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
         return ReturnToPlot(plotFolderId, projectId);
@@ -222,12 +225,6 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-
-    private async Task<ActionResult> WithProjectAsMasterAsync(int projectId, Func<Project, ActionResult> action)
-    {
-      var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project1) ?? action(project1);
-    }
 
     public Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
     {

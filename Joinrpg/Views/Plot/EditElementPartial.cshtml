@@ -1,59 +1,62 @@
-﻿@using JoinRpg.Web.Helpers
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
 <div class="panel panel-default">
     <div class="panel-heading">
 
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
+            @switch (Model.Status)
+            {
+                case PlotStatus.InWork:
+                <span class="label label-info">Вводная в работе</span>
+                    break;
+                case PlotStatus.Completed:
+                <span class="label label-success">Вводная закончена</span>
+                    break;
+                case PlotStatus.Deleted:
+                <del>
+                    <span class="label label-default">Вводная удалена</span>
+                </del>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @{
-                  var header = (HtmlString) Model.Content.TakeWords(10).ToHtmlString();
-                    if (header == null || string.IsNullOrWhiteSpace(header.ToString()))
+                    var header = Model.Content.TakeWords(10).ToPlainText();
+                    if (header == null || string.IsNullOrWhiteSpace(header))
                     {
                         <text>***</text>
-                  }
-                  else
-                  { @header}
+                    }
+                    else
+                    {
+                        @header
+                    }
                 }
-                
             </a>
-                @switch (Model.Status)
-                {
-                    case PlotStatus.InWork:
-                        <span class="label label-info">Вводная в работе</span>
-                        break;
-                    case PlotStatus.Completed:
-                        <span class="label label-success">Вводная закончена</span>
-                        break;
-                    case PlotStatus.Deleted:
-                        <del>
-                            <span class="label label-default">Вводная удалена</span>
-                        </del>
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            
-   
+           
         </h4>
+        <div>
+            <b>Для</b>
+            @if (Model.TargetsForDisplay.Any())
+            {
+                foreach (var target in Model.TargetsForDisplay)
+                {
+                @Html.DisplayFor(model => target)
+                }
+            }
+            else
+            {
+            <span>Не установлено</span>
+            }
+        </div>
+
     </div>
     <div class="panel-collapse collapse" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
         <div class="panel-body">
 
-            <p>
-                <b>Для</b>:
-                @if (Model.For.Any())
-                {
-                    foreach (var target in Model.For)
-                    {
-                        @Html.DisplayFor(model => target)
-                    }
-                }
-                else
-                {
-                    <span>Не установлено</span>
-                }
-            </p>
+
             @if (!string.IsNullOrWhiteSpace(Model.TodoField))
             {
                 <p><b style="color: orange">TODO:</b> @Model.TodoField</p>
@@ -70,52 +73,53 @@
             </div>
             <details>
                 <summary>Изменить</summary>
-                @using (Html.BeginForm("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, FormMethod.Post))
-                {
-                    <div class="form-group">
-                        <div class="col-md-offset-2 col-md-10">
-                            <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default btn-success"/>
-                        </div>
-                    </div>
+                <div class="form-horizontal">
+                    @using (Html.BeginForm("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
 
-                    @Html.AntiForgeryToken()
-                    <div class="form-group">
-                        @Html.LabelFor(model => Model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
-                        <div class="col-md-10">
-                            @Html.EditorFor(model => Model.Content, new {htmlAttributes = new {@class = "form-control"}})
-                            @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Targets, htmlAttributes: new {@class = "control-label col-md-2"})
+                            <div class="col-md-10">
+                                @Html.MagicSelectBind(model => model.Targets)
+                                @Html.ValidationMessageFor(model => model.Targets, "", new {@class = "text-danger"})
+                                @Html.DescriptionFor(model => model.Targets)
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => Model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
-                        <div class="col-md-10">
-                            @Html.EditorFor(model => Model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
-                            @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
+                        <div class="form-group" style="margin-top: 1em">
+                            @Html.LabelFor(model => Model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => Model.Content, new {htmlAttributes = new {@class = "form-control"}})
+                                @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        @Html.LabelFor(model => Model.IsCompleted, htmlAttributes: new {@class = "control-label col-md-2"})
-                        <div class="col-md-10">
-                            <div class="checkbox">
-                                @*TODO: Disable this if TODOField!=''*@
-                                @Html.CheckBoxFor(model => Model.IsCompleted)
+                        <div class="form-group">
+                            @Html.LabelFor(model => Model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
+                            <div class="col-md-10">
+                                @Html.EditorFor(model => Model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
                                 @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
                             </div>
-
                         </div>
-                    </div>
 
-                    @Html.Partial("AllWorldObjectsPartial", Model)
-
-
-                    <div class="form-group">
-                        <div class="col-md-offset-2 col-md-10">
-                            <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default btn-success"/>
+                        <div class="form-group">
+                            @Html.LabelFor(model => Model.IsCompleted, htmlAttributes: new {@class = "control-label col-md-2"})
+                            <div class="col-md-10">
+                                <div class="checkbox">
+                                    @*TODO: Disable this if TODOField!=''*@
+                                    @Html.CheckBoxFor(model => Model.IsCompleted)
+                                    @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                }
+
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default btn-success"/>
+                            </div>
+                        </div>
+                    }</div>
             </details>
             @if (Model.Status != PlotStatus.Deleted)
             {
