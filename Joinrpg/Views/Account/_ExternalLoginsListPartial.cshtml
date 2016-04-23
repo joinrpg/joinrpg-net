@@ -1,7 +1,7 @@
 ﻿@model JoinRpg.Web.Models.ExternalLoginListViewModel
 @using Microsoft.Owin.Security
 
-<h4>Вход через социальные сети</h4>
+<h4>Cоциальные сети</h4>
 <hr />
 @{
     var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().ToList();
@@ -9,7 +9,7 @@
     {
         <div>
             <p>
-                К сожалению, логин через социальные сети пока не настроен. @*(<a href="http://go.microsoft.com/fwlink/?LinkId=403804">вот статья</a>)*@
+                К сожалению, логин через социальные сети выключен.
             </p>
         </div>
     }

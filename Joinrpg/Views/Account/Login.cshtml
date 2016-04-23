@@ -12,7 +12,7 @@
             @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
             {
                 @Html.AntiForgeryToken()
-                <h4>Вход в систему по логину и паролю</h4>
+                <h4>Логин и пароль</h4>
                 <hr/>
                 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                 <div class="form-group">
@@ -31,11 +31,11 @@
                 </div>
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Войти" class="btn btn-success" />
+                        <input type="submit" value="Войти" class="btn btn-success" /> | @Html.ActionLink("Регистрация (Новый пользователь)", "Register") | @Html.ActionLink("Забыли пароль?", "ForgotPassword")
                     </div>
                 </div>
                 <p>
-                    @Html.ActionLink("Регистрация (Новый пользователь)", "Register") | @Html.ActionLink("Забыли пароль?", "ForgotPassword")
+                    
                 </p>
             }
         </section>
@@ -48,7 +48,7 @@
         <section>
         <h4>Allrpg.info</h4>
         <hr/>
-        <p>Если вы никогда не были здесь, возможно, пароль от allrpg.info волшебным образом подойдет.</p>
+        <p>Если вы хотите перенести ваш профиль с allrpg.info, введите ту же самую почту и пароль (или войдите через ВК/Гугл, если основная почта совпадает).</p>
         </section>
     </div>
 </div>
