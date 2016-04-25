@@ -32,8 +32,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Обязательное?")]
     public MandatoryStatusViewType MandatoryStatus { get; set; }
 
-    [Display(Name="Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
-    public ICollection<string> ShowForGroups { get; set; }
+    [Display(Name = "Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
+    public ICollection<string> ShowForGroups { get; set; } = new List<string>();
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
