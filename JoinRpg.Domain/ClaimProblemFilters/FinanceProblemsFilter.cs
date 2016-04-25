@@ -20,7 +20,7 @@ namespace JoinRpg.Domain.ClaimProblemFilters
       {
         yield return new ClaimProblem(ClaimProblemType.FeePaidPartially, ProblemSeverity.Hint);
       }
-      if (!claim.IsInDiscussion && claim.ClaimBalance() > 0)
+      if (claim.IsInDiscussion && claim.ClaimBalance() > 0)
       {
         yield return new ClaimProblem(ClaimProblemType.UnApprovedClaimPayment, ProblemSeverity.Warning);
       }
