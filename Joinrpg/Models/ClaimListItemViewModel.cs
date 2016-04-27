@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
@@ -84,12 +85,16 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Проблема")]
     public ICollection<ProblemViewModel> Problems { get; set; }
 
+    [NotNull, ReadOnly(true)]
+    public CustomFieldsViewModel Fields { get; set; }
+
     public static ClaimListItemViewModel FromClaim([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var viewModel = new ClaimListItemViewModel();
       viewModel.Assign(claim, currentUserId);
       viewModel.AssignProjectProperties(claim);
+      viewModel.Fields = new CustomFieldsViewModel(currentUserId, claim);
       return viewModel;
     }
 
@@ -109,6 +114,7 @@ namespace JoinRpg.Web.Models
       viewModel.AssignProjectProperties(character);
       viewModel.Name = character.CharacterName;
       viewModel.CharacterId = character.CharacterId;
+      viewModel.Fields = new CustomFieldsViewModel(currentUserId, character);
       return viewModel;
     }
 

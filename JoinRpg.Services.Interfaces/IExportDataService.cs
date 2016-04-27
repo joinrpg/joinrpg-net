@@ -21,6 +21,7 @@ namespace JoinRpg.Services.Interfaces
     string ContentType { get; }
     string FileExtension { get; }
 
-    IExportGenerator BindDisplay<T>(Func<T, object> displayFunc);
+    IExportGenerator BindDisplay<T>(Func<T, string> displayFunc);
+    IExportGenerator RegisterComplexType<T>();
   }
 }
