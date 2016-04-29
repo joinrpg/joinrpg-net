@@ -28,7 +28,7 @@
 
                     foreach (var character in element.Characters.Where(ch => ch.IsAvailable))
                     {
-                    @CreateValue("char^", character.CharacterId, string.Join("→", element.Path.Skip(1).Union(new[] { element }).Select(p => p.Name)) + "→" + character.CharacterName)
+                    @CreateValue("character^", character.CharacterId, string.Join("→", element.Path.Skip(1).Union(new[] { element }).Select(p => p.Name)) + "→" + character.CharacterName)
                     }
                 }
             </select>
