@@ -25,11 +25,21 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     protected Task LoadProjectClaimsAndComments(int projectId)
     {
-      return Ctx.ClaimSet
-        .Include(c => c.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Watermarks)
-        .Include(c => c.Player)
-        .Include(c => c.FinanceOperations)
+      return Ctx
+        .ProjectsSet
+        .Include(p => p.Claims.Select(c => c.Comments.Select(cm => cm.Finance)))
+        .Include(p => p.Claims.Select(c => c.Watermarks))
+        .Include(p => p.Claims.Select(c => c.Player))
+        .Include(p => p.Claims.Select(c => c.FinanceOperations))
+        .Where(c => c.ProjectId == projectId).LoadAsync();
+    }
+
+
+    protected Task LoadProjectFields(int projectId)
+    {
+      return Ctx
+        .ProjectsSet
+        .Include(p => p.ProjectFields.Select(pf => pf.GroupsAvailableFor.Select(cg => cg.ParentGroups)))
         .Where(c => c.ProjectId == projectId).LoadAsync();
     }
 
