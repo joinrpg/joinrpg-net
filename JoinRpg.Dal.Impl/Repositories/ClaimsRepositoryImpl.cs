@@ -34,6 +34,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
       await LoadProjectClaimsAndComments(projectId);
+      await LoadProjectFields(projectId);
 
       //Sync operation, as anything should be loaded already
       return Ctx.ProjectsSet.Find(projectId).Claims;
