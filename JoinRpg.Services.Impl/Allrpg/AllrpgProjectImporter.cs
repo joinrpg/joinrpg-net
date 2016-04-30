@@ -141,7 +141,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Claim = claim,
         Author = Users[data.sid],
-        CommentText = new MarkdownString(data.content.Replace("&lt;", "<").Replace("&gt;", ">").Replace("<br>", "\n")),
+        CommentText = new CommentText() {Text = new MarkdownString(data.content.Replace("&lt;", "<").Replace("&gt;", ">").Replace("<br>", "\n"))},
         LastEditTime = UnixTime.ToDateTime(data.date),
         CreatedTime = UnixTime.ToDateTime(data.date),
         IsVisibleToPlayer = data.type != 2,
@@ -181,7 +181,7 @@ namespace JoinRpg.Services.Impl.Allrpg
           new Comment()
           {
             Author = Project.ProjectAcls.Single(acl => acl.IsOwner).User, 
-            CommentText = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>"),
+            CommentText = new CommentText() { Text = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>")},
             CreatedTime = UnixTime.ToDateTime(roleData.datesent),
             IsCommentByPlayer = false,
             IsVisibleToPlayer = false,
@@ -214,7 +214,7 @@ namespace JoinRpg.Services.Impl.Allrpg
           claim.Comments.Add(new Comment()
           {
             Author = Users[roleData.sid],
-            CommentText = new MarkdownString(virtualField.Value),
+            CommentText = new CommentText() {Text = new MarkdownString(virtualField.Value)},
             CreatedTime = claim.CreateDate,
             IsCommentByPlayer = true,
             IsVisibleToPlayer = true,

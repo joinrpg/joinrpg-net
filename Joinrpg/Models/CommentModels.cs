@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
       Author = comment.Author;
       CreatedTime = comment.CreatedTime;
       Finance = comment.Finance;
-      CommentText = new MarkdownViewModel(comment.CommentText);
+      CommentText = new MarkdownViewModel(comment.CommentText.Text);
       CommentId = comment.CommentId;
       ProjectId = comment.ProjectId;
       ClaimId = comment.ClaimId;
