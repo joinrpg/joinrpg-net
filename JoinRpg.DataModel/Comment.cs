@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.Helpers;
+using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
@@ -30,7 +31,8 @@ namespace JoinRpg.DataModel
     public virtual Comment Parent { get; set; }
     public IEnumerable<Comment> ChildsComments => Claim.Comments.Where(c => c.ParentCommentId == CommentId);
 
-    public MarkdownString CommentText { get; set; }
+    [NotNull]
+    public virtual CommentText CommentText { get; set; }
 
     public DateTime CreatedTime { get; set; }
     public DateTime LastEditTime { get; set; }
@@ -55,11 +57,23 @@ namespace JoinRpg.DataModel
         yield return new ValidationResult("Child comments should not be visible if parent is not");
       }
 
-      if (string.IsNullOrWhiteSpace(CommentText.Contents))
+      if (string.IsNullOrWhiteSpace(CommentText.Text.Contents))
       {
         yield return new ValidationResult("Comment can't be empty", new[] { nameof(CommentText) });
       }
     }
+  }
+
+  //Sometimes we need to load bunch of comments
+  //i.e. to analyze money 
+  //or find problems.
+  //But we only need to load comment text on claim page.
+  //So this split is win.
+  public class CommentText
+  {
+    public int CommentId { get; set; }
+    [NotNull]
+    public MarkdownString Text { get; set; } = new MarkdownString();
   }
 
   public enum CommentExtraAction  
