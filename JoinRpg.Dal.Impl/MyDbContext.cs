@@ -70,6 +70,8 @@ namespace JoinRpg.Dal.Impl
 
 
       modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany().WillCascadeOnDelete(false);
+      modelBuilder.Entity<Comment>().HasRequired(comment => comment.CommentText).WithRequiredPrincipal();
+      modelBuilder.Entity<CommentText>().HasKey(pd => pd.CommentId);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Project).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.Author).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(c => c.Finance).WithRequiredPrincipal(fo => fo.Comment);

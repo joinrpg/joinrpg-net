@@ -43,7 +43,7 @@ namespace JoinRpg.Services.Impl
         claim.Comments.Add(new Comment()
         {
           AuthorUserId = currentUserId,
-          CommentText = new MarkdownString(claimText),
+          CommentText = new CommentText() {Text =  new MarkdownString(claimText)},
           CreatedTime = addClaimDate,
           IsCommentByPlayer = true,
           IsVisibleToPlayer = true,
@@ -432,7 +432,7 @@ namespace JoinRpg.Services.Impl
         ProjectId = claim.ProjectId,
         AuthorUserId = currentUserId,
         ClaimId = claim.ClaimId,
-        CommentText = new MarkdownString(commentText),
+        CommentText = new CommentText() { Text = new MarkdownString(commentText) },
         CreatedTime = now,
         IsCommentByPlayer = claim.PlayerUserId == currentUserId,
         IsVisibleToPlayer = isVisibleToPlayer,
