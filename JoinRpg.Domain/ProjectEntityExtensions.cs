@@ -36,7 +36,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void RequestMasterAccess(this IProjectEntity field, int? currentUserId)
+    public static void RequestMasterAccess(this IProjectEntity field, int currentUserId)
     {
       if (field == null)
       {
