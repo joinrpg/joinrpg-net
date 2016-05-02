@@ -1,7 +1,8 @@
 ﻿using System.IO;
 using ClosedXML.Excel;
+using JoinRpg.Services.Export.Internal;
 
-namespace JoinRpg.Services.Export.Internal
+namespace JoinRpg.Services.Export.BackEnds
 {
   internal class ClosedXmlExcelBackend : ExcelBackendBase
   {

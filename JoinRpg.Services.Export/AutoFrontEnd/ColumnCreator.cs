@@ -7,22 +7,18 @@ using System.Reflection;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Services.Export.Internal
+namespace JoinRpg.Services.Export.AutoFrontEnd
 {
   class ColumnCreator
   {
-    public ColumnCreator(IDictionary<Type, Func<object, string>> displayFunctions, ISet<Type> complexTypes, Type targetType, Func<object, object> baseGetter)
+    public ColumnCreator(IDictionary<Type, Func<object, string>> displayFunctions, Type targetType)
     {
       DisplayFunctions = displayFunctions;
-      ComplexTypes = complexTypes;
       TargetType = targetType;
-      BaseGetter = baseGetter;
     }
 
     private IDictionary<Type, Func<object, string>> DisplayFunctions { get; }
-    private ISet<Type> ComplexTypes { get; }
     private Type TargetType { get; }
-    private Func<object, object> BaseGetter { get; }
 
 
     public IEnumerable<TableColumn> ParseColumns()
@@ -38,26 +34,13 @@ namespace JoinRpg.Services.Export.Internal
         }
         else
         {
-          if (ComplexTypes.Contains(propertyInfo.PropertyType))
-          {
-            var creator = new ColumnCreator(DisplayFunctions, ComplexTypes, propertyInfo.PropertyType, BaseGetter);
-            foreach (var childColumn  in creator.ParseColumns())
-            {
-              yield return childColumn;
-            }
-          }
-          else
-          {
-            yield return GetTableColumn(propertyInfo);
-          }
-          
+          yield return GetTableColumn(propertyInfo);
         }
       }
     }
 
     private TableColumn GetTableColumn([NotNull] PropertyInfo propertyInfo)
     {
-      //TODO: BaseGetter
       var tableColumn = new TableColumn()
       {
         Name = propertyInfo.Name,
@@ -72,7 +55,6 @@ namespace JoinRpg.Services.Export.Internal
 
       if (propertyInfo.GetCustomAttribute<UrlAttribute>() != null)
       {
-        tableColumn.IsUri = true;
       }
 
       tableColumn.Converter = GetConverterForType(propertyInfo.PropertyType);

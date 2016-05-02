@@ -53,6 +53,7 @@
     <Compile Include="DisplayAttributeHelper.cs" />
     <Compile Include="ExpressionHelpers.cs" />
     <Compile Include="EntityFrameworkExtensions.cs" />
+    <Compile Include="LambdaHelpers.cs" />
     <Compile Include="OperationLog.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticCollectionHelpers.cs" />

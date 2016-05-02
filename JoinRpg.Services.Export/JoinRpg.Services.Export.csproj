@@ -53,14 +53,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoFrontEnd\AutoFrontend.cs" />
+    <Compile Include="AutoFrontEnd\TableColumn.cs" />
     <Compile Include="ExportDataServiceImpl.cs" />
     <Compile Include="Internal\Cell.cs" />
-    <Compile Include="Internal\ClosedXmlExcelBackend.cs" />
-    <Compile Include="Internal\ColumnCreator.cs" />
-    <Compile Include="Internal\CsvBackend.cs" />
-    <Compile Include="Internal\ExcelBackendBase.cs" />
+    <Compile Include="BackEnds\ClosedXmlExcelBackend.cs" />
+    <Compile Include="AutoFrontEnd\ColumnCreator.cs" />
+    <Compile Include="BackEnds\CsvBackend.cs" />
+    <Compile Include="BackEnds\ExcelBackendBase.cs" />
     <Compile Include="Internal\IGeneratorBackend.cs" />
-    <Compile Include="Internal\LambdaHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internal\TableGenerator.cs" />
   </ItemGroup>
