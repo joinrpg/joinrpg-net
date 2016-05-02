@@ -211,8 +211,8 @@ namespace JoinRpg.Web.Controllers
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
       return await MasterCharacterList(projectid,
-        character => character.HasProblemsForField(field),
-        "Index", export, "Поле (социальный статус): " + field.FieldName);
+        character => character.HasProblemsForField(field) && character.IsActive,
+        "Index", export, "Поле: " + field.FieldName);
     }
   }
 }

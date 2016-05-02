@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Controllers
         });
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     // GET: GameGroups
     public async Task<ActionResult> Report(int projectId, int? characterGroupId, int? maxDeep)
     {
@@ -54,7 +54,10 @@ namespace JoinRpg.Web.Controllers
       ViewBag.MaxDeep = maxDeep;
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
-      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      field.RequestMasterAccess(CurrentUserId);
+
+      var hasMasterAccess = field.HasMasterAccess(CurrentUserId);
+
       return WithEntity(field) ?? View(
         new GameRolesViewModel
         {
