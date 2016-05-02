@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.Internal
@@ -26,7 +20,6 @@ namespace JoinRpg.Services.Export.Internal
     {
       Data = data;
       Backend = backend;
-      Expression.Parameter(typeof (TRow));
     }
 
     public Task<byte[]> Generate()
@@ -34,7 +27,8 @@ namespace JoinRpg.Services.Export.Internal
       //Run on background thread
       return Task.Run(() =>
       {
-        var columns = ParseColumns().ToList();
+        var columnCreator = new ColumnCreator(DisplayFunctions, ComplexTypes, typeof(TRow), o => o);
+        var columns = columnCreator.ParseColumns().ToList();
 
         var headerCells = columns.Select(c => c.CreateHeader());
         Backend.WriteRow(headerCells);
@@ -46,106 +40,6 @@ namespace JoinRpg.Services.Export.Internal
 
         return Backend.Generate();
       });
-    }
-
-    private IEnumerable<TableColumn> ParseColumns()
-    {
-      var type = typeof (TRow);
-      foreach (var propertyInfo in type.GetProperties())
-      {
-        var displayColumnAttribute = propertyInfo.DeclaringType.GetCustomAttribute<DisplayColumnAttribute>();
-
-        if (displayColumnAttribute != null)
-        {
-          yield return
-            GetTableColumn(propertyInfo.DeclaringType?.GetProperty(displayColumnAttribute.DisplayColumn) ?? propertyInfo);
-        }
-        else
-        {
-          yield return GetTableColumn(propertyInfo);
-        }
-      }
-    }
-
-    private TableColumn GetTableColumn([NotNull] PropertyInfo propertyInfo)
-    {
-      var tableColumn = new TableColumn
-      {
-        Name = propertyInfo.Name,
-        Getter = LambdaHelpers.CompileGetter<TRow>(propertyInfo)
-      };
-
-      var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
-      if (displayAttribute != null)
-      {
-        tableColumn.Name = displayAttribute.Name ?? tableColumn.Name;
-      }
-
-      if (propertyInfo.GetCustomAttribute<UrlAttribute>() != null)
-      {
-        tableColumn.IsUri = true;
-      }
-
-      tableColumn.Converter = GetConverterForType(propertyInfo.PropertyType);
-
-      return tableColumn;
-    }
-
-    private Func<object, string> GetConverterForType(Type propertyType)
-    {
-      if (propertyType.IsEnum)
-      {
-        return o => ((Enum) o).GetDisplayName();
-      }
-      if (typeof(string).IsAssignableFrom(propertyType))
-      {
-        return o => (string)o; //Prevent futher conversion
-      }
-
-      var enumerableArg = LambdaHelpers.GetEnumerableType(propertyType);
-      if (enumerableArg != null)
-      {
-        return LambdaHelpers.GetEnumerableConvertor(GetConverterForType(enumerableArg));
-      }
-
-      if (typeof(IEnumerable).IsAssignableFrom(propertyType))
-      {
-        return LambdaHelpers.GetEnumerableConvertor(item => item.ToString());
-      }
-      return
-        DisplayFunctions.Where(
-          displayFunction => displayFunction.Key.IsAssignableFrom(propertyType))
-          .Select(kv => kv.Value)
-          .FirstOrDefault() ?? (arg => arg?.ToString());
-    }
-
-    private class TableColumn
-    {
-      public Cell CreateHeader()
-      {
-        return new Cell()
-        {
-          Content = Name,
-          ColumnHeader = true
-        };
-      }
-
-      public Cell ExtractValue(TRow row)
-      {
-        return new Cell()
-        {
-          Content = Converter(Getter(row))?.ToString(),
-          IsUri = IsUri
-        };
-      }
-
-      public string Name { get; set; }
-
-      public Func<TRow, object> Getter { private get; set; }
-
-      public Func<object, object> Converter
-      { private get; set; } = arg => arg;
-      public bool IsUri { get; set; }
     }
 
     public string ContentType => Backend.ContentType;
@@ -162,5 +56,34 @@ namespace JoinRpg.Services.Export.Internal
       ComplexTypes.Add(typeof(T));
       return this;
     }
+  }
+
+  internal class TableColumn
+  {
+    public Cell CreateHeader()
+    {
+      return new Cell()
+      {
+        Content = Name,
+        ColumnHeader = true
+      };
+    }
+
+    public Cell ExtractValue(object row)
+    {
+      return new Cell()
+      {
+        Content = Converter(Getter(row))?.ToString(),
+        IsUri = IsUri
+      };
+    }
+
+    public string Name { get; set; }
+
+    public Func<object, object> Getter { private get; set; }
+
+    public Func<object, object> Converter
+    { private get; set; } = arg => arg;
+    public bool IsUri { get; set; }
   }
 }

@@ -11,10 +11,10 @@ namespace JoinRpg.Services.Export.Internal
 {
   internal static class LambdaHelpers
   {
-    public static Func<TBaseObject, object> CompileGetter<TBaseObject>(PropertyInfo propertyInfo)
+    public static Func<object, object> CompileGetter(PropertyInfo propertyInfo)
     {
-      var parameterExpression = Expression.Parameter(typeof(TBaseObject));
-      return Expression.Lambda<Func<TBaseObject, object>>(
+      var parameterExpression = Expression.Parameter(typeof(object));
+      return Expression.Lambda<Func<object, object>>(
         Expression.Convert(
           Expression.Property(
             parameterExpression, propertyInfo), typeof(object)), parameterExpression).Compile();
