@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Models
 {
   public class FieldValueViewModel
   {
-    private int ProjectFieldId { get; }
+    public int ProjectFieldId { get; }
 
     public ProjectFieldViewType FieldViewType { get; }
     public bool CanView { get; }
@@ -17,6 +17,8 @@ namespace JoinRpg.Web.Models
     public bool IsPlayerVisible { get; }
 
     public string Value { get; }
+
+    public string DisplayString { get; }
     public string FieldName { get; }
 
     public bool IsDeleted { get; }
@@ -30,6 +32,7 @@ namespace JoinRpg.Web.Models
     public FieldValueViewModel(CustomFieldsViewModel model, FieldWithValue ch)
     {
       Value = ch.Value;
+      DisplayString = ch.DisplayString;
       FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
       FieldName = ch.Field.FieldName;
       Description = new MarkdownViewModel(ch.Field.Description);
@@ -37,14 +40,14 @@ namespace JoinRpg.Web.Models
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;
 
-      CanView = ch.HasValue() && (
+      CanView = ch.HasValue&& (
             ch.Field.IsPublic
             || model.HasMasterAccess
             || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Character)
             || (model.HasPlayerClaimAccess && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
             );
 
-      CanEdit = (ch.Field.IsAvailableForTarget(model.Target) || ch.HasValue()) && model.EditAllowed && (
+      CanEdit = (ch.Field.IsAvailableForTarget(model.Target) || ch.HasValue) && model.EditAllowed && (
            model.HasMasterAccess
            || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Character)
            || (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Claim)

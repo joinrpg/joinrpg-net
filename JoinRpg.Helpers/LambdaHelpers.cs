@@ -5,19 +5,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
-using JoinRpg.Helpers;
 
-namespace JoinRpg.Services.Export.Internal
+namespace JoinRpg.Helpers
 {
-  internal static class LambdaHelpers
+  public static class LambdaHelpers
   {
-    public static Func<object, object> CompileGetter(PropertyInfo propertyInfo)
+    public static Func<object, object> CompileGetter(PropertyInfo propertyInfo, Type targetType)
     {
       var parameterExpression = Expression.Parameter(typeof(object));
       return Expression.Lambda<Func<object, object>>(
         Expression.Convert(
           Expression.Property(
-            parameterExpression, propertyInfo), typeof(object)), parameterExpression).Compile();
+            Expression.Convert(parameterExpression, targetType), propertyInfo), typeof(object)), parameterExpression).Compile();
     }
 
     [CanBeNull]

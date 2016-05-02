@@ -16,8 +16,13 @@ namespace JoinRpg.Services.Export
 
     public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data)
       {
-        return new TableGenerator<T>(data, GetGeneratorBackend(type), new AutoFrontend<T>(DisplayFunctions));
+        return GetGenerator(type, data, new AutoFrontend<T>(DisplayFunctions));
       }
+
+      public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend)
+      {
+        return new TableGenerator<T>(data, GetGeneratorBackend(type), frontend);
+    }
 
       public void BindDisplay<T>(Func<T, string> displayFunc)
       {

@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Controllers.Common
   public class ControllerGameBase : ControllerBase
   {
     protected IProjectService ProjectService { get; }
-    private IExportDataService ExportDataService { get; }
+    protected IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
 

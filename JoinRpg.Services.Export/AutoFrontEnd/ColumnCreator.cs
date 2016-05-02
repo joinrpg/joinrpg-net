@@ -9,7 +9,7 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Export.AutoFrontEnd
 {
-  class ColumnCreator
+  internal class ColumnCreator
   {
     public ColumnCreator(IDictionary<Type, Func<object, string>> displayFunctions, Type targetType)
     {
@@ -41,25 +41,12 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
 
     private TableColumn GetTableColumn([NotNull] PropertyInfo propertyInfo)
     {
-      var tableColumn = new TableColumn()
+      return new TableColumn
       {
-        Name = propertyInfo.Name,
-        Getter = LambdaHelpers.CompileGetter(propertyInfo)
+        Getter = LambdaHelpers.CompileGetter(propertyInfo, TargetType),
+        Name = propertyInfo.GetDisplayName(),
+        Converter = GetConverterForType(propertyInfo.PropertyType)
       };
-
-      var displayAttribute = propertyInfo.GetCustomAttribute<DisplayAttribute>();
-      if (displayAttribute != null)
-      {
-        tableColumn.Name = displayAttribute.Name ?? tableColumn.Name;
-      }
-
-      if (propertyInfo.GetCustomAttribute<UrlAttribute>() != null)
-      {
-      }
-
-      tableColumn.Converter = GetConverterForType(propertyInfo.PropertyType);
-
-      return tableColumn;
     }
 
     private Func<object, string> GetConverterForType(Type propertyType)
