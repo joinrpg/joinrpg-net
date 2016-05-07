@@ -39,7 +39,7 @@
         CanGrantRights =  true,
         CanManageClaims = true,
         CanEditRoles =  true,
-        CanAcceptCash = true,
+        CanAcceptCash = false, // Granter of this priv. has custom code, so better to grant is exp.
         CanManageMoney = true
       };
     }

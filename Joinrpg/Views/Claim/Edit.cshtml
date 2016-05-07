@@ -155,7 +155,7 @@
             {
             <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
                     aria-expanded="false">
-                Отметить взнос
+                <span class="glyphicon glyphicon-usd"></span> Отметить взнос
             </button>
             }
             @if (Model.IsMyClaim)
@@ -349,7 +349,8 @@
           PaymentTypes = Model.PaymentTypes,
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = new MarkdownViewModel("Сдан взнос"),
-          ClaimApproved = Model.Status == Claim.Status.Approved
+          ClaimApproved = Model.Status == Claim.Status.Approved,
+          HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
       }; }
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>

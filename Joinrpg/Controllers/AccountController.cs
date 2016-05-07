@@ -144,7 +144,7 @@ namespace JoinRpg.Web.Controllers
 
         if (currentUser != null)
         {
-          ModelState.AddModelError("", "Вы уже зарегистрировались. Если пароль не по, нажмите «Забыли пароль?»");
+          ModelState.AddModelError("", "Вы уже зарегистрировались. Если пароль не подходит, нажмите «Забыли пароль?»");
           return View("Login", new LoginViewModel() {Email = model.Email});
         }
 
