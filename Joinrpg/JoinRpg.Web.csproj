@@ -238,6 +238,7 @@
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
+    <Compile Include="Controllers\Common\PrintController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
+    <Compile Include="Models\PrintCharacterViewModel.cs" />
     <Compile Include="Models\ProblemViewModel.cs" />
     <Compile Include="Models\ProjectViewModels.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
@@ -594,6 +596,8 @@
     <Content Include="Views\Shared\_MoveControlPartial.cshtml" />
     <Content Include="Scripts\jquery-2.2.3.min.map" />
     <Content Include="Views\CharacterList\Index.cshtml" />
+    <Content Include="Views\Print\Character.cshtml" />
+    <Content Include="Views\Print\PrintCharacter.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

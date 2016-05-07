@@ -7,6 +7,11 @@ namespace JoinRpg.Domain
 {
   public static class FinanceExtensions
   {
+    public static int CurrentFee(this Project project)
+    {
+      return project.CurrentFee(DateTime.UtcNow);
+    }
+
     private static int CurrentFee(this Project project, DateTime operationDate)
     {
       return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
@@ -24,6 +29,8 @@ namespace JoinRpg.Domain
 
     public static int ClaimTotalFee(this Claim claim) => claim.ClaimTotalFee(DateTime.UtcNow);
     public static int ClaimCurrentFee(this Claim claim) => claim.ClaimCurrentFee(DateTime.UtcNow);
+
+    public static int ClaimFeeDue(this Claim claim) => claim.ClaimTotalFee() - claim.ClaimBalance();
 
     public static int ClaimBalance(this Claim claim)
     {

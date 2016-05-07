@@ -1,0 +1,19 @@
+﻿@model JoinRpg.Web.Models.PrintCharacterViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@Model.ProjectName: @Model.CharacterName</title>
+    @Styles.Render("~/Content/css")
+</head>
+<body>
+    <div class="container body-content">
+        @Html.Partial("PrintCharacter", Model)
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+﻿@model JoinRpg.Web.Models.PrintCharacterViewModel
+<h1>@Model.CharacterName</h1>
+<hr/>
+@Model.ProjectName
+<div class="panel panel-default">
+    @if (Model.Player != null)
+    {
+        <div class="panel-heading">
+            <img src="@Html.Action("GetAvatar", "User", new {Model.Player.UserId})"/>
+            @Html.DisplayFor(model => model.Player)
+        </div>
+    }
+    else
+    {
+        <div class="panel-heading">Нет игрока</div>
+    }
+    <div class="panel-body">
+        Здесь контакты игрока
+    </div>
+</div>
+
+@if (Model.RegistrationOnHold)
+{
+    <div class="panel">
+        <div class="panel-heading">Перед выдачей конверта</div>
+        <div class="panel-body">
+            <ul>
+                @if (Model.FeeDue > 0)
+                {
+                    <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<div style="page-break-after: always"></div>
+<h1>О персонаже</h1>
+<
