@@ -101,27 +101,22 @@ namespace JoinRpg.Web.Models
 
     public static CharacterNavigationViewModel FromCharacter(Character field, CharacterNavigationPage page, int? currentUserId)
     {
-      var masterAccess = field.HasMasterAccess(currentUserId);
-      int? claimId = null;
-      if (currentUserId != null)
+      int? claimId;
+
+      if (field.ApprovedClaim?.HasAnyAccess(currentUserId) == true) //If Approved Claim exists and we have access to it, so be it.
       {
-        if (field.ApprovedClaim != null)
-        {
-          if (masterAccess || field.ApprovedClaim.PlayerUserId == currentUserId)
-          {
-            claimId = field.ApprovedClaim.ClaimId;
-          }
-        }
-        else
-        {
-          claimId = field.Claims.SingleOrDefault(c => c.PlayerUserId == currentUserId)?.ClaimId;
-        }
+        claimId = field.ApprovedClaim.ClaimId;
       }
+      else // if we have My claims, try select single one. We may fail to do so.
+      {
+        claimId = field.Claims.Where(c => c.PlayerUserId == currentUserId).ToArray().TrySelectSingleClaim()?.ClaimId;
+      }
+
       var vm = new CharacterNavigationViewModel
       {
         CanAddClaim = field.IsAvailable,
         ClaimId = claimId,
-        HasMasterAccess = masterAccess,
+        HasMasterAccess = field.HasMasterAccess(currentUserId),
         CanEditRoles = field.HasMasterAccess(currentUserId, s => s.CanEditRoles),
         CharacterId = field.CharacterId,
         ProjectId = field.ProjectId,

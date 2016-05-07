@@ -169,5 +169,25 @@ namespace JoinRpg.Domain
       return claim.HasMasterAccess(currentUserId, acl => acl.CanManageClaims) ||
              claim.ResponsibleMasterUserId == currentUserId;
     }
+
+    [CanBeNull]
+    public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
+    {
+      if (claims == null) throw new ArgumentNullException(nameof(claims));
+
+      if (claims.Count(c => c.IsApproved) == 1)
+      {
+        return claims.Single(c => c.IsApproved);
+      }
+      if (claims.Count(c => c.IsInDiscussion) == 1)
+      {
+        return claims.Single(c => c.IsInDiscussion);
+      }
+      if (claims.Count == 1)
+      {
+        return claims.Single();
+      }
+      return null;
+    }
   }
 }
