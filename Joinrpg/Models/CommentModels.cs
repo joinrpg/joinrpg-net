@@ -33,8 +33,7 @@ namespace JoinRpg.Web.Models
     }
 
     public bool IsRead { get; set; }
-    public bool IsVisibleToPlayer
-    { get; set; }
+    public bool IsVisibleToPlayer { get; set; }
     public bool HasMasterAccess { get; set; }
     public bool HasManageMoney { get; set; }
     public bool CanModerateFinance { get; set; }
@@ -57,6 +56,10 @@ namespace JoinRpg.Web.Models
     public int ClaimId
     { get; set; }
     public CommentExtraAction? ExtraAction { get; set; }
+
+    public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
+
+    public bool IsVisible => IsVisibleToPlayer || HasMasterAccess;
   }
 
   public class AddCommentViewModel : IValidatableObject

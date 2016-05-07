@@ -32,9 +32,10 @@ namespace JoinRpg.Web.Models
     { get; set; }
 
     [ReadOnly(true)]
+    public IEnumerable<PaymentType> PaymentTypes { get; set; }
 
-    public IEnumerable<PaymentType> PaymentTypes
-    { get; set; }
+    [ReadOnly(true)]
+    public bool HasUnApprovedPayments { get; set; }
   }
 
   public class FinOperationListItemViewModel
