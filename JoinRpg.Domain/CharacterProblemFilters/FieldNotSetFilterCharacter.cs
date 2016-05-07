@@ -17,7 +17,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     private static IEnumerable<ClaimProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
     {
       var isAvailableForTarget = fieldWithValue.Field.IsAvailableForTarget(target);
-      var hasValue = fieldWithValue.HasValue();
+      var hasValue = fieldWithValue.HasValue;
 
       if (hasValue)
       {

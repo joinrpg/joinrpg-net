@@ -7,6 +7,8 @@ namespace JoinRpg.Services.Interfaces
   public interface IExportDataService
   {
     IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data);
+    IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend);
+    void BindDisplay<T>(Func<T, string> displayFunc);
   }
 
   public enum ExportType
@@ -20,7 +22,17 @@ namespace JoinRpg.Services.Interfaces
     Task<byte[]> Generate();
     string ContentType { get; }
     string FileExtension { get; }
-
-    IExportGenerator BindDisplay<T>(Func<T, object> displayFunc);
   }
+
+  public interface ITableColumn
+  {
+    string ExtractValue(object row);
+    string Name { get; }
+  }
+
+  public interface IGeneratorFrontend
+  {
+    IEnumerable<ITableColumn> ParseColumns();
+  }
+
 }

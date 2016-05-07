@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -8,6 +9,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
@@ -63,7 +65,7 @@ namespace JoinRpg.Web.Controllers
       var viewModel =
         claims.Select(claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId).AddProblems(claim.GetProblems()))
           .ToList();
-      return await ShowMasterList(viewName, export, viewModel, title);
+      return await ShowMasterList(viewName, export, viewModel, title, projectId);
     }
 
     private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate,
@@ -77,11 +79,11 @@ namespace JoinRpg.Web.Controllers
       var viewModel =
         claims.Select(
           claim => ClaimListItemViewModel.FromCharacter(claim, CurrentUserId).AddProblems(claim.GetProblems())).ToList();
-      return await ShowMasterList(viewName, export, viewModel, title);
+      return await ShowMasterList(viewName, export, viewModel, title, projectId);
     }
 
     private async Task<ActionResult> ShowMasterList(string viewName, string export,
-      IReadOnlyCollection<ClaimListItemViewModel> viewModel, string title)
+      IReadOnlyCollection<ClaimListItemViewModel> viewModel, string title, int projectId)
     {
       ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
       ViewBag.HideProjectColumn = true;
@@ -96,7 +98,13 @@ namespace JoinRpg.Web.Controllers
       }
       else
       {
-        return await Export(viewModel, "claims", exportType.Value);
+        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+
+        var generator = ExportDataService.GetGenerator(exportType.Value, viewModel,
+          new ClaimListItemViewModelExporter(project.ProjectFields));
+
+        return File(await generator.Generate(), generator.ContentType,
+          Path.ChangeExtension(project.ProjectName + ": " + title, generator.FileExtension));
       }
     }
 
