@@ -29,6 +29,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
+        //TODO Fix this.
         ModelState.AddModelError("", "Error!");
         return RedirectToAction("Details", "User", new {viewModel.UserId});
       }
