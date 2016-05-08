@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -11,11 +11,11 @@ namespace JoinRpg.Web.Models
 {
   public enum CharacterBusyStatusView
   {
-    [Display(Name = "Занят")]
+    [Display(Name = "Р—Р°РЅСЏС‚")]
     HasPlayer,
-    [Display(Name = "Обсуждается")]
+    [Display(Name = "РћР±СЃСѓР¶РґР°РµС‚СЃСЏ")]
     Discussed,
-    [Display(Name = "Нет заявок")]
+    [Display(Name = "РќРµС‚ Р·Р°СЏРІРѕРє")]
     NotSend,
   }
 
@@ -57,10 +57,10 @@ namespace JoinRpg.Web.Models
 
   public class CharacterListItemViewModel
   {
-    [Display(Name="Занят?")]
+    [Display(Name="Р—Р°РЅСЏС‚?")]
     public CharacterBusyStatusView BusyStatus { get; }
 
-    [Display(Name = "Персонаж")]
+    [Display(Name = "РџРµСЂСЃРѕРЅР°Р¶")]
     public string Name { get; set; }
 
     public int CharacterId { get; }
@@ -70,7 +70,7 @@ namespace JoinRpg.Web.Models
 
     public int? ApprovedClaimId { get; }
 
-    [Display(Name = "Игрок"), CanBeNull]
+    [Display(Name = "РРіСЂРѕРє"), CanBeNull]
     public User Player { get; set; }
 
     public int IndReadyPlotsCount { get; }
@@ -108,7 +108,7 @@ namespace JoinRpg.Web.Models
       ColAllPlotsCount = plots.Count(p => p.IsActive && !p.TargetCharacters.Contains(character));
     }
 
-    [Display(Name="Проблемы")]
+    [Display(Name="РџСЂРѕР±Р»РµРјС‹")]
     public ICollection<ProblemViewModel> Problems { get; set; }
 
     public FieldValueViewModel FieldById(int projectFieldId)
