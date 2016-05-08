@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Controllers.Common
   public class ControllerGameBase : ControllerBase
   {
     protected IProjectService ProjectService { get; }
-    protected IExportDataService ExportDataService { get; }
+    private IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
 
@@ -175,14 +175,13 @@ namespace JoinRpg.Web.Controllers.Common
       return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
     }
 
-    protected async Task<ActionResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title, ExportType exportType,
-      Project project, IGeneratorFrontend frontend)
+    protected async Task<ActionResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title, ExportType exportType, IGeneratorFrontend frontend, string projectName)
     {
       var generator = ExportDataService.GetGenerator(exportType, viewModel,
         frontend);
 
       return File(await generator.Generate(), generator.ContentType,
-        Path.ChangeExtension(project.ProjectName + ": " + title, generator.FileExtension));
+        Path.ChangeExtension(projectName + ": " + title, generator.FileExtension));
     }
   }
 }

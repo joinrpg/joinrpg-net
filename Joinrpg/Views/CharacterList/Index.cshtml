@@ -1,21 +1,43 @@
-﻿@using JoinRpg.Web.Models
-@model IEnumerable<JoinRpg.Web.Models.CharacterListItemViewModel>
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.Models
+@model CharacterListViewModel
 
-<h2>@ViewBag.Title</h2>
+<h2>@Model.Title</h2>
 
 @Html.Partial("_ListOperationsDropdown")
 
-@* TODO: Решить, не добавить ли сюда каких-нибудь быстрых действий в таблицу*@
+@{
+  var firstItem = Model.Items.FirstOrDefault();
+}
 
 <table class="table">
     <tr>
         <th rowspan="2">
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => firstItem.Name)
         </th>
         <th rowspan="2">
-            @Html.DisplayNameFor(model => model.Player)
+            @Html.DisplayNameFor(model => firstItem.Player)
         </th>
-        <th rowspan="2">@Html.DisplayNameFor(model => model.Problems)</th>
+        @foreach (var field in Model.Fields)
+        {
+            switch (field.FieldType)
+            {
+                case ProjectFieldType.Text:
+                    continue;
+                case ProjectFieldType.String:
+                case ProjectFieldType.Dropdown:
+                case ProjectFieldType.Checkbox:
+                case ProjectFieldType.MultiSelect:
+                    <th rowspan="2">@field.FieldName</th>
+                    break;
+                case ProjectFieldType.Header:
+                    <th rowspan="2">&nbsp;</th>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        <th rowspan="2">@Html.DisplayNameFor(model => firstItem.Problems)</th>
         <th colspan="2">Загрузы (готовых/всего)</th>
 
     </tr>
@@ -24,11 +46,11 @@
         <th>Коллективные</th>
     </tr>
 
-    @foreach (var item in Model.OrderBy(c => c.BusyStatus).ThenBy(c => c.Name))
+    @foreach (var item in Model.Items.OrderBy(c => c.BusyStatus).ThenBy(c => c.Name))
     {
         <tr>
             <td>
-                <a href="@Url.Action("Edit", "Character", new {item.ProjectId, item.CharacterId}, null)">
+                <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, item.CharacterId}, null)">
                     @item.Name
                 </a>
             </td>
@@ -36,7 +58,7 @@
                 @switch (item.BusyStatus)
                 {
                     case CharacterBusyStatusView.HasPlayer:
-                        <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, ClaimId = item.ApprovedClaimId}, null)">
+                        <a href="@Url.Action("Edit", "Claim", new {Model.ProjectId, ClaimId = item.ApprovedClaimId}, null)">
                             @Html.DisplayFor(modelItem => item.Player)
                         </a>
                         break;
@@ -50,7 +72,25 @@
                         throw new ArgumentOutOfRangeException();
                 }
             </td>
-
+            @foreach (var field in Model.Fields)
+            {
+                switch (field.FieldType)
+                {
+                    case ProjectFieldType.Text:
+                        continue;
+                    case ProjectFieldType.String:
+                    case ProjectFieldType.Dropdown:
+                    case ProjectFieldType.Checkbox:
+                    case ProjectFieldType.MultiSelect:
+                <td>@item.FieldById(field.ProjectFieldId).DisplayString</td>
+                        break;
+                    case ProjectFieldType.Header:
+                <td>*</td>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
 
             <td>
                 @foreach (var pr in item.Problems)

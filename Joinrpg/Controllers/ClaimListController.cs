@@ -77,12 +77,11 @@ namespace JoinRpg.Web.Controllers
       }
       else
       {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await GetProjectFromList(projectId, claims);
 
-        return await ExportWithCustomFronend(viewModel, title, exportType.Value, project, new ClaimListItemViewModelExporter(project.ProjectFields));
+        return await ExportWithCustomFronend(viewModel, title, exportType.Value, new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
       }
     }
-
     #endregion
 
     [HttpGet, Authorize]

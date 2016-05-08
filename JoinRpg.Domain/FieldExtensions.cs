@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -16,6 +17,7 @@ namespace JoinRpg.Domain
       return field.HasValueList() && field.FieldBoundTo == FieldBoundTo.Character;
     }
 
+    [ItemNotNull, NotNull]
     public static IReadOnlyList<ProjectFieldDropdownValue> GetDropdownValues(this FieldWithValue field)
     {
       var value = field.GetSelectedIds();

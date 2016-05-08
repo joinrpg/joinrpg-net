@@ -18,6 +18,8 @@ namespace JoinRpg.Web.Models
 
     public string Value { get; }
 
+    public bool HasValue { get; }
+
     public string DisplayString { get; }
     public string FieldName { get; }
 
@@ -39,6 +41,8 @@ namespace JoinRpg.Web.Models
 
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;
+
+      HasValue = ch.HasValue;
 
       CanView = ch.HasValue&& (
             ch.Field.IsPublic

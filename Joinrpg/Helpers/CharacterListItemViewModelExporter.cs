@@ -8,12 +8,12 @@ namespace JoinRpg.Web.Helpers
 {
   public class CharacterListItemViewModelExporter : CustomerExporter<CharacterListItemViewModel>
   {
-    public CharacterListItemViewModelExporter(ICollection<ProjectField> fields)
+    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields)
     {
       Fields = fields;
     }
 
-    private ICollection<ProjectField> Fields { get; }
+    private IReadOnlyCollection<ProjectField> Fields { get; }
 
     public override IEnumerable<ITableColumn> ParseColumns()
     {

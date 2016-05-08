@@ -19,14 +19,48 @@ namespace JoinRpg.Web.Models
     NotSend,
   }
 
+  public class CharacterListViewModel
+  {
+    public IEnumerable<CharacterListItemViewModel> Items { get; }
+    public int ProjectId { get; }
+    public string ProjectName { get; }
+    public string Title { get; }
+
+    public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
+      IReadOnlyCollection<PlotFolder> plots, Project project)
+    {
+      var viewModel = new List<CharacterListItemViewModel>(characters.Count);
+      foreach (var character in characters)
+      {
+        var plotElements =
+          plots.SelectMany(p => p.Elements)
+            .Where(
+              p => p.TargetCharacters.Contains(character) || p.TargetGroups.Intersect(character.GetParentGroups()).Any());
+        viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
+          plotElements.ToArray()));
+      }
+
+      Items = viewModel;
+      ProjectName = project.ProjectName;
+      ProjectId = project.ProjectId;
+      Title = title;
+      Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
+    }
+
+    private bool AnyItemHasValue(int projectFieldId)
+    {
+      return Items.Select(i => i.FieldById(projectFieldId)).Any(f1 => f1?.HasValue == true);
+    }
+
+    public IReadOnlyCollection<ProjectField> Fields { get; }
+  }
+
   public class CharacterListItemViewModel
   {
     [Display(Name="Занят?")]
     public CharacterBusyStatusView BusyStatus { get; }
 
-    public int ProjectId { get; }
-
-    [Display(Name = "Имя")]
+    [Display(Name = "Персонаж")]
     public string Name { get; set; }
 
     public int CharacterId { get; }
@@ -63,7 +97,6 @@ namespace JoinRpg.Web.Models
       {
         BusyStatus = CharacterBusyStatusView.NotSend;
       }
-      ProjectId = character.ProjectId;
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
       Fields = new CustomFieldsViewModel(currentUserId, character);
@@ -77,5 +110,10 @@ namespace JoinRpg.Web.Models
 
     [Display(Name="Проблемы")]
     public ICollection<ProblemViewModel> Problems { get; set; }
+
+    public FieldValueViewModel FieldById(int projectFieldId)
+    {
+      return Fields.Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
+    }
   }
 }

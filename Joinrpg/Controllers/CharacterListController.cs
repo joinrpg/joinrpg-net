@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -21,23 +19,21 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet, Authorize]
     public Task<ActionResult> Active(int projectid, string export)
-     => MasterCharacterList(projectid, claim => claim.IsActive, "Index", export, "Все персонажи");
+     => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
 
     [HttpGet, Authorize]
     public Task<ActionResult> Deleted(int projectId, string export)
-      => MasterCharacterList(projectId, character => !character.IsActive, "Index", export, "Удаленные персонажи");
+      => MasterCharacterList(projectId, character => !character.IsActive, export, "Удаленные персонажи");
 
     [HttpGet, Authorize]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
       return await MasterCharacterList(projectid,
-        character => character.HasProblemsForField(field) && character.IsActive,
-        "Index", export, "Поле: " + field.FieldName);
+        character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
     }
 
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate,
-      [AspMvcView] string viewName, string export, string title)
+    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
@@ -45,29 +41,20 @@ namespace JoinRpg.Web.Controllers
       if (error != null) return error;
 
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
+      var project = await GetProjectFromList(projectId, characters);
 
-      var viewModel = new List<CharacterListItemViewModel>(characters.Count);
-      foreach (var character in characters)
-      {
-        var plotElements =
-          plots.SelectMany(p => p.Elements)
-            .Where(
-              p => p.TargetCharacters.Contains(character) || p.TargetGroups.Intersect(character.GetParentGroups()).Any());
-        viewModel.Add(new CharacterListItemViewModel(character, CurrentUserId, character.GetProblems(), plotElements.ToArray()));
-      }
+      var list = new CharacterListViewModel(CurrentUserId, title, characters, plots, project);
 
       var exportType = GetExportTypeByName(export);
 
       if (exportType == null)
       {
-        ViewBag.ClaimIds = viewModel.Select(c => c.ApprovedClaimId).WhereNotNull().ToArray();
-        ViewBag.Title = title;
-        return View(viewName, viewModel);
+        ViewBag.ClaimIds = list.Items.Select(c => c.ApprovedClaimId).WhereNotNull().ToArray();
+        
+        return View("Index", list);
       }
 
-      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-
-      return await ExportWithCustomFronend(viewModel, title, exportType.Value, project, new CharacterListItemViewModelExporter(project.ProjectFields));
+      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields), list.ProjectName);
     }
 
     public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService, exportDataService)
