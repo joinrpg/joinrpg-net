@@ -30,12 +30,13 @@ namespace JoinRpg.Web.Models
       IReadOnlyCollection<PlotFolder> plots, Project project)
     {
       var viewModel = new List<CharacterListItemViewModel>(characters.Count);
+      var selectMany = plots.SelectMany(p => p.Elements).ToArray();
       foreach (var character in characters)
       {
         var plotElements =
-          plots.SelectMany(p => p.Elements)
+          selectMany
             .Where(
-              p => p.TargetCharacters.Contains(character) || p.TargetGroups.Intersect(character.GetParentGroups()).Any());
+              p => PlotForCharacter(p, character));
         viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
           plotElements.ToArray()));
       }
@@ -45,6 +46,13 @@ namespace JoinRpg.Web.Models
       ProjectId = project.ProjectId;
       Title = title;
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
+    }
+
+    private static bool PlotForCharacter(PlotElement p, Character character)
+    {
+      var groups = character.GetParentGroups().Select(g => g.CharacterGroupId);
+      return p.TargetCharacters.Any(c => c.CharacterId == character.CharacterId) ||
+             p.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId));
     }
 
     private bool AnyItemHasValue(int projectFieldId)
@@ -102,10 +110,10 @@ namespace JoinRpg.Web.Models
       Fields = new CustomFieldsViewModel(currentUserId, character);
       Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
 
-      IndReadyPlotsCount = plots.Count(p => p.IsCompleted && p.TargetCharacters.Contains(character));
-      IndAllPlotsCount = plots.Count(p => p.IsActive && p.TargetCharacters.Contains(character));
-      ColReadyPlotsCount = plots.Count(p => p.IsCompleted && !p.TargetCharacters.Contains(character));
-      ColAllPlotsCount = plots.Count(p => p.IsActive && !p.TargetCharacters.Contains(character));
+      IndReadyPlotsCount = plots.Count(p => p.IsCompleted && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
+      IndAllPlotsCount = plots.Count(p => p.IsActive && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
+      ColReadyPlotsCount = plots.Count(p => p.IsCompleted && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
+      ColAllPlotsCount = plots.Count(p => p.IsActive && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
     }
 
     [Display(Name="Проблемы")]

@@ -18,6 +18,9 @@
         <th rowspan="2">
             @Html.DisplayNameFor(model => firstItem.Player)
         </th>
+        
+        <th rowspan="2">@Html.DisplayNameFor(model => firstItem.Problems)</th>
+        <th colspan="2">Загрузы (готовых/всего)</th>
         @foreach (var field in Model.Fields)
         {
             switch (field.FieldType)
@@ -28,17 +31,15 @@
                 case ProjectFieldType.Dropdown:
                 case ProjectFieldType.Checkbox:
                 case ProjectFieldType.MultiSelect:
-                    <th rowspan="2">@field.FieldName</th>
+            <th rowspan="2">@field.FieldName</th>
                     break;
                 case ProjectFieldType.Header:
-                    <th rowspan="2">&nbsp;</th>
+            <th rowspan="2">&nbsp;</th>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-        <th rowspan="2">@Html.DisplayNameFor(model => firstItem.Problems)</th>
-        <th colspan="2">Загрузы (готовых/всего)</th>
 
     </tr>
     <tr>
@@ -72,6 +73,19 @@
                         throw new ArgumentOutOfRangeException();
                 }
             </td>
+            <td>
+                @foreach (var pr in item.Problems)
+                {
+                    @Html.DisplayFor(modelItem => pr)
+                }
+            </td>
+            <td>
+                @item.IndReadyPlotsCount / @item.IndAllPlotsCount
+            </td>
+            <td>
+                @item.ColReadyPlotsCount / @item.ColAllPlotsCount
+            </td>
+
             @foreach (var field in Model.Fields)
             {
                 switch (field.FieldType)
@@ -91,19 +105,6 @@
                         throw new ArgumentOutOfRangeException();
                 }
             }
-
-            <td>
-                @foreach (var pr in item.Problems)
-                {
-                    @Html.DisplayFor(modelItem => pr)
-                }
-            </td>
-            <td>
-                @item.IndReadyPlotsCount / @item.IndAllPlotsCount
-            </td>
-            <td>
-                @item.ColReadyPlotsCount / @item.ColAllPlotsCount
-            </td>
         </tr>
     }
 </table>
