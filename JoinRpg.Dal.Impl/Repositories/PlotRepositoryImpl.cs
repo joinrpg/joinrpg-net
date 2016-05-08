@@ -25,10 +25,10 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
     }
 
-    public async Task<IList<PlotElement>> GetPlotsForCharacter(Character character)
+    public async Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character)
     {
       var ids =
-        character.Groups.SelectMany(@group => @group.FlatTree(g => g.ParentGroups))
+        character.Groups.SelectMany(group => group.FlatTree(g => g.ParentGroups))
           .Select(g => g.CharacterGroupId)
           .Distinct()
           .ToList(); //ToList required here so all lazy loads are finished before we are starting making condition below.
@@ -43,7 +43,15 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public Task<List<PlotFolder>> GetPlots(int project)
       => Ctx.Set<PlotFolder>().Include(pf => pf.Elements).Where(pf => pf.ProjectId == project).ToListAsync();
-  
+
+    public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
+      =>
+        Ctx.Set<PlotFolder>()
+          .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
+          .Include(pf => pf.Elements.Select(e => e.TargetGroups))
+          .Where(pf => pf.ProjectId == projectId)
+          .ToListAsync();
+
 
     public PlotRepositoryImpl(MyDbContext ctx) : base(ctx)
     {

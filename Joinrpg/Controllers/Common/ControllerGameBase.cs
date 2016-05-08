@@ -174,5 +174,15 @@ namespace JoinRpg.Web.Controllers.Common
       var generator = ExportDataService.GetGenerator(exportType, @select);
       return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
     }
+
+    protected async Task<ActionResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title, ExportType exportType,
+      Project project, IGeneratorFrontend frontend)
+    {
+      var generator = ExportDataService.GetGenerator(exportType, viewModel,
+        frontend);
+
+      return File(await generator.Generate(), generator.ContentType,
+        Path.ChangeExtension(project.ProjectName + ": " + title, generator.FileExtension));
+    }
   }
 }

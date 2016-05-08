@@ -236,12 +236,15 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
+    <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
+    <Compile Include="Helpers\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Helpers\ClaimListItemViewModelExporter.cs" />
+    <Compile Include="Helpers\CustomerExporter.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -279,6 +282,7 @@
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AclViewModel.cs" />
+    <Compile Include="Models\CharacterListItemViewModel.cs" />
     <Compile Include="Models\CharacterViewModels.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\CommentModels.cs" />
@@ -591,6 +595,7 @@
     <Content Include="Views\Shared\DisplayTemplates\MandatoryStatusViewType.cshtml" />
     <Content Include="Views\Shared\_MoveControlPartial.cshtml" />
     <Content Include="Scripts\jquery-2.2.3.min.map" />
+    <Content Include="Views\CharacterList\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

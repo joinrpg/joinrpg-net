@@ -1,27 +1,24 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Helpers
 {
-  public class ClaimListItemViewModelExporter: CustomerExporter<ClaimListItemViewModel>
+  public class CharacterListItemViewModelExporter : CustomerExporter<CharacterListItemViewModel>
   {
-    public ClaimListItemViewModelExporter(ICollection<ProjectField> fields)
+    public CharacterListItemViewModelExporter(ICollection<ProjectField> fields)
     {
       Fields = fields;
     }
 
     private ICollection<ProjectField> Fields { get; }
 
-    public  override IEnumerable<ITableColumn> ParseColumns()
+    public override IEnumerable<ITableColumn> ParseColumns()
     {
       yield return StringColumn(x => x.Name);
-      yield return EnumColumn(x => x.ClaimStatus);
-      yield return DateTimeCOlumn(x => x.UpdateDate);
-      yield return UserColumn(x => x.LastModifiedBy);
-      yield return UserColumn(x => x.Responsible);
+      yield return EnumColumn(x => x.BusyStatus);
       yield return UserColumn(x => x.Player);
 
       foreach (var projectField in Fields)

@@ -46,8 +46,6 @@ namespace JoinRpg.Web.Models
     Discussed,
     [Display(Name = "В листе ожидания"), UsedImplicitly]
     OnHold,
-    [Display(Name="Нет заявок")]
-    NotSend = int.MaxValue, 
   }
 
   public class ClaimListItemViewModel
@@ -74,58 +72,23 @@ namespace JoinRpg.Web.Models
     public User LastModifiedBy { get; set; }
 
     [CanBeNull]
-    public int? CharacterId { get; set; }
+    public int? CharacterId { get;  }
 
-    public int ProjectId { get; set; }
+    public int ProjectId { get; }
 
-    public int? ClaimId{ get; set; }
+    public int ClaimId{ get; }
 
-    public int UnreadCommentsCount { get; set; }
+    public int UnreadCommentsCount { get; }
 
     [Display(Name = "Проблема")]
     public ICollection<ProblemViewModel> Problems { get; set; }
 
     [NotNull, ReadOnly(true)]
-    public CustomFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; }
 
-    public static ClaimListItemViewModel FromClaim([NotNull] Claim claim, int currentUserId)
+    public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      var viewModel = new ClaimListItemViewModel();
-      viewModel.Assign(claim, currentUserId);
-      viewModel.AssignProjectProperties(claim);
-      viewModel.Fields = new CustomFieldsViewModel(currentUserId, claim);
-      return viewModel;
-    }
-
-    public static ClaimListItemViewModel FromCharacter([NotNull] Character character, int currentUserId)
-    {
-      if (character == null) throw new ArgumentNullException(nameof(character));
-
-      var viewModel = new ClaimListItemViewModel();
-      if (character.ApprovedClaim != null)
-      {
-        viewModel.Assign(character.ApprovedClaim, currentUserId);
-      }
-      else
-      {
-        viewModel.ClaimStatus = ClaimStatusView.NotSend;
-      }
-      viewModel.AssignProjectProperties(character);
-      viewModel.Name = character.CharacterName;
-      viewModel.CharacterId = character.CharacterId;
-      viewModel.Fields = new CustomFieldsViewModel(currentUserId, character);
-      return viewModel;
-    }
-
-    private void AssignProjectProperties(IProjectEntity character)
-    {
-      ProjectId = character.ProjectId;
-      ProjectName = character.Project.ProjectName;
-    }
-
-    private void Assign([NotNull] Claim claim, int currentUserId)
-    {
       var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
@@ -133,13 +96,17 @@ namespace JoinRpg.Web.Models
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
       Name = claim.Name;
       Player = claim.Player;
-      
+
       UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
       UnreadCommentsCount =
         claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
-                                        && !comment.IsReadByUser(currentUserId));
+                                                  && !comment.IsReadByUser(currentUserId));
+
+      ProjectId = claim.ProjectId;
+      ProjectName = claim.Project.ProjectName;
+      Fields = new CustomFieldsViewModel(currentUserId, claim);
     }
 
     public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)

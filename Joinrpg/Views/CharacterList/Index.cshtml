@@ -1,0 +1,69 @@
+﻿@using JoinRpg.Web.Models
+@model IEnumerable<JoinRpg.Web.Models.CharacterListItemViewModel>
+
+<h2>@ViewBag.Title</h2>
+
+@Html.Partial("_ListOperationsDropdown")
+
+@* TODO: Решить, не добавить ли сюда каких-нибудь быстрых действий в таблицу*@
+
+<table class="table">
+    <tr>
+        <th rowspan="2">
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th rowspan="2">
+            @Html.DisplayNameFor(model => model.Player)
+        </th>
+        <th rowspan="2">@Html.DisplayNameFor(model => model.Problems)</th>
+        <th colspan="2">Загрузы (готовых/всего)</th>
+
+    </tr>
+    <tr>
+        <th>Личные</th>
+        <th>Коллективные</th>
+    </tr>
+
+    @foreach (var item in Model.OrderBy(c => c.BusyStatus).ThenBy(c => c.Name))
+    {
+        <tr>
+            <td>
+                <a href="@Url.Action("Edit", "Character", new {item.ProjectId, item.CharacterId}, null)">
+                    @item.Name
+                </a>
+            </td>
+            <td>
+                @switch (item.BusyStatus)
+                {
+                    case CharacterBusyStatusView.HasPlayer:
+                        <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, ClaimId = item.ApprovedClaimId}, null)">
+                            @Html.DisplayFor(modelItem => item.Player)
+                        </a>
+                        break;
+                    case CharacterBusyStatusView.Discussed:
+                        <span>Обсуждается</span>
+                        break;
+                    case CharacterBusyStatusView.NotSend:
+                        <span>Нет заявок</span>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </td>
+
+
+            <td>
+                @foreach (var pr in item.Problems)
+                {
+                    @Html.DisplayFor(modelItem => pr)
+                }
+            </td>
+            <td>
+                @item.IndReadyPlotsCount / @item.IndAllPlotsCount
+            </td>
+            <td>
+                @item.ColReadyPlotsCount / @item.ColAllPlotsCount
+            </td>
+        </tr>
+    }
+</table>
