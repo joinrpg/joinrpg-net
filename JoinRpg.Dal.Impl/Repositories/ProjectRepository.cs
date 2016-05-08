@@ -37,7 +37,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
-    public Task<CharacterGroup> LoadGroupAsync(int projectId, int characterGroupId)
+    public Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId)
     {
       return
         Ctx.Set<CharacterGroup>()

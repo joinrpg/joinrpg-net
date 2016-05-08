@@ -61,15 +61,15 @@
                                 @Html.ActionLink("Все персонажи", "Active", "CharacterList", new {Model.ProjectId}, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new { Model.ProjectId }, null)
+                                @Html.ActionLink("Удаленные персонажи", "Deleted", "CharacterList", new {Model.ProjectId}, null)
                             </li>
-                            @*
-    <li role="separator" class="dropdown-header">По группам:</li>
-    @foreach (var cg in Model.BigGroups)
-    {
-    <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
-    }
-                            *@
+
+                            <li role="separator" class="dropdown-header">По группам:</li>
+                            @foreach (var cg in Model.BigGroups)
+                            {
+                                <li>@Html.ActionLink(cg.Name, "ByGroup", "CharacterList", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
+                            }
+
                         </ul>
                     </li>
                     <li class="dropdown">

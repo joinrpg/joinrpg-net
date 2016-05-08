@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
-      var field = await ProjectRepository.LoadGroupAsync(projectid, characterGroupId);
+      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
       return WithEntity(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
@@ -88,7 +88,7 @@ namespace JoinRpg.Web.Controllers
     {
       if (characterGroupId != null)
       {
-        return await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+        return await ProjectRepository.GetGroupAsync(projectId, (int) characterGroupId);
       }
       if (characterId != null)
       {

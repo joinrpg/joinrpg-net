@@ -61,5 +61,14 @@ namespace JoinRpg.Web.Controllers
     {
       PlotRepository = plotRepository;
     }
+
+    public async Task<ActionResult> ByGroup(int projectid, int charactergroupid, string export)
+    {
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
+      return
+        await
+          MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
+            "Персонажи — " + characterGroup.CharacterGroupName);
+    }
   }
 }
