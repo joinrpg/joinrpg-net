@@ -96,8 +96,8 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
 
-    public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
-    public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; set; }
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; set; }
 
     public static CharacterNavigationViewModel FromCharacter(Character field, CharacterNavigationPage page, int? currentUserId)
     {
@@ -135,11 +135,11 @@ namespace JoinRpg.Web.Models
       DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
     }
 
-    private IEnumerable<ClaimListItemViewModel> LoadClaimsWithCondition(Character field, Func<Claim, bool> predicate)
+    private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, Func<Claim, bool> predicate)
     {
       return HasMasterAccess && field != null
-        ? field.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim)
-        : Enumerable.Empty<ClaimListItemViewModel>();
+        ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
+        : Enumerable.Empty<ClaimShortListItemViewModel>();
     }
 
     public static CharacterNavigationViewModel FromClaim([NotNull] Claim claim, int currentUserId, CharacterNavigationPage characterNavigationPage)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -35,7 +34,7 @@ namespace JoinRpg.Web.Controllers
         return error;
 
       var viewModel =
-        claims.Select(c => ClaimListItemViewModel.FromClaim(c, CurrentUserId).AddProblems(c.GetProblems()))
+        claims.Select(c => new ClaimListItemViewModel(c, CurrentUserId).AddProblems(c.GetProblems()))
           .Where(vm => vm.Problems.Any(p => p.Severity >= ProblemSeverity.Warning))
           .ToList();
 
@@ -63,51 +62,26 @@ namespace JoinRpg.Web.Controllers
       if (error != null) return error;
 
       var viewModel =
-        claims.Select(claim => ClaimListItemViewModel.FromClaim(claim, CurrentUserId).AddProblems(claim.GetProblems()))
+        claims.Select(claim => new ClaimListItemViewModel(claim, CurrentUserId).AddProblems(claim.GetProblems()))
           .ToList();
-      return await ShowMasterList(viewName, export, viewModel, title, projectId);
-    }
-
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate,
-      [AspMvcView] string viewName, string export, string title)
-    {
-      var claims = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
-
-      var error = await AsMaster(claims, projectId);
-      if (error != null) return error;
-
-      var viewModel =
-        claims.Select(
-          claim => ClaimListItemViewModel.FromCharacter(claim, CurrentUserId).AddProblems(claim.GetProblems())).ToList();
-      return await ShowMasterList(viewName, export, viewModel, title, projectId);
-    }
-
-    private async Task<ActionResult> ShowMasterList(string viewName, string export,
-      IReadOnlyCollection<ClaimListItemViewModel> viewModel, string title, int projectId)
-    {
-      ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-      ViewBag.HideProjectColumn = true;
-      ViewBag.MasterAccessColumn = true;
-      ViewBag.Title = title;
-
+      
       var exportType = GetExportTypeByName(export);
 
       if (exportType == null)
       {
+        ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
+        ViewBag.HideProjectColumn = true;
+        ViewBag.MasterAccessColumn = true;
+        ViewBag.Title = title;
         return View(viewName, viewModel);
       }
       else
       {
-        var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+        var project = await GetProjectFromList(projectId, claims);
 
-        var generator = ExportDataService.GetGenerator(exportType.Value, viewModel,
-          new ClaimListItemViewModelExporter(project.ProjectFields));
-
-        return File(await generator.Generate(), generator.ContentType,
-          Path.ChangeExtension(project.ProjectName + ": " + title, generator.FileExtension));
+        return await ExportWithCustomFronend(viewModel, title, exportType.Value, new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
       }
     }
-
     #endregion
 
     [HttpGet, Authorize]
@@ -189,7 +163,7 @@ namespace JoinRpg.Web.Controllers
           export, "Заявки на мастере", "Responsible");
 
     [HttpGet, Authorize]
-    public ActionResult My() => View(GetCurrentUser().Claims.Select(ClaimListItemViewModel.FromClaim));
+    public ActionResult My() => View(GetCurrentUser().Claims.Select((claim, currentUserId) => new ClaimListItemViewModel(claim, currentUserId)));
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
@@ -206,21 +180,6 @@ namespace JoinRpg.Web.Controllers
             await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId));
     }
 
-    [HttpGet, Authorize]
-    public Task<ActionResult> CharList(int projectid, string export)
-      => MasterCharacterList(projectid, claim => claim.IsActive, "Index", export, "Все персонажи");
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> DeletedCharList(int projectId, string export)
-      => MasterCharacterList(projectId, character => !character.IsActive, "Index", export, "Удаленные персонажи");
-
-    [HttpGet, Authorize]
-    public async Task<ActionResult> CharListByField(int projectfieldid, int projectid, string export)
-    {
-      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
-      return await MasterCharacterList(projectid,
-        character => character.HasProblemsForField(field) && character.IsActive,
-        "Index", export, "Поле: " + field.FieldName);
-    }
+   
   }
 }

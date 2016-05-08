@@ -155,7 +155,7 @@ namespace JoinRpg.Services.Impl
       List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
       int? responsibleMasterId)
     {
-      var characterGroup = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
       {
         characterGroup.CharacterGroupName = Required(name);
@@ -181,7 +181,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
-      var characterGroup = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
       if (characterGroup == null) throw new DbEntityValidationException();
 
@@ -292,7 +292,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue, bool commentsValue, bool fieldChangeValue, bool moneyOperationValue)
     {
-      var group = await ProjectRepository.LoadGroupAsync(projectId, characterGroupId);
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       group.RequestMasterAccess(currentUserId);
       
       var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue || moneyOperationValue;

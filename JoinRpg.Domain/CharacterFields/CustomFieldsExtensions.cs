@@ -36,14 +36,18 @@ namespace JoinRpg.Domain
     public static void MarkUsed([NotNull] this FieldWithValue field)
     {
       if (field == null) throw new ArgumentNullException(nameof(field));
+
       if (!field.Field.WasEverUsed)
       {
         field.Field.WasEverUsed = true;
       }
 
-      foreach (var val in field.GetDropdownValues().Where(v => !v.WasEverUsed))
+      if (field.Field.HasValueList())
       {
-        val.WasEverUsed = true;
+        foreach (var val in field.GetDropdownValues().Where(v => !v.WasEverUsed))
+        {
+          val.WasEverUsed = true;
+        }
       }
     }
 

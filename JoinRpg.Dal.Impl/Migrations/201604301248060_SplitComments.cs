@@ -18,7 +18,7 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .ForeignKey("dbo.Comments", t => t.CommentId)
                 .Index(t => t.CommentId);
           Sql(@"INSERT INTO [dbo].[CommentTexts] ([CommentId] ,[Text_Contents])
-SELECT CommentId, CommentText_Contents FROM[dbo].[Comments]
+SELECT CommentId, CommentText_Contents FROM [dbo].[Comments]
 ");            
             DropColumn("dbo.Comments", "CommentText_Contents");
         }

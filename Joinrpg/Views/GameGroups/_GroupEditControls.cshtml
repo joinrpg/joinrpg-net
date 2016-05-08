@@ -21,8 +21,12 @@
                     "ClaimList",
                     new {Model.ProjectId, Model.CharacterGroupId},
                     null)
-            </li>
+                </li>
             }
+            <li>
+            @Html.ActionLink("список персонажей", "ByGroup", "CharacterList", new {Model.ProjectId, Model.CharacterGroupId},
+                null)
+            </li>
             
             @if (!Model.IsSpecial)
             {

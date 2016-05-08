@@ -85,6 +85,9 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<PlotElement>().HasMany(pe => pe.TargetGroups).WithMany(c => c.DirectlyRelatedPlotElements);
       modelBuilder.Entity<PlotElement>().HasRequired(pf => pf.Project).WithMany().WillCascadeOnDelete(false);
 
+      modelBuilder.Entity<PlotElement>().HasRequired(plotElement => plotElement.Texts).WithRequiredPrincipal();
+      modelBuilder.Entity<PlotElementTexts>().HasKey(pd => pd.PlotElementId);
+
       modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
       modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
 
