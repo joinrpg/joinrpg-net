@@ -27,7 +27,7 @@ namespace JoinRpg.DataModel
     //TODO: Add here "mentioned characters" concept
 
     [NotNull]
-    public virtual PlotElementTexts Texts { get; set; } = new PlotElementTexts();
+    public virtual PlotElementTexts Texts { get; set; }
 
     public DateTime CreatedDateTime { get; set; }
 
