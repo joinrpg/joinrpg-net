@@ -47,8 +47,11 @@ namespace JoinRpg.Services.Impl
       var now = DateTime.UtcNow;
       var plotElement = new PlotElement()
       {
-        Content = new MarkdownString(content),
-        TodoField = todoField,
+        Texts = new PlotElementTexts()
+        {
+          Content = new MarkdownString(content),
+          TodoField = todoField,
+        },
         CreatedDateTime = now,
         ModifiedDateTime = now,
         IsActive = true,
@@ -98,8 +101,8 @@ namespace JoinRpg.Services.Impl
     public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars, bool isCompleted, int currentUserId)
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
-      plotElement.Content.Contents = contents;
-      plotElement.TodoField = todoField;
+      plotElement.Texts.Content.Contents = contents;
+      plotElement.Texts.TodoField = todoField;
       plotElement.TargetGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, targetGroups));
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;

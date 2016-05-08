@@ -19,6 +19,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(pf => pf.Project)
           .Include(pf => pf.Project.ProjectAcls)
           .Include(pf => pf.Elements)
+          .Include(pf => pf.Elements.Select(e => e.Texts))
           .Include(pf => pf.Project.Characters)
           .Include(pf => pf.Project.CharacterGroups)
           .Include(pf => pf.Project.Claims)
@@ -34,6 +35,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToList(); //ToList required here so all lazy loads are finished before we are starting making condition below.
       return
         await Ctx.Set<PlotElement>()
+          .Include(e => e.Texts)
           .Where(
             e =>
               e.TargetCharacters.Any(ch => ch.CharacterId == character.CharacterId) ||
@@ -42,7 +44,11 @@ namespace JoinRpg.Dal.Impl.Repositories
     }
 
     public Task<List<PlotFolder>> GetPlots(int project)
-      => Ctx.Set<PlotFolder>().Include(pf => pf.Elements).Where(pf => pf.ProjectId == project).ToListAsync();
+      =>
+        Ctx.Set<PlotFolder>()
+          .Include(pf => pf.Elements.Select(e => e.Texts))
+          .Where(pf => pf.ProjectId == project)
+          .ToListAsync();
 
     public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
       =>

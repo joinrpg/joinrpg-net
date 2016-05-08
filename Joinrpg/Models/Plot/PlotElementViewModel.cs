@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Models.Plot
     {
       return new PlotElementViewModel
       {
-        Content = p.Content,
+        Content = p.Texts.Content,
         HasMasterAccess = hasMasterAccess,
         PlotFolderId = p.PlotFolderId,
         PlotElementId = p.PlotElementId,
