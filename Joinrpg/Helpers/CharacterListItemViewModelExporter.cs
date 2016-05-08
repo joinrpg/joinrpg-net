@@ -18,8 +18,7 @@ namespace JoinRpg.Web.Helpers
     public override IEnumerable<ITableColumn> ParseColumns()
     {
       yield return StringColumn(x => x.Name);
-      yield return EnumColumn(x => x.BusyStatus);
-      yield return UserColumn(x => x.Player);
+
 
       foreach (var projectField in Fields)
       {
@@ -27,6 +26,9 @@ namespace JoinRpg.Web.Helpers
           FieldColumn(projectField.FieldName,
             x => x.Fields.Fields.SingleOrDefault(f => f.ProjectFieldId == projectField.ProjectFieldId)?.DisplayString);
       }
+
+      yield return EnumColumn(x => x.BusyStatus);
+      yield return UserColumn(x => x.Player);
     }
 
   }
