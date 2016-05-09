@@ -1,77 +1,67 @@
 ﻿@using Microsoft.AspNet.Identity
-@model IEnumerable<JoinRpg.Web.Models.ClaimListItemViewModel>
+@model JoinRpg.Web.Models.ClaimListViewModel
 
 <h2>@ViewBag.Title</h2>
 
-@Html.Partial("_ListOperationsDropdown")
+@Html.Partial("_ListOperationsDropdown", Model)
 
-@* TODO: Решить, не добавить ли сюда каких-нибудь быстрых действий в таблицу*@
+@{
+  var firstItem = Model.Items.FirstOrDefault();
+}
+
 
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => firstItem.Name)
         </th>
         @if (ViewBag.HideUserColumn != true) //We can't do !ViewBag.HideUserColumn, cause it can be null
         {
             <th>
-                @Html.DisplayNameFor(model => model.Player)
+                @Html.DisplayNameFor(model => firstItem.Player)
             </th>
         }
-        @if (ViewBag.HideProjectColumn != true)
+        @if (Model.ProjectId == null) //We need to differentiate by project
         {
             <th>
-                @Html.DisplayNameFor(model => model.ProjectName)
+                @Html.DisplayNameFor(model => firstItem.ProjectName)
             </th>
         }
         <th>
-            @Html.DisplayNameFor(model => model.ClaimStatus)
+            @Html.DisplayNameFor(model => firstItem.ClaimStatus)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.UpdateDate)
+            @Html.DisplayNameFor(model => firstItem.UpdateDate)
         </th>
         @if (ViewBag.MasterAccessColumn == true)
         {
-            <th>@Html.DisplayNameFor(model => model.Responsible)</th>
-            <th>@Html.DisplayNameFor(model => model.Problems)</th>
+            <th>@Html.DisplayNameFor(model => firstItem.Responsible)</th>
+            <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
         }
     </tr>
 
-    @foreach (var item in Model.OrderByDescending(c => c.UpdateDate))
+    @foreach (var item in Model.Items.OrderByDescending(c => c.UpdateDate))
     {
         <tr>
             <td>
-                @if (item.ClaimId != null)
-                {
-                    <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
-                        @item.Name
-                        @if (item.UnreadCommentsCount > 0)
-                        {
-                            <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
-                        }
-                    </a>
-                }
-                else if (item.CharacterId != null)
-                {
-                    <a href="@Url.Action("Edit", "Character", new {item.ProjectId, item.CharacterId}, null)">
-                        @item.Name
-                    </a>
-                }
-                else
-                {
+                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
                     @item.Name
-                }
+                    @if (item.UnreadCommentsCount > 0)
+                    {
+                        <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                    }
+                </a>
             </td>
             @if (ViewBag.HideUserColumn != true)
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
-                    @if (item.Player != null)
+                    @if (item.Player != null && string.IsNullOrWhiteSpace(item.Player.FullName))
                     {<text>(@item.Player.FullName)                    </text>
 }
                 </td>
             }
-            @if (ViewBag.HideProjectColumn != true)
+            @if (Model.ProjectId == null)
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.ProjectName)

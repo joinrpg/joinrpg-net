@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
@@ -21,7 +20,7 @@ namespace JoinRpg.Web.Models
       => CanGrantAccessProjects.Where(acl => ThisUserProjects.All(acl1 => acl1.ProjectId != acl.ProjectId));
 
     [ReadOnly(true)]
-    public IEnumerable<ClaimListItemViewModel> Claims { get; set; } = new List<ClaimListItemViewModel>();
+    public ClaimListViewModel Claims { get; set; }
 
     public UserProfileDetailsViewModel Details { get; set; }
 

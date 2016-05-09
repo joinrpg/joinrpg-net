@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -25,34 +24,6 @@ namespace JoinRpg.Web.Controllers
     }
 
     #region implementation
-
-    //TODO Merge to MasterClaimList
-    private async Task<ActionResult> ShowProblems(int projectId, string export, ICollection<Claim> claims)
-    {
-      var error = await AsMaster(claims, projectId);
-      if (error != null)
-        return error;
-
-      var viewModel =
-        claims.Select(c => new ClaimListItemViewModel(c, CurrentUserId).AddProblems(c.GetProblems()))
-          .Where(vm => vm.Problems.Any(p => p.Severity >= ProblemSeverity.Warning))
-          .ToList();
-
-      ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-      ViewBag.Title = "Проблемные заявки";
-      ViewBag.HideProjectColumn = true;
-      ViewBag.MasterAccessColumn = true;
-
-      var exportType = GetExportTypeByName(export);
-
-      if (exportType == null)
-      {
-        return View("Index", viewModel);
-      }
-
-      return await Export(viewModel, "problem-claims", exportType.Value);
-    }
-
     private async Task<ActionResult> MasterClaimList(int projectId, Func<Claim, bool> predicate, string export,
       string title, [AspMvcView] string viewName = "Index")
     {
@@ -61,25 +32,21 @@ namespace JoinRpg.Web.Controllers
       var error = await AsMaster(claims, projectId);
       if (error != null) return error;
 
-      var viewModel =
-        claims.Select(claim => new ClaimListItemViewModel(claim, CurrentUserId).AddProblems(claim.GetProblems()))
-          .ToList();
-      
+      var view = new ClaimListViewModel(CurrentUserId, claims, projectId);
+
       var exportType = GetExportTypeByName(export);
 
       if (exportType == null)
       {
-        ViewBag.ClaimIds = viewModel.Select(c => c.ClaimId).ToArray();
-        ViewBag.HideProjectColumn = true;
         ViewBag.MasterAccessColumn = true;
         ViewBag.Title = title;
-        return View(viewName, viewModel);
+        return View(viewName, view);
       }
       else
       {
         var project = await GetProjectFromList(projectId, claims);
 
-        return await ExportWithCustomFronend(viewModel, title, exportType.Value, new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
+        return await ExportWithCustomFronend(view.Items, title, exportType.Value, new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
       }
     }
     #endregion
@@ -160,24 +127,34 @@ namespace JoinRpg.Web.Controllers
     public Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
       =>
         MasterClaimList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,
-          export, "Заявки на мастере", "Responsible");
+          export, "Заявки на мастере");
 
     [HttpGet, Authorize]
-    public ActionResult My() => View(GetCurrentUser().Claims.Select((claim, currentUserId) => new ClaimListItemViewModel(claim, currentUserId)));
+    public ActionResult My()
+    {
+      ViewBag.Title = "Мои заявки";
+      ViewBag.HideUserColumn = true;
+      return View("Index", new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims, null));
+    }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
-      return await ShowProblems(projectId, export, await ClaimsRepository.GetClaims(projectId));
+      return
+        await
+          MasterClaimList(projectId, c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning), export,
+            "Проблемные заявки");
     }
 
     [HttpGet, Authorize]
-    public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
+    public Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
     {
       return
-        await
-          ShowProblems(projectId, export,
-            await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId));
+        MasterClaimList(projectId,
+          claim =>
+            claim.ResponsibleMasterUserId == responsibleMasterId &&
+            claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning),
+          export, "Проблемные заявки на мастере");
     }
 
    
