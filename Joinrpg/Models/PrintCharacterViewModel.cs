@@ -13,5 +13,9 @@ namespace JoinRpg.Web.Models
     public int FeeDue { get; set; }
     public bool RegistrationOnHold => FeeDue > 0 && Plots.Any(item => item.Status == PlotStatus.InWork);
     public IReadOnlyCollection<PlotElementViewModel> Plots { get; set; }
+    public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; set; }
+    public User ResponsibleMaster { get; set; }
+    public UserProfileDetailsViewModel PlayerDetails { get; set; }
+    public CustomFieldsViewModel Fields { get; set; }
   }
 }

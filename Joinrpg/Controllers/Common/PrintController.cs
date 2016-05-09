@@ -35,7 +35,11 @@ namespace JoinRpg.Web.Controllers.Common
         Plots =
           character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character))
             .ToViewModels(character.HasMasterAccess(CurrentUserId))
-            .ToArray()
+            .ToArray(),
+        Groups = character.GetParentGroups().Where(g => !g.IsSpecial && g.IsActive).Select(g => new CharacterGroupWithDescViewModel(g)).ToArray(),
+        ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser,
+        PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player, GetCurrentUser()),
+        Fields = new CustomFieldsViewModel(CurrentUserId, character, onlyPlayerVisible: true)
       });
     }
   }
