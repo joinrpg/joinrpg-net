@@ -11,6 +11,7 @@
         <li>
             <a href="?export=xlsx"
                title="Экспорт в Excel">
+                <span class="glyphicon glyphicon-download"></span>
                 Скачать в Excel
             </a>
         </li>
@@ -21,6 +22,7 @@
                     var claimIds = "&claimIds=" + string.Join(",", ((int?[]) ViewBag.ClaimIds).Select(c => c.ToString()));
                 }
                 <a href="@Url.Action("ForClaims", "MassMail", new {ViewBag.ProjectId})@claimIds">
+                    <span class="glyphicon glyphicon-envelope"></span>
                     Написать всем
                 </a>
             </li>

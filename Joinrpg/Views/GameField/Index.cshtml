@@ -1,6 +1,6 @@
 ﻿@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
-@model JoinRpg.Web.Models.GameFieldListViewModel
+@model GameFieldListViewModel
 
 @{
     ViewBag.Title = "Поля персонажа / заявки";
@@ -73,7 +73,7 @@
                 <td>
                     @if (item.MandatoryStatus != MandatoryStatusViewType.Optional)
                     {
-                        @Html.ActionLink("Отчет (непроставленные)", "CharListByField", "ClaimList", new {item.ProjectFieldId, item.ProjectId}, null)
+                        @Html.ActionLink("Отчет (непроставленные)", "ByUnAssignedField", "CharacterList", new {item.ProjectFieldId, item.ProjectId}, null)
                     }
                     @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && Model.CanEditFields)
                     {

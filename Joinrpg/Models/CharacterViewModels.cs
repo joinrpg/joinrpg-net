@@ -96,32 +96,27 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
 
-    public IEnumerable<ClaimListItemViewModel> DiscussedClaims { get; set; }
-    public IEnumerable<ClaimListItemViewModel> RejectedClaims { get; set; }
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; set; }
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; set; }
 
     public static CharacterNavigationViewModel FromCharacter(Character field, CharacterNavigationPage page, int? currentUserId)
     {
-      var masterAccess = field.HasMasterAccess(currentUserId);
-      int? claimId = null;
-      if (currentUserId != null)
+      int? claimId;
+
+      if (field.ApprovedClaim?.HasAnyAccess(currentUserId) == true) //If Approved Claim exists and we have access to it, so be it.
       {
-        if (field.ApprovedClaim != null)
-        {
-          if (masterAccess || field.ApprovedClaim.PlayerUserId == currentUserId)
-          {
-            claimId = field.ApprovedClaim.ClaimId;
-          }
-        }
-        else
-        {
-          claimId = field.Claims.SingleOrDefault(c => c.PlayerUserId == currentUserId)?.ClaimId;
-        }
+        claimId = field.ApprovedClaim.ClaimId;
       }
+      else // if we have My claims, try select single one. We may fail to do so.
+      {
+        claimId = field.Claims.Where(c => c.PlayerUserId == currentUserId).ToArray().TrySelectSingleClaim()?.ClaimId;
+      }
+
       var vm = new CharacterNavigationViewModel
       {
         CanAddClaim = field.IsAvailable,
         ClaimId = claimId,
-        HasMasterAccess = masterAccess,
+        HasMasterAccess = field.HasMasterAccess(currentUserId),
         CanEditRoles = field.HasMasterAccess(currentUserId, s => s.CanEditRoles),
         CharacterId = field.CharacterId,
         ProjectId = field.ProjectId,
@@ -140,11 +135,11 @@ namespace JoinRpg.Web.Models
       DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
     }
 
-    private IEnumerable<ClaimListItemViewModel> LoadClaimsWithCondition(Character field, Func<Claim, bool> predicate)
+    private IEnumerable<ClaimShortListItemViewModel> LoadClaimsWithCondition(Character field, Func<Claim, bool> predicate)
     {
       return HasMasterAccess && field != null
-        ? field.Claims.Where(predicate).Select(ClaimListItemViewModel.FromClaim)
-        : Enumerable.Empty<ClaimListItemViewModel>();
+        ? field.Claims.Where(predicate).Select(claim => new ClaimShortListItemViewModel(claim))
+        : Enumerable.Empty<ClaimShortListItemViewModel>();
     }
 
     public static CharacterNavigationViewModel FromClaim([NotNull] Claim claim, int currentUserId, CharacterNavigationPage characterNavigationPage)

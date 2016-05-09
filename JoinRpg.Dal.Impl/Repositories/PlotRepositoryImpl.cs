@@ -19,21 +19,23 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(pf => pf.Project)
           .Include(pf => pf.Project.ProjectAcls)
           .Include(pf => pf.Elements)
+          .Include(pf => pf.Elements.Select(e => e.Texts))
           .Include(pf => pf.Project.Characters)
           .Include(pf => pf.Project.CharacterGroups)
           .Include(pf => pf.Project.Claims)
           .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
     }
 
-    public async Task<IList<PlotElement>> GetPlotsForCharacter(Character character)
+    public async Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character)
     {
       var ids =
-        character.Groups.SelectMany(@group => @group.FlatTree(g => g.ParentGroups))
+        character.Groups.SelectMany(group => group.FlatTree(g => g.ParentGroups))
           .Select(g => g.CharacterGroupId)
           .Distinct()
           .ToList(); //ToList required here so all lazy loads are finished before we are starting making condition below.
       return
         await Ctx.Set<PlotElement>()
+          .Include(e => e.Texts)
           .Where(
             e =>
               e.TargetCharacters.Any(ch => ch.CharacterId == character.CharacterId) ||
@@ -42,8 +44,20 @@ namespace JoinRpg.Dal.Impl.Repositories
     }
 
     public Task<List<PlotFolder>> GetPlots(int project)
-      => Ctx.Set<PlotFolder>().Include(pf => pf.Elements).Where(pf => pf.ProjectId == project).ToListAsync();
-  
+      =>
+        Ctx.Set<PlotFolder>()
+          .Include(pf => pf.Elements.Select(e => e.Texts))
+          .Where(pf => pf.ProjectId == project)
+          .ToListAsync();
+
+    public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
+      =>
+        Ctx.Set<PlotFolder>()
+          .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
+          .Include(pf => pf.Elements.Select(e => e.TargetGroups))
+          .Where(pf => pf.ProjectId == projectId)
+          .ToListAsync();
+
 
     public PlotRepositoryImpl(MyDbContext ctx) : base(ctx)
     {

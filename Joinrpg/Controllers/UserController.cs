@@ -1,10 +1,7 @@
 ﻿using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
@@ -38,7 +35,7 @@ namespace JoinRpg.Web.Controllers
           userProfileViewModel.CanGrantAccessProjects = currentUser.GetProjects(acl => acl.CanGrantRights);
           userProfileViewModel.Claims =
             user.Claims.Where(claim => claim.HasAnyAccess(currentUser.UserId))
-              .Select(ClaimListItemViewModel.FromClaim);
+              .Select(claim => new ClaimListItemViewModel(claim , currentUser.UserId));
 
         }
 

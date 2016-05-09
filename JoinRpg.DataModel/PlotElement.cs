@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -19,17 +20,14 @@ namespace JoinRpg.DataModel
 
     public PlotFolder PlotFolder { get; set; }
 
-    public MarkdownString MasterSummary { get; set; } = new MarkdownString();
-
     public virtual ICollection<CharacterGroup> TargetGroups { get; set; }
 
     public virtual ICollection<Character> TargetCharacters { get; set; }
 
     //TODO: Add here "mentioned characters" concept
 
-    public MarkdownString Content { get; set; }
-
-    public string TodoField { get; set; }
+    [NotNull]
+    public virtual PlotElementTexts Texts { get; set; }
 
     public DateTime CreatedDateTime { get; set; }
 
@@ -39,5 +37,17 @@ namespace JoinRpg.DataModel
 
     public bool CanBePermanentlyDeleted => false;
     public bool IsActive { get; set; }
+  }
+
+  //Sometimes we need to load bunch of plots w/o texts...
+  public class PlotElementTexts
+  {
+    public int PlotElementId { get; set; }
+
+    [NotNull]
+    public MarkdownString Content { get; set; } = new MarkdownString();
+
+    public string TodoField { get; set; }
+
   }
 }

@@ -15,21 +15,6 @@ namespace JoinRpg.Web.Models
 
     public bool IsActive { get; set; }
 
-    public bool IsGroup(int characterGroupId)
-    {
-      return IsObject(GameObjectLinkType.CharacterGroup, characterGroupId);
-    }
-
-    public bool IsCharacter(int characterId)
-    {
-      return IsObject(GameObjectLinkType.Character, characterId);
-    }
-
-    private bool IsObject(GameObjectLinkType objType, int characterGroupId)
-    {
-      return Type == objType && Identification == characterGroupId.ToString();
-    }
-
 
     private static GameObjectLinkType ConvertToLinkType(LinkType type)
     {

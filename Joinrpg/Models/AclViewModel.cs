@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Models
     [Display(Name="Редактировать ролевку")]
     public bool CanEditRoles { get; set; }
 
-    [Display(Name = "Принимать взносы")]
+    [Display(Name = "Принимать взносы наличными")]
     public bool CanAcceptCash { get; set; }
 
     [Display(Name = "Управлять финансами")]

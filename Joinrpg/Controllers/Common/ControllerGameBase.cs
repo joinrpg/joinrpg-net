@@ -170,8 +170,18 @@ namespace JoinRpg.Web.Controllers.Common
 
     protected async Task<FileContentResult> Export<T>(IEnumerable<T> @select, string fileName, ExportType exportType = ExportType.Csv)
     {
-      var generator = ExportDataService.GetGenerator(exportType, @select).BindDisplay<User>(user => user?.DisplayName);
+      ExportDataService.BindDisplay<User>(user => user?.DisplayName);
+      var generator = ExportDataService.GetGenerator(exportType, @select);
       return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
+    }
+
+    protected async Task<ActionResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title, ExportType exportType, IGeneratorFrontend frontend, string projectName)
+    {
+      var generator = ExportDataService.GetGenerator(exportType, viewModel,
+        frontend);
+
+      return File(await generator.Generate(), generator.ContentType,
+        Path.ChangeExtension(projectName + ": " + title, generator.FileExtension));
     }
   }
 }

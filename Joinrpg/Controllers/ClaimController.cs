@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
-      var field = await ProjectRepository.LoadGroupAsync(projectid, characterGroupId);
+      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
       return WithEntity(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
@@ -88,7 +88,7 @@ namespace JoinRpg.Web.Controllers
     {
       if (characterGroupId != null)
       {
-        return await ProjectRepository.LoadGroupAsync(projectId, (int) characterGroupId);
+        return await ProjectRepository.GetGroupAsync(projectId, (int) characterGroupId);
       }
       if (characterId != null)
       {
@@ -428,23 +428,9 @@ namespace JoinRpg.Web.Controllers
         return RedirectToAction("AddForGroup", new {projectId, project.RootGroup.CharacterGroupId});
       }
 
-      if (claims.Count(c => c.IsApproved) == 1)
-      {
-        return ReturnToClaim(claims.Single(c => c.IsApproved).ClaimId, projectId);
-      }
+      var claimId = claims.TrySelectSingleClaim()?.ClaimId;
 
-      if (claims.Count(c => c.IsInDiscussion) == 1)
-      {
-        return ReturnToClaim(claims.Single(c => c.IsInDiscussion).ClaimId, projectId);
-      }
-
-      if (claims.Count == 1)
-      {
-        return ReturnToClaim(claims.Single().ClaimId, projectId);
-      }
-
-      return RedirectToAction("My", "ClaimList");
-
+      return claimId != null ? ReturnToClaim((int) claimId, projectId) : RedirectToAction("My", "ClaimList");
     }
 
     [Authorize, HttpPost, ValidateAntiForgeryToken]

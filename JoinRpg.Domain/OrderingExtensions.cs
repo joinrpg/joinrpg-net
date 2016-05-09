@@ -17,11 +17,11 @@ namespace JoinRpg.Domain
     public static VirtualOrderContainer<CharacterGroup> GetCharacterGroupsContainer(this CharacterGroup characterGroup)
       => VirtualOrderContainerFacade.Create(characterGroup.ChildGroups, characterGroup.ChildGroupsOrdering);
 
-    public static IReadOnlyList<PlotElement> GetOrderedPlots(this Character character, ICollection<PlotElement> elements)
+    public static IReadOnlyList<PlotElement> GetOrderedPlots(this Character character, IReadOnlyCollection<PlotElement> elements)
       => character.GetCharacterPlotContainer(elements).OrderedItems;
 
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
-      ICollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots, character.PlotElementOrderData);
+      IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots, character.PlotElementOrderData);
 
     public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
       => field.GetFieldValuesContainer().OrderedItems;

@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Models.Plot
         ProjectId = folder.ProjectId,
         Status = GetStatus(folder),
         ElementsCount = folder.Elements.Count(),
-        ElementTodos = string.Join("\n", folder.Elements.Select(e => e.TodoField).WhereNotNullOrWhiteSpace()),
+        ElementTodos = string.Join("\n", folder.Elements.Select(e => e.Texts.TodoField).WhereNotNullOrWhiteSpace()),
         TodoField = folder.TodoField
       };
     }

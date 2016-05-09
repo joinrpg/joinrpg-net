@@ -108,7 +108,7 @@ namespace JoinRpg.Web.Controllers
     [Authorize]
     public async Task<ActionResult> Create(int projectid, int charactergroupid)
     {
-      var field = await ProjectRepository.LoadGroupAsync(projectid, charactergroupid);
+      var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
       return AsMaster(field, pa => pa.CanEditRoles) ?? View(new AddCharacterViewModel()
       {

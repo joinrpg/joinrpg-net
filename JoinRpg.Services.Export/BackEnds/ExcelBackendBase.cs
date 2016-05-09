@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using JoinRpg.Services.Export.Internal;
 
-namespace JoinRpg.Services.Export.Internal
+namespace JoinRpg.Services.Export.BackEnds
 {
   internal abstract class ExcelBackendBase : IGeneratorBackend
   {

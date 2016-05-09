@@ -67,7 +67,7 @@ namespace JoinRpg.Services.Impl
     private async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
     {
       var characterGroup = characterGroupId != null
-        ? await ProjectRepository.LoadGroupAsync(projectId, characterGroupId.Value)
+        ? await ProjectRepository.GetGroupAsync(projectId, characterGroupId.Value)
         : null;
       var character = characterId != null ? await ProjectRepository.GetCharacterAsync(projectId, characterId.Value) : null;
 
