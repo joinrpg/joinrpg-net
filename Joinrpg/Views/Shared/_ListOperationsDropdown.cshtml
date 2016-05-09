@@ -1,4 +1,5 @@
-﻿@if (ViewBag.HideOperations == true)
+﻿@model JoinRpg.Web.Models.IOperationsAwareView
+@if (ViewBag.HideOperations == true)
 {
     return;
 }
@@ -15,13 +16,13 @@
                 Скачать в Excel
             </a>
         </li>
-        @if (ViewBag.ClaimIds != null && ViewBag.ProjectId != null)
+        @if (Model.ClaimIds != null && Model.ClaimIds.Any() && Model.ProjectId != null)
         {
             <li>
                 @{
-                    var claimIds = "&claimIds=" + string.Join(",", ((int[]) ViewBag.ClaimIds).Select(c => c.ToString()));
+                    var claimIds = "&claimIds=" + string.Join(",", Model.ClaimIds.Select(c => c.ToString()));
                 }
-                <a href="@Url.Action("ForClaims", "MassMail", new {ViewBag.ProjectId})@claimIds">
+                <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId})@claimIds">
                     <span class="glyphicon glyphicon-envelope"></span>
                     Написать всем
                 </a>

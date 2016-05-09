@@ -48,6 +48,23 @@ namespace JoinRpg.Web.Models
     OnHold,
   }
 
+  public class ClaimListViewModel : IOperationsAwareView
+  {
+    public IEnumerable<ClaimListItemViewModel> Items { get;  }
+    
+    public int? ProjectId { get; }
+    public IReadOnlyCollection<int> ClaimIds { get; }
+
+    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId)
+    {
+      Items = claims
+        .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
+        .ToList();
+      ClaimIds = claims.Select(c => c.ClaimId).ToArray();
+      ProjectId = projectId;
+    }
+  }
+
   public class ClaimListItemViewModel
   {
     [Display(Name="Имя")]
