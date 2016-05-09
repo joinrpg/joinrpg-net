@@ -16,13 +16,13 @@ namespace JoinRpg.Web.Controllers
 {
   public class CharacterController : Common.ControllerGameBase
   {
-    private readonly IPlotRepository _plotRepository;
+    private IPlotRepository PlotRepository { get; }
 
     public CharacterController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IPlotRepository plotRepository, IExportDataService exportDataService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
-      _plotRepository = plotRepository;
+      PlotRepository = plotRepository;
     }
 
     [HttpGet]
@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Controllers
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character).DisableEdit(),
         Plot =
           character.HasAnyAccess(CurrentUserIdOrDefault)
-            ? character.GetOrderedPlots(await _plotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault))
+            ? character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault))
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);

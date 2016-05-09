@@ -1,4 +1,7 @@
-﻿@model JoinRpg.Web.Models.PrintCharacterViewModel
+﻿@using System.Web.Mvc.Html
+@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Plot
+@model JoinRpg.Web.Models.PrintCharacterViewModel
 <h1>@Model.CharacterName</h1>
 <hr/>
 @Model.ProjectName
@@ -29,11 +32,51 @@
                 {
                     <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
                 }
+                @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
+                {
+                <li>
+                  Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.
+                </li>
+                }
             </ul>
         </div>
     </div>
 }
 
-<div style="page-break-after: always"></div>
-<h1>О персонаже</h1>
-<
+<h1 style="page-break-before: always">О персонаже</h1>
+
+
+@if (Model.Plots.Any())
+{
+    <h1 style="page-break-before: always">Загрузы (@Model.Plots.Count()) </h1>
+
+
+    foreach (var plot in Model.Plots)
+    {
+
+        if (plot.Status == PlotStatus.Deleted)
+        {
+            continue;
+        }
+
+        var hideClass = "";
+
+        if (plot.Status == PlotStatus.InWork)
+        {
+            if (!plot.HasMasterAccess)
+            {
+                continue;
+            }
+
+            <b>Не готов</b>
+
+            hideClass = "world-object-hidden";
+
+        }
+
+        <div class="@hideClass" style="page-break-inside: avoid">
+            @Html.DisplayFor(model => plot.Content)
+        </div>
+    }
+
+}h

@@ -1,32 +1,41 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers.Common
 {
   [Authorize]
   public class PrintController : ControllerGameBase
   {
-    public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService) : base(userManager, projectRepository, projectService, exportDataService)
+    private IPlotRepository PlotRepository { get; }
+
+    public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService, exportDataService)
     {
+      PlotRepository = plotRepository;
     }
 
 
     public async Task<ActionResult> Character(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
-      var error = WithEntity(field);
+      var character = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
+      var error = WithCharacter(character);
       if (error != null) return error;
+
       return View(new PrintCharacterViewModel()
       {
-        CharacterName = field.CharacterName,
-        Player = field.ApprovedClaim?.Player,
-        FeeDue = field.ApprovedClaim?.ClaimFeeDue() ?? field.Project.CurrentFee(),
-        ProjectName = field.Project.ProjectName,
+        CharacterName = character.CharacterName,
+        Player = character.ApprovedClaim?.Player,
+        FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee(),
+        ProjectName = character.Project.ProjectName,
+        Plots =
+          character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character))
+            .ToViewModels(character.HasMasterAccess(CurrentUserId))
+            .ToArray()
       });
     }
   }

@@ -112,6 +112,20 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
+    protected ActionResult WithCharacter(Character character)
+    {
+      if (character == null)
+      {
+        return HttpNotFound();
+      }
+      if (!character.HasAnyAccess(CurrentUserId))
+      {
+        return NoAccesToProjectView(character.Project);
+      }
+
+      return WithEntity(character);
+    }
+
     protected IDictionary<int,string> GetCustomFieldValuesFromPost()
     {
       return GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
