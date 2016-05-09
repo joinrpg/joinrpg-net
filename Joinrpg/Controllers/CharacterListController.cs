@@ -5,7 +5,6 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
@@ -49,8 +48,6 @@ namespace JoinRpg.Web.Controllers
 
       if (exportType == null)
       {
-        ViewBag.ClaimIds = list.Items.Select(c => c.ApprovedClaimId).WhereNotNull().ToArray();
-        
         return View("Index", list);
       }
 

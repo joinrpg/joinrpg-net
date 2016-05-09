@@ -1,4 +1,4 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.ClaimListItemViewModel>
+﻿@model JoinRpg.Web.Models.ClaimListViewModel
 
 <p>Вы смотрите обсуждаемые заявки, поданные поданные на персонажей и подгруппы этой группы. Возможно, вы хотите посмотреть только @Html.ActionLink("заявки напрямую в эту группу персонажей.", "DiscussingForGroupDirect", new { ViewBag.ProjectId, ViewBag.CharacterGroupId })</p>
 @Html.Partial("Index", Model)

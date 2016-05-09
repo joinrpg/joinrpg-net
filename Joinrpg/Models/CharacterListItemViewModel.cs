@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models
 {
@@ -19,10 +20,11 @@ namespace JoinRpg.Web.Models
     NotSend,
   }
 
-  public class CharacterListViewModel
+  public class CharacterListViewModel : IOperationsAwareView
   {
     public IEnumerable<CharacterListItemViewModel> Items { get; }
-    public int ProjectId { get; }
+    public int? ProjectId { get; }
+    public IReadOnlyCollection<int> ClaimIds { get; }
     public string ProjectName { get; }
     public string Title { get; }
 
@@ -46,6 +48,7 @@ namespace JoinRpg.Web.Models
       ProjectId = project.ProjectId;
       Title = title;
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
+      ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNullInt().ToArray();
     }
 
     private static bool PlotForCharacter(PlotElement p, Character character)
