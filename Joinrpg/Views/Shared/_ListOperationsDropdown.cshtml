@@ -16,7 +16,7 @@
                 Скачать в Excel
             </a>
         </li>
-        @if (Model.ClaimIds != null && Model.ClaimIds.Any() && Model.ProjectId != null)
+        @if (Model.ClaimIds.Any() && Model.ProjectId != null)
         {
             <li>
                 @{
@@ -28,18 +28,18 @@
                 </a>
             </li>
         }
-        @if (ViewBag.CharacterIds != null && ViewBag.ProjectId != null)
+        @if (Model.CharacterIds.Any() && Model.ProjectId != null)
         {
-        <li>
-            @{
-              var claimIds = "&characterIds=" + string.Join(",", ((int[])ViewBag.CharacterIds).Select(c => c.ToString()));
-            }
-            <a href="@Url.Action("CharacterList", "Print", new {ViewBag.ProjectId})@claimIds">
-                <span class="glyphicon glyphicon-print"></span>
-                Распечатать все
-            </a>
-        </li>
-              }
+            <li>
+                @{
+                    var claimIds = "&characterIds=" + string.Join(",", Model.CharacterIds.Select(c => c.ToString()));
+                }
+                <a href="@Url.Action("CharacterList", "Print", new {Model.ProjectId})@claimIds">
+                    <span class="glyphicon glyphicon-print"></span>
+                    Распечатать все
+                </a>
+            </li>
+        }
     </ul>
 
 </div>

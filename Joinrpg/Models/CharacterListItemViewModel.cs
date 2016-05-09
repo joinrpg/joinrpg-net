@@ -25,6 +25,7 @@ namespace JoinRpg.Web.Models
     public IEnumerable<CharacterListItemViewModel> Items { get; }
     public int? ProjectId { get; }
     public IReadOnlyCollection<int> ClaimIds { get; }
+    public IReadOnlyCollection<int> CharacterIds { get; }
     public string ProjectName { get; }
     public string Title { get; }
 
@@ -49,6 +50,7 @@ namespace JoinRpg.Web.Models
       Title = title;
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
       ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNullInt().ToArray();
+      CharacterIds = characters.Select(c => c.CharacterId).ToArray();
     }
 
     private bool AnyItemHasValue(int projectFieldId)
