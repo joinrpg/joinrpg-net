@@ -42,7 +42,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars)
+    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
     {
       var now = DateTime.UtcNow;
       var plotElement = new PlotElement()
@@ -98,7 +98,9 @@ namespace JoinRpg.Services.Impl
       return folder.Elements.Single(e => e.PlotElementId == plotelementid);
     }
 
-    public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField, ICollection<int> targetGroups, ICollection<int> targetChars, bool isCompleted, int currentUserId)
+    public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents,
+      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted,
+      int currentUserId)
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
       plotElement.Texts.Content.Contents = contents;

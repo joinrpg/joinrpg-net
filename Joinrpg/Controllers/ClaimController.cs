@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -148,7 +147,7 @@ namespace JoinRpg.Web.Controllers
           CurrentFee = claim.ClaimCurrentFee()
         },
         Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList(),
-        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player, GetCurrentUser())
+        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player)
       };
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))

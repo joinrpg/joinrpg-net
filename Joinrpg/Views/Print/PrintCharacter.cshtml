@@ -4,10 +4,14 @@
 <h1>@Model.CharacterName</h1>
 
 <div class="panel panel-default">
-    @if (Model.Player != null)
+    @if (Model.PlayerDetails != null)
     {
         <div class="panel-heading">
             Игрок
+        </div>
+        <div class="panel-body">
+            @Html.DisplayFor(model => model.PlayerDetails)
+            <br /><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
         </div>
     }
     else
@@ -15,11 +19,10 @@
         <div class="panel-heading">
             Нет игрока
         </div>
+        <div class="panel-body">
+            <b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+        </div>
     }
-    <div class="panel-body">
-        @Html.DisplayFor(model => model.PlayerDetails)
-        <br /><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
-    </div>
 </div>
 
 @if (Model.RegistrationOnHold)
@@ -93,4 +96,4 @@
         </div>
     }
 
-}h
+}

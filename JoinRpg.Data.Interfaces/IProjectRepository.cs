@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -19,8 +20,9 @@ namespace JoinRpg.Data.Interfaces
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
-    Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds);
-    Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds);
+    Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
+    Task<IReadOnlyCollection<Character>> LoadCharacters(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
+    Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
     Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId);
     Task<Project> GetProjectWithFinances(int projectid);

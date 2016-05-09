@@ -598,6 +598,7 @@
     <Content Include="Views\CharacterList\Index.cshtml" />
     <Content Include="Views\Print\Character.cshtml" />
     <Content Include="Views\Print\PrintCharacter.cshtml" />
+    <Content Include="Views\Print\CharacterList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

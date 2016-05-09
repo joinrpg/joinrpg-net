@@ -136,7 +136,7 @@ namespace JoinRpg.Web.Controllers.Common
       return AsMaster(entity, acl => true);
     }
 
-    protected async Task<ActionResult> AsMaster<TEntity>(ICollection<TEntity> entity, int projectId) where TEntity : IProjectEntity
+    protected async Task<ActionResult> AsMaster<TEntity>(IReadOnlyCollection<TEntity> entity, int projectId) where TEntity : IProjectEntity
     {
       return AsMaster(entity.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId), acl => true);
     }

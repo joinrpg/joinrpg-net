@@ -296,7 +296,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
-          group.ProjectId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
+          group.ProjectId, group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 

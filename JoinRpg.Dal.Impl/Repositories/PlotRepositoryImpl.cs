@@ -43,6 +43,15 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid)
+      =>
+        await Ctx.Set<PlotFolder>()
+          .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
+          .Include(pf => pf.Elements.Select(e => e.TargetGroups))
+          .Include(pf => pf.Elements.Select(e => e.Texts))
+          .Where(pf => pf.ProjectId == projectid)
+          .ToListAsync();
+
     public Task<List<PlotFolder>> GetPlots(int project)
       =>
         Ctx.Set<PlotFolder>()

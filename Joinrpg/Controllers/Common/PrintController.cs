@@ -2,10 +2,9 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -26,21 +25,23 @@ namespace JoinRpg.Web.Controllers.Common
       var error = WithCharacter(character);
       if (error != null) return error;
 
-      return View(new PrintCharacterViewModel()
-      {
-        CharacterName = character.CharacterName,
-        Player = character.ApprovedClaim?.Player,
-        FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee(),
-        ProjectName = character.Project.ProjectName,
-        Plots =
-          character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character))
-            .ToViewModels(character.HasMasterAccess(CurrentUserId))
-            .ToArray(),
-        Groups = character.GetParentGroups().Where(g => !g.IsSpecial && g.IsActive).Select(g => new CharacterGroupWithDescViewModel(g)).ToArray(),
-        ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser,
-        PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player, GetCurrentUser()),
-        Fields = new CustomFieldsViewModel(CurrentUserId, character, onlyPlayerVisible: true)
-      });
+      return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character)));
+    }
+
+    public async Task<ActionResult> CharacterList(int projectid, string characterIds)
+    {
+      var characters = (await ProjectRepository.LoadCharacters(projectid, characterIds.ToIntList()));
+
+      var error = await AsMaster(characters, projectid);
+      if (error != null) return error;
+
+      var plotElements = (await PlotRepository.GetPlotsWithTargetAndText(projectid)).SelectMany(p => p.Elements).ToArray();
+
+      var viewModel =
+        characters.Select(
+          c => new PrintCharacterViewModel(CurrentUserId, c, plotElements)).ToArray();
+
+      return View(viewModel);
     }
   }
 }

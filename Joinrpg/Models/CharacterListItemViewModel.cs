@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Models
         var plotElements =
           selectMany
             .Where(
-              p => PlotForCharacter(p, character));
+              p => character.ShouldShowPlot(p));
         viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
           plotElements.ToArray()));
       }
@@ -49,13 +49,6 @@ namespace JoinRpg.Web.Models
       Title = title;
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
       ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNullInt().ToArray();
-    }
-
-    private static bool PlotForCharacter(PlotElement p, Character character)
-    {
-      var groups = character.GetParentGroups().Select(g => g.CharacterGroupId);
-      return p.TargetCharacters.Any(c => c.CharacterId == character.CharacterId) ||
-             p.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId));
     }
 
     private bool AnyItemHasValue(int projectFieldId)

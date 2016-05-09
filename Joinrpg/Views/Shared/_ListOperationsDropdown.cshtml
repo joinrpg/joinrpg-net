@@ -28,6 +28,18 @@
                 </a>
             </li>
         }
+        @if (ViewBag.CharacterIds != null && ViewBag.ProjectId != null)
+        {
+        <li>
+            @{
+              var claimIds = "&characterIds=" + string.Join(",", ((int[])ViewBag.CharacterIds).Select(c => c.ToString()));
+            }
+            <a href="@Url.Action("CharacterList", "Print", new {ViewBag.ProjectId})@claimIds">
+                <span class="glyphicon glyphicon-print"></span>
+                Распечатать все
+            </a>
+        </li>
+              }
     </ul>
 
 </div>

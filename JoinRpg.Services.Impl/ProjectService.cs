@@ -54,8 +54,7 @@ namespace JoinRpg.Services.Impl
 
 
 
-    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
-      string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
       var characterGroups = await ValidateCharacterGroupList(projectId, Required(() => parentCharacterGroupIds));
       var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -85,9 +84,11 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot)
+    public async Task AddCharacter(int projectId, string name, bool isPublic,
+      IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description,
+      bool hidePlayerForCharacter, bool isHot)
     {
-      var characterGroups = await  ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
 
       UnitOfWork.GetDbSet<Character>().Add(
         new Character
@@ -105,7 +106,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot)
+    public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic,
+      IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents,
+      bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot)
     {
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
@@ -150,9 +153,9 @@ namespace JoinRpg.Services.Impl
       parentCharacterGroup.ChildCharactersOrdering = parentCharacterGroup.GetCharactersContainer().Move(item, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
-    
+
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
-      List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
+      IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
       int? responsibleMasterId)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
