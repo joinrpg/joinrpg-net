@@ -28,6 +28,7 @@ namespace JoinRpg.Web.Controllers.Common
       return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character)));
     }
 
+    //TODO: Split this into printing envelope and printing content
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
       var characters = (await ProjectRepository.LoadCharacters(projectid, characterIds.ToIntList()));

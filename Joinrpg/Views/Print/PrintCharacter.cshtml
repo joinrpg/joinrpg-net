@@ -1,8 +1,12 @@
 ﻿@using System.Web.Mvc.Html
 @using JoinRpg.Web.Models.Plot
+@using JoinRpg.Helpers
 @model JoinRpg.Web.Models.PrintCharacterViewModel
 <h1>@Model.CharacterName</h1>
-
+<hr/>
+<p>
+    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
+</p>
 <div class="panel panel-default">
     @if (Model.PlayerDetails != null)
     {
@@ -11,7 +15,7 @@
         </div>
         <div class="panel-body">
             @Html.DisplayFor(model => model.PlayerDetails)
-            <br /><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+            <br/><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
         </div>
     }
     else

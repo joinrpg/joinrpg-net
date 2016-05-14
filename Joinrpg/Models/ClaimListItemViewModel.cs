@@ -96,9 +96,6 @@ namespace JoinRpg.Web.Models
     [CanBeNull]
     public User LastModifiedBy { get; set; }
 
-    [CanBeNull]
-    public int? CharacterId { get;  }
-
     public int ProjectId { get; }
 
     public int ClaimId{ get; }
@@ -117,7 +114,6 @@ namespace JoinRpg.Web.Models
       var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
-      CharacterId = claim.CharacterId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
       Name = claim.Name;
       Player = claim.Player;
