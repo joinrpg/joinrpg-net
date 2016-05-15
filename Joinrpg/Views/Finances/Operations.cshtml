@@ -1,47 +1,47 @@
-﻿@using JoinRpg.Domain
-@model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
+﻿@model JoinRpg.Web.Models.FinOperationListViewModel
 
 @{
     ViewBag.Title = "Список финансовых операций";
+    var firstItem = Model.Items.FirstOrDefault();
 }
 
 <h2>@ViewBag.Title</h2>
 
-@Html.Partial("_ListOperationsDropdown")
+@Html.Partial("_ListOperationsDropdown", Model)
 
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.FinanceOperationId)
+            @Html.DisplayNameFor(model => firstItem.FinanceOperationId)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Money)
+            @Html.DisplayNameFor(model => firstItem.Money)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.FeeChange)
+            @Html.DisplayNameFor(model => firstItem.FeeChange)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.PaymentMaster)
+            @Html.DisplayNameFor(model => firstItem.PaymentMaster)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.PaymentTypeName)
+            @Html.DisplayNameFor(model => firstItem.PaymentTypeName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Claim)
+            @Html.DisplayNameFor(model => firstItem.Claim)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Player)
+            @Html.DisplayNameFor(model => firstItem.Player)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.OperationDate)
+            @Html.DisplayNameFor(model => firstItem.OperationDate)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.MarkingMaster)
+            @Html.DisplayNameFor(model => firstItem.MarkingMaster)
         </th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
     <tr>
         <td>
             @Html.DisplayFor(modelItem => item.FinanceOperationId)
