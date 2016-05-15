@@ -52,6 +52,10 @@
   font-feature-settings: "liga" 1, "dlig" 1;
 }
 
+.multicontrol{
+  width: 50%;
+  margin: 0 auto;
+}
 .hidden{
   display: none !important;
 }
@@ -122,6 +126,11 @@
   clear: both;
 }
 
+.multicontrol .mlc-list .mlc-loading{
+  height: 50px;
+  background: url('../images/ajax-loader-879d35b3.gif') no-repeat center;
+}
+
 .multicontrol .mlc-list>ul{
   padding: 3px 8px !important;
   margin: 0;
@@ -162,7 +171,7 @@
 }
 
 .multicontrol .mlc-list ul li.selected>span.title{
-  background-color: rgba(47, 115, 172, 0.83);
+  background-color: rgba(47, 115, 172, 0.82);
   cursor: pointer;
   color: white;
 }
@@ -258,6 +267,5 @@
 
 
 /*
-
 
 */
