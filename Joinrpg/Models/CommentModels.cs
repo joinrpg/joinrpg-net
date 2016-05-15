@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Models
     public bool IsRead { get; }
     public bool IsVisibleToPlayer { get; }
     public bool HasMasterAccess { get;}
-    public bool CanModerateFinance { get; }
+    private bool CanModerateFinance { get; }
     public bool IsCommentByPlayer { get; }
     public User Author { get; }
     public DateTime CreatedTime { get; }
