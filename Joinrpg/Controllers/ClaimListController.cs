@@ -133,8 +133,7 @@ namespace JoinRpg.Web.Controllers
     public ActionResult My()
     {
       ViewBag.Title = "Мои заявки";
-      ViewBag.HideUserColumn = true;
-      return View("Index", new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims, null));
+      return View("Index", new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims, null, showCount: false, showUserColumn:false));
     }
 
     [HttpGet, Authorize]

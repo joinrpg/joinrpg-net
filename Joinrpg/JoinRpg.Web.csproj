@@ -244,7 +244,7 @@
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Helpers\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Helpers\ClaimListItemViewModelExporter.cs" />
-    <Compile Include="Helpers\CustomerExporter.cs" />
+    <Compile Include="Helpers\CustomExporter.cs" />
     <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />

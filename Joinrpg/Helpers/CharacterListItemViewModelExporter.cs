@@ -6,7 +6,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Helpers
 {
-  public class CharacterListItemViewModelExporter : CustomerExporter<CharacterListItemViewModel>
+  public class CharacterListItemViewModelExporter : CustomExporter<CharacterListItemViewModel>
   {
     public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields)
     {
@@ -28,7 +28,10 @@ namespace JoinRpg.Web.Helpers
       }
 
       yield return EnumColumn(x => x.BusyStatus);
-      yield return UserColumn(x => x.Player);
+      foreach (var c in UserColumn(x => x.Player))
+      {
+        yield return c;
+      }
     }
 
   }

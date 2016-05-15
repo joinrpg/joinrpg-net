@@ -14,6 +14,7 @@ namespace JoinRpg.Services.Export.BackEnds
 
     public byte[] Generate()
     {
+      FreezeHeader();
       for (var columnIndex = 1; columnIndex <= MaxUsedColumn; columnIndex++)
       {
         AdjustColumnToContent(columnIndex);
@@ -24,8 +25,6 @@ namespace JoinRpg.Services.Export.BackEnds
         return stream.ToArray();
       }
     }
-
-    protected abstract void SaveToStream(Stream stream);
 
     public virtual void WriteRow(IEnumerable<Cell> cells)
     {
@@ -38,9 +37,12 @@ namespace JoinRpg.Services.Export.BackEnds
       }
       CurrentRowIndex++;
     }
+    protected abstract void SaveToStream(Stream stream);
 
     protected abstract void SetCell(int columnIndex, Cell cell);
 
     protected abstract void AdjustColumnToContent(int columnIndex);
+
+    protected abstract void FreezeHeader();
   }
 }
