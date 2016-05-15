@@ -39,9 +39,7 @@ namespace JoinRpg.Web.Controllers
       {
         return errorResult;
       }
-      var viewModel = project.FinanceOperations.Where(predicate)
-        .OrderBy(f => f.CommentId)
-        .Select(f => FinOperationListItemViewModel.Create(f, new UrlHelper(ControllerContext.RequestContext)));
+      var viewModel = new FinOperationListViewModel(project, new UrlHelper(ControllerContext.RequestContext), project.FinanceOperations.Where(predicate));
 
       var exportType = GetExportTypeByName(export);
 
@@ -51,7 +49,7 @@ namespace JoinRpg.Web.Controllers
       }
       else
       {
-        return await Export(viewModel, "finance-export", exportType.Value);
+        return await Export(viewModel.Items, "finance-export", exportType.Value);
       }
     }
 
