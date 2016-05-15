@@ -15,6 +15,7 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
+using WebGrease.Css.Extensions;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -97,10 +98,6 @@ namespace JoinRpg.Web.Controllers
       throw new InvalidOperationException();
     }
 
-    
-
-    
-
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
@@ -121,7 +118,7 @@ namespace JoinRpg.Web.Controllers
         ClaimId = claim.ClaimId,
         Comments =
           claim.Comments.Where(comment => comment.ParentCommentId == null)
-            .Select(comment => new CommentViewModel(comment, CurrentUserId)),
+            .Select(comment => new CommentViewModel(comment, CurrentUserId)).OrderBy(c => c.CreatedTime),
         HasMasterAccess = claim.HasMasterAccess(CurrentUserId),
         CanManageThisClaim = claim.CanManageClaim(CurrentUserId),
         IsMyClaim = claim.PlayerUserId == CurrentUserId,

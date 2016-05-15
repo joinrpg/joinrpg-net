@@ -17,8 +17,8 @@ namespace JoinRpg.Web.Models
     {
       IsVisibleToPlayer = comment.IsVisibleToPlayer;
       HasMasterAccess = comment.Claim.HasMasterAccess(currentUserId);
-      HasManageMoney = comment.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
-      CanModerateFinance = HasManageMoney || comment.Finance?.PaymentType?.UserId == currentUserId;
+      CanModerateFinance = comment.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) ||
+                           comment.Finance?.PaymentType?.UserId == currentUserId;
       IsCommentByPlayer = comment.IsCommentByPlayer;
       Author = comment.Author;
       CreatedTime = comment.CreatedTime;
@@ -28,33 +28,23 @@ namespace JoinRpg.Web.Models
       ProjectId = comment.ProjectId;
       ClaimId = comment.ClaimId;
       IsRead = comment.IsReadByUser(currentUserId);
-      ChildComments = comment.ChildsComments.Select(c => new CommentViewModel(c, currentUserId));
+      ChildComments = comment.ChildsComments.Select(c => new CommentViewModel(c, currentUserId)).OrderBy(c => c.CreatedTime);
       ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
     }
 
-    public bool IsRead { get; set; }
-    public bool IsVisibleToPlayer { get; set; }
-    public bool HasMasterAccess { get; set; }
-    public bool HasManageMoney { get; set; }
-    public bool CanModerateFinance { get; set; }
-    public bool IsCommentByPlayer
-    { get; set; }
-    public User Author
-    { get; set; }
-    public DateTime CreatedTime
-    { get; set; }
-    public FinanceOperation Finance
-    { get; set; }
-    public MarkdownViewModel CommentText
-    { get; set; }
-    public int CommentId
-    { get; set; }
-    public IEnumerable<CommentViewModel> ChildComments
-    { get; set; }
-    public int ProjectId
-    { get; set; }
-    public int ClaimId
-    { get; set; }
+    public bool IsRead { get; }
+    public bool IsVisibleToPlayer { get; }
+    public bool HasMasterAccess { get;}
+    public bool CanModerateFinance { get; }
+    public bool IsCommentByPlayer { get; }
+    public User Author { get; }
+    public DateTime CreatedTime { get; }
+    public FinanceOperation Finance { get; }
+    public MarkdownViewModel CommentText { get; }
+    public int CommentId { get; }
+    public IEnumerable<CommentViewModel> ChildComments { get; }
+    public int ProjectId { get;  }
+    public int ClaimId { get; }
     public CommentExtraAction? ExtraAction { get; set; }
 
     public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
@@ -97,3 +87,4 @@ namespace JoinRpg.Web.Models
     }
   }
 }
+

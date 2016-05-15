@@ -453,28 +453,29 @@
                     @Html.Partial("_CommentPartial", comment)
                 }
             </div>
-            <a data-toggle="collapse"
-               href="#answerComment1" class="btn btn-default">
-                Добавить комментарий
-            </a>
-            <div id="answerComment1" class="collapse">
-                @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                {
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+            @if (Model.Comments.Any())
+            {
+                <a data-toggle="collapse"
+                   href="#answerComment1" class="btn btn-default">
+                    Добавить комментарий
+                </a>
+                <div id="answerComment1" class="collapse">
+                    @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
                     {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ParentCommentId = null,
-                        EnableHideFromUser = Model.HasMasterAccess,
-                        HideFromUser = false
-                    })
-                }
-            </div>
+                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        {
+                            ProjectId = Model.ProjectId,
+                            ClaimId = Model.ClaimId,
+                            ParentCommentId = null,
+                            EnableHideFromUser = Model.HasMasterAccess,
+                            HideFromUser = false
+                        })
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>
-
-
 
 @Html.Partial("_PlotForCharacterPartial", Model.Plot)
 
