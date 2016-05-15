@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Публично?", Description = "Публичные группы показываются в сетке ролей и на карточках персонажей.")]
     public bool IsPublic { get; set; } = true;
 
-    [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем. Если нет — только членам группы.")]
+    [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем.")]
     public MarkdownViewModel Description { get; set; }
   }
 }

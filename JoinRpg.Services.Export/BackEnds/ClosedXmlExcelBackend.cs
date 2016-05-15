@@ -29,6 +29,11 @@ namespace JoinRpg.Services.Export.BackEnds
       Sheet.Column(columnIndex).AdjustToContents();
     }
 
+    protected override void FreezeHeader()
+    {
+      Sheet.SheetView.FreezeRows(1);
+    }
+
     protected override void SaveToStream(Stream stream) => Sheet.Workbook.SaveAs(stream);
   }
 }

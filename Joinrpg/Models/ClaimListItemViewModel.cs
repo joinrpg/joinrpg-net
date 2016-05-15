@@ -55,13 +55,18 @@ namespace JoinRpg.Web.Models
     public int? ProjectId { get; }
     public IReadOnlyCollection<int> ClaimIds { get; }
 
-    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId)
+    public bool ShowCount { get; }
+    public bool ShowUserColumn { get; }
+
+    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
     {
       Items = claims
         .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
         .ToList();
       ClaimIds = claims.Select(c => c.ClaimId).ToArray();
       ProjectId = projectId;
+      ShowCount = showCount;
+      ShowUserColumn = showUserColumn;
     }
   }
 

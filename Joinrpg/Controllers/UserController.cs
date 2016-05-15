@@ -34,7 +34,10 @@ namespace JoinRpg.Web.Controllers
         {
           userProfileViewModel.CanGrantAccessProjects = currentUser.GetProjects(acl => acl.CanGrantRights);
           userProfileViewModel.Claims = new ClaimListViewModel(currentUser.UserId,
-            user.Claims.Where(claim => claim.HasAnyAccess(currentUser.UserId)).ToArray(), null);
+            user.Claims.Where(claim => claim.HasAnyAccess(currentUser.UserId)).ToArray(), 
+            null, 
+            showCount: false,
+            showUserColumn: false);
         }
 
         return View(userProfileViewModel);

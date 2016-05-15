@@ -6,7 +6,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Helpers
 {
-  public class ClaimListItemViewModelExporter: CustomerExporter<ClaimListItemViewModel>
+  public class ClaimListItemViewModelExporter: CustomExporter<ClaimListItemViewModel>
   {
     public ClaimListItemViewModelExporter(ICollection<ProjectField> fields)
     {
@@ -19,10 +19,19 @@ namespace JoinRpg.Web.Helpers
     {
       yield return StringColumn(x => x.Name);
       yield return EnumColumn(x => x.ClaimStatus);
-      yield return DateTimeCOlumn(x => x.UpdateDate);
-      yield return UserColumn(x => x.LastModifiedBy);
-      yield return UserColumn(x => x.Responsible);
-      yield return UserColumn(x => x.Player);
+      yield return DateTimeColumn(x => x.UpdateDate);
+      foreach (var c in ShortUserColumn(x => x.LastModifiedBy))
+      {
+        yield return c;
+      }
+      foreach (var c in ShortUserColumn(x => x.Responsible))
+      {
+        yield return c;
+      }
+      foreach (var c in UserColumn(x => x.Player))
+      {
+        yield return c;
+      }
 
       foreach (var projectField in Fields)
       {
