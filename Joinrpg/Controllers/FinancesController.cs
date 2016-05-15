@@ -39,7 +39,8 @@ namespace JoinRpg.Web.Controllers
       {
         return errorResult;
       }
-      var viewModel = new FinOperationListViewModel(project, new UrlHelper(ControllerContext.RequestContext), project.FinanceOperations.Where(predicate));
+      var viewModel = new FinOperationListViewModel(project, new UrlHelper(ControllerContext.RequestContext),
+        project.FinanceOperations.Where(predicate).ToArray());
 
       var exportType = GetExportTypeByName(export);
 

@@ -168,6 +168,13 @@
                 </button>
                 }
             }
+            @if (Model.Status == Claim.Status.Approved)
+            {
+                <a href="@Url.Action("Character", "Print", new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
+                    <span class="glyphicon glyphicon-print"></span>
+                    Для печати
+                </a>
+            }
         </div>
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
@@ -203,8 +210,6 @@
                         })
                         <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
                     }
-
-
                 }
             </div>
         </div>

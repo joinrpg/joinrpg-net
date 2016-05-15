@@ -44,14 +44,17 @@ namespace JoinRpg.Web.Models
     public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; }
 
     public int? ProjectId { get; }
-    public IReadOnlyCollection<int> ClaimIds => new int[] {};
 
-    public FinOperationListViewModel(Project project, UrlHelper urlHelper, IEnumerable<FinanceOperation> operations)
+    public IReadOnlyCollection<int> ClaimIds { get; }
+    public IReadOnlyCollection<int> CharacterIds => new int[] {};
+
+    public FinOperationListViewModel(Project project, UrlHelper urlHelper, IReadOnlyCollection<FinanceOperation> operations)
     {
       Items = operations
         .OrderBy(f => f.CommentId)
         .Select(f => new FinOperationListItemViewModel(f, urlHelper)).ToArray();
       ProjectId = project.ProjectId;
+      ClaimIds = operations.Select(c => c.ClaimId).Distinct().ToArray();
     }
   }
 

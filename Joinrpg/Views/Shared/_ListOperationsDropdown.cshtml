@@ -16,7 +16,7 @@
                 Скачать в Excel
             </a>
         </li>
-        @if (Model.ClaimIds != null && Model.ClaimIds.Any() && Model.ProjectId != null)
+        @if (Model.ClaimIds.Any() && Model.ProjectId != null)
         {
             <li>
                 @{
@@ -25,6 +25,18 @@
                 <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId})@claimIds">
                     <span class="glyphicon glyphicon-envelope"></span>
                     Написать всем
+                </a>
+            </li>
+        }
+        @if (Model.CharacterIds.Any() && Model.ProjectId != null)
+        {
+            <li>
+                @{
+                    var claimIds = "&characterIds=" + string.Join(",", Model.CharacterIds.Select(c => c.ToString()));
+                }
+                <a href="@Url.Action("CharacterList", "Print", new {Model.ProjectId})@claimIds">
+                    <span class="glyphicon glyphicon-print"></span>
+                    Распечатать все
                 </a>
             </li>
         }

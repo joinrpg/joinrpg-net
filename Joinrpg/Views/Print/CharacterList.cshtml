@@ -1,0 +1,24 @@
+﻿@model JoinRpg.Web.Models.PrintCharacterViewModel[]
+
+@{
+  Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>@Model.First().ProjectName:</title>
+    @Styles.Render("~/Content/css")
+</head>
+<body>
+<div class="container body-content">
+    @foreach (var item in Model)
+    {
+
+
+        @Html.Partial("PrintCharacter", item)
+    }
+</div>
+</body>
+</html>

@@ -110,15 +110,24 @@ namespace JoinRpg.Web.Models
      
     }
 
-    public CustomFieldsViewModel(int? currentUserId, Character character)
+    public CustomFieldsViewModel(int? currentUserId, Character character, bool onlyPlayerVisible = false)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = character.HasMasterAccess(currentUserId);
+      if (onlyPlayerVisible)
+      {
+        HasMasterAccess = false;
+        HasPlayerAccessToCharacter = character.HasAnyAccess(currentUserId);
+        HasPlayerClaimAccess = character.ApprovedClaim?.HasAnyAccess(currentUserId) ?? false;
+      }
+      else
+      {
+        HasMasterAccess = character.HasMasterAccess(currentUserId);
+        HasPlayerAccessToCharacter = character.HasPlayerAccess(CurrentUserId);
+        HasPlayerClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
+      }
+      
       FieldsWithValues = character.Project.GetFields().ToList();
       Target = character;
-
-      HasPlayerAccessToCharacter = character.HasPlayerAccess(CurrentUserId);
-      HasPlayerClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
       FieldsWithValues.FillIfEnabled(character.ApprovedClaim, character, CurrentUserId);
       FieldsWithValues = FieldsWithValues.Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character).ToList();
     }

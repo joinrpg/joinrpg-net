@@ -15,7 +15,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
     }
 
-    public Task<ICollection<Claim>> GetClaims(int projectId) => GetClaimsImpl_(projectId);
+    public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId) => GetClaimsImpl_(projectId);
 
     public async Task<IEnumerable<Claim>> GetMyClaimsForProject(int userId, int projectId)
       => await Ctx.ClaimSet.Where(c => c.ProjectId == projectId && c.PlayerUserId == userId).ToListAsync();
@@ -29,7 +29,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
-    private async Task<ICollection<Claim>> GetClaimsImpl_(int projectId)
+    private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl_(int projectId)
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
@@ -37,10 +37,10 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadProjectFields(projectId);
 
       //Sync operation, as anything should be loaded already
-      return Ctx.ProjectsSet.Find(projectId).Claims;
+      return Ctx.ProjectsSet.Find(projectId).Claims.ToArray();
     }
 
-    public async Task<ICollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId)
+    public async Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId)
       => (await GetClaimsImpl_(projectId)).Where(c => c.ResponsibleMasterUserId == userId).ToList();
 
     public Task<Claim> GetClaim(int projectId, int claimId)

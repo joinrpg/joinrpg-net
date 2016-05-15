@@ -1,0 +1,103 @@
+﻿@using System.Web.Mvc.Html
+@using JoinRpg.Web.Models.Plot
+@using JoinRpg.Helpers
+@model JoinRpg.Web.Models.PrintCharacterViewModel
+<h1 style="page-break-before: always">@Model.CharacterName</h1>
+<hr/>
+<p>
+    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
+</p>
+<div class="panel panel-default">
+    @if (Model.PlayerDetails != null)
+    {
+        <div class="panel-heading">
+            Игрок
+        </div>
+        <div class="panel-body">
+            @Html.DisplayFor(model => model.PlayerDetails)
+            <br/><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+        </div>
+    }
+    else
+    {
+        <div class="panel-heading">
+            Нет игрока
+        </div>
+        <div class="panel-body">
+            <b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+        </div>
+    }
+</div>
+
+@if (Model.RegistrationOnHold)
+{
+    <div class="panel panel-danger">
+        <div class="panel-heading">Перед выдачей конверта</div>
+        <div class="panel-body">
+            <ul>
+                @if (Model.FeeDue > 0)
+                {
+                    <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
+                }
+                @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
+                {
+                <li>
+                  Часть загрузов помечены как не готовы!
+                </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<h1 style="page-break-before: always">Группы</h1>
+<dl>
+    @foreach (var group in Model.Groups)
+    {
+        <dt>@group.Name</dt>
+        <dd>@Html.DisplayFor(model => group.Description)</dd>
+    }
+</dl>
+
+@if (Model.Fields.AnythingAccessible)
+{
+<h1 style="page-break-before: always">Поля персонажа</h1>
+<div class="form-horizontal">
+    @Html.Partial("_EditFieldsPartial", Model.Fields)
+</div>
+}
+
+@if (Model.Plots.Any())
+{
+    <h1 style="page-break-before: always">Загрузы (@Model.Plots.Count()) </h1>
+
+
+    foreach (var plot in Model.Plots)
+    {
+
+        if (plot.Status == PlotStatus.Deleted)
+        {
+            continue;
+        }
+
+        var hideClass = "";
+
+        if (plot.Status == PlotStatus.InWork)
+        {
+            if (!plot.HasMasterAccess)
+            {
+                continue;
+            }
+
+            <b>Не готов</b>
+
+            hideClass = "world-object-hidden";
+
+        }
+
+        <div class="@hideClass" style="page-break-inside: avoid">
+            @Html.DisplayFor(model => plot.Content)
+        </div>
+    }
+
+}
