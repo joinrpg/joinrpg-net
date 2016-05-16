@@ -52,10 +52,6 @@
   font-feature-settings: "liga" 1, "dlig" 1;
 }
 
-.multicontrol{
-  width: 50%;
-  margin: 0 auto;
-}
 .hidden{
   display: none !important;
 }
@@ -128,7 +124,7 @@
 
 .multicontrol .mlc-list .mlc-loading{
   height: 50px;
-  background: url('../images/ajax-loader-879d35b3.gif') no-repeat center;
+  background: url('images/ajax-loader-879d35b3.gif') no-repeat center;
 }
 
 .multicontrol .mlc-list>ul{
@@ -267,5 +263,6 @@
 
 
 /*
+
 
 */
