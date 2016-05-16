@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
@@ -73,7 +74,17 @@ namespace JoinRpg.Services.Impl
       return items;
     }
 
-    protected static ICollection<T> Required<T>(Expression<Func<ICollection<T>>> itemsLambda)
+    protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
+    {
+      if (items.Count == 0)
+      {
+        throw new DbEntityValidationException();
+      }
+
+      return items;
+    }
+
+    protected static IReadOnlyCollection<T> Required<T>(Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
     {
       var name = itemsLambda.AsPropertyName();
       var items = itemsLambda.Compile()();
@@ -103,7 +114,7 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    protected async Task<IList<CharacterGroup>> ValidateCharacterGroupList(int projectId, ICollection<int> groupIds)
+    protected async Task<IList<CharacterGroup>> ValidateCharacterGroupList(int projectId, IReadOnlyCollection<int> groupIds)
     {
       var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
 
@@ -115,7 +126,7 @@ namespace JoinRpg.Services.Impl
       return characterGroups;
     }
 
-    protected async Task<IList<Character>> ValidateCharactersList(int projectId, ICollection<int> characterIds)
+    protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)
     {
       var characters =
         await ProjectRepository.LoadCharacters(projectId, characterIds);
@@ -124,7 +135,7 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
-      return characters;
+      return characters.ToArray();
     }
   }
 }

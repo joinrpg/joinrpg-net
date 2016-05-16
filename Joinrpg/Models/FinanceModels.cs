@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -38,55 +39,70 @@ namespace JoinRpg.Web.Models
     public bool HasUnApprovedPayments { get; set; }
   }
 
+  public class FinOperationListViewModel : IOperationsAwareView
+  {
+    public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; }
+
+    public int? ProjectId { get; }
+
+    public IReadOnlyCollection<int> ClaimIds { get; }
+    public IReadOnlyCollection<int> CharacterIds => new int[] {};
+
+    public FinOperationListViewModel(Project project, UrlHelper urlHelper, IReadOnlyCollection<FinanceOperation> operations)
+    {
+      Items = operations
+        .OrderBy(f => f.CommentId)
+        .Select(f => new FinOperationListItemViewModel(f, urlHelper)).ToArray();
+      ProjectId = project.ProjectId;
+      ClaimIds = operations.Select(c => c.ClaimId).Distinct().ToArray();
+    }
+  }
+
   public class FinOperationListItemViewModel
   {
     [Display(Name="# операции")]
-    public int FinanceOperationId { get; set; }
+    public int FinanceOperationId { get; }
 
     [Display(Name = "Внесено денег"), Required]
-    public int Money { get; set; }
+    public int Money { get; }
 
     [Display(Name = "Изменение взноса"), Required]
-    public int FeeChange { get; set; }
+    public int FeeChange { get;  }
 
     [Display(Name = "Оплачено мастеру")]
-    public User PaymentMaster { get; set; }
+    public User PaymentMaster { get;  }
 
     [Display(Name = "Способ оплаты"), Required]
-    public string PaymentTypeName { get; set; }
+    public string PaymentTypeName { get; }
 
     [Display(Name = "Отметил"), Required]
-    public User MarkingMaster { get; set; }
+    public User MarkingMaster { get; }
 
     [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
-    public DateTime OperationDate
-    { get; set; }
+    public DateTime OperationDate { get;  }
 
     [Display(Name = "Заявка"), Required]
-    public string Claim { get; set; }
+    public string Claim { get; }
 
     [Url,Display(Name="Ссылка на заявку")]
-    public string ClaimLink { get; set; }
+    public string ClaimLink { get; }
 
     [Display(Name = "Игрок"), Required]
-    public User Player
-    { get; set; }
+    public User Player { get; }
 
-    public static FinOperationListItemViewModel Create(FinanceOperation fo, UrlHelper url)
+    public FinOperationListItemViewModel (FinanceOperation fo, UrlHelper url)
     {
-      return new FinOperationListItemViewModel()
-      {
-        PaymentTypeName = fo.PaymentType.GetDisplayName(),
-        PaymentMaster = fo.PaymentType.User,
-        Claim = fo.Claim.Name,
-        FeeChange = fo.FeeChange,
-        Money = fo.MoneyAmount,
-        OperationDate = fo.OperationDate,
-        FinanceOperationId = fo.CommentId,
-        MarkingMaster = fo.Comment.Author,
-        Player = fo.Claim.Player,
-        ClaimLink = url.Action("Edit", "Claim", new {fo.ProjectId, fo.ClaimId}, url.RequestContext.HttpContext.Request.Url.Scheme)
-      };
+      PaymentTypeName = fo.PaymentType.GetDisplayName();
+      PaymentMaster = fo.PaymentType.User;
+      Claim = fo.Claim.Name;
+      FeeChange = fo.FeeChange;
+      Money = fo.MoneyAmount;
+      OperationDate = fo.OperationDate;
+      FinanceOperationId = fo.CommentId;
+      MarkingMaster = fo.Comment.Author;
+      Player = fo.Claim.Player;
+      ClaimLink = url.Action("Edit", "Claim", new {fo.ProjectId, fo.ClaimId},
+        url.RequestContext.HttpContext.Request.Url.Scheme);
     }
   }
 

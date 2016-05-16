@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models
 {
@@ -54,14 +55,21 @@ namespace JoinRpg.Web.Models
     
     public int? ProjectId { get; }
     public IReadOnlyCollection<int> ClaimIds { get; }
+    public IReadOnlyCollection<int> CharacterIds { get; }
 
-    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId)
+    public bool ShowCount { get; }
+    public bool ShowUserColumn { get; }
+
+    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
     {
       Items = claims
         .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
         .ToList();
       ClaimIds = claims.Select(c => c.ClaimId).ToArray();
+      CharacterIds = claims.Select(c => c.CharacterId).WhereNotNullInt().ToArray();
       ProjectId = projectId;
+      ShowCount = showCount;
+      ShowUserColumn = showUserColumn;
     }
   }
 
@@ -88,9 +96,6 @@ namespace JoinRpg.Web.Models
     [CanBeNull]
     public User LastModifiedBy { get; set; }
 
-    [CanBeNull]
-    public int? CharacterId { get;  }
-
     public int ProjectId { get; }
 
     public int ClaimId{ get; }
@@ -109,7 +114,6 @@ namespace JoinRpg.Web.Models
       var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
-      CharacterId = claim.CharacterId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
       Name = claim.Name;
       Player = claim.Player;

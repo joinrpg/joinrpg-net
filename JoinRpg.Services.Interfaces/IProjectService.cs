@@ -8,14 +8,11 @@ namespace JoinRpg.Services.Interfaces
   {
     Task<Project> AddProject(string projectName, User creator);
 
-    Task AddCharacterGroup(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds,
-      string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
+    Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
 
-    Task AddCharacter(int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
+    Task AddCharacter(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
 
-    Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
-      List<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
-      int? responsibleMasterId);
+    Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots, int? responsibleMasterId);
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
     Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims);
@@ -30,7 +27,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task DeleteCharacter(int projectId, int characterId);
 
-    Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, List<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot);
+    Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents, bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot);
 
     Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction);
 

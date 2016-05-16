@@ -112,6 +112,20 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
+    protected ActionResult WithCharacter(Character character)
+    {
+      if (character == null)
+      {
+        return HttpNotFound();
+      }
+      if (!character.HasAnyAccess(CurrentUserId))
+      {
+        return NoAccesToProjectView(character.Project);
+      }
+
+      return WithEntity(character);
+    }
+
     protected IDictionary<int,string> GetCustomFieldValuesFromPost()
     {
       return GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
@@ -122,7 +136,7 @@ namespace JoinRpg.Web.Controllers.Common
       return AsMaster(entity, acl => true);
     }
 
-    protected async Task<ActionResult> AsMaster<TEntity>(ICollection<TEntity> entity, int projectId) where TEntity : IProjectEntity
+    protected async Task<ActionResult> AsMaster<TEntity>(IReadOnlyCollection<TEntity> entity, int projectId) where TEntity : IProjectEntity
     {
       return AsMaster(entity.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId), acl => true);
     }

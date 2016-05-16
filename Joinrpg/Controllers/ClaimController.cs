@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -97,10 +96,6 @@ namespace JoinRpg.Web.Controllers
       throw new InvalidOperationException();
     }
 
-    
-
-    
-
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
@@ -121,7 +116,7 @@ namespace JoinRpg.Web.Controllers
         ClaimId = claim.ClaimId,
         Comments =
           claim.Comments.Where(comment => comment.ParentCommentId == null)
-            .Select(comment => new CommentViewModel(comment, CurrentUserId)),
+            .Select(comment => new CommentViewModel(comment, CurrentUserId)).OrderBy(c => c.CreatedTime),
         HasMasterAccess = claim.HasMasterAccess(CurrentUserId),
         CanManageThisClaim = claim.CanManageClaim(CurrentUserId),
         IsMyClaim = claim.PlayerUserId == CurrentUserId,
@@ -151,7 +146,7 @@ namespace JoinRpg.Web.Controllers
           CurrentFee = claim.ClaimCurrentFee()
         },
         Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList(),
-        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player, GetCurrentUser())
+        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player)
       };
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))
@@ -182,8 +177,10 @@ namespace JoinRpg.Web.Controllers
       if (claim.IsApproved)
       {
         var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
+        
         claimViewModel.Plot =
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId));
+          // ReSharper disable once PossibleNullReferenceException
+          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId), claim.Character.CharacterId);
       }
       else
       {

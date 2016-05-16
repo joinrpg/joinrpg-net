@@ -9,13 +9,17 @@
   var firstItem = Model.Items.FirstOrDefault();
 }
 
+@if (Model.ShowCount)
+{
+    <p>@DisplayCount.OfX(Model.Items.Count(), "заявка", "заявки", "заявок")</p>
+}
 
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => firstItem.Name)
         </th>
-        @if (ViewBag.HideUserColumn != true) //We can't do !ViewBag.HideUserColumn, cause it can be null
+        @if (Model.ShowUserColumn)
         {
             <th>
                 @Html.DisplayNameFor(model => firstItem.Player)
@@ -52,7 +56,7 @@
                     }
                 </a>
             </td>
-            @if (ViewBag.HideUserColumn != true)
+            @if (Model.ShowUserColumn)
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)

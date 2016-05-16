@@ -3,10 +3,14 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.Web.Models
 {
-  public interface IOperationsAwareView
+  public interface IOperationsAwareView 
   {
     int? ProjectId { get; }
-    [CanBeNull]
+
+    [NotNull]
     IReadOnlyCollection<int> ClaimIds { get; }
+
+    [NotNull]
+    IReadOnlyCollection<int> CharacterIds { get; }
   }
 }

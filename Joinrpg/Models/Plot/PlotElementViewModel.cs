@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Models.Plot
     public bool First { get; set; }
     public bool Last { get; set; }
 
-    public static PlotElementViewModel FromPlotElement(PlotElement p, bool hasMasterAccess)
+    public static PlotElementViewModel FromPlotElement(PlotElement p, bool hasMasterAccess, int characterId)
     {
       return new PlotElementViewModel
       {
@@ -27,19 +27,21 @@ namespace JoinRpg.Web.Models.Plot
         PlotFolderId = p.PlotFolderId,
         PlotElementId = p.PlotElementId,
         ProjectId = p.ProjectId,
-        Status = PlotFolderViewModelBase.GetStatus(p)
+        Status = PlotFolderViewModelBase.GetStatus(p),
+        CharacterId = characterId
       };
     }
 
     int IMovableListItem.ItemId => PlotElementId;
+    public int CharacterId { get; private set; }
   }
 
   public static class PlotElementViewModelExtensions
   {
-    public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots, bool hasMasterAccess)
+    public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots, bool hasMasterAccess, int characterId)
     {
       return plots.Select(
-        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess)).MarkFirstAndLast();
+        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess, characterId)).MarkFirstAndLast();
     }
   }
 }

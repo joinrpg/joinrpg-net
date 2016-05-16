@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -50,8 +51,13 @@ namespace JoinRpg.Web.Models
 
     public User User { get; set; } //TODO: Start using ViewModel here
 
-    public static UserProfileDetailsViewModel FromUser(User user, User currentUser)
+    [CanBeNull]
+    public static UserProfileDetailsViewModel FromUser([CanBeNull] User user)
     {
+      if (user == null)
+      {
+        return null;
+      }
       return new UserProfileDetailsViewModel()
       {
         Email = user.Email,

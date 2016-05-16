@@ -109,12 +109,23 @@ namespace JoinRpg.Dal.Impl.Repositories
     }
 
 
-    public async Task<IList<Character>> LoadCharacters(int projectId, ICollection<int> characterIds)
+    public async Task<IReadOnlyCollection<Character>> LoadCharacters(int projectId, IReadOnlyCollection<int> characterIds)
     {
       return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
     }
 
-    public async Task<IList<CharacterGroup>> LoadGroups(int projectId, ICollection<int> groupIds)
+    public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)
+    {
+      await LoadProjectGroups(projectId);
+
+      return
+        await Ctx.Set<Character>()
+          .Include(c => c.Groups)
+          .Include(c => c.Project.ProjectFields.Select(pf => pf.DropdownValues))
+          .Where(e => characterIds.Contains(e.CharacterId) && e.ProjectId == projectId).ToListAsync();
+    }
+
+    public async Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds)
     {
       return await Ctx.Set<CharacterGroup>().Where(cg => cg.ProjectId == projectId && groupIds.Contains(cg.CharacterGroupId)).ToListAsync();
     }
