@@ -1431,26 +1431,6 @@ MultiControl.App.prototype.destroyCharactersList = function () {
 //TODO: настройка приема данных
 //TODO: крутилка на загрузке
 ;
-$(function () {
-  var options = {
-    url: 'http://dev.joinrpg.ru/27/roles/78/indexjson',
-    multiselect: true,
-    onitemselected: function (items) {
-    },
-    showcharacters: true,
-    hiddenselect: {
-      id: 'testselect',
-      name: 'testselect'
-    },
-    strategy: {
-      type: "nonchanger",
-      elements: ['2279']
-    },
-    implicitgroups: 'children'
-  };
-  var c = $('#jrpg-multicontrol');
-  c.multicontrol(options);
-});
 var MultiControl = MultiControl || {};
 MultiControl.Views = MultiControl.Views || {};
 
@@ -2200,3 +2180,6 @@ MultiControl.Views.AllGroupsView = function (all_groups, el, actionManager, impl
 //    $el.detach();
   }
 };
+
+
+
