@@ -14,7 +14,6 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
-using WebGrease.Css.Extensions;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -178,8 +177,10 @@ namespace JoinRpg.Web.Controllers
       if (claim.IsApproved)
       {
         var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
+        
         claimViewModel.Plot =
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId));
+          // ReSharper disable once PossibleNullReferenceException
+          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId), claim.Character.CharacterId);
       }
       else
       {

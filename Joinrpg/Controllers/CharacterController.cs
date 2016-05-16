@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Controllers
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character).DisableEdit(),
         Plot =
           character.HasAnyAccess(CurrentUserIdOrDefault)
-            ? character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault))
+            ? character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault), character.CharacterId)
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);

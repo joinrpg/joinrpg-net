@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -12,7 +13,7 @@ namespace JoinRpg.Data.Interfaces
     Task<List<PlotFolder>> GetPlotsWithTargets(int project);
 
     Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId);
-    Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter(Character character);
+    Task<IReadOnlyCollection<PlotElement>> GetPlotsForCharacter ([NotNull] Character character);
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
   }
 }

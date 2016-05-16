@@ -11,9 +11,7 @@
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     </dl>
-@{
-  ViewBag.CharacterId = Model.Navigation.CharacterId;
-}
+
 @if (Model.Fields.AnythingAccessible)
 {
     <div class="form-horizontal">
