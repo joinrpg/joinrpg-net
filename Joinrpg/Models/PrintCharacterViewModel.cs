@@ -25,7 +25,7 @@ namespace JoinRpg.Web.Models
       ProjectName = character.Project.ProjectName;
       Plots =
         character.GetOrderedPlots(plots.Where(character.ShouldShowPlot).ToArray())
-          .ToViewModels(character.HasMasterAccess(currentUserId))
+          .ToViewModels(character.HasMasterAccess(currentUserId), character.CharacterId)
           .ToArray();
       Groups =
         character.GetParentGroups()
