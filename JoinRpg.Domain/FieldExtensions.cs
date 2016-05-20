@@ -43,7 +43,9 @@ namespace JoinRpg.Domain
 
     public static bool IsAvailableForTarget(this ProjectField field, IClaimSource target)
     {
-      return field.IsActive && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
+      return field.IsActive
+        && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor))
+        && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || (target as Character)?.IsAcceptingClaims == true);
     }
   }
 }

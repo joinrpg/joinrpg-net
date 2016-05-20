@@ -25,8 +25,15 @@ namespace JoinRpg.Domain
     {
       get
       {
-        return Field.DropdownValues.FirstOrDefault(dv => dv.ProjectFieldDropdownValueId.ToString() == Value)?.Label ??
-               Value;
+        if (!Field.HasValueList())
+        {
+          return Value;
+        }
+        var selectedIds = GetSelectedIds();
+        return
+          Field.DropdownValues.Where(dv => selectedIds.Contains(dv.ProjectFieldDropdownValueId))
+            .Select(dv => dv.Label)
+            .Join(", ");
       }
     }
 
