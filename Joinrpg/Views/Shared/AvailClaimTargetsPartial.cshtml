@@ -26,7 +26,7 @@
                     @CreateValue("group^", element.CharacterGroupId, "Группа " + GetName(element))
                     }
 
-                    foreach (var character in element.Characters.Where(ch => ch.IsAvailable))
+                    foreach (var character in element.ActiveCharacters.Where(ch => ch.IsAvailable))
                     {
                     @CreateValue("character^", character.CharacterId, string.Join("→", element.Path.Skip(1).Union(new[] { element }).Select(p => p.Name)) + "→" + character.CharacterName)
                     }

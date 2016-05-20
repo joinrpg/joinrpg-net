@@ -18,6 +18,8 @@ namespace JoinRpg.Web.Models
     Discussed,
     [Display(Name = "Нет заявок")]
     NotSend,
+    [Display(Name = "NPC")]
+    Npc,
   }
 
   public class CharacterListViewModel : IOperationsAwareView
@@ -99,9 +101,13 @@ namespace JoinRpg.Web.Models
       {
         BusyStatus = CharacterBusyStatusView.Discussed;
       }
-      else 
+      else if (character.IsAcceptingClaims)
       {
         BusyStatus = CharacterBusyStatusView.NotSend;
+      }
+      else
+      {
+        BusyStatus = CharacterBusyStatusView.Npc;
       }
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
