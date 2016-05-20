@@ -35,6 +35,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
     public ICollection<string> ShowForGroups { get; set; } = new List<string>();
 
+    [Display(Name = "Доступно NPC", Description = "Доступно ли для персонажей-NPC")]
+    public bool ValidForNpc { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)

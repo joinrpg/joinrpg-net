@@ -34,6 +34,8 @@ namespace JoinRpg.DataModel
 
     public bool WasEverUsed { get; set; }
 
+    public bool ValidForNpc { get; set; }
+
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; } =
@@ -60,6 +62,13 @@ namespace JoinRpg.DataModel
         yield return
           new ValidationResult("It's incosistent that player can edit but can't see field.",
             new List<string> {nameof(IsPublic), nameof(CanPlayerView)});
+      }
+
+      if (FieldBoundTo == FieldBoundTo.Claim && ValidForNpc)
+      {
+        yield return
+          new ValidationResult("Claim-bound field shoudn't be valid for NPC.",
+            new List<string> {nameof(FieldBoundTo), nameof(ValidForNpc)});
       }
     }
   }
