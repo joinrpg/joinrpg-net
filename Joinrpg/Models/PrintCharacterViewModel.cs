@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Models
           .ToArray();
       ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;
       PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player);
-      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true);
+      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true).DisableEdit();
     }
   }
 }
