@@ -29,12 +29,12 @@ namespace JoinRpg.Web.Models
           .ToArray();
       Groups =
         character.GetParentGroups()
-          .Where(g => !g.IsSpecial && g.IsActive)
+          .Where(g => !g.IsSpecial && g.IsActive && g.IsPublic)
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
       ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;
       PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player);
-      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true);
+      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true).DisableEdit();
     }
   }
 }
