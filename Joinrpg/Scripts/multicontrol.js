@@ -1020,18 +1020,35 @@ MultiControl.App.prototype.initializeModels = function () {
 
 MultiControl.App.prototype.loadData = function (url) {
   var sender = this;
+  this.MultilistView.setLoading();
+  this.AutocompleteView.setLoading();
   $.ajax({
     url: url,
     type: 'GET',
     dataType: 'json',
     success: function (data) {
       sender.processData(data.Groups);
-      sender.draw();
+      var was_opened = sender.draw();
       sender.initAutocomplete();
       sender.applyKeyElements();
+      sender.MultilistView.unsetLoading();
+      sender.AutocompleteView.unsetLoading();
+      if (was_opened && sender.$el.find('.mlc-taginput').val() != '') {
+        var words = sender.getWord(sender.$el.find('.mlc-taginput').val());
+        if (!!words) {
+          sender.ActionManager.createAction('close_multilist').trigger();
+          sender.ActionManager.createAction('open_autocomplete').trigger(words);
+          sender.ActionManager.createAction('hide_all_groups').trigger();
+        }
+      }
+      else if (was_opened) {
+        sender.ActionManager.createAction('close_autocomplete').trigger();
+        sender.ActionManager.createAction('open_multilist').trigger();
+        sender.ActionManager.createAction('hide_all_groups').trigger();
+      }
     },
     error: function (data) {
-      alert('Ошибка. ' + data.responseText);
+      console.log('Ошибка. ' + data);
     }
   });
 };
@@ -1063,6 +1080,10 @@ MultiControl.App.prototype.tryInitializeHiddenSelect = function () {
     }
     this.$el.after(this.Select);
     this.ActionManager.registerListener('input_updated', this, 'addValueToSelect');
+    for (var i = 0; i < this.Settings.strategy.elements.length; i++) {
+      this.Select.append('<option selected="selected" ' +
+          'value="' + this.Settings.strategy.elements[i] + '"></option>')
+    }
   }
 };
 
@@ -1071,7 +1092,7 @@ MultiControl.App.prototype.addValueToSelect = function (selected_items) {
   var list = [];
   for (var i = 0; i < selected_items.length; i++) {
     var id = selected_items[i].getId();
-    this.Select.append('<option selected="selected" value="' + id + '"></option>')
+    this.Select.append('<option selected="selected" value="' + id + '"></option>');
   }
 };
 
@@ -1153,7 +1174,11 @@ MultiControl.App.prototype.processData = function (data) {
 MultiControl.App.prototype.draw = function () {
   var root_view = this.createView(this.RootGroupModel, '');
   this.$el.find('.mlc-multilist>ul').append(root_view.getEl());
-  this.$el.find('.mlc-multilist').addClass('hidden');
+  if (!this.$el.find('.mlc-multilist').hasClass('hidden')){
+    this.$el.find('.mlc-multilist').addClass('hidden');
+    return true;
+  }
+  return false;
 };
 
 MultiControl.App.prototype.createView = function (model, parentsString) {
@@ -1691,6 +1716,14 @@ MultiControl.Views.MultilistView = function (el, isMultiselect, actionManager) {
   this.isHidden = function () {
     return $el.hasClass('hidden');
   };
+  this.setLoading = function(){
+    $el.append('<div class="mlc-loading"></div>');
+  };
+
+  this.unsetLoading = function(){
+    $el.find('.mlc-loading').detach();
+  };
+
   $el.on('click', function (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -1703,6 +1736,8 @@ MultiControl.Views.MultilistView = function (el, isMultiselect, actionManager) {
 //    $el.detach();
   }
 };
+
+
 
 MultiControl.Views.AutocompleteLiView = function (data, isMultiselect, actionManager) {
   var model = data,
@@ -1872,6 +1907,13 @@ MultiControl.Views.AutocompleteView = function (el, isMultiselect, actionManager
     }
     $el.find('ul').empty();
     views = [];
+  };
+  this.setLoading = function(){
+    $el.append('<div class="mlc-loading"></div>');
+  };
+
+  this.unsetLoading = function(){
+    $el.find('.mlc-loading').detach();
   };
   this.isHidden = function () {
     return $el.hasClass('hidden');
@@ -2082,7 +2124,7 @@ MultiControl.Views.AllGroupsView = function (all_groups, el, actionManager, impl
     $el.empty();
 
     if (groups.length > 0) {
-	  if (implicit_groups == 'parents') {
+      if (implicit_groups == 'parents') {
         $el.append('<li>А также их родителей:</li>');
       } else if (implicit_groups == 'children') {
         $el.append('<li>Включая персонажей:</li>');
