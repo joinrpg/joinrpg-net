@@ -1048,7 +1048,7 @@ MultiControl.App.prototype.loadData = function (url) {
       }
     },
     error: function (data) {
-      alert('Ошибка. ' + data.responseText);
+      console.log('Ошибка. ' + data);
     }
   });
 };
