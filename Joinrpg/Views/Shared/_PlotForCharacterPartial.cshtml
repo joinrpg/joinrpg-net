@@ -1,13 +1,13 @@
 ﻿@using JoinRpg.Web.Models.Plot
 @model IEnumerable<PlotElementViewModel>
 
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Any(m => m.Visible))
 {
     <div class="panel panel-default">
         <div class="panel-heading" id="headingOne">
             <h4 class="panel-title">
                 <a role="button" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    @DisplayCount.OfX(Model.Count(), "загруз", "загруза", "загрузов")
+                    @DisplayCount.OfX(Model.Count(m => m.Visible), "загруз", "загруза", "загрузов")
                 </a>
             </h4>
         </div>
