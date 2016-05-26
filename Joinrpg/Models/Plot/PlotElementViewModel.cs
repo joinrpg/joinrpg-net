@@ -18,6 +18,8 @@ namespace JoinRpg.Web.Models.Plot
     public bool First { get; set; }
     public bool Last { get; set; }
 
+    public bool Visible => Status == PlotStatus.Completed || (HasMasterAccess && Status == PlotStatus.InWork);
+
     public static PlotElementViewModel FromPlotElement(PlotElement p, bool hasMasterAccess, int characterId)
     {
       return new PlotElementViewModel

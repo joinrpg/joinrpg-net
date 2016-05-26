@@ -51,10 +51,15 @@ namespace JoinRpg.Web.Controllers
         return await RedirectToProject(projectId, "Report");
       }
 
-      ViewBag.MaxDeep = maxDeep;
+      ViewBag.MaxDeep = maxDeep ?? 1;
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
-      field.RequestMasterAccess(CurrentUserId);
+
+      var error = AsMaster(field);
+      if (error != null)
+      {
+        return error;
+      }
 
       var hasMasterAccess = field.HasMasterAccess(CurrentUserId);
 

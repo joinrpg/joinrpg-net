@@ -171,7 +171,7 @@ namespace JoinRpg.Web.Controllers
 
       if (claim.Character != null)
       {
-        claimViewModel.ParentGroups = CharacterParentGroupsViewModel.FromCharacter(claim.Character, claim.HasMasterAccess(CurrentUserId));
+        claimViewModel.ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(CurrentUserId));
       }
 
       if (claim.IsApproved)
