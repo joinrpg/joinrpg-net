@@ -86,6 +86,9 @@ namespace JoinRpg.Web.Models
     public int ColReadyPlotsCount { get; }
     public int ColAllPlotsCount{ get; }
 
+    [ReadOnly(true), DisplayName("Входит в группы")]
+    public CharacterParentGroupsViewModel Groups { get; }
+
     public CharacterListItemViewModel ([NotNull] Character character, int currentUserId, IEnumerable<ClaimProblem> problems, IReadOnlyCollection<PlotElement> plots)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
@@ -118,6 +121,7 @@ namespace JoinRpg.Web.Models
       IndAllPlotsCount = plots.Count(p => p.IsActive && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
       ColReadyPlotsCount = plots.Count(p => p.IsCompleted && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
       ColAllPlotsCount = plots.Count(p => p.IsActive && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
+      Groups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserId));
     }
 
     [Display(Name="Проблемы")]

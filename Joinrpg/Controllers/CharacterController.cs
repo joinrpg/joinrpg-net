@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
         Description = new MarkdownViewModel(character.Description),
         Player = character.ApprovedClaim?.Player,
         HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
-        ParentGroups = CharacterParentGroupsViewModel.FromCharacter(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
+        ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
         HidePlayer = character.HidePlayerForCharacter,
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character).DisableEdit(),

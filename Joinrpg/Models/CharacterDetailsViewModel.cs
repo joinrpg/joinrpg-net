@@ -17,14 +17,12 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true), DisplayName("Входит в группы")]
     public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; private set; }
 
-    public static CharacterParentGroupsViewModel FromCharacter([NotNull] Character character, bool hasMasterAccess)
+    public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
-      return new CharacterParentGroupsViewModel()
-      {
-        HasMasterAccess = hasMasterAccess,
-        ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToList()
-      };
+      HasMasterAccess = hasMasterAccess;
+      //TODO: Remove special groups from here
+      ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToArray();
     }
   }
 

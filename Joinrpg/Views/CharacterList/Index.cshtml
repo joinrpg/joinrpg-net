@@ -23,6 +23,9 @@
         <th rowspan="2">
             @Html.DisplayNameFor(model => firstItem.Player)
         </th>
+        <th rowspan="2">
+            @Html.DisplayNameFor(model => firstItem.Groups)
+        </th>
         
         <th rowspan="2">@Html.DisplayNameFor(model => firstItem.Problems)</th>
         <th colspan="2">Загрузы (готовых/всего)</th>
@@ -72,6 +75,9 @@
                         @Html.DisplayFor(modelItem => item.BusyStatus)
                         break;
                 }
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Groups)
             </td>
             <td>
                 @foreach (var pr in item.Problems)
