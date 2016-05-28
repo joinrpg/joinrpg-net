@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.PrintCharacterViewModel
+﻿@using JoinRpg.Helpers
+@model JoinRpg.Web.Models.PrintCharacterViewModel
 
 @{
     Layout = null;
@@ -12,8 +13,35 @@
     @Styles.Render("~/Content/css")
 </head>
 <body>
-    <div class="container body-content">
-        @Html.Partial("PrintCharacter", Model)
+<div class="container body-content">
+    <h1 style="page-break-before: always">@Model.CharacterName</h1>
+    <hr />
+    <p>
+        @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
+    </p>
+    <div class="panel panel-default">
+        @if (Model.PlayerDetails != null)
+        {
+        <div class="panel-heading">
+            Игрок
+        </div>
+        <div class="panel-body">
+            @Html.DisplayFor(model => model.PlayerDetails)
+            <br /><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+        </div>
+        }
+        else
+        {
+        <div class="panel-heading">
+            Нет игрока
+        </div>
+        <div class="panel-body">
+            <b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
+        </div>
+        }
     </div>
+
+    @Html.Partial("PrintCharacter", Model)
+</div>
 </body>
 </html>

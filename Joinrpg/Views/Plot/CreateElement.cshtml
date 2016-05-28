@@ -8,7 +8,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm("")) 
 {
     @Html.AntiForgeryToken()
     
@@ -18,6 +18,15 @@
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(p => p.ProjectId)
         @Html.HiddenFor(p => p.PlotFolderId)
+        @Html.HiddenFor(p => p.ElementType)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ElementType, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DisplayFor(model => model.ElementType)
+                @Html.DescriptionFor(model => model.ElementType)
+            </div>
+        </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.Content, htmlAttributes: new { @class = "control-label col-md-2" })

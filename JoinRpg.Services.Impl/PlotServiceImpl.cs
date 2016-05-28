@@ -42,7 +42,8 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
+    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField,
+      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
     {
       var now = DateTime.UtcNow;
       var plotElement = new PlotElement()
@@ -59,7 +60,8 @@ namespace JoinRpg.Services.Impl
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         TargetGroups = await ValidateCharacterGroupList(projectId, targetGroups),
-        TargetCharacters = await ValidateCharactersList(projectId, targetChars)
+        TargetCharacters = await ValidateCharactersList(projectId, targetChars),
+        ElementType = elementType
       };
 
       UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);

@@ -37,6 +37,14 @@ namespace JoinRpg.DataModel
 
     public bool CanBePermanentlyDeleted => false;
     public bool IsActive { get; set; }
+
+    public PlotElementType ElementType { get; set; }
+  }
+
+  public enum PlotElementType
+  {
+    RegularPlot,
+    Handout
   }
 
   //Sometimes we need to load bunch of plots w/o texts...
