@@ -8,7 +8,7 @@
 
 <html>
 <head>
-    <title>@Model.First().ProjectName:</title>
+    <title>@Model.First().ProjectName</title>
     @Styles.Render("~/Content/css")
 </head>
 <body>
@@ -16,7 +16,7 @@
     @foreach (var item in Model)
     {
 
-
+        @Html.Partial("CharacterListHeader", item)
         @Html.Partial("PrintCharacter", item)
     }
 </div>

@@ -114,11 +114,34 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
+        ElementType = PlotElementTypeView.RegularPlot
       });
     }
 
-    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content, string todoField, [CanBeNull] ICollection<string> targets)
-    { 
+    [HttpGet]
+    public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
+    {
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return AsMaster(folder) ?? View("CreateElement", new AddPlotElementViewModel()
+      {
+        ProjectId = projectId,
+        PlotFolderId = plotFolderId,
+        PlotFolderName = folder.MasterTitle,
+        ElementType = PlotElementTypeView.Handout
+      });
+    }
+
+    [HttpPost]
+    public Task<ActionResult> CreateHandout(int projectId, int plotFolderId, MarkdownViewModel content,
+      string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
+    {
+      return CreateElement(projectId, plotFolderId, content, todoField, targets, elementType);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content,
+      string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
+    {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder);
       if (error != null)
@@ -130,7 +153,8 @@ namespace JoinRpg.Web.Controllers
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars);
+          _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars,
+            (PlotElementType) elementType);
         return ReturnToPlot(plotFolderId, projectId);
       }
       catch (Exception)

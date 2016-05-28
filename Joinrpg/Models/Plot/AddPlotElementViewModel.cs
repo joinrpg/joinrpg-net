@@ -20,5 +20,17 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Для кого", Description = "Тех, кому предназначена эта вводная, можно добавить сейчас или позже.")]
     public IEnumerable<string> Targets { get; set; } = new string[] {};
     public string PlotFolderName { get; set; }
+
+    [Display(Name = "Тип")]
+    public PlotElementTypeView ElementType { get; set; }
+  }
+
+  
+  public enum PlotElementTypeView
+  {
+    [Display(Name = "Обычная вводная", Description = "Текст, который нужно выдать игроку.")]
+    RegularPlot,
+    [Display(Name = "Элемент раздатки", Description = "Инструкция службе регистрации выдать какой-то определенный предмет игроку. Одна строка — один предмет.")]
+    Handout
   }
 }

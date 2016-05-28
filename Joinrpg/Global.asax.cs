@@ -14,7 +14,7 @@ namespace JoinRpg.Web
       RouteConfig.RegisterRoutes(RouteTable.Routes);
       BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-      var migrator = new DbMigrator(new Dal.Impl.Migrations.Configuration());
+      var migrator = new DbMigrator(new Dal.Impl.Migrations.Configuration() {AutomaticMigrationsEnabled = false});
       migrator.Update();
     }
   }

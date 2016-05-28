@@ -40,9 +40,10 @@ namespace JoinRpg.Web.Models.Plot
 
   public static class PlotElementViewModelExtensions
   {
-    public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots, bool hasMasterAccess, int characterId)
+    public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots,
+      bool hasMasterAccess, int characterId)
     {
-      return plots.Select(
+      return plots.Where(p => p.ElementType == PlotElementType.RegularPlot) .Select(
         p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess, characterId)).MarkFirstAndLast();
     }
   }

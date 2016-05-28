@@ -40,6 +40,7 @@ namespace JoinRpg.Web.Models.Plot
         PlotFolderId = e.PlotFolderId,
         Status = GetStatus(e),
         IsCompleted = e.IsCompleted,
+        ElementType = (PlotElementTypeView) e.ElementType
       };
     }
   }
@@ -70,5 +71,7 @@ namespace JoinRpg.Web.Models.Plot
 
     [ReadOnly(true)]
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; set; }
+
+    public PlotElementTypeView ElementType { get; set; }
   }
 }

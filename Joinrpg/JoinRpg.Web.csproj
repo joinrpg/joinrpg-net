@@ -600,6 +600,7 @@
     <Content Include="Views\Print\Character.cshtml" />
     <Content Include="Views\Print\PrintCharacter.cshtml" />
     <Content Include="Views\Print\CharacterList.cshtml" />
+    <Content Include="Views\Print\CharacterListHeader.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
