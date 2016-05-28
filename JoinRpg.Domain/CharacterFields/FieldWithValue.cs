@@ -45,7 +45,7 @@ namespace JoinRpg.Domain
       }
       return string.IsNullOrWhiteSpace(Value)
         ? Enumerable.Empty<int>()
-        : Value.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse);
+        : Value.ToIntList();
     }
 
     public bool HasValue => !string.IsNullOrWhiteSpace(Value) || Field.FieldType == ProjectFieldType.Header;

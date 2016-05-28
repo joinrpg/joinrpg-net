@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.IOperationsAwareView
+﻿@using JoinRpg.Helpers.Web
+@model JoinRpg.Web.Models.IOperationsAwareView
 @if (ViewBag.HideOperations == true)
 {
     return;
@@ -19,10 +20,7 @@
         @if (Model.ClaimIds.Any() && Model.ProjectId != null)
         {
             <li>
-                @{
-                    var claimIds = "&claimIds=" + string.Join(",", Model.ClaimIds.Select(c => c.ToString()));
-                }
-                <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId})@claimIds">
+                <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()})">
                     <span class="glyphicon glyphicon-envelope"></span>
                     Написать всем
                 </a>
@@ -31,10 +29,7 @@
         @if (Model.CharacterIds.Any() && Model.ProjectId != null)
         {
             <li>
-                @{
-                    var claimIds = "&characterIds=" + string.Join(",", Model.CharacterIds.Select(c => c.ToString()));
-                }
-                <a href="@Url.Action("CharacterList", "Print", new {Model.ProjectId})@claimIds">
+                <a href="@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()})">
                     <span class="glyphicon glyphicon-print"></span>
                     Распечатать все
                 </a>
