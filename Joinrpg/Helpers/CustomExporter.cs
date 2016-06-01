@@ -64,7 +64,15 @@ namespace JoinRpg.Web.Helpers
     [MustUseReturnValue]
     protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User>> func)
     {
-      return ComplexColumn(func, u => u.DisplayName, u => u.SurName, u => u.FatherName, u => u.BornName, u => u.Email);
+      return ComplexColumn(
+        func,
+        u => u.DisplayName,
+        u => u.SurName,
+        u => u.FatherName,
+        u => u.BornName,
+        u => u.Email)
+        .Union(new[]
+        {ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk)});
     }
 
     [MustUseReturnValue]
@@ -82,21 +90,33 @@ namespace JoinRpg.Web.Helpers
     [MustUseReturnValue]
     private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string>>[] expressions)
     {
-      var member = func.AsPropertyAccess();
-      var complexGetter = func.Compile();
-
-      return expressions.Select(expression => ComplexElementMemberColumn(member, complexGetter, expression));
+      return expressions.Select(expression => ComplexElementMemberColumn(func, expression));
     }
 
     [MustUseReturnValue]
-    private static ITableColumn ComplexElementMemberColumn<T>(PropertyInfo complexMember, Func<TRow, T> complexGetter, Expression<Func<T, string>> expr)
+    private static ITableColumn ComplexElementMemberColumn<T>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, string>> expr)
     {
-      return new TableColumn($"{complexMember.GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}", arg =>
-      {
-        var complexObj = complexGetter(arg);
-        return complexObj == null ? null : expr.Compile()(complexObj);
-      });
+      return
+        new TableColumn(
+          $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}",
+          CombineGetters(complexGetter, expr).Compile());
     }
 
+    [MustUseReturnValue]
+    private static ITableColumn ComplexElementMemberColumn<T1, T2>(Expression<Func<TRow, T1>> complexGetter,
+      Expression<Func<T1, T2>> immed, Expression<Func<T2, string>> expr) where T2 : class
+    {
+      return
+        new TableColumn(
+          $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{immed.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}",
+          CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
+    }
+
+    private static Expression<Func<TRow, TOut>> CombineGetters<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr)
+      where TOut : class 
+    {
+      //TODO: Combine getters before compile 
+      return arg => complexGetter.Compile()(arg) == null ? null : expr.Compile()(complexGetter.Compile()(arg));
+    }
   }
 }

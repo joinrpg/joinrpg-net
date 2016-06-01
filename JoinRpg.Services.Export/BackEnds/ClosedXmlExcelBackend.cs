@@ -1,11 +1,14 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 using ClosedXML.Excel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Export.Internal;
 
 namespace JoinRpg.Services.Export.BackEnds
 {
   internal class ClosedXmlExcelBackend : ExcelBackendBase
   {
+    private readonly Regex _invalidCharactersRegex = new Regex("[\x00-\x08\x0B\x0C\x0E-\x1F]");
     private IXLWorksheet Sheet { get; }
 
     public ClosedXmlExcelBackend()
@@ -17,7 +20,7 @@ namespace JoinRpg.Services.Export.BackEnds
     protected override void SetCell(int columnIndex, Cell cell)
     {
       var xlCell = Sheet.Cell(CurrentRowIndex, columnIndex);
-      xlCell.Value = cell.Content;
+      xlCell.Value = _invalidCharactersRegex.Replace(cell.Content ?? "", "");
       if (cell.IsUri)
       {
         xlCell.Hyperlink = new XLHyperlink(cell.Content);
