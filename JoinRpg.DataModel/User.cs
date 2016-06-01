@@ -44,6 +44,7 @@ namespace JoinRpg.DataModel
     public virtual UserAuthDetails Auth { get; set; }
 
     public virtual AllrpgUserDetails Allrpg { get; set; }
+    [CanBeNull]
     public virtual UserExtra Extra { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions{ get; set; }
