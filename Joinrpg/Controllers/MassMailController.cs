@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
@@ -20,16 +21,17 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> ForClaims(int projectid, string claimIds)
     {
-      var claims = (await ClaimRepository.GetClaimsByIds(projectid, claimIds.ToIntList())).ToList();
+      var claims = (await ClaimRepository.GetClaimsByIds(projectid, claimIds.UnCompressIdList().ToArray())).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
+      var filteredClaims = claims.Where(c => c.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
       return AsMaster(project) ?? View(new MassMailViewModel
       {
         AlsoMailToMasters = !claimIds.Any(),
         ProjectId = projectid,
         ProjectName = project.ProjectName,
-        ClaimIds = claimIds,
-        Claims = claims.Where(c => c.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).Select(claim => new ClaimShortListItemViewModel(claim)),
+        ClaimIds = filteredClaims.Select( c=> c.ClaimId).CompressIdList(),
+        Claims = filteredClaims.Select(claim => new ClaimShortListItemViewModel(claim)),
         ToMyClaimsOnlyWarning = !canSendMassEmails && claims.Any(c => c.ResponsibleMasterUserId != CurrentUserId),
         Body = new MarkdownViewModel("Добрый день, %NAME%, \nспешим уведомить вас..")
       });
@@ -38,7 +40,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ForClaims(MassMailViewModel viewModel)
     {
-      var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds.ToIntList())).ToList();
+      var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds.UnCompressIdList().ToArray())).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var error = AsMaster(project);

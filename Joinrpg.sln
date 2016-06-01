@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web", "Joinrpg\JoinRpg.Web.csproj", "{24952B80-7D38-44DE-B431-BDC9C1E71D63}"
 EndProject
@@ -54,6 +54,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.CommonUI.Models.Test", "JoinRpg.CommonUI.Models.Test\JoinRpg.CommonUI.Models.Test.csproj", "{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Helpers.Web", "JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj", "{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Helpers.Web.Test", "JoinRpg.Helpers.Web.Test\JoinRpg.Helpers.Web.Test.csproj", "{6B134A2C-84BF-445E-B5FC-0451E3C432CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +131,10 @@ Global
 		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B134A2C-84BF-445E-B5FC-0451E3C432CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,5 +145,6 @@ Global
 		{7B8DB01F-423B-4BC9-9336-50D772F34F82} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{2C54153D-EB05-4A29-9163-C559628CFD7E} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{0DEAC762-ABEF-4AE8-AC2E-5B697171E703} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
+		{6B134A2C-84BF-445E-B5FC-0451E3C432CE} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 	EndGlobalSection
 EndGlobal

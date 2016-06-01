@@ -1,13 +1,14 @@
 ﻿@model JoinRpg.Web.Models.CharacterParentGroupsViewModel
 @foreach (var gr in Model.ParentGroups.Where(g => Model.HasMasterAccess || (g.IsPublic && g.IsActive)))
 {
+    var hideCLass = gr.IsPublic ? "" : "world-object-hidden";
     if (gr.IsActive)
     {
-        @Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, null)
+        @Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, new {@class = hideCLass})
     }
     else
     {
-        <s>@Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, null)</s>
+        <s>@Html.ActionLink(gr.Name, "Index", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId}, new { @class = hideCLass })</s>
     }
     <br/>
 }

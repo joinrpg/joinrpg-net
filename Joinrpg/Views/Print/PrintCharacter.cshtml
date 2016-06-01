@@ -1,56 +1,9 @@
 ﻿@using System.Web.Mvc.Html
 @using JoinRpg.Web.Models.Plot
-@using JoinRpg.Helpers
 @model JoinRpg.Web.Models.PrintCharacterViewModel
 <h1 style="page-break-before: always">@Model.CharacterName</h1>
-<hr/>
-<p>
-    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
-</p>
-<div class="panel panel-default">
-    @if (Model.PlayerDetails != null)
-    {
-        <div class="panel-heading">
-            Игрок
-        </div>
-        <div class="panel-body">
-            @Html.DisplayFor(model => model.PlayerDetails)
-            <br/><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
-        </div>
-    }
-    else
-    {
-        <div class="panel-heading">
-            Нет игрока
-        </div>
-        <div class="panel-body">
-            <b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
-        </div>
-    }
-</div>
-
-@if (Model.RegistrationOnHold)
-{
-    <div class="panel panel-danger">
-        <div class="panel-heading">Перед выдачей конверта</div>
-        <div class="panel-body">
-            <ul>
-                @if (Model.FeeDue > 0)
-                {
-                    <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
-                }
-                @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
-                {
-                <li>
-                  Часть загрузов помечены как не готовы!
-                </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
-
-<h1 style="page-break-before: always">Группы</h1>
+@Html.DisplayFor(model => model.CharacterDescription)
+<h1>Группы</h1>
 <dl>
     @foreach (var group in Model.Groups)
     {
@@ -67,37 +20,16 @@
 </div>
 }
 
-@if (Model.Plots.Any())
+@if (Model.Plots.Any(p => p.Status == PlotStatus.Completed))
 {
-    <h1 style="page-break-before: always">Загрузы (@Model.Plots.Count()) </h1>
+    <h1 style="page-break-before: always">Загрузы (@Model.Plots.Count(p => p.Status == PlotStatus.Completed)) </h1>
 
 
-    foreach (var plot in Model.Plots)
+    foreach (var plot in Model.Plots.Where(p => p.Status == PlotStatus.Completed))
     {
-
-        if (plot.Status == PlotStatus.Deleted)
-        {
-            continue;
-        }
-
-        var hideClass = "";
-
-        if (plot.Status == PlotStatus.InWork)
-        {
-            if (!plot.HasMasterAccess)
-            {
-                continue;
-            }
-
-            <b>Не готов</b>
-
-            hideClass = "world-object-hidden";
-
-        }
-
-        <div class="@hideClass" style="page-break-inside: avoid">
+        <div style="page-break-inside: avoid">
             @Html.DisplayFor(model => plot.Content)
         </div>
     }
-
 }
+<br style="page-break-after: always"/>

@@ -22,6 +22,16 @@
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            @switch (Model.ElementType)
+            {
+                case PlotElementTypeView.RegularPlot:
+                    break;
+                case PlotElementTypeView.Handout:
+                <span class="label label-info">Раздатка</span>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @{
                     var header = Model.Content.TakeWords(10).ToPlainText();
@@ -43,12 +53,12 @@
             {
                 foreach (var target in Model.TargetsForDisplay)
                 {
-                @Html.DisplayFor(model => target)
+                    @Html.DisplayFor(model => target)
                 }
             }
             else
             {
-            <span>Не установлено</span>
+                <span>Не установлено</span>
             }
         </div>
 
@@ -91,6 +101,10 @@
                             @Html.LabelFor(model => Model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
                             <div class="col-md-10">
                                 @Html.EditorFor(model => Model.Content, new {htmlAttributes = new {@class = "form-control"}})
+                                @if (Model.ElementType == PlotElementTypeView.Handout)
+                                {
+                                    <div class="help-block">Один элемент раздатки — одна строчка</div>
+                                }
                                 @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
                             </div>
                         </div>
@@ -123,7 +137,7 @@
             </details>
             @if (Model.Status != PlotStatus.Deleted)
             {
-            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
                 Удалить
             </button>
             }
