@@ -12,6 +12,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
@@ -157,7 +158,7 @@ namespace JoinRpg.Web.Controllers
       {
         field.Project.ProjectId,
         Groups =
-          CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          new CharacterTreeBuilder(field, hasMasterAccess).Generate()
             .Where(g => includeSpecial || !g.IsSpecial)
             .Select(
               g =>
@@ -169,7 +170,7 @@ namespace JoinRpg.Web.Controllers
                   g.FirstCopy,
                   Path = g.Path.Select(gr => gr.Name),
                   PathIds = g.Path.Select(gr => gr.CharacterGroupId),
-                  Characters = g.PublicCharacters.Select(ConvertCharacterToJsonSlim),
+                  Characters = g.Characters.Select(ConvertCharacterToJsonSlim),
                 }),
       });
     }
@@ -209,7 +210,7 @@ namespace JoinRpg.Web.Controllers
       };
     }
 
-    private object ConvertCharacterToJsonSlim(CharacterViewModel ch)
+    private object ConvertCharacterToJsonSlim(CharacterLinkViewModel ch)
     {
       return new
       {
@@ -271,9 +272,9 @@ namespace JoinRpg.Web.Controllers
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
 
     {
-      if (!@group.HaveDirectSlots)
+      if (!group.HaveDirectSlots)
         return DirectClaimSettings.NoDirectClaims;
-      return @group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
+      return group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
     [HttpPost, ValidateAntiForgeryToken, Authorize]

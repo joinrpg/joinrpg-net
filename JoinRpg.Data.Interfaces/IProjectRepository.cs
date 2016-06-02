@@ -16,6 +16,7 @@ namespace JoinRpg.Data.Interfaces
     Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId);
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId);
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId);
+    Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
