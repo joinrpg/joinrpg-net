@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -147,6 +148,13 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var cached = CheckCache(project.CharacterTreeModifiedAt);
+      if (cached)
+      {
+        return NotModified();
+      }
+
       var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
       if (field == null)
       {

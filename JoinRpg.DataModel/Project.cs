@@ -45,6 +45,8 @@ namespace JoinRpg.DataModel
     public virtual ICollection<ProjectFeeSetting>  ProjectFeeSettings { get; set; }
     public virtual ICollection<PaymentType> PaymentTypes { get; set; }
 
+    public DateTime CharacterTreeModifiedAt { get; set; }
+
     #region helper properties
     public IEnumerable<PaymentType> ActivePaymentTypes => PaymentTypes.Where(pt => pt.IsActive);
 
