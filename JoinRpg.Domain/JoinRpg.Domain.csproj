@@ -67,6 +67,7 @@
     <Compile Include="FieldExtensions.cs" />
     <Compile Include="FinanceExtensions.cs" />
     <Compile Include="ProjectEntityExtensions.cs" />
+    <Compile Include="ProjectExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserExtensions.cs" />
     <Compile Include="WorldObjectExtensions.cs" />

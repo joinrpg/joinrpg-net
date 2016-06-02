@@ -9,38 +9,6 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
-  public class CharacterGroupLinkViewModel
-  {
-    public int CharacterGroupId { get; }
-    public string Name { get; }
-    public bool IsPublic { get; }
-    public int ProjectId { get; }
-    public bool IsActive { get; }
-
-    public bool IsRoot { get; }
-
-    public CharacterGroupLinkViewModel(CharacterGroup group)
-    {
-      CharacterGroupId = group.CharacterGroupId;
-      Name = group.CharacterGroupName;
-      IsPublic = group.IsPublic;
-      ProjectId = group.ProjectId;
-      IsActive = group.IsActive;
-      IsRoot = group.IsRoot;
-    }
-  }
-
-  public class CharacterGroupWithDescViewModel : CharacterGroupLinkViewModel
-  {
-    public MarkdownViewModel Description { get; }
-    
-
-    public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group)
-    {
-      Description = new MarkdownViewModel(group.Description);
-    }
-  }
-
   public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
   {
     public int RootGroupId

@@ -1,0 +1,19 @@
+﻿@using JoinRpg.Web.Helpers
+@model JoinRpg.Web.Models.Print.HandoutReportViewModel
+
+@{
+    ViewBag.Title = "Отчет по раздатке";
+ 
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr><th>@Html.LabelFor(model => Model.Handouts.First().Text)</th><th>@Html.LabelFor(model => Model.Handouts.First().Count)</th></tr>
+    @foreach (var item in Model.Handouts)
+    {
+        <tr><td>
+            @Html.ActionLink(item.Text.ToPlainText(), "Edit", "Plot", new {item.ProjectId, item.PlotFolderId}, null)
+        </td><td>@item.Count</td></tr>
+    }
+</table>

@@ -283,8 +283,10 @@
     <Compile Include="Helpers\UserHelper.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AclViewModel.cs" />
-    <Compile Include="Models\CharacterListItemViewModel.cs" />
-    <Compile Include="Models\CharacterViewModels.cs" />
+    <Compile Include="Models\Characters\CharacterListItemViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterTreeBuilder.cs" />
+    <Compile Include="Models\Characters\CharacterTreeViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterViewModels.cs" />
     <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\CommentModels.cs" />
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
@@ -293,18 +295,20 @@
     <Compile Include="Models\CustomFieldsViewModels.cs" />
     <Compile Include="Models\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
-    <Compile Include="Models\CharacterDetailsViewModel.cs" />
-    <Compile Include="Models\CharacterGroupListViewModel.cs" />
-    <Compile Include="Models\CharacterGroupListItemViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterDetailsViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterGroupListViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterGroupListItemViewModel.cs" />
     <Compile Include="Models\EditCharacterGroupViewModel.cs" />
-    <Compile Include="Models\CharacterViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\IOperationsAwareView.cs" />
     <Compile Include="Models\IProjectIdAware.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
-    <Compile Include="Models\PrintCharacterViewModel.cs" />
+    <Compile Include="Models\Print\PrintCharacterViewModel.cs" />
+    <Compile Include="Models\Print\HandoutReportViewModel.cs" />
+    <Compile Include="Models\Print\PrintIndexViewModel.cs" />
     <Compile Include="Models\ProblemViewModel.cs" />
     <Compile Include="Models\ProjectViewModels.cs" />
     <Compile Include="Models\ErrorNoAccessToProjectViewModel.cs" />
@@ -601,6 +605,8 @@
     <Content Include="Views\Print\PrintCharacter.cshtml" />
     <Content Include="Views\Print\CharacterList.cshtml" />
     <Content Include="Views\Print\CharacterListHeader.cshtml" />
+    <Content Include="Views\Print\Index.cshtml" />
+    <Content Include="Views\Print\HandoutReport.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

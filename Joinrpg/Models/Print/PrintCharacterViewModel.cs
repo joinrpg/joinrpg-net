@@ -2,6 +2,7 @@
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 

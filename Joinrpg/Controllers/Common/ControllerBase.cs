@@ -68,5 +68,27 @@ namespace JoinRpg.Web.Controllers.Common
       return post.Keys.UnprefixNumbers(prefix)
         .ToDictionary(fieldClientId => fieldClientId, fieldClientId => post[prefix + fieldClientId]);
     }
+
+    private bool IsClientCached(DateTime contentModified)
+    {
+      string header = Request.Headers["If-Modified-Since"];
+
+      if (header == null) return false;
+
+      DateTime isModifiedSince;
+      return DateTime.TryParse(header, out isModifiedSince) && isModifiedSince.ToUniversalTime() > contentModified;
+    }
+
+    protected bool CheckCache(DateTime characterTreeModifiedAt)
+    {
+      if (IsClientCached(characterTreeModifiedAt)) return true;
+      Response.AddHeader("Last-Modified", characterTreeModifiedAt.ToString("R"));
+      return false;
+    }
+
+    protected static HttpStatusCodeResult NotModified()
+    {
+      return new HttpStatusCodeResult(304, "Page has not been modified");
+    }
   }
 }

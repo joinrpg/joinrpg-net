@@ -2,9 +2,11 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -43,6 +45,31 @@ namespace JoinRpg.Web.Controllers.Common
           c => new PrintCharacterViewModel(CurrentUserId, c, plotElements)).ToArray();
 
       return View(viewModel);
+    }
+
+    public async Task<ActionResult> Index(int projectid)
+    {
+      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
+      var error = await AsMaster(characters, projectid);
+      if (error != null) return error;
+
+      return
+        View(new PrintIndexViewModel(projectid,
+          characters.Select(c => c.CharacterId)));
+    }
+
+    public async Task<ActionResult> HandoutReport(int projectid)
+    {
+      var plotElements =
+        (await PlotRepository.GetPlotsWithTargetAndText(projectid)).SelectMany(p => p.Elements)
+          .Where(e => e.ElementType == PlotElementType.Handout)
+          .ToArray();
+
+      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
+      var error = await AsMaster(characters, projectid);
+      if (error != null) return error;
+
+      return View(new HandoutReportViewModel(plotElements, characters));
     }
   }
 }

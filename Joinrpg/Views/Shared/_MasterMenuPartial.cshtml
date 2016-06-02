@@ -115,6 +115,7 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Прочее <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Встроить ролевку на сайт", "Apis", "GameTools", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Распечатки", "Index", "Print", new { Model.ProjectId }, null)</li>
                             <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Мастера", "Index", "Acl", new {Model.ProjectId}, null)</li>
