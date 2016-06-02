@@ -1,0 +1,16 @@
+﻿@using JoinRpg.Helpers.Web
+@model JoinRpg.Web.Models.Print.PrintIndexViewModel
+
+@{
+    ViewBag.Title = "Распечатки";
+}
+
+<h2>@ViewBag.Title</h2>
+<dl>
+    <dt>@Html.ActionLink("Содержимое конвертов", "CharacterList", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()})</dt>
+    <dd>Распечатать содержимое конвертов (информацию о персонажах, чек-листы раздатки, загрузы) для всех активных персонажей</dd>
+    <dt>Наклейки на конверты — не реализовано</dt>
+    <dd>Распечатать наклейки на конверты для всех активных персонажей</dd>
+    <dt>@Html.ActionLink("Отчет по раздатке", "HandoutReport", new {Model.ProjectId})</dt>
+    <dd>Отчет обо всех настроенных раздатках</dd>
+</dl>
