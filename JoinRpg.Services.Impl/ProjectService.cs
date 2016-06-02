@@ -47,6 +47,7 @@ namespace JoinRpg.Services.Impl
           ProjectAcl.CreateRootAcl(creator.UserId)
         }
       };
+      project.MarkTreeModified();
       UnitOfWork.GetDbSet<Project>().Add(project);
       await UnitOfWork.SaveChangesAsync();
       return project;
@@ -80,6 +81,7 @@ namespace JoinRpg.Services.Impl
         Description = new MarkdownString(description),
         ResponsibleMasterUserId = responsibleMasterId,
       });
+      project.MarkTreeModified();
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -89,6 +91,7 @@ namespace JoinRpg.Services.Impl
       bool hidePlayerForCharacter, bool isHot)
     {
       var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds));
+      var project = await ProjectRepository.GetProjectAsync(projectId);
 
       UnitOfWork.GetDbSet<Character>().Add(
         new Character
@@ -103,6 +106,8 @@ namespace JoinRpg.Services.Impl
           HidePlayerForCharacter = hidePlayerForCharacter,
           IsHot = isHot
         });
+
+      project.MarkTreeModified();
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -128,6 +133,7 @@ namespace JoinRpg.Services.Impl
       }
       character.Groups.AssignLinksList(characterGroups);
       FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, characterFields);
+      character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -179,6 +185,8 @@ namespace JoinRpg.Services.Impl
       characterGroup.ResponsibleMasterUserId = responsibleMasterId;
       characterGroup.AvaiableDirectSlots = directSlots;
       characterGroup.HaveDirectSlots = haveDirectSlots;
+
+      characterGroup.Project.MarkTreeModified(); // Can be smarted than this
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -192,7 +200,9 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
-      
+
+      characterGroup.Project.MarkTreeModified();
+
       ReparentChilds(characterGroup, characterGroup.ChildGroups);
       ReparentChilds(characterGroup, characterGroup.Characters);
       if (characterGroup.CanBePermanentlyDeleted)
@@ -202,6 +212,7 @@ namespace JoinRpg.Services.Impl
         characterGroup.ParentGroups.CleanLinksList();
       }
       SmartDelete(characterGroup);
+      
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -331,12 +342,14 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteCharacter(int projectId, int characterId)
     {
       var character = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      if (character == null || character.ProjectId != projectId) throw new DbEntityValidationException();
+      if (character == null) throw new DbEntityValidationException();
 
       if (character.HasActiveClaims())
       {
         throw new DbEntityValidationException();
       }
+
+      character.Project.MarkTreeModified();
 
       if (character.CanBePermanentlyDeleted)
       {

@@ -46,6 +46,8 @@ namespace JoinRpg.Services.Impl
 
       character.Groups.RemoveFromLinkList(valuesToRemove.Select(v => v.CharacterGroup));
       character.Groups.AddLinkList(valuesToAdd.Select(v => v.CharacterGroup).WhereNotNull().ToList());
+
+      character.Project.MarkTreeModified();
     }
   }
 }

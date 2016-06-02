@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Impl.Allrpg
@@ -77,6 +78,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       _operationLog.Info("DATA_SAVED");
 
       ReorderLocations(Project.RootGroup);
+      Project.MarkTreeModified();
       await SaveToDatabase();
       _operationLog.Info("DATA_REORDED_SAVED");
     }

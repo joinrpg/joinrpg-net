@@ -269,6 +269,10 @@
     <Compile Include="Migrations\201605281518059_IntroduceHandout.Designer.cs">
       <DependentUpon>201605281518059_IntroduceHandout.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606021911179_CharacterTreeModifiedTime.cs" />
+    <Compile Include="Migrations\201606021911179_CharacterTreeModifiedTime.Designer.cs">
+      <DependentUpon>201606021911179_CharacterTreeModifiedTime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -461,6 +465,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201605281518059_IntroduceHandout.resx">
       <DependentUpon>201605281518059_IntroduceHandout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606021911179_CharacterTreeModifiedTime.resx">
+      <DependentUpon>201606021911179_CharacterTreeModifiedTime.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

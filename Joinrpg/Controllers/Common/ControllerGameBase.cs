@@ -10,6 +10,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -63,7 +64,6 @@ namespace JoinRpg.Web.Controllers.Common
           BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
-          CurrentUserId = CurrentUserId,
           RootGroupId = project.RootGroup.CharacterGroupId,
           HasAllrpg = project.Details?.AllrpgId != null
         };
@@ -78,7 +78,6 @@ namespace JoinRpg.Web.Controllers.Common
           BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive && cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
-          CurrentUserId = CurrentUserIdOrDefault,
           RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null
         };
       }

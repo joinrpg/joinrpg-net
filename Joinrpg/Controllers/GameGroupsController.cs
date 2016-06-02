@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -12,6 +13,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
@@ -146,7 +148,14 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var cached = CheckCache(project.CharacterTreeModifiedAt);
+      if (cached)
+      {
+        return NotModified();
+      }
+
+      var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
       if (field == null)
       {
         return HttpNotFound();
@@ -157,7 +166,7 @@ namespace JoinRpg.Web.Controllers
       {
         field.Project.ProjectId,
         Groups =
-          CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          new CharacterTreeBuilder(field, hasMasterAccess).Generate()
             .Where(g => includeSpecial || !g.IsSpecial)
             .Select(
               g =>
@@ -169,7 +178,7 @@ namespace JoinRpg.Web.Controllers
                   g.FirstCopy,
                   Path = g.Path.Select(gr => gr.Name),
                   PathIds = g.Path.Select(gr => gr.CharacterGroupId),
-                  Characters = g.PublicCharacters.Select(ConvertCharacterToJsonSlim),
+                  Characters = g.Characters.Select(ConvertCharacterToJsonSlim),
                 }),
       });
     }
@@ -209,7 +218,7 @@ namespace JoinRpg.Web.Controllers
       };
     }
 
-    private object ConvertCharacterToJsonSlim(CharacterViewModel ch)
+    private object ConvertCharacterToJsonSlim(CharacterLinkViewModel ch)
     {
       return new
       {
@@ -271,9 +280,9 @@ namespace JoinRpg.Web.Controllers
     private static DirectClaimSettings GetDirectClaimSettings(CharacterGroup group)
 
     {
-      if (!@group.HaveDirectSlots)
+      if (!group.HaveDirectSlots)
         return DirectClaimSettings.NoDirectClaims;
-      return @group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
+      return group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
     [HttpPost, ValidateAntiForgeryToken, Authorize]
