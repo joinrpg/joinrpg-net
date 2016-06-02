@@ -147,7 +147,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+      var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
       if (field == null)
       {
         return HttpNotFound();

@@ -179,10 +179,6 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       await Ctx.ProjectsSet
         .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
-        .Where(p => p.ProjectId == projectId)
-        .LoadAsync();
-
-      await Ctx.ProjectsSet
         .Include(p => p.Characters.Select(cg => cg.Groups))
         .Where(p => p.ProjectId == projectId)
         .LoadAsync();
