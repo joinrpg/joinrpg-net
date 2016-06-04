@@ -2,11 +2,13 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Print;
+using JoinRpg.PluginHost.Interfaces;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -14,10 +16,14 @@ namespace JoinRpg.Web.Controllers.Common
   public class PrintController : ControllerGameBase
   {
     private IPlotRepository PlotRepository { get; }
+    private IPluginFactory PluginFactory { get; }
 
-    public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService, exportDataService)
+    public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository,
+      IPluginFactory pluginFactory) : base(userManager, projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
+      PluginFactory = pluginFactory;
     }
 
 
@@ -47,15 +53,15 @@ namespace JoinRpg.Web.Controllers.Common
       return View(viewModel);
     }
 
-    public async Task<ActionResult> Index(int projectid)
+    public async Task<ActionResult> Index(int projectId)
     {
-      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
-      var error = await AsMaster(characters, projectid);
+      var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
+      var error = await AsMaster(characters, projectId);
       if (error != null) return error;
-
+      var pluginNames = (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(p => p.OperationName);
       return
-        View(new PrintIndexViewModel(projectid,
-          characters.Select(c => c.CharacterId)));
+        View(new PrintIndexViewModel(projectId,
+          characters.Select(c => c.CharacterId), pluginNames));
     }
 
     public async Task<ActionResult> HandoutReport(int projectid)
@@ -70,6 +76,20 @@ namespace JoinRpg.Web.Controllers.Common
       if (error != null) return error;
 
       return View(new HandoutReportViewModel(plotElements, characters));
+    }
+
+    public async Task<ActionResult> PrintCards(int projectid, string plugin)
+    {
+      var printCardPluginOperation = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
+      if (printCardPluginOperation == null)
+      {
+        return HttpNotFound();
+      }
+      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive);
+
+      var cards = printCardPluginOperation.PrintForCharacters(characters);
+
+      return View(cards);
     }
   }
 }

@@ -567,6 +567,8 @@
     <Content Include="Views\Print\CharacterListHeader.cshtml" />
     <Content Include="Views\Print\Index.cshtml" />
     <Content Include="Views\Print\HandoutReport.cshtml" />
+    <Content Include="Views\Print\PluginsTemporary.cshtml" />
+    <Content Include="Views\Print\PrintCards.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -604,6 +606,14 @@
       <Project>{fee778a6-b9e7-4305-b985-3c4fa5f1b1d8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj">
+      <Project>{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}</Project>
+      <Name>JoinRpg.Experimental.Plugin.HelloWorld</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
+      <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>
+      <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
       <Project>{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}</Project>
       <Name>JoinRpg.Helpers.Web</Name>
@@ -611,6 +621,14 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
       <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.PluginHost.Impl\JoinRpg.PluginHost.Impl.csproj">
+      <Project>{9819E020-80E9-4AA1-A504-6F6256C1EC01}</Project>
+      <Name>JoinRpg.PluginHost.Impl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj">
+      <Project>{916C67F2-50B1-45DA-B970-222CEE4FC8D8}</Project>
+      <Name>JoinRpg.PluginHost.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj">
       <Project>{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}</Project>

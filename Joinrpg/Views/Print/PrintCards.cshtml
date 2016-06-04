@@ -1,0 +1,21 @@
+﻿@model System.Collections.Generic.IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Распечатка карточек</title>
+</head>
+<body>
+<div>
+      @foreach (var card in Model)
+      {
+          <div style="width: 50%; height: 50%; border: black solid medium; padding: 5px;">@card</div>
+      }
+</div>
+</body>
+</html>

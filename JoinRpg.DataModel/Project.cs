@@ -47,11 +47,20 @@ namespace JoinRpg.DataModel
 
     public DateTime CharacterTreeModifiedAt { get; set; }
 
+    public virtual ICollection<ProjectPlugin> ProjectPlugins { get; set; }
+
     #region helper properties
     public IEnumerable<PaymentType> ActivePaymentTypes => PaymentTypes.Where(pt => pt.IsActive);
 
     public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
     #endregion
+  }
+
+  public class ProjectPlugin
+  {
+    public int ProjectPluginId { get; set; }
+    public string Name { get; set; }
+    public string Configuration { get; set; }
   }
 
   public class ProjectDetails
