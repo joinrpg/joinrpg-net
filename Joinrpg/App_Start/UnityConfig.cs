@@ -96,7 +96,7 @@ namespace JoinRpg.Web
       container.RegisterType<IPluginResolver>(new InjectionFactory(c => new UnityPluginResolver(c)));
       container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 
-      container.RegisterType<IPlugin, HelloWorldPlugin>();
+      container.RegisterType<IPlugin, HelloWorldPlugin>(nameof(HelloWorldPlugin));
     }
 
     private class UnityPluginResolver : IPluginResolver

@@ -23,18 +23,18 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
     private class OperationLink
     {
       public Type Operation { get; }
-      public Func<string, object> Implementer { get; }
+      public Func<string, IPluginOperation> Implementer { get; }
 
-      public OperationLink(Type operation, Func<string, object> implementer)
+      public OperationLink(Type operation, Func<string, IPluginOperation> implementer)
       {
         Operation = operation;
         Implementer = implementer;
       }
     }
 
-    protected void Register<T>(string name, Func<string, T> implementer)
+    protected void Register<T>(string name, Func<string, T> implementer) where T: IPluginOperation
     {
-      _operations.Add(name, new OperationLink(typeof(T), c => implementer));
+      _operations.Add(name, new OperationLink(typeof(T), c => implementer(c)));
     }
 
     public IEnumerable<PluginOperationMetadata> GetOperations()
@@ -43,7 +43,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
         _operations.Select(
           o =>
             new PluginOperationMetadata(o.Key,
-              o.Value.Operation.GetInterfaces().Single(i => typeof(IPluginOperation).IsAssignableFrom(i))));
+              o.Value.Operation.GetInterfaces().Single(i => typeof(IPluginOperation).IsAssignableFrom(i) && i != typeof(IPluginOperation))));
     }
 
     public T GetOperationInstance<T>(int projectId, string operationName, string pluginConfiguration)

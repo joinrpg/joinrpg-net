@@ -1,4 +1,4 @@
-﻿@model System.Collections.Generic.IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
+﻿@model IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
 
 @{
     Layout = null;
@@ -9,12 +9,23 @@
 <html>
 <head>
     <title>Распечатка карточек</title>
+    <style>
+        .a6card {
+            width: 80mm;
+            height: 125mm;
+            border: black solid medium; 
+            padding: 2mm;
+            margin: 2mm;
+            float: left;
+        }
+    </style>
 </head>
+
 <body>
 <div>
       @foreach (var card in Model)
       {
-          <div style="width: 50%; height: 50%; border: black solid medium; padding: 5px;">@card</div>
+          <div class="a6card">@card.Html</div>
       }
 </div>
 </body>

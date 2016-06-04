@@ -78,14 +78,14 @@ namespace JoinRpg.Web.Controllers.Common
       return View(new HandoutReportViewModel(plotElements, characters));
     }
 
-    public async Task<ActionResult> PrintCards(int projectid, string plugin)
+    public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
       var printCardPluginOperation = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
       if (printCardPluginOperation == null)
       {
         return HttpNotFound();
       }
-      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive);
+      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray());
 
       var cards = printCardPluginOperation.PrintForCharacters(characters);
 
