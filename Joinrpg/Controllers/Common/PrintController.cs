@@ -92,7 +92,7 @@ namespace JoinRpg.Web.Controllers.Common
       }
       var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray());
 
-      var cards = printCardPluginOperation.PrintForCharacters(characters);
+      var cards = characters.SelectMany(c => printCardPluginOperation.PrintForCharacter(c));
 
       return View(cards);
     }
