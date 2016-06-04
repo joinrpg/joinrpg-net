@@ -9,6 +9,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Print;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -58,7 +59,11 @@ namespace JoinRpg.Web.Controllers.Common
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
       var error = await AsMaster(characters, projectId);
       if (error != null) return error;
-      var pluginNames = (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(p => p.OperationName);
+
+      var pluginNames =
+        (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
+          PluginOperationDescriptionViewModel.Create);
+
       return
         View(new PrintIndexViewModel(projectId,
           characters.Select(c => c.CharacterId), pluginNames));

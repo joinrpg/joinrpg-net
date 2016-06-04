@@ -28,7 +28,9 @@ namespace JoinRpg.Experimental.Plugin.HelloWorld
 
     public HelloWorldPlugin()
     {
-      Register("HelloWorld", config => new HellowWorldOperation(config));
+      Register("HelloWorld", config => new HellowWorldOperation(config), @"
+This is a simple plugin used to demonstrate ability to create **print card plugins**.
+");
     }
 
     public override string GetName() => "JoinRpg.HelloWorld";

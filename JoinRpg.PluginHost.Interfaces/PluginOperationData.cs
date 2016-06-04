@@ -6,16 +6,25 @@ namespace JoinRpg.PluginHost.Interfaces
 {
   public class PluginOperationData<T> where T : IPluginOperation
   {
-    public PluginOperationData(string operationName, Func<T> createPluginInstance)
+    public PluginOperationData([NotNull] string operationName, [NotNull] Func<T> createPluginInstance,
+      [NotNull] string description)
     {
+      if (operationName == null) throw new ArgumentNullException(nameof(operationName));
+      if (createPluginInstance == null) throw new ArgumentNullException(nameof(createPluginInstance));
+      if (description == null) throw new ArgumentNullException(nameof(description));
+
       OperationName = operationName;
       CreatePluginInstance = createPluginInstance;
+      Description = description;
     }
 
-    [PublicAPI]
+    [PublicAPI, NotNull]
     public string OperationName { get; }
 
-    [PublicAPI]
+    [PublicAPI, NotNull]
     public Func<T> CreatePluginInstance { get; }
+
+    [PublicAPI, NotNull]
+    public string Description { get; } 
   }
 }

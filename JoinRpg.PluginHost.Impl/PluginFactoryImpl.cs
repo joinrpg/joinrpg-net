@@ -49,7 +49,7 @@ namespace JoinRpg.PluginHost.Impl
                 $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
                 () =>
                   projectPlugin.Plugin.GetOperationInstance<T>(project.ProjectId, pluginOperationMetadata.Name,
-                    projectPlugin.Configuration));
+                    projectPlugin.Configuration), pluginOperationMetadata.Description);
           }
 
         }
