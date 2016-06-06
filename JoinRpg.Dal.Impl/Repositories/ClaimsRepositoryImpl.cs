@@ -57,6 +57,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
     {
+      await LoadProjectFields(projectId);
       await LoadMasters(projectId);
       await LoadProjectCharactersAndGroups(projectId);
       await LoadProjectClaims(projectId);
