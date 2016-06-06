@@ -17,7 +17,7 @@
     {
         <dt>
             <span class="label label-info">Плагин</span> 
-            @Html.ActionLink(plugin.Name, "PrintCards", "Print", new {Model.ProjectId, plugin.Name, CharacterIds = Model.CharacterIds.CompressIdList() }, null) 
+            @Html.ActionLink(plugin.Name, "PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterIds.CompressIdList() }, null) 
         </dt>
         <dd>@Html.DisplayFor(item => plugin.Description)</dd>
     }

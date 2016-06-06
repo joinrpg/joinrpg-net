@@ -66,13 +66,18 @@ namespace JoinRpg.Helpers
 
     public static IEnumerable<T> Shuffle<T>([NotNull] this IEnumerable<T> source)
     {
+      return Shuffle(source, Rng);
+    }
+
+    public static IEnumerable<T> Shuffle<T>([NotNull] this IEnumerable<T> source, Random random)
+    {
       if (source == null) throw new ArgumentNullException(nameof(source));
 
       var sourceArray = source.ToArray();
 
       for (var n = 0; n < sourceArray.Length; n++)
       {
-        var k = Rng.Next(n, sourceArray.Length);
+        var k = random.Next(n, sourceArray.Length);
         yield return sourceArray[k];
 
         sourceArray[k] = sourceArray[n];
@@ -88,6 +93,14 @@ namespace JoinRpg.Helpers
         toAdd
           .Except(alreadyTaken)
           .Take(Math.Max(0, totalLimit - alreadyTaken.Count)));
+    }
+
+    public static IEnumerable<int> GetRandomSource(this Random random)
+    {
+      while (true)
+      {
+        yield return random.Next();
+      }
     }
   }
 }

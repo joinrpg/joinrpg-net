@@ -83,5 +83,13 @@ namespace JoinRpg.Domain
       }
       return characterFieldValues;
     }
+
+    public static List<FieldWithValue> GetFields(this Character character)
+    {
+      var projectFields = character.Project.GetFields().ToList();
+      projectFields.FillFrom(character.ApprovedClaim);
+      projectFields.FillFrom(character);
+      return projectFields;
+    }
   }
 }

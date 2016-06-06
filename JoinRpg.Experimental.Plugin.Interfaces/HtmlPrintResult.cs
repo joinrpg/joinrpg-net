@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Experimental.Plugin.Interfaces
 {
@@ -11,7 +12,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
     }
 
     [PublicAPI]
-    public string Html { get; }
+    public UnSafeHtml Html { get; }
 
     [PublicAPI]
     public CardSize CardSize { get; }

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
+﻿@using JoinRpg.Helpers.Web
+@model IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
 
 @{
     Layout = null;
@@ -25,7 +26,7 @@
 <div>
       @foreach (var card in Model)
       {
-          <div class="a6card">@card.Html</div>
+          <div class="a6card">@card.Html.SanitizeHtml()</div>
       }
 </div>
 </body>

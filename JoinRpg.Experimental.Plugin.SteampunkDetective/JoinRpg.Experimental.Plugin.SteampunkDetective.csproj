@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</ProjectGuid>
+    <ProjectGuid>{FBF44C48-6861-4662-B808-2C154A5C3CAE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.Experimental.Plugin.Interfaces</RootNamespace>
-    <AssemblyName>JoinRpg.Experimental.Plugin.Interfaces</AssemblyName>
+    <RootNamespace>JoinRpg.Experimental.Plugin.SteampunkDetective</RootNamespace>
+    <AssemblyName>JoinRpg.Experimental.Plugin.SteampunkDetective</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,40 +30,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=10.1.4.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.1.4\lib\net20\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CharacterFieldInfo.cs" />
-    <Compile Include="CharacterInfo.cs" />
-    <Compile Include="HtmlPrintResult.cs" />
-    <Compile Include="IPlugin.cs" />
-    <Compile Include="IPluginOperation.cs" />
-    <Compile Include="IPrintCardPluginOperation.cs" />
-    <Compile Include="PluginConfigurationIncorrectException.cs" />
-    <Compile Include="PluginOperationMetadata.cs" />
+    <Compile Include="ClueConfiguration.cs" />
+    <Compile Include="CluePrinterDefaultConfig.cs" />
+    <Compile Include="CluePrinterOperation.cs" />
+    <Compile Include="DetectivePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="SignDefinition.cs" />
+    <Compile Include="SignType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
-      <Project>{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}</Project>
-      <Name>JoinRpg.Helpers.Web</Name>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
+      <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>
+      <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
       <Name>JoinRpg.Helpers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

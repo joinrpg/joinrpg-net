@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -85,14 +86,14 @@ namespace JoinRpg.Web.Controllers.Common
 
     public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
-      var printCardPluginOperation = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
-      if (printCardPluginOperation == null)
+      var pluginInstance = await PluginFactory.GetOperationInstance(projectid, plugin);
+      if (pluginInstance == null)
       {
         return HttpNotFound();
       }
       var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray());
 
-      var cards = characters.SelectMany(c => printCardPluginOperation.PrintForCharacter(c));
+      var cards = characters.SelectMany(c => PluginFactory.PrintForCharacter(pluginInstance, c));
 
       return View(cards);
     }

@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
-using JoinRpg.DataModel;
 
 namespace JoinRpg.Experimental.Plugin.Interfaces
 {
   [PublicAPI]
   public interface IPrintCardPluginOperation : IPluginOperation
   {
-    IEnumerable<HtmlCardPrintResult> PrintForCharacter(Character character);
+    IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character);
   }
 }

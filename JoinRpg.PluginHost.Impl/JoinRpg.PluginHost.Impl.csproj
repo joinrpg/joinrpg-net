@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -51,6 +52,10 @@
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
+      <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
+      <Name>JoinRpg.Domain</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
       <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>

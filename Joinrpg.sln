@@ -67,6 +67,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.PluginHost.Impl", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Experimental.Plugin.HelloWorld", "JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj", "{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Experimental.Plugin.SteampunkDetective", "JoinRpg.Experimental.Plugin.SteampunkDetective\JoinRpg.Experimental.Plugin.SteampunkDetective.csproj", "{FBF44C48-6861-4662-B808-2C154A5C3CAE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,10 @@ Global
 		{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -176,5 +182,6 @@ Global
 		{916C67F2-50B1-45DA-B970-222CEE4FC8D8} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
 		{9819E020-80E9-4AA1-A504-6F6256C1EC01} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
 		{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
+		{FBF44C48-6861-4662-B808-2C154A5C3CAE} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
 	EndGlobalSection
 EndGlobal

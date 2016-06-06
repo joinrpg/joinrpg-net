@@ -9,6 +9,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Experimental.Plugin.HelloWorld;
 using JoinRpg.Experimental.Plugin.Interfaces;
+using JoinRpg.Experimental.Plugin.SteampunkDetective;
 using JoinRpg.PluginHost.Impl;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
@@ -97,6 +98,7 @@ namespace JoinRpg.Web
       container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 
       container.RegisterType<IPlugin, HelloWorldPlugin>(nameof(HelloWorldPlugin));
+      container.RegisterType<IPlugin, DetectivePlugin>(nameof(DetectivePlugin));
     }
 
     private class UnityPluginResolver : IPluginResolver

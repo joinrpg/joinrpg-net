@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.DataModel;
 using JoinRpg.Experimental.Plugin.Interfaces;
 
 namespace JoinRpg.Experimental.Plugin.HelloWorld
@@ -17,7 +16,7 @@ namespace JoinRpg.Experimental.Plugin.HelloWorld
         Config = config;
       }
 
-      public IEnumerable<HtmlCardPrintResult> PrintForCharacter(Character character)
+      public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
       {
         yield return new HtmlCardPrintResult($"Hello, {character.CharacterName}! Configuration: {Config}", CardSize.A6);
       }

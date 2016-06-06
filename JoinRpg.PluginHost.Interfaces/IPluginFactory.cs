@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
+using JoinRpg.DataModel;
 using JoinRpg.Experimental.Plugin.Interfaces;
 
 namespace JoinRpg.PluginHost.Interfaces
@@ -7,6 +9,8 @@ namespace JoinRpg.PluginHost.Interfaces
   public interface IPluginFactory
   {
     Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId) where T:IPluginOperation;
-    Task<T> GetOperationInstance<T>(int projectid, string plugin) where T : class, IPluginOperation;
+    [ItemCanBeNull]
+    Task<PluginOperationData<IPrintCardPluginOperation>> GetOperationInstance(int projectid, string plugin);
+    IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c);
   }
 }
