@@ -40,6 +40,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       return Ctx
         .ProjectsSet
         .Include(p => p.ProjectFields.Select(pf => pf.GroupsAvailableFor.Select(cg => cg.ParentGroups)))
+        .Include(p => p.ProjectFields.Select(pf => pf.DropdownValues))
         .Where(c => c.ProjectId == projectId).LoadAsync();
     }
 
