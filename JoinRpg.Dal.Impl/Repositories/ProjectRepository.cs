@@ -158,9 +158,10 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<ICollection<Character>> GetCharacters(int projectId)
     {
+      await LoadProjectFields(projectId);
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
-      await LoadProjectClaimsAndComments(projectId);
+      await LoadProjectClaims(projectId);
 
       //This is sync operation becase Project should be already loaded here
       return Ctx.Set<Project>().Find(projectId).Characters;

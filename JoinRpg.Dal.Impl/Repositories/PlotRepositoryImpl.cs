@@ -10,7 +10,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class PlotRepositoryImpl : RepositoryImplBase, IPlotRepository
+  public class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
   {
     public Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
@@ -52,12 +52,14 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
 
-    public Task<List<PlotFolder>> GetPlots(int project)
-      =>
-        Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Elements.Select(e => e.Texts))
-          .Where(pf => pf.ProjectId == project)
-          .ToListAsync();
+    public async Task<List<PlotFolder>> GetPlots(int project)
+    {
+      await LoadProjectGroups(project); //TODO[GroupsLoad] it's unclear why we need this
+      return await Ctx.Set<PlotFolder>()
+        .Include(pf => pf.Elements.Select(e => e.Texts))
+        .Where(pf => pf.ProjectId == project)
+        .ToListAsync();
+    }
 
     public Task<List<PlotFolder>> GetPlotsWithTargets(int projectId)
       =>

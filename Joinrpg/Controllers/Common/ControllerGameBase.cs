@@ -54,14 +54,17 @@ namespace JoinRpg.Web.Controllers.Common
       ViewBag.ProjectId = project.ProjectId;
 
       var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
+      //TODO[GroupsLoad]. If we not loaded groups already, that's slow
+      var bigGroups =  project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive);
       if (acl != null)
       {
+        
         ViewBag.MasterMenu = new MasterMenuViewModel
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           AccessToProject = acl,
-          BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive).Select(cg => new CharacterGroupLinkViewModel(cg)),
+          BigGroups = bigGroups.Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.CharacterGroupId,
@@ -75,7 +78,7 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          BigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive && cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
+          BigGroups = bigGroups.Where(cg => cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null
