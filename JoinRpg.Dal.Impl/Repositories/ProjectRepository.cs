@@ -50,6 +50,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
       await LoadProjectClaims(projectId);
+      await LoadProjectFields(projectId);
 
       var project = await Ctx.ProjectsSet
         .Include(p => p.Details)
@@ -58,12 +59,11 @@ namespace JoinRpg.Dal.Impl.Repositories
       return project.CharacterGroups.SingleOrDefault(cg => cg.CharacterGroupId == characterGroupId);
     }
 
-    public Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
+    public async Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
     {
+      await LoadProjectCharactersAndGroups(projectId);
       return
-        Ctx.Set<CharacterGroup>()
-          .Include(cg => cg.Project.Characters)
-          .Include(cg => cg.ParentGroups)
+        await Ctx.Set<CharacterGroup>()
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
     }
 
@@ -77,34 +77,31 @@ namespace JoinRpg.Dal.Impl.Repositories
     }
 
 
-    public Task<Character> GetCharacterAsync(int projectId, int characterId)
+    public async Task<Character> GetCharacterAsync(int projectId, int characterId)
     {
+      await LoadProjectFields(projectId);
       return
-        Ctx.Set<Character>()
+        await Ctx.Set<Character>()
           .Include(c => c.Project)
-          .Include(c => c.Project.ProjectFields)
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
     public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
     {
       await LoadProjectGroups(projectId);
+      await LoadProjectFields(projectId);
 
       return
-        await Ctx.Set<Character>()
-          .Include(c => c.Groups)
-          .Include(c => c.Project.ProjectFields.Select(pf => pf.DropdownValues))
-          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
+        await Ctx.Set<Character>().SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
     public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadProjectClaims(projectId);
+      await LoadProjectFields(projectId);
 
       return
         await Ctx.Set<Character>()
-          .Include(c => c.Groups)
-          .Include(c => c.Project.ProjectFields.Select(pf => pf.DropdownValues))
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
@@ -123,7 +120,6 @@ namespace JoinRpg.Dal.Impl.Repositories
 
       return
         await Ctx.Set<Character>()
-          .Include(c => c.Groups)
           .Where(e => characterIds.Contains(e.CharacterId) && e.ProjectId == projectId).ToListAsync();
     }
 
@@ -179,15 +175,13 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId)
     {
-      await Ctx.ProjectsSet
-        .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
-        .Include(p => p.Characters.Select(cg => cg.Groups))
-        .Where(p => p.ProjectId == projectId)
-        .LoadAsync();
-
       var project1 = await Ctx.ProjectsSet
+        .Include(p => p.CharacterGroups)
+        .Include(p => p.Characters)
         .Include(p => p.Details)
+        .Where(p => p.ProjectId == projectId)
         .SingleOrDefaultAsync(p => p.ProjectId == projectId);
+        
       return project1.RootGroup;
     }
   }

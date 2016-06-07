@@ -20,7 +20,7 @@ namespace JoinRpg.Domain
       if (character == null) throw new ArgumentNullException(nameof(character));
       if (selectMany == null) throw new ArgumentNullException(nameof(selectMany));
 
-      var groups = character.GetParentGroups().Select(g => g.CharacterGroupId);
+      var groups = character.GetParentGroupsToTop().Select(g => g.CharacterGroupId);
       return selectMany
         .Where(
           p => p.TargetCharacters.Any(c => c.CharacterId == character.CharacterId) ||
@@ -28,7 +28,7 @@ namespace JoinRpg.Domain
     }
 
     public static int CountCharacters([NotNull] this PlotElement element,
-      [NotNull] IReadOnlyCollection<Character> characters)
+      [NotNull, ItemNotNull] IReadOnlyCollection<Character> characters)
     {
       if (element == null) throw new ArgumentNullException(nameof(element));
       if (characters == null) throw new ArgumentNullException(nameof(characters));
@@ -43,7 +43,7 @@ namespace JoinRpg.Domain
         {
           return true;
         }
-        var groups = character.GetParentGroups().Select(g => g.CharacterGroupId);
+        var groups = character.GetParentGroupsToTop().Select(g => g.CharacterGroupId);
         return element.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId));
       });
     }

@@ -68,7 +68,7 @@ namespace JoinRpg.Web.Helpers
       $('#{0}_control_{6}').multicontrol(options);
     }});
 </script>", propertyName, projectId, showCharacters ? "true" : "false", implicitGroupsString,
-        strategyString, elements.Join(", "), Random.Next(), showSpecial ? "json_full" : "json_real"));
+        strategyString, elements.JoinStrings(", "), Random.Next(), showSpecial ? "json_full" : "json_real"));
       return magicSelectFor;
     }
 

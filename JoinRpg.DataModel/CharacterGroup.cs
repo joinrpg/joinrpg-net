@@ -1,13 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
-  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject
+  [ComplexType]
+  public class IntList
   {
+    private string _internalData;
+    internal int[] _parentCharacterGroupIds;
+
+    [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
+    public string ListIds
+    {
+      get { return _internalData; }
+      set
+      {
+        _internalData = value;
+        _parentCharacterGroupIds = value.ToIntList();
+      }
+    }
+  }
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>
+  {
+
 
     public int CharacterGroupId { get; set; }
 
@@ -20,7 +42,18 @@ namespace JoinRpg.DataModel
 
     public bool IsRoot { get; set; }
 
-    public virtual ICollection<CharacterGroup> ParentGroups { get; set; }
+    [NotMapped]
+    public int[] ParentCharacterGroupIds
+    {
+      get { return ParentGroupsImpl._parentCharacterGroupIds; }
+      set { ParentGroupsImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(","); }
+    }
+
+    public IntList ParentGroupsImpl { get; set; } = new IntList();
+
+    public IEnumerable<CharacterGroup> ParentGroups
+      => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
+
     string IWorldObject.Name => CharacterGroupName;
 
     /// <summary>
@@ -28,7 +61,7 @@ namespace JoinRpg.DataModel
     /// </summary>
     /// <remarks>Check may be you need to use ordered groups</remarks>
     public virtual IEnumerable<CharacterGroup> ChildGroups
-      => Project.CharacterGroups.Where(cg => cg.ParentGroups.Contains(this));
+      => Project.CharacterGroups.Where(cg => cg.ParentCharacterGroupIds.Contains(CharacterGroupId));
 
     public bool IsPublic { get; set; }
     public bool IsSpecial { get; set; }
@@ -39,7 +72,7 @@ namespace JoinRpg.DataModel
 
     public bool DirectSlotsUnlimited => AvaiableDirectSlots == -1;
 
-    public IEnumerable<Character> Characters => Project.Characters.Where(cg => cg.Groups.Contains(this));
+    public IEnumerable<Character> Characters => Project.Characters.Where(cg => cg.ParentCharacterGroupIds.Contains(CharacterGroupId));
 
     public bool IsActive { get; set; }
 
@@ -91,6 +124,8 @@ namespace JoinRpg.DataModel
       }
     }
     #endregion
+
+    public bool Equals(CharacterGroup other) => other.CharacterGroupId == CharacterGroupId;
   }
 
 }

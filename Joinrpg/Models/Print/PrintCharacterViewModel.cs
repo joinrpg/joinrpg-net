@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Models
           .ToArray();
       
       Groups =
-        character.GetParentGroups()
+        character.GetParentGroupsToTop()
           .Where(g => !g.IsSpecial && g.IsActive && g.IsPublic && !g.IsRoot)
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();

@@ -12,6 +12,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
@@ -129,7 +130,7 @@ namespace JoinRpg.Web.Controllers
         CharacterActive = claim.Character?.IsActive,
         OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
         HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
-        Data = CharacterGroupListViewModel.FromProjectAsMaster(claim.Project),
+        Data = new CharacterTreeBuilder(claim.Project.RootGroup, claim.HasMasterAccess(CurrentUserId)).Generate(),
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count(),
         Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =

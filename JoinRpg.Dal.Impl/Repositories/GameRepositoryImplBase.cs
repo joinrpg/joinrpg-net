@@ -1,4 +1,5 @@
 ﻿using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     protected Task LoadMasters(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadMasters)} started");
       return Ctx.ProjectsSet
         .Include(p => p.ProjectAcls.Select(acl => acl.User))
         .Where(p => p.ProjectId == projectId)
@@ -20,11 +22,13 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     protected Task LoadProjectClaims(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadProjectClaims)} started");
       return Ctx.ProjectsSet.Include(p => p.Claims.Select(c => c.Player)).Where(p => p.ProjectId == projectId).LoadAsync();
     }
 
     protected Task LoadProjectClaimsAndComments(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return Ctx
         .ProjectsSet
         .Include(p => p.Claims.Select(c => c.Comments.Select(cm => cm.Finance)))
@@ -37,26 +41,29 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     protected Task LoadProjectFields(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadProjectFields)} started");
       return Ctx
         .ProjectsSet
-        .Include(p => p.ProjectFields.Select(pf => pf.GroupsAvailableFor.Select(cg => cg.ParentGroups)))
+        .Include(p => p.ProjectFields)
         .Include(p => p.ProjectFields.Select(pf => pf.DropdownValues))
         .Where(c => c.ProjectId == projectId).LoadAsync();
     }
 
     protected Task LoadProjectCharactersAndGroups(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadProjectCharactersAndGroups)} started");
       return Ctx.ProjectsSet
-        .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
-        .Include(p => p.Characters.Select(cg => cg.Groups))
+        .Include(p => p.CharacterGroups)
+        .Include(p => p.Characters)
         .Where(p => p.ProjectId == projectId)
         .LoadAsync();
     }
 
     protected Task LoadProjectGroups(int projectId)
     {
+      Debug.WriteLine($"{nameof(LoadProjectGroups)} started");
       return Ctx.ProjectsSet
-        .Include(p => p.CharacterGroups.Select(cg => cg.ParentGroups))
+        .Include(p => p.CharacterGroups)
         .Where(p => p.ProjectId == projectId)
         .LoadAsync();
     }

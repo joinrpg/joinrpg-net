@@ -46,6 +46,13 @@ namespace JoinRpg.Services.Impl
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
     {
       var now = DateTime.UtcNow;
+      var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
+
+      if (characterGroups.Count != targetGroups.Distinct().Count())
+      {
+        var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+        throw new Exception($"Groups {missing} doesn't belong to project");
+      }
       var plotElement = new PlotElement()
       {
         Texts = new PlotElementTexts()
@@ -59,7 +66,7 @@ namespace JoinRpg.Services.Impl
         IsCompleted = false,
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        TargetGroups = await ValidateCharacterGroupList(projectId, targetGroups),
+        TargetGroups =   characterGroups,
         TargetCharacters = await ValidateCharactersList(projectId, targetChars),
         ElementType = elementType
       };
@@ -107,7 +114,15 @@ namespace JoinRpg.Services.Impl
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
       plotElement.Texts.Content.Contents = contents;
       plotElement.Texts.TodoField = todoField;
-      plotElement.TargetGroups.AssignLinksList(await ValidateCharacterGroupList(projectId, targetGroups));
+      var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
+
+      if (characterGroups.Count != targetGroups.Distinct().Count())
+      {
+        var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+        throw new Exception($"Groups {missing} doesn't belong to project");
+
+      }
+      plotElement.TargetGroups.AssignLinksList(characterGroups);
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;
       plotElement.IsActive = true;

@@ -22,7 +22,7 @@ namespace JoinRpg.Helpers
       return strings.Where(s => !string.IsNullOrWhiteSpace(s));
     }
 
-    public static string Join([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)
+    public static string JoinStrings([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)
     {
       return string.Join(separator, strings);
     }
@@ -83,8 +83,12 @@ namespace JoinRpg.Helpers
       return str.TakeWhile(c=> c!=separator).AsString();
     }
 
-    public static int[] ToIntList(this string claimIds)
+    public static int[] ToIntList([CanBeNull] this string claimIds)
     {
+      if (claimIds == null)
+      {
+        return Array.Empty<int>();
+      }
       return claimIds.Split(',').Select(int.Parse).ToArray();
     }
   }
