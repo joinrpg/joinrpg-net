@@ -165,8 +165,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadMasters(projectId);
       await LoadProjectClaims(projectId);
 
-      //This is sync operation becase Project should be already loaded here
-      return Ctx.Set<Project>().Find(projectId).Characters;
+      return (await Ctx.Set<Project>().SingleOrDefaultAsync(p => p.ProjectId == projectId)).Characters; 
     }
 
     public async Task<IEnumerable<Project>> GetProjectsWithoutAllrpgAsync()
