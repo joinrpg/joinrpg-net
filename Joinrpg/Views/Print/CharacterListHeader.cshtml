@@ -21,19 +21,19 @@
         </td>
 
     </tr>
-    @if (Model.PlayerDetails != null)
+    @if (Model.PlayerDisplayName != null)
     {
     <tr>
         <th>Игрок</th>
-        <td>@Model.PlayerDetails.User.DisplayName</td>
+        <td>@Model.PlayerDisplayName</td>
     </tr>
         <tr>
             <th>ФИО</th>
-            <td>@Model.PlayerDetails.FullName</td>
+            <td>@Model.PlayerFullName</td>
         </tr>
         <tr>
             <th>Телефон</th>
-            <td>@Model.PlayerDetails.PhoneNumber</td>
+            <td>@Model.PlayerPhoneNumber</td>
         </tr>
     }
     else

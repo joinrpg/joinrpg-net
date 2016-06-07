@@ -18,8 +18,10 @@ namespace JoinRpg.Web.Models
     public IReadOnlyCollection<PlotElementViewModel> Plots { get; }
     public IReadOnlyCollection<MarkdownViewModel> Handouts { get; }
     public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; }
-    public User ResponsibleMaster { get; set; }
-    public UserProfileDetailsViewModel PlayerDetails { get; set; }
+    public User ResponsibleMaster { get; }
+    public string PlayerDisplayName { get; }
+    public string PlayerFullName { get; }
+    public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
 
     public PrintCharacterViewModel (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots)
@@ -28,7 +30,7 @@ namespace JoinRpg.Web.Models
       CharacterDescription = new MarkdownViewModel(character.Description);
       FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee();
       ProjectName = character.Project.ProjectName;
-      var plotElements = character.GetOrderedPlots(plots.Where(character.ShouldShowPlot).ToArray());
+      var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
       Plots =
         plotElements
           .ToViewModels(character.HasMasterAccess(currentUserId), character.CharacterId)
@@ -38,15 +40,17 @@ namespace JoinRpg.Web.Models
         plotElements.Where(e => e.ElementType == PlotElementType.Handout)
           .Select(e => new MarkdownViewModel(e.Texts.Content))
           .ToArray();
-      ;
+      
       Groups =
         character.GetParentGroups()
           .Where(g => !g.IsSpecial && g.IsActive && g.IsPublic && !g.IsRoot)
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
       ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;
-      PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player);
-      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true).DisableEdit();
+      PlayerDisplayName = character.ApprovedClaim?.Player.DisplayName;
+      PlayerFullName = character.ApprovedClaim?.Player.FullName;
+      PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
+      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true);
     }
   }
 }
