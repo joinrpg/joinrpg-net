@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Helpers
       {
         yield return
           FieldColumn(projectField.FieldName,
-            x => x.Fields.Fields.SingleOrDefault(f => f.ProjectFieldId == projectField.ProjectFieldId)?.DisplayString);
+            x => x.Fields.FieldById(projectField.ProjectFieldId)?.DisplayString);
       }
     }
 
