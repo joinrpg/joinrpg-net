@@ -1,4 +1,6 @@
-﻿namespace JoinRpg.Web.Models
+﻿using System.Collections.Generic;
+
+namespace JoinRpg.Web.Models
 {
   public class GameRolesViewModel
   {
@@ -7,7 +9,7 @@
     public string ProjectName{ get; set; }
 
     public bool ShowEditControls { get; set; }
-    public CharacterGroupListViewModel Data { get; set; }
+    public IEnumerable<CharacterGroupListItemViewModel> Data { get; set; }
 
     public int CharacterGroupId { get; set; }
   }

@@ -47,7 +47,7 @@ namespace JoinRpg.Domain
         return
           Field.DropdownValues.Where(dv => SelectedIds.Contains(dv.ProjectFieldDropdownValueId))
             .Select(dv => dv.Label)
-            .Join(", ");
+            .JoinStrings(", ");
       }
     }
 

@@ -6,38 +6,15 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Helpers;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
   
-  public class CharacterGroupListViewModel
+  public static class CharacterGroupListViewModel
   {
-    private IList<CharacterGroupListItemViewModel> Groups { get; set; }
-
-    public IEnumerable<CharacterGroupListItemViewModel> PublicGroups
-    {
-      get { return Groups.Where(listItem => listItem.IsPublic && listItem.IsActive); }
-    }
-
-    public IEnumerable<CharacterGroupListItemViewModel> ActiveGroups
-    {
-      get { return Groups.Where(listItem => listItem.IsActive); }
-    }
-
-    public static CharacterGroupListViewModel FromGroup(CharacterGroup @group, bool hasMasterAccess)
-    {
-      return new CharacterGroupListViewModel
-      {
-        Groups = new CharacterGroupHierarchyBuilder(@group, hasMasterAccess).Generate(),
-      }; 
-    }
-
     [MustUseReturnValue]
     public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, bool hasMasterAccess)
     {
-      var viewModel = FromGroup(field, hasMasterAccess);
-      return hasMasterAccess
-        ? viewModel.ActiveGroups
-        : viewModel.PublicGroups;
+      return new CharacterGroupHierarchyBuilder(field, hasMasterAccess).Generate().Where(g => g.IsPublic || hasMasterAccess);
     }
 
     //TODO: unit tests
@@ -45,7 +22,6 @@ namespace JoinRpg.Web.Models
     {
       private CharacterGroup Root { get; }
 
-      private IList<int> AlreadyOutputedGroups { get; } = new List<int>();
       private IList<int> AlreadyOutputedChars { get; } = new List<int>();
 
       private IList<CharacterGroupListItemViewModel> Results { get; } = new List<CharacterGroupListItemViewModel>();
@@ -60,25 +36,28 @@ namespace JoinRpg.Web.Models
 
       public IList<CharacterGroupListItemViewModel> Generate()
       {
-        GenerateFrom(Root, 0, new List<CharacterGroup>());
+        GenerateFrom(Root, 0, new List<CharacterGroup>(), new List<CharacterGroup> { Root});
         return Results;
-      }
+      } 
 
-      private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
+      private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop, IReadOnlyList<CharacterGroup> siblings)
       {
-        var immediateParent = pathToTop.LastOrDefault();
-
-        var siblings = immediateParent?.GetOrderedChildGroups() ?? new List<CharacterGroup> { characterGroup};
+        var prevCopy = Results.FirstOrDefault(cg => cg.FirstCopy && cg.CharacterGroupId == characterGroup.CharacterGroupId);
 
         var vm = new CharacterGroupListItemViewModel
         {
           CharacterGroupId = characterGroup.CharacterGroupId,
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
-          FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
-          AvaiableDirectSlots = characterGroup.HaveDirectSlots ?  characterGroup.AvaiableDirectSlots : 0,
-          IsAcceptingClaims = characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims && characterGroup.AvaiableDirectSlots != 0,
-          Characters = characterGroup.GetOrderedCharacters().Select(character => GenerateCharacter(character, characterGroup)).ToList(),
+          FirstCopy = prevCopy == null,
+          AvaiableDirectSlots = characterGroup.HaveDirectSlots ? characterGroup.AvaiableDirectSlots : 0,
+          IsAcceptingClaims =
+            characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims &&
+            characterGroup.AvaiableDirectSlots != 0,
+          ActiveCharacters =
+            prevCopy?.ActiveCharacters ??
+            GenerateCharacters(characterGroup)
+              .ToList(),
           Description = characterGroup.Description.ToHtmlString(),
           ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
@@ -106,9 +85,8 @@ namespace JoinRpg.Web.Models
         
         Results.Add(vm);
 
-        if (!vm.FirstCopy)
+        if (prevCopy != null)
         {
-          var prevCopy = Results.Single(cg => cg.FirstCopy && cg.CharacterGroupId == vm.CharacterGroupId);
           vm.ChildGroups = prevCopy.ChildGroups;
           vm.TotalSlots = prevCopy.TotalSlots;
           vm.TotalCharacters = prevCopy.TotalCharacters;
@@ -120,23 +98,15 @@ namespace JoinRpg.Web.Models
           vm.TotalAcceptedClaims = prevCopy.TotalAcceptedClaims;
           return vm;
         }
+        
+        var childGroups = characterGroup.GetOrderedChildGroups().Where(g =>g.IsActive).ToList();
+        var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
-        AlreadyOutputedGroups.Add(characterGroup.CharacterGroupId);
+        vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren, childGroups)).ToList();
 
-        var childs = new List<CharacterGroupListItemViewModel>();
+        var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
 
-        foreach (var childGroup in characterGroup.GetOrderedChildGroups())
-        {
-          var characterGroups =  pathToTop.Union(new [] { characterGroup }).ToList();
-          var child = GenerateFrom(childGroup, deepLevel + 1, characterGroups);
-          childs.Add(child);
-        }
-
-        vm.ChildGroups = childs;
-
-        var totalChildsBeforeFlat = vm.FlatTree(model => model.ChildGroups).ToList();
-        var flatChilds = totalChildsBeforeFlat.Distinct().ToList();
-        var flatCharacters = flatChilds.SelectMany(c => c.Characters.Where(ch => ch.IsActive)).Distinct().ToList();
+        var flatCharacters = flatChilds.SelectMany(c => c.ActiveCharacters).Distinct().ToList();
 
         vm.TotalSlots = flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
                         flatCharacters.Count(c => c.IsAvailable);
@@ -153,10 +123,15 @@ namespace JoinRpg.Web.Models
         return vm;
       }
 
-      private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group)
+      private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
       {
-        var siblings = group.GetOrderedCharacters() ?? new List<Character> { arg };
+        var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive).ToArray();
 
+        return characters.Select(character => GenerateCharacter(character, characterGroup,characters));
+      }
+
+      private CharacterViewModel GenerateCharacter(Character arg, CharacterGroup group, IReadOnlyList<Character> siblings)
+      {
         var vm = new CharacterViewModel
         {
           CharacterId = arg.CharacterId,
@@ -185,8 +160,5 @@ namespace JoinRpg.Web.Models
         return vm;
       }
     }
-
-    [MustUseReturnValue]
-    public static CharacterGroupListViewModel FromProjectAsMaster(Project project) => FromGroup(project.RootGroup, true);
   }
 }

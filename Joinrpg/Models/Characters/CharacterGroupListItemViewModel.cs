@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using JetBrains.Annotations;
-using JoinRpg.DataModel;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -24,12 +22,10 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Слотов для заявок в группу")]
     public int AvaiableDirectSlots { get; set; }
+    
+    public ICollection<CharacterViewModel> ActiveCharacters { get; set; }
 
-    public IList<CharacterViewModel> Characters { get; set; }
-
-    public IEnumerable<CharacterViewModel> ActiveCharacters => Characters.Where(c => c.IsActive);
-
-    public IEnumerable<CharacterViewModel> PublicCharacters => Characters.Where(c => c.IsActive && c.IsPublic);
+    public IEnumerable<CharacterViewModel> PublicCharacters => ActiveCharacters.Where(c =>  c.IsPublic);
 
     public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
 
@@ -71,11 +67,6 @@ namespace JoinRpg.Web.Models
     public int TotalAcceptedClaims { get; set; }
 
     public bool Unlimited  { get; set; }
-
-    public CharacterGroupListItemViewModel()
-    {
-      
-    }
 
     public bool Equals(CharacterGroupListItemViewModel other) => other.CharacterGroupId == CharacterGroupId;
 

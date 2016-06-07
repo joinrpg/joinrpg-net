@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -40,7 +39,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
+          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
         });
     }
 
@@ -72,7 +71,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.FromGroup(field, hasMasterAccess)
+          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
         });
     }
 
@@ -273,7 +272,7 @@ namespace JoinRpg.Web.Controllers
     {
       var result = group.GetResponsibleMasters(includeSelf)
           .Select(u => u.DisplayName)
-          .Join(", ");
+          .JoinStrings(", ");
       return string.IsNullOrWhiteSpace(result) ? "Никто" : result;
     }
 

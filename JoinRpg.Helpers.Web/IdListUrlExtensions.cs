@@ -7,7 +7,7 @@ namespace JoinRpg.Helpers.Web
   {
     public static string CompressIdList(this IEnumerable<int> list)
     {
-      return list.OrderBy(l => l).DeltaCompress().Compress1().Join("_");
+      return list.OrderBy(l => l).DeltaCompress().Compress1().JoinStrings("_");
     }
 
     public static IEnumerable<int> UnCompressIdList(this string compressedList)

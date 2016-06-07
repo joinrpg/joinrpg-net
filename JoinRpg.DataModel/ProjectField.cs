@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -46,7 +48,16 @@ namespace JoinRpg.DataModel
     public virtual CharacterGroup CharacterGroup { get; set; }
     public int CharacterGroupId { get; set; }
 
-    public virtual ICollection<CharacterGroup> GroupsAvailableFor { get; set; } = new HashSet<CharacterGroup>();
+    [NotMapped]
+    public int[] AvailableForCharacterGroupIds
+    {
+      get { return AviableForImpl._parentCharacterGroupIds; }
+      set { AviableForImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(","); }
+    }
+
+    public IntList AviableForImpl { get; set; } = new IntList();
+
+    public IEnumerable<CharacterGroup> GroupsAvailableFor => Project.CharacterGroups.Where(c => AvailableForCharacterGroupIds.Contains(c.CharacterGroupId));
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

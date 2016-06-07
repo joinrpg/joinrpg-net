@@ -35,7 +35,7 @@ namespace JoinRpg.Helpers
 
     public static Func<object, string> GetEnumerableConvertor(Func<object, string> toStringConvertor)
     {
-      return o => ((IEnumerable) o).Cast<object>().Select(toStringConvertor).Join(", ");
+      return o => ((IEnumerable) o).Cast<object>().Select(toStringConvertor).JoinStrings(", ");
     }
   }
 }

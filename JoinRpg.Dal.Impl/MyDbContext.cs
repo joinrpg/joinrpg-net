@@ -46,13 +46,12 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
       modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
       
-      modelBuilder.Entity<CharacterGroup>().HasMany(cg => cg.ParentGroups).WithMany();
+      
       modelBuilder.Entity<CharacterGroup>()
         .HasOptional(c => c.ResponsibleMasterUser)
         .WithMany()
         .HasForeignKey(c => c.ResponsibleMasterUserId);
 
-      modelBuilder.Entity<Character>().HasMany(c => c.Groups).WithMany();
 
       modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project).WillCascadeOnDelete(false);
 
@@ -117,8 +116,6 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectField>()
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
-
-      modelBuilder.Entity<ProjectField>().HasMany(f => f.GroupsAvailableFor).WithMany();
 
       base.OnModelCreating(modelBuilder);
     }

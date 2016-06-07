@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
@@ -51,7 +52,7 @@ namespace JoinRpg.Web.Models
     public bool HasOtherApprovedClaim { get; set; }
 
     [ReadOnly(true)]
-    public CharacterGroupListViewModel Data { get; set; }
+    public IList<CharacterTreeItem> Data { get; set; }
 
     public bool HidePlayer => false;
 

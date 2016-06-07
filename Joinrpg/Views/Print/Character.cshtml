@@ -17,7 +17,7 @@
     <h1 style="page-break-before: always">@Model.CharacterName</h1>
     <hr />
 <p>
-    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
+    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).JoinStrings(" • ")
 </p>
     <dl>
         <dt>Мастер</dt>
