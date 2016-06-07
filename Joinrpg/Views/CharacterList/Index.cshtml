@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.DataModel
+@using JoinRpg.Domain
 @using JoinRpg.Web.Models
 @model CharacterListViewModel
   @{
@@ -82,7 +83,40 @@
             <td>
                 @foreach (var pr in item.Problems)
                 {
-                    @Html.DisplayFor(modelItem => pr)
+
+                    var style = "";
+                    switch (pr.Severity)
+                    {
+                        case ProblemSeverity.Hint:
+                            style = "label-info";
+                            break;
+                        case ProblemSeverity.Warning:
+                            style = "label-warning";
+                            break;
+                        case ProblemSeverity.Error:
+                        case ProblemSeverity.Fatal:
+                            style = "label-danger";
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    <div class="label @style">
+                        @if (pr.Severity == ProblemSeverity.Fatal)
+                        {
+                            <span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
+                        }
+                        @Html.DisplayFor(modelItem => pr.ProblemType)
+                        @if (pr.ProblemTime != null)
+                        {
+                            @Html.DisplayFor(modelItem => pr.ProblemTime, "EventTime")
+                        }
+                        @if (!string.IsNullOrWhiteSpace(pr.Extra))
+                        {
+                            <text>: @pr.Extra</text>
+                        }
+                    </div>
+                    <br/>
                 }
             </td>
             <td>
