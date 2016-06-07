@@ -464,6 +464,7 @@ namespace JoinRpg.Services.Impl
       {
         //TODO LOcalize
         CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
+        Project = claim.Project,
         ProjectId = claim.ProjectId,
         IsAcceptingClaims = true,
         IsPublic = claim.Group.IsPublic,

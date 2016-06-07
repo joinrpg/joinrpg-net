@@ -59,14 +59,14 @@ namespace JoinRpg.Domain
     }
 
     [NotNull]
-    public static IEnumerable<CharacterGroup> GetParentGroups([CanBeNull] this IClaimSource target)
+    public static IEnumerable<CharacterGroup> GetParentGroupsToTop([CanBeNull] this IClaimSource target)
     {
-      return target.FlatTree(g => g.ParentGroups, includeSelf: false).Cast<CharacterGroup>().Distinct();
+      return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)) ?? Enumerable.Empty<CharacterGroup>();
     }
 
-    public static bool HasActiveClaims(this IClaimSource characterGroup)
+    public static bool HasActiveClaims(this IClaimSource target)
     {
-      return characterGroup.Claims.Any(claim => claim.IsActive);
+      return target.Claims.Any(claim => claim.IsActive);
     }
   }
 }

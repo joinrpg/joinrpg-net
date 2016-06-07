@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -26,7 +27,7 @@ namespace JoinRpg.DataModel
     }
   }
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>
   {
 
 
@@ -123,6 +124,8 @@ namespace JoinRpg.DataModel
       }
     }
     #endregion
+
+    public bool Equals(CharacterGroup other) => other.CharacterGroupId == CharacterGroupId;
   }
 
 }
