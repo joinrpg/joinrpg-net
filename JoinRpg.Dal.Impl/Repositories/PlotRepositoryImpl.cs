@@ -12,16 +12,15 @@ namespace JoinRpg.Dal.Impl.Repositories
   [UsedImplicitly]
   public class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
   {
-    public Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
+    public async Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadMasters(projectId);
+
       return
-        Ctx.Set<PlotFolder>()
-          .Include(pf => pf.Project)
-          .Include(pf => pf.Project.ProjectAcls)
+        await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements)
           .Include(pf => pf.Elements.Select(e => e.Texts))
-          .Include(pf => pf.Project.Characters)
-          .Include(pf => pf.Project.CharacterGroups)
           .Include(pf => pf.Project.Claims)
           .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
     }
@@ -56,7 +55,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       await LoadProjectGroups(project); //TODO[GroupsLoad] it's unclear why we need this
       return await Ctx.Set<PlotFolder>()
-        .Include(pf => pf.Elements.Select(e => e.Texts))
+        .Include(pf => pf.Elements)
         .Where(pf => pf.ProjectId == project)
         .ToListAsync();
     }

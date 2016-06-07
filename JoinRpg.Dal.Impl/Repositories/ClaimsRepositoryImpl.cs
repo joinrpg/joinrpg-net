@@ -103,7 +103,12 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadProjectCharactersAndGroups(projectId);
       await LoadProjectClaims(projectId);
 
-      return await Ctx.ClaimSet.Include(c => c.Comments.Select(com => com.Finance)).Include(c => c.Comments.Select(com => com.Author)).Include(c => c.Comments.Select(com => com.CommentText)).SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+      return
+        await
+          Ctx.ClaimSet.Include(c => c.Comments.Select(com => com.Finance))
+            .Include(c => c.Comments.Select(com => com.Author))
+            .Include(c => c.Comments.Select(com => com.CommentText))
+            .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
   }
 }
