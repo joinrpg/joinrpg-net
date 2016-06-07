@@ -38,12 +38,7 @@ namespace JoinRpg.Web.Models
       var selectMany = plots.SelectMany(p => p.Elements).ToArray();
       foreach (var character in characters)
       {
-        var plotElements =
-          selectMany
-            .Where(
-              p => character.ShouldShowPlot(p));
-        viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
-          plotElements.ToArray()));
+        viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(), character.SelectPlots(selectMany)));
       }
 
       Items = viewModel;
@@ -57,7 +52,7 @@ namespace JoinRpg.Web.Models
 
     private bool AnyItemHasValue(int projectFieldId)
     {
-      return Items.Select(i => i.FieldById(projectFieldId)).Any(f1 => f1?.HasValue == true);
+      return Items.Select(i => i.Fields.FieldById(projectFieldId)).Any(f1 => f1?.HasValue == true);
     }
 
     public IReadOnlyCollection<ProjectField> Fields { get; }
@@ -114,7 +109,7 @@ namespace JoinRpg.Web.Models
       }
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
-      Fields = new CustomFieldsViewModel(currentUserId, character);
+      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true); //This disable edit will speed up some requests.
       Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
 
       IndReadyPlotsCount = plots.Count(p => p.IsCompleted && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
@@ -126,10 +121,5 @@ namespace JoinRpg.Web.Models
 
     [Display(Name="Проблемы")]
     public ICollection<ProblemViewModel> Problems { get; set; }
-
-    public FieldValueViewModel FieldById(int projectFieldId)
-    {
-      return Fields.Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
-    }
   }
 }

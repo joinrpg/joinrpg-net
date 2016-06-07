@@ -24,9 +24,9 @@ namespace JoinRpg.Web.Models.Print
       PlotElementId = element.PlotElementId;
       PlotFolderId = element.PlotFolderId;
       ProjectId = element.ProjectId;
-      Count =
-        characters.Count(character => character.GetOrderedPlots(new[] {element}).Any(character.ShouldShowPlot));
+      Count = element.CountCharacters(characters);
     }
+
     [Display(Name="Что раздавать")]
     public MarkdownViewModel Text { get; private set; }
     public int PlotElementId { get; private set; }

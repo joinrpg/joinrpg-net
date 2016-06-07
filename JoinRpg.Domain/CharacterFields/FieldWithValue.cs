@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
@@ -10,6 +9,9 @@ namespace JoinRpg.Domain
 {
   public class FieldWithValue 
   {
+    private string _value;
+
+    private IReadOnlyList<int> SelectedIds { get; set; }
     public FieldWithValue(ProjectField field, string value)
     {
       Field = field;
@@ -18,7 +20,20 @@ namespace JoinRpg.Domain
 
     public ProjectField Field { get; }
 
-    public string Value { get; set; }
+    public string Value
+    {
+      get { return _value; }
+      set
+      {
+        _value = value;
+        if (Field.HasValueList())
+        {
+          SelectedIds = string.IsNullOrWhiteSpace(Value)
+            ? new int[] { }
+            : Value.ToIntList();
+        }
+      }
+    }
 
     [NotNull]
     public string DisplayString
@@ -29,25 +44,24 @@ namespace JoinRpg.Domain
         {
           return Value;
         }
-        var selectedIds = GetSelectedIds();
         return
-          Field.DropdownValues.Where(dv => selectedIds.Contains(dv.ProjectFieldDropdownValueId))
+          Field.DropdownValues.Where(dv => SelectedIds.Contains(dv.ProjectFieldDropdownValueId))
             .Select(dv => dv.Label)
             .Join(", ");
       }
     }
 
-    public IEnumerable<int> GetSelectedIds()
+    public bool HasValue => !string.IsNullOrWhiteSpace(Value) || Field.FieldType == ProjectFieldType.Header;
+
+    public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
     {
-      if (!Field.HasValueList())
-      {
-        throw new InvalidOperationException();
-      }
-      return string.IsNullOrWhiteSpace(Value)
-        ? Enumerable.Empty<int>()
-        : Value.ToIntList();
+      return Field.GetOrderedValues().Where(v => v.IsActive || SelectedIds.Contains(v.ProjectFieldDropdownValueId));
     }
 
-    public bool HasValue => !string.IsNullOrWhiteSpace(Value) || Field.FieldType == ProjectFieldType.Header;
+    [ItemNotNull, NotNull]
+    public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues()
+    {
+      return Field.GetOrderedValues().Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
+    }
   }
 }

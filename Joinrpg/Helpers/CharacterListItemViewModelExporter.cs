@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -24,7 +23,7 @@ namespace JoinRpg.Web.Helpers
       {
         yield return
           FieldColumn(projectField.FieldName,
-            x => x.Fields.Fields.SingleOrDefault(f => f.ProjectFieldId == projectField.ProjectFieldId)?.DisplayString);
+            x => x.Fields.FieldById(projectField.ProjectFieldId)?.DisplayString);
       }
 
       yield return EnumColumn(x => x.BusyStatus);

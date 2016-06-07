@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
       CharacterDescription = new MarkdownViewModel(character.Description);
       FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee();
       ProjectName = character.Project.ProjectName;
-      var plotElements = character.GetOrderedPlots(plots.Where(character.ShouldShowPlot).ToArray());
+      var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
       Plots =
         plotElements
           .ToViewModels(character.HasMasterAccess(currentUserId), character.CharacterId)
@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models
           .ToArray();
       ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;
       PlayerDetails = UserProfileDetailsViewModel.FromUser(character.ApprovedClaim?.Player);
-      Fields = new CustomFieldsViewModel(currentUserId, character, onlyPlayerVisible: true).DisableEdit();
+      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true);
     }
   }
 }

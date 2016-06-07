@@ -42,26 +42,15 @@ namespace JoinRpg.Domain
 
     private static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource claimSource)
     {
-      var sourceAsGroup = claimSource as CharacterGroup;
       return claimSource
         .GetParentGroups() //Get parents
-        .Union(sourceAsGroup) //Don't forget group himself
+        .Union(claimSource as CharacterGroup) //Don't forget group himself
         .WhereNotNull();
     }
 
     public static bool IsPartOfGroup(this Claim cl, int characterGroupId)
     {
       return cl.GetTarget().IsPartOfGroup(characterGroupId);
-    }
-
-    public static bool IsPartOfGroup(this IClaimSource claimSource, CharacterGroup group)
-    {
-      if (group.IsRoot)
-      {
-        return true;
-      }
-      //TODO we can do faster than this
-      return claimSource.GetGroupsPartOf().Contains(group);
     }
 
     public static bool IsPartOfAnyOfGroups(this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
