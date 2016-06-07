@@ -114,7 +114,8 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    protected async Task<IList<CharacterGroup>> ValidateCharacterGroupList(int projectId, IReadOnlyCollection<int> groupIds)
+    [ItemNotNull]
+    protected async Task<int[]> ValidateCharacterGroupList(int projectId, IReadOnlyCollection<int> groupIds, bool ensureNotSpecial = false)
     {
       var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
 
@@ -123,7 +124,11 @@ namespace JoinRpg.Services.Impl
         var missing = string.Join(", ", groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
         throw new Exception($"Groups {missing} doesn't belong to project");
       }
-      return characterGroups;
+      if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
+      {
+        throw new DbEntityValidationException();
+      }
+      return groupIds.ToArray();
     }
 
     protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)

@@ -1,12 +1,10 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -25,11 +23,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     #region implementation
-    private async Task<ActionResult> MasterClaimList(int projectId, Func<Claim, bool> predicate, string export,
-      string title, [AspMvcView] string viewName = "Index")
-    {
-      var claims = (await ClaimsRepository.GetClaims(projectId)).Where(predicate).ToList();
 
+    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, string viewName, List<Claim> claims)
+    {
       var error = await AsMaster(claims, projectId);
       if (error != null) return error;
 
@@ -47,88 +43,123 @@ namespace JoinRpg.Web.Controllers
       {
         var project = await GetProjectFromList(projectId, claims);
 
-        return await ExportWithCustomFronend(view.Items, title, exportType.Value, new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
+        return
+          await
+            ExportWithCustomFronend(view.Items, title, exportType.Value,
+              new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
       }
     }
+
     #endregion
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ForPlayer(int projectId, int userId, string export)
-      => MasterClaimList(projectId, cl => cl.IsActive & cl.PlayerUserId == userId, export, "Заявки на игроке");
-
-    [HttpGet, Authorize]
-    public Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> ForPlayer(int projectId, int userId, string export)
     {
-      ViewBag.CharacterGroupId = characterGroupId;
-      return MasterClaimList(projectId, cl => cl.IsActive && cl.CharacterGroupId == characterGroupId, export,
-        "Заявки в группу (напрямую)", "ListForGroupDirect");
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active)).Where(cl => cl.PlayerUserId == userId).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Заявки на игроке", "Index", claims);
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      return MasterClaimList(projectId, cl => cl.IsActive && cl.IsPartOfGroup(characterGroupId), export,
-        "Заявки в группу (все)", "ListForGroup");
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active)).Where(cl => cl.CharacterGroupId == characterGroupId).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Заявки в группу (напрямую)", "ListForGroupDirect", claims);
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      return MasterClaimList(projectId, cl => cl.IsInDiscussion && cl.IsPartOfGroup(characterGroupId), export,
-        "Обсуждаемые заявки в группу (все)", "DiscussingForGroup");
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active)).Where(cl => cl.IsPartOfGroup(characterGroupId)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Заявки в группу (все)", "ListForGroup", claims);
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
+    public async Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      return MasterClaimList(projectId, cl => cl.IsInDiscussion && cl.CharacterGroupId == characterGroupId, export,
-        "Обсуждаемые заявки в группу (напрямую)", "DiscussingForGroupDirect");
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Discussion)).Where(cl => cl.IsPartOfGroup(characterGroupId)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (все)", "DiscussingForGroup", claims);
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ResponsibleDiscussing(int projectid, int responsibleMasterId, string export)
-      =>
-        MasterClaimList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsInDiscussion,
-          export, "Обсуждаемые заявки на мастере");
+    public async Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
+    {
+      ViewBag.CharacterGroupId = characterGroupId;
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Discussion)).Where(cl => cl.CharacterGroupId == characterGroupId).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (напрямую)", "DiscussingForGroupDirect", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
-      =>
-        MasterClaimList(projectid,
-          claim => claim.ResponsibleMasterUserId == responsiblemasterid && claim.ClaimStatus == Claim.Status.OnHold,
-          export, "Лист ожидания на мастере");
+    public async Task<ActionResult> ResponsibleDiscussing(int projectid, int responsibleMasterId, string export)
+    {
+      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Discussion)).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", "Index", claims);
+    }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
+    {
+      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsiblemasterid, ClaimStatusSpec.OnHold)).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", "Index", claims);
+    }
 
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ActiveList(int projectid, string export)
-      => MasterClaimList(projectid, claim => claim.IsActive, export, "Активные заявки");
+    public async Task<ActionResult> ActiveList(int projectId, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Активные заявки", "Index", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> DeclinedList(int projectid, string export)
-      => MasterClaimList(projectid, claim => !claim.IsActive, export, "Отклоненные/отозванные заявки");
+    public async Task<ActionResult> DeclinedList(int projectId, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.InActive)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Отклоненные/отозванные заявки", "Index", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> Discussing(int projectid, string export)
-      => MasterClaimList(projectid, claim => claim.IsInDiscussion, export, "Обсуждаемые заявки");
+    public async Task<ActionResult> Discussing(int projectId, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Discussion)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки", "Index", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> OnHoldList(int projectid, string export)
-      => MasterClaimList(projectid, claim => claim.ClaimStatus == Claim.Status.OnHold, export, "Лист ожидания");
+    public async Task<ActionResult> OnHoldList(int projectid, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.OnHold)).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Лист ожидания", "Index", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> WaitingForFee(int projectid, string export)
-      =>
-        MasterClaimList(projectid, claim => claim.IsApproved && !claim.ClaimPaidInFull(), export,
-          "Неоплаченные принятые заявки");
+    public async Task<ActionResult> WaitingForFee(int projectid, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active)).Where(claim => claim.IsApproved && !claim.ClaimPaidInFull()).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", "Index", claims);
+    }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
-      =>
-        MasterClaimList(projectid, claim => claim.ResponsibleMasterUserId == responsibleMasterId && claim.IsActive,
-          export, "Заявки на мастере");
+    public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
+    {
+      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Заявки на мастере", "Index", claims);
+    }
 
     [HttpGet, Authorize]
     public ActionResult My()
@@ -140,21 +171,18 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
+      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any)).Where(c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
       return
-        await
-          MasterClaimList(projectId, c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning), export,
-            "Проблемные заявки");
+        await ShowMasterClaimList(projectId, export, "Проблемные заявки", "Index", claims);
     }
 
     [HttpGet, Authorize]
-    public Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
+    public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
     {
-      return
-        MasterClaimList(projectId,
-          claim =>
-            claim.ResponsibleMasterUserId == responsibleMasterId &&
-            claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning),
-          export, "Проблемные заявки на мастере");
+      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId, ClaimStatusSpec.Any)).Where(claim =>
+        claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
+
+      return await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", "Index", claims);
     }
 
    

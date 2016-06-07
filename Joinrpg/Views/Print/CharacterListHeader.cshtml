@@ -5,7 +5,7 @@
 <table class="table table-bordered">
     <tr>
         <th>Группы</th>
-        <td>@Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")</td>
+        <td>@Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).JoinStrings(" • ")</td>
     </tr>
     <tr>
         <th>Мастер</th>

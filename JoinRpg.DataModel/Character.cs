@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
@@ -12,11 +13,20 @@ namespace JoinRpg.DataModel
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
     int IOrderableEntity.Id => CharacterId;
-    ICollection<CharacterGroup> IWorldObject.ParentGroups => Groups;
+    [NotMapped]
+    public int[] ParentCharacterGroupIds
+    {
+      get { return ParentGroupsImpl._parentCharacterGroupIds; }
+      set { ParentGroupsImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(","); }
+    }
+
+    public IntList ParentGroupsImpl { get; set; } = new IntList();
 
     public virtual Project Project { get; set; }
 
-    public virtual ICollection<CharacterGroup> Groups { get; set; }
+    IEnumerable<CharacterGroup> IWorldObject.ParentGroups => Groups;
+
+    public IEnumerable<CharacterGroup> Groups => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
 
     public string CharacterName { get; set; }
 

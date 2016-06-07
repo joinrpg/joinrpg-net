@@ -26,17 +26,17 @@
         <th>Принято</th>
         <th>Обсуждается</th>
     </tr>
-    @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups : Model.Data.PublicGroups)
+    @foreach (var item in Model.Data)
     {
-        if (ViewBag.MaxDeep != null && item.Path.Count() > ViewBag.MaxDeep)
+        if (ViewBag.MaxDeep != null && item.DeepLevel > ViewBag.MaxDeep)
         {
             continue;
         }
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <tr class="@hideClassName">
             <td style="text-overflow: ellipsis">
-                @string.Join("→", item.Path.Select(p => ""))
-                @if (item.Path.Count() == 0)
+                @(new String('→', item.DeepLevel))
+                @if (item.DeepLevel == 0)
                 {
                     <text><b>@item.Name</b> (итого)</text>
                 }

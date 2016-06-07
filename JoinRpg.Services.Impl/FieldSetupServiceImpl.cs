@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -37,7 +36,7 @@ namespace JoinRpg.Services.Impl
         MandatoryStatus = mandatoryStatus,
       };
 
-      field.GroupsAvailableFor.AssignLinksList(await ValidateCharacterGroupList(projectId, showForGroups));
+      field.AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups);
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -61,7 +60,7 @@ namespace JoinRpg.Services.Impl
       field.IsActive = true;
       field.MandatoryStatus = mandatoryStatus;
       field.ValidForNpc = validForNpc;
-      field.GroupsAvailableFor.AssignLinksList(await ValidateCharacterGroupList(projectId, showForGroups));
+      field.AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups);
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -131,7 +130,7 @@ namespace JoinRpg.Services.Impl
       {
         AvaiableDirectSlots = 0,
         HaveDirectSlots = false,
-        ParentGroups = new List<CharacterGroup> { fieldValue.ProjectField.CharacterGroup },
+        ParentCharacterGroupIds = new [] { fieldValue.ProjectField.CharacterGroup.CharacterGroupId },
         ProjectId = fieldValue.ProjectId,
         IsRoot = false,
         IsSpecial = true,
@@ -155,7 +154,7 @@ namespace JoinRpg.Services.Impl
       {
         AvaiableDirectSlots = 0,
         HaveDirectSlots = false,
-        ParentGroups = new List<CharacterGroup> { field.Project.RootGroup },
+        ParentCharacterGroupIds = new [] { field.Project.RootGroup.CharacterGroupId},
         ProjectId = field.ProjectId,
         IsRoot = false,
         IsSpecial = true,

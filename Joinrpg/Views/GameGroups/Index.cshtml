@@ -2,10 +2,10 @@
 @model GameRolesViewModel
 
 @{
-    ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.ActiveGroups.Single(g => g.DeepLevel == 0).Name;
+    ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
 }
 
-    @foreach (var item in Model.ShowEditControls ? Model.Data.ActiveGroups :  Model.Data.PublicGroups)
+    @foreach (var item in Model.Data)
     {
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">

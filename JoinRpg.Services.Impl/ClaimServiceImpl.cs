@@ -53,6 +53,7 @@ namespace JoinRpg.Services.Impl
       }
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
+      // ReSharper disable once MustUseReturnValue We will never be a part of special group here
       FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, null, claim, fields);
 
       await UnitOfWork.SaveChangesAsync();
@@ -393,7 +394,12 @@ namespace JoinRpg.Services.Impl
       //TODO: Prevent lazy load here - use repository 
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
-      FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
+      var ids =  FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
+      if (claim.IsApproved)
+      {
+        // ReSharper disable once PossibleNullReferenceException
+        claim.Character.ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId, ids);
+      }
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -462,10 +468,7 @@ namespace JoinRpg.Services.Impl
         IsAcceptingClaims = true,
         IsPublic = claim.Group.IsPublic,
         IsActive = true,
-        Groups = new List<CharacterGroup>()
-        {
-          claim.Group
-        }
+        ParentCharacterGroupIds = new[] {claim.CharacterGroupId.Value},
       };
       claim.CharacterGroupId = null;
       claim.Character = character;

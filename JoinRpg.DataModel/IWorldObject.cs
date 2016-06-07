@@ -4,7 +4,7 @@ namespace JoinRpg.DataModel
 {
   public interface IWorldObject : IProjectEntity
   {
-    ICollection<CharacterGroup> ParentGroups { get;  }
+    IEnumerable<CharacterGroup> ParentGroups { get;  }
     string Name { get; }
     bool IsPublic { get;  }
 
