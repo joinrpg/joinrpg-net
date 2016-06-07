@@ -16,31 +16,39 @@
 <div class="container body-content">
     <h1 style="page-break-before: always">@Model.CharacterName</h1>
     <hr />
-    <p>
-        @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
-    </p>
-    <div class="panel panel-default">
-        @if (Model.PlayerDetails != null)
+<p>
+    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).Join(" • ")
+</p>
+    <dl>
+        <dt>Мастер</dt>
+        <dd>
+            @if (Model.ResponsibleMaster == null)
+            {
+                <text>нет</text>
+            }
+            else
+            {
+                @Model.ResponsibleMaster.DisplayName
+            }
+        </dd>
+
+        @if (Model.PlayerDisplayName != null)
         {
-        <div class="panel-heading">
-            Игрок
-        </div>
-        <div class="panel-body">
-            @Html.DisplayFor(model => model.PlayerDetails)
-            <br /><b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
-        </div>
+
+            <dt>Игрок</dt>
+            <dd>@Model.PlayerDisplayName</dd>
+
+            <dt>ФИО</dt>
+            <dd>@Model.PlayerFullName</dd>
+            <dt>Телефон</dt>
+            <dd>@Model.PlayerPhoneNumber</dd>
         }
         else
         {
-        <div class="panel-heading">
-            Нет игрока
-        </div>
-        <div class="panel-body">
-            <b>Мастер</b>: @Html.DisplayFor(model => model.ResponsibleMaster)
-        </div>
+            <dt>Игрок</dt>
+            <dd>Нет</dd>
         }
-    </div>
-
+    </dl>
     @Html.Partial("PrintCharacter", Model)
 </div>
 </body>

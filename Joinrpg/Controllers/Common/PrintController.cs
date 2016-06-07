@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers.Common
     //TODO: Split this into printing envelope and printing content
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
-      var characters = (await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray()));
+      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList().ToArray());
 
       var error = await AsMaster(characters, projectid);
       if (error != null) return error;

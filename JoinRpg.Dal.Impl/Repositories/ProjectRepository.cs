@@ -117,11 +117,13 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)
     {
       await LoadProjectGroups(projectId);
+      await LoadProjectClaimsAndComments(projectId);
+      await LoadMasters(projectId);
+      await LoadProjectFields(projectId);
 
       return
         await Ctx.Set<Character>()
           .Include(c => c.Groups)
-          .Include(c => c.Project.ProjectFields.Select(pf => pf.DropdownValues))
           .Where(e => characterIds.Contains(e.CharacterId) && e.ProjectId == projectId).ToListAsync();
     }
 
