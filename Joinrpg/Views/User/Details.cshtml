@@ -47,7 +47,7 @@
             </ul>
         </div>
     }
-    @if (Model.Claims.Items.Any())
+    @if (Model.Claims != null && Model.Claims.Items.Any())
     {
         @Html.Partial("..\\ClaimList\\Index", Model.Claims, new ViewDataDictionary() {{"HideUserColumn", true}, {"HideOperations", true}})
     }
