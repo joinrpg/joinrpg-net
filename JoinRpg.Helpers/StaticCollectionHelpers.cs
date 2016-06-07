@@ -15,10 +15,11 @@ namespace JoinRpg.Helpers
       return collection.AllKeys.ToDictionary(key => key, key => collection[key]);
     }
 
-    [NotNull]
-    public static IEnumerable<T> FlatTree<T>(this T obj, Func<T, IEnumerable<T>> parentSelectorFunc, bool includeSelf = true)
+    [NotNull, ItemNotNull]
+    public static ISet<T> FlatTree<T>(this T obj, Func<T, IEnumerable<T>> parentSelectorFunc, bool includeSelf = true)
+      where T: IEquatable<T>
     {
-      var groups = new List<T>();
+      var groups = new HashSet<T>();
       if (obj == null)
       {
         return groups;
@@ -31,17 +32,14 @@ namespace JoinRpg.Helpers
       return groups;
     }
 
-    private static void FlatTreeImpl<T>(ICollection<T> flattedcharacterGroupIds, T group1, Func<T, IEnumerable<T>> parentSelectorFunc)
+    private static void FlatTreeImpl<T>(ISet<T> flattedcharacterGroupIds, T group1, Func<T, IEnumerable<T>> parentSelectorFunc)
     {
-      foreach (var characterGroup in parentSelectorFunc(group1))
+      foreach (var characterGroup in parentSelectorFunc(group1).Except(flattedcharacterGroupIds))
       {
         FlatTreeImpl(flattedcharacterGroupIds, characterGroup, parentSelectorFunc);
         flattedcharacterGroupIds.Add(characterGroup);
       }
     }
-
-    public static IEnumerable<T> UnionIf<T>(this IEnumerable<T> source, T @object, bool add)
-      => source.UnionIf(new[] {@object}, add);
 
     public static IEnumerable<T> UnionIf<T>(this IEnumerable<T> source, IEnumerable<T> enumerable, bool add)
       => source.Union(add ? enumerable : Enumerable.Empty<T>());

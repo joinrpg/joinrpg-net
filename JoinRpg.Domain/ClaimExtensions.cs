@@ -43,7 +43,7 @@ namespace JoinRpg.Domain
     private static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource claimSource)
     {
       return claimSource
-        .GetParentGroups() //Get parents
+        .GetParentGroupsToTop() //Get parents
         .Union(claimSource as CharacterGroup) //Don't forget group himself
         .WhereNotNull();
     }
@@ -97,7 +97,7 @@ namespace JoinRpg.Domain
     public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
       int initiatorUserId, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
     {
-      return ((IEnumerable<CharacterGroup>) claim.GetTarget().GetGroupsPartOf()) //Get all groups for claim
+      return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
         .SelectMany(g => g.Subscriptions) //get subscriptions on groups
         .Union(claim.Subscriptions) //subscribtions on claim
         .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters
