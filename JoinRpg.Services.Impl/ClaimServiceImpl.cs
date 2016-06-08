@@ -395,10 +395,10 @@ namespace JoinRpg.Services.Impl
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
       var ids =  FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
-      if (claim.IsApproved)
+      if (claim.IsApproved && claim.Character != null)
       {
-        // ReSharper disable once PossibleNullReferenceException
-        claim.Character.ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId, ids);
+        claim.Character.ParentCharacterGroupIds =
+          claim.Character.ParentCharacterGroupIds.Union(await ValidateCharacterGroupList(projectId, ids)).ToArray();
       }
       await UnitOfWork.SaveChangesAsync();
     }

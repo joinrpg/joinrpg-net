@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -24,11 +23,8 @@ namespace JoinRpg.Domain
     public static VirtualOrderContainer<PlotElement> GetCharacterPlotContainer(this Character character,
       IReadOnlyCollection<PlotElement> plots) => VirtualOrderContainerFacade.Create(plots, character.PlotElementOrderData);
 
-    private static readonly ConcurrentDictionary<int, IReadOnlyList<ProjectFieldDropdownValue>> PfdvCache =
-      new ConcurrentDictionary<int, IReadOnlyList<ProjectFieldDropdownValue>>();
-
     public static IReadOnlyList<ProjectFieldDropdownValue> GetOrderedValues(this ProjectField field)
-      => PfdvCache.GetOrAdd(field.ProjectFieldId, id => field.GetFieldValuesContainer().OrderedItems);
+      => field.GetFieldValuesContainer().OrderedItems;
 
     public static VirtualOrderContainer<ProjectFieldDropdownValue> GetFieldValuesContainer(
       this ProjectField field)

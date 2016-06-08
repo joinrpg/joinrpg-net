@@ -1,20 +1,30 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Impl
 {
   internal static class FieldSaveHelper
   {
     [MustUseReturnValue, NotNull]
-    public static IReadOnlyCollection<int> SaveCharacterFieldsImpl(int currentUserId, Character character, Claim claim,
-      IDictionary<int, string> newFieldValue)
+    public static IReadOnlyCollection<int> SaveCharacterFieldsImpl(int currentUserId, [CanBeNull] Character character, [CanBeNull] Claim claim,
+      [NotNull] IDictionary<int, string> newFieldValue)
     {
+      if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
+
       var project = character?.Project ?? claim?.Project;
+
+      if (project == null)
+      {
+        throw new ArgumentNullException("", "Either character or claim should be not null");
+      }
+
       var fields =
-        project.GetFields()
+        project.GetFieldsWithoutOrder()
           .ToList()
           .FillIfEnabled(claim, character, currentUserId)
           .ToDictionary(f => f.Field.ProjectFieldId);
@@ -39,9 +49,8 @@ namespace JoinRpg.Services.Impl
         claim.JsonData = fields.Values.SerializeFieldsFor(FieldBoundTo.Claim);
       }
 
-      return
-        fields.Values.Where(v => v.Field.HasSpecialGroup())
-          .SelectMany(v => v.GetDropdownValues().Select(c => c.CharacterGroup.CharacterGroupId)).ToArray();
+
+      return fields.Values.SelectMany(v => v.GetSpecialGroupsToApply().Select(g =>g.CharacterGroupId)).ToArray();
     }
   }
 }
