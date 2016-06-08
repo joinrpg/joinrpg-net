@@ -54,7 +54,7 @@ namespace JoinRpg.Helpers
       return source.Where(item => item != null);
     }
 
-    public static IEnumerable<int> WhereNotNullInt(this IEnumerable<int?> source)
+    public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source)
     {
       return source.Where(item => item != null).Select(item => item.Value);
     }

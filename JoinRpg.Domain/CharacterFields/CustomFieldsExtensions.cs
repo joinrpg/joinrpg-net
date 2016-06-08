@@ -18,6 +18,15 @@ namespace JoinRpg.Domain
           .Select(pf => new FieldWithValue(pf, null));
     }
 
+    /// <summary>
+    /// That method is faster than GetFields()
+    /// </summary>
+    public static IEnumerable<FieldWithValue> GetFieldsWithoutOrder([NotNull] this Project project)
+    {
+      if (project == null) throw new ArgumentNullException(nameof(project));
+      return project.ProjectFields.Select(pf => new FieldWithValue(pf, null));
+    }
+
     [MustUseReturnValue]
     public static string SerializeFieldsFor([NotNull] this IEnumerable<FieldWithValue> values, FieldBoundTo fieldBoundTo)
     {
