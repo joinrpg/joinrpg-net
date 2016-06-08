@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models
       ProjectId = project.ProjectId;
       Title = title;
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
-      ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNullInt().ToArray();
+      ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
       CharacterIds = characters.Select(c => c.CharacterId).ToArray();
     }
 

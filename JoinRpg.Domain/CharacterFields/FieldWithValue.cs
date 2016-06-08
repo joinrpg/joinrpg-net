@@ -63,5 +63,11 @@ namespace JoinRpg.Domain
     {
       return Field.GetOrderedValues().Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
     }
+
+    [NotNull, ItemNotNull]
+    public IEnumerable<CharacterGroup> GetSpecialGroupsToApply()
+    {
+      return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
+    }
   }
 }

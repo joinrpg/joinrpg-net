@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models
         .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
         .ToList();
       ClaimIds = claims.Select(c => c.ClaimId).ToArray();
-      CharacterIds = claims.Select(c => c.CharacterId).WhereNotNullInt().ToArray();
+      CharacterIds = claims.Select(c => c.CharacterId).WhereNotNull().ToArray();
       ProjectId = projectId;
       ShowCount = showCount;
       ShowUserColumn = showUserColumn;
