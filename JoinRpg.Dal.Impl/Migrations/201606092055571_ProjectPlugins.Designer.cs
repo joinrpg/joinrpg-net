@@ -7,13 +7,13 @@ namespace JoinRpg.Dal.Impl.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class PluginConfig : IMigrationMetadata
+    public sealed partial class ProjectPlugins : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PluginConfig));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ProjectPlugins));
         
         string IMigrationMetadata.Id
         {
-            get { return "201606041937456_PluginConfig"; }
+            get { return "201606092055571_ProjectPlugins"; }
         }
         
         string IMigrationMetadata.Source

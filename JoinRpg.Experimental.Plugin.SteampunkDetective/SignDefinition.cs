@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 {
   public class SignDefinition

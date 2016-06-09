@@ -7,18 +7,22 @@
 
 <!DOCTYPE html>
 
-<html>
+<html moznomarginboxes mozdisallowselectionprint>
 <head>
     <title>Распечатка карточек</title>
     <style>
-        .a6card {
-            width: 80mm;
-            height: 125mm;
-            border: black solid medium; 
-            padding: 2mm;
-            margin: 2mm;
-            float: left;
-        }
+ @@page {
+     size: A4;
+     margin: 0;
+ }
+         .a7card {
+             width: 95mm ;
+             height: 70mm;
+             border: black solid medium; 
+             margin: 1mm;
+             float: left;
+             page-break-inside: avoid;
+         }
     </style>
 </head>
 
@@ -26,7 +30,7 @@
 <div>
       @foreach (var card in Model)
       {
-          <div class="a6card">@card.Html.SanitizeHtml()</div>
+          <div class="a7card">@card.Html.SanitizeHtml()</div>
       }
 </div>
 </body>

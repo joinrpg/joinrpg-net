@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CharacterFieldInfo.cs" />
+    <Compile Include="CharacterGroupInfo.cs" />
     <Compile Include="CharacterInfo.cs" />
     <Compile Include="HtmlPrintResult.cs" />
     <Compile Include="IPlugin.cs" />

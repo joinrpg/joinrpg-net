@@ -18,7 +18,7 @@ namespace JoinRpg.Experimental.Plugin.HelloWorld
 
       public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
       {
-        yield return new HtmlCardPrintResult($"Hello, {character.CharacterName}! Configuration: {Config}", CardSize.A6);
+        yield return new HtmlCardPrintResult($"Hello, {character.CharacterName}! Configuration: {Config}", CardSize.A7);
       }
     }
 
