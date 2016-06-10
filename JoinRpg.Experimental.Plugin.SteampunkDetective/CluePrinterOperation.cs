@@ -57,11 +57,20 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
     {
       var possibleSigns = Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character)).ToArray();
+      var fieldsToShowInQrCode = character.Fields.Where(f => possibleSigns.Any(s => s.FieldId == f.FieldId));
+      var characterMasterDesc =
+        $"{character.CharacterName} ({character.Groups.Select(g => g.ToString()).JoinStrings(",")}) {fieldsToShowInQrCode.Select(f => f.ToString()).JoinStrings(", ")}";
+
+      if (Config.ShowHeaderClue)
+      {
+        yield return new HtmlCardPrintResult($"<div style='text-align:center'>{characterMasterDesc}</h2>", CardSize.A7);
+      }
+
       var random = new Random(character.CharacterId); //Same seed everytime for consistent generation
 
-      var fieldsToShowInQrCode = character.Fields.Where(f => possibleSigns.Any(s => s.FieldId == f.FieldId));
-      var qrCodeForCharacter = GenerateQrCodeForCharacter(character,
-        fieldsToShowInQrCode);
+      
+      
+      var qrCodeForCharacter = GenerateQrCodeForCharacter(character, characterMasterDesc);
       for (var i = 0; i < Config.CluePerCharacter; i++)
       {
         yield return GenerateClue(character, possibleSigns, random, qrCodeForCharacter);
@@ -75,10 +84,10 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var signs = possibleSigns
         .Shuffle(random)
         .Distinct(ClueCompareByFieldId)
-        .Take(Config.MaxMeaningfulClues)
+        .Take(Config.MaxMeaningfulSignsCount)
         .Select(c => c.Code)
         .ToArray()
-        .UnionUntilTotalCount(randomCodes, Config.RequiredClues)
+        .UnionUntilTotalCount(randomCodes, Config.MinNumberOfSignInClue)
         .Shuffle(random);
       var signString = signs
         .Select(c => c.ToString("D3"))
@@ -87,7 +96,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       return
         new HtmlCardPrintResult(
           $@"
-<div style='text-align:center'>Карточка улики. 
+<div style='text-align:center'>Карточка улики. <br>
 Оставьте ее на месте, если вы не детектив <br> 
 {signString} 
 </div>
@@ -98,12 +107,10 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
           CardSize.A7);
     }
 
-    private static string GenerateQrCodeForCharacter(CharacterInfo character, IEnumerable<CharacterFieldInfo> applicableGroups)
+    private static string GenerateQrCodeForCharacter(CharacterInfo character, string qrCodeContents)
     {
       QRCodeGenerator qrGenerator = new QRCodeGenerator();
-      var formattableString =
-        $"{character.CharacterName} ({character.Groups.Select(g => g.ToString()).JoinStrings(",")}) {applicableGroups.Select(f => f.ToString()).JoinStrings(",")}";
-      var limitedString = LimitUtf8Bytes(formattableString, 600).AsString();
+      var limitedString = LimitUtf8Bytes(qrCodeContents, 600).AsString();
       QRCodeData qrCodeData =
         qrGenerator.CreateQrCode(
           limitedString,

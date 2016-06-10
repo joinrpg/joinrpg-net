@@ -6,8 +6,9 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
   {
     public int CluePerCharacter { get; set; }
     public int Digits { get; set; }
-    public int MaxMeaningfulClues { get; set; }
-    public int RequiredClues { get; set; }
+    public int MaxMeaningfulSignsCount { get; set; }
+    public int MinNumberOfSignInClue { get; set; }
+    public bool ShowHeaderClue { get; set; }
     public List<SignDefinition> SignDefinitions { get; set; }
   }
 }

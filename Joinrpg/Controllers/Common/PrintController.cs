@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -10,7 +9,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Print;
 using JoinRpg.PluginHost.Interfaces;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers.Common
 {
