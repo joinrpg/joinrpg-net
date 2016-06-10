@@ -4,6 +4,7 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
@@ -36,7 +37,6 @@ namespace JoinRpg.Web.Controllers.Common
       return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character)));
     }
 
-    //TODO: Split this into printing envelope and printing content
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
       var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList().ToArray());
@@ -94,6 +94,35 @@ namespace JoinRpg.Web.Controllers.Common
       var cards = characters.SelectMany(c => PluginFactory.PrintForCharacter(pluginInstance, c));
 
       return View(cards);
+    }
+
+    public async Task<ActionResult> Envelopes(int projectid, string characterids)
+    {
+      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterids.UnCompressIdList().ToArray());
+
+      var error = await AsMaster(characters, projectid);
+      if (error != null) return error;
+
+      var viewModel =
+        characters.Select(
+          c => new PrintCharacterViewModelSlim(c)).ToArray();
+
+      var cards = viewModel.Select(v => new HtmlCardPrintResult($@"
+
+Игрок: {v.PlayerDisplayName ?? "нет"}<br>
+ФИО: {v.PlayerFullName ?? "нет"}<br>
+Персонаж: {v.CharacterName ?? "нет"}<br>
+{v.Groups.Select(g => g.Name).JoinStrings(" :: ")}<br>
+{GetFeeDueString(v)}
+Мастер: {v.ResponsibleMaster?.DisplayName ?? "нет"}<br>
+", CardSize.A7));
+
+      return View("PrintCards", cards);
+    }
+
+    private static string GetFeeDueString(PrintCharacterViewModelSlim v)
+    {
+      return v.FeeDue == 0 ? "" : $"<b>Взнос</b>: {v.FeeDue} <br>";
     }
   }
 }
