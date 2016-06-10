@@ -22,8 +22,11 @@ namespace JoinRpg.Helpers
       return strings.Where(s => !string.IsNullOrWhiteSpace(s));
     }
 
-    public static string JoinStrings([NotNull, ItemNotNull] this IEnumerable<string> strings, [NotNull] string separator)
+    public static string JoinStrings([NotNull] [ItemNotNull] this IEnumerable<string> strings,
+      [NotNull] string separator)
     {
+      if (strings == null) throw new ArgumentNullException(nameof(strings));
+      if (separator == null) throw new ArgumentNullException(nameof(separator));
       return string.Join(separator, strings);
     }
 

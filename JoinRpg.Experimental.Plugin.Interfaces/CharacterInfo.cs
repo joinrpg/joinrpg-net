@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
 
 namespace JoinRpg.Experimental.Plugin.Interfaces
@@ -14,9 +15,9 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       if (characterName == null) throw new ArgumentNullException(nameof(characterName));
       if (fields == null) throw new ArgumentNullException(nameof(fields));
       CharacterName = characterName;
-      Fields = fields;
+      Fields = fields.ToArray();
       CharacterId = characterId;
-      Groups = groups;
+      Groups = groups.ToArray();
     }
 
     public int CharacterId { get; }

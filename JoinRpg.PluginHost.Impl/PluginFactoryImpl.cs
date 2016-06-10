@@ -70,9 +70,12 @@ namespace JoinRpg.PluginHost.Impl
     private static CharacterInfo PrepareCharacterForPlugin(Character character)
     {
       return new CharacterInfo(character.CharacterName,
-        character.GetFields().Select(f => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value)),
+        character.GetFields()
+          .Select(f => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString)),
         character.CharacterId,
-        character. GetParentGroupsToTop().Where(g => g.IsActive && !g.IsSpecial).Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)));
+        character.GetParentGroupsToTop().Distinct()
+          .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
+          .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)));
     }
   }
 }

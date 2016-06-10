@@ -1,6 +1,8 @@
+using System;
+
 namespace JoinRpg.Experimental.Plugin.Interfaces
 {
-  public class CharacterGroupInfo
+  public class CharacterGroupInfo : IEquatable<CharacterGroupInfo>
   {
     public CharacterGroupInfo(int characterGroupId, string characterGroupName)
     {
@@ -8,7 +10,11 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       CharacterGroupName = characterGroupName;
     }
 
-    public int CharacterGroupId {get;}
+    public int CharacterGroupId { get; }
     public string CharacterGroupName { get; }
+
+    public bool Equals(CharacterGroupInfo other) => other != null && other.CharacterGroupId == this.CharacterGroupId;
+
+    public override string ToString() => CharacterGroupName;
   }
 }

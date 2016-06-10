@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
+using System.Text;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
@@ -26,11 +25,8 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
 
     public CluePrinterOperation(string config)
-    { 
-      // Config = JsonConvert.DeserializeObject<ClueConfiguration>(config);
-      Config = CluePrinterDefaultConfig.GetDefaultConfig();
-
-      
+    {
+      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config);
 
       var maxCode = 1;
       var digits = Config.Digits;
@@ -60,38 +56,21 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
     {
-      var possibleSigns = Config.SignDefinitions.Where(sign => IsValidDefinition(character, sign)).ToArray();
+      var possibleSigns = Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character)).ToArray();
       var random = new Random(character.CharacterId); //Same seed everytime for consistent generation
 
+      var fieldsToShowInQrCode = character.Fields.Where(f => possibleSigns.Any(s => s.FieldId == f.FieldId));
+      var qrCodeForCharacter = GenerateQrCodeForCharacter(character,
+        fieldsToShowInQrCode);
       for (var i = 0; i < Config.CluePerCharacter; i++)
       {
-        
-        yield return GenerateClue(character, possibleSigns, random);
+        yield return GenerateClue(character, possibleSigns, random, qrCodeForCharacter);
       }
     }
 
-    private bool IsValidDefinition(CharacterInfo character, SignDefinition sign)
+    private HtmlCardPrintResult GenerateClue(CharacterInfo character, IReadOnlyCollection<SignDefinition> possibleSigns, Random random, string embeddedImageTag)
     {
-      switch (sign.SignType)
-      {
-        case SignType.FieldBased:
-          var field = character.Fields.SingleOrDefault(f => f.FieldId == sign.FieldId);
-          return sign.AllowedFieldValues.Contains(field?.FieldValue);
-        case SignType.GroupBased:
-          return sign.AllowedFieldValues.Intersect(character.Groups.Select(g => g.CharacterGroupId.ToString())).Any();
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-    }
-
-    private HtmlCardPrintResult GenerateClue(CharacterInfo character, IReadOnlyCollection<SignDefinition> possibleSigns, Random random)
-    {
-      QRCodeGenerator qrGenerator = new QRCodeGenerator();
-      QRCodeData qrCodeData = qrGenerator.CreateQrCode(character.CharacterName, QRCodeGenerator.ECCLevel.Q);
-      var qrCode = new QRCode(qrCodeData);
-      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
-
-      var randomCodes = random.GetRandomSource().Select(c => c%MaxCode).Where(c => !UsedCodes.Contains(c));
+      var randomCodes = random.GetRandomSource().Select(c => c % MaxCode).Where(c => !UsedCodes.Contains(c));
 
       var signs = possibleSigns
         .Shuffle(random)
@@ -104,8 +83,53 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var signString = signs
         .Select(c => c.ToString("D3"))
         .JoinStrings(" ");
+
       return
-        new HtmlCardPrintResult($"{character.CharacterName} (имя указано для теста) <br> {signString} {qrCodeImage.ToEmbeddedImageTag()}", CardSize.A7);
+        new HtmlCardPrintResult(
+          $@"
+<div style='text-align:center'>Карточка улики. 
+Оставьте ее на месте, если вы не детектив <br> 
+{signString} 
+</div>
+<div style='text-align:center; vertical-align: bottom'>
+  {embeddedImageTag}
+</div>
+",
+          CardSize.A7);
+    }
+
+    private static string GenerateQrCodeForCharacter(CharacterInfo character, IEnumerable<CharacterFieldInfo> applicableGroups)
+    {
+      QRCodeGenerator qrGenerator = new QRCodeGenerator();
+      var formattableString =
+        $"{character.CharacterName} ({character.Groups.Select(g => g.ToString()).JoinStrings(",")}) {applicableGroups.Select(f => f.ToString()).JoinStrings(",")}";
+      var limitedString = LimitUtf8Bytes(formattableString, 600).AsString();
+      QRCodeData qrCodeData =
+        qrGenerator.CreateQrCode(
+          limitedString,
+          QRCodeGenerator.ECCLevel.L);
+      var qrCode = new QRCode(qrCodeData);
+      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 2);
+      var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
+      return embeddedImageTag;
+    }
+
+    private static IEnumerable<char> LimitUtf8Bytes(string formattableString, int i)
+    {
+      var limit = i;
+      foreach (var character in formattableString)
+      {
+        var encoded = Encoding.UTF8.GetByteCount( new [] {character});
+        if (limit < encoded + 3)
+        {
+          yield return '.';
+          yield return '.';
+          yield return '.';
+          yield break;
+        }
+        limit -= encoded;
+        yield return character;
+      }
     }
   }
 }
