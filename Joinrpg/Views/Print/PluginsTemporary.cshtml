@@ -1,0 +1,12 @@
+﻿@model dynamic
+
+@{
+    ViewBag.Title = "PrintPlugins";
+}
+
+<h2>PrintPlugins</h2>
+
+@foreach (var plugin in Model.Names)
+{
+    @LinkExtensions.ActionLink(Html, plugin, "PrintCards", "Print", new {Model.projectId, plugin}, null)
+}

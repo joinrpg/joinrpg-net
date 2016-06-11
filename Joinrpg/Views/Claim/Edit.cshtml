@@ -174,6 +174,13 @@
                     <span class="glyphicon glyphicon-print"></span>
                     Для печати
                 </a>
+                foreach (var plugin in Model.PrintPlugins)
+                {
+                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterId}, null)">
+                    <span class="glyphicon glyphicon-print"></span>
+                    @plugin.Name
+                </a>
+                }
             }
         </div>
 

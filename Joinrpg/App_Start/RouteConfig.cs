@@ -97,9 +97,13 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "Character", url: "{ProjectId}/character/{CharacterId}/{action}",
         defaults: new {controller = "Character", action = "Details"});
 
-
       routes.MapRoute(name: "Finances", url: "{ProjectId}/money/{action}",
         defaults: new { controller = "Finances", action = "Setup" });
+
+
+
+      routes.MapRoute(name: "PrintCOntroller", url: "{ProjectId}/print/{action}",
+        defaults: new { controller = "Print", action = "Index" });
 
       routes.MapRoute(name: "UserMe", url: "user/me",
         defaults: new { controller = "User", action = "Me"});

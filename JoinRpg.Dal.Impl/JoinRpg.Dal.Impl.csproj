@@ -277,6 +277,10 @@
     <Compile Include="Migrations\201606071237053_NewParentGroups.Designer.cs">
       <DependentUpon>201606071237053_NewParentGroups.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201606092055571_ProjectPlugins.cs" />
+    <Compile Include="Migrations\201606092055571_ProjectPlugins.Designer.cs">
+      <DependentUpon>201606092055571_ProjectPlugins.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -475,6 +479,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201606071237053_NewParentGroups.resx">
       <DependentUpon>201606071237053_NewParentGroups.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201606092055571_ProjectPlugins.resx">
+      <DependentUpon>201606092055571_ProjectPlugins.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
