@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Web;
 using JoinRpg.Dal.Impl;
@@ -6,6 +7,11 @@ using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Experimental.Plugin.HelloWorld;
+using JoinRpg.Experimental.Plugin.Interfaces;
+using JoinRpg.Experimental.Plugin.SteampunkDetective;
+using JoinRpg.PluginHost.Impl;
+using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -87,6 +93,30 @@ namespace JoinRpg.Web
 
       container.RegisterType<ApplicationUserManager>(
         new InjectionFactory(o => HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>()));
+
+      container.RegisterType<IPluginResolver>(new InjectionFactory(c => new UnityPluginResolver(c)));
+      container.RegisterType<IPluginFactory, PluginFactoryImpl>();
+
+      container.RegisterType<IPlugin, HelloWorldPlugin>(nameof(HelloWorldPlugin));
+      container.RegisterType<IPlugin, DetectivePlugin>(nameof(DetectivePlugin));
+    }
+
+    private class UnityPluginResolver : IPluginResolver
+    {
+      public UnityPluginResolver(IUnityContainer container)
+      {
+        this.Container = container;
+      }
+
+      private IUnityContainer Container { get; }
+      #region Implementation of IPluginResolver
+
+      public IEnumerable<IPlugin> Resolve()
+      {
+        return Container.ResolveAll<IPlugin>();
+      }
+
+      #endregion
     }
   }
 }

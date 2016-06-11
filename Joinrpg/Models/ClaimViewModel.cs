@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
+using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Models
 {
@@ -75,6 +76,8 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool? CharacterActive { get; set; }
+
+    public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; set; }
   }
 
   public class ClaimFeeViewModel

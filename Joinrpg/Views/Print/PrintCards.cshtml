@@ -1,0 +1,37 @@
+﻿@using JoinRpg.Helpers.Web
+@model IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html moznomarginboxes mozdisallowselectionprint>
+<head>
+    <title>Распечатка карточек</title>
+    <style>
+ @@page {
+     size: A4;
+     margin: 0;
+ }
+         .a7card {
+             width: 95mm ;
+             height: 70mm;
+             border: black solid medium; 
+             margin: 1mm;
+             float: left;
+             page-break-inside: avoid;
+         }
+    </style>
+</head>
+
+<body>
+<div>
+      @foreach (var card in Model)
+      {
+          <div class="a7card">@(ViewBag.CardSanitizeDisable == true ? new MvcHtmlString(card.Html.UnValidatedValue) : card.Html.SanitizeHtml())</div>
+      }
+</div>
+</body>
+</html>
