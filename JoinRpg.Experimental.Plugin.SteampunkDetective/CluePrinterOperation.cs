@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
+using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
@@ -68,8 +70,6 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
       var random = new Random(character.CharacterId); //Same seed everytime for consistent generation
 
-      
-      
       var qrCodeForCharacter = GenerateQrCodeForCharacter(character, characterMasterDesc);
       for (var i = 0; i < Config.CluePerCharacter; i++)
       {
@@ -107,36 +107,19 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
           CardSize.A7);
     }
 
-    private static string GenerateQrCodeForCharacter(CharacterInfo character, string qrCodeContents)
+    private string GenerateQrCodeForCharacter(CharacterInfo character, string qrCodeContents)
     {
-      QRCodeGenerator qrGenerator = new QRCodeGenerator();
-      var limitedString = LimitUtf8Bytes(qrCodeContents, 600).AsString();
-      QRCodeData qrCodeData =
-        qrGenerator.CreateQrCode(
-          limitedString,
-          QRCodeGenerator.ECCLevel.L);
+      var qrGenerator = new QRCodeGenerator();
+      var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 600).ToArray();
+
+      var key = Config.QrEncryptionKey;
+      var encryptedBytes = key != null ? utf8Bytes.EncryptAes(key) : utf8Bytes;
+
+      var qrCodeData = qrGenerator.CreateQrCode(Convert.ToBase64String(encryptedBytes), QRCodeGenerator.ECCLevel.L);
       var qrCode = new QRCode(qrCodeData);
       var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 2);
       var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
       return embeddedImageTag;
-    }
-
-    private static IEnumerable<char> LimitUtf8Bytes(string formattableString, int i)
-    {
-      var limit = i;
-      foreach (var character in formattableString)
-      {
-        var encoded = Encoding.UTF8.GetByteCount( new [] {character});
-        if (limit < encoded + 3)
-        {
-          yield return '.';
-          yield return '.';
-          yield return '.';
-          yield break;
-        }
-        limit -= encoded;
-        yield return character;
-      }
     }
   }
 }

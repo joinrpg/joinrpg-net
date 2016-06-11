@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 {
+  [PublicAPI]
   public class ClueConfiguration
   {
     public int CluePerCharacter { get; set; }
@@ -9,6 +11,8 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     public int MaxMeaningfulSignsCount { get; set; }
     public int MinNumberOfSignInClue { get; set; }
     public bool ShowHeaderClue { get; set; }
-    public List<SignDefinition> SignDefinitions { get; set; }
+    public string QrEncryptionKey { get; set; }
+
+  public List<SignDefinition> SignDefinitions { get; set; }
   }
 }

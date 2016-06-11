@@ -41,8 +41,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CryptTest.cs" />
     <Compile Include="DateInPastAttributeTest.cs" />
     <Compile Include="ExpressionHelpers.cs" />
+    <Compile Include="HexFuncsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualOrderContainerTests.cs" />
   </ItemGroup>
