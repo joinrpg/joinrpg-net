@@ -6,9 +6,8 @@ using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Print
 {
-
   public class PrintCharacterViewModelSlim
   {
     public string ProjectName { get;  }
@@ -28,6 +27,7 @@ namespace JoinRpg.Web.Models
       Groups =
         character.GetParentGroupsToTop()
           .Where(g => !g.IsSpecial && g.IsActive && g.IsPublic && !g.IsRoot)
+          .Distinct()
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
       ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;

@@ -108,21 +108,22 @@ namespace JoinRpg.Web.Controllers.Common
           c => new PrintCharacterViewModelSlim(c)).ToArray();
 
       var cards = viewModel.Select(v => new HtmlCardPrintResult($@"
-
-Игрок: {v.PlayerDisplayName ?? "нет"}<br>
-ФИО: {v.PlayerFullName ?? "нет"}<br>
-Персонаж: {v.CharacterName ?? "нет"}<br>
-{v.Groups.Select(g => g.Name).JoinStrings(" :: ")}<br>
 {GetFeeDueString(v)}
-Мастер: {v.ResponsibleMaster?.DisplayName ?? "нет"}<br>
+<b>Игрок</b>: {v.PlayerDisplayName ?? "нет"}<br>
+<b>ФИО</b>: {v.PlayerFullName ?? "нет"}<br>
+<hr>
+<b>Персонаж</b>: {v.CharacterName ?? "нет"}<br>
+<b>Мастер</b>: {v.ResponsibleMaster?.DisplayName ?? "нет"}<br>
+<hr>
+<i>{v.Groups.Select(g => g.Name).JoinStrings(" • ")}</i><br>
 ", CardSize.A7));
-
+      ViewBag.CardSanitizeDisable = true;
       return View("PrintCards", cards);
     }
 
     private static string GetFeeDueString(PrintCharacterViewModelSlim v)
     {
-      return v.FeeDue == 0 ? "" : $"<b>Взнос</b>: {v.FeeDue} <br>";
+      return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue} </div><hr>";
     }
   }
 }

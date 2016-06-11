@@ -153,9 +153,10 @@ namespace JoinRpg.Web.Controllers
         },
         Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList(),
         PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player),
-        PrintPlugins = (claim.HasMasterAccess(CurrentUserId) && claim.IsApproved)
-          ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Select(
-            PluginOperationDescriptionViewModel.Create)
+        PrintPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
+          ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Where(
+            p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId)).Select(
+              PluginOperationDescriptionViewModel.Create)
           : Enumerable.Empty<PluginOperationDescriptionViewModel>()
       };
 

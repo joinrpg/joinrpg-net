@@ -6,7 +6,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
   [PublicAPI]
   public class PluginOperationMetadata
   {
-    public PluginOperationMetadata([NotNull] string name, [NotNull] Type operation, [NotNull] string description)
+    public PluginOperationMetadata([NotNull] string name, [NotNull] Type operation, [NotNull] string description, bool allowPlayerAccess)
     {
       if (name == null) throw new ArgumentNullException(nameof(name));
       if (operation == null) throw new ArgumentNullException(nameof(operation));
@@ -14,6 +14,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       Name = name;
       Operation = operation;
       Description = description;
+      AllowPlayerAccess = allowPlayerAccess;
     }
 
     [NotNull]
@@ -24,5 +25,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
 
     [NotNull]
     public string Description { get; }
+
+    public bool AllowPlayerAccess { get; }
   }
 }

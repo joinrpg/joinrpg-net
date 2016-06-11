@@ -30,7 +30,7 @@
 <div>
       @foreach (var card in Model)
       {
-          <div class="a7card">@card.Html.SanitizeHtml()</div>
+          <div class="a7card">@(ViewBag.CardSanitizeDisable == true ? new MvcHtmlString(card.Html.UnValidatedValue) : card.Html.SanitizeHtml())</div>
       }
 </div>
 </body>

@@ -28,22 +28,24 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       public Type Operation { get; }
       public Func<string, IPluginOperation> Implementer { get; }
       public string Description { get; }
+      public bool AllowPlayerAccess { get; }
 
-      public OperationLink(Type operation, Func<string, IPluginOperation> implementer, string description)
+      public OperationLink(Type operation, Func<string, IPluginOperation> implementer, string description, bool allowPlayerAccess)
       {
         Operation = operation;
         Implementer = implementer;
         Description = description;
+        AllowPlayerAccess = allowPlayerAccess;
       }
     }
 
-    protected void Register<T>([NotNull] string name, [NotNull] Func<string, T> implementer, [NotNull] string description = "") where T: IPluginOperation
+    protected void Register<T>([NotNull] string name, [NotNull] Func<string, T> implementer, [NotNull] string description = "", bool allowPlayerAccess = false) where T: IPluginOperation
     {
       if (name == null) throw new ArgumentNullException(nameof(name));
       if (implementer == null) throw new ArgumentNullException(nameof(implementer));
       if (description == null) throw new ArgumentNullException(nameof(description));
 
-      _operations.Add(name, new OperationLink(typeof(T), c => implementer(c), description));
+      _operations.Add(name, new OperationLink(typeof(T), c => implementer(c), description, allowPlayerAccess));
     }
 
     public IEnumerable<PluginOperationMetadata> GetOperations()
@@ -54,7 +56,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
             new PluginOperationMetadata(o.Key,
               o.Value.Operation.GetInterfaces()
                 .Single(i => typeof(IPluginOperation).IsAssignableFrom(i) && i != typeof(IPluginOperation)),
-              o.Value.Description));
+              o.Value.Description, o.Value.AllowPlayerAccess));
     }
 
     public T GetOperationInstance<T>(int projectId, string operationName, string pluginConfiguration)

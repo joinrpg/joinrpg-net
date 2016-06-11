@@ -50,7 +50,7 @@ namespace JoinRpg.PluginHost.Impl
               $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
               () =>
                 projectPlugin.Plugin.GetOperationInstance<T>(project.ProjectId, pluginOperationMetadata.Name,
-                  projectPlugin.Configuration), pluginOperationMetadata.Description);
+                  projectPlugin.Configuration), pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
         }
 
       }
