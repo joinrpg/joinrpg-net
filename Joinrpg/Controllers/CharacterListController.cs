@@ -24,6 +24,12 @@ namespace JoinRpg.Web.Controllers
     public Task<ActionResult> Deleted(int projectId, string export)
       => MasterCharacterList(projectId, character => !character.IsActive, export, "Удаленные персонажи");
 
+
+    [HttpGet, Authorize]
+    public Task<ActionResult> Problems(int projectid, string export)
+     => MasterCharacterList(projectid, claim => claim.GetProblems(ProblemSeverity.Warning).Any(), export, "Проблемные персонажи");
+
+
     [HttpGet, Authorize]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
