@@ -41,10 +41,7 @@ namespace JoinRpg.Web.Models.Plot
     int IMovableListItem.ItemId => PlotElementId;
     public int? CharacterId { get; private set; }
 
-    public bool HasWorkTodo
-    {
-      get { return !string.IsNullOrWhiteSpace(TodoField) || Status == PlotStatus.InWork; }
-    }
+    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Status == PlotStatus.InWork;
   }
 
   public static class PlotElementViewModelExtensions
