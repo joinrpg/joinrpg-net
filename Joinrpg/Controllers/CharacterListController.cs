@@ -29,6 +29,10 @@ namespace JoinRpg.Web.Controllers
     public Task<ActionResult> Problems(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.GetProblems(ProblemSeverity.Warning).Any(), export, "Проблемные персонажи");
 
+    [HttpGet, Authorize]
+    public Task<ActionResult> FreeCharactersWithPlot(int projectid, string export)
+     => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи с сюжетом", vm => vm.IndAllPlotsCount > 0);
+
 
     [HttpGet, Authorize]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
@@ -38,7 +42,13 @@ namespace JoinRpg.Web.Controllers
         character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
     }
 
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
+    private Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export,
+      string title)
+    {
+      return MasterCharacterList(projectId, predicate, export, title, vm => true);
+    }
+
+    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title, Func<CharacterListItemViewModel, bool> viewModelPredicate)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
@@ -48,7 +58,7 @@ namespace JoinRpg.Web.Controllers
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
       var project = await GetProjectFromList(projectId, characters);
 
-      var list = new CharacterListViewModel(CurrentUserId, title, characters, plots, project);
+      var list = new CharacterListViewModel(CurrentUserId, title, characters, plots, project, viewModelPredicate);
 
       var exportType = GetExportTypeByName(export);
 
@@ -71,7 +81,7 @@ namespace JoinRpg.Web.Controllers
       return
         await
           MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
-            "Персонажи — " + characterGroup.CharacterGroupName);
+            "Персонажи — " + characterGroup.CharacterGroupName, vm => true);
     }
   }
 }
