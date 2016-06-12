@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Controllers
     {
       var folders = (await _plotRepository.GetPlotsWithTargets(projectId)).ToList(); 
       var project = await GetProjectFromList(projectId, folders);
-      return AsMaster(project) ?? View(new PlotFolderListViewModel(folders, project));
+      return AsMaster(project) ?? View(new PlotFolderFullListViewModel(folders, project));
     }
 
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,

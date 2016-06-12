@@ -41,11 +41,11 @@ namespace JoinRpg.Web.Models.Plot
   {
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
 
-    public PlotFolderFullListViewModel(List<PlotFolder> folders, Project project, bool hasMasterAccess) : base(project)
+    public PlotFolderFullListViewModel(List<PlotFolder> folders, Project project) : base(project)
     {
       Folders =
         folders
-          .Select(f => new PlotFolderListFullItemViewModel(f, hasMasterAccess))
+          .Select(f => new PlotFolderListFullItemViewModel(f))
           .OrderBy(pf => pf.Status)
           .ThenBy(pf => pf.PlotFolderMasterTitle);
     }
@@ -55,32 +55,29 @@ namespace JoinRpg.Web.Models.Plot
   {
     public MarkdownViewModel Summary { get; }
     public IEnumerable<PlotElementViewModel> Elements { get; }
+    public string ElementTodos { get; }
 
-    public PlotFolderListFullItemViewModel(PlotFolder folder, bool hasMasterAccess) : base(folder)
+    public PlotFolderListFullItemViewModel(PlotFolder folder) : base(folder)
     {
       Summary = new MarkdownViewModel(folder.MasterSummary);
-      Elements = folder.Elements.ToViewModels(hasMasterAccess);
+      Elements = folder.Elements.ToViewModels(hasMasterAccess: true);
+      ElementTodos = folder.Elements.Select(e => e.Texts.TodoField).WhereNotNullOrWhiteSpace().JoinStrings("\n");
     }
   }
 
   public class PlotFolderListItemViewModel : PlotFolderViewModelBase
   {
-    public int PlotFolderId { get; set; }
-    public int ElementsCount { get; set; }
-    public string ElementTodos { get; set; }
+    public int PlotFolderId { get; }
+    public int ElementsCount { get; }
 
     public PlotFolderListItemViewModel(PlotFolder folder)
     {
-
-      {
-        PlotFolderId = folder.PlotFolderId,
-        PlotFolderMasterTitle = folder.MasterTitle,
-        ProjectId = folder.ProjectId,
-        Status = GetStatus(folder),
-        ElementsCount = folder.Elements.Count(),
-        ElementTodos = "",// string.Join("\n", folder.Elements.Select(e => e.Texts.TodoField).WhereNotNullOrWhiteSpace()),
-        TodoField = folder.TodoField
-      };
+      PlotFolderId = folder.PlotFolderId;
+      PlotFolderMasterTitle = folder.MasterTitle;
+      ProjectId = folder.ProjectId;
+      Status = GetStatus(folder);
+      ElementsCount = folder.Elements.Count;
+      TodoField = folder.TodoField;
     }
   }
 }

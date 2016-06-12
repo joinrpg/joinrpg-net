@@ -20,7 +20,7 @@ namespace JoinRpg.Web.Models.Plot
 
     public bool Visible => Status == PlotStatus.Completed || (HasMasterAccess && Status == PlotStatus.InWork);
 
-    public static PlotElementViewModel FromPlotElement(PlotElement p, bool hasMasterAccess, int characterId)
+    public PlotElementViewModel (PlotElement p, bool hasMasterAccess, int? characterId)
     {
       Content = p.Texts.Content;
       HasMasterAccess = hasMasterAccess;
@@ -32,16 +32,16 @@ namespace JoinRpg.Web.Models.Plot
     }
 
     int IMovableListItem.ItemId => PlotElementId;
-    public int CharacterId { get; private set; }
+    public int? CharacterId { get; private set; }
   }
 
   public static class PlotElementViewModelExtensions
   {
     public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots,
-      bool hasMasterAccess, int characterId)
+      bool hasMasterAccess, int? characterId = null)
     {
       return plots.Select(
-        p => new PlotElementViewModel(p, hasMasterAccess)).MarkFirstAndLast();
+        p => new PlotElementViewModel(p, hasMasterAccess, characterId)).MarkFirstAndLast();
     }
   }
 }

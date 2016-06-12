@@ -32,6 +32,9 @@
 {
     <div>
         @Html.ActionLink("Изменить", "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)
-        @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+        @if (Model.CharacterId != null)
+        {
+            @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+        }
     </div>
 }
