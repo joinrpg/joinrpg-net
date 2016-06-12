@@ -567,7 +567,6 @@
     <Content Include="Views\Print\CharacterListHeader.cshtml" />
     <Content Include="Views\Print\Index.cshtml" />
     <Content Include="Views\Print\HandoutReport.cshtml" />
-    <Content Include="Views\Print\PluginsTemporary.cshtml" />
     <Content Include="Views\Print\PrintCards.cshtml" />
   </ItemGroup>
   <ItemGroup>
