@@ -49,8 +49,7 @@ namespace JoinRpg.Services.Impl
         claim.JsonData = fields.Values.SerializeFieldsFor(FieldBoundTo.Claim);
       }
 
-
-      return fields.Values.SelectMany(v => v.GetSpecialGroupsToApply().Select(g =>g.CharacterGroupId)).ToArray();
+      return fields.Values.GenerateSpecialGroupsList();
     }
   }
 }
