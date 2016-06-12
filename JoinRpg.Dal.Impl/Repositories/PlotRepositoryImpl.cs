@@ -35,6 +35,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       return
         await Ctx.Set<PlotElement>()
           .Include(e => e.Texts)
+          .Include(e => e.TargetCharacters)
+          .Include(e => e.TargetGroups)
           .Where(
             e =>
               e.TargetCharacters.Any(ch => ch.CharacterId == character.CharacterId) ||

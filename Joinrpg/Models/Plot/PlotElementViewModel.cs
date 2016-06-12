@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
@@ -20,6 +22,8 @@ namespace JoinRpg.Web.Models.Plot
 
     public bool Visible => Status == PlotStatus.Completed || (HasMasterAccess && Status == PlotStatus.InWork);
 
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
+
     public PlotElementViewModel (PlotElement p, bool hasMasterAccess, int? characterId)
     {
       Content = p.Texts.Content;
@@ -28,6 +32,7 @@ namespace JoinRpg.Web.Models.Plot
       PlotElementId = p.PlotElementId;
       ProjectId = p.ProjectId;
       Status = PlotFolderViewModelBase.GetStatus(p);
+      TargetsForDisplay = p.GetTargets().AsObjectLinks().ToList();
       CharacterId = characterId;
     }
 
@@ -40,7 +45,7 @@ namespace JoinRpg.Web.Models.Plot
     public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots,
       bool hasMasterAccess, int? characterId = null)
     {
-      return plots.Select(
+      return plots.Where(p => p.ElementType == PlotElementType.RegularPlot).Select(
         p => new PlotElementViewModel(p, hasMasterAccess, characterId)).MarkFirstAndLast();
     }
   }

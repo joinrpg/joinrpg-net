@@ -9,12 +9,13 @@
 
 @foreach (var item in Model.Folders)
 {
-    <h3>@item.PlotFolderMasterTitle</h3>
+    <h2>@item.PlotFolderMasterTitle</h2>
     <p>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</p>
-    <hr/>
+
     <p>@Html.DisplayFor(modelItem => item.Summary)</p>
     foreach (var plot in item.Elements)
     {
-    @Html.Partial("ShowElementPartial", plot)
+        @Html.Partial("ShowElementPartial", plot)
     }
+    <hr/>
 }
