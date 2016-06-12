@@ -7,13 +7,13 @@ namespace JoinRpg.Web.Models.Plot
 {
   public class PlotElementViewModel : IMovableListItem
   {
-    public PlotStatus Status { get; set; }
-    public MarkdownString Content { get; set; }
-    public int PlotFolderId { get; set; }
+    public PlotStatus Status { get; }
+    public MarkdownString Content { get; }
+    public int PlotFolderId { get; }
 
-    public int PlotElementId { get; set; }
-    public int ProjectId { get; set; }
-    public bool HasMasterAccess { get; set; }
+    public int PlotElementId { get; }
+    public int ProjectId { get; }
+    public bool HasMasterAccess { get; }
 
     public bool First { get; set; }
     public bool Last { get; set; }
@@ -22,16 +22,13 @@ namespace JoinRpg.Web.Models.Plot
 
     public static PlotElementViewModel FromPlotElement(PlotElement p, bool hasMasterAccess, int characterId)
     {
-      return new PlotElementViewModel
-      {
-        Content = p.Texts.Content,
-        HasMasterAccess = hasMasterAccess,
-        PlotFolderId = p.PlotFolderId,
-        PlotElementId = p.PlotElementId,
-        ProjectId = p.ProjectId,
-        Status = PlotFolderViewModelBase.GetStatus(p),
-        CharacterId = characterId
-      };
+      Content = p.Texts.Content;
+      HasMasterAccess = hasMasterAccess;
+      PlotFolderId = p.PlotFolderId;
+      PlotElementId = p.PlotElementId;
+      ProjectId = p.ProjectId;
+      Status = PlotFolderViewModelBase.GetStatus(p);
+      CharacterId = characterId;
     }
 
     int IMovableListItem.ItemId => PlotElementId;
@@ -43,8 +40,8 @@ namespace JoinRpg.Web.Models.Plot
     public static IEnumerable<PlotElementViewModel> ToViewModels(this IEnumerable<PlotElement> plots,
       bool hasMasterAccess, int characterId)
     {
-      return plots.Where(p => p.ElementType == PlotElementType.RegularPlot) .Select(
-        p => PlotElementViewModel.FromPlotElement(p, hasMasterAccess, characterId)).MarkFirstAndLast();
+      return plots.Select(
+        p => new PlotElementViewModel(p, hasMasterAccess)).MarkFirstAndLast();
     }
   }
 }
