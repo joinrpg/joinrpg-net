@@ -2,16 +2,16 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Print;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Models.Print;
 
-namespace JoinRpg.Web.Controllers.Common
+namespace JoinRpg.Web.Controllers
 {
   [Authorize]
   public class PrintController : ControllerGameBase
@@ -65,7 +65,7 @@ namespace JoinRpg.Web.Controllers.Common
 
       return
         View(new PrintIndexViewModel(projectId,
-          characters.Select(c => c.CharacterId), pluginNames));
+          characters.Select(c => c.CharacterId).ToArray(), pluginNames));
     }
 
     public async Task<ActionResult> HandoutReport(int projectid)
