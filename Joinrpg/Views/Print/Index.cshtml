@@ -1,5 +1,27 @@
-﻿@using JoinRpg.Helpers.Web
+﻿@using JetBrains.Annotations
+@using JoinRpg.Helpers.Web
 @model JoinRpg.Web.Models.Print.PrintIndexViewModel
+
+@helper SplitByChunks([AspMvcAction] string actionName, int chunkSize = 100)
+{
+    for (var i = 0; i < Model.CharacterIds.Count; i += chunkSize)
+    {
+        var characters = Model.CharacterIds.Skip(i).Take(chunkSize).ToArray();
+        if (characters.Any())
+        {
+            if (i == 0 && characters.Length < chunkSize)
+            {
+                @Html.ActionLink("[все]", actionName,
+                    new {Model.ProjectId, CharacterIds = characters.CompressIdList()})
+            }
+            else
+            {
+                @Html.ActionLink(string.Format("[{0}–{1}]", i + 1, i + characters.Length), actionName,
+                    new {Model.ProjectId, CharacterIds = characters.CompressIdList()})
+            }
+        }
+    }
+}
 
 @{
     ViewBag.Title = "Распечатки";
@@ -7,17 +29,19 @@
 
 <h2>@ViewBag.Title</h2>
 <dl>
-    <dt>@Html.ActionLink("Содержимое конвертов", "CharacterList", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()})</dt>
+    <dt>
+        Содержимое конвертов @SplitByChunks("CharacterList")
+    </dt>
     <dd>Распечатать содержимое конвертов (информацию о персонажах, чек-листы раздатки, загрузы) для всех активных персонажей</dd>
-    <dt>@Html.ActionLink("Наклейки на конверты", "Envelopes", new { Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList() }) </dt>
+    <dt>Наклейки на конверты @SplitByChunks("Envelopes")  </dt>
     <dd>Распечатать наклейки на конверты для всех активных персонажей</dd>
     <dt>@Html.ActionLink("Отчет по раздатке", "HandoutReport", new {Model.ProjectId})</dt>
     <dd>Отчет обо всех настроенных раздатках</dd>
     @foreach (var plugin in Model.Plugins)
     {
         <dt>
-            <span class="label label-info">Плагин</span> 
-            @Html.ActionLink(plugin.Name, "PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterIds.CompressIdList() }, null) 
+            <span class="label label-info">Плагин</span> @plugin.Name
+            @SplitByChunks("PrintCards")
         </dt>
         <dd>@Html.DisplayFor(item => plugin.Description)</dd>
     }

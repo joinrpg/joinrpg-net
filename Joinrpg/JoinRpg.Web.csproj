@@ -199,7 +199,7 @@
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
-    <Compile Include="Controllers\Common\PrintController.cs" />
+    <Compile Include="Controllers\PrintController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />

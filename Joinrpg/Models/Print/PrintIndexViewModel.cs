@@ -7,7 +7,7 @@ namespace JoinRpg.Web.Models.Print
 {
   public class PrintIndexViewModel
   {
-    public PrintIndexViewModel(int projectId, IEnumerable<int> characterIds, IEnumerable<PluginOperationDescriptionViewModel> plugins)
+    public PrintIndexViewModel(int projectId, IReadOnlyCollection<int> characterIds, IEnumerable<PluginOperationDescriptionViewModel> plugins)
     {
       Plugins = plugins;
       ProjectId = projectId;
@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models.Print
 
     public IEnumerable<PluginOperationDescriptionViewModel> Plugins { get; }
     public int ProjectId { get; }
-    public IEnumerable<int> CharacterIds { get;  }
+    public IReadOnlyCollection<int> CharacterIds { get;  }
   }
 
   public class PluginOperationDescriptionViewModel
