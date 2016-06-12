@@ -397,8 +397,9 @@ namespace JoinRpg.Services.Impl
       var ids =  FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
       if (claim.IsApproved && claim.Character != null)
       {
+        var groupsToKeep = claim.Character.Groups.Where(g => !g.IsSpecial).Select(g => g.CharacterGroupId);
         claim.Character.ParentCharacterGroupIds =
-          claim.Character.ParentCharacterGroupIds.Union(await ValidateCharacterGroupList(projectId, ids)).ToArray();
+          groupsToKeep.Union(await ValidateCharacterGroupList(projectId, ids)).ToArray();
       }
       await UnitOfWork.SaveChangesAsync();
     }

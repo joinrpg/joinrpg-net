@@ -24,7 +24,9 @@ namespace JoinRpg.Web.Models
       {ClaimProblemType.ClaimDontHaveTarget, "Заявка не привязана ни к чему"},
       {ClaimProblemType.DeletedFieldHasValue, "Значение в удаленном поле"},
       {ClaimProblemType.FieldIsEmpty, "Поле не заполнено"},
-      {ClaimProblemType.FieldShouldNotHaveValue, "Поле не должно быть заполнено для этой группы"}
+      {ClaimProblemType.FieldShouldNotHaveValue, "Поле не должно быть заполнено для этой группы"},
+      {ClaimProblemType.NoParentGroup, "Персонаж не принадлежит ни к одной группе"},
+      {ClaimProblemType.GroupIsBroken, "Группа сломана"},
     };
 
     public ProblemViewModel(ClaimProblem problem)

@@ -104,7 +104,9 @@ namespace JoinRpg.Domain
     ClaimDontHaveTarget,
     DeletedFieldHasValue,
     FieldIsEmpty,
-    FieldShouldNotHaveValue
+    FieldShouldNotHaveValue,
+    NoParentGroup,
+    GroupIsBroken
   }
 
   public enum ProblemSeverity
