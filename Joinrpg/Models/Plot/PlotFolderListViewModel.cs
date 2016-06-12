@@ -40,9 +40,11 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
   {
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
+    public bool InWorkOnly { get; }
 
-    public PlotFolderFullListViewModel(List<PlotFolder> folders, Project project) : base(project)
+    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, bool inWorkOnly = false) : base(project)
     {
+      InWorkOnly = inWorkOnly;
       Folders =
         folders
           .Select(f => new PlotFolderListFullItemViewModel(f))

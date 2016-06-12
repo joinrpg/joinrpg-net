@@ -33,6 +33,10 @@
         {
             <span>Не установлено</span>
         }
+        @if (!string.IsNullOrWhiteSpace(Model.TodoField))
+        {
+        <p><b>Доделать</b>: @Model.TodoField</p>
+        }
     </div>
 }
 <div class="@hideClass">

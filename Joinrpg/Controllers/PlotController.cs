@@ -43,6 +43,13 @@ namespace JoinRpg.Web.Controllers
       return AsMaster(project) ?? View(new PlotFolderFullListViewModel(folders, project));
     }
 
+    public async Task<ActionResult> FlatListUnready(int projectId)
+    {
+      var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+      var project = await GetProjectFromList(projectId, folders);
+      return AsMaster(project) ?? View("FlatList", new PlotFolderFullListViewModel(folders, project, true));
+    }
+
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository,
       IExportDataService exportDataService) : base(userManager, projectRepository, projectService, exportDataService)
