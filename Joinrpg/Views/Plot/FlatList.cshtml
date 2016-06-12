@@ -1,0 +1,32 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotFolderFullListViewModel
+
+@{
+    ViewBag.Title = "Сюжеты " + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+@foreach (var item in Model.Folders)
+{
+    if (Model.InWorkOnly && string.IsNullOrWhiteSpace(item.TodoField) && item.Elements.All(e => !e.HasWorkTodo))
+    {
+        continue;
+    }
+    <div style="page-break-inside: avoid">
+        <h2>@item.PlotFolderMasterTitle</h2>
+        <p>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</p>
+        @if (!string.IsNullOrWhiteSpace(item.TodoField))
+        {
+        <p><b>Доделать</b>: @item.TodoField</p>
+        }
+
+
+        <p>@Html.DisplayFor(modelItem => item.Summary)</p>
+        @foreach (var plot in item.Elements.Where(e => !Model.InWorkOnly  || e.HasWorkTodo))
+        {
+            @Html.Partial("ShowElementPartial", plot)
+        }
+        <hr />
+    </div>
+}

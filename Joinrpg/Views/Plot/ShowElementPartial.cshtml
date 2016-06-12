@@ -2,36 +2,43 @@
 @using JoinRpg.Web.Models.Plot
 @model PlotElementViewModel
 
- @if (Model.Status == PlotStatus.Deleted)
+ @if (!Model.Visible)
  {
      return;
  }
 
 @{
-    var hideClass = "";
+    var hideClass = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
 }
-
-@if (Model.Status == PlotStatus.InWork)
-{
-    if (!Model.HasMasterAccess)
-    {
-        return;
-    }
-
-    <b>Не готов</b>
-
-    hideClass = "world-object-hidden";
-
-}
-@*TODO: show "For" field for masters *@
-<div class="@hideClass">
-    @Html.DisplayFor(model => Model.Content)
-</div>
 
 @if (Model.HasMasterAccess)
 {
     <div>
-        @Html.ActionLink("Изменить", "Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)
+        @Html.DisplayFor(model => model.Status)
+        @Html.ActionLink("Изменить", "Edit", "Plot", new { Model.PlotFolderId, Model.ProjectId }, null)
+        @if (Model.CharacterId != null)
+        {
         @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+        }
+        <br/>
+        <b>Для</b>
+        @if (Model.TargetsForDisplay.Any())
+        {
+            foreach (var target in Model.TargetsForDisplay)
+            {
+                @Html.DisplayFor(model => target)
+            }
+        }
+        else
+        {
+            <span>Не установлено</span>
+        }
+        @if (!string.IsNullOrWhiteSpace(Model.TodoField))
+        {
+        <p><b>Доделать</b>: @Model.TodoField</p>
+        }
     </div>
 }
+<div class="@hideClass">
+    @Html.DisplayFor(model => Model.Content)
+</div>

@@ -117,7 +117,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
       var qrCodeData = qrGenerator.CreateQrCode(Convert.ToBase64String(encryptedBytes), QRCodeGenerator.ECCLevel.L);
       var qrCode = new QRCode(qrCodeData);
-      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 2);
+      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
       var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
       return embeddedImageTag;
     }

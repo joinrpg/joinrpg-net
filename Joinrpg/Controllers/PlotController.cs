@@ -36,6 +36,20 @@ namespace JoinRpg.Web.Controllers
       return await PlotList(projectId, pf => pf.Completed);
     }
 
+    public async Task<ActionResult> FlatList(int projectId)
+    {
+      var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList(); 
+      var project = await GetProjectFromList(projectId, folders);
+      return AsMaster(project) ?? View(new PlotFolderFullListViewModel(folders, project));
+    }
+
+    public async Task<ActionResult> FlatListUnready(int projectId)
+    {
+      var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
+      var project = await GetProjectFromList(projectId, folders);
+      return AsMaster(project) ?? View("FlatList", new PlotFolderFullListViewModel(folders, project, true));
+    }
+
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository,
       IExportDataService exportDataService) : base(userManager, projectRepository, projectService, exportDataService)
@@ -177,7 +191,7 @@ namespace JoinRpg.Web.Controllers
       var allFolders = await _plotRepository.GetPlots(projectId);
       var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
       var project = await GetProjectFromList(projectId, folders);
-      return AsMaster(project) ?? View("Index", PlotFolderListViewModel.FromProject(folders, project));
+      return AsMaster(project) ?? View("Index", new PlotFolderListViewModel(folders, project));
     }
 
     #endregion
