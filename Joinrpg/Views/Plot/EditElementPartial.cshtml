@@ -6,28 +6,13 @@
     <div class="panel-heading">
 
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
-            @switch (Model.Status)
-            {
-                case PlotStatus.InWork:
-                <span class="label label-info">Вводная в работе</span>
-                    break;
-                case PlotStatus.Completed:
-                <span class="label label-success">Вводная закончена</span>
-                    break;
-                case PlotStatus.Deleted:
-                <del>
-                    <span class="label label-default">Вводная удалена</span>
-                </del>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            @Html.DisplayFor(model => model.Status)
             @switch (Model.ElementType)
             {
                 case PlotElementTypeView.RegularPlot:
                     break;
                 case PlotElementTypeView.Handout:
-                <span class="label label-info">Раздатка</span>
+                    <span class="label label-info">Раздатка</span>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -35,7 +20,7 @@
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @{
                     var header = Model.Content.TakeWords(10).ToPlainText();
-                    if (header == null || string.IsNullOrWhiteSpace(header))
+                    if (string.IsNullOrWhiteSpace(header))
                     {
                         <text>***</text>
                     }
@@ -45,7 +30,7 @@
                     }
                 }
             </a>
-           
+
         </h4>
         <div>
             <b>Для</b>

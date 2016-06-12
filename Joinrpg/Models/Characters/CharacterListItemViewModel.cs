@@ -33,15 +33,23 @@ namespace JoinRpg.Web.Models
 
     public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
       IReadOnlyCollection<PlotFolder> plots, Project project)
+      : this (currentUserId, title, characters, plots, project, vm => true)
     {
-      var viewModel = new List<CharacterListItemViewModel>(characters.Count);
-      var selectMany = plots.SelectMany(p => p.Elements).ToArray();
-      foreach (var character in characters)
-      {
-        viewModel.Add(new CharacterListItemViewModel(character, currentUserId, character.GetProblems(), character.SelectPlots(selectMany)));
-      }
+      
+    }
 
-      Items = viewModel;
+    public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
+      IReadOnlyCollection<PlotFolder> plots, Project project, Func<CharacterListItemViewModel, bool> viewPredicate)
+    {
+      var selectMany = plots.SelectMany(p => p.Elements).ToArray();
+
+      var viewModel =
+        characters.Select(
+          character =>
+            new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
+              character.SelectPlots(selectMany)));
+
+      Items = viewModel.Where(viewPredicate).ToArray();
       ProjectName = project.ProjectName;
       ProjectId = project.ProjectId;
       Title = title;
