@@ -113,9 +113,9 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 600).ToArray();
 
       var key = Config.QrEncryptionKey;
-      var encryptedBytes = key != null ? utf8Bytes.EncryptAes(key) : utf8Bytes;
+      var encryptedBytes = key != null ? BouncyFacade.Encrypt(key, utf8Bytes) : Convert.ToBase64String(utf8Bytes);
 
-      var qrCodeData = qrGenerator.CreateQrCode(Convert.ToBase64String(encryptedBytes), QRCodeGenerator.ECCLevel.L);
+      var qrCodeData = qrGenerator.CreateQrCode(encryptedBytes, QRCodeGenerator.ECCLevel.L);
       var qrCode = new QRCode(qrCodeData);
       var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
       var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
