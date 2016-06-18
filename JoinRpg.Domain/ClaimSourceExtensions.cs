@@ -15,17 +15,17 @@ namespace JoinRpg.Domain
     }
 
     [NotNull, ItemNotNull]
-    public static IEnumerable<User> GetResponsibleMasters([NotNull] this IClaimSource @group, bool includeSelf = true)
+    public static IEnumerable<User> GetResponsibleMasters([NotNull] this IClaimSource group, bool includeSelf = true)
     {
-      if (@group == null) throw new ArgumentNullException(nameof(@group));
+      if (@group == null) throw new ArgumentNullException(nameof(group));
 
-      if (group.ResponsibleMasterUser != null && includeSelf)
+      if (@group.ResponsibleMasterUser != null && includeSelf)
       {
-        return new[] {group.ResponsibleMasterUser};
+        return new[] {@group.ResponsibleMasterUser};
       }
       var candidates = new HashSet<CharacterGroup>();
       var removedGroups = new HashSet<CharacterGroup>();
-      var lookupGroups = new HashSet<CharacterGroup>(group.ParentGroups);
+      var lookupGroups = new HashSet<CharacterGroup>(@group.ParentGroups);
       while (lookupGroups.Any())
       {
         var currentGroup = lookupGroups.First();
@@ -67,6 +67,13 @@ namespace JoinRpg.Domain
     public static bool HasActiveClaims(this IClaimSource target)
     {
       return target.Claims.Any(claim => claim.IsActive);
+    }
+
+    [CanBeNull]
+    public static User GetResponsibleMaster([NotNull] this Character character)
+    {
+      if (character == null) throw new ArgumentNullException(nameof(character));
+      return character.ApprovedClaim?.ResponsibleMasterUser ?? character.GetResponsibleMasters().FirstOrDefault();
     }
   }
 }
