@@ -86,6 +86,8 @@ namespace JoinRpg.Dal.Impl.Repositories
           return c => c.ClaimStatus == Claim.Status.AddedByMaster || c.ClaimStatus == Claim.Status.AddedByUser || c.ClaimStatus == Claim.Status.Discussed;
         case ClaimStatusSpec.OnHold:
           return c => c.ClaimStatus == Claim.Status.OnHold;
+        case ClaimStatusSpec.Approved:
+          return c => c.ClaimStatus == Claim.Status.Approved;
         default:
           throw new ArgumentOutOfRangeException(nameof(status), status, null);
       }
