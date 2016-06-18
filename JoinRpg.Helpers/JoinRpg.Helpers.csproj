@@ -49,7 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CryptFuncs.cs" />
     <Compile Include="DictionaryStaticExtensions.cs" />
     <Compile Include="DisplayAttributeHelper.cs" />
     <Compile Include="ExpressionHelpers.cs" />
