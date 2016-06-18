@@ -9,7 +9,7 @@ namespace JoinRpg.Data.Interfaces
   {
     Any, Active, InActive,
     Discussion,
-    OnHold
+    OnHold, Approved
   }
   public interface IClaimsRepository : IDisposable
   {

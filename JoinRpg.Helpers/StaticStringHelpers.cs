@@ -113,9 +113,10 @@ namespace JoinRpg.Helpers
       return str.TakeWhile(c=> c!=separator).JoinStrings("");
     }
 
+    [NotNull]
     public static int[] ToIntList([CanBeNull] this string claimIds)
     {
-      if (claimIds == null)
+      if (string.IsNullOrWhiteSpace(claimIds))
       {
         return Array.Empty<int>();
       }

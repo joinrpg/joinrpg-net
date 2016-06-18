@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,23 +8,6 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
-  [ComplexType]
-  public class IntList
-  {
-    private string _internalData;
-    internal int[] _parentCharacterGroupIds;
-
-    [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
-    public string ListIds
-    {
-      get { return _internalData; }
-      set
-      {
-        _internalData = value;
-        _parentCharacterGroupIds = value.ToIntList();
-      }
-    }
-  }
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
   public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>
   {
@@ -51,6 +33,7 @@ namespace JoinRpg.DataModel
 
     public IntList ParentGroupsImpl { get; set; } = new IntList();
 
+    [NotNull, ItemNotNull]
     public IEnumerable<CharacterGroup> ParentGroups
       => Project.CharacterGroups.Where(c => ParentCharacterGroupIds.Contains(c.CharacterGroupId));
 
@@ -85,6 +68,7 @@ namespace JoinRpg.DataModel
 
     public IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterGroupId == CharacterGroupId);
 
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual User ResponsibleMasterUser { get; set; }
 
     public int? ResponsibleMasterUserId { get; set; }
@@ -92,10 +76,13 @@ namespace JoinRpg.DataModel
     public string ChildCharactersOrdering { get; set; }
     public string ChildGroupsOrdering { get; set; }
 
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual ICollection<PlotFolder> DirectlyRelatedPlotFolders { get; set; }
 
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
 
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global assigned by EF
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
 
     public bool CanBePermanentlyDeleted
@@ -104,9 +91,9 @@ namespace JoinRpg.DataModel
     #region Implementation of IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-      if (ParentGroups == null)
+      if (!IsRoot && !ParentCharacterGroupIds.Any())
       {
-        yield break; //Prevent validation
+        yield return new ValidationResult("Character group should be part of tree");
       }
       if (IsSpecial)
       {
@@ -120,6 +107,10 @@ namespace JoinRpg.DataModel
         if (ParentGroups.Any(pg => pg.IsSpecial))
         {
           yield return new ValidationResult("Non-special group can't be child of special group");
+        }
+        if (ParentGroups.Any(pg => pg.CharacterGroupId == CharacterGroupId))
+        {
+          yield return new ValidationResult("Character group can't be self-child");
         }
       }
     }

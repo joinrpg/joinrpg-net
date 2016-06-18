@@ -58,7 +58,10 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
     {
-      var possibleSigns = Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character)).ToArray();
+      var possibleSigns =
+        Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character))
+          .SelectMany(s => Enumerable.Repeat(s, s.Weight))
+          .ToArray();
       var fieldsToShowInQrCode = character.Fields.Where(f => possibleSigns.Any(s => s.FieldId == f.FieldId));
       var characterMasterDesc =
         $"{character.CharacterName} ({character.Groups.Select(g => g.ToString()).JoinStrings(",")}) {fieldsToShowInQrCode.Select(f => f.ToString()).JoinStrings(", ")}";
@@ -113,13 +116,12 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 600).ToArray();
 
       var key = Config.QrEncryptionKey;
-      var encryptedBytes = key != null ? utf8Bytes.EncryptAes(key) : utf8Bytes;
+      var encryptedBytes = key != null ? BouncyFacade.Encrypt(key, utf8Bytes) : Convert.ToBase64String(utf8Bytes);
 
-      var qrCodeData = qrGenerator.CreateQrCode(Convert.ToBase64String(encryptedBytes), QRCodeGenerator.ECCLevel.L);
+      var qrCodeData = qrGenerator.CreateQrCode(encryptedBytes, QRCodeGenerator.ECCLevel.L);
       var qrCode = new QRCode(qrCodeData);
       var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
-      var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
-      return embeddedImageTag;
+      return qrCodeImage.ToEmbeddedImageTag();
     }
   }
 }

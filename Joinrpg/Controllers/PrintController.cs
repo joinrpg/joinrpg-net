@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
 
     private static string GetFeeDueString(PrintCharacterViewModelSlim v)
     {
-      return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue} </div><hr>";
+      return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue} </div>";
     }
   }
 }

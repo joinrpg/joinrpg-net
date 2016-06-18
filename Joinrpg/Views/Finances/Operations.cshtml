@@ -9,6 +9,8 @@
 
 @Html.Partial("_ListOperationsDropdown", Model)
 
+<p>@DisplayCount.OfX(Model.Items.Count(), "операция", "операции", "операций")</p>
+
 <table class="table">
     <tr>
         <th>

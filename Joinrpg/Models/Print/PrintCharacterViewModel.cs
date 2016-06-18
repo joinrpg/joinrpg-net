@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.Characters;
@@ -14,6 +15,7 @@ namespace JoinRpg.Web.Models.Print
     public string CharacterName { get;  }
     public int FeeDue { get; }
     public IReadOnlyCollection<CharacterGroupWithDescViewModel> Groups { get; }
+    [CanBeNull]
     public User ResponsibleMaster { get; }
     public string PlayerDisplayName { get; }
     public string PlayerFullName { get; }
@@ -30,7 +32,7 @@ namespace JoinRpg.Web.Models.Print
           .Distinct()
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
-      ResponsibleMaster = character.ApprovedClaim?.ResponsibleMasterUser;
+      ResponsibleMaster = character.GetResponsibleMaster();
       PlayerDisplayName = character.ApprovedClaim?.Player.DisplayName;
       PlayerFullName = character.ApprovedClaim?.Player.FullName;
     }
