@@ -18,7 +18,10 @@ namespace JoinRpg.Web.Helpers
         {
           foreach (var error in dbValidationErrors)
           {
-            dict.AddModelError("", error.PropertyName + ": " + error.ErrorMessage);
+            dict.AddModelError("",
+              string.IsNullOrWhiteSpace(error.PropertyName)
+                ? error.ErrorMessage
+                : $"{error.PropertyName}: {error.ErrorMessage}");
           }
           return;
         }

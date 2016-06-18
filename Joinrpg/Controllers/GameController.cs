@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -50,8 +52,9 @@ namespace JoinRpg.Web.Controllers
 
         return RedirectTo(project);
       }
-      catch
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return View(model);
       }
     }
