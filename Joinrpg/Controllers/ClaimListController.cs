@@ -148,7 +148,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> WaitingForFee(int projectid, string export)
     {
-      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active)).Where(claim => claim.IsApproved && !claim.ClaimPaidInFull()).ToList();
+      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(claim => !claim.ClaimPaidInFull()).ToList();
 
       return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", "Index", claims);
     }
@@ -185,6 +185,12 @@ namespace JoinRpg.Web.Controllers
       return await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", "Index", claims);
     }
 
-   
+    [HttpGet, Authorize]
+    public async Task<ActionResult> PaidDeclined(int projectid, string export)
+    {
+      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive)).Where(claim => claim.ClaimBalance() > 0).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", "Index", claims);
+    }
   }
 }

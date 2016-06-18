@@ -56,6 +56,7 @@
     <Compile Include="IClaimSource.cs" />
     <Compile Include="IDeletableSubEntity.cs" />
     <Compile Include="IFieldContainter.cs" />
+    <Compile Include="IntList.cs" />
     <Compile Include="IProjectEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="Links.cs" />
