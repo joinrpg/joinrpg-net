@@ -14,6 +14,8 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     [UsedImplicitly]
     public string[] AllowedValues { get; set; }
 
+    public int Weight { get; set; } = 1;
+
     public bool IsValidForCharacter(CharacterInfo character)
     {
       switch (SignType)

@@ -58,7 +58,10 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
     {
-      var possibleSigns = Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character)).ToArray();
+      var possibleSigns =
+        Config.SignDefinitions.Where(sign => sign.IsValidForCharacter(character))
+          .SelectMany(s => Enumerable.Repeat(s, s.Weight))
+          .ToArray();
       var fieldsToShowInQrCode = character.Fields.Where(f => possibleSigns.Any(s => s.FieldId == f.FieldId));
       var characterMasterDesc =
         $"{character.CharacterName} ({character.Groups.Select(g => g.ToString()).JoinStrings(",")}) {fieldsToShowInQrCode.Select(f => f.ToString()).JoinStrings(", ")}";
@@ -118,8 +121,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var qrCodeData = qrGenerator.CreateQrCode(encryptedBytes, QRCodeGenerator.ECCLevel.L);
       var qrCode = new QRCode(qrCodeData);
       var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
-      var embeddedImageTag = qrCodeImage.ToEmbeddedImageTag();
-      return embeddedImageTag;
+      return qrCodeImage.ToEmbeddedImageTag();
     }
   }
 }
