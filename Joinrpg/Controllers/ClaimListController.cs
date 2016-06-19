@@ -154,6 +154,17 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, Authorize]
+    public async Task<ActionResult> SomeFieldsToFill(int projectid, string export)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var claims =
+        (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(
+          claim => claim.HasProblemsForFields(project.ProjectFields.Where(p => p.CanPlayerEdit))).ToList();
+
+      return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", "Index", claims);
+    }
+
+    [HttpGet, Authorize]
     public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
     {
       var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList();

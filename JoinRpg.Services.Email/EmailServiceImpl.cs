@@ -207,7 +207,7 @@ namespace JoinRpg.Services.Email
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Subject}",
         $@"{body}
---
+
 {model.Initiator.DisplayName}
 ", model.Initiator.ToRecipient());
     }
