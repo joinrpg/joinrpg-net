@@ -27,7 +27,7 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet, Authorize]
     public Task<ActionResult> Problems(int projectid, string export)
-     => MasterCharacterList(projectid, claim => claim.GetProblems(ProblemSeverity.Warning).Any(), export, "Проблемные персонажи");
+     => MasterCharacterList(projectid, claim => claim.GetProblems().Any(), export, "Проблемные персонажи");
 
     [HttpGet, Authorize]
     public Task<ActionResult> FreeCharactersWithPlot(int projectid, string export)
