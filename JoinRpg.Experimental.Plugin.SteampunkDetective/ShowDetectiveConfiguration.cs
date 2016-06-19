@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +29,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       foreach (var signDefinition in Config.SignDefinitions)
       {
         buffer.AppendLine($"{signDefinition.Code}\n--");
-        buffer.AppendLine($"Вес {signDefinition.Weight}\n");
+        buffer.AppendLine($"Р’РµСЃ {signDefinition.Weight}\n");
         if (signDefinition.FieldId != 0)
         {
           var field = fieldBuf.SingleOrDefault(f => f.FieldId == signDefinition.FieldId);
@@ -45,8 +45,8 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
           }
 
         }
-        AddGroupList(buffer, groupBuf, "Показывать для групп", signDefinition.ShowForGroups);
-        AddGroupList(buffer, groupBuf, "Скрывать для групп", signDefinition.SkipForGroups);
+        AddGroupList(buffer, groupBuf, "РџРѕРєР°Р·С‹РІР°С‚СЊ РґР»СЏ РіСЂСѓРїРї", signDefinition.ShowForGroups);
+        AddGroupList(buffer, groupBuf, "РЎРєСЂС‹РІР°С‚СЊ РґР»СЏ РіСЂСѓРїРї", signDefinition.SkipForGroups);
 
         buffer.AppendLine();
       }
