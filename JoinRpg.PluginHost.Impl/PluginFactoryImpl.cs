@@ -56,15 +56,28 @@ namespace JoinRpg.PluginHost.Impl
       }
     }
 
-    public async Task<PluginOperationData<IPrintCardPluginOperation>> GetOperationInstance(int projectid, string plugin)
+    public async Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin)
+      where T:IPluginOperation
     {
-      return (await GetPossibleOperations<IPrintCardPluginOperation>(projectid)).SingleOrDefault(
+      return (await GetPossibleOperations<T>(projectid)).SingleOrDefault(
         p => p.OperationName == plugin);
     }
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c)
     {
       return pluginInstance.CreatePluginInstance().PrintForCharacter(PrepareCharacterForPlugin(c));
+    }
+
+    public MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance, Project project)
+    {
+      return
+        pluginInstance.CreatePluginInstance()
+          .ShowPluginConfiguration(
+            project.CharacterGroups.Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
+            project.ProjectFields.Select(
+              f =>
+                new ProjectFieldInfo(f.ProjectFieldId, f.FieldName,
+                  f.DropdownValues.ToDictionary(fv => fv.ProjectFieldDropdownValueId, fv => fv.Label))));
     }
 
     private static CharacterInfo PrepareCharacterForPlugin(Character character)

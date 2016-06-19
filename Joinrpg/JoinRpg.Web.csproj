@@ -199,6 +199,7 @@
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
+    <Compile Include="Controllers\Common\PluginSetupController.cs" />
     <Compile Include="Controllers\PrintController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
@@ -570,6 +571,7 @@
     <Content Include="Views\Print\PrintCards.cshtml" />
     <Content Include="Views\Plot\FlatList.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PlotStatus.cshtml" />
+    <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -26,6 +26,13 @@ namespace JoinRpg.Domain
         new FinanceProblemsFilter(), new ClaimWorkStopped(), new FieldNotSetFilterClaim()
       };
     }
+
+    public static bool HasProblemsForFields([NotNull] this Claim claim, [NotNull, ItemNotNull] IEnumerable<ProjectField> fields)
+    {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      if (fields == null) throw new ArgumentNullException(nameof(fields));
+      return claim.GetProblems().OfType<FieldRelatedProblem>().Any(fp => fields.Select(f => f.ProjectFieldId).Contains(fp.Field.ProjectFieldId));
+    }
   }
 
   public static class CharacterProblemExtensions
