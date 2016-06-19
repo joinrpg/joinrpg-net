@@ -70,4 +70,13 @@ for (var i = 0; i < Model.CharacterIds.Count; i += chunkSize)
         </dt>
         <dd>@Html.DisplayFor(item => plugin.Description)</dd>
     }
+
+    @*TODO: Move this to some kind of project plugin configuration page*@
+    @foreach (var plugin in Model.ConfigPlugins)
+    {
+    <dt>
+        <span class="label label-info">Плагин</span> @Html.ActionLink(plugin.Name, "DisplayConfig", "PluginSetup", new {Model.ProjectId, Plugin = plugin.Name}, null);
+    </dt>
+        <dd>@Html.DisplayFor(item => plugin.Description)</dd>
+    }
 </dl>

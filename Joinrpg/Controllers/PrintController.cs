@@ -64,9 +64,14 @@ namespace JoinRpg.Web.Controllers
         (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
           PluginOperationDescriptionViewModel.Create);
 
+      //TODO: That doesn't belong here
+      var configPluginNames =
+  (await PluginFactory.GetPossibleOperations<IShowConfigurationPluginOperation>(projectId)).Select(
+    PluginOperationDescriptionViewModel.Create);
+
       return
         View(new PrintIndexViewModel(projectId,
-          characters.Select(c => c.CharacterId).ToArray(), pluginNames));
+          characters.Select(c => c.CharacterId).ToArray(), pluginNames, configPluginNames));
     }
 
     public async Task<ActionResult> HandoutReport(int projectid)
@@ -85,7 +90,7 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
-      var pluginInstance = await PluginFactory.GetOperationInstance(projectid, plugin);
+      var pluginInstance = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
       if (pluginInstance == null)
       {
         return HttpNotFound();

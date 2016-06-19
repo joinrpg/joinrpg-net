@@ -45,6 +45,7 @@
     <Compile Include="IPlugin.cs" />
     <Compile Include="IPluginOperation.cs" />
     <Compile Include="IPrintCardPluginOperation.cs" />
+    <Compile Include="IShowConfigurationPluginOperation.cs" />
     <Compile Include="PluginConfigurationIncorrectException.cs" />
     <Compile Include="PluginOperationMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

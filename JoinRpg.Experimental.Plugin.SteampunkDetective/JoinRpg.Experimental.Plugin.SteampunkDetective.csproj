@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="ClueConfiguration.cs" />
     <Compile Include="CluePrinterOperation.cs" />
+    <Compile Include="DetectiveConfiguration.cs" />
     <Compile Include="DetectivePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BouncyFacade.cs" />

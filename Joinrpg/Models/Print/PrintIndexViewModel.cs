@@ -7,14 +7,18 @@ namespace JoinRpg.Web.Models.Print
 {
   public class PrintIndexViewModel
   {
-    public PrintIndexViewModel(int projectId, IReadOnlyCollection<int> characterIds, IEnumerable<PluginOperationDescriptionViewModel> plugins)
+    public PrintIndexViewModel(int projectId, IReadOnlyCollection<int> characterIds, IEnumerable<PluginOperationDescriptionViewModel> plugins, IEnumerable<PluginOperationDescriptionViewModel> configPlugins)
     {
       Plugins = plugins;
+      ConfigPlugins = configPlugins;
       ProjectId = projectId;
       CharacterIds = characterIds;
     }
 
     public IEnumerable<PluginOperationDescriptionViewModel> Plugins { get; }
+    
+    //TODO: Remove this from print page to own place
+    public IEnumerable<PluginOperationDescriptionViewModel> ConfigPlugins { get; }
     public int ProjectId { get; }
     public IReadOnlyCollection<int> CharacterIds { get;  }
   }
