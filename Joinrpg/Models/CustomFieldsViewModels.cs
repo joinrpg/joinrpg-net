@@ -109,7 +109,7 @@ namespace JoinRpg.Web.Models
           .ToList();
     }
 
-    public CustomFieldsViewModel(int? currentUserId, Character character, bool disableEdit = false, bool onlyPlayerVisible = false)
+    public CustomFieldsViewModel(int? currentUserId, Character character, bool disableEdit = false, bool onlyPlayerVisible = false, bool wherePrintEnabled = false)
     {
       EditAllowed = !disableEdit;
       CurrentUserId = currentUserId;
@@ -129,7 +129,7 @@ namespace JoinRpg.Web.Models
       Target = character;
       Fields =
         character.Project.GetFields()
-          .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
+          .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
           .ToList()
           .FillIfEnabled(character.ApprovedClaim, character, CurrentUserId)
           .Select(ch => new FieldValueViewModel(this, ch))

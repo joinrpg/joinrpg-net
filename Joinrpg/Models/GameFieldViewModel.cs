@@ -38,6 +38,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Доступно NPC", Description = "Доступно для персонажей-NPC")]
     public bool ValidForNpc { get; set; }
 
+    [Display(Name = "Включать в распечатки")]
+    public bool IncludeInPrint { get; set; } = true;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)
@@ -76,6 +79,7 @@ namespace JoinRpg.Web.Models
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
       MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
       ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
+      IncludeInPrint = field.IncludeInPrint;
     }
 
     public GameFieldEditViewModel()

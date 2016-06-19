@@ -38,6 +38,8 @@ namespace JoinRpg.DataModel
 
     public bool ValidForNpc { get; set; }
 
+    public bool IncludeInPrint { get; set; }
+
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; } =

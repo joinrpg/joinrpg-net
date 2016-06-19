@@ -9,16 +9,26 @@
 <html>
 <head>
     <title>@Model.First().ProjectName</title>
-    @Styles.Render("~/Content/css")
+    <style>
+        h1, h2, h3, h4, h5, h6, p, div,dt {
+            font-family: 'Roboto', sans-serif;
+        }
+        dt {
+            font-weight: bold;
+        }
+    </style>
+
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto&subset=latin,cyrillic" rel="stylesheet" />
 </head>
 <body>
-<div class="container body-content">
+
     @foreach (var item in Model)
     {
 
         @Html.Partial("CharacterListHeader", item)
         @Html.Partial("PrintCharacter", item)
     }
-</div>
+
 </body>
 </html>
