@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -18,16 +16,18 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
     private class CompareCluesByFieldId : IEqualityComparer<SignDefinition>
     {
-      public bool Equals(SignDefinition x, SignDefinition y) => x.SignType == y.SignType && x.FieldId == y.FieldId;
+      public bool Equals(SignDefinition x, SignDefinition y) => x.FieldId == y.FieldId && x.FieldId !=0;
 
-      public int GetHashCode(SignDefinition obj) => (int)obj.SignType ^ obj.FieldId;
+      public int GetHashCode(SignDefinition obj) => obj.FieldId;
     }
 
     private ClueConfiguration Config { get; }
 
 
-    public CluePrinterOperation(string config)
+    public CluePrinterOperation([NotNull] string config)
     {
+      if (config == null) throw new ArgumentNullException(nameof(config));
+
       Config = JsonConvert.DeserializeObject<ClueConfiguration>(config);
 
       var maxCode = 1;
