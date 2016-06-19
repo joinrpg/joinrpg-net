@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
@@ -91,6 +92,20 @@ namespace JoinRpg.Web.Controllers
       }
       var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray());
 
+      if (!pluginInstance.AllowPlayerAccess)
+      {
+        var error = await AsMaster(characters, projectid);
+        if (error != null) return error;
+      }
+      else
+      {
+        //TODO display correct errors
+        if (characters.Any(c => !c.HasAnyAccess(CurrentUserId)))
+        {
+          return new  HttpUnauthorizedResult();
+        }
+      }
+
       var cards = characters.SelectMany(c => PluginFactory.PrintForCharacter(pluginInstance, c));
 
       return View(cards);
@@ -123,7 +138,7 @@ namespace JoinRpg.Web.Controllers
 
     private static string GetFeeDueString(PrintCharacterViewModelSlim v)
     {
-      return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue} </div>";
+      return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
     }
   }
 }
