@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Experimental.Plugin.Interfaces
@@ -6,6 +7,6 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
   [PublicAPI]
   public interface IShowConfigurationPluginOperation: IPluginOperation
   {
-    MarkdownString ShowPluginConfiguration();
+    MarkdownString ShowPluginConfiguration(IEnumerable<CharacterGroupInfo> projectGroups, IEnumerable<ProjectFieldInfo> fields);
   }
 }

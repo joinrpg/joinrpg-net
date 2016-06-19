@@ -38,6 +38,9 @@ namespace JoinRpg.Helpers.Web
       sanitizer.Tag("hr");
       sanitizer.Tag("p");
       sanitizer.Tag("blockquote");
+      sanitizer.Tag("s");
+      sanitizer.Tag("pre");
+      sanitizer.Tag("code");
       return sanitizer;
     }
 

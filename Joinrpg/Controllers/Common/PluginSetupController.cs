@@ -1,16 +1,21 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers.Common
 {
-  public class PluginSetupController : ControllerBase
+  public class PluginSetupController : ControllerGameBase
   {
     private IPluginFactory PluginFactory { get; }
 
-    public PluginSetupController(ApplicationUserManager userManager, IPluginFactory pluginFactory) : base(userManager)
+    public PluginSetupController(ApplicationUserManager userManager, IPluginFactory pluginFactory,
+      IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService)
+      : base(userManager, projectRepository, projectService, exportDataService)
     {
       PluginFactory = pluginFactory;
     }
@@ -23,8 +28,16 @@ namespace JoinRpg.Web.Controllers.Common
         return HttpNotFound();
       }
 
+      var groups = await ProjectRepository.GetCharacters(projectid);
+
+      var error = await AsMaster(groups.ToArray(), projectid);
+      if (error != null) return error;
+
       ViewBag.Title = pluginInstance.OperationName;
-      return View("ShowMarkdown", new MarkdownViewModel(PluginFactory.ShowPluginConfiguration(pluginInstance)));
+      return View("ShowMarkdown",
+        new MarkdownViewModel(PluginFactory.ShowPluginConfiguration(pluginInstance,
+          await GetProjectFromList(projectid, groups))));
+      ;
     }
   }
 }

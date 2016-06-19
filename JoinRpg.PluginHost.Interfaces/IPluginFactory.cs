@@ -13,6 +13,6 @@ namespace JoinRpg.PluginHost.Interfaces
     [ItemCanBeNull]
     Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin) where T : IPluginOperation;
     IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c);
-    MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance);
+    MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance, Project project);
   }
 }

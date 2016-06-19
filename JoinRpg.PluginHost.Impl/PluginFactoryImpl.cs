@@ -68,9 +68,16 @@ namespace JoinRpg.PluginHost.Impl
       return pluginInstance.CreatePluginInstance().PrintForCharacter(PrepareCharacterForPlugin(c));
     }
 
-    public MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance)
+    public MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance, Project project)
     {
-      return pluginInstance.CreatePluginInstance().ShowPluginConfiguration();
+      return
+        pluginInstance.CreatePluginInstance()
+          .ShowPluginConfiguration(
+            project.CharacterGroups.Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
+            project.ProjectFields.Select(
+              f =>
+                new ProjectFieldInfo(f.ProjectFieldId, f.FieldName,
+                  f.DropdownValues.ToDictionary(fv => fv.ProjectFieldDropdownValueId, fv => fv.Label))));
     }
 
     private static CharacterInfo PrepareCharacterForPlugin(Character character)

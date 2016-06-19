@@ -48,6 +48,7 @@
     <Compile Include="IShowConfigurationPluginOperation.cs" />
     <Compile Include="PluginConfigurationIncorrectException.cs" />
     <Compile Include="PluginOperationMetadata.cs" />
+    <Compile Include="ProjectFieldInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
