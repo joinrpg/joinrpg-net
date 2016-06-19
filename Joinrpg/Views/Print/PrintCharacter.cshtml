@@ -22,7 +22,7 @@
 
 @if (Model.Plots.Any(p => p.Status == PlotStatus.Completed))
 {
-    <h1 style="page-break-before: always">Загрузы (@Model.Plots.Count(p => p.Status == PlotStatus.Completed)) </h1>
+    <h1 style="page-break-before: always; page-break-after: avoid">Загрузы (@Model.Plots.Count(p => p.Status == PlotStatus.Completed)) </h1>
 
 
     foreach (var plot in Model.Plots.Where(p => p.Status == PlotStatus.Completed))
