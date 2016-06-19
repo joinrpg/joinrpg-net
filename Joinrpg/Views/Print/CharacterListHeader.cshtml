@@ -1,32 +1,33 @@
 ﻿@using JoinRpg.Web.Models.Plot
 @using JoinRpg.Helpers
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
-<h1 style="">@Model.CharacterName</h1>
-<table class="table table-bordered">
-    <tr>
-        <th>Группы</th>
-        <td>@Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).JoinStrings(" • ")</td>
-    </tr>
-    <tr>
-        <th>Мастер</th>
-        <td>
-            @if (Model.ResponsibleMaster == null)
-            {
-            <text>нет</text>
-            }
-            else
-            {
-            @Model.ResponsibleMaster.DisplayName
-            }
-        </td>
+<div style="border: solid 5px">
+    <h1 style="">@Model.CharacterName</h1>
+    <table class="table table-bordered">
+        <tr>
+            <th>Группы</th>
+            <td>@Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).JoinStrings(" • ")</td>
+        </tr>
+        <tr>
+            <th>Мастер</th>
+            <td>
+                @if (Model.ResponsibleMaster == null)
+                {
+                <text>нет</text>
+                }
+                else
+                {
+                @Model.ResponsibleMaster.DisplayName
+                }
+            </td>
 
-    </tr>
-    @if (Model.PlayerDisplayName != null)
-    {
-    <tr>
-        <th>Игрок</th>
-        <td>@Model.PlayerDisplayName</td>
-    </tr>
+        </tr>
+        @if (Model.PlayerDisplayName != null)
+        {
+        <tr>
+            <th>Игрок</th>
+            <td>@Model.PlayerDisplayName</td>
+        </tr>
         <tr>
             <th>ФИО</th>
             <td>@Model.PlayerFullName</td>
@@ -35,39 +36,40 @@
             <th>Телефон</th>
             <td>@Model.PlayerPhoneNumber</td>
         </tr>
-    }
-    else
-    {
-    <tr>
-        <th>Игрок</th>
-        <td>Нет</td>
-    </tr>
-    }
+        }
+        else
+        {
+        <tr>
+            <th>Игрок</th>
+            <td>Нет</td>
+        </tr>
+        }
 
-</table>
-@if (Model.RegistrationOnHold)
-{
-<div class="panel panel-danger">
-    <div class="panel-heading">Перед выдачей конверта</div>
-    <div class="panel-body">
-        <ul>
-            @if (Model.FeeDue > 0)
-            {
-            <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
-            }
-            @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
-            {
-            <li>
-                Часть загрузов помечены как не готовы!
-            </li>
-            }
-        </ul>
+    </table>
+    @if (Model.RegistrationOnHold)
+    {
+    <div class="panel panel-danger">
+        <div class="panel-heading">Перед выдачей конверта</div>
+        <div class="panel-body">
+            <ul>
+                @if (Model.FeeDue > 0)
+                {
+                <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
+                }
+                @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
+                {
+                <li>
+                    Часть загрузов помечены как не готовы!
+                </li>
+                }
+            </ul>
+        </div>
     </div>
+    }
 </div>
-}
-@if (Model.Handouts.Any())
-{
-<h1>Раздатка</h1>
+    @if (Model.Handouts.Any())
+    {
+    <h1>Раздатка</h1>
     <p>Здесь собраны все вещи, которые нужно положить в конверт.</p>
     <table style="border-spacing: 10px; border-collapse: separate; font-size: 120%">
         @foreach (var handout in Model.Handouts)
@@ -80,4 +82,4 @@
         }
 
     </table>
-}
+    }

@@ -10,11 +10,11 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
-  public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
+  public class  FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
   {
     public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name,
       string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo,
-      MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc)
+      MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -34,9 +34,10 @@ namespace JoinRpg.Services.Impl
         FieldBoundTo = fieldBoundTo,
         IsActive = true,
         MandatoryStatus = mandatoryStatus,
+        AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups),
+        IncludeInPrint = includeInPrint
       };
 
-      field.AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups);
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -46,7 +47,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups,
-      bool validForNpc)
+      bool validForNpc, bool includeInPrint)
     {
       var field = await ProjectRepository.GetProjectField(projectId, fieldId);
 
@@ -61,6 +62,7 @@ namespace JoinRpg.Services.Impl
       field.MandatoryStatus = mandatoryStatus;
       field.ValidForNpc = validForNpc;
       field.AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups);
+      field.IncludeInPrint = includeInPrint;
 
       CreateOrUpdateSpecialGroup(field);
 

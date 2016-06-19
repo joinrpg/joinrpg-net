@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models.Print
       
       
       PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
-      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true);
+      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true, wherePrintEnabled: true);
     }
   }
 }
