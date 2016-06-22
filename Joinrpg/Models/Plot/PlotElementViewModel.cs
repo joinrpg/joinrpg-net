@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Models.Plot
       PlotFolderId = p.PlotFolderId;
       PlotElementId = p.PlotElementId;
       ProjectId = p.ProjectId;
-      Status = PlotFolderViewModelBase.GetStatus(p);
+      Status = p.GetStatus();
       TargetsForDisplay = p.GetTargets().AsObjectLinks().ToList();
       CharacterId = characterId;
     }

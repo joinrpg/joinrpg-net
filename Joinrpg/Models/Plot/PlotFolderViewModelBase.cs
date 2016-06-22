@@ -16,15 +16,18 @@ namespace JoinRpg.Web.Models.Plot
     public string TodoField
     { get; set; }
 
-    protected static PlotStatus GetStatus(PlotFolder folder)
+    [ReadOnly(true), Display(Name = "Статус")]
+    public PlotStatus Status { get; set; }
+  }
+
+  public static class PlotStatusExts
+  {
+    public static PlotStatus GetStatus(this PlotFolder folder)
     {
       return folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
     }
 
-    [ReadOnly(true), Display(Name = "Статус")]
-    public PlotStatus Status { get; set; }
-
-    public static PlotStatus GetStatus(PlotElement e)
+    public static PlotStatus GetStatus(this PlotElement e)
     {
       return !e.IsActive ? PlotStatus.Deleted : (e.IsCompleted ? PlotStatus.Completed : PlotStatus.InWork);
     }
