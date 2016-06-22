@@ -120,7 +120,7 @@ namespace JoinRpg.Helpers
       {
         return Array.Empty<int>();
       }
-      return claimIds.Split(',').Select(int.Parse).ToArray();
+      return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
     }
 
     [NotNull]
