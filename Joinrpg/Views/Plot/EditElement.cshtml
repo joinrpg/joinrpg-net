@@ -1,0 +1,64 @@
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Plot
+@model EditPlotElementViewModel
+
+@{
+    ViewBag.Title = "Редактирование вводной";
+}
+
+<h2>Редактирование вводной</h2>
+@using (Html.BeginForm("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, FormMethod.Post))
+{
+    <div class="form-horizontal">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Targets, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.MagicSelectBind(model => model.Targets)
+                @Html.ValidationMessageFor(model => model.Targets, "", new {@class = "text-danger"})
+                @Html.DescriptionFor(model => model.Targets)
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => Model.Content, new {htmlAttributes = new {@class = "form-control"}})
+                @if (Model.ElementType == PlotElementTypeView.Handout)
+                {
+                    <div class="help-block">Один элемент раздатки — одна строчка</div>
+                }
+                @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => Model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => Model.IsCompleted, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @*TODO: Disable this if TODOField!=''*@
+                    @Html.CheckBoxFor(model => Model.IsCompleted)
+                    @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default btn-success"/>
+                |
+                <a href="@Url.Action("Edit", "Plot", new {Model.PlotFolderId, Model.ProjectId}, null)">назад к списку</a>
+            </div>
+
+        </div>
+    </div>
+}

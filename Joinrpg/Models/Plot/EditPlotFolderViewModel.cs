@@ -22,31 +22,30 @@ namespace JoinRpg.Web.Models.Plot
         PlotFolderId = folder.PlotFolderId,
         TodoField = folder.TodoField,
         ProjectId = folder.ProjectId,
-        Elements = folder.Elements. Select(FromElement).OrderBy(e => e.Status),
-        Status = GetStatus(folder)
+        Elements = folder.Elements. Select(e => new EditPlotElementViewModel(e)).OrderBy(e => e.Status),
+        Status = folder.GetStatus()
       };
     }
 
-    private static EditPlotElementViewModel FromElement(PlotElement e)
-    {
-      return new EditPlotElementViewModel()
-      {
-        PlotElementId = e.PlotElementId,
-        Targets = e.GetElementBindingsForEdit(),
-        TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList(),
-        Content =new MarkdownViewModel(e.Texts.Content),
-        TodoField = e.Texts.TodoField,
-        ProjectId = e.PlotFolder.ProjectId,
-        PlotFolderId = e.PlotFolderId,
-        Status = GetStatus(e),
-        IsCompleted = e.IsCompleted,
-        ElementType = (PlotElementTypeView) e.ElementType
-      };
-    }
   }
 
   public class EditPlotElementViewModel  : IProjectIdAware
   {
+
+    public EditPlotElementViewModel(PlotElement e)
+    {
+      PlotElementId = e.PlotElementId;
+      Targets = e.GetElementBindingsForEdit();
+      TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
+      Content = new MarkdownViewModel(e.Texts.Content);
+      TodoField = e.Texts.TodoField;
+      ProjectId = e.PlotFolder.ProjectId;
+      PlotFolderId = e.PlotFolderId;
+      Status = e.GetStatus();
+      IsCompleted = e.IsCompleted;
+      ElementType = (PlotElementTypeView) e.ElementType;
+    }
+
     [ReadOnly(true)]
     public int ProjectId { get; set; }
     [ReadOnly(true)]

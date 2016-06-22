@@ -572,6 +572,7 @@
     <Content Include="Views\Plot\FlatList.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PlotStatus.cshtml" />
     <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
+    <Content Include="Views\Plot\EditElement.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

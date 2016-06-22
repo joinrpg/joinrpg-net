@@ -238,6 +238,20 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Edit", new {projectId, plotFolderId});
     }
 
+    [HttpGet]
+    public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
+    {
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var error = AsMaster(folder);
+      if (error != null)
+      {
+        return error;
+      }
+
+      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid));
+      return View(viewModel);
+    }
+
     [HttpPost]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
       bool isCompleted, [CanBeNull] ICollection<string> targets)
@@ -288,6 +302,20 @@ namespace JoinRpg.Web.Controllers
       catch
       {
         return RedirectToAction("Details", "Character", new { projectId, characterId = parentCharacterId });
+      }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId)
+    {
+      try
+      {
+        await _plotService.PublishElement(projectId, plotFolderId, plotelementid, CurrentUserId);
+        return ReturnToPlot(plotFolderId, projectId);
+      }
+      catch (Exception)
+      {
+        return await Edit(projectId, plotFolderId);
       }
     }
   }
