@@ -120,7 +120,7 @@ namespace JoinRpg.Helpers
       {
         return Array.Empty<int>();
       }
-      return claimIds.Split(',').Select(int.Parse).ToArray();
+      return claimIds.Split(',').WhereNotNullOrWhiteSpace().Select(int.Parse).ToArray();
     }
 
     [NotNull]
@@ -128,13 +128,18 @@ namespace JoinRpg.Helpers
     {
       if (formattableString == null) throw new ArgumentNullException(nameof(formattableString));
 
-      var bytes = Encoding.UTF8.GetBytes(formattableString);
-      if (bytes.Length < bytesLimit)
+      var ch = formattableString.ToCharArray();
+      var epilogue = Encoding.UTF8.GetBytes("…");
+      for (var i = ch.Length; i > 0; i--)
       {
-        return bytes;
+        var chunkBytes = Encoding.UTF8.GetByteCount(ch, 0, i);
+        if (chunkBytes +  epilogue.Length <= bytesLimit)
+        {
+          return Encoding.UTF8.GetBytes(ch, 0, i).Concat(epilogue);
+        }
       }
-      var epilogue = Encoding.UTF8.GetBytes("...");
-      return bytes.Take(bytesLimit - epilogue.Length).Union(epilogue);
+      
+      return Enumerable.Empty<byte>();
     }
   }
 }

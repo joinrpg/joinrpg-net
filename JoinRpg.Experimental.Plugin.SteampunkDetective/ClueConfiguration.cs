@@ -13,6 +13,9 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     public bool ShowHeaderClue { get; set; }
     public string QrEncryptionKey { get; set; }
 
+    public List<int> GroupsToShowInQr { get; set; }
+    public bool ConsistentGeneration { get; set; }
+
   public List<SignDefinition> SignDefinitions { get; set; }
   }
 }

@@ -21,10 +21,18 @@ $(".datepicker").datepicker({
     autoclose: true
 });
 
+//TODO: merge this
 
 $('#deleteElementModal').on('show.bs.modal', function(event) {
     var button = $(event.relatedTarget);
     var plotElementId = button.data('element');
     var modal = $(this);
     modal.find('#deletePlotElementId').val(plotElementId);
+});
+
+$('#publishElementModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var plotElementId = button.data('element');
+    var modal = $(this);
+    modal.find('#publishPlotElementId').val(plotElementId);
 });

@@ -154,6 +154,20 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task PublishElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    {
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      if (plotElement.IsActive && !plotElement.IsCompleted)
+      {
+        plotElement.IsCompleted = true;
+      }
+      else
+      {
+        //TODO singal error
+      }
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     public PlotServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
     {
     }

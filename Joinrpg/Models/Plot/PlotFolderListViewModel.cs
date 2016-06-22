@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models.Plot
       PlotFolderId = folder.PlotFolderId;
       PlotFolderMasterTitle = folder.MasterTitle;
       ProjectId = folder.ProjectId;
-      Status = GetStatus(folder);
+      Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
       TodoField = folder.TodoField;
     }

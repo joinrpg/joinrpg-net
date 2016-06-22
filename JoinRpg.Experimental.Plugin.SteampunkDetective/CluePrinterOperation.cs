@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -43,11 +44,11 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       {
         if (signDefinition.Code > MaxCode)
         {
-          throw new PluginConfigurationIncorrectException();
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is too large. Should be less than {MaxCode}");
         }
         if (UsedCodes.Contains(signDefinition.Code))
         {
-          throw new PluginConfigurationIncorrectException();
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is duplicated");
         }
         UsedCodes.Add(signDefinition.Code);
       }
@@ -71,11 +72,14 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
         yield return new HtmlCardPrintResult($"<div style='text-align:center'>{characterMasterDesc}</h2>", CardSize.A7);
       }
 
-      var random = new Random(character.CharacterId); //Same seed everytime for consistent generation
+      var random = Config.ConsistentGeneration ? new Random(character.CharacterId) : new Random();
 
-      var qrCodeForCharacter = GenerateQrCodeForCharacter(character, characterMasterDesc);
+      
       for (var i = 0; i < Config.CluePerCharacter; i++)
       {
+        var characterQrCodeContents =
+        $"{i}.{character.CharacterId} {character.Groups.Where(g => Config.GroupsToShowInQr.Contains(g.CharacterGroupId)).Select(g => g.ToString()).JoinStrings(",")} {character.CharacterName}";
+        var qrCodeForCharacter = GenerateQrCodeForCharacter(character, characterQrCodeContents);
         yield return GenerateClue(character, possibleSigns, random, qrCodeForCharacter);
       }
     }
@@ -113,14 +117,14 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     private string GenerateQrCodeForCharacter(CharacterInfo character, string qrCodeContents)
     {
       var qrGenerator = new QRCodeGenerator();
-      var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 600).ToArray();
+      var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 90).ToArray();
 
       var key = Config.QrEncryptionKey;
       var encryptedBytes = key != null ? BouncyFacade.Encrypt(key, utf8Bytes) : Convert.ToBase64String(utf8Bytes);
 
-      var qrCodeData = qrGenerator.CreateQrCode(encryptedBytes, QRCodeGenerator.ECCLevel.L);
+      var qrCodeData = qrGenerator.CreateQrCode(encryptedBytes, QRCodeGenerator.ECCLevel.H);
       var qrCode = new QRCode(qrCodeData);
-      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 1);
+      var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 2);
       return qrCodeImage.ToEmbeddedImageTag();
     }
   }
