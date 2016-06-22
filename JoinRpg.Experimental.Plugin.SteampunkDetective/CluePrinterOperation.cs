@@ -43,11 +43,11 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       {
         if (signDefinition.Code > MaxCode)
         {
-          throw new PluginConfigurationIncorrectException();
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is too large. Should be less than {MaxCode}");
         }
         if (UsedCodes.Contains(signDefinition.Code))
         {
-          throw new PluginConfigurationIncorrectException();
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is duplicated");
         }
         UsedCodes.Add(signDefinition.Code);
       }
