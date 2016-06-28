@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Helpers
       {
         return null;
       }
-      return markdownString.RenderMarkDownToHtmlUnsafe().RemoveHtml();
+      return markdownString.RenderMarkDownToHtmlUnsafe().RemoveHtml().Trim();
     }
 
     private static UnSafeHtml RenderMarkDownToHtmlUnsafe(this MarkdownString markdownString)
