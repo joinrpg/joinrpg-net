@@ -100,10 +100,7 @@ namespace JoinRpg.Services.Impl
     private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.HasMasterAccess(currentUserId))
-      {
-        throw new DbEntityValidationException();
-      }
+      folder.RequestMasterAccess(currentUserId);
       return folder.Elements.Single(e => e.PlotElementId == plotelementid);
     }
 
