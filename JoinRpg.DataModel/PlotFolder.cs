@@ -31,7 +31,10 @@ namespace JoinRpg.DataModel
 
     public bool IsActive { get; set; }
 
-    public bool Completed => IsActive && string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted) && Elements.Any();
+    public bool Completed
+      =>
+        IsActive && string.IsNullOrWhiteSpace(TodoField) && Elements.All(e => e.IsCompleted || !e.IsActive) &&
+        Elements.Any(e => e.IsActive);
     public bool InWork => IsActive && !Completed;
     public bool CanBePermanentlyDeleted => !Elements.Any();
   }
