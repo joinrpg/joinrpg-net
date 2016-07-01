@@ -78,7 +78,7 @@ namespace JoinRpg.Web.Controllers
     {
       var plotElements =
         (await PlotRepository.GetPlotsWithTargetAndText(projectid)).SelectMany(p => p.Elements)
-          .Where(e => e.ElementType == PlotElementType.Handout)
+          .Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
           .ToArray();
 
       var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();

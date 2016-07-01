@@ -13,7 +13,7 @@
     @foreach (var item in Model.Handouts)
     {
         <tr><td>
-            @Html.ActionLink(item.Text.ToPlainText(), "Edit", "Plot", new {item.ProjectId, item.PlotFolderId}, null)
+            @Html.ActionLink(item.Text.ToPlainText(), "EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)
         </td><td>@item.Count</td></tr>
     }
 </table>
