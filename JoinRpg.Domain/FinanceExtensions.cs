@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -43,7 +44,11 @@ namespace JoinRpg.Domain
     }
 
     //TODO[Localize]: JoinRpg.Domain should be localization-neutral. 
-    public static string GetDisplayName(this PaymentType paymentType) => paymentType.IsCash ? "Наличными — " + paymentType.User.DisplayName : paymentType.Name;
+    public static string GetDisplayName([NotNull] this PaymentType paymentType)
+    {
+      if (paymentType == null) throw new ArgumentNullException(nameof(paymentType));
+      return paymentType.IsCash ? "Наличными — " + paymentType.User.DisplayName : paymentType.Name;
+    }
 
     public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {

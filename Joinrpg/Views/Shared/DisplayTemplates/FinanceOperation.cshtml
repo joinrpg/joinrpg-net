@@ -13,8 +13,12 @@
     {
         <span><b>Возврат денег игроку</b>: @Model.MoneyAmount &#8381;</span><br />
     }
-<span><b>Дата операции</b>: @Model.OperationDate.ToShortDateString()</span><br />
-<span><b>Способ оплаты</b>: @Model.PaymentType.GetDisplayName()</span><br />
+<span><b>Дата операции</b>: @Model.OperationDate.ToShortDateString()</span><br/>
+@if (Model.PaymentType != null)
+{
+    <span><b>Способ оплаты</b>: @Model.PaymentType.GetDisplayName()</span>
+    <br/>
+}
 
 @if (Model.State == FinanceOperationState.Declined)
 {

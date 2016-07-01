@@ -92,8 +92,8 @@ namespace JoinRpg.Web.Models
 
     public FinOperationListItemViewModel (FinanceOperation fo, UrlHelper url)
     {
-      PaymentTypeName = fo.PaymentType.GetDisplayName();
-      PaymentMaster = fo.PaymentType.User;
+      PaymentTypeName = fo.PaymentType?.GetDisplayName();
+      PaymentMaster = fo.PaymentType?.User;
       Claim = fo.Claim.Name;
       FeeChange = fo.FeeChange;
       Money = fo.MoneyAmount;
