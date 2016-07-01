@@ -74,5 +74,18 @@ namespace JoinRpg.Dal.Impl.Repositories
     public PlotRepositoryImpl(MyDbContext ctx) : base(ctx)
     {
     }
+
+    public async Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid)
+    {
+      return  await Ctx.Set<PlotFolder>()
+        
+        .Where(pf => pf.ProjectId == projectid)
+        .SelectMany(p => p.Elements)
+        .Include(pf => pf.TargetCharacters)
+        .Include(e => e.TargetGroups)
+        .Include(e => e.Texts)
+        .Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
+        .ToListAsync();
+    }
   }
 }

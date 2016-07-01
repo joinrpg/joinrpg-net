@@ -4,6 +4,7 @@ using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models.Print
 {
@@ -25,6 +26,7 @@ namespace JoinRpg.Web.Models.Print
       PlotFolderId = element.PlotFolderId;
       ProjectId = element.ProjectId;
       Count = element.CountCharacters(characters);
+      Status = element.GetStatus();
     }
 
     [Display(Name="Что раздавать")]
@@ -34,5 +36,6 @@ namespace JoinRpg.Web.Models.Print
     public int ProjectId { get; private set; }
     [Display(Name = "Количество")]
     public int Count { get; private set; }
+    public PlotStatus Status { get; }
   }
 }

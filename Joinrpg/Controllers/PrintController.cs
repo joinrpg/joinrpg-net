@@ -77,9 +77,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> HandoutReport(int projectid)
     {
       var plotElements =
-        (await PlotRepository.GetPlotsWithTargetAndText(projectid)).SelectMany(p => p.Elements)
-          .Where(e => e.ElementType == PlotElementType.Handout)
-          .ToArray();
+        await PlotRepository.GetActiveHandouts(projectid);
 
       var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
       var error = await AsMaster(characters, projectid);
