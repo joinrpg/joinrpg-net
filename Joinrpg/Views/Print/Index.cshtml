@@ -55,7 +55,7 @@ for (var i = 0; i < Model.CharacterIds.Count; i += chunkSize)
 <h2>@ViewBag.Title</h2>
 <dl>
     <dt>
-        Содержимое конвертов @SplitByChunks("CharacterList")
+        Содержимое конвертов @SplitByChunks("CharacterList", 30)
     </dt>
     <dd>Распечатать содержимое конвертов (информацию о персонажах, чек-листы раздатки, загрузы) для всех активных персонажей</dd>
     <dt>Наклейки на конверты @SplitByChunks("Envelopes")  </dt>
