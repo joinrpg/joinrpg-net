@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -15,6 +16,7 @@ namespace JoinRpg.DataModel
     public int FeeChange { get; set; }
     public int MoneyAmount { get; set; }
     public int? PaymentTypeId { get; set; }
+    [CanBeNull]
     public virtual PaymentType PaymentType { get; set; }
 
     public int CommentId { get; set; }
