@@ -37,5 +37,10 @@ namespace JoinRpg.Domain
     {
       return fieldValues.SelectMany(v => v.GetSpecialGroupsToApply().Select(g =>g.CharacterGroupId)).ToArray();
     }
+
+    public static bool CanHaveValue(this ProjectField projectField)
+    {
+      return projectField.FieldType != ProjectFieldType.Header;
+    }
   }
 }

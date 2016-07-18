@@ -51,7 +51,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public bool HasValue => !string.IsNullOrWhiteSpace(Value) || Field.FieldType == ProjectFieldType.Header;
+    public bool HasValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
 
     public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
     {
