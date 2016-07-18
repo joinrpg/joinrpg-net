@@ -12,9 +12,11 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotFolderViewModel : PlotFolderViewModelBase
   {
     public int PlotFolderId { get; set; }
-    public IEnumerable<EditPlotElementViewModel> Elements { get; set; }
+    public IEnumerable<EditPlotElementViewModel> Elements { get; private set; }
 
-    public static EditPlotFolderViewModel FromFolder(PlotFolder folder)
+    public bool HasEditAccess { get; private set; }
+
+    public static EditPlotFolderViewModel FromFolder(PlotFolder folder, int? currentUserId)
     {
       return new EditPlotFolderViewModel()
       {
@@ -22,8 +24,9 @@ namespace JoinRpg.Web.Models.Plot
         PlotFolderId = folder.PlotFolderId,
         TodoField = folder.TodoField,
         ProjectId = folder.ProjectId,
-        Elements = folder.Elements. Select(e => new EditPlotElementViewModel(e)).OrderBy(e => e.Status),
-        Status = folder.GetStatus()
+        Elements = folder.Elements. Select(e => new EditPlotElementViewModel(e, currentUserId)).OrderBy(e => e.Status),
+        Status = folder.GetStatus(),
+        HasEditAccess =folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots)
       };
     }
 
@@ -32,7 +35,7 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotElementViewModel  : IProjectIdAware
   {
 
-    public EditPlotElementViewModel(PlotElement e)
+    public EditPlotElementViewModel(PlotElement e, int? currentUserId)
     {
       PlotElementId = e.PlotElementId;
       Targets = e.GetElementBindingsForEdit();
@@ -44,6 +47,7 @@ namespace JoinRpg.Web.Models.Plot
       Status = e.GetStatus();
       IsCompleted = e.IsCompleted;
       ElementType = (PlotElementTypeView) e.ElementType;
+      HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots);
     }
 
     [ReadOnly(true)]
@@ -72,5 +76,6 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; set; }
 
     public PlotElementTypeView ElementType { get; set; }
+    public bool HasEditAccess { get; private set; }
   }
 }

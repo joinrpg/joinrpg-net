@@ -26,7 +26,9 @@
     public bool CanAcceptCash { get; set; }
     public bool CanManageMoney { get; set; }
 
-    public bool CanSendMassMails => true;
+    public bool CanSendMassMails { get; set; }
+
+    public bool CanManagePlots { get; set; }
 
     public static ProjectAcl CreateRootAcl(int userId)
     {
@@ -40,7 +42,8 @@
         CanManageClaims = true,
         CanEditRoles =  true,
         CanAcceptCash = false, // Granter of this priv. has custom code, so better to grant is exp.
-        CanManageMoney = true
+        CanManageMoney = true,
+        CanSendMassMails = true,
       };
     }
   }

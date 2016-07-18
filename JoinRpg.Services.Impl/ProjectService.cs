@@ -215,7 +215,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
       bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
-      bool canAcceptCash, bool canManageMoney)
+      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
@@ -238,11 +238,14 @@ namespace JoinRpg.Services.Impl
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
+      acl.CanSendMassMails = canSendMassMails;
+      acl.CanManagePlots = canManagePlots;
 
       UpdatePaymentTypes(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }
+
     private void UpdatePaymentTypes(ProjectAcl acl)
     {
       var cashPaymentType = acl.GetPaymentTypes().SingleOrDefault(pt => pt.IsCash);
@@ -271,11 +274,13 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney)
+    public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
+      bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
+      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
-      
+
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
@@ -284,6 +289,8 @@ namespace JoinRpg.Services.Impl
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
+      acl.CanSendMassMails = canSendMassMails;
+      acl.CanManagePlots = canManagePlots;
 
       UpdatePaymentTypes(acl);
 

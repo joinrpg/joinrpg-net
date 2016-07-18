@@ -17,6 +17,7 @@ namespace JoinRpg.Web.Models
   public class PlayerMenuViewModel : MenuViewModelBase
   {
     public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
+    public bool PlotPublished { get; set; }
   }
 
   public class MasterMenuViewModel : MenuViewModelBase

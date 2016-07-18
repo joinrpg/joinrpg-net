@@ -81,7 +81,8 @@ namespace JoinRpg.Web.Controllers.Common
           BigGroups = bigGroups.Where(cg => cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
-          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null
+          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,
+          PlotPublished = project.Details?.PublishPlot == true
         };
       }
       return null;
@@ -112,6 +113,34 @@ namespace JoinRpg.Web.Controllers.Common
       }
 
       return WithEntity(claim);
+    }
+
+    protected ActionResult WithPlot(PlotFolder plot)
+    {
+      if (plot == null)
+      {
+        return HttpNotFound();
+      }
+      if (!plot.HasMasterAccess(CurrentUserIdOrDefault) && plot.Project?.Details?.PublishPlot == false)
+      {
+        return NoAccesToProjectView(plot.Project);
+      }
+
+      return WithEntity(plot);
+    }
+
+    protected ActionResult WithPlot(Project project)
+    {
+      if (project == null)
+      {
+        return HttpNotFound();
+      }
+      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && project.Details?.PublishPlot == false)
+      {
+        return NoAccesToProjectView(project);
+      }
+
+      return WithEntity(project);
     }
 
     protected ActionResult WithCharacter(Character character)

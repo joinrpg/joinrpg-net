@@ -75,11 +75,31 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManageMoney" })
+            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new {@class = "control-label col-md-2", @for = "CanManageMoney"})
             <div class="col-md-10">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.CanManageMoney, null, htmlFieldName: "CanManageMoney")
-                    @Html.ValidationMessageFor(model => model.CanManageMoney, "", new { @class = "text-danger" })
+                    @Html.ValidationMessageFor(model => model.CanManageMoney, "", new {@class = "text-danger"})
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanSendMassMails, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanSendMassMails" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
+                    @Html.ValidationMessageFor(model => model.CanSendMassMails, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanManagePlots, htmlAttributes: new { @class = "control-label col-md-2", @for = "CanManagePlots" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanManagePlots, null, htmlFieldName: "CanManagePlots")
+                    @Html.ValidationMessageFor(model => model.CanManagePlots, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>

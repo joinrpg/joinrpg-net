@@ -9,7 +9,10 @@
     <span  class="h2">
         @ViewBag.Title
 </span>
-    <a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
+    @if (Model.HasEditAccess)
+    {
+        <a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
+    }
 </p>
 
 @{
@@ -38,7 +41,7 @@
         <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")
         </td>
         <td>
-           @if (item.Status != PlotStatus.Deleted)
+           @if (item.Status != PlotStatus.Deleted && item.HasEditAccess)
            {
                @Html.ActionLink("Удалить", "Delete", new {item.PlotFolderId, item.ProjectId})
            }

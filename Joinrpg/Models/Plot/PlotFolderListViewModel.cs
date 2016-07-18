@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -9,8 +10,11 @@ namespace JoinRpg.Web.Models.Plot
 {
   public abstract class PlotFolderListViewModelBase
   {
-    protected PlotFolderListViewModelBase (Project project)
+    public bool HasEditAccess { get; }
+
+    protected PlotFolderListViewModelBase (Project project, bool hasEditAccess)
     {
+      HasEditAccess = hasEditAccess;
 
       ProjectId = project.ProjectId;
       ProjectName = project.ProjectName;
@@ -27,13 +31,14 @@ namespace JoinRpg.Web.Models.Plot
   {
     public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
 
-    public PlotFolderListViewModel (IEnumerable<PlotFolder> folders, Project project) : base(project)
+    public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId)
+      : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
     {
       Folders =
-  folders
-    .Select(f => new PlotFolderListItemViewModel(f))
-    .OrderBy(pf => pf.Status)
-    .ThenBy(pf => pf.PlotFolderMasterTitle);
+        folders
+          .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
+          .OrderBy(pf => pf.Status)
+          .ThenBy(pf => pf.PlotFolderMasterTitle);
     }
   }
 
@@ -42,12 +47,12 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
     public bool InWorkOnly { get; }
 
-    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, bool inWorkOnly = false) : base(project)
+    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, bool hasEditAccess, int? currentUserId, bool inWorkOnly = false) : base(project, hasEditAccess)
     {
       InWorkOnly = inWorkOnly;
       Folders =
         folders
-          .Select(f => new PlotFolderListFullItemViewModel(f))
+          .Select(f => new PlotFolderListFullItemViewModel(f, currentUserId))
           .OrderBy(pf => pf.Status)
           .ThenBy(pf => pf.PlotFolderMasterTitle);
     }
@@ -59,7 +64,7 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<PlotElementViewModel> Elements { get; }
     public string ElementTodos { get; }
 
-    public PlotFolderListFullItemViewModel(PlotFolder folder) : base(folder)
+    public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
     {
       Summary = new MarkdownViewModel(folder.MasterSummary);
       Elements = folder.Elements.ToViewModels(hasMasterAccess: true);
@@ -71,8 +76,9 @@ namespace JoinRpg.Web.Models.Plot
   {
     public int PlotFolderId { get; }
     public int ElementsCount { get; }
+    public bool HasEditAccess { get; }
 
-    public PlotFolderListItemViewModel(PlotFolder folder)
+    public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
     {
       PlotFolderId = folder.PlotFolderId;
       PlotFolderMasterTitle = folder.MasterTitle;
@@ -80,6 +86,7 @@ namespace JoinRpg.Web.Models.Plot
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
       TodoField = folder.TodoField;
+      HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots);
     }
   }
 }

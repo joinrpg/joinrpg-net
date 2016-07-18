@@ -285,6 +285,10 @@
     <Compile Include="Migrations\201606190851377_IncludeInPrint.Designer.cs">
       <DependentUpon>201606190851377_IncludeInPrint.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201607181926539_AddMorePermissions.cs" />
+    <Compile Include="Migrations\201607181926539_AddMorePermissions.Designer.cs">
+      <DependentUpon>201607181926539_AddMorePermissions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -489,6 +493,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201606190851377_IncludeInPrint.resx">
       <DependentUpon>201606190851377_IncludeInPrint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201607181926539_AddMorePermissions.resx">
+      <DependentUpon>201607181926539_AddMorePermissions.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
