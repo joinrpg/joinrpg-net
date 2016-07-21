@@ -68,6 +68,12 @@
                 </li>
                 }
 
+                @if (Model.IsActive && Model.IsAdmin)
+                {
+                <li>
+                    @Html.ActionLink("Закрыть проект", "Close", "Game", new { Model.ProjectId}, null)
+                </li>
+                }
             </ul>
             @if (!Model.IsActive)
             {

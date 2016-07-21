@@ -20,8 +20,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
 
-    Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce,
-      bool isAcceptingClaims);
+    Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot);
 
     Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
       bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney,
@@ -46,5 +45,6 @@ namespace JoinRpg.Services.Interfaces
       short direction);
 
     Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, short direction);
+    Task CloseProject(int projectId, int currentUserId, bool publishPlot);
   }
 }

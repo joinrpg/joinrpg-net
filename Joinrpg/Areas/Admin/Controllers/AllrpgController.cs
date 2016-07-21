@@ -33,10 +33,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     public async Task<ActionResult> Index()
     {
       var user = await GetCurrentUserAsync();
-      if (!user.Auth.IsAdmin)
-      {
-        throw new JoinRpgInvalidUserException();
-      }
+      user.RequestAdminAccess();
       return await ShowIndex();
     }
 

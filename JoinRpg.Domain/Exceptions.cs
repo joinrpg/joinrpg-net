@@ -17,12 +17,12 @@ namespace JoinRpg.Domain
 
   public class JoinRpgInvalidUserException : JoinRpgBaseException
   {
-    public JoinRpgInvalidUserException() : base("Cannot perform this operation for current user.")
+    public JoinRpgInvalidUserException(string message = "Cannot perform this operation for current user.") : base(message)
     {
     }
   }
 
-  public class MustBeAdminException : JoinRpgBaseException
+  public class MustBeAdminException : JoinRpgInvalidUserException
   {
     public MustBeAdminException() : base("Cannot perform this operation for non-admin user.")
     {
