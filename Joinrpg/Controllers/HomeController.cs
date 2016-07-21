@@ -17,14 +17,18 @@ namespace JoinRpg.Web.Controllers
       _projectRepository = projectRepository;
     }
 
-    public async Task<ActionResult> Index() => View(await LoadModel(ProjectsOnHomePage));
+    public async Task<ActionResult> Index() => View(await LoadModel(false, ProjectsOnHomePage));
 
-    private async Task<HomeViewModel> LoadModel(int maxProjects = int.MaxValue)
+    private async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)
     {
+      var allProjects = showInactive
+        ? await _projectRepository.GetAllProjectsWithClaimCount()
+        : await _projectRepository.GetActiveProjectsWithClaimCount();
+
       var projects =
-        (await _projectRepository.GetActiveProjectsWithClaimCount())
-        .Select(p => ProjectListItemViewModel.FromProject(p, CurrentUserIdOrDefault))
-        .Where(p => p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
+        allProjects
+        .Select(p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault))
+        .Where(p => showInactive || p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
         .ToList();
 
       var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
@@ -54,9 +58,8 @@ namespace JoinRpg.Web.Controllers
 
     public ActionResult FromAllrpgInfo() => View();
 
-    public async Task<ViewResult> BrowseGames()
-    {
-      return View(await LoadModel());
-    }
+    public async Task<ActionResult> BrowseGames() => View(await LoadModel());
+
+    public async Task<ActionResult> GameArchive() => View("BrowseGames", await LoadModel(true));
   }
 }

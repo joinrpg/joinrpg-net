@@ -26,9 +26,18 @@
                 <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
                    class="btn btn-primary btn-sm"
                    role="button"
-                   title="Выбрать роль и заявиться">
+                   title="Сетка ролей">
                     Сетка ролей
                 </a>
+
+                @if (!Model.IsMaster && Model.PublishPlot)
+                {
+                <a href="@Url.Action("Index", "Plot", new {Model.ProjectId}, null)"
+                   class="btn btn-info btn-sm"
+                   role="button">
+                     Материалы
+                </a>
+                }
 
                 @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims && Model.IsRootGroupAccepting)
                 {

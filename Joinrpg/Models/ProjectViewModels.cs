@@ -32,8 +32,29 @@ namespace JoinRpg.Web.Models
     [DisplayName("Правила подачи заявок")]
     public MarkdownViewModel ClaimApplyRules { get; set; }
 
+    [Display(Name = "Разрешить несколько персонажей одному игроку")]
+    public bool EnableManyCharacters { get; set; }
+
+    [Display(Name = "Опубликовать сюжет всем", Description = "Cюжет игры будет раскрыт всем для всеобщего просмотра и послужит обмену опытом среди мастеров.")]
+    public bool PublishPlot{ get; set; }
+
     [ReadOnly(true)]
     public string OriginalName { get; set;  }
+
+    public bool Active { get; set; }
+  }
+
+  public class CloseProjectViewModel
+  {
+    public int ProjectId { get; set; }
+
+    [ReadOnly(true)]
+    public string OriginalName { get; set; }
+
+    [Display(Name = "Опубликовать сюжет всем", Description = "Cюжет игры будет раскрыт всем для всеобщего просмотра и послужит обмену опытом среди мастеров.")]
+    public bool PublishPlot { get; set; }
+
+    public bool IsMaster { get; set; }
   }
 
   public class ProjectDetailsViewModel : ProjectViewModelBase
@@ -47,30 +68,31 @@ namespace JoinRpg.Web.Models
 
   public class ProjectListItemViewModel : ProjectViewModelBase
   {
-    public bool IsMaster { get; set; }
-    public bool IsActive { get; set; }
-    public IEnumerable<Claim>  MyClaims {get; set; }
+    public bool IsMaster { get; }
+    public bool IsActive { get; }
+    public IEnumerable<Claim>  MyClaims {get; }
     public int ClaimCount { get; set; }
 
-    public int ProjectRootGroupId { get; set; }
+    public int ProjectRootGroupId { get; }
 
-    public bool IsRootGroupAccepting { get; set; }
+    public bool IsRootGroupAccepting { get; }
 
-    public static ProjectListItemViewModel FromProject(Project p, int? user)
+    public bool PublishPlot { get; }
+
+    public  ProjectListItemViewModel (Project p, int? user)
     {
-      return new ProjectListItemViewModel()
-      {
-        ProjectId = p.ProjectId,
-        IsMaster = p.HasMasterAccess(user),
-        IsActive = p.Active,
-        ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce),
-        ProjectName = p.ProjectName,
-        MyClaims = p.Claims.Where(c => c.PlayerUserId == user),
-        ClaimCount = p.Claims.Count(c => c.IsActive),
-        IsAcceptingClaims = p.IsAcceptingClaims,
-        ProjectRootGroupId = p.RootGroup.CharacterGroupId,
-        IsRootGroupAccepting = p.RootGroup.IsAvailable
-      };
+      ProjectId = p.ProjectId;
+      IsMaster = p.HasMasterAccess(user);
+      IsActive = p.Active;
+      ProjectAnnounce = new MarkdownViewModel(p.Details?.ProjectAnnounce);
+      ProjectName = p.ProjectName;
+      MyClaims = p.Claims.Where(c => c.PlayerUserId == user);
+      ClaimCount = p.Claims.Count(c => c.IsActive);
+      IsAcceptingClaims = p.IsAcceptingClaims;
+      ProjectRootGroupId = p.RootGroup.CharacterGroupId;
+      IsRootGroupAccepting = p.RootGroup.IsAvailable;
+      PublishPlot = p.Details?.PublishPlot ?? false;
+      ;
     }
 
     public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(

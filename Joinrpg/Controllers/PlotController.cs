@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
@@ -15,7 +16,6 @@ using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
 {
-  [Authorize]
   public class PlotController : ControllerGameBase
   {
     private readonly IPlotService _plotService;
@@ -40,14 +40,14 @@ namespace JoinRpg.Web.Controllers
     {
       var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList(); 
       var project = await GetProjectFromList(projectId, folders);
-      return AsMaster(project) ?? View(new PlotFolderFullListViewModel(folders, project));
+      return WithPlot(project) ?? View(new PlotFolderFullListViewModel(folders, project, project.HasMasterAccess(CurrentUserIdOrDefault, acl => acl.CanManagePlots), CurrentUserIdOrDefault));
     }
 
     public async Task<ActionResult> FlatListUnready(int projectId)
     {
       var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
       var project = await GetProjectFromList(projectId, folders);
-      return AsMaster(project) ?? View("FlatList", new PlotFolderFullListViewModel(folders, project, true));
+      return WithPlot(project) ?? View("FlatList", new PlotFolderFullListViewModel(folders, project, project.HasMasterAccess(CurrentUserIdOrDefault, acl => acl.CanManagePlots), CurrentUserIdOrDefault, true));
     }
 
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -58,11 +58,11 @@ namespace JoinRpg.Web.Controllers
       _plotRepository = plotRepository;
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<ActionResult> Create(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project1) ??  View(new AddPlotFolderViewModel
+      return AsMaster(project1, acl => acl.CanManagePlots) ??  View(new AddPlotFolderViewModel
       {
         ProjectId = project1.ProjectId,
         ProjectName = project1.ProjectName
@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Create(AddPlotFolderViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = AsMaster(project, acl => true);
+      var errorResult = AsMaster(project, acl => acl.CanManagePlots);
       if (errorResult != null)
       {
         return errorResult;
@@ -81,7 +81,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+        await _plotService.CreatePlotFolder(project.ProjectId, CurrentUserId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return RedirectToAction("Index", "Plot", new {project.ProjectId});
       }
       catch (Exception)
@@ -95,10 +95,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(folder) ?? View(EditPlotFolderViewModel.FromFolder(folder));
+      return WithPlot(folder) ?? View(EditPlotFolderViewModel.FromFolder(folder, CurrentUserIdOrDefault));
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken, Authorize]
     public async Task<ActionResult> Edit(EditPlotFolderViewModel viewModel)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
@@ -110,7 +110,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, CurrentUserId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
       }
       catch (Exception)
@@ -119,11 +119,11 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(folder) ?? View(new AddPlotElementViewModel()
+      return AsMaster(folder, acl => acl.CanManagePlots) ?? View(new AddPlotElementViewModel()
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
@@ -132,11 +132,11 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(folder) ?? View("CreateElement", new AddPlotElementViewModel()
+      return AsMaster(folder, acl => acl.CanManagePlots) ?? View("CreateElement", new AddPlotElementViewModel()
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
@@ -145,19 +145,19 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public Task<ActionResult> CreateHandout(int projectId, int plotFolderId, MarkdownViewModel content,
       string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
     {
       return CreateElement(projectId, plotFolderId, content, todoField, targets, elementType);
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, MarkdownViewModel content,
       string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      var error = AsMaster(folder);
+      var error = AsMaster(folder, acl => acl.CanManagePlots);
       if (error != null)
       {
         return error;
@@ -167,7 +167,7 @@ namespace JoinRpg.Web.Controllers
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.AddPlotElement(projectId, plotFolderId, content.Contents, todoField, targetGroups, targetChars,
+          _plotService.AddPlotElement(projectId, plotFolderId, CurrentUserId,  content.Contents, todoField, targetGroups, targetChars,
             (PlotElementType) elementType);
         return ReturnToPlot(plotFolderId, projectId);
       }
@@ -191,21 +191,21 @@ namespace JoinRpg.Web.Controllers
       var allFolders = await _plotRepository.GetPlots(projectId);
       var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
       var project = await GetProjectFromList(projectId, folders);
-      return AsMaster(project) ?? View("Index", new PlotFolderListViewModel(folders, project));
+      return WithPlot(project) ?? View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault));
     }
 
     #endregion
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
       PlotFolder folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      var error = AsMaster(folder);
+      var error = AsMaster(folder, acl=> acl.CanManagePlots);
       if (error != null) return null;
-      return View(EditPlotFolderViewModel.FromFolder(folder));
+      return View(EditPlotFolderViewModel.FromFolder(folder, CurrentUserId));
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public async Task<ActionResult> Delete(int projectId, int plotFolderId, FormCollection collection)
     {
       try
@@ -238,26 +238,26 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Edit", new {projectId, plotFolderId});
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      var error = AsMaster(folder);
+      var error = AsMaster(folder, acl => acl.CanManagePlots);
       if (error != null)
       {
         return error;
       }
 
-      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid));
+      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid), CurrentUserId);
       return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, MarkdownViewModel content, string todoField,
       bool isCompleted, [CanBeNull] ICollection<string> targets)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      var error = AsMaster(folder);
+      var error = AsMaster(folder, acl => acl.CanManagePlots);
       if (error != null)
       {
         return error;
@@ -305,7 +305,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId)
     {
       try

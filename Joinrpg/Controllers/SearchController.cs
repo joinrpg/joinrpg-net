@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Controllers
         (await _projectRepository.GetAllProjectsWithClaimCount())
         .ToDictionary(
           p => p.ProjectId,
-          p => ProjectListItemViewModel.FromProject(p, CurrentUserIdOrDefault));
+          p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault));
 
       return searchResults.Count == 1
         ? RedirectToAction(searchResults.Single().GetRouteTarget())

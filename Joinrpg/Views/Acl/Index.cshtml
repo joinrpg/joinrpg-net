@@ -21,26 +21,32 @@
         <th>
             @Html.DisplayNameFor(model => model.Master)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanManageClaims)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanChangeFields)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanChangeProjectProperties)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanGrantRights)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanEditRoles)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanAcceptCash)
         </th>
-        <th>
+        <th class="hidden-xs">
             @Html.DisplayNameFor(model => model.CanManageMoney)
+        </th>
+        <th class="hidden-xs">
+            @Html.DisplayNameFor(model => model.CanSendMassMails)
+        </th>
+        <th class="hidden-xs">
+            @Html.DisplayNameFor(model => model.CanManagePlots)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.ClaimsCount)
@@ -60,26 +66,32 @@
         <td>
             @Html.DisplayFor(modelItem => item.Master)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(modelItem => item.CanManageClaims)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(modelItem => item.CanChangeFields)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(modelItem => item.CanChangeProjectProperties)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(modelItem => item.CanGrantRights)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(model => item.CanEditRoles)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(model => item.CanAcceptCash)
         </td>
-        <td>
+        <td class="hidden-xs">
             @Html.DisplayFor(model => item.CanManageMoney)
+        </td>
+        <td class="hidden-xs">
+            @Html.DisplayFor(model => item.CanSendMassMails)
+        </td>
+        <td class="hidden-xs">
+            @Html.DisplayFor(model => item.CanManagePlots)
         </td>
         <td style="white-space: nowrap">
             @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "ClaimList", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)

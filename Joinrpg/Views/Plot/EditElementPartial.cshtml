@@ -50,22 +50,25 @@
     <div class="panel-collapse collapse" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
         <div class="panel-body">
 
-            <a class="btn btn-default btn-sm"
-               href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
+            @if (Model.HasEditAccess)
+            {
+                <a class="btn btn-default btn-sm"
+                   href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
 
-            @if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
-            {
-            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
-                Опубликовать
-            </button>
+                if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
+                 {
+                     <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
+                         Опубликовать
+                     </button>
+                 }
+                if (Model.Status != PlotStatus.Deleted)
+                 {
+                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                         Удалить
+                     </button>
+                 }
+                <hr/>
             }
-            @if (Model.Status != PlotStatus.Deleted)
-            {
-            <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
-                Удалить
-            </button>
-            }
-            <hr/>
 
             @if (!string.IsNullOrWhiteSpace(Model.TodoField))
             {

@@ -11,9 +11,7 @@ namespace JoinRpg.Web.Controllers
 {
   [Authorize]
   public class AclController : ControllerGameBase
-  {
-    private IClaimService ClaimSevice { get; }
-
+  { 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
@@ -25,7 +23,7 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
           viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-          viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
+          viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {
@@ -37,10 +35,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     public AclController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IClaimService claimSevice)
+      IProjectService projectService, IExportDataService exportDataService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
-      ClaimSevice = claimSevice;
     }
 
     [HttpGet]
@@ -107,7 +104,7 @@ namespace JoinRpg.Web.Controllers
         await
           ProjectService.ChangeAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
             viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-            viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
+            viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {

@@ -17,9 +17,10 @@ namespace JoinRpg.Services.Impl
   {
 
 
-    public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
+    public async Task CreatePlotFolder(int projectId, int currentUserId, string masterTitle, string todo)
     {
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
       var startTimeUtc = DateTime.UtcNow;
       project.PlotFolders.Add(new PlotFolder
       {
@@ -33,18 +34,25 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
+    public async Task EditPlotFolder(int projectId, int plotFolderId, int currentUserId, string plotFolderMasterTitle, string todoField)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+
+      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
       folder.MasterTitle = Required(plotFolderMasterTitle);
       folder.TodoField = todoField;
       folder.IsActive = true; //Restore if deleted
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField,
-      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
+    public async Task AddPlotElement(int projectId, int plotFolderId, int currentUserId, string content,
+      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
+      PlotElementType elementType)
     {
+      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+
+      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
+
       var now = DateTime.UtcNow;
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
 
@@ -66,7 +74,7 @@ namespace JoinRpg.Services.Impl
         IsCompleted = false,
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        TargetGroups =   characterGroups,
+        TargetGroups = characterGroups,
         TargetCharacters = await ValidateCharactersList(projectId, targetChars),
         ElementType = elementType
       };
@@ -78,7 +86,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteFolder(int projectId, int plotFolderId, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.HasMasterAccess(currentUserId))
+      if (!folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
       {
         throw new DbEntityValidationException();
       }
@@ -93,6 +101,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+
       SmartDelete(plotElement);
       await UnitOfWork.SaveChangesAsync();
     }
@@ -100,7 +109,7 @@ namespace JoinRpg.Services.Impl
     private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      folder.RequestMasterAccess(currentUserId);
+      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
       return folder.Elements.Single(e => e.PlotElementId == plotelementid);
     }
 

@@ -2,7 +2,7 @@
 @model EditPlotFolderViewModel
 
 @{
-    ViewBag.Title = "Сюжет «" + @Model.PlotFolderMasterTitle + "»";
+    ViewBag.Title = "Сюжет «" + Model.PlotFolderMasterTitle + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -11,41 +11,53 @@
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
-        <p>Сюжет редактируется вот тут</p>
-        <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(model => model.PlotFolderId)
         @Html.HiddenFor(model => model.ProjectId)
+        @if (Model.HasEditAccess)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.PlotFolderMasterTitle, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-10">
 
+                    @Html.EditorFor(model => model.PlotFolderMasterTitle, new {htmlAttributes = new {@class = "form-control"}})
+                    @Html.ValidationMessageFor(model => model.PlotFolderMasterTitle, "", new {@class = "text-danger"})
+                </div>
+            </div>
+        }
         <div class="form-group">
-            @Html.LabelFor(model => model.PlotFolderMasterTitle, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.PlotFolderMasterTitle, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.PlotFolderMasterTitle, "", new { @class = "text-danger" })
+                @if (Model.HasEditAccess)
+                {
+                    @Html.EditorFor(model => model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.TodoField)
+                }
+                @Html.ValidationMessageFor(model => model.TodoField, "", new {@class = "text-danger"})
             </div>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.TodoField, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.TodoField, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.TodoField, "", new { @class = "text-danger" })
+        @if (Model.HasEditAccess)
+        {
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default"/>
+                </div>
             </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                
-                <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-default"/>
-            </div>
-        </div>
+        }
     </div>
 }
 <h3>Вводные
-    <a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить вводную...</a>
-    <a href="@Url.Action("CreateHandout", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить элемент раздатки...</a>
+    @if (Model.HasEditAccess)
+    {
+        <a href="@Url.Action("CreateElement", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить вводную...</a>
+        <a href="@Url.Action("CreateHandout", new {Model.PlotFolderId, Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить элемент раздатки...</a>
+    }
 </h3>
 
 @Html.Partial("Elements", Model.Elements)
