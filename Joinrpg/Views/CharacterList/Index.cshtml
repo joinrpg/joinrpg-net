@@ -1,6 +1,6 @@
 ﻿@using JoinRpg.DataModel
 @using JoinRpg.Domain
-@using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
   @{
       ViewBag.Title = Model.Title;
@@ -60,7 +60,7 @@
     {
         <tr>
             <td>
-                <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, item.CharacterId}, null)">
+                <a href="@Url.Action(Model.HasEditAccess ? "Edit" : "Details", "Character", new {Model.ProjectId, item.CharacterId}, null)">
                     @item.Name
                 </a>
             </td>
@@ -72,9 +72,13 @@
                             @Html.DisplayFor(modelItem => item.Player.DisplayName)
                         </a>
                         break;
-                    default:
+                    case CharacterBusyStatusView.Discussed:
+                    case CharacterBusyStatusView.NotSend:
+                    case CharacterBusyStatusView.Npc:
                         @Html.DisplayFor(modelItem => item.BusyStatus)
                         break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             </td>
             <td>
@@ -84,7 +88,7 @@
                 @foreach (var pr in item.Problems)
                 {
 
-                    var style = "";
+                    string style;
                     switch (pr.Severity)
                     {
                         case ProblemSeverity.Hint:
