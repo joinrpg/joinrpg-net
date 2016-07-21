@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Helpers
 {

@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Редактор сюжетов")]
     public bool CanManagePlots { get; set; }
 
-    public static AclViewModel FromAcl(ProjectAcl acl)
+    public static AclViewModel FromAcl(ProjectAcl acl, int count)
     {
       return new AclViewModel()
       {
@@ -68,7 +68,7 @@ namespace JoinRpg.Web.Models
         CanManagePlots = acl.CanManagePlots,
         Master = acl.User,
         ProjectName = acl.Project.ProjectName,
-        ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId && claim.IsActive)
+        ClaimsCount = count
       };
     }
   }
