@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -75,7 +76,10 @@ namespace JoinRpg.Web.Controllers
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         OriginalName = project.ProjectName,
-        IsAcceptingClaims = project.IsAcceptingClaims
+        IsAcceptingClaims = project.IsAcceptingClaims,
+        PublishPlot = project.Details?.PublishPlot ?? false,
+        EnableManyCharacters = project.Details?.EnableManyCharacters ?? false,
+        Active = project.Active
       });
     }
 
@@ -93,8 +97,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          ProjectService.EditProject(viewModel.ProjectId, viewModel.ProjectName, viewModel.ClaimApplyRules.Contents,
-            viewModel.ProjectAnnounce.Contents, viewModel.IsAcceptingClaims);
+          ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName, viewModel.ClaimApplyRules.Contents,
+            viewModel.ProjectAnnounce.Contents, viewModel.IsAcceptingClaims, viewModel.EnableManyCharacters, viewModel.PublishPlot);
 
         return RedirectTo(project);
       }
@@ -105,5 +109,50 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    [HttpGet, Authorize]
+    public async Task<ActionResult> Close(int projectid)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var errorResult = await AsMasterOrAdmin(project, pacl => pacl.CanChangeProjectProperties);
+      if (errorResult != null)
+      {
+        return errorResult;
+      }
+      var isMaster = project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+      return View(new CloseProjectViewModel()
+      {
+        OriginalName = project.ProjectName,
+        ProjectId = projectid,
+        PublishPlot = isMaster,
+        IsMaster = isMaster,
+      });
+    }
+
+    [HttpPost, Authorize]
+    public async Task<ActionResult> Close(CloseProjectViewModel viewModel)
+    {
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var errorResult = await AsMasterOrAdmin(project, pacl => pacl.CanChangeProjectProperties);
+      if (errorResult != null)
+      {
+        return errorResult;
+      }
+      viewModel.OriginalName = project.ProjectName;
+      viewModel.IsMaster = project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+      if (!ModelState.IsValid)
+      {
+        return View(viewModel);
+      }
+      try
+      {
+        await ProjectService.CloseProject(viewModel.ProjectId, CurrentUserId, viewModel.PublishPlot);
+        return await RedirectToProject(viewModel.ProjectId);
+      }
+      catch (Exception ex)
+      {
+        ModelState.AddException(ex);
+        return View(viewModel);
+      }
+    }
   }
 }

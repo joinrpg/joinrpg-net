@@ -68,7 +68,8 @@ namespace JoinRpg.Web.Controllers.Common
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.CharacterGroupId,
-          HasAllrpg = project.Details?.AllrpgId != null
+          HasAllrpg = project.Details?.AllrpgId != null,
+          IsAdmin = IsCurrentUserAdmin(),
         };
       }
       else
@@ -81,7 +82,9 @@ namespace JoinRpg.Web.Controllers.Common
           BigGroups = bigGroups.Where(cg => cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
-          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null
+          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,
+          PlotPublished = project.Details?.PublishPlot == true,
+          IsAdmin = IsCurrentUserAdmin(),
         };
       }
       return null;
@@ -114,6 +117,34 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
+    protected ActionResult WithPlot(PlotFolder plot)
+    {
+      if (plot == null)
+      {
+        return HttpNotFound();
+      }
+      if (!plot.HasMasterAccess(CurrentUserIdOrDefault) && plot.Project?.Details?.PublishPlot == false)
+      {
+        return NoAccesToProjectView(plot.Project);
+      }
+
+      return WithEntity(plot);
+    }
+
+    protected ActionResult WithPlot(Project project)
+    {
+      if (project == null)
+      {
+        return HttpNotFound();
+      }
+      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && project.Details?.PublishPlot == false)
+      {
+        return NoAccesToProjectView(project);
+      }
+
+      return WithEntity(project);
+    }
+
     protected ActionResult WithCharacter(Character character)
     {
       if (character == null)
@@ -143,12 +174,32 @@ namespace JoinRpg.Web.Controllers.Common
       return AsMaster(await GetProjectFromList(projectId, entity), acl => true);
     }
 
+    [CanBeNull]
     protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
     {
       return WithEntity(entity) ??
              (entity.HasMasterAccess(CurrentUserId, requiredRights)
                ? null
                : NoAccesToProjectView(entity.Project));
+    }
+
+    [ItemCanBeNull]
+    protected async Task<ActionResult> AsMasterOrAdmin<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
+    {
+      return WithEntity(entity) ??
+             (entity.HasMasterAccess(CurrentUserId, requiredRights) || await IsCurrentUserAdminAsync()
+               ? null
+               : NoAccesToProjectView(entity.Project));
+    }
+
+    private async Task<bool> IsCurrentUserAdminAsync()
+    {
+      return CurrentUserIdOrDefault != null && (await GetCurrentUserAsync()).Auth?.IsAdmin == true;
+    }
+
+    private bool IsCurrentUserAdmin()
+    {
+      return CurrentUserIdOrDefault != null && GetCurrentUser().Auth?.IsAdmin == true;
     }
 
     protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders)

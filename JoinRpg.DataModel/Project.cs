@@ -70,6 +70,7 @@ namespace JoinRpg.DataModel
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
 
     public bool EnableManyCharacters { get; set; }
+    public bool PublishPlot { get; set; }
     public int? AllrpgId { get; set; }
   }
 

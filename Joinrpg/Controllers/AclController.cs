@@ -11,9 +11,8 @@ namespace JoinRpg.Web.Controllers
 {
   [Authorize]
   public class AclController : ControllerGameBase
-  {
-    private IClaimService ClaimSevice { get; }
-
+  { 
+    private IClaimsRepository ClaimRepository { get; }
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
@@ -25,7 +24,7 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
           viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-          viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
+          viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {
@@ -37,21 +36,23 @@ namespace JoinRpg.Web.Controllers
     }
 
     public AclController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IClaimService claimSevice)
+      IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimRepository)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
-      ClaimSevice = claimSevice;
+      ClaimRepository = claimRepository;
     }
 
     [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+      var claims = await ClaimRepository.GetClaims(projectId, ClaimStatusSpec.Active);
       return AsMaster(project) ?? View(project.ProjectAcls.Select(acl =>
       {
-        var result = AclViewModel.FromAcl(acl);
+        var result = AclViewModel.FromAcl(acl, claims.Count(c => c.ResponsibleMasterUserId == acl.UserId));
         result.ProblemClaimsCount =
-          project.Claims.Where(c => c.ResponsibleMasterUserId == acl.UserId).Count(claim => claim.GetProblems(ProblemSeverity.Warning).Any());
+          claims.Where(c => c.ResponsibleMasterUserId == acl.UserId)
+            .Count(claim => claim.GetProblems(ProblemSeverity.Warning).Any());
         return result;
       }));
     }
@@ -61,7 +62,7 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
       return AsMaster(project, acl => acl.CanGrantRights) ??
-             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid)));
+             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
 
     }
 
@@ -91,7 +92,7 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
       return AsMaster(project, acl => acl.CanGrantRights) ??
-             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid)));
+             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -107,7 +108,7 @@ namespace JoinRpg.Web.Controllers
         await
           ProjectService.ChangeAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
             viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-            viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney);
+            viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {

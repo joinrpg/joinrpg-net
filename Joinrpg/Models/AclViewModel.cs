@@ -44,7 +44,13 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Проблемных"), ReadOnly(true)]
     public int ProblemClaimsCount { get; set; }
 
-    public static AclViewModel FromAcl(ProjectAcl acl)
+    [Display(Name = "Делать массовые рассылки")]
+    public bool CanSendMassMails { get; set; }
+
+    [Display(Name = "Редактор сюжетов")]
+    public bool CanManagePlots { get; set; }
+
+    public static AclViewModel FromAcl(ProjectAcl acl, int count)
     {
       return new AclViewModel()
       {
@@ -58,9 +64,11 @@ namespace JoinRpg.Web.Models
         CanEditRoles = acl.CanEditRoles,
         CanAcceptCash = acl.CanAcceptCash,
         CanManageMoney = acl.CanManageMoney,
+        CanSendMassMails = acl.CanSendMassMails,
+        CanManagePlots = acl.CanManagePlots,
         Master = acl.User,
         ProjectName = acl.Project.ProjectName,
-        ClaimsCount = acl.Project.Claims.Count(claim => claim.ResponsibleMasterUserId == acl.UserId && claim.IsActive)
+        ClaimsCount = count
       };
     }
   }

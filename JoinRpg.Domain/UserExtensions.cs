@@ -45,7 +45,7 @@ namespace JoinRpg.Domain
     // ReSharper disable once UnusedParameter.Global
     public static void RequestAdminAccess(this User user)
     {
-      if (!user.Auth.IsAdmin)
+      if (user.Auth?.IsAdmin != true)
       {
         throw new MustBeAdminException();
       }

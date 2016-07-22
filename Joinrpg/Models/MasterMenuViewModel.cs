@@ -12,11 +12,13 @@ namespace JoinRpg.Web.Models
     public bool IsAcceptingClaims { get; set; }
     public int? RootGroupId { get; internal set; }
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
+    public bool IsAdmin { get; set; }
   }
 
   public class PlayerMenuViewModel : MenuViewModelBase
   {
     public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
+    public bool PlotPublished { get; set; }
   }
 
   public class MasterMenuViewModel : MenuViewModelBase

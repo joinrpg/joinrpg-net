@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -154,6 +155,33 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task CloseProject(int projectId, int currentUserId, bool publishPlot)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+
+      var user = await UserRepository.GetById(currentUserId);
+      RequestProjectAdminAccess(project, user);
+      project.Details = project.Details ?? new ProjectDetails();
+
+      project.Active = false;
+      project.IsAcceptingClaims = false;
+      project.Details.PublishPlot = publishPlot;
+      
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private static void RequestProjectAdminAccess(Project project, User user)
+    {
+      if (project == null)
+      {
+        throw new ArgumentNullException(nameof(project));
+      }
+      if (!project.HasMasterAccess(user.UserId, acl => acl.CanChangeProjectProperties) && user.Auth?.IsAdmin != true)
+      {
+        throw new NoAccessToProjectException(project, user.UserId, acl => acl.CanChangeProjectProperties);
+      }
+    }
+
     public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
       IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
       int? responsibleMasterId)
@@ -202,20 +230,24 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditProject(int projectId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims)
+    public async Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot)
     {
-      var project = await UnitOfWork.GetDbSet<Project>().Include(p =>p.Details).SingleOrDefaultAsync(p => p.ProjectId == projectId);
+      var project = await ProjectRepository.GetProjectAsync(projectId); 
+      project.RequestMasterAccess(currentUserId, acl => acl.CanChangeProjectProperties);
+
       project.Details = project.Details ?? new ProjectDetails {ProjectId = projectId};
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
       project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
+      project.Details.EnableManyCharacters = multipleCharacters;
+      project.Details.PublishPlot = publishPlot && !project.Active;
       project.ProjectName = Required(projectName);
-      project.IsAcceptingClaims = isAcceptingClaims;
+      project.IsAcceptingClaims = isAcceptingClaims && project.Active;
       await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
       bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
-      bool canAcceptCash, bool canManageMoney)
+      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
@@ -238,11 +270,14 @@ namespace JoinRpg.Services.Impl
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
+      acl.CanSendMassMails = canSendMassMails;
+      acl.CanManagePlots = canManagePlots;
 
       UpdatePaymentTypes(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }
+
     private void UpdatePaymentTypes(ProjectAcl acl)
     {
       var cashPaymentType = acl.GetPaymentTypes().SingleOrDefault(pt => pt.IsCash);
@@ -271,11 +306,13 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney)
+    public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
+      bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
+      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
-      
+
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
       acl.CanGrantRights = canGrantRights;
       acl.CanChangeFields = canChangeFields;
@@ -284,6 +321,8 @@ namespace JoinRpg.Services.Impl
       acl.CanEditRoles = canEditRoles;
       acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
+      acl.CanSendMassMails = canSendMassMails;
+      acl.CanManagePlots = canManagePlots;
 
       UpdatePaymentTypes(acl);
 

@@ -1,0 +1,43 @@
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.CloseProjectViewModel
+
+@{
+    ViewBag.Title = "Закрытие проекта " + Model.OriginalName;
+}
+
+<h2>@ViewBag.Title</h2>
+<p>Закрытый проект пропадет из списков, на него нельзя будет больше заявиться или добавить новых мастеров.
+    В остальном вы всегда сможете найти его по @Html.ActionLink("прямой ссылке", "Details", new {Model.ProjectId})
+    или в @Html.ActionLink("архиве игр", "GameArchive", "Home"), точно в таком состоянии, как и оставили.
+    Закрытые проекты нельзя восстановить.</p>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ProjectId)
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+        @if (Model.IsMaster)
+        {
+            <div class="form-group">
+
+                @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-10">
+                    <div class="checkbox">
+                        @Html.CheckBoxFor(model => model.PublishPlot)
+                        @Html.ValidationMessageFor(model => model.PublishPlot, "", new {@class = "text-danger"})
+                        @Html.DescriptionFor(model => model.PublishPlot)
+                    </div>
+                </div>
+
+            </div>
+        }
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Закрыть проект" class="btn btn-danger"/>
+
+            </div>
+        </div>
+    </div>
+}

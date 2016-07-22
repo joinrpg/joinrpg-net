@@ -8,7 +8,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
   public enum CharacterBusyStatusView
   {
@@ -30,6 +30,8 @@ namespace JoinRpg.Web.Models
     public IReadOnlyCollection<int> CharacterIds { get; }
     public string ProjectName { get; }
     public string Title { get; }
+
+    public bool HasEditAccess { get; }
 
     public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
       IReadOnlyCollection<PlotFolder> plots, Project project)
@@ -56,6 +58,7 @@ namespace JoinRpg.Web.Models
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
       ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
       CharacterIds = characters.Select(c => c.CharacterId).ToArray();
+      HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanEditRoles);
     }
 
     private bool AnyItemHasValue(int projectFieldId)

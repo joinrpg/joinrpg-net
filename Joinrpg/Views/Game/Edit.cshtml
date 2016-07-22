@@ -38,22 +38,52 @@
             </div>
         </div>
 
+        @if (Model.Active)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-1">
+                    @Html.EditorFor(model => model.IsAcceptingClaims)
+                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new {@class = "text-danger"})
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.EnableManyCharacters, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-1">
+                    @Html.EditorFor(model => model.EnableManyCharacters)
+                    @Html.ValidationMessageFor(model => model.EnableManyCharacters, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        }
+
+
+        @if (!Model.Active)
+        {
         <div class="form-group">
-            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-1">
-                @Html.EditorFor(model => model.IsAcceptingClaims)
-                @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.PublishPlot)
+                @Html.ValidationMessageFor(model => model.PublishPlot, "", new { @class = "text-danger" })
             </div>
         </div>
+        }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-success" />
+                <input type="submit" value="Сохранить" class="btn btn-success"/>
+                @if (Model.Active)
+                {
+                    <a class="btn btn-danger" href="@Url.Action("Close", "Game", new {Model.ProjectId}, null)">
+                        <span title="удалить" class="glyphicon glyphicon-trash"></span>
+                        Закрыть проект
+                    </a>
+                }
             </div>
         </div>
     </div>
 }
 
 <div>
-    @Html.ActionLink("Назад", "Details", new {Model.ProjectId})
+    
 </div>

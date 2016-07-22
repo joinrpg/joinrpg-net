@@ -23,8 +23,8 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 
-      var allowByField = FieldId == 0 ||
-                         AllowedValues.Contains(character.Fields.SingleOrDefault(f => f.FieldId == FieldId)?.FieldValue);
+      var fieldValues = character.Fields.SingleOrDefault(f => f.FieldId == FieldId)?.FieldValue?.Split(',');
+      var allowByField = FieldId == 0 || AllowedValues.Intersect(fieldValues ?? Enumerable.Empty<string>()).Any();
       var allowByGroup = ShowForGroups.Length == 0 ||
                          ShowForGroups.Intersect(character.Groups.Select(g => g.CharacterGroupId)).Any();
       var disallowByGroup = SkipForGroups.Intersect(character.Groups.Select(g => g.CharacterGroupId)).Any();

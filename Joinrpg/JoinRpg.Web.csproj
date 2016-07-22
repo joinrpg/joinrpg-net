@@ -573,6 +573,7 @@
     <Content Include="Views\Shared\DisplayTemplates\PlotStatus.cshtml" />
     <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
     <Content Include="Views\Plot\EditElement.cshtml" />
+    <Content Include="Views\Game\Close.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
