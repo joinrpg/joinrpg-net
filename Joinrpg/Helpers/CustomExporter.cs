@@ -48,6 +48,13 @@ namespace JoinRpg.Web.Helpers
     }
 
     [MustUseReturnValue]
+    protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func)
+    {
+      var member = func.AsPropertyAccess();
+      return new TableColumn(member, r => func.Compile()(r).ToString());
+    }
+
+    [MustUseReturnValue]
     protected ITableColumn EnumColumn(Expression<Func<TRow, Enum>> func)
     {
       var member = func.AsPropertyAccess();

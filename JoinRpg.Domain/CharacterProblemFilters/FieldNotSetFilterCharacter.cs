@@ -19,7 +19,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       var isAvailableForTarget = fieldWithValue.Field.IsAvailableForTarget(target);
       var hasValue = fieldWithValue.HasValue;
 
-      if (fieldWithValue.Field.FieldType == ProjectFieldType.Header)
+      if (!fieldWithValue.Field.CanHaveValue())
       {
         yield break;
       }

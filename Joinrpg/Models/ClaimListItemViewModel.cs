@@ -108,6 +108,11 @@ namespace JoinRpg.Web.Models
     [NotNull, ReadOnly(true)]
     public CustomFieldsViewModel Fields { get; }
 
+    [Display(Name= "Уплачено")]
+    public int FeePaid { get; }
+    [Display(Name = "Осталось")]
+    public int FeeDue { get; }
+
     public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
@@ -128,6 +133,8 @@ namespace JoinRpg.Web.Models
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;
       Fields = new CustomFieldsViewModel(currentUserId, claim);
+      FeePaid = claim.ClaimBalance();
+      FeeDue = claim.ClaimFeeDue();
     }
 
     public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
