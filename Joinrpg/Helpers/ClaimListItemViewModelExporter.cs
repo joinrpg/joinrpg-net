@@ -3,6 +3,7 @@ using System.Linq;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Helpers
 {
@@ -20,6 +21,8 @@ namespace JoinRpg.Web.Helpers
       yield return StringColumn(x => x.Name);
       yield return EnumColumn(x => x.ClaimStatus);
       yield return DateTimeColumn(x => x.UpdateDate);
+      yield return IntColumn(x => x.FeeDue);
+      yield return IntColumn(x => x.FeePaid);
       foreach (var c in ShortUserColumn(x => x.LastModifiedBy))
       {
         yield return c;
@@ -33,7 +36,7 @@ namespace JoinRpg.Web.Helpers
         yield return c;
       }
 
-      foreach (var projectField in Fields)
+      foreach (var projectField in Fields.Where(f => f.CanHaveValue()))
       {
         yield return
           FieldColumn(projectField.FieldName,
