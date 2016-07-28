@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Controllers
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
         Plot =
-          character.HasAnyAccess(CurrentUserIdOrDefault)
+          character.HasPlotViewAccess(CurrentUserIdOrDefault)
             ? character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault), character.CharacterId)
             : Enumerable.Empty<PlotElementViewModel>()
       };

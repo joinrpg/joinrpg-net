@@ -1,6 +1,6 @@
 ﻿@model JoinRpg.Web.Models.Plot.PlotFolderListItemViewModel
 @Html.ActionLink(Model.PlotFolderMasterTitle, "Edit", "Plot",  new { Model.PlotFolderId, Model.ProjectId }, null)
-@if (!string.IsNullOrWhiteSpace(Model.TodoField))
+@if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasEditAccess)
 {
     <span title="@Model.TodoField">TODO</span>
 }

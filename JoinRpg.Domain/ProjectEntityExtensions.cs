@@ -70,6 +70,12 @@ namespace JoinRpg.Domain
       return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
     }
 
+    public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
+    {
+      return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
+             (character.Project.Details?.PublishPlot ?? false);
+    }
+
     public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
     {
       return claim.PlayerUserId == currentUserIdOrDefault;
