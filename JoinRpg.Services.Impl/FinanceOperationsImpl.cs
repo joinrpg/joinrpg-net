@@ -25,7 +25,7 @@ namespace JoinRpg.Services.Impl
 
       paymentType.EnsureActive();
 
-      if (operationDate > now.AddDays(1))//TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
+      if (operationDate > now.AddDays(1)) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
       {
         throw new CannotPerformOperationInFuture();
       }
@@ -154,6 +154,43 @@ namespace JoinRpg.Services.Impl
         }
       }
       paymentType.IsDefault = isDefault;
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateFeeSetting(int projectId, int currentUserId, int fee, DateTime startDate)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+      if (startDate < DateTime.UtcNow) 
+      {
+        throw new CannotPerformOperationInPast();
+      }
+
+      project.ProjectFeeSettings.Add(new ProjectFeeSetting()
+      {
+        Fee = fee,
+        StartDate = startDate,
+        ProjectId = projectId
+      });
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteFeeSetting(int projectid, int currentUserId, int projectFeeSettingId)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+      var feeSetting = project.ProjectFeeSettings.Single(pt => pt.ProjectFeeSettingId == projectFeeSettingId);
+
+      if (feeSetting.StartDate < DateTime.UtcNow)
+      {
+        throw new CannotPerformOperationInPast();
+      }
+
+      UnitOfWork.GetDbSet<ProjectFeeSetting>().Remove(feeSetting);
 
       await UnitOfWork.SaveChangesAsync();
     }

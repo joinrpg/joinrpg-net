@@ -1,10 +1,10 @@
-﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Models
 @model FinanceSetupViewModel
 
 @{
-    ViewBag.Title = "Настройка финансов проекта " + Model.ProjectName;
-    var first = Model.PaymentTypes.FirstOrDefault();
+  ViewBag.Title = "Настройка финансов проекта " + Model.ProjectName;
+  var first = Model.PaymentTypes.FirstOrDefault();
+  var firstFee = Model.FeeSettings.FirstOrDefault();
 }
 
 <h2>@ViewBag.Title</h2>
@@ -19,7 +19,57 @@
         </div>
         <div class="panel-collapse collapse" id="setupFee" role="tabpanel">
             <div class="panel-body">
-                <p>К сожалению, это пока не реализовано. Обратитесь в поддержку, чтобы настроить взнос.</p>
+                <p>Изменение взноса не влияет на уже оплаченные заявки. Возможно удалить только взнос, который еще не вступил в силу.</p>
+                <table class="table">
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => firstFee.Fee)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => firstFee.StartDate)
+                        </th>
+                        <th></th>
+                    </tr>
+
+                    @foreach (var item in Model.FeeSettings)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Fee)
+                            </td>
+                            <td>
+                                @item.StartDate.ToShortDateString()
+                            </td>
+                            <td>
+                                @if (item.IsActual && Model.HasEditAccess)
+                                {
+                                <button type="button" class="btn btn-danger btn-sm"
+                                        data-toggle="modal"
+                                        data-target="#deleteFeeSetting"
+                                        data-element="@item.ProjectFeeSettingId"
+                                        >
+                                    <span class="glyphicon glyphicon-trash"></span>Удалить..
+                                </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (Model.HasEditAccess)
+                    {
+                        <tr>
+                            <td>
+                                <button type="button" class="btn btn-success"
+                                        data-toggle="modal"
+                                        data-target="#addFeeSettingModal">
+                                    <span class="glyphicon glyphicon-plus"></span>Добавить новый размер взноса ...
+                                </button>
+                            </td>
+                            <td></td>
+                            <td></td>
+
+                        </tr>
+                    }
+                </table>
             </div>
         </div>
     </div>
@@ -72,7 +122,7 @@
                                 @Html.DisplayFor(modelItem => item.Master)
                                 @if (item.IsDefault)
                                 {
-                                <div class="label label-default">По умолчанию</div>
+                                    <div class="label label-default">По умолчанию</div>
                                 }
                             </td>
                             @if (Model.HasEditAccess)
@@ -118,6 +168,36 @@
     </div>
 </div>
 
+<div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("CreateFeeSetting", "Finances", FormMethod.Post))
+            {
+                var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId};
+
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
+            </div>
+                <div class="modal-body">
+                    <p>
+                        Выберите размер взноса и с какого числа он вступает в силу.
+                    </p>
+
+                    @Html.Partial("CreateFeeSettingPartial", localModel)
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
+                </div>
+            }
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+
 <div class="modal fade" id="addPaymentTypeModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -153,18 +233,39 @@
 <div class="modal fade" id="deleteElementModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("TogglePaymentType", "Finances", new { Model.ProjectId }, FormMethod.Post))
+            @using (Html.BeginForm("TogglePaymentType", "Finances", new {Model.ProjectId}, FormMethod.Post))
             {
-            <input type="hidden" name="paymentTypeId" id="elementId" value="0" />
+                <input type="hidden" name="paymentTypeId" id="elementId" value="0"/>
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">Удаление метода оплаты</h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-default" id="submit-button">Удалить</button>
+                </div>
+            }
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="deleteFeeSetting" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("DeleteFeeSetting", "Finances", new { Model.ProjectId }, FormMethod.Post))
+            {
+            <input type="hidden" name="projectFeeSettingId" id="elementId" value="0" />
             @Html.AntiForgeryToken()
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="deleteTitle">Удаление метода оплаты</h4>
+                <h4 class="modal-title" id="deleteTitle">Удаление размера взноса</h4>
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button type="submit" class="btn btn-default" id="submit-button">Удалить</button>
+                <button type="submit" class="btn btn-danger" id="submit-button">Удалить</button>
             </div>
             }
         </div><!-- /.modal-content -->
@@ -185,5 +286,14 @@
                         .text(button.data('actionname') + ' метод оплаты «' + button.data('name') + '»');
                     modal.find("#submit-button").text(button.data('actionname'));
                 });
+
+        $('#deleteFeeSetting')
+           .on('show.bs.modal',
+               function (event) {
+                   var button = $(event.relatedTarget);
+                   var plotElementId = button.data('element');
+                   var modal = $(this);
+                   modal.find('#elementId').val(plotElementId);
+               });
     </script>
 }

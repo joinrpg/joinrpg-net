@@ -178,5 +178,48 @@ namespace JoinRpg.Web.Controllers
         return View(viewModel);
       }
     }
+
+    public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
+    {
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
+      if (errorResult != null)
+      {
+        return errorResult;
+      }
+
+      try
+      {
+        await FinanceService.CreateFeeSetting(viewModel.ProjectId, CurrentUserId, viewModel.Fee, viewModel.StartDate);
+        return RedirectToAction("Setup", new { viewModel.ProjectId });
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Setup", new { viewModel.ProjectId });
+      }
+    }
+
+    [HttpPost,ValidateAntiForgeryToken]
+    public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
+      if (errorResult != null)
+      {
+        return errorResult;
+      }
+
+      try
+      {
+        await FinanceService.DeleteFeeSetting(projectid, CurrentUserId, projectFeeSettingId);
+        return RedirectToAction("Setup", new { projectid });
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Setup", new { projectid });
+      }
+    }
   }
 }

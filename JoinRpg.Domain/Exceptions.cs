@@ -59,6 +59,14 @@ namespace JoinRpg.Domain
     }
   }
 
+  public class CannotPerformOperationInPast : JoinRpgBaseException
+  {
+    public CannotPerformOperationInPast() : base("Cannot perform operation in past")
+    {
+    }
+  }
+
+
   public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
   {
     public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")

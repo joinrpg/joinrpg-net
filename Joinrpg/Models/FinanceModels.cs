@@ -145,6 +145,8 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; }
     public IReadOnlyList<PaymentTypeListItemViewModel> PaymentTypes { get; }
 
+    public IReadOnlyList<ProjectFeeSettingListItemViewModel> FeeSettings { get; }
+
     public bool HasEditAccess { get; }
     public int ProjectId { get; }
     [ReadOnly(true)]
@@ -170,6 +172,8 @@ namespace JoinRpg.Web.Models
           .ThenBy(li => li.Name)
           .ToList();
       Masters = project.GetMasterListViewModel();
+
+      FeeSettings = project.ProjectFeeSettings.Select(fs => new ProjectFeeSettingListItemViewModel(fs)).ToList();
     }
   }
 
@@ -215,8 +219,33 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public static class FinanceDisplayExtensions
+  public abstract class ProjectFeeSettingViewModelBase
   {
-   
+    [Display(Name="Размер взноса")]
+    public int Fee { get; set; }
+    [Display(Name = "Действует с")]
+    public DateTime StartDate { get; set; }
+
+    public int ProjectId { get; set; }
+  }
+
+  public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
+  {
+    
+  }
+
+  public class ProjectFeeSettingListItemViewModel : ProjectFeeSettingViewModelBase
+  {
+    public bool IsActual { get; }
+    public int ProjectFeeSettingId { get; }
+
+    public ProjectFeeSettingListItemViewModel(ProjectFeeSetting fs)
+    {
+      Fee = fs.Fee;
+      StartDate = fs.StartDate;
+      IsActual = fs.StartDate > DateTime.UtcNow;
+      ProjectFeeSettingId = fs.ProjectFeeSettingId;
+      ProjectId = fs.ProjectId;
+    }
   }
 }
