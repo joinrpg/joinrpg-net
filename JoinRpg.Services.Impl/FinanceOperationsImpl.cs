@@ -80,5 +80,82 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
 
     }
+
+    public async Task CreateCashPaymentType(int projectid, int currentUserId, int targetUserId)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(targetUserId);
+
+      var targetMaster = project.ProjectAcls.Single(a => a.UserId == targetUserId);
+
+      if (targetMaster.GetCashPaymentType() != null)
+      {
+        throw new JoinRpgInvalidUserException();
+      }
+
+      project.PaymentTypes.Add(PaymentType.CreateCash(targetMaster.UserId));
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task TogglePaymentActivness(int projectid, int currentUserId, int paymentTypeId)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+      var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
+
+      if (paymentType.IsActive)
+      {
+        SmartDelete(paymentType);
+      }
+      else
+      {
+        paymentType.IsActive = true;
+      }
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateCustomPaymentType(int projectId, int currentUserId, string name, int targetMasterId)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(targetMasterId);
+
+      project.PaymentTypes.Add(new PaymentType()
+      {
+        IsActive = true,
+        IsCash = false,
+        IsDefault = project.PaymentTypes.All(pt => !pt.IsDefault),
+        Name = Required(name),
+        UserId = targetMasterId,
+        ProjectId = projectId
+      });
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task EditCustomPaymentType(int projectId, int currentUserId, int paymentTypeId, string name, bool isDefault)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
+      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+      var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
+
+      paymentType.IsActive = true;
+      paymentType.Name = Required(name);
+
+      if (isDefault && !paymentType.IsDefault)
+      {
+        foreach (var oldDefault in project.PaymentTypes.Where(pt => pt.IsDefault))
+        {
+          oldDefault.IsDefault = false;
+        }
+      }
+      paymentType.IsDefault = isDefault;
+
+      await UnitOfWork.SaveChangesAsync();
+    }
   }
 }

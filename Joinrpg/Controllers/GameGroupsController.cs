@@ -258,13 +258,13 @@ namespace JoinRpg.Web.Controllers
       }, group));
     }
 
-    private static IEnumerable<MasterListItemViewModel>  GetMasters(IClaimSource @group, bool includeSelf)
+    private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource @group, bool includeSelf)
     {
-      return MasterListItemViewModel.FromProject(@group.Project)
+      return group.Project.GetMasterListViewModel()
         .Union(new MasterListItemViewModel()
         {
           Id = "-1",
-          Name = "По умолчанию: " + GetDefaultResponsible(@group, includeSelf)
+          Name = "По умолчанию: " + GetDefaultResponsible(group, includeSelf)
         }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
     }
 

@@ -139,7 +139,7 @@ namespace JoinRpg.Web.Controllers
         OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count(),
         Description = new MarkdownViewModel(claim.Character?.Description),
         Masters =
-          MasterListItemViewModel.FromProject(claim.Project)
+          claim.Project.GetMasterListViewModel()
             .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
         ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
         ResponsibleMaster = claim.ResponsibleMasterUser,

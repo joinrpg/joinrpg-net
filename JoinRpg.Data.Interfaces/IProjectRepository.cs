@@ -27,6 +27,7 @@ namespace JoinRpg.Data.Interfaces
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
     Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId);
     Task<Project> GetProjectWithFinances(int projectid);
+    Task<Project> GetProjectForFinanceSetup(int projectid);
     Task<ICollection<Character>> GetCharacters(int projectId);
     Task<IEnumerable<Project>>  GetProjectsWithoutAllrpgAsync();
   }

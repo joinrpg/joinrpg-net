@@ -44,8 +44,11 @@ namespace JoinRpg.Web.Models
   {
     public string Id { get; set; }
     public string Name { get; set; }
+  }
 
-    public static IEnumerable<MasterListItemViewModel> FromProject(Project project)
+  public static class MasterListExtensions
+  {
+    public static IEnumerable<MasterListItemViewModel> GetMasterListViewModel(this Project project)
     {
       return project.ProjectAcls.Select(
         acl => new MasterListItemViewModel() {Id = acl.UserId.ToString(), Name = acl.User.DisplayName}).OrderBy(a => a.Name);

@@ -1,8 +1,189 @@
-﻿@model dynamic
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
+@model FinanceSetupViewModel
 
 @{
-    ViewBag.Title = "Настройка финансов проекта";
+    ViewBag.Title = "Настройка финансов проекта " + Model.ProjectName;
+    var first = Model.PaymentTypes.FirstOrDefault();
 }
 
 <h2>@ViewBag.Title</h2>
-<p>К сожалению, это пока не реализовано. Обратитесь в поддержку, чтобы настроить взнос и дополнительные способы приема оплаты.</p>
+<div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>
+                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#setupFee">
+                    Взнос и сроки
+                </a>
+            </h4>
+        </div>
+        <div class="panel-collapse collapse" id="setupFee" role="tabpanel">
+            <div class="panel-body">
+                <p>К сожалению, это пока не реализовано. Обратитесь в поддержку, чтобы настроить взнос.</p>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>
+                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#setupPayment">
+                    Методы оплаты
+                </a>
+            </h4>
+
+        </div>
+        <div class="panel-collapse collapse" role="tabpanel" id="setupPayment">
+            <div class="panel-body">
+
+                @if (Model.HasEditAccess)
+                {
+                    <p>
+                        <button type="button" class="btn btn-success"
+                                data-toggle="modal"
+                                data-target="#addPaymentTypeModal">
+                            <span class="glyphicon glyphicon-plus"></span>Добавить способ оплаты...
+                        </button>
+                    </p>
+                }
+                <table class="table">
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => first.Name)
+                        </th>
+                        @if (Model.HasEditAccess)
+                        {
+                            <th></th>
+                        }
+                    </tr>
+
+                    @foreach (var item in Model.PaymentTypes)
+                    {
+                        <tr>
+                            <td class="@(item.IsActive ? "" : "deleted")">
+                                @if (item.IsCash)
+                                {<text>
+                                     Наличными
+                                 </text>
+                                }
+                                else
+                                {
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                }
+                                @Html.DisplayFor(modelItem => item.Master)
+                                @if (item.IsDefault)
+                                {
+                                <div class="label label-default">По умолчанию</div>
+                                }
+                            </td>
+                            @if (Model.HasEditAccess)
+                            {
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        if (!item.IsCash)
+                                        {
+                                            <a href="@Url.Action("EditPaymentType", new {item.ProjectId, item.PaymentTypeId})" class="btn btn-default">Изменить</a>
+                                        }
+                                        var deleteActionName = item.CanBePermanentlyDeleted ? "Удалить" : "Выключить";
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                data-toggle="modal"
+                                                data-target="#deleteElementModal"
+                                                data-element="@item.PaymentTypeId"
+                                                data-name="@item.Name"
+                                                data-actionname="@deleteActionName">
+                                            @deleteActionName
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        var id = item.PaymentTypeId ?? -item.Master.UserId;
+                                        <button type="button" class="btn btn-default btn-sm"
+                                                data-toggle="modal"
+                                                data-target="#deleteElementModal"
+                                                data-element="@id"
+                                                data-name="@item.Name"
+                                                data-actionname="Включить">
+                                            Включить
+                                        </button>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addPaymentTypeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("CreatePaymentType", "Finances", FormMethod.Post))
+            {
+                var localModel = new CreatePaymentTypeViewModel() {ProjectId = Model.ProjectId, Masters = Model.Masters};
+
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">Добавление безналичного метода оплаты</h4>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Выберите название и ответственного за это мастера.
+                    </p>
+
+                    @Html.Partial("CreatePaymentTypePartial", localModel)
+
+                   
+
+                </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
+            </div>
+            }
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="deleteElementModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("TogglePaymentType", "Finances", new { Model.ProjectId }, FormMethod.Post))
+            {
+            <input type="hidden" name="paymentTypeId" id="elementId" value="0" />
+            @Html.AntiForgeryToken()
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="deleteTitle">Удаление метода оплаты</h4>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-default" id="submit-button">Удалить</button>
+            </div>
+            }
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+@section scripts {
+    <script type="text/javascript" defer>
+        $('#deleteElementModal')
+            .on('show.bs.modal',
+                function(event) {
+                    var button = $(event.relatedTarget);
+                    var plotElementId = button.data('element');
+                    var modal = $(this);
+                    modal.find('#elementId').val(plotElementId);
+
+                    modal.find("#deleteTitle")
+                        .text(button.data('actionname') + ' метод оплаты «' + button.data('name') + '»');
+                    modal.find("#submit-button").text(button.data('actionname'));
+                });
+    </script>
+}
