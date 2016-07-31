@@ -247,7 +247,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
       bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
-      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
+      bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
@@ -268,33 +268,12 @@ namespace JoinRpg.Services.Impl
       acl.CanChangeProjectProperties = canChangeProjectProperties;
       acl.CanManageClaims = canApproveClaims;
       acl.CanEditRoles = canEditRoles;
-      acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
       acl.CanSendMassMails = canSendMassMails;
       acl.CanManagePlots = canManagePlots;
 
-      UpdatePaymentTypes(acl);
-
       await UnitOfWork.SaveChangesAsync();
     }
-
-    private void UpdatePaymentTypes(ProjectAcl acl)
-    {
-      var cashPaymentType = acl.GetPaymentTypes().SingleOrDefault(pt => pt.IsCash);
-
-      //User now can accept cash and should have his "payment type"
-      if (acl.CanAcceptCash && cashPaymentType == null)
-      {
-        acl.Project.PaymentTypes.Add(PaymentType.CreateCash(acl.UserId));
-      }
-
-      //User now can't accept cash , try to delete payment type if we don't need it anymore
-      if (!acl.CanAcceptCash && cashPaymentType != null)
-      {
-        SmartDelete(cashPaymentType);
-      }
-    }
-
 
     public async Task RemoveAccess(int projectId, int currentUserId, int userId)
     {
@@ -308,7 +287,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights,
       bool canChangeFields, bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles,
-      bool canAcceptCash, bool canManageMoney, bool canSendMassMails, bool canManagePlots)
+      bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
@@ -319,12 +298,9 @@ namespace JoinRpg.Services.Impl
       acl.CanChangeProjectProperties = canChangeProjectProperties;
       acl.CanManageClaims = canApproveClaims;
       acl.CanEditRoles = canEditRoles;
-      acl.CanAcceptCash = canAcceptCash;
       acl.CanManageMoney = canManageMoney;
       acl.CanSendMassMails = canSendMassMails;
       acl.CanManagePlots = canManagePlots;
-
-      UpdatePaymentTypes(acl);
 
       await UnitOfWork.SaveChangesAsync();
     }

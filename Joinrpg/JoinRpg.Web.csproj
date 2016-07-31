@@ -574,6 +574,9 @@
     <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
     <Content Include="Views\Plot\EditElement.cshtml" />
     <Content Include="Views\Game\Close.cshtml" />
+    <Content Include="Views\Finances\CreatePaymentTypePartial.cshtml" />
+    <Content Include="Views\Finances\EditPaymentType.cshtml" />
+    <Content Include="Views\Finances\CreateFeeSettingPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -23,7 +23,6 @@
     public bool CanManageClaims { get; set; }
 
     public bool CanEditRoles { get; set; }
-    public bool CanAcceptCash { get; set; }
     public bool CanManageMoney { get; set; }
 
     public bool CanSendMassMails { get; set; }
@@ -41,7 +40,6 @@
         CanGrantRights =  true,
         CanManageClaims = true,
         CanEditRoles =  true,
-        CanAcceptCash = false, // Granter of this priv. has custom code, so better to grant is exp.
         CanManageMoney = true,
         CanSendMassMails = true,
       };

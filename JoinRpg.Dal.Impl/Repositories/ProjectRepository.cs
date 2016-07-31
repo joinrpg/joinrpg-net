@@ -154,6 +154,14 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(p => p.FinanceOperations.Select(fo => fo.Comment.Author))
         .SingleOrDefaultAsync(p => p.ProjectId == projectid);
 
+    public Task<Project> GetProjectForFinanceSetup(int projectid)
+      => Ctx.ProjectsSet.Include(f => f.PaymentTypes)
+        .Include(p => p.Details)
+        .Include(p => p.ProjectAcls)
+        .Include(p => p.ProjectFeeSettings)
+        .Include(p => p.FinanceOperations)
+        .SingleOrDefaultAsync(p => p.ProjectId == projectid);
+
     public async Task<ICollection<Character>> GetCharacters(int projectId)
     {
       await LoadProjectFields(projectId);

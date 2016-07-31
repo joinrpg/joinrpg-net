@@ -29,9 +29,6 @@ namespace JoinRpg.Web.Models
     [Display(Name="Редактировать ролевку")]
     public bool CanEditRoles { get; set; }
 
-    [Display(Name = "Принимать взносы наличными")]
-    public bool CanAcceptCash { get; set; }
-
     [Display(Name = "Управлять финансами")]
     public bool CanManageMoney { get; set; }
 
@@ -62,7 +59,6 @@ namespace JoinRpg.Web.Models
         CanChangeProjectProperties = acl.CanChangeProjectProperties,
         CanGrantRights = acl.CanGrantRights,
         CanEditRoles = acl.CanEditRoles,
-        CanAcceptCash = acl.CanAcceptCash,
         CanManageMoney = acl.CanManageMoney,
         CanSendMassMails = acl.CanSendMassMails,
         CanManagePlots = acl.CanManagePlots,

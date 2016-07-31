@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -8,8 +7,9 @@ namespace JoinRpg.Domain
 {
   public static class FinanceExtensions
   {
-    public static int CurrentFee(this Project project)
+    public static int CurrentFee([NotNull] this Project project)
     {
+      if (project == null) throw new ArgumentNullException(nameof(project));
       return project.CurrentFee(DateTime.UtcNow);
     }
 
@@ -38,18 +38,6 @@ namespace JoinRpg.Domain
       return claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
     }
 
-    public static IEnumerable<PaymentType> GetPaymentTypes(this ProjectAcl acl)
-    {
-      return acl.Project.PaymentTypes.Where(pt => pt.UserId == acl.UserId);
-    }
-
-    //TODO[Localize]: JoinRpg.Domain should be localization-neutral. 
-    public static string GetDisplayName([NotNull] this PaymentType paymentType)
-    {
-      if (paymentType == null) throw new ArgumentNullException(nameof(paymentType));
-      return paymentType.IsCash ? "Наличными — " + paymentType.User.DisplayName : paymentType.Name;
-    }
-
     public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
       if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
@@ -73,6 +61,11 @@ namespace JoinRpg.Domain
       {
         claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
       }
+    }
+
+    public static PaymentType GetCashPaymentType(this ProjectAcl acl)
+    {
+      return acl.Project.PaymentTypes.SingleOrDefault(pt => pt.UserId == acl.UserId && pt.IsCash);
     }
   }
 }

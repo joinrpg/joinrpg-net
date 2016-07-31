@@ -23,9 +23,12 @@
         <th>
             @Html.DisplayNameFor(model => firstItem.PlotFolderMasterTitle)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.Status)
-        </th>
+        @if (Model.HasEditAccess)
+        {
+            <th>
+                @Html.DisplayNameFor(model => firstItem.Status)
+            </th>
+        }
         <th>Вводные</th>
         <th></th>
     </tr>
@@ -35,10 +38,14 @@
         <td>
             @Html.DisplayFor(model => item)
         </td>
+        @if (Model.HasEditAccess)
+        {
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+        }
         <td>
-            @Html.DisplayFor(modelItem => item.Status)
-        </td>
-        <td>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")
+            @DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")
         </td>
         <td>
            @if (item.Status != PlotStatus.Deleted && item.HasEditAccess)
