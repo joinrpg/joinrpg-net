@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Controllers
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
           viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-          viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
+          viewModel.CanEditRoles, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {
@@ -108,7 +108,7 @@ namespace JoinRpg.Web.Controllers
         await
           ProjectService.ChangeAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
             viewModel.CanChangeFields, viewModel.CanChangeProjectProperties, viewModel.CanManageClaims,
-            viewModel.CanEditRoles, viewModel.CanAcceptCash, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
+            viewModel.CanEditRoles, viewModel.CanManageMoney, viewModel.CanSendMassMails, viewModel.CanManagePlots);
       }
       catch
       {

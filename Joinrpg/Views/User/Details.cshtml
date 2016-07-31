@@ -122,16 +122,6 @@
                         </div>
 
                         <div class="form-group">
-                            @Html.LabelFor(model => acl.CanAcceptCash, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanAcceptCash"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanAcceptCash, null, htmlFieldName: "CanAcceptCash")
-                                    @Html.ValidationMessageFor(model => acl.CanAcceptCash, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
                             @Html.LabelFor(model => acl.CanManageMoney, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanManageMoney"})
                             <div class="col-md-1">
                                 <div class="checkbox">
@@ -143,7 +133,7 @@
 
                         <div class="form-group">
                             @Html.LabelFor(model => acl.CanSendMassMails, htmlAttributes: new { @class = "control-label col-md-5", @for = "CanSendMassMails" })
-                            <div class="col-md-10">
+                            <div class="col-md-1">
                                 <div class="checkbox">
                                     @Html.EditorFor(model => acl.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
                                     @Html.ValidationMessageFor(model => acl.CanSendMassMails, "", new { @class = "text-danger" })
@@ -153,7 +143,7 @@
 
                         <div class="form-group">
                             @Html.LabelFor(model => acl.CanManagePlots, htmlAttributes: new { @class = "control-label col-md-5", @for = "CanManagePlots" })
-                            <div class="col-md-10">
+                            <div class="col-md-1">
                                 <div class="checkbox">
                                     @Html.EditorFor(model => acl.CanManagePlots, null, htmlFieldName: "CanManagePlots")
                                     @Html.ValidationMessageFor(model => acl.CanManagePlots, "", new { @class = "text-danger" })

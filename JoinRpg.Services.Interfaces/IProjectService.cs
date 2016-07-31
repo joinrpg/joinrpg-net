@@ -23,13 +23,13 @@ namespace JoinRpg.Services.Interfaces
     Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot);
 
     Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
-      bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney,
+      bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canManageMoney,
       bool canSendMassMails, bool canManagePlots);
 
     Task RemoveAccess(int projectId, int currentUserId, int userId);
 
     Task ChangeAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
-      bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canAcceptCash, bool canManageMoney,
+      bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canManageMoney,
       bool canSendMassMails, bool canManagePlots);
 
     Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue,
