@@ -1,11 +1,19 @@
 ﻿@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
+
+@if (!Model.HasEditAccess && Model.Status != PlotStatus.Completed)
+{
+    return;
+}
 <div class="panel panel-default">
     <div class="panel-heading">
 
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
-            @Html.DisplayFor(model => model.Status)
+            @if (Model.HasEditAccess)
+            {
+                @Html.DisplayFor(model => model.Status)
+            }
             @switch (Model.ElementType)
             {
                 case PlotElementTypeView.RegularPlot:
@@ -56,17 +64,17 @@
                    href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
 
                 if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
-                 {
-                     <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
-                         Опубликовать
-                     </button>
-                 }
+                {
+                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
+                        Опубликовать
+                    </button>
+                }
                 if (Model.Status != PlotStatus.Deleted)
-                 {
-                     <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
-                         Удалить
-                     </button>
-                 }
+                {
+                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                        Удалить
+                    </button>
+                }
                 <hr/>
             }
 
