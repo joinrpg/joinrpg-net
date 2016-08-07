@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 

@@ -9,6 +9,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
@@ -110,7 +111,7 @@ namespace JoinRpg.Web.Controllers
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
 
-    [HttpGet]
+    [HttpGet, Compress]
     public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -145,7 +146,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpGet]
+    [HttpGet, Compress]
     public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
