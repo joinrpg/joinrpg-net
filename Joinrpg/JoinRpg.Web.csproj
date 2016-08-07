@@ -311,6 +311,8 @@
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
+    <Content Include="external\joinrpg-api.css" />
+    <Content Include="external\joinrpg-api.js" />
     <Content Include="external\roles-1.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />

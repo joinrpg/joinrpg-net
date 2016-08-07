@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -78,7 +80,7 @@ namespace JoinRpg.Web.Controllers.Common
       DateTime isModifiedSince;
       return DateTime.TryParse(header, out isModifiedSince) && isModifiedSince.ToUniversalTime() > contentModified;
     }
-
+    
     protected bool CheckCache(DateTime characterTreeModifiedAt)
     {
       if (IsClientCached(characterTreeModifiedAt)) return true;
@@ -89,6 +91,17 @@ namespace JoinRpg.Web.Controllers.Common
     protected static HttpStatusCodeResult NotModified()
     {
       return new HttpStatusCodeResult(304, "Page has not been modified");
+    }
+
+    protected string GetFullyQualifiedUri([AspMvcAction] string actionName, [AspMvcController] string controllerName, object routeValues)
+    {
+      if (Request.Url == null)
+      {
+        throw new InvalidOperationException("Request.Url is unexpectedly null");
+      }
+      return Request.Url.Scheme + "://" + Request.Url.Host +
+             (Request.Url.IsDefaultPort ? "" : $":{Request.Url.Port}") +
+             Url.Action(actionName, controllerName, routeValues);
     }
   }
 }

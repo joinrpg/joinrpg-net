@@ -8,21 +8,55 @@
 
 <p>На этой странице документированы различные способы встраивания сетки ролей на сайт.</p>
 <h3>Встраивание сетки ролей</h3>
-<h4>JSON API</h4>
+<h4>Javascript библиотека</h4>
 <p>
-    URL метода:
+    Добавьте на страницу код такого вида:
     <br />
+
     <code>
-        http://@Request.Url.Host@Url.Action("IndexJson", "GameGroups", new { ProjectId = "_projectId_", CharacterGroupId = "_characterGroupId_" })
+        &lt;div class="joinrpg-api" data-projectId="_projectId_" data-locationId="_characterGroupId_"&gt;Идет загрузка...&lt;/div&gt;
     </code>
+
     <br />
     Где _projectId_ — ид проекта, а _characterGroupId_ ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
-    Например, для текущего проекта вызов JSON API «получить вообще все роли в проекте» будет выглядеть как:
+    Например, для текущего проекта «получить вообще все роли в проекте» будет выглядеть как:
+    <br/>
+
+    <code>
+        &lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId"&gt;
+            Идет загрузка...
+        &lt;/div&gt;
+    </code>
+    <br />
+    И подключите скрипт:
     <br />
     <code>
-        http://@Request.Url.Host@Url.Action("IndexJson", "GameGroups", new { Model.ProjectId, Model.RootGroup.CharacterGroupId })
+        &lt;script type="text/javascript"
+        src="@(Request.Url.Scheme)://@Request.Url.Host@(Request.Url.IsDefaultPort ? "" : ":" + Request.Url.Port)/external/joinrpg-api.js"
+        async defer
+        &gt;&lt;/script&gt;
+        &lt;script type="text/javascript"
+        $(function() {
+        $('.joinrpg-api').joinrpgroles();
+        });
+        &gt;&lt;/script&gt;
     </code>
+    <br />
+    Также можно подключить дефолтные стили:
+    <br />
+    <code>
+        @(Request.Url.Scheme)://@Request.Url.Host@(Request.Url.IsDefaultPort ? "" : ":" + Request.Url.Port)/external/joinrpg-api.css
+    </code>
+    <br />
+    Пример результата:
+    <div class="panel panel-default">
+        <div class="panel-heading">Сетка ролей</div>
+        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId">
+            Идет загрузка...
+        </div>
+    </div>
 </p>
+
 <h3>Показ горячих ролей</h3>
 <h4>Javascript библиотека</h4>
 <p>
@@ -48,24 +82,17 @@
         </div>
     </div>
 </p>
-<h4>JSON API</h4>
-<details>
-    <summary>Использовать прямой вызов JSON не рекомендуется, т.к. реализована Javascript библиотека</summary>
-    <p>
-        URL метода:
-        <br/>
-        <code>
-            http://@Request.Url.Host@Url.Action("HotJson", "GameGroups", new {ProjectId = "_projectId_", CharacterGroupId = "_characterGroupId_"})
-        </code>
-        <br/>
-        Где _projectId_ — ид проекта, а _characterGroupId_ ид группы (см. выше).
-        <br/>
-        <code>
-            http://@Request.Url.Host@Url.Action("HotJson", "GameGroups", new {Model.ProjectId, Model.RootGroup.CharacterGroupId})
-        </code>
-    </p>
-</details>
 @section Scripts
 {
     <script type="text/javascript" src="~/external/roles-1.js" async defer></script>
+    <script type="text/javascript" src="~/external/joinrpg-api.js" async defer></script>
+    <script type="text/javascript">
+        $(function() {
+            $('.joinrpg-api').joinrpgroles();
+        });
+    </script>
+}
+@section styles
+{
+    <link href="~/external/joinrpg-api.css" rel="stylesheet"/>
 }
