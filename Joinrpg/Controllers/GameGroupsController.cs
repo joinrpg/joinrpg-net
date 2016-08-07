@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -139,7 +140,7 @@ namespace JoinRpg.Web.Controllers
                   Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
                   CanAddDirectClaim = g.IsAcceptingClaims,
                   DirectClaimsCount = g.AvaiableDirectSlots,
-                  DirectClaimLink = g.IsAcceptingClaims ? GetClaimLink("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
+                  DirectClaimLink = g.IsAcceptingClaims ? GetFullyQualifiedUri("AddForGroup", "Claim", new {field.ProjectId, g.CharacterGroupId}) : null,
                 }),
       });
     }
@@ -182,37 +183,35 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    private string GetClaimLink([AspMvcAction] string actionName, [AspMvcController] string controllerName, object routeValues)
-    {
-      if (Request.Url == null)
-      {
-        throw new InvalidOperationException("Request.Url is unexpectedly null");
-      }
-      return Request.Url.Scheme + "://" + Request.Url.Host + Url.Action(actionName, controllerName, routeValues);
-    }
-
     private ActionResult ReturnJson(object data)
     {
       ControllerContext.HttpContext.Response.AddHeader("Access-Control-Allow-Origin", "*");
-      return Json(
-        data, JsonRequestBehavior.AllowGet);
+      return new JsonResult()
+      {
+        Data = data,
+        ContentEncoding = Encoding.UTF8,
+        JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+        MaxJsonLength = int.MaxValue
+      };
     }
 
     private object ConvertCharacterToJson(CharacterViewModel ch)
     {
       return new
       {
-        ch.CharacterId,
+        ch.CharacterId, //TODO Remove
+        CharacterLink = GetFullyQualifiedUri("Details", "Character", new { ch.CharacterId }),
         ch.IsAvailable,
         ch.IsFirstCopy,
         ch.CharacterName,
         Description = ch.Description?.ToHtmlString(),
         PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-        PlayerId = ch.HidePlayer ? null : ch.Player?.Id,
+        PlayerId = ch.HidePlayer ? null : ch.Player?.Id, //TODO Remove
+        PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {UserId =  ch.Player?.Id }),
         ch.ActiveClaimsCount,
         ClaimLink =
           ch.IsAvailable
-            ? GetClaimLink("AddForCharacter", "Claim", new {ch.ProjectId, ch.CharacterId})
+            ? GetFullyQualifiedUri("AddForCharacter", "Claim", new {ch.ProjectId, ch.CharacterId})
             : null,
       };
     }
@@ -258,7 +257,7 @@ namespace JoinRpg.Web.Controllers
       }, group));
     }
 
-    private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource @group, bool includeSelf)
+    private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
     {
       return group.Project.GetMasterListViewModel()
         .Union(new MasterListItemViewModel()
