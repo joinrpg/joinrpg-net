@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
@@ -62,13 +61,12 @@ namespace JoinRpg.Web.Models.Plot
   {
     public MarkdownViewModel Summary { get; }
     public IEnumerable<PlotElementViewModel> Elements { get; }
-    public string ElementTodos { get; }
+    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 
     public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
     {
       Summary = new MarkdownViewModel(folder.MasterSummary);
-      Elements = folder.Elements.ToViewModels(hasMasterAccess: true);
-      ElementTodos = folder.Elements.Select(e => e.Texts.TodoField).WhereNotNullOrWhiteSpace().JoinStrings("\n");
+      Elements = folder.Elements.ToViewModels(currentUserId);
     }
   }
 

@@ -76,12 +76,12 @@
                     </button>
                 }
                 <hr/>
+                if (!string.IsNullOrWhiteSpace(Model.TodoField))
+                {
+                    <p><b style="color: orange">TODO:</b> @Model.TodoField</p>
+                }
             }
-
-            @if (!string.IsNullOrWhiteSpace(Model.TodoField))
-            {
-                <p><b style="color: orange">TODO:</b> @Model.TodoField</p>
-            }
+            
             @{
                 var hideClassName = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
             }

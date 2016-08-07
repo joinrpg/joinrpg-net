@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -45,10 +46,15 @@ namespace JoinRpg.Web.Controllers
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
         Plot =
           character.HasPlotViewAccess(CurrentUserIdOrDefault)
-            ? character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault), character.CharacterId)
+            ? await ShowPlotsForCharacter(character)
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);
+    }
+
+    private async Task<IEnumerable<PlotElementViewModel>> ShowPlotsForCharacter(Character character)
+    {
+      return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(CurrentUserIdOrDefault, character);
     }
 
     [HttpGet, Authorize]
