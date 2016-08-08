@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -47,16 +48,18 @@ namespace JoinRpg.Web.Models.Print
     public CustomFieldsViewModel Fields { get; }
     public bool RegistrationOnHold => FeeDue > 0 && Plots.Any(item => item.Status == PlotStatus.InWork);
 
-    public PrintCharacterViewModel (int currentUserId, Character character, IReadOnlyCollection<PlotElement> plots)
+    public PrintCharacterViewModel 
+      (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots)
       : base(character)
     {
-      
+      if (character == null) throw new ArgumentNullException(nameof(character));
+
       CharacterDescription = new MarkdownViewModel(character.Description);
       
       var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
       Plots =
         plotElements
-          .ToViewModels(character.HasMasterAccess(currentUserId), character.CharacterId)
+          .ToViewModels(currentUserId, character)
           .ToArray();
 
       Handouts =

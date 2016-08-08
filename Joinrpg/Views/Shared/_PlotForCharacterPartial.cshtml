@@ -13,7 +13,7 @@
         </div>
         <div id="collapseOne" class="panel-collapse collapse in" aria-labelledby="headingOne">
             <div class="panel-body">
-                @if (Model.Any(item => item.Status == PlotStatus.InWork && !item.HasMasterAccess))
+                @if (Model.Any(item => item.Status == PlotStatus.InWork && item.HasPlayerAccess))
                 {
                 <p>
                     <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
