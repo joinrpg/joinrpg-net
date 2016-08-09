@@ -20,6 +20,9 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount()
       => await ActiveProjects.Include(p=> p.Claims).ToListAsync();
 
+    public async Task<IEnumerable<Project>> GetArchivedProjectsWithClaimCount()
+     => await AllProjects.Include(p => p.Claims).Where(p => !p.Active).ToListAsync();
+
     public async Task<IEnumerable<Project>> GetAllProjectsWithClaimCount() 
       => await AllProjects.Include(p=> p.Claims).ToListAsync();
 

@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Controllers
         Player = character.ApprovedClaim?.Player,
         HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
         ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
-        HidePlayer = character.HidePlayerForCharacter,
+        HidePlayer = character.HidePlayerForCharacter && !character.Project.IsPlotPublished(),
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
         Plot =

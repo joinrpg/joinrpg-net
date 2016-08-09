@@ -22,13 +22,13 @@ namespace JoinRpg.Web.Controllers
     private async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)
     {
       var allProjects = showInactive
-        ? await _projectRepository.GetAllProjectsWithClaimCount()
+        ? await _projectRepository.GetArchivedProjectsWithClaimCount()
         : await _projectRepository.GetActiveProjectsWithClaimCount();
 
       var projects =
         allProjects
         .Select(p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault))
-        .Where(p => showInactive || p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
+        .Where(p => (showInactive && p.ClaimCount > 0) || p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
         .ToList();
 
       var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(

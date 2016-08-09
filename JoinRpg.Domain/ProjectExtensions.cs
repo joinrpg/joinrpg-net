@@ -9,5 +9,10 @@ namespace JoinRpg.Domain
     {
       project.CharacterTreeModifiedAt = DateTime.UtcNow;
     }
+
+    public static bool IsPlotPublished(this Project project)
+    {
+      return (project.Details?.PublishPlot ?? false);
+    }
   }
 }

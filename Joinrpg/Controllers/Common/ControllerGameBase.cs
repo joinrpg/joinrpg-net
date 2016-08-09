@@ -79,7 +79,7 @@ namespace JoinRpg.Web.Controllers.Common
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
           Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          BigGroups = bigGroups.Where(cg => cg.IsPublic).Select(cg => new CharacterGroupLinkViewModel(cg)),
+          BigGroups = bigGroups.Where(cg => cg.IsPublic || project.IsPlotPublished()).Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,

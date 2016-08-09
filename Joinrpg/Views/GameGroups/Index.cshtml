@@ -60,7 +60,7 @@
 
                 @item.Description
                 <ul>
-                    @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
+                    @foreach (var character in item.ActiveCharacters)
                     {
                         <li>
                             @Html.Partial("_CharacterPartial", character)

@@ -161,13 +161,11 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-
-      var hasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault);
       return ReturnJson(new
       {
         field.Project.ProjectId,
         Groups =
-          new CharacterTreeBuilder(field, hasMasterAccess).Generate()
+          new CharacterTreeBuilder(field, CurrentUserId).Generate()
             .Where(g => includeSpecial || !g.IsSpecial)
             .Select(
               g =>
