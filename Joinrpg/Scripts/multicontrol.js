@@ -1022,11 +1022,13 @@ MultiControl.App.prototype.loadData = function (url) {
     var sender = this;
     this.MultilistView.setLoading();
     this.AutocompleteView.setLoading();
+    this.InputView.setLoading();
     $.ajax({
         url: url,
         type: 'GET',
         dataType: 'json',
         success: function (data) {
+            sender.InputView.unsetLoading();
             sender.processData(data.Groups);
             var was_opened = sender.draw();
             sender.initAutocomplete();
@@ -1241,11 +1243,13 @@ MultiControl.App.prototype.initAutocomplete = function () {
         }
     }
 
-    for (i = 0, keys = Object.keys(this.CharacterList), max = keys.length; i < max; i++) {
-        words = this.CharacterList[keys[i]].getName().split(' ');
-        for (j = 0; j < words.length; j++) {
-            if (words[j].length >= 2) {
-                this.Trie.add(words[j], this.CharacterList[keys[i]]);
+    if (this.Settings.showcharacters) {
+        for (i = 0, keys = Object.keys(this.CharacterList), max = keys.length; i < max; i++) {
+            words = this.CharacterList[keys[i]].getName().split(' ');
+            for (j = 0; j < words.length; j++) {
+                if (words[j].length >= 2) {
+                    this.Trie.add(words[j], this.CharacterList[keys[i]]);
+                }
             }
         }
     }
@@ -1878,8 +1882,9 @@ MultiControl.Views.AutocompleteView = function (el, isMultiselect, actionManager
         $el.children('ul').append('<li class="mcl-autocomplete-block mcl-autocomplete-group"><span>Группы</span>' +
             '<ul></ul></li>');
         var groups_ul = $el.find('.mcl-autocomplete-group').find('ul');
-        $el.children('ul').append('<li class="mcl-autocomplete-block mcl-autocomplete-character"><span>Персонажи</span>' +
-            '<ul></ul></li>');
+        $el.children('ul')
+            .append('<li class="mcl-autocomplete-block mcl-autocomplete-character"><span>Персонажи</span>' +
+                '<ul></ul></li>');
         var characters_ul = $el.find('.mcl-autocomplete-character').find('ul');
         for (var i = 0, max = data.length; i < max; i++) {
             var view = new MultiControl.Views.AutocompleteLiView(data[i], is_multiselect, action_manager);
@@ -2023,6 +2028,15 @@ MultiControl.Views.InputView = function (input, inputmodel, actionManager) {
         disabled = false;
         $el.find('input').prop('disabled', false);
     };
+
+    this.setLoading = function () {
+        $el.find('input').val('Загружается...');
+    };
+
+    this.unsetLoading = function () {
+        $el.find('input').val('');
+    };
+
     $el.on('click', function (event) {
         if (!disabled) {
             if (action_manager.createRequest('autocomplete_is_hidden').trigger() &&

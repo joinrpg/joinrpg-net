@@ -9,14 +9,14 @@
 
 @foreach (var item in Model.Folders)
 {
-    if (Model.InWorkOnly && string.IsNullOrWhiteSpace(item.TodoField) && item.Elements.All(e => !e.HasWorkTodo))
+    if (Model.InWorkOnly && !item.HasWorkTodo)
     {
         continue;
     }
     <div style="page-break-inside: avoid">
         <h2>@item.PlotFolderMasterTitle</h2>
         <p>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</p>
-        @if (!string.IsNullOrWhiteSpace(item.TodoField))
+        @if (!string.IsNullOrWhiteSpace(item.TodoField) && item.HasEditAccess)
         {
         <p><b>Доделать</b>: @item.TodoField</p>
         }
