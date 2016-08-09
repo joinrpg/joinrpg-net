@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
 {
   public static class WorldObjectExtensions
   {
-    public static bool IsVisible(this IWorldObject cg, int? currentUserId)
+    public static bool IsVisible([NotNull] this IWorldObject cg, int? currentUserId)
     {
-      return cg.IsPublic || cg.HasMasterAccess(currentUserId);
+      if (cg == null) throw new ArgumentNullException(nameof(cg));
+      return cg.IsPublic || cg.Project.IsPlotPublished() || cg.HasMasterAccess(currentUserId);
     }
   }
 }

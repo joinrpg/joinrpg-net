@@ -15,12 +15,10 @@ namespace JoinRpg.Web.Models.Characters
 
     private IList<CharacterTreeItem> Results { get; } = new List<CharacterTreeItem>();
 
-    private bool HasMasterAccess { get; }
-
-    public CharacterTreeBuilder(CharacterGroup root, bool hasMasterAccess)
+    public CharacterTreeBuilder(CharacterGroup root, int? currentUserId)
     {
       Root = root;
-      HasMasterAccess = hasMasterAccess;
+      CurrentUserId = currentUserId;
     }
 
     [MustUseReturnValue]
@@ -36,7 +34,7 @@ namespace JoinRpg.Web.Models.Characters
       {
         DeepLevel = deepLevel,
         FirstCopy = !AlreadyOutputedGroups.Contains(characterGroup.CharacterGroupId),
-        Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && (c.IsPublic || HasMasterAccess)).Select(GenerateCharacter).ToList(),
+        Characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).Select(GenerateCharacter).ToList(),
         Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
         IsSpecial = characterGroup.IsSpecial,
       };
@@ -54,7 +52,7 @@ namespace JoinRpg.Web.Models.Characters
 
       var childs = new List<CharacterTreeItem>();
 
-      foreach (var childGroup in characterGroup.GetOrderedChildGroups().Where(c => c.IsActive && (c.IsPublic || HasMasterAccess)))
+      foreach (var childGroup in characterGroup.GetOrderedChildGroups().Where(c => c.IsActive && (c.IsVisible(CurrentUserId))))
       {
         var characterGroups = pathToTop.Union(new[] { characterGroup }).ToList();
         var child = GenerateFrom(childGroup, deepLevel + 1, characterGroups);
@@ -65,6 +63,8 @@ namespace JoinRpg.Web.Models.Characters
 
       return vm;
     }
+
+    private int? CurrentUserId { get; }
 
     private CharacterLinkViewModel GenerateCharacter(Character arg)
     {
