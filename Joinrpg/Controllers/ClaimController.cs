@@ -185,13 +185,12 @@ namespace JoinRpg.Web.Controllers
         claimViewModel.ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(CurrentUserId));
       }
 
-      if (claim.IsApproved)
+      if (claim.IsApproved && claim.Character != null)
       {
         var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
         
         claimViewModel.Plot =
-          // ReSharper disable once PossibleNullReferenceException
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(claim.HasMasterAccess(CurrentUserId), claim.Character.CharacterId);
+          claim.Character.GetOrderedPlots(plotElements).ToViewModels(CurrentUserId, claim.Character);
       }
       else
       {

@@ -13,32 +13,38 @@
 
 @if (Model.HasMasterAccess)
 {
-    <div>
-        @Html.DisplayFor(model => model.Status)
-        @Html.ActionLink("Изменить", "Edit", "Plot", new { Model.PlotFolderId, Model.ProjectId }, null)
-        @if (Model.CharacterId != null)
+<div>
+    @Html.DisplayFor(model => model.Status)
+    @Html.ActionLink("Изменить", "Edit", "Plot", new { Model.PlotFolderId, Model.ProjectId }, null)
+    @if (Model.CharacterId != null)
         {
-        @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
-        }
-        <br/>
-        <b>Для</b>
-        @if (Model.TargetsForDisplay.Any())
-        {
-            foreach (var target in Model.TargetsForDisplay)
-            {
-                @Html.DisplayFor(model => target)
-            }
-        }
-        else
-        {
-            <span>Не установлено</span>
-        }
-        @if (!string.IsNullOrWhiteSpace(Model.TodoField))
-        {
-        <p><b>Доделать</b>: @Model.TodoField</p>
-        }
-    </div>
+    @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+    }
+</div>
 }
+
+@if (Model.HasMasterAccess || Model.PublishMode)
+{
+    <br/>
+    <b>Для</b>
+    if (Model.TargetsForDisplay.Any())
+    {
+        foreach (var target in Model.TargetsForDisplay)
+        {
+            @Html.DisplayFor(model => target)
+        }
+    }
+    else
+    {
+        <span>Не установлено</span>
+    }
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasMasterAccess)
+{
+    <p><b>Доделать</b>: @Model.TodoField</p>
+}
+
 <div class="@hideClass">
     @Html.DisplayFor(model => Model.Content)
 </div>

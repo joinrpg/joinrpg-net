@@ -60,13 +60,15 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static bool HasPlayerAccess(this Character character, int? currentUserId)
+    public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
     {
+      if (character == null) throw new ArgumentNullException(nameof(character));
       return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
     }
 
-    public static bool HasAnyAccess(this Character character, int? currentUserIdOrDefault)
+    public static bool HasAnyAccess([NotNull] this Character character, int? currentUserIdOrDefault)
     {
+      if (character == null) throw new ArgumentNullException(nameof(character));
       return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
     }
 
