@@ -46,22 +46,29 @@ namespace JoinRpg.Web.Models
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;
 
-      HasValue = ch.HasValue;
+      HasValue = ch.HasValue || !ch.Field.CanHaveValue();
 
-      CanView = ch.HasValue&& (
-            ch.Field.IsPublic
-            || model.HasMasterAccess
-            || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Character)
-            || (model.HasPlayerClaimAccess && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
-            );
+      var hasViewAccess = ch.Field.IsPublic
+                          || model.HasMasterAccess
+                          ||
+                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
+                          ||
+                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
+      CanView = hasViewAccess &&
+                (ch.HasValue || (!ch.Field.CanHaveValue() && ch.Field.IsAvailableForTarget(model.Target)));
+
+      var hasEditAccess = model.HasMasterAccess
+                          ||
+                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
+                          ||
+                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
       CanEdit = 
-        model.EditAllowed && (
-        model.HasMasterAccess
-        ||
-        (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Character)
-        || (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
-        )
+        model.EditAllowed && hasEditAccess
                 && (ch.HasValue || ch.Field.IsAvailableForTarget(model.Target));
 
       if (ch.Field.HasValueList())
