@@ -1,6 +1,12 @@
 ﻿@using JoinRpg.Web.Models
 @model GameRolesViewModel
 
+@if (!Model.Data.Any())
+{
+    <p>Группа не существует, удалена или скрыта.</p>
+    return;
+}
+
 @{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
 }
