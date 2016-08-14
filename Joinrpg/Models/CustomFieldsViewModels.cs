@@ -96,7 +96,7 @@ namespace JoinRpg.Web.Models
     public bool HasPlayerAccessToCharacter { get; }
     public bool HasPlayerClaimAccess { get; }
     public bool HasMasterAccess { get; }
-    public bool EditAllowed { get; } = true;
+    public bool EditAllowed { get; } 
     public IClaimSource Target { get;  }
 
     public ICollection<FieldValueViewModel> Fields { get; }
@@ -104,7 +104,8 @@ namespace JoinRpg.Web.Models
     public CustomFieldsViewModel(int? currentUserId, IClaimSource target)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = target.Project.HasMasterAccess(currentUserId);
+      HasMasterAccess = target.HasMasterAccess(currentUserId);
+      EditAllowed = target.Project.Active;
 
       Target = target;
 
@@ -118,7 +119,7 @@ namespace JoinRpg.Web.Models
 
     public CustomFieldsViewModel(int? currentUserId, Character character, bool disableEdit = false, bool onlyPlayerVisible = false, bool wherePrintEnabled = false)
     {
-      EditAllowed = !disableEdit;
+      EditAllowed = !disableEdit && character.Project.Active;
       CurrentUserId = currentUserId;
       if (onlyPlayerVisible)
       {
@@ -148,6 +149,7 @@ namespace JoinRpg.Web.Models
       CurrentUserId = currentUserId;
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       Target = claim.GetTarget();
+      EditAllowed = claim.Project.Active;
 
       HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
       HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);

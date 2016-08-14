@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -33,15 +32,15 @@ namespace JoinRpg.Web.Controllers
       }
       
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
-      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      
       return WithEntity(field) ?? View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         });
     }
 
@@ -58,22 +57,14 @@ namespace JoinRpg.Web.Controllers
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
 
-      var error = AsMaster(field);
-      if (error != null)
-      {
-        return error;
-      }
-
-      var hasMasterAccess = field.HasMasterAccess(CurrentUserId);
-
-      return WithEntity(field) ?? View(
+      return AsMaster(field) ?? View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId)
         });
     }
 
@@ -106,7 +97,7 @@ namespace JoinRpg.Web.Controllers
 
     private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
     {
-      return CharacterGroupListViewModel.GetGroups(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
+      return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         .SelectMany(
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
@@ -127,7 +118,7 @@ namespace JoinRpg.Web.Controllers
         field.Project.ProjectId,
         field.Project.ProjectName,
         ShowEditControls = hasMasterAccess,
-        Groups = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess).Select(
+        Groups = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault).Select(
               g =>
                 new
                 {
@@ -307,9 +298,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
-          group.ProjectId, group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
-          viewModel.DirectSlotsForSave(), responsibleMasterId);
+          @group.ProjectId, CurrentUserId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(group.Project);
       }
@@ -344,7 +333,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId);
+        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId, CurrentUserId);
 
         return RedirectToIndex(field.Project);
       }
@@ -393,9 +382,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
-          viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
-          viewModel.DirectSlotsForSave(), responsibleMasterId);
+          viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }

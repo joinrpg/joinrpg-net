@@ -11,7 +11,7 @@
     var hideClass = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
 }
 
-@if (Model.HasMasterAccess)
+@if (Model.HasEditAccess)
 {
 <div>
     @Html.DisplayFor(model => model.Status)
