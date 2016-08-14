@@ -7,7 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
 
   public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
@@ -96,36 +96,36 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public bool IsActive { get; private set; }
 
-    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; set; }
-    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; set; }
+    public IEnumerable<ClaimShortListItemViewModel> DiscussedClaims { get; private set; }
+    public IEnumerable<ClaimShortListItemViewModel> RejectedClaims { get; private set; }
 
-    public static CharacterNavigationViewModel FromCharacter(Character field, CharacterNavigationPage page, int? currentUserId)
+    public static CharacterNavigationViewModel FromCharacter(Character character, CharacterNavigationPage page, int? currentUserId)
     {
       int? claimId;
 
-      if (field.ApprovedClaim?.HasAnyAccess(currentUserId) == true) //If Approved Claim exists and we have access to it, so be it.
+      if (character.ApprovedClaim?.HasAnyAccess(currentUserId) == true) //If Approved Claim exists and we have access to it, so be it.
       {
-        claimId = field.ApprovedClaim.ClaimId;
+        claimId = character.ApprovedClaim.ClaimId;
       }
       else // if we have My claims, try select single one. We may fail to do so.
       {
-        claimId = field.Claims.Where(c => c.PlayerUserId == currentUserId).ToArray().TrySelectSingleClaim()?.ClaimId;
+        claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId).ToArray().TrySelectSingleClaim()?.ClaimId;
       }
 
       var vm = new CharacterNavigationViewModel
       {
-        CanAddClaim = field.IsAvailable,
+        CanAddClaim = character.IsAvailable,
         ClaimId = claimId,
-        HasMasterAccess = field.HasMasterAccess(currentUserId),
-        CanEditRoles = field.HasMasterAccess(currentUserId, s => s.CanEditRoles),
-        CharacterId = field.CharacterId,
-        ProjectId = field.ProjectId,
+        HasMasterAccess = character.HasMasterAccess(currentUserId),
+        CanEditRoles = character.HasEditRolesAccess(currentUserId),
+        CharacterId = character.CharacterId,
+        ProjectId = character.ProjectId,
         Page = page,
-        Name = field.CharacterName,
-        IsActive = field.IsActive
+        Name = character.CharacterName,
+        IsActive = character.IsActive
       };
 
-      vm.LoadClaims(field);
+      vm.LoadClaims(character);
       return vm;
     }
 
@@ -149,7 +149,7 @@ namespace JoinRpg.Web.Models
       {
         CanAddClaim = false,
         ClaimId = claim.ClaimId,
-        HasMasterAccess = claim.HasMasterAccess(currentUserId),
+        HasMasterAccess = claim.HasEditRolesAccess(currentUserId),
         CharacterId = claim.Character?.CharacterId,
         ProjectId = claim.ProjectId,
         Page = characterNavigationPage,

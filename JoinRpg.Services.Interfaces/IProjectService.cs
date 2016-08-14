@@ -8,17 +8,13 @@ namespace JoinRpg.Services.Interfaces
   {
     Task<Project> AddProject(string projectName, User creator);
 
-    Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds,
-      string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
+    Task AddCharacterGroup(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
 
-    Task AddCharacter(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds,
-      bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
+    Task AddCharacter(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
 
-    Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
-      IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
-      int? responsibleMasterId);
+    Task EditCharacterGroup(int projectId, int currentUserId, int characterGroupId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots, int? responsibleMasterId);
 
-    Task DeleteCharacterGroup(int projectId, int characterGroupId);
+    Task DeleteCharacterGroup(int projectId, int characterGroupId, int currentUserId);
 
     Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot);
 
@@ -35,7 +31,7 @@ namespace JoinRpg.Services.Interfaces
     Task UpdateSubscribeForGroup(int projectId, int characterGroupId, int currentUserId, bool claimStatusChangeValue,
       bool commentsValue, bool fieldChangeValue, bool moneyOperationValue);
 
-    Task DeleteCharacter(int projectId, int characterId);
+    Task DeleteCharacter(int projectId, int characterId, int currentUserId);
 
     Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic,
       IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents,

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -56,7 +54,7 @@ namespace JoinRpg.Services.Impl
 
 
 
-    public async Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
+    public async Task AddCharacterGroup(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -66,6 +64,9 @@ namespace JoinRpg.Services.Impl
         //TODO: Move this check into ChGroup validation
         throw new Exception("No such master");
       }
+
+      project.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      project.EnsureProjectActive();
 
       UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
       {
@@ -86,11 +87,14 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddCharacter(int projectId, string name, bool isPublic,
+    public async Task AddCharacter(int projectId, int currentUserId, string name, bool isPublic,
       IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description,
       bool hidePlayerForCharacter, bool isHot)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
+
+      project.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      project.EnsureProjectActive();
 
       UnitOfWork.GetDbSet<Character>().Add(
         new Character
@@ -117,6 +121,8 @@ namespace JoinRpg.Services.Impl
       var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
       character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
 
+      character.EnsureProjectActive();
+
       character.CharacterName = Required(name);
       character.IsAcceptingClaims = isAcceptingClaims;
       character.IsPublic = isPublic;
@@ -133,10 +139,13 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    // ReSharper disable once UnusedParameter.Local
+
     public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)
     {
       var parentCharacterGroup = await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
       parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      parentCharacterGroup.EnsureProjectActive();
 
       var thisCharacterGroup = parentCharacterGroup.ChildGroups.Single(i => i.CharacterGroupId == charactergroupId);
 
@@ -148,6 +157,7 @@ namespace JoinRpg.Services.Impl
     {
       var parentCharacterGroup = await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
       parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      parentCharacterGroup.EnsureProjectActive();
 
       var item = parentCharacterGroup.Characters.Single(i => i.CharacterId == characterId);
 
@@ -182,16 +192,21 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task EditCharacterGroup(int projectId, int characterGroupId, string name, bool isPublic,
-      IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots,
-      int? responsibleMasterId)
+    public async Task EditCharacterGroup(int projectId, int currentUserId, int characterGroupId, string name,
+      bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots,
+      int directSlots, int? responsibleMasterId)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+
+      characterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      characterGroup.EnsureProjectActive();
+
       if (!characterGroup.IsRoot) //We shoud not edit root group, except of possibility of direct claims here
       {
         characterGroup.CharacterGroupName = Required(name);
         characterGroup.IsPublic = isPublic;
-        characterGroup.ParentCharacterGroupIds =  await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+        characterGroup.ParentCharacterGroupIds =
+          await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
         characterGroup.Description = new MarkdownString(description);
       }
       if (responsibleMasterId != null &&
@@ -207,7 +222,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
+    public async Task DeleteCharacterGroup(int projectId, int characterGroupId, int currentUserId)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
@@ -217,6 +232,10 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
+
+      characterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      characterGroup.EnsureProjectActive();
+
 
       characterGroup.Project.MarkTreeModified();
 
@@ -251,6 +270,7 @@ namespace JoinRpg.Services.Impl
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+      project.EnsureProjectActive();
 
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
       if (acl == null)
@@ -309,6 +329,7 @@ namespace JoinRpg.Services.Impl
     {
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       group.RequestMasterAccess(currentUserId);
+      group.EnsureProjectActive();
       
       var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue || moneyOperationValue;
       var user = await UserRepository.GetWithSubscribe(currentUserId);
@@ -340,10 +361,12 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteCharacter(int projectId, int characterId)
+    public async Task DeleteCharacter(int projectId, int characterId, int currentUserId)
     {
       var character = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      if (character == null) throw new DbEntityValidationException();
+
+      character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      character.EnsureProjectActive();
 
       if (character.HasActiveClaims())
       {

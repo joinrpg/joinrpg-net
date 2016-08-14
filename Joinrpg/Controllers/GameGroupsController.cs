@@ -307,9 +307,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.EditCharacterGroup(
-          group.ProjectId, group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
-          viewModel.DirectSlotsForSave(), responsibleMasterId);
+          @group.ProjectId, CurrentUserId, @group.CharacterGroupId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(group.Project);
       }
@@ -344,7 +342,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId);
+        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId, CurrentUserId);
 
         return RedirectToIndex(field.Project);
       }
@@ -393,9 +391,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
-          viewModel.ProjectId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
-          viewModel.DirectSlotsForSave(), responsibleMasterId);
+          viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(), viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }
