@@ -149,12 +149,12 @@ namespace JoinRpg.Web.Models.Characters
       {
         CanAddClaim = false,
         ClaimId = claim.ClaimId,
-        HasMasterAccess = claim.HasEditRolesAccess(currentUserId),
+        HasMasterAccess = claim.HasMasterAccess(currentUserId),
         CharacterId = claim.Character?.CharacterId,
         ProjectId = claim.ProjectId,
         Page = characterNavigationPage,
         Name = claim.GetTarget().Name,
-        CanEditRoles = claim.HasMasterAccess(currentUserId, acl => acl.CanEditRoles),
+        CanEditRoles = claim.HasEditRolesAccess(currentUserId),
         IsActive = claim.GetTarget().IsActive
       };
       vm.LoadClaims(claim.Character);

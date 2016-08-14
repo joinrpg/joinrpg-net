@@ -16,20 +16,19 @@ namespace JoinRpg.Web.Models.Plot
 
     public bool HasEditAccess { get; private set; }
 
-    public static EditPlotFolderViewModel FromFolder(PlotFolder folder, int? currentUserId)
+    public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
     {
-      return new EditPlotFolderViewModel()
-      {
-        PlotFolderMasterTitle = folder.MasterTitle,
-        PlotFolderId = folder.PlotFolderId,
-        TodoField = folder.TodoField,
-        ProjectId = folder.ProjectId,
-        Elements = folder.Elements. Select(e => new EditPlotElementViewModel(e, currentUserId)).OrderBy(e => e.Status),
-        Status = folder.GetStatus(),
-        HasEditAccess =folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots)
-      };
+      PlotFolderMasterTitle = folder.MasterTitle;
+      PlotFolderId = folder.PlotFolderId;
+      TodoField = folder.TodoField;
+      ProjectId = folder.ProjectId;
+      Elements = folder.Elements.Select(e => new EditPlotElementViewModel(e, currentUserId)).OrderBy(e => e.Status);
+      Status = folder.GetStatus();
+      HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
+      HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }
 
+    public bool HasMasterAccess { get; }
   }
 
   public class EditPlotElementViewModel  : IProjectIdAware
@@ -47,15 +46,16 @@ namespace JoinRpg.Web.Models.Plot
       Status = e.GetStatus();
       IsCompleted = e.IsCompleted;
       ElementType = (PlotElementTypeView) e.ElementType;
-      HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
+      HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
     }
 
     [ReadOnly(true)]
-    public int ProjectId { get; set; }
+    public int ProjectId { get; }
     [ReadOnly(true)]
-    public int PlotFolderId { get; set; }
+    public int PlotFolderId { get; }
     [ReadOnly(true)]
-    public int PlotElementId { get; set; }
+    public int PlotElementId { get; }
 
 
     [Display(Name="Для кого")]
@@ -73,9 +73,11 @@ namespace JoinRpg.Web.Models.Plot
     public bool IsCompleted { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; set; }
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay  { get; }
 
-    public PlotElementTypeView ElementType { get; set; }
-    public bool HasEditAccess { get; private set; }
+    public PlotElementTypeView ElementType { get; }
+    public bool HasEditAccess { get; }
+
+    public bool HasMasterAccess { get; }
   }
 }

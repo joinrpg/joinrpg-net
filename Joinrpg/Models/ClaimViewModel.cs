@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Models
 
     public bool HasMasterAccess { get; set; }
     public bool CanManageThisClaim { get; set; }
+    public bool ProjectActive { get; set; }
     public IEnumerable<CommentViewModel> Comments { get; set; }
 
     public int? CharacterId { get; set; }

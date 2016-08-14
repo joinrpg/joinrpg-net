@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return WithPlot(folder) ?? View(EditPlotFolderViewModel.FromFolder(folder, CurrentUserIdOrDefault));
+      return WithPlot(folder) ?? View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault));
     }
 
     [HttpPost, ValidateAntiForgeryToken, Authorize]
@@ -202,7 +202,7 @@ namespace JoinRpg.Web.Controllers
       PlotFolder folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       var error = AsMaster(folder, acl=> acl.CanManagePlots);
       if (error != null) return null;
-      return View(EditPlotFolderViewModel.FromFolder(folder, CurrentUserId));
+      return View(new EditPlotFolderViewModel(folder, CurrentUserId));
     }
 
     [HttpPost, Authorize]

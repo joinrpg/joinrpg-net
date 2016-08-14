@@ -151,10 +151,17 @@ namespace JoinRpg.Web.Models
 
   public class GameFieldListViewModel
   {
-    public int ProjectId { get; set; }
-    public IEnumerable<GameFieldEditViewModel> Items { get; set; }
+    public int ProjectId { get; }
+    public IEnumerable<GameFieldEditViewModel> Items { get; }
 
-    public bool CanEditFields { get; set; }
+    public bool CanEditFields { get; }
+
+    public GameFieldListViewModel (Project project, int currentUserId)
+    {
+      ProjectId = project.ProjectId;
+      Items = project.GetOrderedFields().ToViewModels();
+      CanEditFields = project.HasMasterAccess(currentUserId, pa => pa.CanChangeFields) && project.Active;
+    }
   }
 
   public abstract class GameFieldDropdownValueViewModelBase

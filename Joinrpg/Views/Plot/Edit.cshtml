@@ -39,6 +39,25 @@
                 </div>
             </div>
         }
+        else
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.PlotFolderMasterTitle, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-10">
+
+                    @Html.DisplayFor(model => model.PlotFolderMasterTitle, new {htmlAttributes = new {@class = "form-control"}})
+                </div>
+            </div>
+            if (Model.HasMasterAccess)
+             {
+                 <div class="form-group">
+                     @Html.LabelFor(model => model.TodoField, htmlAttributes: new {@class = "control-label col-md-2"})
+                     <div class="col-md-10">
+                         @Html.DisplayFor(model => model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
+                     </div>
+                 </div>
+             }
+        }
     </div>
 }
 <h3>Вводные

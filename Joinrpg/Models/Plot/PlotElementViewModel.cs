@@ -20,6 +20,8 @@ namespace JoinRpg.Web.Models.Plot
     public int ProjectId { get; }
     public bool HasMasterAccess { get; }
 
+    public bool HasEditAccess { get; }
+
     public bool First { get; set; }
     public bool Last { get; set; }
 
@@ -28,12 +30,13 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
     public PlotElementViewModel(
-      [NotNull] PlotElement p, bool hasMasterAccess, [CanBeNull] Character character, int? currentUserId)
+      [NotNull] PlotElement p, [CanBeNull] Character character, int? currentUserId)
     {
       if (p == null) throw new ArgumentNullException(nameof(p));
       Content = p.Texts.Content;
       TodoField = p.Texts.TodoField;
-      HasMasterAccess = hasMasterAccess;
+      HasMasterAccess = p.HasMasterAccess(currentUserId);
+      HasEditAccess = p.HasMasterAccess(currentUserId) && p.Project.Active;
       HasPlayerAccess = character?.HasPlayerAccess(currentUserId) ?? false;
       PlotFolderId = p.PlotFolderId;
       PlotElementId = p.PlotElementId;
@@ -56,20 +59,13 @@ namespace JoinRpg.Web.Models.Plot
 
   public static class PlotElementViewModelExtensions
   {
-    public static IEnumerable<PlotElementViewModel> ToViewModels([NotNull] this IEnumerable<PlotElement> plots, int? currentUserId)
-    {
-      if (plots == null) throw new ArgumentNullException(nameof(plots));
-      return plots.Where(p => p.ElementType == PlotElementType.RegularPlot).Select(
-        p => new PlotElementViewModel(p, p.HasMasterAccess(currentUserId), null, currentUserId)).MarkFirstAndLast();
-    }
-
     public static IEnumerable<PlotElementViewModel> ToViewModels([NotNull] this IEnumerable<PlotElement> plots, int? currentUserId,
-      [NotNull] Character character)
+      [CanBeNull] Character character = null)
     {
       if (plots == null) throw new ArgumentNullException(nameof(plots));
-      if (character == null) throw new ArgumentNullException(nameof(character));
+      
       return plots.Where(p => p.ElementType == PlotElementType.RegularPlot).Select(
-        p => new PlotElementViewModel(p, character.HasMasterAccess(currentUserId), character, currentUserId)).MarkFirstAndLast();
+        p => new PlotElementViewModel(p, character, currentUserId)).MarkFirstAndLast();
     }
   }
 }

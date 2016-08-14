@@ -35,12 +35,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Index(int projectId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project) ?? View(new GameFieldListViewModel()
-      {
-        ProjectId = project.ProjectId,
-        Items = project.GetOrderedFields().ToViewModels(),
-        CanEditFields = project.HasMasterAccess(CurrentUserId, pa => pa.CanChangeFields)
-      });
+      return AsMaster(project) ?? View(new GameFieldListViewModel(project, CurrentUserId));
     }
 
     [HttpGet]

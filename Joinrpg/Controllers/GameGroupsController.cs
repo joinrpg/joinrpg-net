@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -33,15 +32,15 @@ namespace JoinRpg.Web.Controllers
       }
       
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
-      var hasMasterAccess = field.Project.HasMasterAccess(CurrentUserIdOrDefault);
+      
       return WithEntity(field) ?? View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         });
     }
 
@@ -58,22 +57,14 @@ namespace JoinRpg.Web.Controllers
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
 
-      var error = AsMaster(field);
-      if (error != null)
-      {
-        return error;
-      }
-
-      var hasMasterAccess = field.HasMasterAccess(CurrentUserId);
-
-      return WithEntity(field) ?? View(
+      return AsMaster(field) ?? View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = hasMasterAccess,
-          Data = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess)
+          ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId)
         });
     }
 
@@ -106,7 +97,7 @@ namespace JoinRpg.Web.Controllers
 
     private IEnumerable<CharacterViewModel> GetHotCharacters(CharacterGroup field)
     {
-      return CharacterGroupListViewModel.GetGroups(field, field.Project.HasMasterAccess(CurrentUserIdOrDefault))
+      return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         .SelectMany(
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
     }
@@ -127,7 +118,7 @@ namespace JoinRpg.Web.Controllers
         field.Project.ProjectId,
         field.Project.ProjectName,
         ShowEditControls = hasMasterAccess,
-        Groups = CharacterGroupListViewModel.GetGroups(field, hasMasterAccess).Select(
+        Groups = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault).Select(
               g =>
                 new
                 {

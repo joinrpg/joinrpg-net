@@ -2,7 +2,7 @@
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
 
-@if (!Model.HasEditAccess && Model.Status != PlotStatus.Completed)
+@if (!Model.HasMasterAccess && Model.Status != PlotStatus.Completed)
 {
     return;
 }
@@ -10,7 +10,7 @@
     <div class="panel-heading">
 
         <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
-            @if (Model.HasEditAccess)
+            @if (Model.HasMasterAccess)
             {
                 @Html.DisplayFor(model => model.Status)
             }
