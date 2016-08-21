@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Helpers.Web
+﻿namespace JoinRpg.Helpers
 {
   public class UnSafeHtml
   {

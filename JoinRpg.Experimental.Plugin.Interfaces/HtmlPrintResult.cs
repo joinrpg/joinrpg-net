@@ -1,5 +1,5 @@
 ﻿using JetBrains.Annotations;
-using JoinRpg.Helpers.Web;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Experimental.Plugin.Interfaces
 {
