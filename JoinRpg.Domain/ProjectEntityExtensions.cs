@@ -108,5 +108,18 @@ namespace JoinRpg.Domain
         throw new NoAccessToProjectException(character, currentUserId);
       }
     }
+
+    public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId)
+    {
+      return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
+    }
+
+    public static void EnsureProjectActive(this IProjectEntity character)
+    {
+      if (!character.Project.Active)
+      {
+        throw new ProjectDeactivedException();
+      }
+    }
   }
 }

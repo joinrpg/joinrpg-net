@@ -12,9 +12,10 @@ namespace JoinRpg.Web.Models.Characters
   public static class CharacterGroupListViewModel
   {
     [MustUseReturnValue]
-    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, bool hasMasterAccess)
+    public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId)
     {
-      return new CharacterGroupHierarchyBuilder(field, hasMasterAccess).Generate().Where(g => g.IsPublic || hasMasterAccess);
+      var hasMasterAccess = field.HasMasterAccess(currentUserId);
+      return new CharacterGroupHierarchyBuilder(field, hasMasterAccess, field.HasEditRolesAccess(currentUserId)).Generate().Where(g => g.IsPublic || field.Project.IsPlotPublished() || hasMasterAccess);
     }
 
     //TODO: unit tests
@@ -28,10 +29,11 @@ namespace JoinRpg.Web.Models.Characters
 
       private bool HasMasterAccess { get; }
 
-      public CharacterGroupHierarchyBuilder(CharacterGroup root, bool hasMasterAccess)
+      public CharacterGroupHierarchyBuilder(CharacterGroup root, bool hasMasterAccess, bool hasEditRolesAccess)
       {
         Root = root;
         HasMasterAccess = hasMasterAccess;
+        HasEditRolesAccess = hasEditRolesAccess;
       }
 
       public IList<CharacterGroupListItemViewModel> Generate()
@@ -141,10 +143,11 @@ namespace JoinRpg.Web.Models.Characters
           Description =  arg.Description.ToHtmlString(),
           IsPublic =  arg.IsPublic,
           IsActive = arg.IsActive,
-          HidePlayer = arg.HidePlayerForCharacter,
+          HidePlayer = arg.HidePlayerForCharacter && !arg.Project.IsPlotPublished(),
           ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
           Player = arg.ApprovedClaim?.Player,
           HasMasterAccess = HasMasterAccess,
+          HasEditRolesAccess = HasEditRolesAccess,
           ProjectId = arg.ProjectId,
           FirstInGroup = siblings.First() == arg,
           LastInGroup = siblings.Last() == arg,
@@ -159,6 +162,8 @@ namespace JoinRpg.Web.Models.Characters
         }
         return vm;
       }
+
+      public bool HasEditRolesAccess { get; }
     }
   }
 }

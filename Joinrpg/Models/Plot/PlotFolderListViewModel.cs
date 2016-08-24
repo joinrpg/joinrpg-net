@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Models.Plot
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
       TodoField = folder.TodoField;
-      HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
     }
   }
 }

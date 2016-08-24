@@ -75,6 +75,14 @@ namespace JoinRpg.Domain
     }
   }
 
+  public class ProjectDeactivedException : JoinRpgBaseException
+  {
+    public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+    {
+
+    }
+  }
+
   public class ClaimWrongStatusException : JoinRpgProjectEntityException
   {
     public ClaimWrongStatusException(Claim entity, IEnumerable<Claim.Status> possible) 

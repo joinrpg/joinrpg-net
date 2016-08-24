@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Models.Characters
       Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
       ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
       CharacterIds = characters.Select(c => c.CharacterId).ToArray();
-      HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      HasEditAccess = project.HasEditRolesAccess(currentUserId);
     }
 
     private bool AnyItemHasValue(int projectFieldId)

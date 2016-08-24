@@ -46,22 +46,29 @@ namespace JoinRpg.Web.Models
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;
 
-      HasValue = ch.HasValue;
+      HasValue = ch.HasValue || !ch.Field.CanHaveValue();
 
-      CanView = ch.HasValue&& (
-            ch.Field.IsPublic
-            || model.HasMasterAccess
-            || (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Character)
-            || (model.HasPlayerClaimAccess && ch.Field.CanPlayerView && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
-            );
+      var hasViewAccess = ch.Field.IsPublic
+                          || model.HasMasterAccess
+                          ||
+                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
+                          ||
+                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
+      CanView = hasViewAccess &&
+                (ch.HasValue || (!ch.Field.CanHaveValue() && ch.Field.IsAvailableForTarget(model.Target)));
+
+      var hasEditAccess = model.HasMasterAccess
+                          ||
+                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
+                          ||
+                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit &&
+                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
       CanEdit = 
-        model.EditAllowed && (
-        model.HasMasterAccess
-        ||
-        (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Character)
-        || (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit && ch.Field.FieldBoundTo == FieldBoundTo.Claim)
-        )
+        model.EditAllowed && hasEditAccess
                 && (ch.HasValue || ch.Field.IsAvailableForTarget(model.Target));
 
       if (ch.Field.HasValueList())
@@ -89,7 +96,7 @@ namespace JoinRpg.Web.Models
     public bool HasPlayerAccessToCharacter { get; }
     public bool HasPlayerClaimAccess { get; }
     public bool HasMasterAccess { get; }
-    public bool EditAllowed { get; } = true;
+    public bool EditAllowed { get; } 
     public IClaimSource Target { get;  }
 
     public ICollection<FieldValueViewModel> Fields { get; }
@@ -97,7 +104,8 @@ namespace JoinRpg.Web.Models
     public CustomFieldsViewModel(int? currentUserId, IClaimSource target)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = target.Project.HasMasterAccess(currentUserId);
+      HasMasterAccess = target.HasMasterAccess(currentUserId);
+      EditAllowed = target.Project.Active;
 
       Target = target;
 
@@ -111,7 +119,7 @@ namespace JoinRpg.Web.Models
 
     public CustomFieldsViewModel(int? currentUserId, Character character, bool disableEdit = false, bool onlyPlayerVisible = false, bool wherePrintEnabled = false)
     {
-      EditAllowed = !disableEdit;
+      EditAllowed = !disableEdit && character.Project.Active;
       CurrentUserId = currentUserId;
       if (onlyPlayerVisible)
       {
@@ -141,6 +149,7 @@ namespace JoinRpg.Web.Models
       CurrentUserId = currentUserId;
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       Target = claim.GetTarget();
+      EditAllowed = claim.Project.Active;
 
       HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
       HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);

@@ -1,6 +1,12 @@
 ﻿@using JoinRpg.Web.Models
 @model GameRolesViewModel
 
+@if (!Model.Data.Any())
+{
+    <p>Группа не существует, удалена или скрыта.</p>
+    return;
+}
+
 @{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
 }
@@ -60,7 +66,7 @@
 
                 @item.Description
                 <ul>
-                    @foreach (var character in Model.ShowEditControls ? item.ActiveCharacters : item.PublicCharacters)
+                    @foreach (var character in item.ActiveCharacters)
                     {
                         <li>
                             @Html.Partial("_CharacterPartial", character)

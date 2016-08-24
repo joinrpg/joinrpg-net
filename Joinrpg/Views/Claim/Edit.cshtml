@@ -84,7 +84,7 @@
             @Html.DisplayNameFor(model => model.ResponsibleMasterId)
         </dt>
         <dd>
-            @if (Model.CanManageThisClaim)
+            @if (Model.CanManageThisClaim && Model.ProjectActive)
             {
                 using (Html.BeginForm("ChangeResponsible", "Claim"))
                 {
@@ -105,7 +105,7 @@
             else
             {
                 @Html.DisplayFor(model => model.ResponsibleMaster)
-                if (Model.HasMasterAccess)
+                if (Model.HasMasterAccess && !Model.CanManageThisClaim)
                 {
                     <span class="help-block">Изменять ответственного мастера для чужих заявок могут только администраторы.</span>
                 }
@@ -116,7 +116,7 @@
 </div>
     <div class="panel-group">
         <div class="btn-group">
-            @if (Model.CanManageThisClaim)
+            @if (Model.CanManageThisClaim && Model.ProjectActive)
             {
                 if (Model.Status.CanChangeTo(Claim.Status.Approved))
                 {
@@ -151,14 +151,14 @@
                 </button>
                 }
             }
-            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null)
+            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null && Model.ProjectActive)
             {
             <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
                     aria-expanded="false">
                 <span class="glyphicon glyphicon-usd"></span> Отметить взнос
             </button>
             }
-            @if (Model.IsMyClaim)
+            @if (Model.IsMyClaim && Model.ProjectActive)
             {
                 if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved || Model.Status == Claim.Status.Discussed)
                 {

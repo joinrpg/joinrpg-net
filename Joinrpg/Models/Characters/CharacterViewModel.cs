@@ -36,6 +36,8 @@ namespace JoinRpg.Web.Models
     public bool IsHot { get; set; }
 
     public bool IsAcceptingClaims { get; set; }
+    public bool HasEditRolesAccess { get; set; }
+
     public bool Equals(CharacterViewModel other) => CharacterId == other.CharacterId;
 
     public override bool Equals(object obj)

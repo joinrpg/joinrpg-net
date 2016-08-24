@@ -10,6 +10,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
@@ -41,7 +42,7 @@ namespace JoinRpg.Web.Controllers
         Player = character.ApprovedClaim?.Player,
         HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
         ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
-        HidePlayer = character.HidePlayerForCharacter,
+        HidePlayer = character.HidePlayerForCharacter && !character.Project.IsPlotPublished(),
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
         Plot =
@@ -138,9 +139,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await ProjectService.AddCharacter(
-          viewModel.ProjectId,
-          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
+          viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims, viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
         return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }
@@ -168,7 +167,7 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await ProjectService.DeleteCharacter(projectId, characterId);
+        await ProjectService.DeleteCharacter(projectId, characterId, CurrentUserId);
 
         return RedirectToIndex(field.Project);
       }

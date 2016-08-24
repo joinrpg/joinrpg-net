@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.EditProjectViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.EditProjectViewModel
 
 @{
   ViewBag.Title = "Игра «" + Model.OriginalName + "»";
@@ -62,9 +63,10 @@
         {
         <div class="form-group">
             @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-1">
+            <div class="col-md-10">
                 @Html.EditorFor(model => model.PublishPlot)
                 @Html.ValidationMessageFor(model => model.PublishPlot, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.PublishPlot)
             </div>
         </div>
         }
