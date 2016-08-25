@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models.Characters
 
       private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop, IReadOnlyList<CharacterGroup> siblings)
       {
-        if (characterGroup.IsVisible(CurrentUserId))
+        if (!characterGroup.IsVisible(CurrentUserId))
         {
           return null;
         }
