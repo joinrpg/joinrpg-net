@@ -14,8 +14,7 @@ namespace JoinRpg.Web.Models.Characters
     [MustUseReturnValue]
     public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId)
     {
-      var hasMasterAccess = field.HasMasterAccess(currentUserId);
-      return new CharacterGroupHierarchyBuilder(field, hasMasterAccess, field.HasEditRolesAccess(currentUserId)).Generate().Where(g => g.IsPublic || field.Project.IsPlotPublished() || hasMasterAccess);
+      return new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
     }
 
     //TODO: unit tests
@@ -29,11 +28,14 @@ namespace JoinRpg.Web.Models.Characters
 
       private bool HasMasterAccess { get; }
 
-      public CharacterGroupHierarchyBuilder(CharacterGroup root, bool hasMasterAccess, bool hasEditRolesAccess)
+      private int? CurrentUserId { get; }
+
+      public CharacterGroupHierarchyBuilder(CharacterGroup root, int? currentUserId)
       {
         Root = root;
-        HasMasterAccess = hasMasterAccess;
-        HasEditRolesAccess = hasEditRolesAccess;
+        HasMasterAccess = root.HasMasterAccess(currentUserId);
+        HasEditRolesAccess = root.HasEditRolesAccess(currentUserId);
+        CurrentUserId = currentUserId;
       }
 
       public IList<CharacterGroupListItemViewModel> Generate()
@@ -44,6 +46,10 @@ namespace JoinRpg.Web.Models.Characters
 
       private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop, IReadOnlyList<CharacterGroup> siblings)
       {
+        if (characterGroup.IsVisible(CurrentUserId))
+        {
+          return null;
+        }
         var prevCopy = Results.FirstOrDefault(cg => cg.FirstCopy && cg.CharacterGroupId == characterGroup.CharacterGroupId);
 
         var vm = new CharacterGroupListItemViewModel
@@ -101,7 +107,7 @@ namespace JoinRpg.Web.Models.Characters
           return vm;
         }
         
-        var childGroups = characterGroup.GetOrderedChildGroups().Where(g =>g.IsActive).ToList();
+        var childGroups = characterGroup.GetOrderedChildGroups().Where(g =>g.IsActive && g.IsVisible(CurrentUserId)).ToList();
         var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
         vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren, childGroups)).ToList();
@@ -127,7 +133,7 @@ namespace JoinRpg.Web.Models.Characters
 
       private IEnumerable<CharacterViewModel> GenerateCharacters(CharacterGroup characterGroup)
       {
-        var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive).ToArray();
+        var characters = characterGroup.GetOrderedCharacters().Where(c => c.IsActive && c.IsVisible(CurrentUserId)).ToArray();
 
         return characters.Select(character => GenerateCharacter(character, characterGroup,characters));
       }
