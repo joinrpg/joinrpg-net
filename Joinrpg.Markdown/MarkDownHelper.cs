@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using JetBrains.Annotations;
@@ -11,32 +12,61 @@ namespace Joinrpg.Markdown
 {
   public interface ILinkRenderer
   {
-    HashSet<string> LinkTypesToMatch { get; }
+    IEnumerable<string> LinkTypesToMatch { get; }
     string Render(string match, int index, string extra);
   }
 
   public static class MarkDownHelper
   {
+    private static readonly DoNothingLinkRenderer NoLinks = new DoNothingLinkRenderer();
+
     /// <summary>
     /// Converts markdown to HtmlString with all sanitization
     /// </summary>
     [NotNull]
-    public static HtmlString ToHtmlString([CanBeNull] this MarkdownString markdownString, ILinkRenderer renderer = null)
+    public static IHtmlString ToHtmlString([CanBeNull] this MarkdownString markdownString,
+      [NotNull] ILinkRenderer renderer)
     {
+      if (renderer == null) throw new ArgumentNullException(nameof(renderer));
       return markdownString?.Contents == null ? new HtmlString("") : markdownString.RenderMarkDownToHtmlUnsafe(renderer).SanitizeHtml();
     }
 
-    public static string ToPlainText([CanBeNull] this MarkdownString markdownString, ILinkRenderer renderer = null)
+    [NotNull]
+    public static IHtmlString ToHtmlString([CanBeNull] this MarkdownString markdownString)
     {
+      return markdownString.ToHtmlString(NoLinks);
+    }
+
+    [NotNull]
+    public static string ToPlainText([CanBeNull] this MarkdownString markdownString)
+    {
+      return markdownString.ToPlainText(NoLinks);
+    }
+
+    private class DoNothingLinkRenderer : ILinkRenderer
+    {
+      public IEnumerable<string> LinkTypesToMatch { get; } = new string[] {};
+      public string Render(string match, int index, string extra)
+      {
+        throw new NotImplementedException();
+      }
+    }
+
+    [NotNull]
+    public static string ToPlainText([CanBeNull] this MarkdownString markdownString, [NotNull] ILinkRenderer renderer)
+    {
+      if (renderer == null) throw new ArgumentNullException(nameof(renderer));
       if (markdownString?.Contents == null)
       {
-        return null;
+        return "";
       }
       return markdownString.RenderMarkDownToHtmlUnsafe(renderer).RemoveHtml().Trim();
     }
 
-    private static UnSafeHtml RenderMarkDownToHtmlUnsafe(this MarkdownString markdownString, ILinkRenderer renderer)
+    private static UnSafeHtml RenderMarkDownToHtmlUnsafe(this MarkdownString markdownString,
+      [NotNull] ILinkRenderer renderer)
     {
+      if (renderer == null) throw new ArgumentNullException(nameof(renderer));
       //TODO - do we need to save re-use pipeline?
       var pipeline =
         new MarkdownPipelineBuilder().UseSoftlineBreakAsHardlineBreak().UseEntityLinker(renderer).Build();

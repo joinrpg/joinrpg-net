@@ -26,17 +26,7 @@
                     throw new ArgumentOutOfRangeException();
             }
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
-                @{
-                    var header = Model.Content.TakeWords(10).ToPlainText();
-                    if (string.IsNullOrWhiteSpace(header))
-                    {
-                        <text>***</text>
-                    }
-                    else
-                    {
-                        @header
-                    }
-                }
+                @Model.ShortContent
             </a>
 
         </h4>
@@ -88,7 +78,7 @@
             }
             <div class="@hideClassName">
                 @Html.DisplayFor(model => Model.Content)
-                @if (string.IsNullOrWhiteSpace(Model.Content.Contents))
+                @if (string.IsNullOrWhiteSpace(Model.Content.ToHtmlString()))
                 {
                     <i>Вводная пуста</i>
                 }

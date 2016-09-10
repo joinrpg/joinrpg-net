@@ -2,7 +2,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
@@ -26,8 +28,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Игрок может менять")]
     public bool CanPlayerEdit { get; set; }
 
-    [Display(Name = "Описание")]
-    public MarkdownViewModel Description { get; set; }
+    [Display(Name = "Описание"), UIHint("MarkdownString")]
+    public string Description { get; set; }
 
     [Display(Name = "Обязательное?")]
     public MandatoryStatusViewType MandatoryStatus { get; set; }
@@ -67,7 +69,7 @@ namespace JoinRpg.Web.Models
     {
       CanPlayerView = field.CanPlayerView;
       CanPlayerEdit = field.CanPlayerEdit;
-      Description = new MarkdownViewModel(field.Description);
+      Description = field.Description.Contents;
       ProjectFieldId = field.ProjectFieldId;
       IsPublic = field.IsPublic;
       Name = field.FieldName;
@@ -169,15 +171,23 @@ namespace JoinRpg.Web.Models
     [Display(Name="Значение"), Required]
     public string Label { get; set; }
 
-    [Display(Name = "Описание")]
-    public MarkdownViewModel Description { get; set; }
+    [Display(Name = "Описание"), UIHint("MarkdownString")]
+    public string Description { get; set; }
 
     public int ProjectId { get; set; }
     public int ProjectFieldId { get; set; }
   }
 
-  public class GameFieldDropdownValueListItemViewModel : GameFieldDropdownValueViewModelBase, IMovableListItem
+  public class GameFieldDropdownValueListItemViewModel : IMovableListItem
   {
+    [Display(Name = "Значение"), Required]
+    public string Label { get; set; }
+
+    [Display(Name = "Описание")]
+    public IHtmlString Description { get; }
+
+    public int ProjectId { get; }
+    public int ProjectFieldId { get; }
     public bool IsActive { get; }
 
     public int ProjectFieldDropdownValueId { get;  }
@@ -185,7 +195,7 @@ namespace JoinRpg.Web.Models
     public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
     {
       Label = value.Label;
-      Description = new MarkdownViewModel(value.Description);
+      Description = value.Description.ToHtmlString();
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
       ProjectFieldId = value.ProjectFieldId;
@@ -210,7 +220,7 @@ namespace JoinRpg.Web.Models
     public GameFieldDropdownValueEditViewModel(ProjectFieldDropdownValue value)
     {
       Label = value.Label;
-      Description = new MarkdownViewModel(value.Description);
+      Description = value.Description.Contents;
       IsActive = value.IsActive;
       ProjectId = value.ProjectId;
       ProjectFieldId = value.ProjectFieldId;

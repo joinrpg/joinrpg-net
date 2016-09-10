@@ -5,8 +5,6 @@ using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -16,8 +14,7 @@ namespace JoinRpg.Web.Models
 
     public string ProjectName { get; set; }
 
-    //TODO[MarkdownViewModel]
-    public HtmlString ClaimApplyRules { get; set; }
+    public IHtmlString ClaimApplyRules { get; set; }
 
     public int? CharacterId { get; set; }
     public int? CharacterGroupId { get; set; }
@@ -26,7 +23,7 @@ namespace JoinRpg.Web.Models
     public string TargetName { get; set; }
 
     [Display(Name="Описание")]
-    public MarkdownViewModel Description { get; set; }
+    public IHtmlString Description { get; set; }
 
     public bool HasApprovedClaim { get; set; }
 
@@ -36,8 +33,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    [Display(Name ="Комментарий к заявке", Description="Все, что вы хотите сообщить мастерам дополнительно")]
-    public MarkdownViewModel ClaimText { get; set; }
+    [Display(Name ="Комментарий к заявке", Description="Все, что вы хотите сообщить мастерам дополнительно"),UIHint("MarkdownString")]
+    public string ClaimText { get; set; }
 
     [ReadOnly(true)]
     public CustomFieldsViewModel Fields { get; private set; }
@@ -51,7 +48,7 @@ namespace JoinRpg.Web.Models
 
     public static AddClaimViewModel Create(CharacterGroup group, User user)
     {
-      var vm = new AddClaimViewModel().Fill(@group, user);
+      var vm = new AddClaimViewModel().Fill(group, user);
       vm.CharacterGroupId = group.CharacterGroupId;
       return vm;
     }
@@ -64,9 +61,9 @@ namespace JoinRpg.Web.Models
       HasApprovedClaim = !(obj.Project.Details?.EnableManyCharacters ?? false) && obj.Project.Claims.OfUserApproved(user.UserId).Any();
       HasMyClaim = obj.HasClaimForUser(user.UserId);
       TargetName = obj.Name;
-      Description = new MarkdownViewModel(obj.Description);
+      Description = obj.Description.ToHtmlString();
       IsAvailable = obj.IsAvailable;
-      ClaimApplyRules = obj.Project.Details?.ClaimApplyRules?.ToHtmlString();
+      ClaimApplyRules = obj.Project.Details?.ClaimApplyRules.ToHtmlString();
       Fields = new CustomFieldsViewModel(user.UserId, obj);
       IsRoot = obj.IsRoot;
       return this;

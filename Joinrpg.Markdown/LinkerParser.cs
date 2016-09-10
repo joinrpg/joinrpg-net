@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using Markdig.Helpers;
 using Markdig.Parsers;
 
@@ -10,8 +12,9 @@ namespace Joinrpg.Markdown
   {
     private ILinkRenderer LinkRenderer { get; }
 
-    public LinkerParser(ILinkRenderer linkRenderer)
+    public LinkerParser([NotNull] ILinkRenderer linkRenderer)
     {
+      if (linkRenderer == null) throw new ArgumentNullException(nameof(linkRenderer));
       LinkRenderer = linkRenderer;
     }
 

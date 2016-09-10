@@ -119,7 +119,7 @@
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
         @ValidationMessage()
-        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
+        @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
             <div class="help-block">@Html.DisplayFor(model => model.Description) </div>
         }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Print
 {
@@ -30,11 +29,11 @@ namespace JoinRpg.Web.Models.Print
       return new PluginOperationDescriptionViewModel()
       {
         Name = p.OperationName,
-        Description = new MarkdownViewModel(p.Description)
+        Description = p.Description
       };
     }
 
     public string Name { get; private set; }
-    public MarkdownViewModel Description { get; private set; }
+    public string Description { get; private set; }
   }
 }

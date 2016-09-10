@@ -69,7 +69,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
-          viewModel.Description.Contents,
+          viewModel.Description,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
           viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
           viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint);
@@ -112,7 +112,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
-            viewModel.Name, viewModel.Description.Contents, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
+            viewModel.Name, viewModel.Description, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
             viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint);
 
@@ -180,7 +180,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, CurrentUserId, viewModel.Label,
-            viewModel.Description.Contents);
+            viewModel.Description);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -213,7 +213,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId,
-            viewModel.Label, viewModel.Description.Contents, viewModel.ProjectFieldId);
+            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }

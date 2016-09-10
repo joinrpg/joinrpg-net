@@ -64,7 +64,7 @@
             {
             <div>
 
-                @item.Description
+                @Html.DisplayFor(modelItem => item.Description)
                 <ul>
                     @foreach (var character in item.ActiveCharacters)
                     {

@@ -1,6 +1,4 @@
-﻿@using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
-@model JoinRpg.Web.Models.ProjectDetailsViewModel
+﻿@model JoinRpg.Web.Models.ProjectDetailsViewModel
 
 @{
     ViewBag.Title = "Игра «"+ Model.ProjectName +"»";
@@ -8,12 +6,7 @@
 
 <h2>@ViewBag.Title</h2>
 
-
-@if (Model.ProjectAnnounce != null && !string.IsNullOrWhiteSpace(Model.ProjectAnnounce.Contents))
-{
-    <hr/>
-    @Model.ProjectAnnounce.ToHtmlString()
-}
+@Model.ProjectAnnounce
 
 <hr/>
 

@@ -50,6 +50,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -73,6 +74,10 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
       <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj">
+      <Project>{9e52df40-a040-47c2-91dc-2413270ff9b1}</Project>
+      <Name>Joinrpg.Markdown</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032c5d8-131d-4e84-adf4-263399f9626a}</Project>

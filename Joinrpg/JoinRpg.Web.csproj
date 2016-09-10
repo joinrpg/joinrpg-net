@@ -204,7 +204,6 @@
     <Compile Include="Helpers\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Helpers\ClaimListItemViewModelExporter.cs" />
     <Compile Include="Helpers\CustomExporter.cs" />
-    <Compile Include="Helpers\HtmlServiceImpl.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -248,7 +247,6 @@
     <Compile Include="Models\CommentModels.cs" />
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
-    <Compile Include="Models\CommonTypes\MarkdownViewModel.cs" />
     <Compile Include="Models\CustomFieldsViewModels.cs" />
     <Compile Include="Models\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
@@ -491,7 +489,6 @@
     <Content Include="Views\Plot\Elements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
     <Content Include="Views\Account\RegisterSuccess.cshtml" />
     <Content Include="Views\Account\EmailUnconfirmed.cshtml" />

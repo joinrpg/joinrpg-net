@@ -16,7 +16,7 @@ namespace JoinRpg.Markdown.Test
 
       #region Implementation of ILinkRenderer
 
-      public HashSet<string> LinkTypesToMatch { get; } = new HashSet<string>()
+      public IEnumerable<string> LinkTypesToMatch { get; } = new HashSet<string>()
       {
         Test
       };

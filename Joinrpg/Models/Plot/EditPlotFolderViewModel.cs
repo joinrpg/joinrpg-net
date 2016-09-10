@@ -2,10 +2,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -39,13 +41,14 @@ namespace JoinRpg.Web.Models.Plot
       PlotElementId = e.PlotElementId;
       Targets = e.GetElementBindingsForEdit();
       TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
-      Content = new MarkdownViewModel(e.Texts.Content);
+      Content = e.Texts.Content.ToHtmlString();
       TodoField = e.Texts.TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       IsCompleted = e.IsCompleted;
       ElementType = (PlotElementTypeView) e.ElementType;
+      ShortContent = e.Texts.Content.TakeWords(10).ToPlainText().WithDefaultStringValue("***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
     }
@@ -57,11 +60,12 @@ namespace JoinRpg.Web.Models.Plot
     [ReadOnly(true)]
     public int PlotElementId { get; }
 
-
     [Display(Name="Для кого")]
     public IEnumerable<string> Targets {  get; set;}
-    [Display(Name = "Текст вводной")]
-    public MarkdownViewModel Content { get; set; }
+    [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
+    public IHtmlString Content { get; set; }
+    
+    public string ShortContent { get; }
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; set; }

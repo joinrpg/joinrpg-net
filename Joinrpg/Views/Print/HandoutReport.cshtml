@@ -1,6 +1,4 @@
-﻿@using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
-@using JoinRpg.Web.Models.Plot
+﻿@using JoinRpg.Web.Models.Plot
 @model JoinRpg.Web.Models.Print.HandoutReportViewModel
 
 @{
@@ -15,7 +13,7 @@
     @foreach (var item in Model.Handouts)
     {
         <tr><td>
-            @Html.ActionLink(item.Text.ToPlainText() ?? "(пустой текст)", "EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)
+            @Html.ActionLink(item.Text, "EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)
             @if (item.Status != PlotStatus.Completed)
             {
                 @Html.DisplayFor(modelItem => item.Status)

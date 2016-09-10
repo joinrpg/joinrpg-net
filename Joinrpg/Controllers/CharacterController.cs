@@ -42,12 +42,12 @@ namespace JoinRpg.Web.Controllers
         Player = character.ApprovedClaim?.Player,
         HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
         ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
-        HidePlayer = character.HidePlayerForCharacter && !character.Project.IsPlotPublished(),
+        HidePlayer = character.HidePlayerForCharacter,
         Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
         Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
         Plot =
           character.HasPlotViewAccess(CurrentUserIdOrDefault)
-            ? await ShowPlotsForCharacter(character)
+            ? character.ShowPlotsForCharacter(character).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault), character.CharacterId)
             : Enumerable.Empty<PlotElementViewModel>()
       };
       return View("Details", viewModel);
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<IEnumerable<PlotElementViewModel>> ShowPlotsForCharacter(Character character)
     {
-      return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(CurrentUserIdOrDefault, character);
+      return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character));
     }
 
     [HttpGet, Authorize]
@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = field.ProjectId,
         CharacterId = field.CharacterId,
-        Description = new MarkdownViewModel(field.Description),
+        Description = field.Description.Contents,
         IsPublic = field.IsPublic,
         ProjectName = field.Project.ProjectName,
         IsAcceptingClaims = field.IsAcceptingClaims,
@@ -97,7 +97,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterId,
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, 
+          viewModel.Description, 
           viewModel.HidePlayerForCharacter,
           GetCustomFieldValuesFromPost(), 
           viewModel.IsHot);
@@ -139,7 +139,9 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await ProjectService.AddCharacter(
-          viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims, viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
+          viewModel.ProjectId, CurrentUserId,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
+          viewModel.Description, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
         return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }

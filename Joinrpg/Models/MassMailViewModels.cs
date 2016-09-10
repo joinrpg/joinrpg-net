@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -13,8 +12,8 @@ namespace JoinRpg.Web.Models
     public IEnumerable<ClaimShortListItemViewModel> Claims { get; set; }
     [Display(Name="Тема рассылки"), Required]
     public string Subject { get; set; }
-    [Display(Name = "Текст"), Required]
-    public MarkdownViewModel Body { get; set; }
+    [Display(Name = "Текст"), Required, UIHint("MarkdownString")]
+    public string Body { get; set; }
     [Display(Name = "Также включить всех мастеров")]
     public bool AlsoMailToMasters { get; set; }
 

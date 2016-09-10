@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -8,7 +7,6 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -23,16 +21,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return WithEntity(project) ?? View(new ProjectDetailsViewModel()
-      {
-        ProjectAnnounce = new MarkdownViewModel(project.Details?.ProjectAnnounce),
-        ProjectId = project.ProjectId,
-        ProjectName = project.ProjectName,
-        IsActive = project.Active,
-        IsAcceptingClaims = project.IsAcceptingClaims,
-        CreatedDate = project.CreatedDate,
-        Masters = project.ProjectAcls.Select(acl => acl.User)
-      });
+      return WithEntity(project) ?? View(new ProjectDetailsViewModel(project));
     }
 
     [Authorize]
@@ -71,8 +60,8 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectId);
       return AsMaster(project, pacl => pacl.CanChangeProjectProperties) ?? View(new EditProjectViewModel
       {
-        ClaimApplyRules =new MarkdownViewModel(project.Details?.ClaimApplyRules),
-        ProjectAnnounce = new MarkdownViewModel(project.Details?.ProjectAnnounce),
+        ClaimApplyRules =project.Details?.ClaimApplyRules.Contents,
+        ProjectAnnounce = project.Details?.ProjectAnnounce.Contents,
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         OriginalName = project.ProjectName,
@@ -97,8 +86,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName, viewModel.ClaimApplyRules.Contents,
-            viewModel.ProjectAnnounce.Contents, viewModel.IsAcceptingClaims, viewModel.EnableManyCharacters, viewModel.PublishPlot);
+          ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName, viewModel.ClaimApplyRules,
+            viewModel.ProjectAnnounce, viewModel.IsAcceptingClaims, viewModel.EnableManyCharacters, viewModel.PublishPlot);
 
         return RedirectTo(project);
       }

@@ -14,8 +14,8 @@
     <textarea
         class="form-control"
         cols="100"
-        id="@(ViewData.TemplateInfo.HtmlFieldPrefix)_Contents"
-        name="@(ViewData.TemplateInfo.HtmlFieldPrefix).Contents"
+        id="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
+        name="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
         @requiredMsg @(validation ? "data-val=true" : "")
         rows="4">@(Model == null ? "" : Model.Contents)</textarea>    
 @if (validation)
