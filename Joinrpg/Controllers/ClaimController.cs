@@ -130,35 +130,6 @@ namespace JoinRpg.Web.Controllers
             claim.Comments.Max(c => c.CommentId));
       }
 
-
-      if (claim.PlayerUserId == CurrentUserId || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
-      {
-        //Finance admins can create any payment. User also can create any payment, but it will be moderated
-        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
-      }
-      else
-      {
-        //All other master can create only payment from user to himself.
-        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == CurrentUserId);
-      }
-
-
-      if (claim.Character != null)
-      {
-        claimViewModel.ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(CurrentUserId));
-      }
-
-      if (claim.IsApproved && claim.Character != null)
-      {
-        var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
-        
-        claimViewModel.Plot =
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(CurrentUserId, claim.Character);
-      }
-      else
-      {
-        claimViewModel.Plot = Enumerable.Empty<PlotElementViewModel>();
-      }
       return View("Edit", claimViewModel);
     }
 

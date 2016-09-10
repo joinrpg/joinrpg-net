@@ -23,21 +23,21 @@ namespace JoinRpg.Web.Models
     public User Player { get; set; }
     [Display(Name="Статус заявки")]
     public Claim.Status Status { get; set; }
-    public bool IsMyClaim { get; set; }
+    public bool IsMyClaim { get; }
 
-    public bool HasMasterAccess { get; set; }
-    public bool CanManageThisClaim { get; set; }
-    public bool ProjectActive { get; set; }
-    public IEnumerable<CommentViewModel> Comments { get; set; }
+    public bool HasMasterAccess { get; }
+    public bool CanManageThisClaim { get; }
+    public bool ProjectActive { get; }
+    public IEnumerable<CommentViewModel> Comments { get; }
 
-    public int? CharacterId { get; set; }
+    public int? CharacterId { get; }
 
     [DisplayName("Заявка в группу")]
     public string GroupName { get; set; }
 
-    public int? CharacterGroupId { get; set; }
-    public int OtherClaimsForThisCharacterCount { get; set; }
-    public int OtherClaimsFromThisPlayerCount { get; set; }
+    public int? CharacterGroupId { get;  }
+    public int OtherClaimsForThisCharacterCount { get; }
+    public int OtherClaimsFromThisPlayerCount { get; }
 
     [Display(Name = "Описание персонажа")]
     public IHtmlString Description { get; set; }
@@ -54,21 +54,21 @@ namespace JoinRpg.Web.Models
     public User ResponsibleMaster { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters { get; set; }
+    public IEnumerable<MasterListItemViewModel> Masters { get; }
 
     [ReadOnly(true)]
-    public bool HasOtherApprovedClaim { get; set; }
+    public bool HasOtherApprovedClaim { get; }
 
     [ReadOnly(true)]
-    public IList<CharacterTreeItem> Data { get; set; }
+    public IList<CharacterTreeItem> Data { get; }
 
     public bool HidePlayer => false;
 
     public bool HasAccess => true;
 
-    public CustomFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; }
 
-    public CharacterNavigationViewModel Navigation { get; set; }
+    public CharacterNavigationViewModel Navigation { get; }
 
     [Display(Name="Взнос")]
     public ClaimFeeViewModel ClaimFee { get; set; }
@@ -77,14 +77,14 @@ namespace JoinRpg.Web.Models
     public IEnumerable<PaymentType> PaymentTypes { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<ProblemViewModel> Problems { get; set; }
+    public IEnumerable<ProblemViewModel> Problems { get; }
 
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
 
     [ReadOnly(true)]
-    public bool? CharacterActive { get; set; }
+    public bool? CharacterActive { get; }
 
-    public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; set; }
+    public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
 
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
@@ -104,7 +104,7 @@ namespace JoinRpg.Web.Models
       CharacterActive = claim.Character?.IsActive;
       OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count();
       HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-      Data = new CharacterTreeBuilder(claim.Project.RootGroup, claim.HasMasterAccess(currentUserId)).Generate();
+      Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUserId).Generate();
       OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count();
       Description = claim.Character?.Description.ToHtmlString();
       Masters =
@@ -114,16 +114,11 @@ namespace JoinRpg.Web.Models
       ResponsibleMaster = claim.ResponsibleMasterUser;
       Fields = new CustomFieldsViewModel(currentUserId, claim);
       Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserId, CharacterNavigationPage.Claim);
-      ClaimFee = new ClaimFeeViewModel()
-      {
-        CurrentTotalFee = claim.ClaimTotalFee(),
-        CurrentBalance = claim.ClaimBalance(),
-        CurrentFee = claim.ClaimCurrentFee()
-      };
+      ClaimFee = new ClaimFeeViewModel(claim);
       Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
       PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player);
       PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
-
+      ProjectActive = claim.Project.Active;
 
       if (claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney))
       {
@@ -143,25 +138,23 @@ namespace JoinRpg.Web.Models
           claim.HasMasterAccess(currentUserId));
       }
 
-      if (claim.IsApproved)
-      {
-        var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-        Plot =
-          // ReSharper disable once PossibleNullReferenceException
-          readOnlyList
-            .ToViewModels(claim.HasMasterAccess(currentUserId), claim.Character.CharacterId);
-      }
-      else
-      {
-        Plot = Enumerable.Empty<PlotElementViewModel>();
-      }
+      Plot = claim.IsApproved
+        ? claim.Character.GetOrderedPlots(plotElements).ToViewModels(currentUserId, claim.Character)
+        : Enumerable.Empty<PlotElementViewModel>();
     }
   }
 
   public class ClaimFeeViewModel
   {
-    public int CurrentFee { get; set; }
-    public int CurrentTotalFee { get; set; }
-    public int CurrentBalance { get; set; }
+    public ClaimFeeViewModel(Claim claim)
+    {
+      CurrentTotalFee = claim.ClaimTotalFee();
+      CurrentBalance = claim.ClaimBalance();
+      CurrentFee = claim.ClaimCurrentFee();
+    }
+
+    public int CurrentFee { get; }
+    public int CurrentTotalFee { get; }
+    public int CurrentBalance { get; }
   }
 }

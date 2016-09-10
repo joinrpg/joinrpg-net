@@ -205,7 +205,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, Authorize]
-    public async Task<ActionResult> Delete(int projectId, int plotFolderId, FormCollection collection)
+    public async Task<ActionResult> Delete(int projectId, int plotFolderId, [UsedImplicitly] FormCollection collection)
     {
       try
       {

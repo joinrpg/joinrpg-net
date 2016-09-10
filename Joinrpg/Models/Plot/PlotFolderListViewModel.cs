@@ -5,7 +5,6 @@ using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -68,7 +67,7 @@ namespace JoinRpg.Web.Models.Plot
     public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
     {
       Summary = folder.MasterSummary.ToHtmlString();
-      Elements = folder.Elements.ToViewModels(hasMasterAccess: true);
+      Elements = folder.Elements.ToViewModels(currentUserId);
     }
   }
 

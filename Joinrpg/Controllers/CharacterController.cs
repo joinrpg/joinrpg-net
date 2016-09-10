@@ -9,10 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
-using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -36,24 +33,14 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> ShowCharacter(Character character)
     {
-      var viewModel = new CharacterDetailsViewModel
-      {
-        Description = new MarkdownViewModel(character.Description),
-        Player = character.ApprovedClaim?.Player,
-        HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
-        ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
-        HidePlayer = character.HidePlayerForCharacter,
-        Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
-        Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
-        Plot =
-          character.HasPlotViewAccess(CurrentUserIdOrDefault)
-            ? character.ShowPlotsForCharacter(character).ToViewModels(character.HasMasterAccess(CurrentUserIdOrDefault), character.CharacterId)
-            : Enumerable.Empty<PlotElementViewModel>()
-      };
+      var plots = character.HasPlotViewAccess(CurrentUserIdOrDefault)
+        ? await ShowPlotsForCharacter(character)
+        : Enumerable.Empty<PlotElement>();
+      var viewModel = new CharacterDetailsViewModel(CurrentUserIdOrDefault, character,plots);
       return View("Details", viewModel);
     }
 
-    private async Task<IEnumerable<PlotElementViewModel>> ShowPlotsForCharacter(Character character)
+    private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)
     {
       return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character));
     }

@@ -65,7 +65,7 @@ namespace JoinRpg.Web.Models.Characters
         CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
           currentUserIdOrDefault);
       Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, disableEdit: true);
-      Plot = plots.ToViewModels(character.HasMasterAccess(currentUserIdOrDefault), character.CharacterId);
+      Plot = plots.ToViewModels(currentUserIdOrDefault, character);
     }
   }
 }

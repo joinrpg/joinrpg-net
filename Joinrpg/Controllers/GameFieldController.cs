@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;

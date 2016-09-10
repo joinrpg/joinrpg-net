@@ -5,7 +5,6 @@ using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -170,7 +169,7 @@ namespace JoinRpg.Web.Models.Characters
         return vm;
       }
 
-      public bool HasEditRolesAccess { get; }
+      private bool HasEditRolesAccess { get; }
     }
   }
 }

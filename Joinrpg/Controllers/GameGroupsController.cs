@@ -300,7 +300,7 @@ namespace JoinRpg.Web.Controllers
           group.ProjectId, 
           CurrentUserId,
           group.CharacterGroupId, viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description?.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(group.Project);
@@ -388,7 +388,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.ProjectId, 
           CurrentUserId,
           viewModel.Name, viewModel.IsPublic,
-          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description.Contents, viewModel.HaveDirectSlotsForSave(),
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
         return RedirectToIndex(field.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
