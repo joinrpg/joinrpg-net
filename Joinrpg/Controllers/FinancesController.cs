@@ -9,6 +9,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -224,7 +225,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet,AllowAnonymous]
-    public async Task<ActionResult> MoneySummary(string token, int projectId)
+    public async Task<ActionResult> SummaryByMaster(string token, int projectId)
     {
       var project = await ProjectRepository.GetProjectWithFinances(projectId);
 
@@ -240,18 +241,17 @@ namespace JoinRpg.Web.Controllers
       var summary =
         project.FinanceOperations.Where(fo => fo.Approved && fo.PaymentType != null)
           .GroupBy(fo => fo.PaymentType?.User)
-          .Select(fg => new
-          {
-            fg.Key.DisplayName,
-            fg.Key.Email,
-            //TODO[https]
-            Url = Url.Action("Details", "User", new {fg.Key.UserId}, "http"),
-            Total = fg.Sum(fo => fo.MoneyAmount)
-          })
+          .Select(
+            fg =>
+              new MoneySummaryByMasterListItemViewModel(fg.Sum(fo => fo.MoneyAmount), fg.Key))
           .Where(fr => fr.Total != 0)
-          .OrderBy(fr => fr.DisplayName);
+          .OrderBy(fr => fr.Master.DisplayName);
 
-      return await Export(summary, "money-summary", ExportType.Csv);
+      return
+        await
+          ExportWithCustomFronend(summary, "money-summary", ExportType.Csv,
+            new MoneySummaryByMasterExporter(),
+            project.ProjectName);
     }
   }
 }
