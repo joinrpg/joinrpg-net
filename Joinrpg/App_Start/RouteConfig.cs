@@ -100,6 +100,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "Character", url: "{ProjectId}/character/{CharacterId}/{action}",
         defaults: new {controller = "Character", action = "Details"});
 
+      routes.MapRoute(name: "FinanceExport", url: "{ProjectId}/money.csv/{action}/{token}",
+        defaults: new { controller = "Finances", action = "MoneySummary" });
+
       routes.MapRoute(name: "Finances", url: "{ProjectId}/money/{action}",
         defaults: new { controller = "Finances", action = "Setup" });
 
