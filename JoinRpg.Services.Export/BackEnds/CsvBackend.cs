@@ -13,7 +13,7 @@ namespace JoinRpg.Services.Export.BackEnds
     public string FileExtension => "csv";
 
     public void WriteRow(IEnumerable<Cell> cells)
-      => Builder.AppendLine(string.Join(";", cells.Select(GetContentForCsv)));
+      => Builder.AppendLine(string.Join(",", cells.Select(GetContentForCsv)));
 
     private static string GetContentForCsv(Cell c) => "\"" + c.Content.Replace("\"", "\"\"") + "\"";
 
