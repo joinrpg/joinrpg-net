@@ -90,6 +90,9 @@ namespace JoinRpg.Web.Models
     [Display (Name ="Обновлена"),UIHint("EventTime")]
     public DateTime? UpdateDate { get; set; }
 
+    [Display(Name = "Создана"), UIHint("EventTime")]
+    public DateTime? CreateDate { get; set; }
+
     [Display (Name = "Ответственный")]
     public User Responsible { get; set; }
 
@@ -124,6 +127,7 @@ namespace JoinRpg.Web.Models
       Player = claim.Player;
 
       UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
+      CreateDate = claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
       UnreadCommentsCount =
