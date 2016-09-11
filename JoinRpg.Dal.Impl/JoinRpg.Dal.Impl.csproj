@@ -294,6 +294,10 @@
     <Compile Include="Migrations\201607301204463_RemoveCashHack.Designer.cs">
       <DependentUpon>201607301204463_RemoveCashHack.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609111403569_AclAccessToken.cs" />
+    <Compile Include="Migrations\201609111403569_AclAccessToken.Designer.cs">
+      <DependentUpon>201609111403569_AclAccessToken.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -504,6 +508,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201607301204463_RemoveCashHack.resx">
       <DependentUpon>201607301204463_RemoveCashHack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609111403569_AclAccessToken.resx">
+      <DependentUpon>201609111403569_AclAccessToken.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
