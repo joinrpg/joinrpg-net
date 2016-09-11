@@ -44,7 +44,6 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});
       modelBuilder.Entity<ProjectAcl>()
         .Property(acl => acl.Token)
-        .IsOptional()
         .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
 
       modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();

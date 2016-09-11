@@ -298,6 +298,10 @@
     <Compile Include="Migrations\201609111403569_AclAccessToken.Designer.cs">
       <DependentUpon>201609111403569_AclAccessToken.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609112008125_FixMigrations.cs" />
+    <Compile Include="Migrations\201609112008125_FixMigrations.Designer.cs">
+      <DependentUpon>201609112008125_FixMigrations.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -511,6 +515,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201609111403569_AclAccessToken.resx">
       <DependentUpon>201609111403569_AclAccessToken.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609112008125_FixMigrations.resx">
+      <DependentUpon>201609112008125_FixMigrations.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
