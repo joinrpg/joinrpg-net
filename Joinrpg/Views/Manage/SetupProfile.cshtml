@@ -12,18 +12,23 @@
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.UserId)
+    @Html.HiddenFor(m => m.LastClaimId)
+    @Html.HiddenFor(m => m.LastClaimProjectId)
 
 
     <div class="form-horizontal">
-        @if (ViewBag.CheckContactsMessage)
+        @if (Model.LastClaimId != null)
         {
-            <div class="alert alert-info">Проверьте и дополните свои контакты, чтобы мастера смогли с вами связаться. Ваш телефон, email и skype будут видны только мастерам игр,
-                на которые вы заявились.</div>
+            <div class="alert alert-info">
+                <h3>Поздравляем! Ваша заявка отправлена мастерам!</h3>
+                Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
+                Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.
+            </div>
         }
         else
         {
-        <p>Введите контакты, чтобы мастерам было легче с вами связаться или найти вас. Ваш телефон, email и skype будут видны только мастерам игр,
-            на которые вы заявились.</p>
+            <p>Удостоверьтесь что ваши контакты актуальны, чтобы мастерам было легче с вами связаться или найти вас.
+                Ваш телефон, email и skype будут видны только мастерам игр, на которые вы заявились.</p>
         }
         <p>Загрузить аватарку пока можно при помощи сервиса <a href="https://ru.gravatar.com/">GrAvatar</a> (<a href="https://drive.google.com/open?id=19pqYYfvSxQ3WMqAAr7F5hHziXAaPT50JHoml-w6R3tk">инструкция</a>).</p>
         <hr />
@@ -130,7 +135,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-7">
-                <input type="submit" value="Сохранить" class="btn btn-default" />
+                <input type="submit" value="@(Model.LastClaimId  == null ? "Сохранить" : "Сохранить и перейти к заявке")" class="btn btn-success" />
             </div>
         </div>
     </div>

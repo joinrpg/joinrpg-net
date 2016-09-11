@@ -200,9 +200,14 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false)
     {
-      ViewBag.CheckContactsMessage = checkContactsMessage;
-
       var user = await _userRepository.WithProfile(CurrentUserId);
+      var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
+      var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
+      if (claimBeforeThat != null && claimBeforeThat.CreateDate.AddMonths(3) > DateTime.Now && lastClaim != null)
+      {
+        return RedirectToAction("Edit", "Claim",
+            new {lastClaim.ClaimId, lastClaim.ProjectId });
+      }
       return View(new EditUserProfileViewModel()
       {
         SurName = user.SurName,
@@ -217,7 +222,9 @@ namespace JoinRpg.Web.Controllers
         GroupNames = user.Extra?.GroupNames,
         Vk = user.Extra?.Vk,
         Livejournal = user.Extra?.Livejournal,
-        Skype = user.Extra?.Skype
+        Skype = user.Extra?.Skype,
+        LastClaimId = lastClaim?.ClaimId,
+        LastClaimProjectId = lastClaim?.ProjectId
       });
     }
 
@@ -230,7 +237,15 @@ namespace JoinRpg.Web.Controllers
           _userService.UpdateProfile(CurrentUserId, viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
             viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal);
-        return RedirectToAction("SetupProfile");
+        if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
+        {
+          return RedirectToAction("SetupProfile");
+        }
+        else
+        {
+          return RedirectToAction("Edit", "Claim",
+            new {ClaimId = viewModel.LastClaimId, ProjectId = viewModel.LastClaimProjectId});
+        }
       }
       catch (Exception e)
       {
