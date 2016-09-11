@@ -197,9 +197,9 @@
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
-    <Compile Include="Helpers\CharacterListItemViewModelExporter.cs" />
-    <Compile Include="Helpers\ClaimListItemViewModelExporter.cs" />
-    <Compile Include="Helpers\CustomExporter.cs" />
+    <Compile Include="Models\Exporters\CharacterListItemViewModelExporter.cs" />
+    <Compile Include="Models\Exporters\ClaimListItemViewModelExporter.cs" />
+    <Compile Include="Models\Exporters\CustomExporter.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
@@ -245,6 +245,7 @@
     <Compile Include="Models\AllrpgUpdateViewModel.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CustomFieldsViewModels.cs" />
+    <Compile Include="Models\Exporters\MoneySummaryByMasterExporter.cs" />
     <Compile Include="Models\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\Characters\CharacterDetailsViewModel.cs" />
@@ -257,6 +258,7 @@
     <Compile Include="Models\IProjectIdAware.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
+    <Compile Include="Models\MoneySummaryByMasterListItemViewModel.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
     <Compile Include="Models\Print\PrintCharacterViewModel.cs" />
     <Compile Include="Models\Print\HandoutReportViewModel.cs" />

@@ -9,6 +9,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers
 {

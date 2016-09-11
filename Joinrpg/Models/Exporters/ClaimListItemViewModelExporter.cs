@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 
-namespace JoinRpg.Web.Helpers
+namespace JoinRpg.Web.Models.Exporters
 {
   public class ClaimListItemViewModelExporter: CustomExporter<ClaimListItemViewModel>
   {
@@ -24,14 +24,8 @@ namespace JoinRpg.Web.Helpers
       yield return DateTimeColumn(x => x.CreateDate);
       yield return IntColumn(x => x.FeeDue);
       yield return IntColumn(x => x.FeePaid);
-      foreach (var c in ShortUserColumn(x => x.LastModifiedBy))
-      {
-        yield return c;
-      }
-      foreach (var c in ShortUserColumn(x => x.Responsible))
-      {
-        yield return c;
-      }
+      yield return ShortUserColumn(x => x.LastModifiedBy);
+      yield return ShortUserColumn(x => x.Responsible);
       foreach (var c in UserColumn(x => x.Player))
       {
         yield return c;
@@ -44,6 +38,5 @@ namespace JoinRpg.Web.Helpers
             x => x.Fields.FieldById(projectField.ProjectFieldId)?.DisplayString);
       }
     }
-
   }
 }

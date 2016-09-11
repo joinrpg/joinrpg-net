@@ -15,7 +15,14 @@ namespace JoinRpg.Services.Export.BackEnds
     public void WriteRow(IEnumerable<Cell> cells)
       => Builder.AppendLine(string.Join(",", cells.Select(GetContentForCsv)));
 
-    private static string GetContentForCsv(Cell c) => "\"" + c.Content.Replace("\"", "\"\"") + "\"";
+    private static string GetContentForCsv(Cell c)
+    {
+      if (string.IsNullOrWhiteSpace(c.Content))
+      {
+        return "";
+      }
+      return "\"" + c.Content.Replace("\"", "\"\"") + "\"";
+    }
 
     public byte[] Generate() => Encoding.UTF8.GetBytes(Builder.ToString());
   }
