@@ -8,7 +8,7 @@
 {
     public static HtmlString GetFullHostName()
     {
-        return new HtmlString(Request.Url.Scheme + Request.Url.Host + (Request.Url.IsDefaultPort ? "" : ":" + Request.Url.Port));
+        return new HtmlString(Request.Url.Scheme + "://" + Request.Url.Host + (Request.Url.IsDefaultPort ? "" : ":" + Request.Url.Port));
     }
 
 }
