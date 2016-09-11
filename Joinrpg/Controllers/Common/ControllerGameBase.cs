@@ -5,12 +5,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 
@@ -235,20 +234,26 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    protected async Task<FileContentResult> Export<T>(IEnumerable<T> @select, string fileName, ExportType exportType = ExportType.Csv)
+    protected Task<FileContentResult> Export<T>(IEnumerable<T> select, string fileName, ExportType exportType = ExportType.Csv)
     {
       ExportDataService.BindDisplay<User>(user => user?.DisplayName);
-      var generator = ExportDataService.GetGenerator(exportType, @select);
-      return File(await generator.Generate(), generator.ContentType, Path.ChangeExtension(fileName, generator.FileExtension));
+      var generator = ExportDataService.GetGenerator(exportType, select);
+      return  ReturnExportResult(fileName, generator);
     }
 
-    protected async Task<ActionResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title, ExportType exportType, IGeneratorFrontend frontend, string projectName)
+    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
+    {
+      return File(await generator.Generate(), generator.ContentType,
+        Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+    }
+
+    protected Task<FileContentResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title,
+      ExportType exportType, IGeneratorFrontend frontend, string projectName)
     {
       var generator = ExportDataService.GetGenerator(exportType, viewModel,
         frontend);
 
-      return File(await generator.Generate(), generator.ContentType,
-        Path.ChangeExtension(projectName + ": " + title, generator.FileExtension));
+      return ReturnExportResult(projectName + ": " + title, generator);
     }
   }
 }

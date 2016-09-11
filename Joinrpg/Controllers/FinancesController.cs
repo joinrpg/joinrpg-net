@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -220,6 +221,37 @@ namespace JoinRpg.Web.Controllers
         //TODO: Message that comment is not added
         return RedirectToAction("Setup", new { projectid });
       }
+    }
+
+    [HttpGet,AllowAnonymous]
+    public async Task<ActionResult> MoneySummary(string token, int projectId)
+    {
+      var project = await ProjectRepository.GetProjectWithFinances(projectId);
+
+      var guid = new Guid(token.FromHexString());
+
+      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+
+      if (acl == null)
+      {
+        return Content("Unauthorized");
+      }
+
+      var summary =
+        project.FinanceOperations.Where(fo => fo.Approved && fo.PaymentType != null)
+          .GroupBy(fo => fo.PaymentType?.User)
+          .Select(fg => new
+          {
+            fg.Key.DisplayName,
+            fg.Key.Email,
+            //TODO[https]
+            Url = Url.Action("Details", "User", new {fg.Key.UserId}, "http"),
+            Total = fg.Sum(fo => fo.MoneyAmount)
+          })
+          .Where(fr => fr.Total != 0)
+          .OrderBy(fr => fr.DisplayName);
+
+      return await Export(summary, "money-summary", ExportType.Csv);
     }
   }
 }

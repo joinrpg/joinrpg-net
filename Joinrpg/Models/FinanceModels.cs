@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models
@@ -152,6 +153,8 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true)]
     public IEnumerable<MasterListItemViewModel> Masters { get; }
 
+    public string CurrentUserToken { get; }
+
     public FinanceSetupViewModel(Project project, int currentUserId)
     {
       ProjectName = project.ProjectName;
@@ -174,6 +177,8 @@ namespace JoinRpg.Web.Models
       Masters = project.GetMasterListViewModel();
 
       FeeSettings = project.ProjectFeeSettings.Select(fs => new ProjectFeeSettingListItemViewModel(fs)).ToList();
+
+      CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
     }
   }
 

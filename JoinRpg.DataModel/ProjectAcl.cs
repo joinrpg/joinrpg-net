@@ -1,4 +1,6 @@
-﻿namespace JoinRpg.DataModel
+﻿using System;
+
+namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (required by LINQ)
   public class ProjectAcl 
@@ -11,6 +13,8 @@
     public int UserId { get; set; }
 
     public virtual  User User { get; set; }
+
+    public Guid Token { get; set; } = new Guid();
 
     public bool CanChangeFields { get; set; }
 
@@ -41,7 +45,7 @@
         CanManageClaims = true,
         CanEditRoles =  true,
         CanManageMoney = true,
-        CanSendMassMails = true,
+        CanSendMassMails = true
       };
     }
   }

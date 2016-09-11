@@ -31,13 +31,11 @@ namespace JoinRpg.Helpers
       return string.Join(separator, strings);
     }
 
-    [NotNull]
-    public static string JoinStrings([NotNull] this IEnumerable<char> strings,
-      [NotNull] string separator)
+    [NotNull, PublicAPI]
+    public static string AsString([NotNull] this IEnumerable<char> strings)
     {
       if (strings == null) throw new ArgumentNullException(nameof(strings));
-      if (separator == null) throw new ArgumentNullException(nameof(separator));
-      return string.Join(separator, strings);
+      return string.Join("", strings);
     }
 
     public static IEnumerable<int> UnprefixNumbers([NotNull, ItemNotNull] this IEnumerable<string> enumerable, [NotNull] string prefix)
@@ -50,7 +48,7 @@ namespace JoinRpg.Helpers
       return number.StartsWith(prefix) ? (int?) int.Parse(number.Substring(prefix.Length)) : null;
     }
 
-    [NotNull]
+    [NotNull, PublicAPI]
     public static string ToHexString([NotNull] this IEnumerable<byte> bytes)
     {
       if (bytes == null) throw new ArgumentNullException(nameof(bytes));
@@ -105,12 +103,12 @@ namespace JoinRpg.Helpers
 
     public static string AfterSeparator(this string str, char separator)
     {
-      return str.SkipWhile(c => c!=separator).Skip(1).JoinStrings("");
+      return str.SkipWhile(c => c!=separator).Skip(1).AsString();
     }
 
     public static string BeforeSeparator(this string str, char separator)
     {
-      return str.TakeWhile(c=> c!=separator).JoinStrings("");
+      return str.TakeWhile(c=> c!=separator).AsString();
     }
 
     [NotNull]
@@ -147,6 +145,11 @@ namespace JoinRpg.Helpers
     {
       if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));
       return string.IsNullOrEmpty(value) ? defaultValue : value;
+    }
+
+    public static string ToHexString(this Guid guid)
+    {
+      return guid.ToByteArray().ToHexString();
     }
   }
 }

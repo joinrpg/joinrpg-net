@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Helpers
       yield return StringColumn(x => x.Name);
       yield return EnumColumn(x => x.ClaimStatus);
       yield return DateTimeColumn(x => x.UpdateDate);
+      yield return DateTimeColumn(x => x.CreateDate);
       yield return IntColumn(x => x.FeeDue);
       yield return IntColumn(x => x.FeePaid);
       foreach (var c in ShortUserColumn(x => x.LastModifiedBy))
