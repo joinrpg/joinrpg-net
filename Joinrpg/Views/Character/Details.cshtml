@@ -1,4 +1,8 @@
 ﻿@model JoinRpg.Web.Models.Characters.CharacterDetailsViewModel
+  
+@{
+    ViewBag.Title = Model.Navigation.Name;
+}
 
 <div>
     @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -6,7 +10,7 @@
         <dt>Игрок</dt>
         <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
         <dt>@Html.DisplayNameFor(model => model.Description)</dt>
-        <dd>@Html.DisplayFor(model => model.Description)</dd>
+        <dd>@Model.Description</dd>
         <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
         <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
     </dl>

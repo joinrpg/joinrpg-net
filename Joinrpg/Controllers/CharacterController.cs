@@ -36,8 +36,8 @@ namespace JoinRpg.Web.Controllers
       var plots = character.HasPlotViewAccess(CurrentUserIdOrDefault)
         ? await ShowPlotsForCharacter(character)
         : Enumerable.Empty<PlotElement>();
-      var viewModel = new CharacterDetailsViewModel(CurrentUserIdOrDefault, character,plots);
-      return View("Details", viewModel);
+      return View("Details",
+        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)

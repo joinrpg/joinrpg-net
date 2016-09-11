@@ -63,8 +63,7 @@
             @if (item.FirstCopy)
             {
             <div>
-
-                @Html.DisplayFor(modelItem => item.Description)
+                @item.Description
                 <ul>
                     @foreach (var character in item.ActiveCharacters)
                     {

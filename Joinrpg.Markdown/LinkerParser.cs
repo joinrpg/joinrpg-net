@@ -29,7 +29,7 @@ namespace Joinrpg.Markdown
 
     public override bool Match(InlineProcessor processor, ref StringSlice slice)
     {
-      if (slice.Start != 0 && !slice.PeekChar(-1).IsWhitespace())
+      if (slice.Start != 0 && !slice.PeekCharExtra(-1).IsWhitespace())
       {
         return false;
       }

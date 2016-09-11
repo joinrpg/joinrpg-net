@@ -69,7 +69,10 @@ namespace Joinrpg.Markdown
       if (renderer == null) throw new ArgumentNullException(nameof(renderer));
       //TODO - do we need to save re-use pipeline?
       var pipeline =
-        new MarkdownPipelineBuilder().UseSoftlineBreakAsHardlineBreak().UseEntityLinker(renderer).Build();
+        new MarkdownPipelineBuilder()
+          .UseSoftlineBreakAsHardlineBreak()
+          .UseEntityLinker(renderer)
+          .Build();
       return Markdig.Markdown.ToHtml(markdownString.Contents, pipeline);
     }
 

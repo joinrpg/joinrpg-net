@@ -1,6 +1,5 @@
 ﻿@using System.ComponentModel
 @using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
 
@@ -121,7 +120,7 @@
         @ValidationMessage()
         @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
-            <div class="help-block">@Html.DisplayFor(model => model.Description) </div>
+            <div class="help-block">@Model.Description </div>
         }
         @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
     </div>

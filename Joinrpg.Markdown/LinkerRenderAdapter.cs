@@ -12,13 +12,9 @@ namespace Joinrpg.Markdown
       LinkRenderer = linkRenderer;
     }
 
-    #region Overrides of MarkdownObjectRenderer<HtmlRenderer,EntityLinkInline>
-
     protected override void Write(HtmlRenderer renderer, EntityLinkInline obj)
     {
-      renderer.WriteEscape(LinkRenderer.Render(obj.Match, obj.Index, obj.Extra));
+      renderer.Write(LinkRenderer.Render(obj.Match, obj.Index, obj.Extra));
     }
-
-    #endregion
   }
 }

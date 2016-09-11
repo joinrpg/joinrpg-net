@@ -1,7 +1,5 @@
-﻿@using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
-@using JoinRpg.Web.Models.Plot
-@model EditPlotElementViewModel
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotElementListItemViewModel
 
 @if (!Model.HasMasterAccess && Model.Status != PlotStatus.Completed)
 {
@@ -77,7 +75,7 @@
                 var hideClassName = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
             }
             <div class="@hideClassName">
-                @Html.DisplayFor(model => Model.Content)
+                @Model.Content
                 @if (string.IsNullOrWhiteSpace(Model.Content.ToHtmlString()))
                 {
                     <i>Вводная пуста</i>

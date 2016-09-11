@@ -6,7 +6,6 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
@@ -39,14 +38,21 @@ namespace JoinRpg.Web.Controllers
     {
       var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList(); 
       var project = await GetProjectFromList(projectId, folders);
-      return WithPlot(project) ?? View(new PlotFolderFullListViewModel(folders, project, project.HasMasterAccess(CurrentUserIdOrDefault, acl => acl.CanManagePlots), CurrentUserIdOrDefault));
+      return WithPlot(project) ??
+             View(
+               new PlotFolderFullListViewModel(
+                 folders, 
+                 project, 
+                 CurrentUserIdOrDefault));
     }
 
     public async Task<ActionResult> FlatListUnready(int projectId)
     {
       var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
       var project = await GetProjectFromList(projectId, folders);
-      return WithPlot(project) ?? View("FlatList", new PlotFolderFullListViewModel(folders, project, project.HasMasterAccess(CurrentUserIdOrDefault, acl => acl.CanManagePlots), CurrentUserIdOrDefault, true));
+      return WithPlot(project) ??
+             View("FlatList",
+               new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, true));
     }
 
     public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -247,7 +253,7 @@ namespace JoinRpg.Web.Controllers
         return error;
       }
 
-      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid), CurrentUserId);
+      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid));
       return View(viewModel);
     }
 

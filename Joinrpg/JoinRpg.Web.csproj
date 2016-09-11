@@ -231,6 +231,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\JoinrpgMarkdownLinkRenderer.cs" />
     <Compile Include="Helpers\MagicControlHelper.cs" />
     <Compile Include="Helpers\ModelStateExtensions.cs" />
     <Compile Include="Helpers\ObjectLinkHelper.cs" />

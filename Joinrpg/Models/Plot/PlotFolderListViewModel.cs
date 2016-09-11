@@ -47,7 +47,9 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
     public bool InWorkOnly { get; }
 
-    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, bool hasEditAccess, int? currentUserId, bool inWorkOnly = false) : base(project, hasEditAccess)
+    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project,
+      int? currentUserId, bool inWorkOnly = false)
+      : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
     {
       InWorkOnly = inWorkOnly;
       Folders =

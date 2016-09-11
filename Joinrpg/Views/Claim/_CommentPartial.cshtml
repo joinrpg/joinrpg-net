@@ -1,6 +1,4 @@
-﻿@using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
-@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Models
 @model CommentViewModel
 
 @helper ShowCommentWithTree(CommentViewModel comment, int deepLevel)
@@ -52,7 +50,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                         <b>@Html.DisplayFor(model => comment.ExtraAction)</b>
                         }
 
-                        <span>@comment.CommentText.ToHtmlString()</span>
+                        <span>@comment.CommentText</span>
                         <a data-toggle="collapse"
                            href="#answerComment@(comment.CommentId)">
                             Ответить
