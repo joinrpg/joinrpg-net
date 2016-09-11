@@ -54,6 +54,7 @@
     <Compile Include="DisplayAttributeHelper.cs" />
     <Compile Include="ExpressionHelpers.cs" />
     <Compile Include="EntityFrameworkExtensions.cs" />
+    <Compile Include="FileNamesHelper.cs" />
     <Compile Include="LambdaHelpers.cs" />
     <Compile Include="MarkdownString.cs" />
     <Compile Include="OperationLog.cs" />
