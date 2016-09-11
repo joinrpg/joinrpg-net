@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models.Print
 {
   public class HandoutReportViewModel
   {
-    public HandoutReportViewModel(IReadOnlyCollection<PlotElement> elements, IReadOnlyCollection<Character> characters)
+    public HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters)
     {
       Handouts = elements.Select(e => new HandoutReportItemViewModel(e, characters));
     }
@@ -21,7 +22,7 @@ namespace JoinRpg.Web.Models.Print
   {
     public HandoutReportItemViewModel(PlotElement element, IReadOnlyCollection<Character> characters)
     {
-      Text = new MarkdownViewModel(element.Texts.Content);
+      Text = element.Texts.Content.ToPlainText().WithDefaultStringValue("(пустой текст)");
       PlotElementId = element.PlotElementId;
       PlotFolderId = element.PlotFolderId;
       ProjectId = element.ProjectId;
@@ -30,7 +31,7 @@ namespace JoinRpg.Web.Models.Print
     }
 
     [Display(Name="Что раздавать")]
-    public MarkdownViewModel Text { get; private set; }
+    public string Text { get; private set; }
     public int PlotElementId { get; private set; }
     public int PlotFolderId { get; private set; }
     public int ProjectId { get; private set; }

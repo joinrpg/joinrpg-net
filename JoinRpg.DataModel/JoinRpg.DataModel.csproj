@@ -60,7 +60,6 @@
     <Compile Include="IProjectEntity.cs" />
     <Compile Include="IWorldObject.cs" />
     <Compile Include="Links.cs" />
-    <Compile Include="MarkdownString.cs" />
     <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />

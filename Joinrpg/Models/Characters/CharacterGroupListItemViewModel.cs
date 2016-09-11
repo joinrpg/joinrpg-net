@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
-using JetBrains.Annotations;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
   public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
   {
@@ -40,8 +39,7 @@ namespace JoinRpg.Web.Models
 
     public int TotalActiveClaims { get; set; }
 
-    [CanBeNull]
-    public HtmlString Description { get; set; }
+    public IHtmlString Description { get; set; }
 
     public IEnumerable<CharacterGroupListItemViewModel> Path { get; set; }
 

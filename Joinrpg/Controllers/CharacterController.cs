@@ -9,10 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
-using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
-using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -36,26 +33,16 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> ShowCharacter(Character character)
     {
-      var viewModel = new CharacterDetailsViewModel
-      {
-        Description = new MarkdownViewModel(character.Description),
-        Player = character.ApprovedClaim?.Player,
-        HasAccess = character.HasAnyAccess(CurrentUserIdOrDefault),
-        ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(CurrentUserIdOrDefault)),
-        HidePlayer = character.HidePlayerForCharacter && !character.Project.IsPlotPublished(),
-        Navigation = CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character, CurrentUserIdOrDefault),
-        Fields = new CustomFieldsViewModel(CurrentUserIdOrDefault, character, disableEdit: true),
-        Plot =
-          character.HasPlotViewAccess(CurrentUserIdOrDefault)
-            ? await ShowPlotsForCharacter(character)
-            : Enumerable.Empty<PlotElementViewModel>()
-      };
-      return View("Details", viewModel);
+      var plots = character.HasPlotViewAccess(CurrentUserIdOrDefault)
+        ? await ShowPlotsForCharacter(character)
+        : Enumerable.Empty<PlotElement>();
+      return View("Details",
+        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots));
     }
 
-    private async Task<IEnumerable<PlotElementViewModel>> ShowPlotsForCharacter(Character character)
+    private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)
     {
-      return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character)).ToViewModels(CurrentUserIdOrDefault, character);
+      return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character));
     }
 
     [HttpGet, Authorize]
@@ -66,7 +53,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = field.ProjectId,
         CharacterId = field.CharacterId,
-        Description = new MarkdownViewModel(field.Description),
+        Description = field.Description.Contents,
         IsPublic = field.IsPublic,
         ProjectName = field.Project.ProjectName,
         IsAcceptingClaims = field.IsAcceptingClaims,
@@ -97,7 +84,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterId,
           viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
-          viewModel.Description.Contents, 
+          viewModel.Description, 
           viewModel.HidePlayerForCharacter,
           GetCustomFieldValuesFromPost(), 
           viewModel.IsHot);
@@ -139,7 +126,9 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await ProjectService.AddCharacter(
-          viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims, viewModel.Description.Contents, viewModel.HidePlayerForCharacter, viewModel.IsHot);
+          viewModel.ProjectId, CurrentUserId,
+          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
+          viewModel.Description, viewModel.HidePlayerForCharacter, viewModel.IsHot);
 
         return RedirectToIndex(viewModel.ProjectId, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
       }

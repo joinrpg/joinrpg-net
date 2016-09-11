@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -35,8 +35,8 @@ namespace JoinRpg.Web.Controllers.Common
 
       ViewBag.Title = pluginInstance.OperationName;
       return View("ShowMarkdown",
-        new MarkdownViewModel(PluginFactory.ShowPluginConfiguration(pluginInstance,
-          await GetProjectFromList(projectid, groups))));
+        PluginFactory.ShowPluginConfiguration(pluginInstance,
+          await GetProjectFromList(projectid, groups)).ToHtmlString());
       ;
     }
   }

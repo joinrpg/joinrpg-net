@@ -14,10 +14,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
-using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -72,7 +68,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-          CurrentUserId, viewModel.ClaimText?.Contents, 
+          CurrentUserId, viewModel.ClaimText, 
           GetCustomFieldValuesFromPost());
 
         return RedirectToAction(
@@ -117,49 +113,15 @@ namespace JoinRpg.Web.Controllers
         return error;
       }
 
-      var claimViewModel = new ClaimViewModel()
-      {
-        ClaimId = claim.ClaimId,
-        Comments =
-          claim.Comments.Where(comment => comment.ParentCommentId == null)
-            .Select(comment => new CommentViewModel(comment, CurrentUserId)).OrderBy(c => c.CreatedTime),
-        HasMasterAccess = claim.HasMasterAccess(CurrentUserId),
-        CanManageThisClaim = claim.CanManageClaim(CurrentUserId),
-        IsMyClaim = claim.PlayerUserId == CurrentUserId,
-        Player = claim.Player,
-        ProjectId = claim.ProjectId,
-        Status = claim.ClaimStatus,
-        CharacterGroupId = claim.CharacterGroupId,
-        GroupName = claim.Group?.CharacterGroupName,
-        CharacterId = claim.CharacterId,
-        CharacterActive = claim.Character?.IsActive,
-        ProjectActive = claim.Project.Active,
-        OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count(),
-        HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved),
-        Data = new CharacterTreeBuilder(claim.Project.RootGroup, CurrentUserId).Generate(),
-        OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count(),
-        Description = new MarkdownViewModel(claim.Character?.Description),
-        Masters =
-          claim.Project.GetMasterListViewModel()
-            .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"}),
-        ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1,
-        ResponsibleMaster = claim.ResponsibleMasterUser,
-        Fields = new CustomFieldsViewModel(CurrentUserId, claim),
-        Navigation = CharacterNavigationViewModel.FromClaim(claim, CurrentUserId, CharacterNavigationPage.Claim),
-        ClaimFee = new ClaimFeeViewModel()
-        {
-          CurrentTotalFee = claim.ClaimTotalFee(),
-          CurrentBalance = claim.ClaimBalance(),
-          CurrentFee = claim.ClaimCurrentFee()
-        },
-        Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList(),
-        PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player),
-        PrintPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
-          ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Where(
-            p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId)).Select(
-              PluginOperationDescriptionViewModel.Create)
-          : Enumerable.Empty<PluginOperationDescriptionViewModel>()
-      };
+      var printPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
+        ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Where(
+          p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
+        : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
+
+      var plots = claim.IsApproved && claim.Character != null
+        ? await _plotRepository.GetPlotsForCharacter(claim.Character)
+        : new PlotElement[] {};
+      var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
 
       if (claimViewModel.Comments.Any(c => !c.IsRead))
       {
@@ -168,35 +130,6 @@ namespace JoinRpg.Web.Controllers
             claim.Comments.Max(c => c.CommentId));
       }
 
-
-      if (claim.PlayerUserId == CurrentUserId || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
-      {
-        //Finance admins can create any payment. User also can create any payment, but it will be moderated
-        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes;
-      }
-      else
-      {
-        //All other master can create only payment from user to himself.
-        claimViewModel.PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == CurrentUserId);
-      }
-
-
-      if (claim.Character != null)
-      {
-        claimViewModel.ParentGroups = new CharacterParentGroupsViewModel(claim.Character, claim.HasMasterAccess(CurrentUserId));
-      }
-
-      if (claim.IsApproved && claim.Character != null)
-      {
-        var plotElements = await _plotRepository.GetPlotsForCharacter(claim.Character);
-        
-        claimViewModel.Plot =
-          claim.Character.GetOrderedPlots(plotElements).ToViewModels(CurrentUserId, claim.Character);
-      }
-      else
-      {
-        claimViewModel.Plot = Enumerable.Empty<PlotElementViewModel>();
-      }
       return View("Edit", claimViewModel);
     }
 
@@ -235,7 +168,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -259,7 +192,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+          _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
         return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
@@ -289,7 +222,7 @@ namespace JoinRpg.Web.Controllers
           throw new DbEntityValidationException();
         }
         await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -320,7 +253,7 @@ namespace JoinRpg.Web.Controllers
           throw new DbEntityValidationException();
         }
         await
-          _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+          _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
         return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
@@ -349,7 +282,7 @@ namespace JoinRpg.Web.Controllers
           throw new DbEntityValidationException();
         }
         await
-          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents);
+          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }
@@ -404,7 +337,7 @@ namespace JoinRpg.Web.Controllers
         var characterGroupId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.GroupFieldPrefix);
         var characterId = claimTarget.UnprefixNumber(CharacterAndGroupPrefixer.CharFieldPrefix);
         await
-          _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText.Contents, characterGroupId, characterId);
+          _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText, characterGroupId, characterId);
 
         return ReturnToClaim(viewModel);
       }
@@ -460,7 +393,7 @@ namespace JoinRpg.Web.Controllers
 
         await
           FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
-            viewModel.CommentText.Contents, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
+            viewModel.CommentText, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
             viewModel.PaymentTypeId);
         
         return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });

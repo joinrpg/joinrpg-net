@@ -141,5 +141,12 @@ namespace JoinRpg.Helpers
       
       return Enumerable.Empty<byte>();
     }
+
+    [NotNull]
+    public static string WithDefaultStringValue([CanBeNull] this string value, [NotNull] string defaultValue)
+    {
+      if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));
+      return string.IsNullOrEmpty(value) ? defaultValue : value;
+    }
   }
 }

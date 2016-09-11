@@ -1,4 +1,4 @@
-﻿@model JoinRpg.Web.Models.CharacterViewModel
+﻿@model JoinRpg.Web.Models.Characters.CharacterViewModel
 <span>
     <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="изменить" class="glyphicon glyphicon-wrench"></span></a>
     @if (Model.ActiveClaimsCount == 0)

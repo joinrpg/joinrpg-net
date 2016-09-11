@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models
 {

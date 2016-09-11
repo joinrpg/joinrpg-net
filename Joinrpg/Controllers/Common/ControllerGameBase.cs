@@ -5,10 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 
@@ -20,7 +22,6 @@ namespace JoinRpg.Web.Controllers.Common
     private IExportDataService ExportDataService { get; }
     protected IProjectRepository ProjectRepository { get; }
 
-
     protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IExportDataService exportDataService) : base(userManager)
     {
@@ -28,7 +29,6 @@ namespace JoinRpg.Web.Controllers.Common
       ProjectService = projectService;
       ExportDataService = exportDataService;
     }
-
 
     private ActionResult NoAccesToProjectView(Project project)
     {

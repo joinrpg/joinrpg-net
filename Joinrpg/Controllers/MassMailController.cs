@@ -3,12 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers
         ClaimIds = filteredClaims.Select( c=> c.ClaimId).CompressIdList(),
         Claims = filteredClaims.Select(claim => new ClaimShortListItemViewModel(claim)),
         ToMyClaimsOnlyWarning = !canSendMassEmails && claims.Any(c => c.ResponsibleMasterUserId != CurrentUserId),
-        Body = new MarkdownViewModel("Добрый день, %NAME%, \nспешим уведомить вас..")
+        Body = "Добрый день, %NAME%, \nспешим уведомить вас..",
       });
     }
 
@@ -59,7 +59,7 @@ namespace JoinRpg.Web.Controllers
         {
           Initiator = await GetCurrentUserAsync(),
           ProjectName = project.ProjectName,
-          Text = viewModel.Body,
+          Text = new MarkdownString(viewModel.Body),
           Recepients = recepients.ToList(),
           Subject = viewModel.Subject
         });

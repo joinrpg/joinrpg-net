@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers.Validation;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -19,7 +18,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Публично?", Description = "Публичные группы показываются в сетке ролей и на карточках персонажей.")]
     public bool IsPublic { get; set; } = true;
 
-    [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем.")]
-    public MarkdownViewModel Description { get; set; }
+    [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем."), UIHint("MarkdownString")]
+    public string Description { get; set; }
   }
 }

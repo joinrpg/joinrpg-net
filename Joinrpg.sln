@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web", "Joinrpg\JoinRpg.Web.csproj", "{24952B80-7D38-44DE-B431-BDC9C1E71D63}"
 EndProject
@@ -68,6 +68,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Experimental.Plugin.HelloWorld", "JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj", "{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Experimental.Plugin.SteampunkDetective", "JoinRpg.Experimental.Plugin.SteampunkDetective\JoinRpg.Experimental.Plugin.SteampunkDetective.csproj", "{FBF44C48-6861-4662-B808-2C154A5C3CAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.Markdown", "Joinrpg.Markdown\Joinrpg.Markdown.csproj", "{9E52DF40-A040-47C2-91DC-2413270FF9B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Markdown.Test", "JoinRpg.Markdown.Test\JoinRpg.Markdown.Test.csproj", "{138594D3-38DF-4025-B5B5-1049D686CC29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -167,6 +171,14 @@ Global
 		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBF44C48-6861-4662-B808-2C154A5C3CAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E52DF40-A040-47C2-91DC-2413270FF9B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{138594D3-38DF-4025-B5B5-1049D686CC29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{138594D3-38DF-4025-B5B5-1049D686CC29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{138594D3-38DF-4025-B5B5-1049D686CC29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{138594D3-38DF-4025-B5B5-1049D686CC29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -183,5 +195,6 @@ Global
 		{9819E020-80E9-4AA1-A504-6F6256C1EC01} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
 		{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
 		{FBF44C48-6861-4662-B808-2C154A5C3CAE} = {C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}
+		{138594D3-38DF-4025-B5B5-1049D686CC29} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 	EndGlobalSection
 EndGlobal

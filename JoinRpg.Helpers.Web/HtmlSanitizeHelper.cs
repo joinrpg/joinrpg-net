@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web;
+using JetBrains.Annotations;
 using Vereyon.Web;
 
 namespace JoinRpg.Helpers.Web
@@ -49,8 +50,10 @@ namespace JoinRpg.Helpers.Web
       return RemoveAllHtmlSanitizer.Value.Sanitize(unsafeHtml.UnValidatedValue);
     }
 
-    public static HtmlString SanitizeHtml(this UnSafeHtml unsafeHtml)
+    [NotNull]
+    public static HtmlString SanitizeHtml([NotNull] this UnSafeHtml unsafeHtml)
     {
+      if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
       return new HtmlString(SimpleHtml5Sanitizer.Value.Sanitize(unsafeHtml.UnValidatedValue));
     }
   }

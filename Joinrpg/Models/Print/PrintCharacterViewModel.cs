@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Models.Print
@@ -41,9 +42,9 @@ namespace JoinRpg.Web.Models.Print
 
   public class PrintCharacterViewModel : PrintCharacterViewModelSlim
   {
-    public MarkdownViewModel CharacterDescription{ get; }
+    public IHtmlString CharacterDescription{ get; }
     public IReadOnlyCollection<PlotElementViewModel> Plots { get; }
-    public IReadOnlyCollection<MarkdownViewModel> Handouts { get; }
+    public IReadOnlyCollection<string> Handouts { get; }
     public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
     public bool RegistrationOnHold => FeeDue > 0 && Plots.Any(item => item.Status == PlotStatus.InWork);
@@ -53,8 +54,7 @@ namespace JoinRpg.Web.Models.Print
       : base(character)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
-
-      CharacterDescription = new MarkdownViewModel(character.Description);
+      CharacterDescription = character.Description.ToHtmlString();
       
       var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
       Plots =
@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Models.Print
 
       Handouts =
         plotElements.Where(e => e.ElementType == PlotElementType.Handout)
-          .Select(e => new MarkdownViewModel(e.Texts.Content))
+          .Select(e => e.Texts.Content.ToPlainText())
           .ToArray();
       
       
