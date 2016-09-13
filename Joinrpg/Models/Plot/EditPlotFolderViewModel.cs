@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -29,6 +30,9 @@ namespace JoinRpg.Web.Models.Plot
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }
+
+    [UsedImplicitly] //For binding
+    public EditPlotFolderViewModel() {} //For binding
 
     public bool HasMasterAccess { get; }
   }
