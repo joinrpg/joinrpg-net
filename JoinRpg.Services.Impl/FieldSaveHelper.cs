@@ -35,7 +35,14 @@ namespace JoinRpg.Services.Impl
 
         field.Field.RequestEditAccess(currentUserId, character, claim);
 
-        field.Value = keyValuePair.Value;
+        if (field.Field.FieldType == ProjectFieldType.Checkbox)
+        {
+          field.Value = keyValuePair.Value.StartsWith("on") ? "on" : "";
+        }
+        else
+        {
+          field.Value = keyValuePair.Value;
+        }
 
         field.MarkUsed();
       }
