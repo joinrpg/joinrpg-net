@@ -8,6 +8,7 @@ namespace JoinRpg.Web.Helpers
 {
   public static class ModelStateExtensions
   {
+    //TODO messages from resources
     public static void AddException(this ModelStateDictionary dict, Exception exception)
     {
       var validation = exception as DbEntityValidationException;
@@ -39,6 +40,28 @@ namespace JoinRpg.Web.Helpers
         dict.AddModelError("", exception.Message);
         return;
       }
+
+      var projectDeactivated = exception as ProjectDeactivedException;
+      if (projectDeactivated != null)
+      {
+        dict.AddModelError("", exception.Message);
+        return;
+      }
+
+      var already = exception as ClaimAlreadyPresentException;
+      if (already != null)
+      {
+        dict.AddModelError("", exception.Message);
+        return;
+      }
+
+      var noaccept = exception as ClaimTargetIsNotAcceptingClaims;
+      if (noaccept != null)
+      {
+        dict.AddModelError("", exception.Message);
+        return;
+      }
+
       dict.AddModelError("", exception.ToString());
     }
   }

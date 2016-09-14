@@ -80,16 +80,18 @@ namespace JoinRpg.Services.Impl
       //TODO add more validation checks, move to Domain
       if (claimSource.HasClaimForUser(currentUserId))
       {
-        throw new DbEntityValidationException();
+        throw new ClaimAlreadyPresentException();
       }
+      EnsureAvailable(claimSource);
+
+      claimSource.EnsureProjectActive();
+    }
+
+    private static void EnsureAvailable<T>(T claimSource) where T : IClaimSource
+    {
       if (!claimSource.IsAvailable)
       {
-        throw new DbEntityValidationException();
-      }
-
-      if (!claimSource.Project.IsAcceptingClaims)
-      {
-        throw new DbEntityValidationException();
+        throw new ClaimTargetIsNotAcceptingClaims();
       }
     }
 
@@ -251,7 +253,7 @@ namespace JoinRpg.Services.Impl
       //Grab subscribtions before change 
       var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange, currentUserId, null, true);
 
-      EnsureCanAddClaim(currentUserId, source);
+      EnsureCanAddClaim(claim.PlayerUserId, source);
 
       claim.CharacterGroupId = characterGroupId;
       claim.CharacterId = characterId;
@@ -477,3 +479,4 @@ namespace JoinRpg.Services.Impl
     }
   }
 }
+

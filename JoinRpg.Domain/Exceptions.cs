@@ -91,9 +91,19 @@ namespace JoinRpg.Domain
     }
 
     public ClaimWrongStatusException(Claim entity)
-      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}")
+      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
     {
     }
+  }
+
+  public class ClaimAlreadyPresentException : JoinRpgBaseException
+  {
+    public ClaimAlreadyPresentException(): base("Claim already present for this character or group.") { }
+  }
+
+  public class ClaimTargetIsNotAcceptingClaims: JoinRpgBaseException
+  {
+    public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
   }
 
   public class NoAccessToProjectException : JoinRpgProjectEntityException
