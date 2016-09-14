@@ -82,17 +82,9 @@ namespace JoinRpg.Services.Impl
       {
         throw new ClaimAlreadyPresentException();
       }
-      EnsureAvailable(claimSource);
+      claimSource.EnsureAvailable();
 
       claimSource.EnsureProjectActive();
-    }
-
-    private static void EnsureAvailable<T>(T claimSource) where T : IClaimSource
-    {
-      if (!claimSource.IsAvailable)
-      {
-        throw new ClaimTargetIsNotAcceptingClaims();
-      }
     }
 
     public async Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
