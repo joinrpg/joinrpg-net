@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -27,7 +28,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsDeleted { get; }
 
-    public MarkdownViewModel Description { get; }
+    public IHtmlString Description { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
 
@@ -41,7 +42,7 @@ namespace JoinRpg.Web.Models
       DisplayString = ch.DisplayString;
       FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
       FieldName = ch.Field.FieldName;
-      Description = new MarkdownViewModel(ch.Field.Description);
+      Description = ch.Field.Description.ToHtmlString();
 
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;

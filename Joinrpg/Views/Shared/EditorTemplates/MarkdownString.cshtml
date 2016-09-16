@@ -1,4 +1,4 @@
-﻿@model JoinRpg.DataModel.MarkdownString
+﻿@model string
 @{
   var requiredMsg = new MvcHtmlString("");
     var validation = false;
@@ -14,12 +14,12 @@
     <textarea
         class="form-control"
         cols="100"
-        id="@(ViewData.TemplateInfo.HtmlFieldPrefix)_Contents"
-        name="@(ViewData.TemplateInfo.HtmlFieldPrefix).Contents"
+        id="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
+        name="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
         @requiredMsg @(validation ? "data-val=true" : "")
-        rows="4">@(Model == null ? "" : Model.Contents)</textarea>    
+        rows="4">@(Model == null ? "" : Model)</textarea>    
 @if (validation)
 {
-@Html.ValidationMessageFor(model => Model.Contents, "", new { @class = "text-danger" })
+@Html.ValidationMessageFor(model => Model, "", new { @class = "text-danger" })
 }
 <div class="help-block">Можно использовать <a href="http://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>

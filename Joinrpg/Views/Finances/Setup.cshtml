@@ -166,6 +166,30 @@
             </div>
         </div>
     </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>
+                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#gooleDocs">
+                    Синхронизация с GoogleDocs
+                </a>
+            </h4>
+
+        </div>
+        <div class="panel-collapse collapse" role="tabpanel" id="gooleDocs">
+            <div class="panel-body">
+                Для тех мастерских групп, которые ведут свой бюджет в <a href="https://docs.google.com/spreadsheets/">Google Таблицах</a>.<br/>
+                Создайте в вашем бюджете отдельную вкладку (например, взносы из Joinrpg).
+                В любой ячейке (например, А1), введите
+                <br/>
+                <code>
+                    =IMPORTDATA("@(RouteHelper.GetFullHostName() + Url.Action("SummaryByMaster", new { token = Model.CurrentUserToken, Model.ProjectId }))")
+                </code>.
+                <br/>
+                Учтите, что обновление происходит с некоторой задержкой (раз в несколько часов). Подробности можно узнать в <a href="https://support.google.com/docs/answer/3093335?hl=ru">справке Google Таблиц</a>.
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">

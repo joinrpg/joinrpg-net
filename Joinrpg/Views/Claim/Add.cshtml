@@ -62,7 +62,7 @@
             @Html.HiddenFor(model => model.CharacterGroupId)
         }
 
-        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
+        @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
         {
             <div class="form-group">

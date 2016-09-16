@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -14,38 +13,6 @@ namespace JoinRpg.Web.Models
   public class ExternalLoginListViewModel
   {
     public string ReturnUrl { get; set; }
-  }
-
-  public class SendCodeViewModel
-  {
-    public string SelectedProvider { get; set; }
-    public ICollection<System.Web.Mvc.SelectListItem> Providers { get; set; }
-    public string ReturnUrl { get; set; }
-    public bool RememberMe { get; set; }
-  }
-
-  public class VerifyCodeViewModel
-  {
-    [Required]
-    public string Provider { get; set; }
-
-    [Required]
-    [Display(Name = "Code")]
-    public string Code { get; set; }
-
-    public string ReturnUrl { get; set; }
-
-    [Display(Name = "Remember this browser?")]
-    public bool RememberBrowser { get; set; }
-
-    public bool RememberMe { get; set; }
-  }
-
-  public class ForgotViewModel
-  {
-    [Required]
-    [Display(Name = "Email")]
-    public string Email { get; set; }
   }
 
   public class LoginViewModel
@@ -141,6 +108,9 @@ namespace JoinRpg.Web.Models
     public string Nicknames { get; set; }
     [Display(Name = "МГ/Клубы", Description = "Все мастерские группы/клубы, через запятую, к которым вы себя относите. ")]
     public string GroupNames { get; set; }
+
+    public int? LastClaimId { get; set; }
+    public int? LastClaimProjectId { get; set; }
 
     /*[Display(Name="Дата рождения", Description = "Указание даты рождения подтверждает мастерам, что вы совершеннолетний"), Required]
     public DateTime? BirthDate { get; set; }*/

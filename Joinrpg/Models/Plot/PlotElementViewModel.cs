@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
@@ -12,7 +14,7 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotElementViewModel : IMovableListItem
   {
     public PlotStatus Status { get; }
-    public MarkdownString Content { get; }
+    public IHtmlString Content { get; }
     public string TodoField{ get; }
     public int PlotFolderId { get; }
 
@@ -29,11 +31,11 @@ namespace JoinRpg.Web.Models.Plot
 
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
-    public PlotElementViewModel(
-      [NotNull] PlotElement p, [CanBeNull] Character character, int? currentUserId)
+    public PlotElementViewModel([NotNull] PlotElement p, [CanBeNull] Character character, int? currentUserId, ILinkRenderer linkRendrer)
     {
       if (p == null) throw new ArgumentNullException(nameof(p));
-      Content = p.Texts.Content;
+
+      Content = p.Texts.Content.ToHtmlString(linkRendrer);
       TodoField = p.Texts.TodoField;
       HasMasterAccess = p.HasMasterAccess(currentUserId);
       HasEditAccess = p.HasMasterAccess(currentUserId) && p.Project.Active;
@@ -59,13 +61,12 @@ namespace JoinRpg.Web.Models.Plot
 
   public static class PlotElementViewModelExtensions
   {
-    public static IEnumerable<PlotElementViewModel> ToViewModels([NotNull] this IEnumerable<PlotElement> plots, int? currentUserId,
-      [CanBeNull] Character character = null)
+    public static IEnumerable<PlotElementViewModel> ToViewModels([NotNull] this IEnumerable<PlotElement> plots, int? currentUserId, [CanBeNull] Character character = null)
     {
       if (plots == null) throw new ArgumentNullException(nameof(plots));
-      
+
       return plots.Where(p => p.ElementType == PlotElementType.RegularPlot).Select(
-        p => new PlotElementViewModel(p, character, currentUserId)).MarkFirstAndLast();
+        p => new PlotElementViewModel(p, character, currentUserId, new JoinrpgMarkdownLinkRenderer(p.Project))).MarkFirstAndLast();
     }
   }
 }

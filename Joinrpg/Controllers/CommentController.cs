@@ -36,7 +36,7 @@ namespace JoinRpg.Web.Controllers
           claim.Project.RequestMasterAccess(CurrentUserId);
         }
         await ClaimService.AddComment(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
-          !viewModel.HideFromUser, viewModel.CommentText.Contents, viewModel.FinanceAction);
+          !viewModel.HideFromUser, viewModel.CommentText, viewModel.FinanceAction);
 
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
       }

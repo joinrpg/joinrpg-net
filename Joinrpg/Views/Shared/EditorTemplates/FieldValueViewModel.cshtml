@@ -1,5 +1,5 @@
 ﻿@using System.ComponentModel
-@using JoinRpg.Web.Helpers
+@using Joinrpg.Markdown
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
 
@@ -99,8 +99,9 @@
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" @requiredMsg>
                 break;
             case ProjectFieldViewType.Checkbox:
-                var ch = Model.Value == "on" ? "checked" : "";
+                var ch = Model.Value == "" ? "" : "checked";
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
+                <input name="@Model.FieldClientId" type="hidden" value="false" />
                 break;
             case ProjectFieldViewType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple" @requiredMsg>
@@ -118,9 +119,9 @@
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
         @ValidationMessage()
-        @if (!string.IsNullOrWhiteSpace(Model.Description.Contents))
+        @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
-            <div class="help-block">@Html.DisplayFor(model => model.Description) </div>
+            <div class="help-block">@Model.Description </div>
         }
         @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
     </div>

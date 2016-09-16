@@ -5,9 +5,11 @@ using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -220,6 +222,36 @@ namespace JoinRpg.Web.Controllers
         //TODO: Message that comment is not added
         return RedirectToAction("Setup", new { projectid });
       }
+    }
+
+    [HttpGet,AllowAnonymous]
+    public async Task<ActionResult> SummaryByMaster(string token, int projectId)
+    {
+      var project = await ProjectRepository.GetProjectWithFinances(projectId);
+
+      var guid = new Guid(token.FromHexString());
+
+      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+
+      if (acl == null)
+      {
+        return Content("Unauthorized");
+      }
+
+      var summary =
+        project.FinanceOperations.Where(fo => fo.Approved && fo.PaymentType != null)
+          .GroupBy(fo => fo.PaymentType?.User)
+          .Select(
+            fg =>
+              new MoneySummaryByMasterListItemViewModel(fg.Sum(fo => fo.MoneyAmount), fg.Key))
+          .Where(fr => fr.Total != 0)
+          .OrderBy(fr => fr.Master.DisplayName);
+
+      return
+        await
+          ExportWithCustomFronend(summary, "money-summary", ExportType.Csv,
+            new MoneySummaryByMasterExporter(),
+            project.ProjectName);
     }
   }
 }

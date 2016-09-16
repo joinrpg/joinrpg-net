@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -27,20 +28,19 @@ namespace JoinRpg.Services.Email
     private readonly Lazy<MessageService> _lazyService;
     private MessageService MessageService => _lazyService.Value;
 
-    private readonly IHtmlService _htmlService;
     private readonly IUriService _uriService;
-    private bool _emailEnabled;
+    private readonly bool _emailEnabled;
 
     private Task Send(IMessage message)
     {
       return MessageService.SendMessageAsync(_apiDomain, message);
     }
 
-    public EmailServiceImpl(IHtmlService htmlService, IUriService uriService, IMailGunConfig config)
+    public EmailServiceImpl(IUriService uriService, IMailGunConfig config)
     {
       _emailEnabled = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
       _apiDomain = config.ApiDomain;
-      _htmlService = htmlService;
+    
       _joinRpgSender = new Recipient()
       {
         DisplayName = JoinRpgTeam,
@@ -61,7 +61,7 @@ namespace JoinRpg.Services.Email
       {
         return;
       }
-      var html = _htmlService.MarkdownToHtml(new MarkdownString(text));
+      var html = new MarkdownString(text).ToHtmlString().ToHtmlString();
       var message = new MessageBuilder().AddUsers(recepients)
         .SetSubject(subject)
         .SetFromAddress(new Recipient() {DisplayName = sender.DisplayName, Email = _joinRpgSender.Email})

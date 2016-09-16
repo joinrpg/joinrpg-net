@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.CommonTypes;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
@@ -23,7 +24,7 @@ namespace JoinRpg.Web.Models
       Author = comment.Author;
       CreatedTime = comment.CreatedTime;
       Finance = comment.Finance;
-      CommentText = new MarkdownViewModel(comment.CommentText.Text);
+      CommentText = comment.CommentText.Text.ToHtmlString();
       CommentId = comment.CommentId;
       ProjectId = comment.ProjectId;
       ClaimId = comment.ClaimId;
@@ -40,7 +41,7 @@ namespace JoinRpg.Web.Models
     public User Author { get; }
     public DateTime CreatedTime { get; }
     public FinanceOperation Finance { get; }
-    public MarkdownViewModel CommentText { get; }
+    public IHtmlString CommentText { get; }
     public int CommentId { get; }
     public IEnumerable<CommentViewModel> ChildComments { get; }
     public int ProjectId { get;  }
@@ -61,11 +62,8 @@ namespace JoinRpg.Web.Models
     /// </summary>
     public int? ParentCommentId { get; set; }
 
-    [ReadOnly(true)]
-    public CommentViewModel ParentComment { get; set; }
-
-    [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария")] 
-    public MarkdownViewModel CommentText { get; set; }
+    [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария"),UIHint("MarkdownString")] 
+    public string CommentText { get; set; }
 
     [DisplayName("Только другим мастерам")]
     public bool HideFromUser { get; set; }

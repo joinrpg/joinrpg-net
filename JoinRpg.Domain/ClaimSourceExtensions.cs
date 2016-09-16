@@ -75,5 +75,13 @@ namespace JoinRpg.Domain
       if (character == null) throw new ArgumentNullException(nameof(character));
       return character.ApprovedClaim?.ResponsibleMasterUser ?? character.GetResponsibleMasters().FirstOrDefault();
     }
+
+    public static void EnsureAvailable<T>(this T claimSource) where T : IClaimSource
+    {
+      if (!claimSource.IsAvailable)
+      {
+        throw new ClaimTargetIsNotAcceptingClaims();
+      }
+    }
   }
 }

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
-using JoinRpg.Web.Models.Characters;
-using JoinRpg.Web.Models.CommonTypes;
+using JoinRpg.Domain;
 using JoinRpg.Web.Models.Plot;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
   
   public class CharacterParentGroupsViewModel
@@ -37,20 +38,34 @@ namespace JoinRpg.Web.Models
   public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel
   {
     [Display(Name = "Описание персонажа")]
-    public MarkdownViewModel Description { get; set; }
+    public IHtmlString Description { get; }
 
     [ReadOnly(true), DisplayName("Входит в группы")]
-    public CharacterParentGroupsViewModel ParentGroups { get; set; }
+    public CharacterParentGroupsViewModel ParentGroups { get; }
 
-    public User Player { get; set; }
+    public User Player { get; }
 
-    public IEnumerable<PlotElementViewModel> Plot { get; set; }
+    public IEnumerable<PlotElementViewModel> Plot { get; }
 
-    public bool HidePlayer { get; set; }
-    public bool HasAccess { get;set; }
+    public bool HidePlayer { get; }
+    public bool HasAccess { get; }
 
-    public CustomFieldsViewModel Fields { get; set; }
+    public CustomFieldsViewModel Fields { get; }
 
-    public CharacterNavigationViewModel Navigation { get; set; }
+    public CharacterNavigationViewModel Navigation { get; }
+
+    public CharacterDetailsViewModel (int? currentUserIdOrDefault, Character character, IEnumerable<PlotElement> plots)
+    {
+      Description = character.Description.ToHtmlString();
+      Player = character.ApprovedClaim?.Player;
+      HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
+      ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));
+      HidePlayer = character.HidePlayerForCharacter;
+      Navigation =
+        CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
+          currentUserIdOrDefault);
+      Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, disableEdit: true);
+      Plot = plots.ToViewModels(currentUserIdOrDefault, character);
+    }
   }
 }

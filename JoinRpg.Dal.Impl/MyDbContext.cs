@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Threading.Tasks;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
@@ -41,6 +42,9 @@ namespace JoinRpg.Dal.Impl
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});
+      modelBuilder.Entity<ProjectAcl>()
+        .Property(acl => acl.Token)
+        .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
 
       modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
       modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);

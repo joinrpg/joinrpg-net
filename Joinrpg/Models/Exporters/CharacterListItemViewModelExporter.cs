@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Characters;
 
-namespace JoinRpg.Web.Helpers
+namespace JoinRpg.Web.Models.Exporters
 {
   public class CharacterListItemViewModelExporter : CustomExporter<CharacterListItemViewModel>
   {

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
-using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -28,12 +29,12 @@ namespace JoinRpg.Web.Models.Characters
 
   public class CharacterGroupWithDescViewModel : CharacterGroupLinkViewModel
   {
-    public MarkdownViewModel Description { get; }
+    public IHtmlString Description { get; }
 
 
     public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group)
     {
-      Description = new MarkdownViewModel(group.Description);
+      Description = group.Description.ToHtmlString();
     }
   }
 

@@ -2,7 +2,7 @@
 using System.Web;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.Characters
 {
   public class CharacterViewModel  : ICharacterWithPlayerViewModel, IEquatable<CharacterViewModel>
   {
@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Models
 
     public bool IsAvailable { get; set; }
 
-    public HtmlString Description { get; set; }
+    public IHtmlString Description { get; set; }
 
     public bool IsPublic { get; set; }
 

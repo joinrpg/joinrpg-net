@@ -28,7 +28,7 @@
                 }
                 break;
             case ProjectFieldViewType.Checkbox:
-                if (Model.Value == "on")
+                if (Model.Value != "")
                 {
                     <span class="glyphicon glyphicon-ok"></span>
                 }
@@ -41,11 +41,12 @@
             case ProjectFieldViewType.Text:
             @Html.DisplayFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
                 break;
+            case ProjectFieldViewType.Header:
             default:
                 throw new InvalidEnumArgumentException();
         }
         <div class="help-block">
-            @Html.DisplayFor(model => model.Description)
+            @Model.Description
         </div>
     </div>
 </div>

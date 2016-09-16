@@ -15,7 +15,6 @@
 
 @using JoinRpg.DataModel
 @using JoinRpg.Web.Models
-@using JoinRpg.Web.Models.CommonTypes
 @using JoinRpg.Domain;
 
 <div>
@@ -360,7 +359,7 @@
           OperationDate = DateTime.Today,
           PaymentTypes = Model.PaymentTypes,
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
-          CommentText = new MarkdownViewModel("Сдан взнос"),
+          CommentText = "Сдан взнос",
           ClaimApproved = Model.Status == Claim.Status.Approved,
           HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
       }; }
@@ -381,13 +380,12 @@
           ActionName = "Изменить взнос",
           OperationDate = DateTime.Today,
           PaymentTypes = Model.PaymentTypes,
-          CommentText = new MarkdownViewModel(),
           ClaimApproved = Model.Status == Claim.Status.Approved
       }; }
     <div class="panel panel-default collapse" id="financeChangeClaimActionPanel">
         <div class="panel-heading">Изменить взнос</div>
         <div class="panel-body">
-            @Html.Partial("_ClaimFinancePartial", viewModel)
+            @Html.Partial("_ClaimFinancePartial", viewModelFinChange)
         </div>
     </div>
 
@@ -404,7 +402,7 @@
            EnableHideFromUser = false,
            HideFromUser = false,
            ActionName = "Отозвать заявку",
-           CommentText = new MarkdownViewModel("Извините, я передумал ехать")
+           CommentText = "Извините, я передумал ехать"
        })
             }
         </div>
