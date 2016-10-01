@@ -7,6 +7,7 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.DataModel
 {
+  //TODO: We need to untie User from AspNet.Identity by providing proxy class
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class User : IUser<int>
   {
