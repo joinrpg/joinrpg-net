@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
@@ -138,8 +139,6 @@ namespace JoinRpg.Services.Impl
 
       await UnitOfWork.SaveChangesAsync();
     }
-
-    // ReSharper disable once UnusedParameter.Local
 
     public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)
     {
