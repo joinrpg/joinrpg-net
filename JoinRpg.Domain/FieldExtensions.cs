@@ -29,7 +29,7 @@ namespace JoinRpg.Domain
     public static bool IsAvailableForTarget(this ProjectField field, IClaimSource target)
     {
       return field.IsActive
-        && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || (target as Character)?.IsAcceptingClaims == true)
+        && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || !target.IsNpc())
         && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
     }
 

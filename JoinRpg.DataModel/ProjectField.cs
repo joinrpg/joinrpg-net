@@ -59,7 +59,19 @@ namespace JoinRpg.DataModel
 
     public IntList AviableForImpl { get; set; } = new IntList();
 
-    public IEnumerable<CharacterGroup> GroupsAvailableFor => Project.CharacterGroups.Where(c => AvailableForCharacterGroupIds.Contains(c.CharacterGroupId));
+    public IEnumerable<CharacterGroup> GroupsAvailableFor
+    {
+      get
+      {
+        if (!AvailableForCharacterGroupIds.Any())
+        {
+          return Enumerable.Empty<CharacterGroup>(); 
+          // For most common case skip touching Project.CharacterGroups
+          // As it may trigger lazy load
+        }
+        return Project.CharacterGroups.Where(c => AvailableForCharacterGroupIds.Contains(c.CharacterGroupId));
+      }
+    }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
