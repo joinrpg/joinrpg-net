@@ -43,6 +43,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Включать в распечатки")]
     public bool IncludeInPrint { get; set; } = true;
 
+    [Display(Name = "Показывать даже при непринятой заявке")]
+    public bool ShowForUnApprovedClaim { get; set; } = true;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)

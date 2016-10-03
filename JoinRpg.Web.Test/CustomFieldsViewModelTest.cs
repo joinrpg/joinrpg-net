@@ -18,6 +18,13 @@ namespace JoinRpg.Web.Test
     }
 
     [TestMethod]
+    public void HideUnApprovedFieldOnAddClaimTest()
+    {
+      var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
+      Assert.IsFalse(vm.FieldById(Mock.HideForUnApprovedClaim.ProjectFieldId)?.CanView ?? false);
+    }
+
+    [TestMethod]
     public void AllowCharactersFieldOnAddClaimTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource) Mock.Character);

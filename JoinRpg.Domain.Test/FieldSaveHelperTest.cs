@@ -53,6 +53,39 @@ namespace JoinRpg.Domain.Test
     }
 
     [TestMethod]
+    public void ApprovedClaimHiddenChangeTest()
+    {
+      var mock = new MockedProject();
+      var claim = mock.CreateClaim(mock.Character, mock.Player);
+      claim.ClaimStatus = Claim.Status.Approved;
+      FieldSaveHelper.SaveCharacterFields(
+        mock.Player.UserId,
+        claim,
+        new Dictionary<int, string>()
+        {
+          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
+          {mock.CharacterField.ProjectFieldId, null }
+        });
+      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\"}}", mock.Character.JsonData);
+      Assert.AreEqual("{}", claim.JsonData);
+    }
+
+    [TestMethod]
+    public void MasterHiddenChangeTest()
+    {
+      var mock = new MockedProject();
+      FieldSaveHelper.SaveCharacterFields(
+        mock.Master.UserId,
+        mock.Character,
+        new Dictionary<int, string>()
+        {
+          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
+          {mock.CharacterField.ProjectFieldId, null }
+        });
+      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\"}}", mock.Character.JsonData);
+    }
+
+    [TestMethod]
     public void ApprovedClaimChangeTest()
     {
       var mock = new MockedProject();
@@ -104,6 +137,23 @@ namespace JoinRpg.Domain.Test
       Assert.AreEqual($"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
       Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData,
         "Adding claim should not modify any character fields");
+    }
+
+
+    [TestMethod]
+    [ExpectedException(typeof(NoAccessToProjectException))]
+    public void HiddenFieldChangeFailedTest()
+    {
+      var mock = new MockedProject();
+      var claim = mock.CreateClaim(mock.Group, mock.Player);
+
+      FieldSaveHelper.SaveCharacterFields(
+        mock.Player.UserId,
+        claim,
+        new Dictionary<int, string>()
+        {
+          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"}
+        });
     }
 
     [TestMethod]

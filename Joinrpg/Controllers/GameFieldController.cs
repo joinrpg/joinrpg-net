@@ -71,7 +71,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.Description,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
           viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
-          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint);
+          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, viewModel.ShowForUnApprovedClaim);
 
         return ReturnToIndex(project);
       }
@@ -113,7 +113,8 @@ namespace JoinRpg.Web.Controllers
           FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
             viewModel.Name, viewModel.Description, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
-            viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint);
+            viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
+            viewModel.ShowForUnApprovedClaim);
 
         return ReturnToIndex(project);
       }

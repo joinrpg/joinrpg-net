@@ -77,7 +77,7 @@ namespace JoinRpg.Domain
              (characterAccess && Field.CanPlayerEdit &&
               Field.FieldBoundTo == FieldBoundTo.Character)
              ||
-             (claimAccess && Field.CanPlayerEdit))
+             (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)))
              && (HasValue || Field.IsAvailableForTarget(target));
     }
   }

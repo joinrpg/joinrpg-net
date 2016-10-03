@@ -12,6 +12,7 @@ namespace JoinRpg.DataModel.Mocks
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
     public ProjectField ConditionalField { get; }
+    public ProjectField HideForUnApprovedClaim { get; }
     public Character Character { get; }
 
     private static void FixProjectSubEntities(Project project1)
@@ -54,6 +55,7 @@ namespace JoinRpg.DataModel.Mocks
         CanPlayerEdit = false,
         CanPlayerView = false,
         IsActive = true,
+        ShowOnUnApprovedClaims = true
       };
       CharacterField = new ProjectField()
       {
@@ -61,6 +63,7 @@ namespace JoinRpg.DataModel.Mocks
         CanPlayerView = true,
         IsActive = true,
         FieldBoundTo = FieldBoundTo.Character,
+        ShowOnUnApprovedClaims = true,
         AvailableForCharacterGroupIds = new int[0]
       };
       ConditionalField = new ProjectField()
@@ -68,7 +71,18 @@ namespace JoinRpg.DataModel.Mocks
         CanPlayerEdit = true,
         CanPlayerView = true,
         IsActive = true,
+        ShowOnUnApprovedClaims = true,
         FieldBoundTo = FieldBoundTo.Character,
+        AvailableForCharacterGroupIds = new int[0]
+      };
+
+      HideForUnApprovedClaim = new ProjectField()
+      {
+        CanPlayerEdit = true,
+        CanPlayerView = true,
+        IsActive = true,
+        FieldBoundTo = FieldBoundTo.Character,
+        ShowOnUnApprovedClaims = false,
         AvailableForCharacterGroupIds = new int[0]
       };
 
@@ -97,7 +111,7 @@ namespace JoinRpg.DataModel.Mocks
         },
         ProjectFields = new List<ProjectField>()
         {
-          MasterOnlyField, CharacterField, ConditionalField
+          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim
         },
         Characters = new List<Character>() { Character },
         CharacterGroups = new List<CharacterGroup> {  Group},
