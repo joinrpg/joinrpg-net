@@ -78,8 +78,9 @@ namespace JoinRpg.Domain
              (character.Project.Details?.PublishPlot ?? false);
     }
 
-    public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
+    public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
     {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
       return claim.PlayerUserId == currentUserIdOrDefault;
     }
 

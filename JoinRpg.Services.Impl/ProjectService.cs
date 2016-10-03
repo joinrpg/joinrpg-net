@@ -132,9 +132,8 @@ namespace JoinRpg.Services.Impl
       character.IsHot = isHot;
       character.IsActive = true;
 
-      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      var specialGroupIds = FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, characterFields);
-      character.ParentCharacterGroupIds =  characterGroups.Union(await ValidateCharacterGroupList(projectId, specialGroupIds)).ToArray();
+      character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       await UnitOfWork.SaveChangesAsync();
