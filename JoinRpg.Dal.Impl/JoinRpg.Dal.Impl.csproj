@@ -306,6 +306,10 @@
     <Compile Include="Migrations\201610031942148_ShowOnUnApprovedClaims.Designer.cs">
       <DependentUpon>201610031942148_ShowOnUnApprovedClaims.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs" />
+    <Compile Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.Designer.cs">
+      <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -525,6 +529,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610031942148_ShowOnUnApprovedClaims.resx">
       <DependentUpon>201610031942148_ShowOnUnApprovedClaims.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.resx">
+      <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
