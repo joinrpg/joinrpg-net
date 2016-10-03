@@ -11,6 +11,7 @@ namespace JoinRpg.DataModel.Mocks
     public User Master { get; } = new User() { UserId = 2 };
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
+    public ProjectField ConditionalField { get; }
     public Character Character { get; }
 
     private static void FixProjectSubEntities(Project project1)
@@ -62,6 +63,14 @@ namespace JoinRpg.DataModel.Mocks
         FieldBoundTo = FieldBoundTo.Character,
         AvailableForCharacterGroupIds = new int[0]
       };
+      ConditionalField = new ProjectField()
+      {
+        CanPlayerEdit = true,
+        CanPlayerView = true,
+        IsActive = true,
+        FieldBoundTo = FieldBoundTo.Character,
+        AvailableForCharacterGroupIds = new int[0]
+      };
 
       var characterFieldValue = new FieldWithValue(CharacterField, "Value");
       Character = new Character
@@ -88,7 +97,7 @@ namespace JoinRpg.DataModel.Mocks
         },
         ProjectFields = new List<ProjectField>()
         {
-          MasterOnlyField, CharacterField
+          MasterOnlyField, CharacterField, ConditionalField
         },
         Characters = new List<Character>() { Character },
         CharacterGroups = new List<CharacterGroup> {  Group},
@@ -98,6 +107,10 @@ namespace JoinRpg.DataModel.Mocks
       FixProjectSubEntities(Project);
       //That needs to happen after FixProjectSubEntities(..)
       Character.JsonData = new[] { characterFieldValue }.SerializeFields();
+
+      Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
+
+      ConditionalField.AvailableForCharacterGroupIds = new[] {Group.CharacterGroupId};
     }
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)
@@ -107,6 +120,20 @@ namespace JoinRpg.DataModel.Mocks
         Project = Project,
         Character = mockCharacter,
         CharacterId = mockCharacter.CharacterId,
+        Player = mockUser,
+        PlayerUserId = mockUser.UserId
+      };
+      Project.Claims.Add(claim);
+      return claim;
+    }
+
+    public Claim CreateClaim(CharacterGroup mockGroup, User mockUser)
+    {
+      var claim = new Claim
+      {
+        Project = Project,
+        CharacterGroupId = mockGroup.CharacterGroupId,
+        Group =  mockGroup,
         Player = mockUser,
         PlayerUserId = mockUser.UserId
       };
