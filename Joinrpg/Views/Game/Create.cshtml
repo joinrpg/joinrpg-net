@@ -10,7 +10,10 @@
 @using (Html.BeginForm()) 
 {
     @Html.AntiForgeryToken()
-    
+
+<p class="alert alert-warning">Создание базы заявок для вашего проекта бесплатно, но прямо сейчас идет <a href="@Url.Action("Funding2016", "Home")" class="alert-link">сбор денег</a> на развитие проекта.</p>
+
+
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
