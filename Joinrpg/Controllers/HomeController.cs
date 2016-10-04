@@ -47,6 +47,8 @@ namespace JoinRpg.Web.Controllers
 
     public ActionResult About() => View();
 
+    public ActionResult Funding2016() => View();
+
     public ActionResult Contact()
     {
       ViewBag.Message = "Your contact page.";
