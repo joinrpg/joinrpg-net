@@ -34,9 +34,10 @@
 
         <div class="form-group">
             @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-3">
+            <div class="col-md-7">
                 @Html.EnumDropDownListFor(model => model.FieldBoundTo, new {@class = "form-control"})
                 @Html.ValidationMessageFor(model => model.FieldBoundTo, "", new {@class = "text-danger"})
+                @Html.DescriptionFor(model => model.FieldBoundTo)
             </div>
         </div>
 
