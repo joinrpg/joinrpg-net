@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
@@ -131,15 +132,12 @@ namespace JoinRpg.Services.Impl
       character.IsHot = isHot;
       character.IsActive = true;
 
-      var characterGroups = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      var specialGroupIds = FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, characterFields);
-      character.ParentCharacterGroupIds =  characterGroups.Union(await ValidateCharacterGroupList(projectId, specialGroupIds)).ToArray();
+      character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       await UnitOfWork.SaveChangesAsync();
     }
-
-    // ReSharper disable once UnusedParameter.Local
 
     public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)
     {

@@ -40,6 +40,8 @@ namespace JoinRpg.DataModel
 
     public bool IncludeInPrint { get; set; }
 
+    public bool ShowOnUnApprovedClaims { get; set; }
+
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; } =
@@ -59,7 +61,19 @@ namespace JoinRpg.DataModel
 
     public IntList AviableForImpl { get; set; } = new IntList();
 
-    public IEnumerable<CharacterGroup> GroupsAvailableFor => Project.CharacterGroups.Where(c => AvailableForCharacterGroupIds.Contains(c.CharacterGroupId));
+    public IEnumerable<CharacterGroup> GroupsAvailableFor
+    {
+      get
+      {
+        if (!AvailableForCharacterGroupIds.Any())
+        {
+          return Enumerable.Empty<CharacterGroup>(); 
+          // For most common case skip touching Project.CharacterGroups
+          // As it may trigger lazy load
+        }
+        return Project.CharacterGroups.Where(c => AvailableForCharacterGroupIds.Contains(c.CharacterGroupId));
+      }
+    }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

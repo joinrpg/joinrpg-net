@@ -78,35 +78,10 @@ namespace JoinRpg.Domain
              (character.Project.Details?.PublishPlot ?? false);
     }
 
-    public static bool HasPlayerAccesToClaim(this Claim claim, int? currentUserIdOrDefault)
+    public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
     {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
       return claim.PlayerUserId == currentUserIdOrDefault;
-    }
-
-    public static bool HasEditAccess(this ProjectField projectField, int currentUserId, Character character, Claim claim)
-    {
-      if (projectField.Project.HasMasterAccess(currentUserId))
-      {
-        return true;
-      }
-      switch (projectField.FieldBoundTo)
-      {
-        case FieldBoundTo.Character:
-          return character.HasPlayerAccess(currentUserId) && projectField.CanPlayerEdit;
-        case FieldBoundTo.Claim:
-          return claim.HasPlayerAccesToClaim(currentUserId) && projectField.CanPlayerEdit;
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-    }
-
-    public static void RequestEditAccess(this ProjectField projectField, int currentUserId, Character character, Claim claim)
-    {
-      var editAccess = projectField.HasEditAccess(currentUserId, character, claim);
-      if (!editAccess)
-      {
-        throw new NoAccessToProjectException(character, currentUserId);
-      }
     }
 
     public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId)

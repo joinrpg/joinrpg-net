@@ -28,12 +28,14 @@ namespace JoinRpg.Domain
     }
 
     [MustUseReturnValue]
-    public static string SerializeFieldsFor([NotNull] this IEnumerable<FieldWithValue> values, FieldBoundTo fieldBoundTo)
+    public static string SerializeFields([NotNull] this IEnumerable<FieldWithValue> fieldWithValues)
     {
-      if (values == null) throw new ArgumentNullException(nameof(values));
+      if (fieldWithValues == null) throw new ArgumentNullException(nameof(fieldWithValues));
+
       return
         JsonConvert.SerializeObject(
-          values.Where(v => v.Field.FieldBoundTo == fieldBoundTo)
+          fieldWithValues
+            .Where(v => v.HasValue)
             .ToDictionary(pair => pair.Field.ProjectFieldId, pair => pair.Value));
     }
 

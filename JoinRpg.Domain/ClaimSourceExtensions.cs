@@ -83,5 +83,10 @@ namespace JoinRpg.Domain
         throw new ClaimTargetIsNotAcceptingClaims();
       }
     }
+
+    public static bool IsNpc(this IClaimSource target)
+    {
+      return (target as Character)?.IsAcceptingClaims == false;
+    }
   }
 }

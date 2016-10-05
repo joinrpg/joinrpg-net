@@ -25,14 +25,16 @@ namespace JoinRpg.Domain
     /// <param name="claim"></param>
     /// <returns></returns>
     [NotNull, ItemNotNull]
-    public static IEnumerable<Claim> OtherClaimsForThisCharacter(this Claim claim)
+    public static IEnumerable<Claim> OtherClaimsForThisCharacter([NotNull] this Claim claim)
     {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
       return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
     }
 
     [NotNull]
-    public static IClaimSource GetTarget(this Claim claim)
+    public static IClaimSource GetTarget([NotNull] this Claim claim)
     {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
       if (claim.Character == null && claim.Group == null)
       {
         throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen");

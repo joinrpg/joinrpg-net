@@ -8,12 +8,12 @@ namespace JoinRpg.Services.Interfaces
   {
     Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups,
-      bool validForNpc, bool includeInPrint);
+      bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims);
     Task DeleteField(int currentUserId, int projectId, int projectFieldId);
 
     Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint,
       bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus,
-      List<int> showForGroups, bool validForNpc, bool includeInPrint);
+      List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims);
 
     Task CreateFieldValueVariant(int projectId, int projectCharacterFieldId, int currentUserId, string label,
       string description);

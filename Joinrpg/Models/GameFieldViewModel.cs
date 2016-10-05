@@ -43,6 +43,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Включать в распечатки")]
     public bool IncludeInPrint { get; set; } = true;
 
+    [Display(Name = "Показывать даже при непринятой заявке")]
+    public bool ShowForUnApprovedClaim { get; set; } = true;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)
@@ -147,7 +150,8 @@ namespace JoinRpg.Web.Models
     [Display(Name="Тип поля")]
     public ProjectFieldViewType FieldViewType { get; set; }
 
-    [Display(Name = "Привязано к")]
+    [Display(Name = "Привязано к", 
+      Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
     public FieldBoundToViewModel FieldBoundTo { get; set; }
   }
 

@@ -9,6 +9,7 @@ using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
+  //Actually most of this logic should be moved to Domain
   public class FieldValueViewModel
   {
     public int ProjectFieldId { get; }
@@ -61,16 +62,12 @@ namespace JoinRpg.Web.Models
       CanView = hasViewAccess &&
                 (ch.HasValue || (!ch.Field.CanHaveValue() && ch.Field.IsAvailableForTarget(model.Target)));
 
-      var hasEditAccess = model.HasMasterAccess
-                          ||
-                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerEdit &&
-                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
-                          ||
-                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerEdit &&
-                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
-      CanEdit = 
-        model.EditAllowed && hasEditAccess
-                && (ch.HasValue || ch.Field.IsAvailableForTarget(model.Target));
+      CanEdit = model.EditAllowed 
+          && ch.HasEditAccess(
+            model.HasMasterAccess, 
+            model.HasPlayerAccessToCharacter,
+            model.HasPlayerClaimAccess, 
+            model.Target);
 
       if (ch.Field.HasValueList())
       {
@@ -113,7 +110,6 @@ namespace JoinRpg.Web.Models
       HasPlayerClaimAccess = true;
       Fields =
         target.Project.GetFields()
-          .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Claim)
           .Select(ch => new FieldValueViewModel(this, ch))
           .ToList();
     }
@@ -157,15 +153,15 @@ namespace JoinRpg.Web.Models
 
       Fields =
         claim.Project.GetFields()
-          .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved)
           .ToList()
-          .FillIfEnabled(claim, claim.Character, CurrentUserId)
+          .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null, CurrentUserId)
           .Select(ch => new FieldValueViewModel(this, ch))
           .ToArray();
     }
 
     public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
+    [CanBeNull]
     public FieldValueViewModel FieldById(int projectFieldId)
     {
       return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);

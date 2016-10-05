@@ -56,6 +56,9 @@
                 <li class="navbar-text" style="max-width: 15em">
                     @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
                 </li>
+                <li class="alert-info hidden-sm hidden-xs">
+                    @Html.ActionLink("Сбор денег на развитие проекта", "Funding2016", "Home")
+                </li>
             </ul>
             @Html.Partial("_LoginPartial")
         </div>

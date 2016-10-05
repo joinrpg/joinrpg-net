@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
@@ -40,10 +41,10 @@ namespace JoinRpg.Services.Impl
 
       if (!string.IsNullOrWhiteSpace(claimText))
       {
-        claim.Comments.Add(new Comment()
+        claim.Comments.Add(new Comment
         {
           AuthorUserId = currentUserId,
-          CommentText = new CommentText() {Text =  new MarkdownString(claimText)},
+          CommentText = new CommentText {Text =  new MarkdownString(claimText)},
           CreatedTime = addClaimDate,
           IsCommentByPlayer = true,
           IsVisibleToPlayer = true,
@@ -53,8 +54,7 @@ namespace JoinRpg.Services.Impl
       }
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-      // ReSharper disable once MustUseReturnValue We will never be a part of special group here
-      FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, null, claim, fields);
+      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
 
       await UnitOfWork.SaveChangesAsync();
 
@@ -177,6 +177,10 @@ namespace JoinRpg.Services.Impl
         //TODO: Добавить здесь возможность ввести имя персонажа или брать его из заявки
         claim.ConvertToIndividual();
       }
+
+      //We need to resave fields here, because it may cause some field values to move from Claim to Characters
+      //which also could trigger changing of special groups
+      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, new Dictionary<int, string>());
 
       //TODO: Reorder and save emails only after save
 
@@ -388,13 +392,7 @@ namespace JoinRpg.Services.Impl
       //TODO: Prevent lazy load here - use repository 
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
-      var ids =  FieldSaveHelper.SaveCharacterFieldsImpl(currentUserId, claim.IsApproved ? claim.Character : null, claim, newFieldValue);
-      if (claim.IsApproved && claim.Character != null)
-      {
-        var groupsToKeep = claim.Character.Groups.Where(g => !g.IsSpecial).Select(g => g.CharacterGroupId);
-        claim.Character.ParentCharacterGroupIds =
-          groupsToKeep.Union(await ValidateCharacterGroupList(projectId, ids)).ToArray();
-      }
+      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue);
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -465,9 +463,11 @@ namespace JoinRpg.Services.Impl
         IsPublic = claim.Group.IsPublic,
         IsActive = true,
         ParentCharacterGroupIds = new[] {claim.CharacterGroupId.Value},
+        CharacterId = -1
       };
       claim.CharacterGroupId = null;
       claim.Character = character;
+      claim.CharacterId = character.CharacterId;
     }
   }
 }
