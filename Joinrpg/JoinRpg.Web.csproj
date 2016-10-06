@@ -301,6 +301,7 @@
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
+    <Content Include="Content\Images\fee.jpg" />
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
