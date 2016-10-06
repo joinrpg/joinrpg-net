@@ -85,6 +85,8 @@ namespace JoinRpg.Web.Models
       MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
       ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
       IncludeInPrint = field.IncludeInPrint;
+      ValidForNpc = field.ValidForNpc;
+      ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
     }
 
     public GameFieldEditViewModel()

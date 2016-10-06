@@ -86,6 +86,8 @@ namespace JoinRpg.Web.Models
 
 
     public const string HtmlIdPrefix = "field_";
+
+    public bool IsCheckboxSet() => !string.IsNullOrWhiteSpace(Value);
   }
 
   public class CustomFieldsViewModel

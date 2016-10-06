@@ -60,7 +60,7 @@
     </label>
     <div class="col-md-10">
         @{
-          var requiredMsg = new MvcHtmlString("");
+          MvcHtmlString requiredMsg;
           switch (Model.MandatoryStatus)
           {
               case MandatoryStatusViewType.Optional:
@@ -99,7 +99,7 @@
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" @requiredMsg>
                 break;
             case ProjectFieldViewType.Checkbox:
-                var ch = Model.Value == "" ? "" : "checked";
+                var ch = Model.IsCheckboxSet() ? "checked" : "";
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
                 <input name="@Model.FieldClientId" type="hidden" value="false" />
                 break;

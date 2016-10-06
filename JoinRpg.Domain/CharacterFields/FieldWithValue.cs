@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
@@ -28,7 +29,7 @@ namespace JoinRpg.Domain
         _value = value;
         if (Field.HasValueList())
         {
-          SelectedIds = string.IsNullOrWhiteSpace(Value)
+          SelectedIds = String.IsNullOrWhiteSpace(Value)
             ? new int[] { }
             : Value.ToIntList();
         }
@@ -51,7 +52,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public bool HasValue => !string.IsNullOrWhiteSpace(Value);
+    public bool HasValue => !String.IsNullOrWhiteSpace(Value);
 
     public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
     {
@@ -80,5 +81,9 @@ namespace JoinRpg.Domain
              (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)))
              && (HasValue || Field.IsAvailableForTarget(target));
     }
+
+    public override string ToString() => $"{Field.FieldName}={Value}";
+
+    public const string CheckboxValueOn = "on";
   }
 }
