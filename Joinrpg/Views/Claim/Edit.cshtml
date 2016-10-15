@@ -77,8 +77,6 @@
                 <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
                 <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
             }
-
-
         <dt>
             @Html.DisplayNameFor(model => model.ResponsibleMasterId)
         </dt>
@@ -87,7 +85,7 @@
             {
                 using (Html.BeginForm("ChangeResponsible", "Claim"))
                 {
-                    <div class="form-inline input-group-sm">
+                    <div class="form-inline input-group-sm" style="margin-top: 0.5em">
                         @Html.AntiForgeryToken()
                         @Html.HiddenFor(model => model.ProjectId)
                         @Html.HiddenFor(model => model.ClaimId)
@@ -97,7 +95,7 @@
                             htmlAttributes: new {@class = "form-control"})
 
                         @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
-                        <input type="submit" value="Изменить" class="btn btn-default btn-sm"/>
+                        <input type="submit" value="Изменить" class="btn btn-default btn-xs"/>
                     </div>
                 }
             }

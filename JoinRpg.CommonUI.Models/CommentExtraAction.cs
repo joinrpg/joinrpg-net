@@ -34,6 +34,9 @@ namespace JoinRpg.CommonUI.Models
     NewClaim,
     [Display(Name = "Заявка поставлена в лист ожидания", ShortName = "изменена")]
     [UsedImplicitly]
-    OnHoldByMaster
+    OnHoldByMaster,
+    [Display(Name = "Сумма взноса установлена вручную", ShortName = "изменена")]
+    [UsedImplicitly]
+    FeeChanged
   }
 }
