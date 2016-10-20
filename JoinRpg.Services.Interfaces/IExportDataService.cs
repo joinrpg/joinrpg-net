@@ -31,9 +31,8 @@ namespace JoinRpg.Services.Interfaces
 
   public interface ITableColumn
   {
-    string ExtractValue(object row);
+    object ExtractValue(object row);
     string Name { get; }
-    CellType CellType { get; }
   }
 
   public interface IGeneratorFrontend
