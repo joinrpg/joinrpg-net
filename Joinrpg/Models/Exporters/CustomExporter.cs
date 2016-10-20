@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,20 +12,20 @@ namespace JoinRpg.Web.Models.Exporters
 {
   public abstract class CustomExporter<TRow> : IGeneratorFrontend
   {
-    private class TableColumn : ITableColumn
+    private class TableColumn<T> : ITableColumn
     {
-      public TableColumn(string name, Func<TRow, string> getter)
+      public TableColumn(string name, Func<TRow, T> getter)
       {
         Name = name;
         Getter = getter;
       }
 
-      public TableColumn(PropertyInfo member, Func<TRow, string> getter)
+      public TableColumn(PropertyInfo member, Func<TRow, T> getter)
         : this (member.GetDisplayName(), getter)
       {
       }
 
-      public string ExtractValue(object row)
+      public object ExtractValue(object row)
       {
         return Getter((TRow) row);
       }
@@ -35,7 +34,7 @@ namespace JoinRpg.Web.Models.Exporters
       public string Name { get; }
 
       [NotNull]
-      private Func<TRow, string> Getter { get; }
+      private Func<TRow, T> Getter { get; }
     }
 
     public abstract IEnumerable<ITableColumn> ParseColumns();
@@ -44,32 +43,32 @@ namespace JoinRpg.Web.Models.Exporters
     protected ITableColumn StringColumn(Expression<Func<TRow, string>>  func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn(member, func.Compile());
+      return new TableColumn<string>(member, func.Compile());
     }
 
     [MustUseReturnValue]
     protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn(member, r => func.Compile()(r).ToString());
+      return new TableColumn<int>(member, r => func.Compile()(r));
     }
 
     [MustUseReturnValue]
     protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func, string name)
-      => new TableColumn(name, r => func.Compile()(r).ToString());
+      => new TableColumn<int>(name, r => func.Compile()(r));
 
     [MustUseReturnValue]
     protected ITableColumn EnumColumn(Expression<Func<TRow, Enum>> func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn(member, r => func.Compile()(r).GetDisplayName());
+      return new TableColumn<string>(member, r => func.Compile()(r).GetDisplayName());
     }
 
     [MustUseReturnValue]
     protected ITableColumn DateTimeColumn(Expression<Func<TRow, DateTime?>> func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn(member, r => func.Compile()(r)?.ToString(CultureInfo.InvariantCulture));
+      return new TableColumn<DateTime?>(member, r => func.Compile()(r));
     }
 
     [MustUseReturnValue]
@@ -93,9 +92,9 @@ namespace JoinRpg.Web.Models.Exporters
     }
 
     [MustUseReturnValue]
-    protected ITableColumn FieldColumn(string name, Func<TRow, string> func)
+    protected ITableColumn FieldColumn<T>(string name, Func<TRow, T> func)
     {
-      return new TableColumn(name, func);
+      return new TableColumn<T>(name, func);
     }
 
     [MustUseReturnValue]
@@ -108,7 +107,7 @@ namespace JoinRpg.Web.Models.Exporters
     protected static ITableColumn ComplexElementMemberColumn<T>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, string>> expr, string name = null)
     {
       name = name ?? $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}";
-      return new TableColumn(name, CombineGetters(complexGetter, expr).Compile());
+      return new TableColumn<string>(name, CombineGetters(complexGetter, expr).Compile());
     }
 
     [MustUseReturnValue]
@@ -117,7 +116,7 @@ namespace JoinRpg.Web.Models.Exporters
     {
       name = name ??
              $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{immed.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}";
-      return new TableColumn(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
+      return new TableColumn<string>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
     }
 
     private static Expression<Func<TRow, TOut>> CombineGetters<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr)

@@ -22,9 +22,9 @@ namespace Joinrpg.Markdown
     
     public override void Initialize()
     {
-      _textMatchHelper = new TextMatchHelper(new HashSet<string>(LinkRenderer.LinkTypesToMatch.Select(c => "@" + c)));
+      _textMatchHelper = new TextMatchHelper(new HashSet<string>(LinkRenderer.LinkTypesToMatch.Select(c => "%" + c)));
 
-      OpeningCharacters = new[] {'@'};
+      OpeningCharacters = new[] {'%'};
     }
 
     public override bool Match(InlineProcessor processor, ref StringSlice slice)

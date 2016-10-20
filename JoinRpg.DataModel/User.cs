@@ -35,8 +35,9 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<Claim> Claims { get; set; }
 
+    [NotNull]
     public string DisplayName
-      => new string[] {PrefferedName, FullName, Email}.SkipWhile(string.IsNullOrWhiteSpace).FirstOrDefault();
+      => new string[] {PrefferedName, FullName, Email}.SkipWhile(string.IsNullOrWhiteSpace).First();
 
     public string FullName => new[] {BornName, FatherName, SurName}.JoinIfNotNullOrWhitespace(" ");
 

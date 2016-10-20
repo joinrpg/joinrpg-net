@@ -17,11 +17,12 @@ namespace JoinRpg.Services.Export.BackEnds
 
     private static string GetContentForCsv(Cell c)
     {
-      if (string.IsNullOrWhiteSpace(c.Content))
+      var value = c.Content?.ToString();
+      if (string.IsNullOrWhiteSpace(value))
       {
         return "";
       }
-      return "\"" + c.Content.Replace("\"", "\"\"") + "\"";
+      return "\"" + value.Replace("\"", "\"\"") + "\"";
     }
 
     public byte[] Generate() => Encoding.UTF8.GetBytes(Builder.ToString());

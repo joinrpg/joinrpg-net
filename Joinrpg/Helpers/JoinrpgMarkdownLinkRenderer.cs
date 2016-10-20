@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -22,12 +23,10 @@ namespace JoinRpg.Web.Helpers
       _matches = new Dictionary
         <string, Func<string, int, string, string>>
         {
-  
-  //        {"charname", Charname},
-  //        {"charfull", CharacterFullFunc},
-  //        {"character", CharacterFunc},
-  //        {"groupname", GroupName},
-  //        {"grouplist", GroupListFunc},
+          {"персонаж", Charname},
+          {"контакты", CharacterFullFunc},
+          {"группа", GroupName},
+          {"список", GroupListFunc},
         };
     }
 
@@ -39,16 +38,12 @@ namespace JoinRpg.Web.Helpers
         return Fail(match, index, extra);
       }
       var groupLink = GroupLinkImpl(index, extra, group);
-      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId)).Take(11).ToList();
+      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId)).ToList();
       var builder = new StringBuilder(groupLink);
-      foreach (var character in characters.Take(10))
+      foreach (var character in characters)
       {
         builder.Append("<br>");
         builder.Append(CharacterImpl(character));
-      }
-      if (characters.Count > 10)
-      {
-        builder.Append("<br>....");
       }
       return $"<p>{builder}</p>";
     }
@@ -72,47 +67,29 @@ namespace JoinRpg.Web.Helpers
     private string CharacterFullFunc(string match, int index, string extra)
     {
       var character = Project.Characters.SingleOrDefault(c => c.CharacterId == index);
-      if (character == null)
-      {
-        return Fail(match, index, extra);
-      }
-      var characterLink = CharacterLinkImpl(character, extra);
-      var vkLink = GetVKLinkImpl(character);
-      var emailLink = GetEmailLinkImpl(character);
-      return $"<p>{characterLink}<br>игрок: {character.ApprovedClaim?.Player?.DisplayName ?? "нет"}{emailLink}{vkLink}<br>{character.Description.ToHtmlString()}</p>";
-    }
-
-    private string CharacterFunc(string match, int index, string extra)
-    {
-      var character = Project.Characters.SingleOrDefault(c => c.CharacterId == index);
-      if (character == null)
-      {
-        return Fail(match, index, extra);
-      }
-      return CharacterImpl(character, extra);
+      return character == null ? Fail(match, index, extra) : CharacterImpl(character, extra);
     }
 
     private string CharacterImpl(Character character, string extra = "")
     {
       var characterLink = CharacterLinkImpl(character, extra);
-      var vkLink = GetVKLinkImpl(character);
-      var emailLink = GetEmailLinkImpl(character);
-      return
-        $"<span>{characterLink} (игрок: {character.ApprovedClaim?.Player?.DisplayName ?? "нет"}{emailLink}{vkLink})</span>";
+      var player = character.ApprovedClaim?.Player;
+      var playerString = player == null
+        ? "нет игрока"
+        : $"{player.DisplayName}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
+      return $"<span>{characterLink}&nbsp;({playerString})</span>";
     }
 
-    private static string GetEmailLinkImpl(Character character)
+    private static string GetEmailLinkImpl([NotNull] User player)
     {
-      var email = character.ApprovedClaim?.Player?.Email;
-      var emailLink = string.IsNullOrEmpty(email) ? "" : $" Email: <a href=\"mailto:{email}\">{email}</a>";
-      return emailLink;
+      var email = player.Email;
+      return string.IsNullOrEmpty(email) ? "" : $"Email: <a href=\"mailto:{email}\">{email}</a>";
     }
 
-    private static string GetVKLinkImpl(Character character)
+    private static string GetVKLinkImpl([NotNull] User player)
     {
-      var vk = character.ApprovedClaim?.Player?.Extra?.Vk;
-      var vkLink = string.IsNullOrEmpty(vk) ? "" : $" ВК: <a href=\"https://vk.com/{vk}\">https://vk.com/{vk}</a>";
-      return vkLink;
+      var vk = player.Extra?.Vk;
+      return string.IsNullOrEmpty(vk) ? "" : $"ВК: <a href=\"https://vk.com/{vk}\">vk.com/{vk}</a>";
     }
 
     private string Charname(string match, int index, string extra)
@@ -133,7 +110,7 @@ namespace JoinRpg.Web.Helpers
 
     public string Render(string match, int index, string extra)
     {
-      if (match.Length > 1 && match[0] == '@' && _matches.ContainsKey(match.Substring(1)))
+      if (match.Length > 1 && match[0] == '%' && _matches.ContainsKey(match.Substring(1)))
       {
         return _matches[match.Substring(1)](match, index, extra);
       }
@@ -144,9 +121,9 @@ namespace JoinRpg.Web.Helpers
     {
       if (!string.IsNullOrEmpty(extra))
       {
-        extra = $"({extra}";
+        extra = $"({extra})";
       }
-      return $"@{match}{index}{extra}";
+      return $"{match}{index}{extra}";
     }
   }
 }

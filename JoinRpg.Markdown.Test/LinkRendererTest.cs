@@ -16,7 +16,7 @@ namespace JoinRpg.Markdown.Test
 
       public string Render(string match, int index, string extra)
       {
-        Assert.AreEqual("@" + Test, match);
+        Assert.AreEqual("%" + Test, match);
         Assert.IsTrue(index > 0);
         return $"<b>{index}</b>{extra}";
       }
@@ -38,21 +38,21 @@ namespace JoinRpg.Markdown.Test
     private readonly LinkRendererMock _mock = new LinkRendererMock();
     
     [TestMethod]
-    public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "@test12");
+    public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%test12");
     
     [TestMethod]
-    public void TestNoMatchWithoutIndex() => NoMatch("@test");
+    public void TestNoMatchWithoutIndex() => NoMatch("%test");
 
     [TestMethod]
-    public void TestNoMatchInMiddle() => NoMatch("test@test12");
+    public void TestNoMatchInMiddle() => NoMatch("test%test12");
 
     [TestMethod]
-    public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "@test121(extra)");
+    public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "%test121(extra)");
 
     [TestMethod]
-    public void TestNoMatchZero() => NoMatch("@test0(extra)");
+    public void TestNoMatchZero() => NoMatch("%test0(extra)");
 
     [TestMethod]
-    public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s @test12");
+    public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s %test12");
   }
 }
