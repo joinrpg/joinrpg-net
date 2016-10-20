@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.AutoFrontEnd
 {
@@ -45,7 +46,8 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
       {
         Getter = LambdaHelpers.CompileGetter(propertyInfo, TargetType),
         Name = propertyInfo.GetDisplayName(),
-        Converter = GetConverterForType(propertyInfo.PropertyType)
+        Converter = GetConverterForType(propertyInfo.PropertyType),
+        CellType = TargetType.IsAssignableFrom(typeof(DateTime)) ? CellType.DateTime : CellType.Regular
       };
     }
 

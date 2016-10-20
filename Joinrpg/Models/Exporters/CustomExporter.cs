@@ -15,14 +15,15 @@ namespace JoinRpg.Web.Models.Exporters
   {
     private class TableColumn : ITableColumn
     {
-      public TableColumn(string name, Func<TRow, string> getter)
+      public TableColumn(string name, Func<TRow, string> getter, CellType type = CellType.Regular)
       {
         Name = name;
         Getter = getter;
+        CellType = type;
       }
 
-      public TableColumn(PropertyInfo member, Func<TRow, string> getter)
-        : this (member.GetDisplayName(), getter)
+      public TableColumn(PropertyInfo member, Func<TRow, string> getter, CellType type = CellType.Regular)
+        : this (member.GetDisplayName(), getter, type)
       {
       }
 
@@ -33,6 +34,8 @@ namespace JoinRpg.Web.Models.Exporters
 
       [NotNull]
       public string Name { get; }
+
+      public CellType CellType { get; }
 
       [NotNull]
       private Func<TRow, string> Getter { get; }
@@ -69,7 +72,7 @@ namespace JoinRpg.Web.Models.Exporters
     protected ITableColumn DateTimeColumn(Expression<Func<TRow, DateTime?>> func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn(member, r => func.Compile()(r)?.ToString(CultureInfo.InvariantCulture));
+      return new TableColumn(member, r => func.Compile()(r)?.ToString(CultureInfo.InvariantCulture), CellType.DateTime);
     }
 
     [MustUseReturnValue]

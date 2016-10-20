@@ -11,6 +11,7 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
     }
 
     public string Name { get; set; }
+    public CellType CellType { get; set; }
 
     public Func<object, object> Getter { private get; set; }
 

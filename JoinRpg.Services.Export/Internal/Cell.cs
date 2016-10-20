@@ -1,4 +1,5 @@
 using JetBrains.Annotations;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.Internal
 {
@@ -9,6 +10,6 @@ namespace JoinRpg.Services.Export.Internal
 
     public bool ColumnHeader { get; set; }
 
-    public bool IsUri { get; set; }
+    public CellType CellType { get; set; } = CellType.Regular;
   }
 }
