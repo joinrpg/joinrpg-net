@@ -14,5 +14,6 @@ namespace JoinRpg.Services.Interfaces
     Task EditCustomPaymentType(int projectId, int currentUserId, int paymentTypeId, string name, bool isDefault);
     Task CreateFeeSetting(int projectId, int currentUserId, int fee, DateTime startDate);
     Task DeleteFeeSetting(int projectid, int currentUserId, int projectFeeSettingId);
+    Task ChangeFee(int projectId, int claimId, int feeValue, int currentUserId);
   }
 }

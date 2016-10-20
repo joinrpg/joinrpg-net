@@ -114,7 +114,7 @@ namespace JoinRpg.Web.Models
       ResponsibleMaster = claim.ResponsibleMasterUser;
       Fields = new CustomFieldsViewModel(currentUserId, claim);
       Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserId, CharacterNavigationPage.Claim);
-      ClaimFee = new ClaimFeeViewModel(claim);
+      ClaimFee = new ClaimFeeViewModel(claim, currentUserId);
       Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
       PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player);
       PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
@@ -146,15 +146,23 @@ namespace JoinRpg.Web.Models
 
   public class ClaimFeeViewModel
   {
-    public ClaimFeeViewModel(Claim claim)
+    public ClaimFeeViewModel(Claim claim, int currentUserId)
     {
       CurrentTotalFee = claim.ClaimTotalFee();
       CurrentBalance = claim.ClaimBalance();
       CurrentFee = claim.ClaimCurrentFee();
+      IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      ClaimId = claim.ClaimId;
+      ProjectId = claim.ProjectId;
+      FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
     }
 
     public int CurrentFee { get; }
     public int CurrentTotalFee { get; }
     public int CurrentBalance { get; }
+    public bool IsFeeAdmin { get; }
+    public int ClaimId { get; }
+    public int ProjectId { get; }
+    public IEnumerable<int> FeeVariants { get; }
   }
 }

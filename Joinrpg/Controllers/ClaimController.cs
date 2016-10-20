@@ -403,5 +403,32 @@ namespace JoinRpg.Web.Controllers
         return await Edit(viewModel.ProjectId, viewModel.ClaimId);
       }
     }
+
+    [Authorize, HttpPost, ValidateAntiForgeryToken]
+    public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
+    {
+      var claim = await _claimsRepository.GetClaim(projectid, claimid);
+      var error = WithClaim(claim);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return await Edit(projectid, claimid);
+        }
+
+        await
+          FinanceService.ChangeFee(claim.ProjectId, claim.ClaimId, feeValue, CurrentUserId);
+
+        return RedirectToAction("Edit", "Claim", new { claimid, projectid });
+      }
+      catch
+      {
+        return await Edit(projectid, claimid);
+      }
+    }
   }
 }
