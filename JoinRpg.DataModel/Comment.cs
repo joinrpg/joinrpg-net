@@ -87,6 +87,7 @@ namespace JoinRpg.DataModel
     DeclineByPlayer,
     ChangeResponsible,
     NewClaim,
-    OnHoldByMaster
+    OnHoldByMaster,
+    FeeChanged
   }
 }

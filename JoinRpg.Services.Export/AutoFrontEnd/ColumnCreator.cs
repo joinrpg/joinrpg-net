@@ -45,7 +45,7 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
       {
         Getter = LambdaHelpers.CompileGetter(propertyInfo, TargetType),
         Name = propertyInfo.GetDisplayName(),
-        Converter = GetConverterForType(propertyInfo.PropertyType)
+        Converter = GetConverterForType(propertyInfo.PropertyType),
       };
     }
 

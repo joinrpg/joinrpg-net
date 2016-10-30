@@ -24,9 +24,14 @@ namespace JoinRpg.Services.Interfaces
     string FileExtension { get; }
   }
 
+  public enum CellType
+  {
+    Regular, Url, DateTime
+  }
+
   public interface ITableColumn
   {
-    string ExtractValue(object row);
+    object ExtractValue(object row);
     string Name { get; }
   }
 

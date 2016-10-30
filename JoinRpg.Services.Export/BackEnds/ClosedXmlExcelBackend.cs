@@ -1,8 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Export.Internal;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.BackEnds
 {
@@ -20,10 +21,18 @@ namespace JoinRpg.Services.Export.BackEnds
     protected override void SetCell(int columnIndex, Cell cell)
     {
       var xlCell = Sheet.Cell(CurrentRowIndex, columnIndex);
-      xlCell.Value = _invalidCharactersRegex.Replace(cell.Content ?? "", "");
-      if (cell.IsUri)
+
+      if (cell.Content is DateTime)
       {
-        xlCell.Hyperlink = new XLHyperlink(cell.Content);
+        xlCell.SetValue((DateTime) cell.Content);
+      }
+      else if (cell.Content is DateTime?)
+      {
+        xlCell.SetValue((DateTime?)cell.Content);
+      }
+      else
+      {
+        xlCell.SetValue(_invalidCharactersRegex.Replace(cell.Content?.ToString() ?? "", ""));
       }
     }
 

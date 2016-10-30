@@ -197,5 +197,20 @@ namespace JoinRpg.Services.Impl
 
       await UnitOfWork.SaveChangesAsync();
     }
+
+    public async Task ChangeFee(int projectId, int claimId, int feeValue, int currentUserId)
+    {
+      
+      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+      var now = DateTime.UtcNow;
+      claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+      var comment = claim.AddCommentImpl(currentUserId, null, feeValue.ToString(), now, isVisibleToPlayer: true,
+        extraAction: CommentExtraAction.FeeChanged);
+
+      claim.CurrentFee = feeValue;
+
+      await UnitOfWork.SaveChangesAsync();
+    }
   }
 }

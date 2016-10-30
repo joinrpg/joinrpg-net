@@ -24,4 +24,60 @@
     {
         <span> — оплачен <b>частично</b> @Model.CurrentBalance&nbsp;&#8381;, осталось @(Model.CurrentTotalFee - Model.CurrentBalance)&nbsp;&#8381;</span>
     }
+    @if (Model.IsFeeAdmin)
+    {
+        <button 
+                type="button" 
+                class="btn btn-default btn-xs" 
+                data-toggle="modal" 
+                data-target="#changeFeeModal" 
+                >
+        Изменить
+    </button>
+    }
+    
+    <div class="modal fade" id="changeFeeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                @using (Html.BeginForm("ChangeFee", "Claim", new { Model.ClaimId, Model.ProjectId }, FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Изменение суммы взноса</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>Размер взноса для этой заявки будет назначен вручную. В таком случае взнос не будет больше зависеть от времени сдачи и будет зафиксирован.</p>
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <div class="col-md-5 control-label">Новый размер взноса:</div>
+
+                                <div class="col-md-3">
+                                    <input type="text"
+                                           class="form-control"
+                                           name="feeValue"
+                                           list="feeVariants"
+                                           value="@Model.CurrentFee" />
+                                </div>
+
+                                <datalist id="feeVariants">
+                                    @foreach (var feeVariant in Model.FeeVariants)
+                                    {
+                                        <option value="@feeVariant"></option>
+                                    }
+                                </datalist>
+                            </div>
+                           
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-info">Изменить</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </span>

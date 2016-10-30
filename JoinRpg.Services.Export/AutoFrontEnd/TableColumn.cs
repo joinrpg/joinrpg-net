@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
 {
   internal class TableColumn : ITableColumn
   {
-    public string ExtractValue(object row)
+    public object ExtractValue(object row)
     {
       return Converter(Getter(row))?.ToString();
     }
