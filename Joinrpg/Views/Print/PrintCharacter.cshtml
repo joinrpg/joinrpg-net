@@ -28,7 +28,7 @@
     foreach (var plot in Model.Plots.Where(p => p.Status == PlotStatus.Completed))
     {
         <div style="page-break-inside: avoid">
-            @Html.DisplayFor(model => plot.Content)
+            @plot.Content
         </div>
     }
 }
