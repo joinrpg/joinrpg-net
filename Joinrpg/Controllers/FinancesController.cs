@@ -17,12 +17,14 @@ namespace JoinRpg.Web.Controllers
   public class FinancesController : Common.ControllerGameBase
   {
     private IFinanceService FinanceService { get; }
+    private IUriService UriService { get; }
 
     public FinancesController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IFinanceService financeService)
+      IProjectService projectService, IExportDataService exportDataService, IFinanceService financeService, IUriService uriService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       FinanceService = financeService;
+      UriService = uriService;
     }
 
     [HttpGet]
@@ -250,7 +252,7 @@ namespace JoinRpg.Web.Controllers
       return
         await
           ExportWithCustomFronend(summary, "money-summary", ExportType.Csv,
-            new MoneySummaryByMasterExporter(),
+            new MoneySummaryByMasterExporter(UriService),
             project.ProjectName);
     }
   }
