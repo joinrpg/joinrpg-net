@@ -1,3 +1,5 @@
 ﻿@using System.Collections
 @model int
-@Html.DropDownList("", new SelectList(ViewData["Projects"] as IEnumerable, "ProjectId", "ProjectName", Model))
+@Html.DropDownList("", 
+  new SelectList(ViewData["Projects"] as IEnumerable, "ProjectId", "ProjectName", selectedValue: Model), 
+  new {@class = "form-control"})

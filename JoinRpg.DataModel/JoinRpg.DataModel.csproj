@@ -69,6 +69,7 @@
     <Compile Include="ProjectField.cs" />
     <Compile Include="ProjectFieldDropdownValue.cs" />
     <Compile Include="ReadCommentWatermark.cs" />
+    <Compile Include="Security.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserSubscription.cs" />
