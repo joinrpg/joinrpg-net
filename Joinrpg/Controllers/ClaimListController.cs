@@ -14,12 +14,14 @@ namespace JoinRpg.Web.Controllers
   public class ClaimListController : Common.ControllerGameBase
   {
     private IClaimsRepository ClaimsRepository { get; }
+    private IUriService UriService { get; }
 
     public ClaimListController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository)
+      IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository, IUriService uriService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       ClaimsRepository = claimsRepository;
+      UriService = uriService;
     }
 
     #region implementation
@@ -46,7 +48,7 @@ namespace JoinRpg.Web.Controllers
         return
           await
             ExportWithCustomFronend(view.Items, title, exportType.Value,
-              new ClaimListItemViewModelExporter(project.ProjectFields), project.ProjectName);
+              new ClaimListItemViewModelExporter(project.ProjectFields, UriService), project.ProjectName);
       }
     }
 

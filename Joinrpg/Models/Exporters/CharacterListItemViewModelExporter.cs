@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.Exporters
 {
   public class CharacterListItemViewModelExporter : CustomExporter<CharacterListItemViewModel>
   {
-    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields)
+    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields, IUriService uriService)
+      : base(uriService)
     {
       Fields = fields;
     }
@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Models.Exporters
     public override IEnumerable<ITableColumn> ParseColumns()
     {
       yield return StringColumn(x => x.Name);
-
+      yield return UriColumn(x => x);
 
       foreach (var projectField in Fields)
       {
@@ -33,6 +33,5 @@ namespace JoinRpg.Web.Models.Exporters
         yield return c;
       }
     }
-
   }
 }

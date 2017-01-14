@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -24,14 +25,11 @@ namespace JoinRpg.Services.Interfaces
     string FileExtension { get; }
   }
 
-  public enum CellType
-  {
-    Regular, Url, DateTime
-  }
-
   public interface ITableColumn
   {
+    [CanBeNull]
     object ExtractValue(object row);
+    [CanBeNull]
     string Name { get; }
   }
 

@@ -33,16 +33,16 @@ namespace JoinRpg.Web.Helpers
     private object Params { get; }
     private string Anchor { get; }
 
-    public string GetUri(UrlHelper urlHelper)
+    public Uri GetUri(UrlHelper urlHelper)
     {
       //TODO[https]
       var uri = urlHelper.Action(Action, Controller, Params, "http");
-
+      
       if (Anchor != "")
       {
         uri += "#" + Anchor;
       }
-      return uri;
+      return new Uri(uri);
     }
   }
 

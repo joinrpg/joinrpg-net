@@ -21,14 +21,19 @@ namespace JoinRpg.Services.Export.BackEnds
     protected override void SetCell(int columnIndex, Cell cell)
     {
       var xlCell = Sheet.Cell(CurrentRowIndex, columnIndex);
-
+      var uri = cell.Content as Uri;
       if (cell.Content is DateTime)
       {
         xlCell.SetValue((DateTime) cell.Content);
       }
       else if (cell.Content is DateTime?)
       {
-        xlCell.SetValue((DateTime?)cell.Content);
+        xlCell.SetValue((DateTime?) cell.Content);
+      }
+      else if (uri != null)
+      {
+        xlCell.SetValue(uri.PathAndQuery);
+        xlCell.Hyperlink.ExternalAddress = uri;
       }
       else
       {
