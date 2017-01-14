@@ -187,7 +187,10 @@
     <Content Include="App_Code\MvcHelpers.cs" />
     <Content Include="App_Code\MoveControlHtmlHelper.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Models\ChangeEmailModel.cs" />
+    <Compile Include="Helpers\AdminAuthorizeAttribute.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
+    <Compile Include="Areas\Admin\Controllers\UsersController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
@@ -337,6 +340,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Areas\Admin\Views\Users\ChangeEmail.cshtml" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-datepicker.min.js" />
@@ -576,6 +580,8 @@
     <Content Include="Scripts\jquery-3.1.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.1.0.min.map" />
     <Content Include="Views\Home\Funding2016.cshtml" />
+    <Content Include="Views\User\AddToProject.cshtml" />
+    <Content Include="Views\User\ChangeEmailForm.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

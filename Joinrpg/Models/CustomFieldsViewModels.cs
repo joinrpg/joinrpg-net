@@ -6,6 +6,8 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
+using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
@@ -24,7 +26,7 @@ namespace JoinRpg.Web.Models
 
     public bool HasValue { get; }
 
-    public string DisplayString { get; }
+    public IHtmlString DisplayString { get; }
     public string FieldName { get; }
 
     public bool IsDeleted { get; }
@@ -35,12 +37,20 @@ namespace JoinRpg.Web.Models
 
     public IReadOnlyList<ProjectFieldDropdownValue> ValueList { get; }
     public IEnumerable<ProjectFieldDropdownValue> PossibleValueList { get; }
-    public FieldValueViewModel(CustomFieldsViewModel model, [NotNull] FieldWithValue ch)
+    public FieldValueViewModel(CustomFieldsViewModel model, [NotNull] FieldWithValue ch, ILinkRenderer renderer)
     {
       if (ch == null) throw new ArgumentNullException(nameof(ch));
 
       Value = ch.Value;
-      DisplayString = ch.DisplayString;
+
+      if (ch.Field.SupportsMarkdown())
+      {
+        DisplayString = new MarkdownString(ch.DisplayString).ToHtmlString(renderer);
+      }
+      else
+      {
+       DisplayString = ch.DisplayString.SanitizeHtml(); 
+      }
       FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
       FieldName = ch.Field.FieldName;
       Description = ch.Field.Description.ToHtmlString();
@@ -110,9 +120,11 @@ namespace JoinRpg.Web.Models
       Target = target;
 
       HasPlayerClaimAccess = true;
+      var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
+
       Fields =
         target.Project.GetFields()
-          .Select(ch => new FieldValueViewModel(this, ch))
+          .Select(ch => new FieldValueViewModel(this, ch, renderer))
           .ToList();
     }
 
@@ -134,12 +146,13 @@ namespace JoinRpg.Web.Models
       }
 
       Target = character;
+      var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
       Fields =
         character.Project.GetFields()
           .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
           .ToList()
           .FillIfEnabled(character.ApprovedClaim, character, CurrentUserId)
-          .Select(ch => new FieldValueViewModel(this, ch))
+          .Select(ch => new FieldValueViewModel(this, ch, joinrpgMarkdownLinkRenderer))
           .ToArray();
     }
 
@@ -153,11 +166,13 @@ namespace JoinRpg.Web.Models
       HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
       HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
 
+      var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
+
       Fields =
         claim.Project.GetFields()
           .ToList()
           .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null, CurrentUserId)
-          .Select(ch => new FieldValueViewModel(this, ch))
+          .Select(ch => new FieldValueViewModel(this, ch, renderer))
           .ToArray();
     }
 

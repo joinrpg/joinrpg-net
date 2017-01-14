@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -9,6 +10,11 @@ namespace JoinRpg.Domain
     public static bool HasValueList(this ProjectField field)
     {
       return field.FieldType == ProjectFieldType.Dropdown || field.FieldType == ProjectFieldType.MultiSelect;
+    }
+
+    public static bool SupportsMarkdown([NotNull] this ProjectField field)
+    {
+      return field.FieldType == ProjectFieldType.Text;
     }
 
     public static bool HasSpecialGroup(this ProjectField field)

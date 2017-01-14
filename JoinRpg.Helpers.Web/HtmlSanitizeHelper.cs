@@ -51,10 +51,18 @@ namespace JoinRpg.Helpers.Web
     }
 
     [NotNull]
-    public static HtmlString SanitizeHtml([NotNull] this UnSafeHtml unsafeHtml)
+    public static IHtmlString SanitizeHtml([NotNull] this UnSafeHtml unsafeHtml)
     {
       if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
       return new HtmlString(SimpleHtml5Sanitizer.Value.Sanitize(unsafeHtml.UnValidatedValue));
+    }
+
+    [NotNull]
+    public static IHtmlString SanitizeHtml([NotNull] this string str)
+    {
+      var unsafeHtml = (UnSafeHtml) str;
+      if (unsafeHtml == null) throw new ArgumentNullException(nameof(str));
+      return unsafeHtml.SanitizeHtml();
     }
   }
 }

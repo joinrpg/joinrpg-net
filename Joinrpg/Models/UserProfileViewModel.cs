@@ -30,6 +30,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public string Hash { get; set; }
+
+    [ReadOnly(true)]
+    public bool HasAdminAccess { get; set; }
   }
 
   public class UserProfileDetailsViewModel
