@@ -5,6 +5,7 @@
 /// <reference path="bootstrap-datepicker.min.js" />
 /// <reference path="edit-funcs.js" />
 /// <reference path="jquery.details.min.js" />
+/// <reference path="jquery.popconfirm.js" />
 /// <reference path="jquery.validate.min.js" />
 /// <reference path="jquery.validate.unobtrusive.js" />
 /// <reference path="jquery-2.1.4.js" />

@@ -33,6 +33,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasAdminAccess { get; set; }
+
+    [ReadOnly(true)]
+    public bool IsAdmin { get; set;  }
   }
 
   public class UserProfileDetailsViewModel

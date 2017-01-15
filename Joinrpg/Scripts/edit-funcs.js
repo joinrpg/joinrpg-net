@@ -17,22 +17,28 @@ jQuery("input[type=submit]").click(function () {
 
 $("html").addClass($.fn.details.support ? "details" : "no-details");
 $("details").details();
+$("[data-toggle='confirmation']").popConfirm({
+    yesBtn: "OK",
+    noBtn: "Отмена",
+    title: "Подтверждение операции",
+    container: "body"
+});
 $(".datepicker").datepicker({
     autoclose: true
 });
 
 //TODO: merge this
 
-$('#deleteElementModal').on('show.bs.modal', function(event) {
+$("#deleteElementModal").on("show.bs.modal", function(event) {
     var button = $(event.relatedTarget);
-    var plotElementId = button.data('element');
+    var plotElementId = button.data("element");
     var modal = $(this);
-    modal.find('#deletePlotElementId').val(plotElementId);
+    modal.find("#deletePlotElementId").val(plotElementId);
 });
 
-$('#publishElementModal').on('show.bs.modal', function (event) {
+$("#publishElementModal").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget);
-    var plotElementId = button.data('element');
+    var plotElementId = button.data("element");
     var modal = $(this);
-    modal.find('#publishPlotElementId').val(plotElementId);
+    modal.find("#publishPlotElementId").val(plotElementId);
 });

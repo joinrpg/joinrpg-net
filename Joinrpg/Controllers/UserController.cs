@@ -12,7 +12,6 @@ namespace JoinRpg.Web.Controllers
     {
 
       [HttpGet]
-      // GET: User
       public async Task<ActionResult> Details(int userId)
       {
         var user = await UserManager.FindByIdAsync(userId);
@@ -28,6 +27,7 @@ namespace JoinRpg.Web.Controllers
           : AccessReason.NoAccess,
           Details = UserProfileDetailsViewModel.FromUser(user),
           HasAdminAccess = currentUser?.Auth?.IsAdmin ?? false,
+          IsAdmin = user.Auth?.IsAdmin ?? false
         };
 
 
@@ -76,7 +76,7 @@ namespace JoinRpg.Web.Controllers
       public ActionResult GetAvatar(int userId)
       {
         var hash = UserManager.FindById(userId).Email.GravatarHash();
-      return Content($"https://www.gravatar.com/avatar/{hash}?d=identicon&s=64");
-    }
+        return Content($"https://www.gravatar.com/avatar/{hash}?d=identicon&s=64");
+      }
     }
 }
