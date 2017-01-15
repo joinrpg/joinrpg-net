@@ -30,7 +30,21 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             @if (!comment.IsCommentByPlayer)
                             {
                                 <strong>
-                                    @if (comment.IsVisibleToPlayer) {  <span>игроку</span> } else { <span>другим мастерам</span> }
+                                    @if (comment.IsVisibleToPlayer)
+                                    {
+                                      if (!comment.IsClaimComment)
+                                       {
+                                           <text>игрокам</text>
+                                       }
+                                       else
+                                       {
+                                           <span>игроку</span>
+                                       }
+                                    }
+                                    else
+                                    {
+                                        <span>другим мастерам</span>
+                                    }
                                 </strong>
                             }
 
@@ -38,7 +52,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             {
                                 <span class="label label-default" title="Новый комментарий" id="unread">New</span>
                             }
-                            <a href="@Url.Action("Edit", "Claim", new {comment.ProjectId, comment.ClaimId})#comment@(comment.CommentId)">#</a>
+                            <a href="@Url.Action("RedirectToDiscussion", "Forum", new {comment.ProjectId, comment.CommentId})">#</a>
                         </div>
                         @if (comment.Finance != null)
                         {
@@ -56,12 +70,12 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             Ответить
                         </a>
                         <div id="answerComment@(comment.CommentId)" class="collapse">
-                            @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
                             {
-                                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                            {
                                ProjectId = comment.ProjectId,
-                               ClaimId = comment.ClaimId,
+                               CommentDiscussionId = comment.CommentDiscussionId,
                                ParentCommentId = comment.CommentId,
                                EnableFinanceAction = comment.ShowFinanceModeration,
                                EnableHideFromUser = comment.HasMasterAccess,

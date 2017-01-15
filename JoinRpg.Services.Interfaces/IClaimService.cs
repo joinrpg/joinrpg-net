@@ -8,8 +8,7 @@ namespace JoinRpg.Services.Interfaces
   {
     Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields);
 
-    Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
-      string commentText, FinanceOperationAction financeAction);
+    Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
     Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);

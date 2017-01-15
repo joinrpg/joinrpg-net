@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -15,16 +14,16 @@ namespace JoinRpg.Web.Models
     [Display(Name="Мастер")]
     public User Master { get; set; }
 
-    [DisplayName("Администратор заявок")]
+    [Display(Name = "Администратор заявок")]
     public bool CanManageClaims { get; set; }
 
-    [DisplayName("Настраивать поля персонажа")]
+    [Display(Name = "Настраивать поля персонажа")]
     public bool CanChangeFields { get; set; }
 
-    [DisplayName("Настраивать проект")]
+    [Display(Name="Настраивать проект")]
     public bool CanChangeProjectProperties { get; set; }
 
-    [DisplayName("Давать доступ другим мастерам")]
+    [Display(Name = "Давать доступ другим мастерам")]
     public bool CanGrantRights { get; set; }
 
     [Display(Name="Редактировать ролевку")]

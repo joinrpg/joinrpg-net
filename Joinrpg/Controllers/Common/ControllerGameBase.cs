@@ -10,20 +10,24 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Controllers.Common
 {
+  [JoinRpgExceptionHandler]
   public class ControllerGameBase : ControllerBase
   {
     protected IProjectService ProjectService { get; }
     private IExportDataService ExportDataService { get; }
-    protected IProjectRepository ProjectRepository { get; }
+    [NotNull]
+    public IProjectRepository ProjectRepository { get; }
 
-    protected ControllerGameBase(ApplicationUserManager userManager, IProjectRepository projectRepository,
+    protected ControllerGameBase(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,
       IProjectService projectService, IExportDataService exportDataService) : base(userManager)
     {
+      if (projectRepository == null) throw new ArgumentNullException(nameof(projectRepository));
       ProjectRepository = projectRepository;
       ProjectService = projectService;
       ExportDataService = exportDataService;
@@ -31,13 +35,7 @@ namespace JoinRpg.Web.Controllers.Common
 
     private ActionResult NoAccesToProjectView(Project project)
     {
-      return View("ErrorNoAccessToProject",
-        new ErrorNoAccessToProjectViewModel
-        {
-          CanGrantAccess = project.ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.User),
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName
-        });
+      return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
     }
 
 
@@ -50,14 +48,19 @@ namespace JoinRpg.Web.Controllers.Common
         return HttpNotFound();
       }
 
+      RegisterProjectMenu(project);
+      return null;
+    }
+
+    private void RegisterProjectMenu(Project project)
+    {
       ViewBag.ProjectId = project.ProjectId;
 
       var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
       //TODO[GroupsLoad]. If we not loaded groups already, that's slow
-      var bigGroups =  project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive);
+      var bigGroups = project.RootGroup.ChildGroups.Where(cg => !cg.IsSpecial && cg.IsActive);
       if (acl != null)
       {
-        
         ViewBag.MasterMenu = new MasterMenuViewModel
         {
           ProjectId = project.ProjectId,
@@ -77,8 +80,11 @@ namespace JoinRpg.Web.Controllers.Common
         {
           ProjectId = project.ProjectId,
           ProjectName = project.ProjectName,
-          Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          BigGroups = bigGroups.Where(cg => cg.IsPublic || project.IsPlotPublished()).Select(cg => new CharacterGroupLinkViewModel(cg)),
+          Claims =
+            project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+          BigGroups =
+            bigGroups.Where(cg => cg.IsPublic || project.IsPlotPublished())
+              .Select(cg => new CharacterGroupLinkViewModel(cg)),
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,
@@ -86,7 +92,6 @@ namespace JoinRpg.Web.Controllers.Common
           IsAdmin = IsCurrentUserAdmin(),
         };
       }
-      return null;
     }
 
     protected ActionResult WithMyClaim(Claim claim)

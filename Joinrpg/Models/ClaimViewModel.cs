@@ -15,7 +15,7 @@ using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Models
 {
-  public class ClaimViewModel : ICharacterWithPlayerViewModel
+  public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
     public bool ProjectActive { get; }
-    public IEnumerable<CommentViewModel> Comments { get; }
+    public IReadOnlyCollection<CommentViewModel> Comments { get; }
 
     public int? CharacterId { get; }
 
@@ -89,9 +89,8 @@ namespace JoinRpg.Web.Models
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
       ClaimId = claim.ClaimId;
-      Comments =
-        claim.Comments.Where(comment => comment.ParentCommentId == null)
-          .Select(comment => new CommentViewModel(comment, currentUserId)).OrderBy(c => c.CreatedTime);
+      CommentDiscussionId = claim.Discussion.CommentDiscussionId;
+      Comments = claim.Discussion.ToCommentTreeViewModel(currentUserId);
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       CanManageThisClaim = claim.CanManageClaim(currentUserId);
       IsMyClaim = claim.PlayerUserId == currentUserId;
@@ -142,6 +141,12 @@ namespace JoinRpg.Web.Models
         ? claim.Character.GetOrderedPlots(plotElements).ToViewModels(currentUserId, claim.Character)
         : Enumerable.Empty<PlotElementViewModel>();
     }
+
+    #region Implementation of IEntityWithCommentsViewModel
+
+    public int CommentDiscussionId { get; }
+
+    #endregion
   }
 
   public class ClaimFeeViewModel

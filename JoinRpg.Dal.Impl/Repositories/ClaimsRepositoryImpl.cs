@@ -27,8 +27,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx
         .ClaimSet
-        .Include(c => c.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Watermarks)
+        .Include(c => c.Discussion.Comments.Select(cm => cm.Finance))
+        .Include(c => c.Discussion.Watermarks)
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
         .Where(GetClaimStatusPredicate(status))
@@ -59,8 +59,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx
         .ClaimSet
-        .Include(c => c.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Watermarks)
+        .Include(c => c.Discussion.Comments.Select(cm => cm.Finance))
+        .Include(c => c.Discussion.Watermarks)
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
         .Where(GetClaimStatusPredicate(status))
@@ -93,9 +93,15 @@ namespace JoinRpg.Dal.Impl.Repositories
       }
     }
 
-    public Task<Claim> GetClaim(int projectId, int claimId)
+    public Task<Claim> GetClaim(int projectId, int? claimId)
     {
-      return Ctx.ClaimSet.Include(c => c.Project).Include(c => c.Project.ProjectAcls).Include(c => c.Character).Include(c => c.Player).Include(c => c.Player.Claims).SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+      return
+        Ctx.ClaimSet.Include(c => c.Project)
+          .Include(c => c.Project.ProjectAcls)
+          .Include(c => c.Character)
+          .Include(c => c.Player)
+          .Include(c => c.Player.Claims)
+          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 
     public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
@@ -107,9 +113,9 @@ namespace JoinRpg.Dal.Impl.Repositories
 
       return
         await
-          Ctx.ClaimSet.Include(c => c.Comments.Select(com => com.Finance))
-            .Include(c => c.Comments.Select(com => com.Author))
-            .Include(c => c.Comments.Select(com => com.CommentText))
+          Ctx.ClaimSet.Include(c => c.Discussion.Comments.Select(com => com.Finance))
+            .Include(c => c.Discussion.Comments.Select(com => com.Author))
+            .Include(c => c.Discussion.Comments.Select(com => com.CommentText))
             .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
   }

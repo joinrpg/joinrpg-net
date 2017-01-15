@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IClaimsRepository.cs" />
+    <Compile Include="IForumRepository.cs" />
     <Compile Include="IPlotRepository.cs" />
     <Compile Include="IProjectRepository.cs" />
     <Compile Include="IUserRepository.cs" />

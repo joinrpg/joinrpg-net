@@ -1,0 +1,49 @@
+﻿@using JoinRpg.Web.Models
+@model IEntityWithCommentsViewModel
+<a data-toggle="collapse"
+   href="#answerComment0" class="btn btn-default">
+    Добавить комментарий
+</a> 
+<br />
+<br />
+<div id="answerComment0" class="collapse">
+    @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
+   {
+       ProjectId = Model.ProjectId,
+       CommentDiscussionId = Model.CommentDiscussionId,
+       ParentCommentId = null,
+       EnableHideFromUser = Model.HasMasterAccess,
+       HideFromUser = false
+   })
+    }
+</div>
+
+<div class="media-list">
+    @foreach (var comment in Model.Comments)
+    {
+        @Html.Partial("..\\Comments\\_CommentPartial", comment)
+    }
+</div>
+
+@if (Model.Comments.Any())
+{
+    <a data-toggle="collapse"
+       href="#answerComment1" class="btn btn-default">
+        Добавить комментарий
+    </a>
+    <div id="answerComment1" class="collapse">
+        @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new {enctype = "multipart/form-data"}))
+        {
+            @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
+            {
+                ProjectId = Model.ProjectId,
+                CommentDiscussionId = Model.CommentDiscussionId,
+                ParentCommentId = null,
+                EnableHideFromUser = Model.HasMasterAccess,
+                HideFromUser = false
+            })
+        }
+    </div>
+}

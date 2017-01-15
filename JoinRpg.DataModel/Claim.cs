@@ -42,11 +42,7 @@ namespace JoinRpg.DataModel
     /// </summary>
     public string JsonData { get; set; }
 
-    public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
-
     public virtual ICollection<UserSubscription> Subscriptions { get; set; } = new HashSet<UserSubscription>();
-
-    public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
 
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
@@ -63,6 +59,8 @@ namespace JoinRpg.DataModel
     public DateTime LastUpdateDateTime { get; set; }
 
     public int? CurrentFee { get; set; }
+
+    public CommentDiscussion Discussion { get; set; }
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 

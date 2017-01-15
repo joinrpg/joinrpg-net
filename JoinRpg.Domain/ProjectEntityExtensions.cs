@@ -52,12 +52,14 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
+    [NotNull]
+    public static T EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
     {
       if (!entity.IsActive)
       {
         throw new ProjectEntityDeactivedException(entity);
       }
+      return entity;
     }
 
     public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
@@ -95,6 +97,29 @@ namespace JoinRpg.Domain
       {
         throw new ProjectDeactivedException();
       }
+    }
+
+    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
+    {
+      if (!(discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId)))
+      {
+        throw new NoAccessToProjectException(discussion, currentUserId);
+      }
+    }
+
+    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+    {
+      if (commentDiscussion.ForumThread != null)
+      {
+        return commentDiscussion.ForumThread.IsVisibleToPlayer &&
+                   commentDiscussion.Project.Claims.OfUserApproved(currentUserId)
+                     .Any(claim => claim.IsPartOfGroup(commentDiscussion.ForumThread.CharacterGroupId));
+      }
+      if (commentDiscussion.Claim != null)
+      {
+        return commentDiscussion.Claim.HasPlayerAccesToClaim(currentUserId);
+      }
+      throw new InvalidOperationException();
     }
   }
 }

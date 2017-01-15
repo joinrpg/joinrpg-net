@@ -33,6 +33,7 @@ namespace JoinRpg.Dal.Impl
 
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
+    public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
 
     public static MyDbContext Create()
     {
@@ -63,8 +64,9 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasRequired(c => c.Discussion).WithOptional();
 
-      modelBuilder.Entity<Claim>().HasMany(c => c.Comments).WithRequired(c => c.Claim);
+      modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments).WithRequired(c => c.Discussion);
 
       modelBuilder.Entity<Claim>()
         .HasOptional(c => c.ResponsibleMasterUser)
@@ -121,6 +123,9 @@ namespace JoinRpg.Dal.Impl
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 
+      modelBuilder.Entity<ForumThread>().HasRequired(ft => ft.Project).WithMany().WillCascadeOnDelete(false);
+
+      modelBuilder.Entity<ForumThread>().HasRequired(c => c.Discussion).WithOptional();
       base.OnModelCreating(modelBuilder);
     }
  }

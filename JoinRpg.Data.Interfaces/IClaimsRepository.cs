@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -18,7 +19,8 @@ namespace JoinRpg.Data.Interfaces
     Task<IEnumerable<Claim>> GetMyClaimsForProject(int userId, int projectId);
     Task<IEnumerable<Claim>>  GetClaimsByIds(int projectid, ICollection<int> claimindexes);
     Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status);
-    Task<Claim> GetClaim(int projectId, int claimId);
+    [ItemCanBeNull]
+    Task<Claim> GetClaim(int projectId, int? claimId);
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
   }
 }
