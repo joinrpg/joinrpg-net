@@ -19,7 +19,26 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     public async Task<ActionResult> ChangeEmail(ChangeEmailModel model)
     {
       await UserService.ChangeEmail(model.UserId, model.NewEmail);
-      return RedirectToAction("Details", "User", new {area = "", model.UserId});
+      return RedirectToUserDetails(model.UserId);
+    }
+
+    private ActionResult RedirectToUserDetails(int userId)
+    {
+      return RedirectToAction("Details", "User", new {area = "", userId});
+    }
+
+    [ValidateAntiForgeryToken, HttpPost]
+    public async Task<ActionResult> GrantAmin(int userId)
+    {
+      await UserService.SetAdminFlag(userId, administratorFlag: true);
+      return RedirectToUserDetails(userId);
+    }
+
+    [ValidateAntiForgeryToken, HttpPost]
+    public async Task<ActionResult> RevokeAdmin(int userId)
+    {
+      await UserService.SetAdminFlag(userId, administratorFlag: false);
+      return RedirectToUserDetails(userId);
     }
   }
 }

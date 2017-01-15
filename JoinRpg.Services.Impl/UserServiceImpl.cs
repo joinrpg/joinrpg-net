@@ -50,5 +50,15 @@ namespace JoinRpg.Services.Impl
       //TODO: Send email
       await UnitOfWork.SaveChangesAsync();
     }
+
+    [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+    public async Task SetAdminFlag(int userId, bool administratorFlag)
+    {
+      var user = await UserRepository.GetById(userId);
+      user.Auth = user.Auth ?? new UserAuthDetails();
+      user.Auth.IsAdmin = administratorFlag;
+      //TODO: Send email
+      await UnitOfWork.SaveChangesAsync();
+    }
   }
 }
