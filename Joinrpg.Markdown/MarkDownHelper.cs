@@ -71,6 +71,7 @@ namespace Joinrpg.Markdown
       var pipeline =
         new MarkdownPipelineBuilder()
           .UseSoftlineBreakAsHardlineBreak()
+          .UseAutoLinks()
           .UseEntityLinker(renderer)
           .Build();
       return Markdig.Markdown.ToHtml(markdownString.Contents, pipeline);
