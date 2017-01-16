@@ -7,7 +7,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 
@@ -16,6 +15,7 @@ namespace JoinRpg.Web.Controllers
   public class CharacterListController : ControllerGameBase
   {
     private IPlotRepository PlotRepository { get; }
+    private IUriService UriService { get; }
 
     [HttpGet, Authorize]
     public Task<ActionResult> Active(int projectid, string export)
@@ -68,12 +68,13 @@ namespace JoinRpg.Web.Controllers
         return View("Index", list);
       }
 
-      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields), list.ProjectName);
+      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService, exportDataService)
+    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository, IUriService uriService) : base(userManager, projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
+      UriService = uriService;
     }
 
     public async Task<ActionResult> ByGroup(int projectid, int charactergroupid, string export)

@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class ClaimListItemViewModel
+  public class ClaimListItemViewModel : ILinkable
   {
     [Display(Name="Имя")]
     public string Name { get; set; }
@@ -147,5 +147,13 @@ namespace JoinRpg.Web.Models
         problem.Select(p => new ProblemViewModel(p)).ToList();
       return this;
     }
+
+    #region Implementation of ILinkable
+
+    public LinkType LinkType => LinkType.Claim;
+    public string Identification => ClaimId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
+
+    #endregion
   }
 }

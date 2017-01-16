@@ -23,7 +23,7 @@ namespace Joinrpg.Markdown
       pipeline.InlineParsers.AddIfNotAlready(new LinkerParser(LinkRenderers));
     }
 
-    public void Setup(IMarkdownRenderer renderer)
+    public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer)
     {
       renderer.ObjectRenderers.AddIfNotAlready(new LinkerRenderAdapter(LinkRenderers));
     }

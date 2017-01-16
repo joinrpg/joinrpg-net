@@ -8,6 +8,7 @@ namespace JoinRpg.Web.Models
   public class AclViewModel
   {
     public int? ProjectAclId { get; set; }
+    [Display(Name="Проект")]
     public int ProjectId { get; set; }
     public int UserId { get; set; }
 
