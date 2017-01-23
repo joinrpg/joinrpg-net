@@ -13,6 +13,7 @@ namespace JoinRpg.DataModel.Mocks
     public ProjectField CharacterField { get; }
     public ProjectField ConditionalField { get; }
     public ProjectField HideForUnApprovedClaim { get; }
+    public ProjectField PublicField { get; }
     public Character Character { get; }
 
     private static void FixProjectSubEntities(Project project1)
@@ -86,7 +87,19 @@ namespace JoinRpg.DataModel.Mocks
         AvailableForCharacterGroupIds = new int[0]
       };
 
+      PublicField = new ProjectField()
+      {
+        CanPlayerEdit = false,
+        CanPlayerView = true,
+        IsPublic = true,
+        IsActive = true,
+        FieldBoundTo = FieldBoundTo.Character,
+        AvailableForCharacterGroupIds = new int[0],
+        ShowOnUnApprovedClaims =  true,
+      };
+
       var characterFieldValue = new FieldWithValue(CharacterField, "Value");
+      var publicFieldValue = new FieldWithValue(PublicField, "Public");
       Character = new Character
       {
         IsActive = true,
@@ -111,7 +124,7 @@ namespace JoinRpg.DataModel.Mocks
         },
         ProjectFields = new List<ProjectField>()
         {
-          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim
+          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim, PublicField
         },
         Characters = new List<Character>() { Character },
         CharacterGroups = new List<CharacterGroup> {  Group},
@@ -120,7 +133,7 @@ namespace JoinRpg.DataModel.Mocks
 
       FixProjectSubEntities(Project);
       //That needs to happen after FixProjectSubEntities(..)
-      Character.JsonData = new[] { characterFieldValue }.SerializeFields();
+      Character.JsonData = new[] { characterFieldValue, publicFieldValue }.SerializeFields();
 
       Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
 

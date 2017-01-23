@@ -102,7 +102,7 @@ namespace JoinRpg.Domain.CharacterFields
       var fields =
         project.GetFieldsWithoutOrder()
           .ToList()
-          .FillIfEnabled(claim, character, currentUserId)
+          .FillIfEnabled(claim, character)
           .ToDictionary(f => f.Field.ProjectFieldId);
 
       var hasMasterAccess = project.HasMasterAccess(currentUserId);
