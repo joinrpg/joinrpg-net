@@ -10,45 +10,102 @@ namespace JoinRpg.Domain.CharacterFields
   {
     private abstract class FieldSaveStrategyBase
     {
-      public abstract void Save(Character character, Claim claim, Dictionary<int, FieldWithValue> fields);
+      protected Claim Claim { get; }
+      protected Character Character { get; }
+      private int CurrentUserId { get; }
 
-      protected static void UpdateSpecialGroups(Character character, Dictionary<int, FieldWithValue> fields)
+      private Project Project { get; }
+
+      protected FieldSaveStrategyBase(Claim claim, Character character, int currentUserId)
+      {
+        Claim = claim;
+        Character = character;
+        CurrentUserId = currentUserId;
+        Project = character?.Project ?? claim?.Project;
+
+        if (Project == null)
+        {
+          throw new ArgumentNullException("", "Either character or claim should be not null");
+        }
+      }
+
+      
+
+      public abstract void Save(Dictionary<int, FieldWithValue> fields);
+
+      protected void UpdateSpecialGroups(Dictionary<int, FieldWithValue> fields)
       {
         var ids = fields.Values.GenerateSpecialGroupsList();
-        var groupsToKeep = character.Groups.Where(g => !g.IsSpecial).Select(g => g.CharacterGroupId);
-        character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
+        var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial).Select(g => g.CharacterGroupId);
+        Character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
+      }
+
+      public Dictionary<int, FieldWithValue> LoadFields()
+      {
+        var fields =
+          Project.GetFieldsWithoutOrder()
+            .ToList()
+            .FillIfEnabled(Claim, Character)
+            .ToDictionary(f => f.Field.ProjectFieldId);
+        return fields;
+      }
+
+      public void EnsureEditAccess(FieldWithValue field)
+      {
+        var hasMasterAccess = Project.HasMasterAccess(CurrentUserId);
+        var characterAccess = Character?.HasPlayerAccess(CurrentUserId) ?? false;
+        var hasPlayerAccesToClaim = Claim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
+        var editAccess = field.HasEditAccess(hasMasterAccess,
+          characterAccess, hasPlayerAccesToClaim, Character ?? Claim.GetTarget());
+        if (!editAccess)
+        {
+          throw new NoAccessToProjectException(Project, CurrentUserId);
+        }
       }
     }
     private class SaveToCharacterOnlyStrategy : FieldSaveStrategyBase
     {
-      public override void Save(Character character, Claim claim, Dictionary<int, FieldWithValue> fields)
+
+      public SaveToCharacterOnlyStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
       {
-          character.JsonData = fields.Values
+      }
+
+      public override void Save(Dictionary<int, FieldWithValue> fields)
+      {
+          Character.JsonData = fields.Values
             .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character).SerializeFields();
-        UpdateSpecialGroups(character, fields);
+        UpdateSpecialGroups(fields);
       }
     }
 
     private class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     {
-      public override void Save(Character character, Claim claim, Dictionary<int, FieldWithValue> fields)
+      public SaveToClaimOnlyStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
+      {
+      }
+
+      public override void Save(Dictionary<int, FieldWithValue> fields)
       {
         //TODO do not save fields that have values same as character's
-          claim.JsonData = fields.Values.SerializeFields();
+          Claim.JsonData = fields.Values.SerializeFields();
       }
     }
 
     private class SaveToCharacterAndClaimStrategy : FieldSaveStrategyBase
     {
-      public override void Save(Character character, Claim claim, Dictionary<int, FieldWithValue> fields)
+      public SaveToCharacterAndClaimStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
       {
-        character.JsonData = fields.Values
+      }
+
+      public override void Save(Dictionary<int, FieldWithValue> fields)
+      {
+        Character.JsonData = fields.Values
             .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Character).SerializeFields();
         
-          claim.JsonData = fields.Values
+          Claim.JsonData = fields.Values
             .Where(v => v.Field.FieldBoundTo == FieldBoundTo.Claim).SerializeFields();
 
-        UpdateSpecialGroups(character, fields);
+        UpdateSpecialGroups(fields);
       }
     }
 
@@ -81,44 +138,26 @@ namespace JoinRpg.Domain.CharacterFields
       FieldSaveStrategyBase strategy;
       if (claim == null)
       {
-        strategy = new SaveToCharacterOnlyStrategy();
+        strategy = new SaveToCharacterOnlyStrategy(null, character, currentUserId);
       }
       else if (!claim.IsApproved)
       {
-        strategy = new SaveToClaimOnlyStrategy();
+        strategy = new SaveToClaimOnlyStrategy(claim, null, currentUserId);
       }
       else
       {
-        strategy = new SaveToCharacterAndClaimStrategy();
+        strategy = new SaveToCharacterAndClaimStrategy(claim, character, currentUserId);
       }
 
-      var project = character?.Project ?? claim?.Project;
+      var fields = strategy.LoadFields();
 
-      if (project == null)
-      {
-        throw new ArgumentNullException("", "Either character or claim should be not null");
-      }
-
-      var fields =
-        project.GetFieldsWithoutOrder()
-          .ToList()
-          .FillIfEnabled(claim, character)
-          .ToDictionary(f => f.Field.ProjectFieldId);
-
-      var hasMasterAccess = project.HasMasterAccess(currentUserId);
-      var characterAccess = character?.HasPlayerAccess(currentUserId) ?? false;
-      var hasPlayerAccesToClaim = claim?.HasPlayerAccesToClaim(currentUserId) ?? false;
+     
 
       foreach (var keyValuePair in newFieldValue)
       {
         var field = fields[keyValuePair.Key];
 
-        var editAccess = field.HasEditAccess(hasMasterAccess,
-          characterAccess, hasPlayerAccesToClaim, character ?? claim.GetTarget());
-        if (!editAccess)
-        {
-          throw new NoAccessToProjectException(project, currentUserId);
-        }
+        strategy.EnsureEditAccess(field);
 
         var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
         if (field.Value != normalizedValue)
@@ -129,7 +168,7 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      strategy.Save(character, claim, fields);
+      strategy.Save(fields);
     }
 
     private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)
