@@ -151,7 +151,7 @@ namespace JoinRpg.Web.Models
         character.Project.GetFields()
           .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
           .ToList()
-          .FillIfEnabled(character.ApprovedClaim, character, CurrentUserId)
+          .FillIfEnabled(character.ApprovedClaim, character)
           .Select(ch => new FieldValueViewModel(this, ch, joinrpgMarkdownLinkRenderer))
           .ToArray();
     }
@@ -171,7 +171,7 @@ namespace JoinRpg.Web.Models
       Fields =
         claim.Project.GetFields()
           .ToList()
-          .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null, CurrentUserId)
+          .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null)
           .Select(ch => new FieldValueViewModel(this, ch, renderer))
           .ToArray();
     }
