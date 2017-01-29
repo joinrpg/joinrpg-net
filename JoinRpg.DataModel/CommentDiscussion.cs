@@ -10,6 +10,7 @@ namespace JoinRpg.DataModel
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
   public class CommentDiscussion : IValidatableObject, IProjectEntity, ILinkable
   {
+    [Key]
     public int CommentDiscussionId { get; set; }
 
     public int ProjectId { get; set; }
@@ -19,13 +20,14 @@ namespace JoinRpg.DataModel
 
     public int? ClaimId { get; set; }
 
-    [ForeignKey(nameof(ClaimId)), CanBeNull]
-    public Claim Claim { get; set; }
+    [CanBeNull]
+    public virtual Claim Claim { get; set; }
 
     public int? ForumThreadId { get; set; }
 
-    [ForeignKey(nameof(ForumThreadId))]
-    public ForumThread ForumThread { get; set; }
+    [ForeignKey(nameof(ForumThreadId)),CanBeNull]
+
+    public virtual ForumThread ForumThread { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
 

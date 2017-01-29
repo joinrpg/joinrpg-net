@@ -256,11 +256,11 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
-    public async Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId)
+    public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int currentUserId, int maxCommentId)
     {
       var watermarks =
         UnitOfWork.GetDbSet<ReadCommentWatermark>()
-          .Where(w => w.ClaimId == claimId && w.UserId == currentUserId)
+          .Where(w => w.CommentDiscussionId == commentDiscussionId && w.UserId == currentUserId)
           .OrderByDescending(wm => wm.ReadCommentWatermarkId)
           .ToList();
 
@@ -276,7 +276,7 @@ namespace JoinRpg.Services.Impl
       {
         watermark = new ReadCommentWatermark()
         {
-          ClaimId = claimId,
+          CommentDiscussionId = commentDiscussionId,
           ProjectId = projectId,
           UserId = currentUserId
         };

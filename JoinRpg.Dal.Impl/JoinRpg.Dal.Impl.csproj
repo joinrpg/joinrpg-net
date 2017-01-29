@@ -310,17 +310,9 @@
     <Compile Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.Designer.cs">
       <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701221002418_Forums.cs" />
-    <Compile Include="Migrations\201701221002418_Forums.Designer.cs">
-      <DependentUpon>201701221002418_Forums.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201701221038241_Forums2.cs" />
-    <Compile Include="Migrations\201701221038241_Forums2.Designer.cs">
-      <DependentUpon>201701221038241_Forums2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201701221050494_Forums3.cs" />
-    <Compile Include="Migrations\201701221050494_Forums3.Designer.cs">
-      <DependentUpon>201701221050494_Forums3.cs</DependentUpon>
+    <Compile Include="Migrations\201701261903402_Forums.cs" />
+    <Compile Include="Migrations\201701261903402_Forums.Designer.cs">
+      <DependentUpon>201701261903402_Forums.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -546,14 +538,8 @@
     <EmbeddedResource Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.resx">
       <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701221002418_Forums.resx">
-      <DependentUpon>201701221002418_Forums.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701221038241_Forums2.resx">
-      <DependentUpon>201701221038241_Forums2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701221050494_Forums3.resx">
-      <DependentUpon>201701221050494_Forums3.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201701261903402_Forums.resx">
+      <DependentUpon>201701261903402_Forums.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

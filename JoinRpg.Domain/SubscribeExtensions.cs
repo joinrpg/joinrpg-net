@@ -14,6 +14,7 @@ namespace JoinRpg.Domain
     {
       return
         claim.Subscriptions //get subscriptions on forum
+          .Select(u => u.User) //Select users
           .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
           .Where(u => isVisibleToPlayer || !claim.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
 

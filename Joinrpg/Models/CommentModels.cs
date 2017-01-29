@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Models
       CommentId = comment.CommentId;
       ProjectId = comment.ProjectId;
       CommentDiscussionId = comment.CommentDiscussionId;
-      IsClaimComment = parent.ClaimId != null;
+      IsClaimComment = parent.Claim != null;
       IsRead = comment.IsReadByUser(currentUserId);
       ChildComments =
         parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)

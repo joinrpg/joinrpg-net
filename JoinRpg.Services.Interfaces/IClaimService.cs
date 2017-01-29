@@ -21,7 +21,7 @@ namespace JoinRpg.Services.Interfaces
     Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
       int? characterId);
 
-    Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
+    Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int currentUserId, int maxCommentId);
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
   }

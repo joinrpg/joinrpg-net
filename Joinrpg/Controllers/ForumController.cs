@@ -143,14 +143,14 @@ namespace JoinRpg.Web.Controllers
       {
         extra = "#" + extra;
       }
-      if (discussion.ClaimId != null)
+      if (discussion.Claim != null)
       {
-        var actionLink = Url.Action("Edit", "Claim", new {discussion.ClaimId, discussion.ProjectId});
+        var actionLink = Url.Action("Edit", "Claim", new {discussion.Claim.ClaimId, discussion.ProjectId});
         return Redirect(actionLink + extra);
       }
-      if (discussion.ForumThreadId != null)
+      if (discussion.ForumThread != null)
       {
-        var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, discussion.ForumThreadId});
+        var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, discussion.ForumThread.ForumThreadId});
         return Redirect(actionLink + extra);
       }
       return HttpNotFound();

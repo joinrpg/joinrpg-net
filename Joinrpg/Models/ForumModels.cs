@@ -15,10 +15,9 @@ namespace JoinRpg.Web.Models
       Comments = forumThread.Discussion.ToCommentTreeViewModel(currentUserId);
       ProjectId = forumThread.ProjectId;
       HasMasterAccess = forumThread.HasMasterAccess(currentUserId);
-      ForumThreadId = forumThread.ForumThreadId;
       Header = forumThread.Header;
       ProjectName = forumThread.Project.ProjectName;
-      CommentDiscussionId = forumThread.CommentDiscussionId;
+      CommentDiscussionId = forumThread.Discussion.CommentDiscussionId;
     }
 
     public IReadOnlyCollection<CommentViewModel> Comments { get; }
@@ -26,9 +25,6 @@ namespace JoinRpg.Web.Models
     public int ProjectId { get;}
     public bool HasMasterAccess { get; }
 
-    public int? ClaimId => null;
-
-    public int? ForumThreadId { get; }
     public string ProjectName { get; }
     public string Header { get; }
 

@@ -7,13 +7,13 @@ namespace JoinRpg.Dal.Impl.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class Forums2 : IMigrationMetadata
+    public sealed partial class Forums : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Forums2));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(Forums));
         
         string IMigrationMetadata.Id
         {
-            get { return "201701221038241_Forums2"; }
+            get { return "201701261903402_Forums"; }
         }
         
         string IMigrationMetadata.Source

@@ -17,8 +17,8 @@ namespace JoinRpg.DataModel
     public Project Project { get; set; }
 
     public string Header { get; set; }
-    public int CommentDiscussionId { get; set; }
-    [ForeignKey(nameof(CommentDiscussionId))]
+    
+    [Required]
     public virtual CommentDiscussion Discussion { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
@@ -45,7 +45,17 @@ namespace JoinRpg.DataModel
     }
 
     int IOrderableEntity.Id => ForumThreadId;
-    public virtual ICollection<User> Subscriptions { get; set; } = new List<User>();
+    public virtual ICollection<UserForumSubscription> Subscriptions { get; set; } = new List<UserForumSubscription>();
     
+  }
+
+  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by Entity Framework
+  public class UserForumSubscription
+  {
+    public int UserForumSubscriptionId { get; set; }
+    public int ForumThreadId { get; set; }
+    public int UserId { get; set; }
+    [ForeignKey(nameof(UserId))]
+    public virtual User User { get; set; }
   }
 }

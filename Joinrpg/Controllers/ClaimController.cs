@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-      return WithEntity(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+      return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -113,7 +113,7 @@ namespace JoinRpg.Web.Controllers
       if (claimViewModel.Comments.Any(c => !c.IsRead))
       {
         await
-          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
+          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.Discussion.CommentDiscussionId, CurrentUserId,
             claim.Discussion.Comments.Max(c => c.CommentId));
       }
 
@@ -147,7 +147,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
