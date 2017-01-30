@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -26,7 +27,8 @@ namespace JoinRpg.Web.Controllers
 
     #region implementation
 
-    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title, string viewName, IReadOnlyCollection<Claim> claims)
+    private async Task<ActionResult> ShowMasterClaimList(int projectId, string export, string title,
+      [AspMvcView] string viewName, IReadOnlyCollection<Claim> claims)
     {
       var error = await AsMaster(claims, projectId);
       if (error != null) return error;
