@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -104,14 +105,19 @@ namespace JoinRpg.Dal.Impl.Repositories
             .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds)
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds)
     {
-      return await GetClaimsImpl(projectId, active,
+      return GetClaimsImpl(projectId, active,
         claim => (claim.CharacterGroupId != null && characterGroupsIds.Contains(claim.CharacterGroupId.Value))
                  ||
                  (claim.CharacterId != null &&
-                  claim.Character.ParentGroupsImpl.ListIds.Split(',')
-                    .Any(id => characterGroupsIds.Contains(int.Parse(id)))));
+                 characterGroupsIds.Any(id => SqlFunctions.CharIndex(id.ToString(), claim.Character.ParentGroupsImpl.ListIds) > 0
+                  )));
+    }
+
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
+    {
+      return GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
     }
   }
 }

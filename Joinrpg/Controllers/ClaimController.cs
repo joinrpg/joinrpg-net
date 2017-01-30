@@ -361,7 +361,7 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {
-      var claims = (await _claimsRepository.GetMyClaimsForProject(CurrentUserId, projectId)).ToList();
+      var claims = await _claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
 
       if (claims.Count == 0)
       {
