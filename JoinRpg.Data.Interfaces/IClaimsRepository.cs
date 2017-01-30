@@ -20,5 +20,6 @@ namespace JoinRpg.Data.Interfaces
     Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status);
     Task<Claim> GetClaim(int projectId, int claimId);
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
+    Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds);
   }
 }

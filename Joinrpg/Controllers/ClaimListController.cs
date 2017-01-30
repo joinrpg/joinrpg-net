@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Active)).Where(cl => cl.CharacterGroupId == characterGroupId).ToList();
+      var claims = (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, new [] {characterGroupId} )).ToList();
 
       return await ShowMasterClaimList(projectId, export, "Заявки в группу (напрямую)", "ListForGroupDirect", claims);
     }

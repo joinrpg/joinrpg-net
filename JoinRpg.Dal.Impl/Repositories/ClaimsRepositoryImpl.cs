@@ -18,7 +18,12 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status)
+    public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status)
+    {
+      return GetClaimsImpl(projectId, status, claim  => true);
+    }
+
+    private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(int projectId, ClaimStatusSpec status, Expression<Func<Claim, bool>> predicate)
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
@@ -32,6 +37,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
         .Where(GetClaimStatusPredicate(status))
+        .Where(predicate)
         .Where(
           c =>
             c.ProjectId == projectId
@@ -50,24 +56,9 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
+    public Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
     {
-      await LoadProjectCharactersAndGroups(projectId);
-      await LoadMasters(projectId);
-      await LoadProjectFields(projectId);
-
-      Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
-      return await Ctx
-        .ClaimSet
-        .Include(c => c.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Watermarks)
-        .Include(c => c.Player)
-        .Include(c => c.FinanceOperations)
-        .Where(GetClaimStatusPredicate(status))
-        .Where(
-          c =>
-            c.ProjectId == projectId && c.ResponsibleMasterUserId == userId
-            ).ToListAsync();
+      return GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
     }
 
     private Expression<Func<Claim, bool>> GetClaimStatusPredicate(ClaimStatusSpec status)
@@ -111,6 +102,16 @@ namespace JoinRpg.Dal.Impl.Repositories
             .Include(c => c.Comments.Select(com => com.Author))
             .Include(c => c.Comments.Select(com => com.CommentText))
             .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+    }
+
+    public async Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds)
+    {
+      return await GetClaimsImpl(projectId, active,
+        claim => (claim.CharacterGroupId != null && characterGroupsIds.Contains(claim.CharacterGroupId.Value))
+                 ||
+                 (claim.CharacterId != null &&
+                  claim.Character.ParentGroupsImpl.ListIds.Split(',')
+                    .Any(id => characterGroupsIds.Contains(int.Parse(id)))));
     }
   }
 }
