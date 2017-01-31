@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
-      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList().ToArray());
+      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList());
 
       var error = await AsMaster(characters, projectid);
       if (error != null) return error;
@@ -93,7 +93,7 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList().ToArray());
+      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
 
       if (!pluginInstance.AllowPlayerAccess)
       {
@@ -116,7 +116,7 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> Envelopes(int projectid, string characterids)
     {
-      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterids.UnCompressIdList().ToArray());
+      var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterids.UnCompressIdList());
 
       var error = await AsMaster(characters, projectid);
       if (error != null) return error;
