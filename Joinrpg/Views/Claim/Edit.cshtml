@@ -359,7 +359,7 @@
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = "Сдан взнос",
           ClaimApproved = Model.Status == Claim.Status.Approved,
-          HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
+          HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
       }; }
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>
@@ -456,12 +456,12 @@
                 }
             </div>
             <div class="media-list">
-                @foreach (var comment in Model.Comments)
+                @foreach (var comment in Model.RootComments)
                 {
                     @Html.Partial("_CommentPartial", comment)
                 }
             </div>
-            @if (Model.Comments.Any())
+            @if (Model.RootComments.Any())
             {
                 <a data-toggle="collapse"
                    href="#answerComment1" class="btn btn-default">
