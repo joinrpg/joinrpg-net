@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
         : new PlotElement[] {};
       var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
 
-      if (claimViewModel.Comments.Any(c => !c.IsRead))
+      if (claim.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
         await
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,

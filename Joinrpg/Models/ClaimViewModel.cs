@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
     public bool ProjectActive { get; }
-    public IEnumerable<CommentViewModel> Comments { get; }
+    public IEnumerable<CommentViewModel> RootComments { get; }
 
     public int? CharacterId { get; }
 
@@ -89,7 +89,7 @@ namespace JoinRpg.Web.Models
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
       ClaimId = claim.ClaimId;
-      Comments =
+      RootComments =
         claim.Comments.Where(comment => comment.ParentCommentId == null)
           .Select(comment => new CommentViewModel(comment, currentUserId)).OrderBy(c => c.CreatedTime);
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
