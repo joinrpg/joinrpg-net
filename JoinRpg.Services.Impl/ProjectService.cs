@@ -267,7 +267,14 @@ namespace JoinRpg.Services.Impl
       bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+      if (!project.HasMasterAccess(currentUserId, a => a.CanGrantRights))
+      {
+        var user = await UserRepository.GetById(currentUserId);
+        if (!user.Auth?.IsAdmin == true)
+        {
+          project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+        }
+      }
       project.EnsureProjectActive();
 
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
