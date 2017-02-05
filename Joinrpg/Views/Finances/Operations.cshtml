@@ -1,15 +1,14 @@
 ﻿@model JoinRpg.Web.Models.FinOperationListViewModel
 
 @{
-    ViewBag.Title = "Список финансовых операций";
-    var firstItem = Model.Items.FirstOrDefault();
+  ViewBag.Title = "Список финансовых операций";
+  var firstItem = Model.Items.FirstOrDefault();
+    ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "операция", "операции", "операций");
 }
 
 <h2>@ViewBag.Title</h2>
 
 @Html.Partial("_ListOperationsDropdown", Model)
-
-<p>@DisplayCount.OfX(Model.Items.Count(), "операция", "операции", "операций")</p>
 
 <table class="table">
     <tr>
