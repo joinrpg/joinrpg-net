@@ -9,6 +9,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -77,19 +78,23 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-      var groupIds = groups.GetChildrenGroups().Select(g => g.CharacterGroupId).ToArray();
+      var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, groupIds);
 
       return await ShowMasterClaimList(projectId, export, "Заявки в группу (все)", "ListForGroup", claims);
+    }
+
+    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
+    {
+      var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(characterGroupId).ToArray();
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-      var groupIds = groups.GetChildrenGroups().Select(g => g.CharacterGroupId).ToArray();
+      var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
       return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (все)", "DiscussingForGroup", claims);

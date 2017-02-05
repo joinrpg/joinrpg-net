@@ -3,7 +3,8 @@
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
   @{
-      ViewBag.Title = Model.Title;
+    ViewBag.Title = Model.Title;
+      ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
   }
 
 <h2>@Model.Title</h2>
@@ -13,8 +14,6 @@
 @{
   var firstItem = Model.Items.FirstOrDefault();
 }
-
-<p>@DisplayCount.OfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей")</p>
 
 <table class="table">
     <tr>

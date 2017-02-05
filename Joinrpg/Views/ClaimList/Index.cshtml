@@ -3,15 +3,15 @@
 
 <h2>@ViewBag.Title</h2>
 
+@if (Model.ShowCount)
+{
+    ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
+}
+
 @Html.Partial("_ListOperationsDropdown", Model)
 
 @{
   var firstItem = Model.Items.FirstOrDefault();
-}
-
-@if (Model.ShowCount)
-{
-    <p>@DisplayCount.OfX(Model.Items.Count(), "заявка", "заявки", "заявок")</p>
 }
 
 <table class="table">

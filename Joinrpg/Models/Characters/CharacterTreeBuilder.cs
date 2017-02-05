@@ -52,7 +52,7 @@ namespace JoinRpg.Web.Models.Characters
 
       var childs = new List<CharacterTreeItem>();
 
-      foreach (var childGroup in characterGroup.GetOrderedChildGroups().Where(c => c.IsActive && (c.IsVisible(CurrentUserId))))
+      foreach (var childGroup in characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(c => c.IsActive && c.IsVisible(CurrentUserId)))
       {
         var characterGroups = pathToTop.Union(new[] { characterGroup }).ToList();
         var child = GenerateFrom(childGroup, deepLevel + 1, characterGroups);

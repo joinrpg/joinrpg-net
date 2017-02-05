@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace JoinRpg.Helpers.Web.Test
@@ -101,18 +102,23 @@ namespace JoinRpg.Helpers.Web.Test
           6043, 6045, 6061, 6063, 6072, 6079, 6083, 6090, 6091, 6092, 6095, 6098, 6099, 6110, 6111, 6113, 6115, 6116,
           6119, 6121, 6133, 6152, 6157, 6160, 6162, 6166, 6171, 6172, 6181, 6182, 6200, 6227, 6241, 6243, 6257, 6259,
           6276, 6280, 6283, 6284, 6288, 6290, 6291, 6307, 6308, 6374, 6377, 6379, 6381, 6382, 6383, 6384, 6398, 6399,
-          6403, 6410, 6411, 6414, 6419
+          6403, 6410, 6411, 6414, 6419, 6435, 6453, 6455, 6469, 6470, 6483, 6490, 6513, 6520, 6525, 6535, 6541, 6549,
+          6552, 6555, 6556, 6557, 6559, 6560, 6561, 6562, 6563, 6564, 6565, 6568, 6577, 6586, 6587, 6588, 6590, 6595,
+          6617, 6630, 6649, 6653, 6655, 6656, 6659, 6672, 6701, 6712, 6721, 6738, 6742, 6753, 6755, 6760, 6770, 6771,
+          6777, 6782, 6796, 6831, 6836, 6848, 6870, 6915, 6919, 6953
         });
 
     private static void TestList(int[] list)
     {
       var compressed = list.CompressIdList();
       var result = compressed.UnCompressIdList().ToArray();
-      Assert.AreEqual(list.Length, result.Length);
       for (var i = 0; i < list.Length; i++)
       {
         Assert.AreEqual(list[i], result[i]);
       }
+      Assert.AreEqual(list.Length, result.Length);
+      Debug.Print(compressed.Length.ToString());
+      Debug.Print(compressed);
     }
   }
 }
