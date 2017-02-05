@@ -23,6 +23,8 @@ namespace JoinRpg.Services.Email
     private const string MailGunRecepientName = "%recipient.name%";
     private readonly string _apiDomain;
 
+    private const int MaxRecepientsInChunk = 1000;
+
     private readonly Recipient _joinRpgSender;
 
     private readonly Lazy<MessageService> _lazyService;
@@ -61,7 +63,18 @@ namespace JoinRpg.Services.Email
       {
         return;
       }
+
       var html = new MarkdownString(text).ToHtmlString().ToHtmlString();
+
+      for (var i = 0; i * MaxRecepientsInChunk < recepients.Count; i++)
+      {
+        await SendEmailChunkImpl(recepients.Skip(i * MaxRecepientsInChunk).Take(MaxRecepientsInChunk).ToList(), subject,
+          text, sender, html);
+      }
+    }
+
+    private async Task SendEmailChunkImpl(ICollection<User> recepients, string subject, string text, Recipient sender, string html)
+    {
       var message = new MessageBuilder().AddUsers(recepients)
         .SetSubject(subject)
         .SetFromAddress(new Recipient() {DisplayName = sender.DisplayName, Email = _joinRpgSender.Email})
@@ -70,7 +83,8 @@ namespace JoinRpg.Services.Email
         .SetHtmlBody(html)
         .GetMessage();
       message.RecipientVariables =
-        JObject.Parse("{" +string.Join(", ", recepients.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
+        JObject.Parse("{" + string.Join(", ", recepients.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) +
+                      "}");
       if (_emailEnabled)
       {
         await Send(message);
@@ -156,9 +170,7 @@ namespace JoinRpg.Services.Email
 
 
     public Task Email(ChangeResponsibleMasterEmail model)
-     =>
-        SendClaimEmail(model, "изменена",
-          $@"В заявке изменен ответственный мастер.");
+     => SendClaimEmail(model, "изменена", "В заявке изменен ответственный мастер.");
 
     public Task Email(OnHoldByMasterEmail createClaimEmail)
       => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
