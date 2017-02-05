@@ -67,6 +67,8 @@ namespace JoinRpg.Web.Helpers
           return new RouteTarget("Edit", "Claim",
             new {link.ProjectId, ClaimId = link.Identification.BeforeSeparator('.')},
             anchor: $"comment{link.Identification.AfterSeparator('.')}");
+        case LinkType.Project:
+            return new RouteTarget("Details", "Game", new { link.ProjectId });
         default:
           throw new ArgumentOutOfRangeException();
       }
