@@ -19,17 +19,15 @@ namespace JoinRpg.Services.Impl.Search
                 UnitOfWork.GetDbSet<Project>()
                   .Where(pr =>
                     (pr.Active==true&&pr.ProjectName.Contains(searchString)
-                     // || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString))
                      )
-                  //&& cg.//.IsActive
                   )
                   .ToListAsync();
 
             return results.Select(proj => new SearchResultImpl
             {
                 LinkType = LinkType.Project,
-                Name = proj.ProjectName,//plot.MasterTitle,
-                Description = (proj.Details==null)?"":proj.Details.ProjectAnnounce.ToString(),
+                Name = proj.ProjectName,
+                Description = "",
                 Identification = proj.ProjectId.ToString(),
                 ProjectId = proj.ProjectId,
                 IsPublic = true,
