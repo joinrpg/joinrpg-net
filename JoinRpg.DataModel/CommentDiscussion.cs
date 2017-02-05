@@ -18,6 +18,7 @@ namespace JoinRpg.DataModel
     [ForeignKey(nameof(ProjectId))]
     public Project Project { get; set; }
 
+    [ForeignKey(nameof(Claim))]
     public int? ClaimId { get; set; }
 
     [CanBeNull]

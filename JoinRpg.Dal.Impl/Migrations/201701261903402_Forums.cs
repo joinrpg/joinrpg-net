@@ -48,7 +48,8 @@ namespace JoinRpg.Dal.Impl.Migrations
                     })
                 .PrimaryKey(t => t.CommentDiscussionId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
-                .Index(t => t.ProjectId);
+                .Index(t => t.ProjectId)
+                .Index(t => t.ClaimId, unique: true, name: "IX_Unique_ClaimId");
             
             CreateTable(
                 "dbo.UserForumSubscriptions",
@@ -64,16 +65,32 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ForumThreadId)
                 .Index(t => t.UserId);
             
-            AddColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: false));
-            AddColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: false));
-            AlterColumn("dbo.Claims", "ClaimId", c => c.Int(nullable: false));
+            AddColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: true));
+            AddColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: true));
+      Sql(@"INSERT INTO dbo.CommentDiscussions 
+(ProjectId, ClaimId) 
+SELECT ProjectId, ClaimId 
+FROM Claims
+
+UPDATE dbo.Comments 
+SET CommentDiscussionId = CD.CommentDiscussionId
+FROM dbo.Comments C
+INNER JOIN dbo.CommentDiscussions CD ON CD.ClaimId = C.ClaimId
+
+UPDATE dbo.ReadCommentWatermarks
+SET CommentDiscussionId = CD.CommentDiscussionId
+FROM dbo.Comments C
+INNER JOIN dbo.CommentDiscussions CD ON CD.ClaimId = C.ClaimId");
+      AlterColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: false));
+      AlterColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: false));
+      AlterColumn("dbo.Claims", "ClaimId", c => c.Int(nullable: false));
             AddPrimaryKey("dbo.Claims", "ClaimId");
             CreateIndex("dbo.Claims", "ClaimId");
             CreateIndex("dbo.Comments", "CommentDiscussionId");
             CreateIndex("dbo.ReadCommentWatermarks", "CommentDiscussionId");
             AddForeignKey("dbo.Comments", "CommentDiscussionId", "dbo.CommentDiscussions", "CommentDiscussionId", cascadeDelete: true);
             AddForeignKey("dbo.ReadCommentWatermarks", "CommentDiscussionId", "dbo.CommentDiscussions", "CommentDiscussionId", cascadeDelete: true);
-            AddForeignKey("dbo.Claims", "ClaimId", "dbo.CommentDiscussions", "CommentDiscussionId");
+            AddForeignKey("dbo.Claims", "ClaimId", "dbo.CommentDiscussions", "ClaimId");
             AddForeignKey("dbo.UserSubscriptions", "ClaimId", "dbo.Claims", "ClaimId");
             AddForeignKey("dbo.FinanceOperations", "ClaimId", "dbo.Claims", "ClaimId", cascadeDelete: true);
             DropColumn("dbo.Comments", "ClaimId");
@@ -100,6 +117,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             DropIndex("dbo.UserForumSubscriptions", new[] { "ForumThreadId" });
             DropIndex("dbo.ReadCommentWatermarks", new[] { "CommentDiscussionId" });
             DropIndex("dbo.Comments", new[] { "CommentDiscussionId" });
+            DropIndex("dbo.CommentDiscussions", "IX_Unique_ClaimId");
             DropIndex("dbo.CommentDiscussions", new[] { "ProjectId" });
             DropIndex("dbo.ForumThreads", new[] { "AuthorUserId" });
             DropIndex("dbo.ForumThreads", new[] { "ProjectId" });

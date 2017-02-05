@@ -325,6 +325,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\RepositoryImplBase.cs" />
     <Compile Include="Repositories\UserInfoRepository.cs" />
+    <Compile Include="TypeConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj">
