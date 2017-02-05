@@ -17,8 +17,8 @@ namespace JoinRpg.Services.Impl.Search
             var results =
               await
                 UnitOfWork.GetDbSet<Project>()
-                  .Where(cg =>
-                    (cg.ProjectName.Contains(searchString)
+                  .Where(pr =>
+                    (pr.Active==true&&pr.ProjectName.Contains(searchString)
                      // || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString))
                      )
                   //&& cg.//.IsActive
