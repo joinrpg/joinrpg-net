@@ -7,7 +7,8 @@
     ResultCharacter,
     Claim,
     Plot,
-    Comment
+    Comment,
+    Project
   }
 
   public interface ILinkable
