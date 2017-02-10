@@ -179,6 +179,10 @@
                 </a>
                 }
             }
+            <a href="@Url.Action("test", "Claim", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default" id="subscribe">
+                <span class="glyphicon glyphicon-pushpin"></span>
+                Подписаться
+            </a>
         </div>
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
@@ -493,5 +497,15 @@
         $(function() {
             $('[data-toggle="popover"]').popover();
         })
+    </script>
+    <script type="text/javascript">
+        document.getElementById('subscribe').addEventListener("click", function (event) {
+            console.log(event);
+            event.preventDefault();
+            var req = $.post(this.href);
+            req.done(data=>console.log(data));
+            console.log(this.href);
+
+        });
     </script>
 }

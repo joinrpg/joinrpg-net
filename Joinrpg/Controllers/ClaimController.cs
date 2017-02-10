@@ -430,5 +430,14 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectid, claimid);
       }
     }
-  }
+
+        public async Task<ActionResult> Subscribe() {
+            return PartialView("SubscribeResult");
+        }
+
+        public async Task<String> test()
+        {
+            return "result";
+        }
+    }
 }
