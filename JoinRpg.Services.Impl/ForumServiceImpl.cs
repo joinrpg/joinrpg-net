@@ -39,11 +39,13 @@ namespace JoinRpg.Services.Impl
       
       forumThread.CommentDiscussion.Comments.Add(new Comment()
       {
+        CommentId = -1,
         ProjectId = projectId,
         AuthorUserId = CurrentUserId,
         IsVisibleToPlayer = !hideFromUser,
         CommentText = new CommentText()
         {
+          CommentId = -1,
           Text =  new MarkdownString(commentText)
         },
         CreatedAt = utcNow,
@@ -76,7 +78,7 @@ namespace JoinRpg.Services.Impl
 
       var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
-      var email = await AddCommentWithEmail<AddCommentEmail>(commentText, forumThread, isVisibleToPlayer, parentComment);
+      var email = await AddCommentWithEmail(commentText, forumThread, isVisibleToPlayer, parentComment);
 
       await UnitOfWork.SaveChangesAsync();
 
@@ -84,8 +86,8 @@ namespace JoinRpg.Services.Impl
 
     }
 
-    private async Task<ForumEmail> AddCommentWithEmail<T>(string commentText, ForumThread forumThread,
-      bool isVisibleToPlayer, Comment parentComment, IEnumerable<User> extraSubscriptions = null) where T : ClaimEmailModel, new()
+    private async Task<ForumEmail> AddCommentWithEmail(string commentText, ForumThread forumThread,
+      bool isVisibleToPlayer, Comment parentComment, IEnumerable<User> extraSubscriptions = null)
     {
       var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
       if (!isVisibleToPlayer)
@@ -95,9 +97,14 @@ namespace JoinRpg.Services.Impl
 
       var comment = new Comment
       {
+        CommentId = -1,
         ProjectId = forumThread.ProjectId,
         AuthorUserId = CurrentUserId,
-        CommentText = new CommentText() { Text = new MarkdownString(commentText) },
+        CommentText = new CommentText()
+        {
+          Text = new MarkdownString(commentText),
+          CommentId = -1
+        },
         IsCommentByPlayer = !forumThread.HasMasterAccess(CurrentUserId),
         IsVisibleToPlayer = isVisibleToPlayer,
         Parent = parentComment,
