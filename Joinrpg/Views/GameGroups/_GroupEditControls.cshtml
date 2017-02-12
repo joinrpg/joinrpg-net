@@ -28,7 +28,7 @@
                 null)
         </li>
             
-        @if (!Model.IsSpecial)
+        @if (!Model.IsSpecial && !ViewBag.ShowEditControls)
         {
             <li>
                 <a href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
@@ -43,7 +43,7 @@
 
         </li>
 
-        @if (!Model.IsRootGroup && !Model.IsSpecial)
+        @if (!Model.IsRootGroup && !Model.IsSpecial && !ViewBag.ShowEditControls)
         {
             var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
             var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null);
@@ -53,7 +53,7 @@
                 </a>
             </li>
         }
-        @if ((!Model.FirstInGroup || !Model.LastInGroup) && !Model.IsRoot && !Model.IsSpecial)
+        @if ((!Model.FirstInGroup || !Model.LastInGroup) && !Model.IsRoot && !Model.IsSpecial && !ViewBag.ShowEditControls)
         {
             var moveParameters = new
             {
@@ -72,7 +72,7 @@
                 <li><a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)">..ниже</a></li>
             }
         }
-        @if (!Model.IsSpecial)
+        @if (!Model.IsSpecial && !ViewBag.ShowEditControls)
         {
             <li class="dropdown-header">Добавить</li>
             <li>
