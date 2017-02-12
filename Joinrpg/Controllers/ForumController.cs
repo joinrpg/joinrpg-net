@@ -111,16 +111,21 @@ namespace JoinRpg.Web.Controllers
           discussion.RequestMasterAccess(CurrentUserId);
         }
 
-        if (discussion.Claim != null)
+        var claim = discussion.GetClaim();
+        if (claim != null)
         {
 
-          await ClaimService.AddComment(discussion.ProjectId, discussion.Claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
+          await ClaimService.AddComment(discussion.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
             !viewModel.HideFromUser, viewModel.CommentText, viewModel.FinanceAction);
         }
-        else if (discussion.ForumThread != null)
+        else
         {
-          await ForumService.AddComment(discussion.ProjectId, discussion.ForumThread.ForumThreadId, viewModel.ParentCommentId,
-            !viewModel.HideFromUser, viewModel.CommentText);
+          var forumThread = discussion.GetForumThread();
+          if (forumThread != null)
+          {
+            await ForumService.AddComment(discussion.ProjectId, forumThread.ForumThreadId, viewModel.ParentCommentId,
+              !viewModel.HideFromUser, viewModel.CommentText);
+          }
         }
 
         return ReturnToParent(discussion);
@@ -143,14 +148,16 @@ namespace JoinRpg.Web.Controllers
       {
         extra = "#" + extra;
       }
-      if (discussion.Claim != null)
+      var claim = discussion.GetClaim();
+      if (claim != null)
       {
-        var actionLink = Url.Action("Edit", "Claim", new {discussion.Claim.ClaimId, discussion.ProjectId});
+        var actionLink = Url.Action("Edit", "Claim", new {claim.ClaimId, discussion.ProjectId});
         return Redirect(actionLink + extra);
       }
-      if (discussion.ForumThread != null)
+      var forumThread = discussion.GetForumThread();
+      if (forumThread != null)
       {
-        var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, discussion.ForumThread.ForumThreadId});
+        var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, forumThread.ForumThreadId});
         return Redirect(actionLink + extra);
       }
       return HttpNotFound();

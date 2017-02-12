@@ -34,10 +34,10 @@ namespace JoinRpg.Services.Impl
         ModifiedAt = utcNow,
         AuthorUserId = CurrentUserId,
         IsVisibleToPlayer = !hideFromUser,
-        Discussion = new CommentDiscussion()
+        CommentDiscussion = new CommentDiscussion()
       };
       
-      forumThread.Discussion.Comments.Add(new Comment()
+      forumThread.CommentDiscussion.Comments.Add(new Comment()
       {
         ProjectId = projectId,
         AuthorUserId = CurrentUserId,
@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
     {
       var forumThread = await GetForumThread(projectId, forumThreadId);
 
-      var parentComment = forumThread.Discussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+      var parentComment = forumThread.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
       var email = await AddCommentWithEmail<AddCommentEmail>(commentText, forumThread, isVisibleToPlayer, parentComment);
 
@@ -102,7 +102,7 @@ namespace JoinRpg.Services.Impl
         IsVisibleToPlayer = isVisibleToPlayer,
         Parent = parentComment,
       };
-      forumThread.Discussion.Comments.Add(comment);
+      forumThread.CommentDiscussion.Comments.Add(comment);
 
       var extraRecepients =
         new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.

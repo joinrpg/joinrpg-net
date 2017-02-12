@@ -19,14 +19,14 @@ namespace JoinRpg.Domain.ClaimProblemFilters
         yield break;
       }
 
-      if (!claim.Discussion.GetMasterAnswers().Any())
+      if (!claim.CommentDiscussion.GetMasterAnswers().Any())
       {
         yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Error);
       }
 
-      else if (!claim.Discussion.GetMasterAnswers().InLastXDays(60).Any())
+      else if (!claim.CommentDiscussion.GetMasterAnswers().InLastXDays(60).Any())
       {
-        yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, ProblemSeverity.Hint, claim.Discussion.GetMasterAnswers().Last().CreatedAt);
+        yield return new ClaimProblem(ClaimProblemType.ClaimWorkStopped, ProblemSeverity.Hint, claim.CommentDiscussion.GetMasterAnswers().Last().CreatedAt);
       }
     }
   }

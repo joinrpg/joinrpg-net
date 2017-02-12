@@ -36,12 +36,12 @@ namespace JoinRpg.Services.Impl
         ResponsibleMasterUserId = responsibleMaster?.UserId,
         ResponsibleMasterUser = responsibleMaster,
         LastUpdateDateTime = addClaimDate,
-        Discussion = new CommentDiscussion(),
+        CommentDiscussion = new CommentDiscussion(),
       };
 
       if (!string.IsNullOrWhiteSpace(claimText))
       {
-        claim.Discussion.Comments.Add(new Comment
+        claim.CommentDiscussion.Comments.Add(new Comment
         {
           AuthorUserId = currentUserId,
           CommentText = new CommentText {Text =  new MarkdownString(claimText)},
@@ -83,7 +83,7 @@ namespace JoinRpg.Services.Impl
 
       claim.SetDiscussed(currentUserId, isVisibleToPlayer);
 
-      var parentComment = claim.Discussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
+      var parentComment = claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
       Func<UserSubscription, bool> predicate = s => s.Comments;
       CommentExtraAction? extraAction = null;
@@ -410,16 +410,21 @@ namespace JoinRpg.Services.Impl
 
       var comment = new Comment
       {
+        CommentId = -1,
         ProjectId = claim.ProjectId,
         AuthorUserId = currentUserId,
-        CommentDiscussionId = claim.Discussion.CommentDiscussionId,
-        CommentText = new CommentText() {Text = new MarkdownString(commentText)},
+        CommentDiscussionId = claim.CommentDiscussion.CommentDiscussionId,
+        CommentText = new CommentText()
+        {
+          CommentId = -1,
+          Text = new MarkdownString(commentText)
+        },
         IsCommentByPlayer = claim.PlayerUserId == currentUserId,
         IsVisibleToPlayer = isVisibleToPlayer,
         Parent = parentComment,
         ExtraAction = extraAction
       };
-      claim.Discussion.Comments.Add(comment);
+      claim.CommentDiscussion.Comments.Add(comment);
 
       claim.LastUpdateDateTime = DateTime.UtcNow;
 

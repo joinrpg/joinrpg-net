@@ -133,7 +133,7 @@ namespace JoinRpg.Services.Email
 
 {model.Initiator.DisplayName}
 
-Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.Discussion)}
+Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
 ", model.Initiator.ToRecipient());
     }
 
@@ -182,7 +182,7 @@ namespace JoinRpg.Services.Email
 
 {model.Initiator.DisplayName}
 
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.Discussion)}
+Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
 ", model.Initiator.ToRecipient());
     }
 

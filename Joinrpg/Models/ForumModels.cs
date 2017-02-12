@@ -12,12 +12,12 @@ namespace JoinRpg.Web.Models
   {
     public ForumThreadViewModel(ForumThread forumThread, int currentUserId)
     {
-      Comments = forumThread.Discussion.ToCommentTreeViewModel(currentUserId);
+      Comments = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
       ProjectId = forumThread.ProjectId;
       HasMasterAccess = forumThread.HasMasterAccess(currentUserId);
       Header = forumThread.Header;
       ProjectName = forumThread.Project.ProjectName;
-      CommentDiscussionId = forumThread.Discussion.CommentDiscussionId;
+      CommentDiscussionId = forumThread.CommentDiscussionId;
     }
 
     public IReadOnlyCollection<CommentViewModel> Comments { get; }

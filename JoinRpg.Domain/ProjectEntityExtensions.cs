@@ -109,17 +109,36 @@ namespace JoinRpg.Domain
 
     public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
     {
-      if (commentDiscussion.ForumThread != null)
+      var forumThread =
+        commentDiscussion.GetForumThread();
+
+      var claim =
+        commentDiscussion.GetClaim();
+      if (forumThread != null)
       {
-        return commentDiscussion.ForumThread.IsVisibleToPlayer &&
+        return forumThread.IsVisibleToPlayer &&
                    commentDiscussion.Project.Claims.OfUserApproved(currentUserId)
-                     .Any(claim => claim.IsPartOfGroup(commentDiscussion.ForumThread.CharacterGroupId));
+                     .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
       }
-      if (commentDiscussion.Claim != null)
+      if (claim != null)
       {
-        return commentDiscussion.Claim.HasPlayerAccesToClaim(currentUserId);
+        return claim.HasPlayerAccesToClaim(currentUserId);
       }
       throw new InvalidOperationException();
+    }
+
+    [CanBeNull, Pure]
+    public static Claim GetClaim(this CommentDiscussion commentDiscussion)
+    {
+      return commentDiscussion.Project.Claims.SingleOrDefault(
+        c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
+    }
+
+    [CanBeNull, Pure]
+    public static ForumThread GetForumThread(this CommentDiscussion commentDiscussion)
+    {
+      return commentDiscussion.Project.ForumThreads.SingleOrDefault(
+        ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
     }
   }
 }

@@ -31,8 +31,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return Ctx
         .ProjectsSet
-        .Include(p => p.Claims.Select(c => c.Discussion.Comments.Select(cm => cm.Finance)))
-        .Include(p => p.Claims.Select(c => c.Discussion.Watermarks))
+        .Include(p => p.Claims.Select(c => c.CommentDiscussion.Comments.Select(cm => cm.Finance)))
+        .Include(p => p.Claims.Select(c => c.CommentDiscussion.Watermarks))
         .Include(p => p.Claims.Select(c => c.Player))
         .Include(p => p.Claims.Select(c => c.FinanceOperations))
         .Where(c => c.ProjectId == projectId).LoadAsync();

@@ -14,12 +14,13 @@ namespace JoinRpg.DataModel
     public int CharacterGroupId { get; set; }
     public CharacterGroup CharacterGroup { get; set; }
     public int ProjectId { get; set; }
+    [ForeignKey(nameof(ProjectId))]
     public Project Project { get; set; }
 
     public string Header { get; set; }
     
-    [Required]
-    public virtual CommentDiscussion Discussion { get; set; }
+    public virtual CommentDiscussion CommentDiscussion { get; set; }
+    public int CommentDiscussionId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
 
@@ -34,11 +35,11 @@ namespace JoinRpg.DataModel
       {
         yield return new ValidationResult("Header must be not empty", new [] {nameof(Header)});
       }
-      if (Discussion.Comments.Count == 0)
+      if (CommentDiscussion.Comments.Count == 0)
       {
-        yield return new ValidationResult("Must be at least one comment", new [] {nameof(Discussion.Comments)});
+        yield return new ValidationResult("Must be at least one comment", new [] {nameof(CommentDiscussion.Comments)});
       }
-      if (!IsVisibleToPlayer && Discussion.Comments.Any(comment => comment.IsVisibleToPlayer))
+      if (!IsVisibleToPlayer && CommentDiscussion.Comments.Any(comment => comment.IsVisibleToPlayer))
       {
         yield return new ValidationResult("If thread is master only, every comment must be master-only.");
       }

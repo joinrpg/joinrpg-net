@@ -18,8 +18,8 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
       return
         Ctx.Set<ForumThread>()
-          .Include(thread => thread.Discussion.Comments.Select(comment => comment.CommentText))
-          .Include(thread => thread.Discussion.Comments.Select(comment => comment.Author))
+          .Include(thread => thread.CommentDiscussion.Comments.Select(comment => comment.CommentText))
+          .Include(thread => thread.CommentDiscussion.Comments.Select(comment => comment.Author))
           .Include(thread => thread.Project)
           .SingleOrDefaultAsync(thread => thread.ProjectId == projectId && thread.ForumThreadId == forumThreadId);
     }

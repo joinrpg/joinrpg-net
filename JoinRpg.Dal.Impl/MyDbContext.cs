@@ -64,9 +64,19 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
-      modelBuilder.Entity<Claim>().HasOptional(c => c.Discussion).WithOptionalPrincipal(p => p.Claim);
 
       modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments).WithRequired(c => c.Discussion);
+
+      modelBuilder.Entity<Claim>()
+        .HasRequired(c => c.CommentDiscussion)
+        .WithMany()
+        .HasForeignKey(c => c.CommentDiscussionId)
+        .WillCascadeOnDelete(false);
+      modelBuilder.Entity<ForumThread>()
+        .HasRequired(c => c.CommentDiscussion)
+        .WithMany()
+        .HasForeignKey(ft => ft.CommentDiscussionId)
+        .WillCascadeOnDelete(false);
 
       modelBuilder.Entity<Claim>()
         .HasOptional(c => c.ResponsibleMasterUser)
@@ -123,16 +133,9 @@ namespace JoinRpg.Dal.Impl
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 
-      modelBuilder.Entity<ForumThread>().HasRequired(ft => ft.Project).WithMany().WillCascadeOnDelete(false);
-
-      modelBuilder.Entity<ForumThread>().HasOptional(ft => ft.Discussion).WithOptionalDependent(d => d.ForumThread);
-      modelBuilder.Entity<Claim>().HasRequired(ft => ft.Discussion).WithOptional(d => d.Claim);
+      modelBuilder.Entity<ForumThread>().HasRequired(ft => ft.Project).WithMany().HasForeignKey(ft => ft.ProjectId).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany().WillCascadeOnDelete(false);
-
-      modelBuilder.Entity<CommentDiscussion>()
-        .Property(cd => cd.ClaimId)
-        .HasUniqueIndexAnnotation("IX_Unique_" + "ClaimId", 0);
 
       base.OnModelCreating(modelBuilder);
     }

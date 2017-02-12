@@ -89,8 +89,8 @@ namespace JoinRpg.Web.Models
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
       ClaimId = claim.ClaimId;
-      CommentDiscussionId = claim.Discussion.CommentDiscussionId;
-      Comments = claim.Discussion.ToCommentTreeViewModel(currentUserId);
+      CommentDiscussionId = claim.CommentDiscussionId;
+      Comments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       CanManageThisClaim = claim.CanManageClaim(currentUserId);
       IsMyClaim = claim.PlayerUserId == currentUserId;

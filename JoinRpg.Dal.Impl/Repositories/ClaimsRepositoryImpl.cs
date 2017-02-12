@@ -27,8 +27,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx
         .ClaimSet
-        .Include(c => c.Discussion.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Discussion.Watermarks)
+        .Include(c => c.CommentDiscussion.Comments.Select(cm => cm.Finance))
+        .Include(c => c.CommentDiscussion.Watermarks)
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
         .Where(GetClaimStatusPredicate(status))
@@ -59,8 +59,8 @@ namespace JoinRpg.Dal.Impl.Repositories
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx
         .ClaimSet
-        .Include(c => c.Discussion.Comments.Select(cm => cm.Finance))
-        .Include(c => c.Discussion.Watermarks)
+        .Include(c => c.CommentDiscussion.Comments.Select(cm => cm.Finance))
+        .Include(c => c.CommentDiscussion.Watermarks)
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
         .Where(GetClaimStatusPredicate(status))
@@ -113,9 +113,9 @@ namespace JoinRpg.Dal.Impl.Repositories
 
       return
         await
-          Ctx.ClaimSet.Include(c => c.Discussion.Comments.Select(com => com.Finance))
-            .Include(c => c.Discussion.Comments.Select(com => com.Author))
-            .Include(c => c.Discussion.Comments.Select(com => com.CommentText))
+          Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
+            .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
+            .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
             .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
   }

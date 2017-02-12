@@ -22,7 +22,7 @@ namespace JoinRpg.Domain.ClaimProblemFilters
       }
 
 
-      var masterAnswers = claim.Discussion.GetMasterAnswers().ToList();
+      var masterAnswers = claim.CommentDiscussion.GetMasterAnswers().ToList();
       if (!masterAnswers.Any())
       {
         yield return new ClaimProblem(ClaimProblemType.ClaimNeverAnswered, ProblemSeverity.Error, claim.CreateDate);

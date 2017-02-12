@@ -45,7 +45,6 @@ namespace JoinRpg.Web.Models
       CommentId = comment.CommentId;
       ProjectId = comment.ProjectId;
       CommentDiscussionId = comment.CommentDiscussionId;
-      IsClaimComment = parent.Claim != null;
       IsRead = comment.IsReadByUser(currentUserId);
       ChildComments =
         parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
@@ -53,8 +52,6 @@ namespace JoinRpg.Web.Models
           .OrderBy(c => c.CreatedTime);
       ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
     }
-
-    public bool IsClaimComment { get; }
 
     public bool IsRead { get; }
     public bool IsVisibleToPlayer { get; }

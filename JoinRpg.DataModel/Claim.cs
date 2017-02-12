@@ -59,8 +59,9 @@ namespace JoinRpg.DataModel
     public DateTime LastUpdateDateTime { get; set; }
 
     public int? CurrentFee { get; set; }
+    public int CommentDiscussionId { get; set; }
     [NotNull]
-    public CommentDiscussion Discussion { get; set; }
+    public virtual CommentDiscussion CommentDiscussion{ get; set; }
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 

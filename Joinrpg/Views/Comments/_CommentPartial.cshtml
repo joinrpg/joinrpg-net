@@ -27,24 +27,10 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             }
                             @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
 
-                            @if (!comment.IsCommentByPlayer)
+                            @if (!comment.IsVisibleToPlayer)
                             {
                                 <strong>
-                                    @if (comment.IsVisibleToPlayer)
-                                    {
-                                      if (!comment.IsClaimComment)
-                                       {
-                                           <text>игрокам</text>
-                                       }
-                                       else
-                                       {
-                                           <span>игроку</span>
-                                       }
-                                    }
-                                    else
-                                    {
-                                        <span>другим мастерам</span>
-                                    }
+                                    <span>другим мастерам</span>
                                 </strong>
                             }
 

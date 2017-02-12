@@ -150,7 +150,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         ParentCommentId = null,
       };
       comment.IsCommentByPlayer = comment.Author == claim.Player;
-      claim.Discussion.Comments.Add(comment);
+      claim.CommentDiscussion.Comments.Add(comment);
       claim.LastUpdateDateTime = new DateTime[] {claim.LastUpdateDateTime, comment.CreatedAt}.Max();
     }
 
@@ -178,7 +178,7 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Character = null, //see later
         Group = null, // see later
-        Discussion = new CommentDiscussion() { 
+        CommentDiscussion = new CommentDiscussion() { 
         Comments = new List<Comment>()
         {
           new Comment()
@@ -206,7 +206,7 @@ namespace JoinRpg.Services.Impl.Allrpg
       {
         if (ConvertToCommentVirtualFields.Contains(virtualField.Key) && !string.IsNullOrWhiteSpace(virtualField.Value))
         {
-          claim.Discussion.Comments.Add(new Comment()
+          claim.CommentDiscussion.Comments.Add(new Comment()
           {
             Author = Users[roleData.sid],
             CommentText = new CommentText() {Text = new MarkdownString(virtualField.Value)},
@@ -343,12 +343,12 @@ namespace JoinRpg.Services.Impl.Allrpg
     private void CleanProject()
     {
       UnitOfWork.GetDbSet<FinanceOperation>()
-        .RemoveRange(Project.Claims.SelectMany(c => c.Discussion.Comments).Select(c => c.Finance).WhereNotNull());
+        .RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).Select(c => c.Finance).WhereNotNull());
       UnitOfWork.GetDbSet<PlotElement>().RemoveRange(Project.PlotFolders.SelectMany(f => f.Elements).ToList());
       UnitOfWork.GetDbSet<PlotFolder>().RemoveRange(Project.PlotFolders.ToList());
       UnitOfWork.GetDbSet<ReadCommentWatermark>()
-        .RemoveRange(Project.Claims.SelectMany(c => c.Discussion.Watermarks));
-      UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Discussion.Comments).ToList());
+        .RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Watermarks));
+      UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).ToList());
       UnitOfWork.GetDbSet<Claim>().RemoveRange(Project.Claims.ToList());
 
       var characters = Project.Characters.ToList();

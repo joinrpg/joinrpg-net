@@ -13,7 +13,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201701261903402_Forums"; }
+            get { return "201702121018582_Forums"; }
         }
         
         string IMigrationMetadata.Source
