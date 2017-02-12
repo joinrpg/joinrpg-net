@@ -59,5 +59,8 @@ namespace JoinRpg.Web.Models
 
     [DisplayName("Только для мастеров")]
     public bool HideFromUser { get; set; }
+
+    [Display(Name="Послать email",Description = "Уведомить всех, у кого есть доступ к этому форуму по email.")]
+    public bool EmailEverybody { get; set; }
   }
 }

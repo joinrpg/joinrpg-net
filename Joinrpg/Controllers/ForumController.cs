@@ -59,7 +59,8 @@ namespace JoinRpg.Web.Controllers
           viewModel.CharacterGroupId, 
           viewModel.Header,
           viewModel.CommentText, 
-          viewModel.HideFromUser);
+          viewModel.HideFromUser,
+          viewModel.EmailEverybody);
         return RedirectToAction("ViewThread", new {viewModel.ProjectId, forumThreadId });
       }
       catch (Exception exception)

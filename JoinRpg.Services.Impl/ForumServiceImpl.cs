@@ -19,7 +19,7 @@ namespace JoinRpg.Services.Impl
       EmailService = emailService;
     }
 
-    public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser)
+    public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
     {
       var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
       group.RequestMasterAccess(CurrentUserId);
@@ -53,6 +53,11 @@ namespace JoinRpg.Services.Impl
 
       group.ForumThreads.Add(forumThread);
       await UnitOfWork.SaveChangesAsync();
+
+      if (emailEverybody)
+      {
+        //TODO implement this
+      }
       return forumThread.ForumThreadId;
     }
 

@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.CreateForumThreadViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.CreateForumThreadViewModel
 
 @{
     ViewBag.Title = "Открыть обсуждение на форуме группы " + Model.CharacterGroupName;
@@ -38,6 +39,17 @@
                 <div class="checkbox">
                     @Html.EditorFor(model => model.HideFromUser)
                     @Html.ValidationMessageFor(model => model.HideFromUser, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmailEverybody, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.EmailEverybody)
+                    @Html.DescriptionFor(model => model.EmailEverybody)
+                    @Html.ValidationMessageFor(model => model.EmailEverybody, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>
