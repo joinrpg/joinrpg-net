@@ -83,7 +83,7 @@ namespace JoinRpg.Web.Controllers
       var forumThread = await ForumRepository.GetThread(projectid, forumThreadId);
       var isMaster = forumThread.HasMasterAccess(CurrentUserId);
       var isPlayer = forumThread.IsVisibleToPlayer &&
-                     (await ClaimsRepository.GetMyClaimsForProject(CurrentUserId, projectid)).Any(
+                     (await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId)).Any(
                        claim => claim.IsPartOfGroup(forumThread.CharacterGroupId));
 
       if (!isMaster && !isPlayer)

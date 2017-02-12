@@ -60,9 +60,9 @@
             {
                 <td>
                     @Html.DisplayFor(modelItem => item.Player)
-                    @if (item.Player != null && string.IsNullOrWhiteSpace(item.Player.FullName))
-                    {<text>(@item.Player.FullName)                    </text>
-}
+                    @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
+                    {<text><br /> @item.Player.FullName </text>
+                    }
                 </td>
             }
             @if (Model.ProjectId == null)

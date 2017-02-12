@@ -25,6 +25,7 @@ namespace JoinRpg.DataModel
 
     public int ProjectId { get; set; }
     int IOrderableEntity.Id => ClaimId;
+    [NotNull]
     public virtual Project Project { get; set; }
 
     public virtual User Player { get; set; }

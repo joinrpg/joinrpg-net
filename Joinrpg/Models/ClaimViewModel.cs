@@ -104,7 +104,10 @@ namespace JoinRpg.Web.Models
       OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count();
       HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
       Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUserId).Generate();
-      OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count();
+      OtherClaimsFromThisPlayerCount =
+        OtherClaimsFromThisPlayerCount = claim.IsApproved || (claim.Project.Details?.EnableManyCharacters ?? false)
+          ? 0
+          : claim.OtherPendingClaimsForThisPlayer().Count();
       Description = claim.Character?.Description.ToHtmlString();
       Masters =
         claim.Project.GetMasterListViewModel()

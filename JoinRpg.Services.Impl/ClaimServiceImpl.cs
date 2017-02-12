@@ -144,17 +144,21 @@ namespace JoinRpg.Services.Impl
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
-      foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
+      if (!claim.Project?.Details?.EnableManyCharacters ?? false)
       {
-        otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold);
-        otherClaim.MasterDeclinedDate = now;
-        otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
-        await
-          EmailService.Email(
-            await
-              AddCommentWithEmail<DeclineByMasterEmail>(currentUserId,
-                "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                otherClaim, true, s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster));
+        foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
+        {
+          otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed,
+            Claim.Status.OnHold);
+          otherClaim.MasterDeclinedDate = now;
+          otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
+          await
+            EmailService.Email(
+              await
+                AddCommentWithEmail<DeclineByMasterEmail>(currentUserId,
+                  "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                  otherClaim, true, s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster));
+        }
       }
 
       if (claim.Group != null)
@@ -351,6 +355,7 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
+    [ItemNotNull]
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
