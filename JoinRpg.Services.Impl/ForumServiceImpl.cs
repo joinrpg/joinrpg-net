@@ -8,6 +8,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Services.Impl
 {
@@ -18,6 +19,11 @@ namespace JoinRpg.Services.Impl
     public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
     {
       EmailService = emailService;
+    }
+
+    private int[] GetChildrenGroupIds(CharacterGroup group)
+    {
+      return group.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(group.CharacterGroupId).ToArray();
     }
 
     public async Task<int> CreateThread(int projectId, int characterGroupId, string header, string commentText, bool hideFromUser, bool emailEverybody)
@@ -35,7 +41,7 @@ namespace JoinRpg.Services.Impl
         ModifiedAt = utcNow,
         AuthorUserId = CurrentUserId,
         IsVisibleToPlayer = !hideFromUser,
-        CommentDiscussion = new CommentDiscussion()
+        CommentDiscussion = new CommentDiscussion() { ProjectId = projectId}
       };
       
       forumThread.CommentDiscussion.Comments.Add(new Comment()
@@ -57,7 +63,22 @@ namespace JoinRpg.Services.Impl
 
       if (emailEverybody)
       {
-        //TODO implement this
+        var groups = GetChildrenGroupIds(group);
+        var players = hideFromUser ? new User[] {} :
+          (await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Approved, groups)).Select(
+            claim => claim.Player);
+        var masters = forumThread.Project.ProjectAcls.Select(acl => acl.User);
+
+        var fe = new ForumEmail()
+        {
+          ForumThread = forumThread,
+          ProjectName = forumThread.Project.ProjectName,
+          Initiator = await UserRepository.GetById(CurrentUserId),
+          Recepients = players.Union(masters).ToList(),
+          Text = new MarkdownString(commentText),
+        };
+
+        await EmailService.Email(fe);
       }
       return forumThread.ForumThreadId;
     }

@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models
   {
     int ProjectId { get; }
     bool HasMasterAccess { get; }
-    IReadOnlyCollection<CommentViewModel> Comments { get; }
+    IReadOnlyCollection<CommentViewModel> RootComments { get; }
     int CommentDiscussionId { get; }
   }
 

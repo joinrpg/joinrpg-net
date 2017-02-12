@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -12,7 +11,7 @@ namespace JoinRpg.Web.Models
   {
     public ForumThreadViewModel(ForumThread forumThread, int currentUserId)
     {
-      Comments = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
+      RootComments = forumThread.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
       ProjectId = forumThread.ProjectId;
       HasMasterAccess = forumThread.HasMasterAccess(currentUserId);
       Header = forumThread.Header;
@@ -20,7 +19,7 @@ namespace JoinRpg.Web.Models
       CommentDiscussionId = forumThread.CommentDiscussionId;
     }
 
-    public IReadOnlyCollection<CommentViewModel> Comments { get; }
+    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
     public int ProjectId { get;}
     public bool HasMasterAccess { get; }
