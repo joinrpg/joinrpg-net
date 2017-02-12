@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
     public bool ProjectActive { get; }
-    public IReadOnlyCollection<CommentViewModel> Comments { get; }
+    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
     public int? CharacterId { get; }
 
@@ -90,7 +90,7 @@ namespace JoinRpg.Web.Models
     {
       ClaimId = claim.ClaimId;
       CommentDiscussionId = claim.CommentDiscussionId;
-      Comments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
+      RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       CanManageThisClaim = claim.CanManageClaim(currentUserId);
       IsMyClaim = claim.PlayerUserId == currentUserId;

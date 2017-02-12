@@ -54,7 +54,9 @@ namespace JoinRpg.Web.Helpers
           return new RouteTarget("Edit", "Plot", new {PlotFolderId = link.Identification, link.ProjectId});
         case LinkType.Comment:
           return new RouteTarget("RedirectToDiscussion", "Forum",
-            new {link.ProjectId, CommentId = link.Identification});
+            new { link.ProjectId, CommentId = link.Identification });
+        case LinkType.Project:
+          return new RouteTarget("Details", "Game", new { link.ProjectId });
         default:
           throw new ArgumentOutOfRangeException();
       }

@@ -8,6 +8,7 @@ namespace JoinRpg.Domain
 {
   public static class ProjectEntityExtensions
   {
+    [MustUseReturnValue]
     public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
     {
       if (entity == null) throw new ArgumentNullException(nameof(entity));

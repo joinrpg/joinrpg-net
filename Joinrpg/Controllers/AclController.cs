@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project, a => a.CanGrantRights);
+      var error = await AsMasterOrAdmin(project, a => a.CanGrantRights);
       if (error != null) return error;
 
       try

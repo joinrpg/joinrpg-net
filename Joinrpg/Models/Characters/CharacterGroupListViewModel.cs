@@ -107,7 +107,7 @@ namespace JoinRpg.Web.Models.Characters
           return vm;
         }
         
-        var childGroups = characterGroup.GetOrderedChildGroups().Where(g =>g.IsActive && g.IsVisible(CurrentUserId)).ToList();
+        var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g =>g.IsActive && g.IsVisible(CurrentUserId)).ToList();
         var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
         vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren, childGroups)).ToList();

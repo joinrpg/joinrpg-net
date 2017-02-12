@@ -35,6 +35,7 @@ namespace JoinRpg.Services.Impl.Search
       yield return new CharacterGroupsProvider { UnitOfWork = UnitOfWork };
       yield return new CharacterProvider { UnitOfWork = UnitOfWork };
       yield return new PlotSearchProvider {UnitOfWork = UnitOfWork};
+      yield return new ProjectSearchProvider{ UnitOfWork = UnitOfWork };
     }
   }
 

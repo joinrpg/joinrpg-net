@@ -90,6 +90,7 @@
     <Compile Include="Search\CharacterGroupsProvider.cs" />
     <Compile Include="Search\CharacterProvider.cs" />
     <Compile Include="Search\PlotSearchProvider.cs" />
+    <Compile Include="Search\ProjectSearchProvider.cs" />
     <Compile Include="Search\SearchServiceImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\UserSearchProvider.cs" />

@@ -359,7 +359,7 @@
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = "Сдан взнос",
           ClaimApproved = Model.Status == Claim.Status.Approved,
-          HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
+          HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
       }; }
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>
