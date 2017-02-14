@@ -581,8 +581,6 @@
     <Content Include="Views\Finances\CreatePaymentTypePartial.cshtml" />
     <Content Include="Views\Finances\EditPaymentType.cshtml" />
     <Content Include="Views\Finances\CreateFeeSettingPartial.cshtml" />
-    <Content Include="Scripts\jquery-3.1.0.slim.min.map" />
-    <Content Include="Scripts\jquery-3.1.0.min.map" />
     <Content Include="Views\Home\Funding2016.cshtml" />
     <Content Include="Views\User\AddToProject.cshtml" />
     <Content Include="Views\User\ChangeEmailForm.cshtml" />

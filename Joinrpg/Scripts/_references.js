@@ -10,7 +10,6 @@
 /// <reference path="jquery.validate.unobtrusive.js" />
 /// <reference path="jquery-2.1.4.js" />
 /// <reference path="jquery-2.1.4.min.js" />
-/// <reference path="jquery-3.1.1.js" />
 /// <reference path="jquery-3.1.1.min.js" />
 /// <reference path="jquery-3.1.1.slim.min.js" />
 /// <reference path="locales/bootstrap-datepicker.ar.min.js" />
