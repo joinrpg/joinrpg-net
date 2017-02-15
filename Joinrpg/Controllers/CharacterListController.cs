@@ -85,5 +85,14 @@ namespace JoinRpg.Web.Controllers
           MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
             "Персонажи — " + characterGroup.CharacterGroupName, vm => true);
     }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      return await MasterCharacterList(projectid,
+        character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasValue && character.IsActive, export,
+        "Поле (проставлено): " + field.FieldName);
+    }
   }
 }

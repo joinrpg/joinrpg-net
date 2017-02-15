@@ -28,11 +28,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       {
         if (isAvailableForTarget) yield break;
 
-        if (!fieldWithValue.Field.IsActive)
-        {
-          yield return FieldProblem(ClaimProblemType.DeletedFieldHasValue, ProblemSeverity.Hint, fieldWithValue);
-        }
-        else
+        if (fieldWithValue.Field.IsActive)
         {
           yield return FieldProblem(ClaimProblemType.FieldShouldNotHaveValue, ProblemSeverity.Hint, fieldWithValue);
         }
@@ -84,9 +80,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     #region Implementation of IProblemFilter<in Character>
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
-      var projectFields = claim.Project.GetFields().ToList();
-      projectFields.FillFrom(claim);
-      projectFields.FillFrom(claim.Character);
+      var projectFields = claim.GetFields();
 
       return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }

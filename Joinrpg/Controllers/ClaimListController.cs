@@ -19,7 +19,8 @@ namespace JoinRpg.Web.Controllers
     private IUriService UriService { get; }
 
     public ClaimListController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository, IUriService uriService)
+      IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository,
+      IUriService uriService)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       ClaimsRepository = claimsRepository;
@@ -69,7 +70,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, new [] {characterGroupId} );
+      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, new[] {characterGroupId});
 
       return await ShowMasterClaimList(projectId, export, "Заявки в группу (напрямую)", "ListForGroupDirect", claims);
     }
@@ -97,22 +98,26 @@ namespace JoinRpg.Web.Controllers
       var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
-      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (все)", "DiscussingForGroup", claims);
+      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (все)", "DiscussingForGroup",
+        claims);
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
     {
       ViewBag.CharacterGroupId = characterGroupId;
-      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, new [] {characterGroupId});
+      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion,
+        new[] {characterGroupId});
 
-      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (напрямую)", "DiscussingForGroupDirect", claims);
+      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (напрямую)",
+        "DiscussingForGroupDirect", claims);
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> ResponsibleDiscussing(int projectid, int responsibleMasterId, string export)
     {
-      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Discussion);
+      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId,
+        ClaimStatusSpec.Discussion);
 
       return await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", "Index", claims);
     }
@@ -120,7 +125,8 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
     {
-      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsiblemasterid, ClaimStatusSpec.OnHold);
+      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsiblemasterid,
+        ClaimStatusSpec.OnHold);
 
       return await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", "Index", claims);
     }
@@ -161,7 +167,9 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> WaitingForFee(int projectid, string export)
     {
-      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(claim => !claim.ClaimPaidInFull()).ToList();
+      var claims =
+        (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Approved)).Where(claim => !claim.ClaimPaidInFull())
+        .ToList();
 
       return await ShowMasterClaimList(projectid, export, "Неоплаченные принятые заявки", "Index", claims);
     }
@@ -180,7 +188,9 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
     {
-      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList();
+      var claims =
+        (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList
+        ();
 
       return await ShowMasterClaimList(projectid, export, "Заявки на мастере", "Index", claims);
     }
@@ -189,13 +199,17 @@ namespace JoinRpg.Web.Controllers
     public ActionResult My()
     {
       ViewBag.Title = "Мои заявки";
-      return View("Index", new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims.ToList(), null, showCount: false, showUserColumn:false));
+      return View("Index",
+        new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims.ToList(), null, showCount: false,
+          showUserColumn: false));
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> Problems(int projectId, string export)
     {
-      var claims = (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any)).Where(c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
+      var claims =
+        (await ClaimsRepository.GetClaims(projectId, ClaimStatusSpec.Any)).Where(
+          c => c.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
       return
         await ShowMasterClaimList(projectId, export, "Проблемные заявки", "Index", claims);
     }
@@ -203,8 +217,10 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
     {
-      var claims = (await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId, ClaimStatusSpec.Any)).Where(claim =>
-        claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
+      var claims =
+        (await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId, ClaimStatusSpec.Any)).Where(
+          claim =>
+            claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
 
       return await ShowMasterClaimList(projectId, export, "Проблемные заявки на мастере", "Index", claims);
     }
@@ -212,9 +228,21 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> PaidDeclined(int projectid, string export)
     {
-      var claims = (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive)).Where(claim => claim.ClaimBalance() > 0).ToList();
+      var claims =
+        (await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.InActive)).Where(claim => claim.ClaimBalance() > 0)
+        .ToList();
 
       return await ShowMasterClaimList(projectid, export, "Оплаченные отклоненные заявки", "Index", claims);
+    }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
+      return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, "Index",
+        claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasValue).ToList()
+        );
     }
   }
 }
