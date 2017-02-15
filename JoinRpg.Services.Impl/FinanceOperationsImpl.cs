@@ -49,7 +49,7 @@ namespace JoinRpg.Services.Impl
         }
       }
 
-      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true, extraAction: null);
+      var comment = claim.AddCommentImpl(currentUserId, null, contents, isVisibleToPlayer:true, extraAction: null);
 
       var financeOperation = new FinanceOperation()
       {
@@ -72,8 +72,10 @@ namespace JoinRpg.Services.Impl
       claim.UpdateClaimFeeIfRequired(operationDate);
 
       await UnitOfWork.SaveChangesAsync();
-      var email = await CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation,
-        isVisibleToPlayer: true, commentExtraAction: null, extraRecepients: new [] { paymentType.User});
+      var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents,
+        s => s.MoneyOperation,
+        isVisibleToPlayer: true, commentExtraAction: null, initiator: await UserRepository.GetById(currentUserId),
+        extraRecepients: new[] {paymentType.User});
       email.FeeChange = feeChange;
       email.Money = money;
 
@@ -205,7 +207,7 @@ namespace JoinRpg.Services.Impl
       var now = DateTime.UtcNow;
       claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
 
-      var comment = claim.AddCommentImpl(currentUserId, null, feeValue.ToString(), now, isVisibleToPlayer: true,
+      var comment = claim.AddCommentImpl(currentUserId, null, feeValue.ToString(), isVisibleToPlayer: true,
         extraAction: CommentExtraAction.FeeChanged);
 
       claim.CurrentFee = feeValue;

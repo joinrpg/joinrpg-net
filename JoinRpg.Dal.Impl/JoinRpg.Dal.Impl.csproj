@@ -310,16 +310,22 @@
     <Compile Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.Designer.cs">
       <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702121018582_Forums.cs" />
+    <Compile Include="Migrations\201702121018582_Forums.Designer.cs">
+      <DependentUpon>201702121018582_Forums.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />
+    <Compile Include="Repositories\ForumRepositoryImpl.cs" />
     <Compile Include="Repositories\GameRepositoryImplBase.cs" />
     <Compile Include="Repositories\PlotRepositoryImpl.cs" />
     <Compile Include="Repositories\ProjectRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\RepositoryImplBase.cs" />
     <Compile Include="Repositories\UserInfoRepository.cs" />
+    <Compile Include="TypeConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj">
@@ -532,6 +538,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610032019000_RevertShowOnUnApprovedIncorrectFlag.resx">
       <DependentUpon>201610032019000_RevertShowOnUnApprovedIncorrectFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702121018582_Forums.resx">
+      <DependentUpon>201702121018582_Forums.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

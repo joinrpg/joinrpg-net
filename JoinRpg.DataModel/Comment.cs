@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
+using System.ComponentModel.DataAnnotations.Schema;
 using JoinRpg.Helpers;
 using JetBrains.Annotations;
 
@@ -10,32 +10,35 @@ namespace JoinRpg.DataModel
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class Comment : IProjectEntity, IValidatableObject, ILinkable
   {
-    public int CommentId { get; set; }
+    public int CommentId { get; set; } 
 
     public virtual  Project Project { get; set; }
 
     public LinkType LinkType => LinkType.Comment;
 
-    public string Identification => $"{ClaimId}.{CommentId}";
+    public string Identification => CommentId.ToString();
 
     int? ILinkable.ProjectId => ProjectId;
 
+    [Required]
     public int ProjectId { get; set; }
 
     int IOrderableEntity.Id => CommentId;
 
-    public int ClaimId { get; set; }
-    public virtual Claim Claim { get; set; }
+    public int CommentDiscussionId { get; set; }
+
+    [NotNull, ForeignKey(nameof(CommentDiscussionId))]
+    public virtual CommentDiscussion Discussion { get; set; }
 
     public int? ParentCommentId { get; set; }
     public virtual Comment Parent { get; set; }
-    public IEnumerable<Comment> ChildsComments => Claim.Comments.Where(c => c.ParentCommentId == CommentId);
 
     [NotNull]
     public virtual CommentText CommentText { get; set; }
 
-    public DateTime CreatedTime { get; set; }
-    public DateTime LastEditTime { get; set; }
+    [Column("CreatedTime")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime LastEditTime { get; set; } = DateTime.UtcNow;
 
     public virtual User Author { get; set; }
     public int AuthorUserId { get; set; }

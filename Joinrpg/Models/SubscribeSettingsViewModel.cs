@@ -9,10 +9,10 @@ namespace JoinRpg.Web.Models
   {
     public SubscribeSettingsViewModel() { }
 
-    public SubscribeSettingsViewModel(User user, CharacterGroup @group)
+    public SubscribeSettingsViewModel(User user, CharacterGroup group)
     {
       var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == group.CharacterGroupId);
-      Init(user, @group, direct);
+      Init(user, group, direct);
       ProjectId = group.ProjectId;
       CharacterGroupId = group.CharacterGroupId;
       Name = group.CharacterGroupName;
@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
     public SubscribeSettingsViewModel(User user, Character @group)
     {
       var direct = user.Subscriptions.SingleOrDefault(s => s.CharacterId == group.CharacterId);
-      Init(user, @group, direct);
+      Init(user, group, direct);
     }
 
     public SubscribeSettingsViewModel(User user, Claim claim)
@@ -35,7 +35,6 @@ namespace JoinRpg.Web.Models
       }
       else
       {
-        
           var direct2 = user.Subscriptions.SingleOrDefault(s => s.CharacterId == claim.CharacterId || s.CharacterGroupId == claim.CharacterGroupId);
           Init(user, claim.GetTarget(), direct2); 
       }

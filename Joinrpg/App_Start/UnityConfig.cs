@@ -14,9 +14,6 @@ using JoinRpg.PluginHost.Impl;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
-using JoinRpg.Services.Impl;
-using JoinRpg.Services.Impl.Allrpg;
-using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Helpers;
@@ -57,8 +54,6 @@ namespace JoinRpg.Web
     /// change the defaults), as Unity allows resolving a concrete type even if it was not previously registered.</remarks>
     public static void RegisterTypes(IUnityContainer container)
     {
-      // NOTE: To load from web.config uncomment the line below. Make sure to add a Microsoft.Practices.Unity.Configuration to the using statements.
-      // container.LoadConfiguration();
 
       container.RegisterType<IUnitOfWork, MyDbContext>();
       container.RegisterType<DbContext, MyDbContext>();
@@ -67,16 +62,11 @@ namespace JoinRpg.Web
       container.RegisterType<IUserRepository, UserInfoRepository>();
       container.RegisterType<IClaimsRepository, ClaimsRepositoryImpl>();
       container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
+      container.RegisterType<IForumRepository, ForumRepositoryImpl>();
 
-      container.RegisterType<IProjectService, ProjectService>();
-      container.RegisterType<IClaimService, ClaimServiceImpl>();
-      container.RegisterType<ISearchService, SearchServiceImpl>();
-      container.RegisterType<IPlotService, PlotServiceImpl>();
-      container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
-      container.RegisterType<IUserService, UserServiceImpl>();
-      container.RegisterType<IFinanceService, FinanceOperationsImpl>();
+      Services.Impl.Services.Register(container);
+
       container.RegisterType<IExportDataService, ExportDataServiceImpl>();
-      container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
 
       container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
 

@@ -17,9 +17,9 @@
         <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
 
             @{
-                var groupLink = Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var editControls = Model.ShowEditControls ? Html.Partial("_GroupEditControls", item) : MvcHtmlString.Empty;
-                var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
+              var groupLink = Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null);
+                var editControls = Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}});
+              var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
             <div>@switch (item.DeepLevel)
                  {
