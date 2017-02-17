@@ -19,57 +19,68 @@
         </div>
         <div class="panel-collapse collapse" id="setupFee" role="tabpanel">
             <div class="panel-body">
+                
+                @if (!Model.FeeSettings.Any())
+                {
+                    <p class="alert alert-info">
+                        Коллеги! Скорее всего вы оказались в этом разделе, чтобы настроить размер взноса для вашей игры, чтобы покрыть расходы на
+                        ее проведение. На секунду мы просим вас задуматься о том, откуда покрываются расходы на работу
+                        нашего сайта. Joinrpg бесплатный для игроков и мастеров, рекламы на нем нет и не будет, мы существуем
+                        за счет пожертвований.
+                        Если бы вы сочли возможным повысить ваш взнос всего на 50 рублей, и <a href="@Url.Action("HowToHelp", "Home")">пожертвовать эти деньги</a> на наш сайт,
+                        мы могли бы покрыть расходы на хостинг, не залезая в личные деньги, а при удаче — и отложить что-то на развитие.
+                    </p>
+                }
+                else
+                {
                 <p>Изменение взноса не влияет на уже оплаченные заявки. Возможно удалить только взнос, который еще не вступил в силу.</p>
-                <table class="table">
-                    <tr>
-                        <th>
-                            @Html.DisplayNameFor(model => firstFee.Fee)
-                        </th>
-                        <th>
-                            @Html.DisplayNameFor(model => firstFee.StartDate)
-                        </th>
-                        <th></th>
-                    </tr>
-
-                    @foreach (var item in Model.FeeSettings)
-                    {
+                    <table class="table">
                         <tr>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Fee)
-                            </td>
-                            <td>
-                                @item.StartDate.ToShortDateString()
-                            </td>
-                            <td>
-                                @if (item.IsActual && Model.HasEditAccess)
-                                {
-                                <button type="button" class="btn btn-danger btn-sm"
-                                        data-toggle="modal"
-                                        data-target="#deleteFeeSetting"
-                                        data-element="@item.ProjectFeeSettingId"
-                                        >
-                                    <span class="glyphicon glyphicon-trash"></span>Удалить..
-                                </button>
-                                }
-                            </td>
+                            <th>
+                                @Html.DisplayNameFor(model => firstFee.Fee)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => firstFee.StartDate)
+                            </th>
+                            <th></th>
                         </tr>
-                    }
-                    @if (Model.HasEditAccess)
-                    {
-                        <tr>
-                            <td>
-                                <button type="button" class="btn btn-success"
-                                        data-toggle="modal"
-                                        data-target="#addFeeSettingModal">
-                                    <span class="glyphicon glyphicon-plus"></span>Добавить новый размер взноса ...
-                                </button>
-                            </td>
-                            <td></td>
-                            <td></td>
 
-                        </tr>
-                    }
-                </table>
+                        @foreach (var item in Model.FeeSettings)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Fee)
+                                </td>
+                                <td>
+                                    @item.StartDate.ToShortDateString()
+                                </td>
+                                <td>
+                                    @if (item.IsActual && Model.HasEditAccess)
+                                    {
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                data-toggle="modal"
+                                                data-target="#deleteFeeSetting"
+                                                data-element="@item.ProjectFeeSettingId">
+                                            <span class="glyphicon glyphicon-trash"></span>Удалить..
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                }
+                
+                @if (Model.HasEditAccess)
+                {
+
+                    <button type="button" class="btn btn-success"
+                            data-toggle="modal"
+                            data-target="#addFeeSettingModal">
+                        <span class="glyphicon glyphicon-plus"></span>Добавить новый размер взноса ...
+                    </button>
+
+                }
+ 
             </div>
         </div>
     </div>
