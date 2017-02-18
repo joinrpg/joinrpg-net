@@ -131,31 +131,12 @@ namespace JoinRpg.Web.Controllers
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
             claim.Comments.Max(c => c.CommentId));
       }
-
+            //Issue#352
             var user = await GetCurrentUserAsync();
             List<int> parentGroups= _claimService.GetGroupHierarchy(claim.CharacterGroupId??claim.Character.Groups.FirstOrDefault().CharacterGroupId);
             bool isHierarchSubscribe;
             var subscriptions = user.Subscriptions.Where(s=> {
                 isHierarchSubscribe = false;
-                //parentGroups = new List<int>();
-                //if ((s.CharacterId!=null&&(s.CharacterId == claim.CharacterId||claim.Character!=null&&(s.CharacterId==claim.Character.CharacterId)))||(s.CharacterGroupId!=null&&(s.CharacterGroupId==claim.CharacterGroupId||claim.Character!=null&&s.CharacterGroupId==claim.Character.Groups.FirstOrDefault().CharacterGroupId||claim.Group!=null&&s.CharacterGroupId==claim.Group.CharacterGroupId))) {
-               /*     if (s.CharacterGroupId != null)
-                    {
-                        parentGroups = _claimService.GetGroupHierarchy(s.CharacterGroupId);
-                    }
-                    if (s.ClaimId != null && s.Claim.CharacterGroupId != null)
-                    {
-                        parentGroups = _claimService.GetGroupHierarchy(s.Claim.CharacterGroupId);
-                    }
-                    if (s.ClaimId != null && s.Claim.CharacterId != null)
-                    {
-                        parentGroups = _claimService.GetGroupHierarchy(s.Claim.Character.Groups.First().CharacterGroupId);
-                    }
-                    if (s.CharacterId != null )
-                    {
-                        parentGroups = _claimService.GetGroupHierarchy(s.CharacterGroupId);
-                    }*/
-               // }
                 foreach(var el in parentGroups)
                 {
                     if (s.CharacterGroupId == el)
@@ -167,7 +148,6 @@ namespace JoinRpg.Web.Controllers
             });
             claimViewModel.Subscriptions = subscriptions;
             claimViewModel.SubscriptionTooltip = _claimService.GetSubscriptionTooltip(subscriptions);
-            //if (claimViewModel.CharacterGroupId == null) { claimViewModel.CharacterGroupId = claim.CharacterGroupId ?? claim.Character.Groups.FirstOrDefault().CharacterGroupId; }
       return View("Edit", claimViewModel);
     }
 
@@ -468,7 +448,7 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectid, claimid);
       }
     }
-
+        //Issue#352
         public async Task<String> Subscribe(int projectid,int claimid)
         {
 
@@ -485,6 +465,8 @@ namespace JoinRpg.Web.Controllers
 
             return User.Identity.Name+"; "+claim.Name;
         }
+
+        //Issue#352
         public async Task<String> Unsubscribe(int projectid, int claimid, int subscribeid)
         {
 

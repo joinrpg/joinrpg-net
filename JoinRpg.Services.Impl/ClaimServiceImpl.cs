@@ -22,11 +22,6 @@ namespace JoinRpg.Services.Impl
     {
       var user = await UserRepository.GetWithSubscribe(currentUserId);
             var subscriptions = user.Subscriptions;
-            //var isFromGroup = subscriptions.Where(x => x.CharacterGroupId == CharacterGroupId).Count()!=0;
-            //if (isFromGroup)
-            //{
-            //    return;
-            //}
             user.Subscriptions.Add(new UserSubscription() { ClaimId = ClaimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
       await UnitOfWork.SaveChangesAsync();
     }
@@ -56,17 +51,17 @@ namespace JoinRpg.Services.Impl
 
         public string GetSubscriptionTooltip(IEnumerable<UserSubscription> subscriptions)
         {
-            string res= "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: ";
+            string res= "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br>";
             var group = UnitOfWork.GetDbSet<CharacterGroup>();
             foreach (var el in subscriptions)
             {
+                res += "группа <b>" + group.Where(g => g.CharacterGroupId == el.CharacterGroupId).First().CharacterGroupName + "</b>:<br><ul>";
                 res += (el.CharacterGroupId == null) ? "" :
-                    ((el.FieldChange) ? "[Изменение полей] ":"")+
-                    ((el.MoneyOperation) ? "[Финансовые операции] " : "") +
-                    ((el.Comments) ? "[Комментарии] " : "") +
-                    ((el.ClaimStatusChange) ? "[Изменение статуса] " : "") +
-                    "(" +group.Where(g=>g.CharacterGroupId==el.CharacterGroupId).First().CharacterGroupName+");";
-                res += " ";
+                    ((el.FieldChange) ? "<li>Изменение полей</li>" : "") +
+                    ((el.MoneyOperation) ? "<li>Финансовые операции</li>" : "") +
+                    ((el.Comments) ? "<li>Комментарии</li>" : "") +
+                    ((el.ClaimStatusChange) ? "<li>Изменение статуса</li>" : "");
+                res += "</ul> ";
             }
             return res;
         }
