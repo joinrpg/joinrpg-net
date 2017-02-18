@@ -14,6 +14,8 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Data.Write.Interfaces;
+using System.Collections.Generic;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -130,6 +132,42 @@ namespace JoinRpg.Web.Controllers
             claim.Comments.Max(c => c.CommentId));
       }
 
+            var user = await GetCurrentUserAsync();
+            List<int> parentGroups= _claimService.GetGroupHierarchy(claim.CharacterGroupId??claim.Character.Groups.FirstOrDefault().CharacterGroupId);
+            bool isHierarchSubscribe;
+            var subscriptions = user.Subscriptions.Where(s=> {
+                isHierarchSubscribe = false;
+                //parentGroups = new List<int>();
+                //if ((s.CharacterId!=null&&(s.CharacterId == claim.CharacterId||claim.Character!=null&&(s.CharacterId==claim.Character.CharacterId)))||(s.CharacterGroupId!=null&&(s.CharacterGroupId==claim.CharacterGroupId||claim.Character!=null&&s.CharacterGroupId==claim.Character.Groups.FirstOrDefault().CharacterGroupId||claim.Group!=null&&s.CharacterGroupId==claim.Group.CharacterGroupId))) {
+               /*     if (s.CharacterGroupId != null)
+                    {
+                        parentGroups = _claimService.GetGroupHierarchy(s.CharacterGroupId);
+                    }
+                    if (s.ClaimId != null && s.Claim.CharacterGroupId != null)
+                    {
+                        parentGroups = _claimService.GetGroupHierarchy(s.Claim.CharacterGroupId);
+                    }
+                    if (s.ClaimId != null && s.Claim.CharacterId != null)
+                    {
+                        parentGroups = _claimService.GetGroupHierarchy(s.Claim.Character.Groups.First().CharacterGroupId);
+                    }
+                    if (s.CharacterId != null )
+                    {
+                        parentGroups = _claimService.GetGroupHierarchy(s.CharacterGroupId);
+                    }*/
+               // }
+                foreach(var el in parentGroups)
+                {
+                    if (s.CharacterGroupId == el)
+                    {
+                        isHierarchSubscribe = true;
+                    }
+                }
+                return s.ProjectId == claim.ProjectId && (s.CharacterGroupId == (claim.CharacterGroupId ?? -1) || s.ClaimId == claim.ClaimId || s.CharacterId == (claim.CharacterId ?? -1)|| isHierarchSubscribe);
+            });
+            claimViewModel.Subscriptions = subscriptions;
+            claimViewModel.SubscriptionTooltip = _claimService.GetSubscriptionTooltip(subscriptions);
+            //if (claimViewModel.CharacterGroupId == null) { claimViewModel.CharacterGroupId = claim.CharacterGroupId ?? claim.Character.Groups.FirstOrDefault().CharacterGroupId; }
       return View("Edit", claimViewModel);
     }
 
@@ -431,13 +469,37 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-        public async Task<ActionResult> Subscribe() {
-            return PartialView("SubscribeResult");
-        }
-
-        public async Task<String> test()
+        public async Task<String> Subscribe(int projectid,int claimid)
         {
-            return "result";
+
+            var user = await GetCurrentUserAsync();
+            var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+            var error = AsMaster(claim);
+            if (error != null)
+            {
+                return error.ToString();
+            }
+
+            await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId, claim.CharacterId, claim.CharacterGroupId);
+
+            return User.Identity.Name+"; "+claim.Name;
+        }
+        public async Task<String> Unsubscribe(int projectid, int claimid, int subscribeid)
+        {
+
+            var user = await GetCurrentUserAsync();
+            var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+            var error = AsMaster(claim);
+            if (error != null)
+            {
+                return error.ToString();
+            }
+
+            await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId, subscribeid);
+
+            return User.Identity.Name + "; " + claim.Name+ "; subscribeid " + subscribeid+" - удалено";
         }
     }
 }

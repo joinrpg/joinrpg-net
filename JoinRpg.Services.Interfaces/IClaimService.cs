@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using JoinRpg.DataModel;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -25,6 +26,11 @@ namespace JoinRpg.Services.Interfaces
     Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
+
+    Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId,int? CharacterId, int? CharacterGroupId);
+    Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId, int SubscribeId);
+    List<int> GetGroupHierarchy(int? groupId);
+        string GetSubscriptionTooltip(IEnumerable<UserSubscription> subscriptions);
   }
 
   //TODO[Localize]

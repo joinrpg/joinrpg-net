@@ -11,13 +11,67 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 
+
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
-    
-    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
+
+    public async Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId, int? CharacterId, int? CharacterGroupId)
+    {
+      var user = await UserRepository.GetWithSubscribe(currentUserId);
+            var subscriptions = user.Subscriptions;
+            //var isFromGroup = subscriptions.Where(x => x.CharacterGroupId == CharacterGroupId).Count()!=0;
+            //if (isFromGroup)
+            //{
+            //    return;
+            //}
+            user.Subscriptions.Add(new UserSubscription() { ClaimId = ClaimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+        public async Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId, int SubscribeId)
+        {
+            var user = await UserRepository.GetWithSubscribe(currentUserId);
+            var subscription = user.Subscriptions.First(s => s.ProjectId == projectId && s.UserId == currentUserId && s.ClaimId == ClaimId);
+            if (subscription != null)
+            {
+                UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+            }
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        public List<int> GetGroupHierarchy(int? groupId)
+        {
+            List<int> res=new List<int>();
+            var group = UnitOfWork.GetDbSet<CharacterGroup>().Where(g => g.CharacterGroupId == groupId).First();
+            res.Add(group.CharacterGroupId);
+            while (group.ParentGroups.Count()>0) {
+                res.Add(group.ParentGroups.First().CharacterGroupId);
+                group = group.ParentGroups.First();
+            }
+            return res;
+        }
+
+        public string GetSubscriptionTooltip(IEnumerable<UserSubscription> subscriptions)
+        {
+            string res= "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: ";
+            var group = UnitOfWork.GetDbSet<CharacterGroup>();
+            foreach (var el in subscriptions)
+            {
+                res += (el.CharacterGroupId == null) ? "" :
+                    ((el.FieldChange) ? "[Изменение полей] ":"")+
+                    ((el.MoneyOperation) ? "[Финансовые операции] " : "") +
+                    ((el.Comments) ? "[Комментарии] " : "") +
+                    ((el.ClaimStatusChange) ? "[Изменение статуса] " : "") +
+                    "(" +group.Where(g=>g.CharacterGroupId==el.CharacterGroupId).First().CharacterGroupName+");";
+                res += " ";
+            }
+            return res;
+        }
+
+        public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await GetClaimSource(projectId, characterGroupId, characterId);
 

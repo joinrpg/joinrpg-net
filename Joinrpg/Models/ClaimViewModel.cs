@@ -86,6 +86,9 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
 
+    public IEnumerable<UserSubscription> Subscriptions { get; set; }
+    public string SubscriptionTooltip { get; set;}
+
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
       ClaimId = claim.ClaimId;
