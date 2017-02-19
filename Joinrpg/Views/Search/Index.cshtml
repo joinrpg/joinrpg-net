@@ -27,8 +27,8 @@
             }
 
             <div class="panel-body">
-                @foreach(var result in resultsForProject)
-{
+                @foreach(var result in resultsForProject.Select(r => new TargetedSearchResultViewModel(r, Model.SearchString)))
+                { 
                     @*TODO: Can't find template for interface, so damned hard-coded template name*@
                     @Html.DisplayFor(m => result, "ISearchResult")
                 }

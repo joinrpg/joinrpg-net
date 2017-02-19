@@ -286,6 +286,7 @@
     <Compile Include="Models\SearchResultViewModel.cs" />
     <Compile Include="Models\SubscribeSettingsViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
+    <Compile Include="Models\TargetedSearchResultViewModel.cs" />
     <Compile Include="Models\UserProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
