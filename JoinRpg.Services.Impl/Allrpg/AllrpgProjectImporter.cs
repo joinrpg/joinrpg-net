@@ -142,17 +142,16 @@ namespace JoinRpg.Services.Impl.Allrpg
       {
         Project = Project,
         ProjectId = Project.ProjectId,
-        Claim = claim,
         Author = Users[data.sid],
         CommentText = new CommentText() {Text = new MarkdownString(data.content.Replace("&lt;", "<").Replace("&gt;", ">").Replace("<br>", "\n"))},
         LastEditTime = UnixTime.ToDateTime(data.date),
-        CreatedTime = UnixTime.ToDateTime(data.date),
+        CreatedAt = UnixTime.ToDateTime(data.date),
         IsVisibleToPlayer = data.type != 2,
         ParentCommentId = null,
       };
-      comment.IsCommentByPlayer = comment.Author == comment.Claim.Player;
-      comment.Claim.Comments.Add(comment);
-      comment.Claim.LastUpdateDateTime = new DateTime[] {comment.Claim.LastUpdateDateTime, comment.CreatedTime}.Max();
+      comment.IsCommentByPlayer = comment.Author == claim.Player;
+      claim.CommentDiscussion.Comments.Add(comment);
+      claim.LastUpdateDateTime = new DateTime[] {claim.LastUpdateDateTime, comment.CreatedAt}.Max();
     }
 
     private void ImportClaims(ICollection<RoleData> roles)
@@ -179,20 +178,21 @@ namespace JoinRpg.Services.Impl.Allrpg
         ProjectId = Project.ProjectId,
         Character = null, //see later
         Group = null, // see later
+        CommentDiscussion = new CommentDiscussion() { 
         Comments = new List<Comment>()
         {
           new Comment()
           {
             Author = Project.ProjectAcls.Single(acl => acl.IsOwner).User, 
             CommentText = new CommentText() { Text = new MarkdownString($"<a href=\"http://site.allrpg.info/orders/orders/{roleData.id}/act=view&site={Project.Details.AllrpgId}\">Заявка в allrpg</a>")},
-            CreatedTime = UnixTime.ToDateTime(roleData.datesent),
+            CreatedAt = UnixTime.ToDateTime(roleData.datesent),
             IsCommentByPlayer = false,
             IsVisibleToPlayer = false,
             LastEditTime = UnixTime.ToDateTime(roleData.datesent),
             ParentCommentId = null,
             Project = Project,
           }
-        },
+        }},
         CreateDate = UnixTime.ToDateTime(roleData.datesent),
         Player = Users[roleData.sid],
         MasterDeclinedDate =
@@ -204,21 +204,13 @@ namespace JoinRpg.Services.Impl.Allrpg
 
       foreach (var virtualField in roleData.@virtual)
       {
-        if (virtualField.Key == 7152) //Known steam2016 "responsible master"
+        if (ConvertToCommentVirtualFields.Contains(virtualField.Key) && !string.IsNullOrWhiteSpace(virtualField.Value))
         {
-          int responsibleMasterIdx;
-          if (int.TryParse(virtualField.Value, out responsibleMasterIdx))
-          {
-            var responsibleSid = Steam2016ResponsibleMasters[responsibleMasterIdx];
-            claim.ResponsibleMasterUser = responsibleSid == null ? null : Users[(int) responsibleSid];
-          }
-        } else if (ConvertToCommentVirtualFields.Contains(virtualField.Key) && !string.IsNullOrWhiteSpace(virtualField.Value))
-        {
-          claim.Comments.Add(new Comment()
+          claim.CommentDiscussion.Comments.Add(new Comment()
           {
             Author = Users[roleData.sid],
             CommentText = new CommentText() {Text = new MarkdownString(virtualField.Value)},
-            CreatedTime = claim.CreateDate,
+            CreatedAt = claim.CreateDate,
             IsCommentByPlayer = true,
             IsVisibleToPlayer = true,
             LastEditTime = DateTime.UtcNow,
@@ -351,12 +343,12 @@ namespace JoinRpg.Services.Impl.Allrpg
     private void CleanProject()
     {
       UnitOfWork.GetDbSet<FinanceOperation>()
-        .RemoveRange(Project.Claims.SelectMany(c => c.Comments).Select(c => c.Finance).WhereNotNull());
+        .RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).Select(c => c.Finance).WhereNotNull());
       UnitOfWork.GetDbSet<PlotElement>().RemoveRange(Project.PlotFolders.SelectMany(f => f.Elements).ToList());
       UnitOfWork.GetDbSet<PlotFolder>().RemoveRange(Project.PlotFolders.ToList());
       UnitOfWork.GetDbSet<ReadCommentWatermark>()
-        .RemoveRange(Project.Claims.SelectMany(c => c.Watermarks));
-      UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.Comments).ToList());
+        .RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Watermarks));
+      UnitOfWork.GetDbSet<Comment>().RemoveRange(Project.Claims.SelectMany(c => c.CommentDiscussion.Comments).ToList());
       UnitOfWork.GetDbSet<Claim>().RemoveRange(Project.Claims.ToList());
 
       var characters = Project.Characters.ToList();

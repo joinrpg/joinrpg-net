@@ -15,7 +15,7 @@ using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Models
 {
-  public class ClaimViewModel : ICharacterWithPlayerViewModel
+  public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }
@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
     public bool ProjectActive { get; }
-    public IEnumerable<CommentViewModel> Comments { get; }
+    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
     public int? CharacterId { get; }
 
@@ -92,9 +92,8 @@ namespace JoinRpg.Web.Models
     public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
     {
       ClaimId = claim.ClaimId;
-      Comments =
-        claim.Comments.Where(comment => comment.ParentCommentId == null)
-          .Select(comment => new CommentViewModel(comment, currentUserId)).OrderBy(c => c.CreatedTime);
+      CommentDiscussionId = claim.CommentDiscussionId;
+      RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
       HasMasterAccess = claim.HasMasterAccess(currentUserId);
       CanManageThisClaim = claim.CanManageClaim(currentUserId);
       IsMyClaim = claim.PlayerUserId == currentUserId;
@@ -108,7 +107,10 @@ namespace JoinRpg.Web.Models
       OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count();
       HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
       Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUserId).Generate();
-      OtherClaimsFromThisPlayerCount = claim.IsApproved ? 0 : claim.OtherPendingClaimsForThisPlayer().Count();
+      OtherClaimsFromThisPlayerCount =
+        OtherClaimsFromThisPlayerCount = claim.IsApproved || (claim.Project.Details?.EnableManyCharacters ?? false)
+          ? 0
+          : claim.OtherPendingClaimsForThisPlayer().Count();
       Description = claim.Character?.Description.ToHtmlString();
       Masters =
         claim.Project.GetMasterListViewModel()
@@ -145,6 +147,12 @@ namespace JoinRpg.Web.Models
         ? claim.Character.GetOrderedPlots(plotElements).ToViewModels(currentUserId, claim.Character)
         : Enumerable.Empty<PlotElementViewModel>();
     }
+
+    #region Implementation of IEntityWithCommentsViewModel
+
+    public int CommentDiscussionId { get; }
+
+    #endregion
   }
 
   public class ClaimFeeViewModel

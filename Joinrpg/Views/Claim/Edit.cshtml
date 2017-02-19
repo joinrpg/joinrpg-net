@@ -234,10 +234,10 @@
                     }
                     using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                     {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
+                            CommentDiscussionId = Model.ClaimId,
                             ParentCommentId = null,
                             EnableHideFromUser = false,
                             HideFromUser = false,
@@ -259,10 +259,10 @@
                 </div>
                   using (Html.BeginForm("OnHoldByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                   {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
+                            CommentDiscussionId = Model.ClaimId,
                             ParentCommentId = null,
                             EnableHideFromUser = false,
                             HideFromUser = false,
@@ -291,10 +291,10 @@
                 }
                 @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
            {
                ProjectId = Model.ProjectId,
-               ClaimId = Model.ClaimId,
+               CommentDiscussionId = Model.ClaimId,
                ParentCommentId = null,
                EnableHideFromUser = false,
                HideFromUser = false,
@@ -321,10 +321,10 @@
                 @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
                 @Html.Partial("AvailClaimTargetsPartial", Model.Data)
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
            {
                ProjectId = Model.ProjectId,
-               ClaimId = Model.ClaimId,
+               CommentDiscussionId = Model.ClaimId,
                ParentCommentId = null,
                EnableHideFromUser = false,
                HideFromUser = false,
@@ -362,10 +362,10 @@
                                 Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
                             </div>
                         }
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                {
                    ProjectId = Model.ProjectId,
-                   ClaimId = Model.ClaimId,
+                   CommentDiscussionId = Model.ClaimId,
                    ParentCommentId = null,
                    EnableHideFromUser = false,
                    HideFromUser = false,
@@ -380,7 +380,7 @@
     @{ var viewModel = new FeeAcceptanceViewModel
       {
           ProjectId = Model.ProjectId,
-          ClaimId = Model.ClaimId,
+          CommentDiscussionId = Model.ClaimId,
           ParentCommentId = null,
           EnableHideFromUser = false,
           HideFromUser = false,
@@ -390,7 +390,7 @@
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = "Сдан взнос",
           ClaimApproved = Model.Status == Claim.Status.Approved,
-          HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
+          HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
       }; }
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>
@@ -402,7 +402,7 @@
     @{ var viewModelFinChange = new FeeAcceptanceViewModel
       {
           ProjectId = Model.ProjectId,
-          ClaimId = Model.ClaimId,
+          CommentDiscussionId = Model.ClaimId,
           ParentCommentId = null,
           EnableHideFromUser = false,
           HideFromUser = false,
@@ -423,10 +423,10 @@
         <div class="panel-body">
             @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-            @Html.Partial("AddCommentPartial", new AddCommentViewModel
+            @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
        {
            ProjectId = Model.ProjectId,
-           ClaimId = Model.ClaimId,
+           CommentDiscussionId = Model.ClaimId,
            ParentCommentId = null,
            EnableHideFromUser = false,
            HideFromUser = false,
@@ -469,49 +469,7 @@
         <div class="panel-heading"><h4>Комментарии к заявке</h4></div>
 
         <div class="panel-body">
-            <a data-toggle="collapse"
-               href="#answerComment0" class="btn btn-default">
-                Добавить комментарий
-            </a> <br/><br/>
-            <div id="answerComment0" class="collapse">
-                @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                {
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                    {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ParentCommentId = null,
-                        EnableHideFromUser = Model.HasMasterAccess,
-                        HideFromUser = false
-                    })
-                }
-            </div>
-            <div class="media-list">
-                @foreach (var comment in Model.Comments)
-                {
-                    @Html.Partial("_CommentPartial", comment)
-                }
-            </div>
-            @if (Model.Comments.Any())
-            {
-                <a data-toggle="collapse"
-                   href="#answerComment1" class="btn btn-default">
-                    Добавить комментарий
-                </a>
-                <div id="answerComment1" class="collapse">
-                    @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                    {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                        {
-                            ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
-                            ParentCommentId = null,
-                            EnableHideFromUser = Model.HasMasterAccess,
-                            HideFromUser = false
-                        })
-                    }
-                </div>
-            }
+            @Html.Partial("..\\Comments\\CommentsListPartial", Model)
         </div>
     </div>
 </div>

@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-      return WithEntity(field.Project) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+      return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -81,23 +81,10 @@ namespace JoinRpg.Web.Controllers
       catch (Exception exception)
       {
         ModelState.AddException(exception);
-        var source = await GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
+        var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
         //TODO: Отображать ошибки верно
         return View(viewModel.Fill(source, GetCurrentUser()));
       }
-    }
-
-    private async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
-    {
-      if (characterGroupId != null)
-      {
-        return await ProjectRepository.GetGroupAsync(projectId, (int) characterGroupId);
-      }
-      if (characterId != null)
-      {
-        return await ProjectRepository.GetCharacterAsync(projectId, (int) characterId);
-      }
-      throw new InvalidOperationException();
     }
 
     [HttpGet, Authorize]
@@ -125,11 +112,11 @@ namespace JoinRpg.Web.Controllers
         : new PlotElement[] {};
       var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
 
-      if (claimViewModel.Comments.Any(c => !c.IsRead))
+      if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
         await
-          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
-            claim.Comments.Max(c => c.CommentId));
+          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId, CurrentUserId,
+            claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
             //Issue#352
             var user = await GetCurrentUserAsync();
@@ -176,9 +163,9 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -188,7 +175,7 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
       }
       catch (Exception exception)
       {
@@ -200,7 +187,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, Authorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -212,7 +199,7 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
       }
       catch (Exception exception)
       {
@@ -226,7 +213,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -242,12 +229,12 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
       }
       catch
       {
         //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
       }
 
     }
@@ -257,7 +244,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -273,12 +260,12 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
       }
       catch
       {
         //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
       }
     }
 
@@ -287,7 +274,7 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithMyClaim(claim);
       if (error != null)
       {
@@ -302,12 +289,12 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
       }
       catch
       {
         //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId});
+        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
       }
     }
 
@@ -339,7 +326,7 @@ namespace JoinRpg.Web.Controllers
     /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
     public async Task<ActionResult> Move(AddCommentViewModel viewModel, string claimTarget)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
       if (error != null)
       {
@@ -368,7 +355,11 @@ namespace JoinRpg.Web.Controllers
 
     private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
     {
-      return ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
+      if (viewModel.CommentDiscussionId != null)
+      {
+        ReturnToClaim((int) viewModel.CommentDiscussionId, viewModel.ProjectId);
+      }
+      throw new InvalidOperationException();
     }
 
     private ActionResult ReturnToClaim(int claimId, int projectId)
@@ -379,7 +370,7 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {
-      var claims = (await _claimsRepository.GetMyClaimsForProject(CurrentUserId, projectId)).ToList();
+      var claims = await _claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
 
       if (claims.Count == 0)
       {
@@ -395,9 +386,13 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (viewModel.CommentDiscussionId == null)
+      {
+        throw new ArgumentNullException(nameof(viewModel.CommentDiscussionId));
+      }
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithClaim(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -405,7 +400,7 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+          return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
         }
 
 
@@ -414,11 +409,11 @@ namespace JoinRpg.Web.Controllers
             viewModel.CommentText, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
             viewModel.PaymentTypeId);
         
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+        return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
       }
     }
 

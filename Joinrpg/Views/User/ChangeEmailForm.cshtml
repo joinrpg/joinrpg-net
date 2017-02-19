@@ -1,0 +1,17 @@
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Areas.Admin.Models.ChangeEmailModel
+
+@Html.AntiForgeryToken()
+@Html.HiddenFor(model => model.UserId)
+<div class="form-horizontal">
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.NewEmail, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.NewEmail, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.DescriptionFor(model => model.NewEmail)
+            @Html.ValidationMessageFor(model => model.NewEmail, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+</div>

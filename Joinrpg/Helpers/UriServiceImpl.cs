@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -17,6 +18,11 @@ namespace JoinRpg.Web.Helpers
     }
 
     public string Get(ILinkable link)
+    {
+      return GetUri(link).ToString();
+    }
+
+    public Uri GetUri(ILinkable link)
     {
       return link.GetRouteTarget().GetUri(new UrlHelper(_current.Request.RequestContext));
     }

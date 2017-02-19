@@ -66,7 +66,9 @@ namespace JoinRpg.Domain.Test
           {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
           {mock.CharacterField.ProjectFieldId, null }
         });
-      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\"}}", mock.Character.JsonData);
+      Assert.AreEqual(
+  $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
+  mock.Character.JsonData);
       Assert.AreEqual("{}", claim.JsonData);
     }
 
@@ -82,7 +84,7 @@ namespace JoinRpg.Domain.Test
           {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
           {mock.CharacterField.ProjectFieldId, null }
         });
-      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\"}}", mock.Character.JsonData);
+      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}", mock.Character.JsonData);
     }
 
     [TestMethod]
@@ -98,7 +100,9 @@ namespace JoinRpg.Domain.Test
         {
           {mock.CharacterField.ProjectFieldId, "test"}
         });
-      Assert.AreEqual($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}", mock.Character.JsonData);
+      Assert.AreEqual(
+        $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
+        mock.Character.JsonData);
       Assert.AreEqual("{}", claim.JsonData);
     }
 

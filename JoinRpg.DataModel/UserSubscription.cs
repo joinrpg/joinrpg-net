@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace JoinRpg.DataModel
 {
-  public class UserSubscription:IValidatableObject
-  {
+ // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
+  public class UserSubscription: IValidatableObject
+
     public int UserSubscriptionId { get; set; }
 
     public int UserId { get; set; }
@@ -26,7 +27,6 @@ namespace JoinRpg.DataModel
     public bool ClaimStatusChange { get; set; }
     public bool Comments { get; set; }
     public bool FieldChange { get; set; }
-
     public bool MoneyOperation { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {

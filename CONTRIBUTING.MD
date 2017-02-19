@@ -17,12 +17,12 @@ There is instruction for **Windows**. It's theoretically possible to build on Li
 1. Compile VS project and observe package restoring and everything happens
 1. Tap F5 and you should be there.
 1. First start can take a long time while Local DB will create database for first time.
-1. Some features will be disabled — it's all about integration to Remote systems — email, social services login etc. 
+1. Some features will be disabled â€”Â it's all about integration to Remote systems â€” email, social services login etc. 
 If you want to test this, you will need to rename Secret.config.example to Secret.config and provide correct keys.
 1. Please note that you won't be able for login until you verify your email. Of course, it's not possible w/o email integration enabled.
 To perform that, you will need to go to database and change `[dbo].[UserAuthDetails]` to set `[EmailConfirmed]` for corresponding user.
 
-Submitting your chabges
+Submitting your changes
 ==
 1. I recommend that you will have separate branch for each feature, but that's on you.
 1. Test your changes locally, etc.

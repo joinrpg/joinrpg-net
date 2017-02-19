@@ -117,6 +117,7 @@ namespace JoinRpg.DataModel
     #endregion
 
     public bool Equals(CharacterGroup other) => other.CharacterGroupId == CharacterGroupId;
-  }
 
+    public virtual ICollection<ForumThread> ForumThreads { get; set; }
+  }
 }

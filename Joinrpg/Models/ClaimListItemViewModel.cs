@@ -60,7 +60,7 @@ namespace JoinRpg.Web.Models
     public bool ShowCount { get; }
     public bool ShowUserColumn { get; }
 
-    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
+    public ClaimListViewModel (int currentUserId, IReadOnlyCollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
     {
       Items = claims
         .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
@@ -73,7 +73,7 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class ClaimListItemViewModel
+  public class ClaimListItemViewModel : ILinkable
   {
     [Display(Name="Имя")]
     public string Name { get; set; }
@@ -119,7 +119,7 @@ namespace JoinRpg.Web.Models
     public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
+      var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
@@ -131,7 +131,7 @@ namespace JoinRpg.Web.Models
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
       UnreadCommentsCount =
-        claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
+        claim.CommentDiscussion.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
                                                   && !comment.IsReadByUser(currentUserId));
 
       ProjectId = claim.ProjectId;
@@ -147,5 +147,13 @@ namespace JoinRpg.Web.Models
         problem.Select(p => new ProblemViewModel(p)).ToList();
       return this;
     }
+
+    #region Implementation of ILinkable
+
+    public LinkType LinkType => LinkType.Claim;
+    public string Identification => ClaimId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
+
+    #endregion
   }
 }

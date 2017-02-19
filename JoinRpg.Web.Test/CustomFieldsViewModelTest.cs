@@ -25,6 +25,23 @@ namespace JoinRpg.Web.Test
     }
 
     [TestMethod]
+    public void ShowPublicFieldToAnon()
+    {
+      var vm = new CustomFieldsViewModel(null, Mock.Character);
+      var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
+      Assert.IsTrue(publicField?.CanView ?? true);
+      Assert.IsNotNull(publicField?.Value);
+    }
+
+    [TestMethod]
+    public void ShowPublicFieldToAnonEvenIfEditDisabled()
+    {
+      var vm = new CustomFieldsViewModel(null, Mock.Character, disableEdit: true);
+      Assert.IsTrue(vm.FieldById(Mock.PublicField.ProjectFieldId)?.CanView ?? true);
+    }
+
+
+    [TestMethod]  
     public void AllowCharactersFieldOnAddClaimTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource) Mock.Character);
