@@ -13,7 +13,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
+                <span class="navbar-brand">@Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
             </div>
             <div class="navbar-collapse collapse" id="master-menu-collapse">
                 <ul class="nav navbar-nav">
@@ -102,6 +102,14 @@
                             {
                                 <li>@Html.ActionLink(cg.Name, "ListForGroup", "ClaimList", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
                             }
+                        </ul>
+                    </li>
+                    
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
+
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>
                     <li class="dropdown">
