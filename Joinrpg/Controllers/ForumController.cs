@@ -170,5 +170,17 @@ namespace JoinRpg.Web.Controllers
       discussion.RequestAnyAccess(CurrentUserId);
       return ReturnToParent(discussion, $"comment{commentid}");
     }
+
+    [HttpGet]
+    public async Task<ActionResult> ListThreads(int projectid)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
+      var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
+      var groupIds = claims.SelectMany(claim => claim.Character.GetGroupsPartOf());
+      var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
+      var viewModel = new ForumThreadListViewModel(project, threads);
+      return View(viewModel);
+    }
   }
 }
