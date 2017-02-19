@@ -204,6 +204,7 @@
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
+    <Compile Include="Models\ApisIndexViewModel.cs" />
     <Compile Include="Models\ForumModels.cs" />
     <Compile Include="Models\Exporters\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Models\Exporters\ClaimListItemViewModelExporter.cs" />
