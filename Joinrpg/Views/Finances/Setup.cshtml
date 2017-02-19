@@ -180,6 +180,40 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4>
+                <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#changeSettings">
+                    Общие настройки
+                </a>
+            </h4>
+
+        </div>
+        <div class="panel-collapse collapse" role="tabpanel" id="changeSettings">
+            <div class="panel-body">
+               @using (Html.BeginForm("ChangeSettings", "Finances"))
+               {
+                   var model = Model.GlobalSettings;
+                   @Html.AntiForgeryToken()
+                   @Html.HiddenFor(item => model.ProjectId)
+
+                <div class="form-group">
+                    @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-1">
+                        @Html.EditorFor(item => model.WarnOnOverPayment)
+                        @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Сохранить" class="btn btn-success" />
+                    </div>
+                </div>
+               }
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>
                 <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#gooleDocs">
                     Синхронизация с GoogleDocs
                 </a>

@@ -78,7 +78,7 @@ namespace JoinRpg.Domain
     public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
     {
       return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
-             (character.Project.Details?.PublishPlot ?? false);
+             character.Project.Details.PublishPlot;
     }
 
     public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
@@ -92,6 +92,7 @@ namespace JoinRpg.Domain
       return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
     }
 
+    // ReSharper disable once UnusedParameter.Global
     public static void EnsureProjectActive(this IProjectEntity character)
     {
       if (!character.Project.Active)
