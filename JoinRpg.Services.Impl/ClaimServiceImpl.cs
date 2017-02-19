@@ -15,7 +15,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
-    
+
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
@@ -36,13 +36,14 @@ namespace JoinRpg.Services.Impl
         ResponsibleMasterUserId = responsibleMaster?.UserId,
         ResponsibleMasterUser = responsibleMaster,
         LastUpdateDateTime = addClaimDate,
-        CommentDiscussion = new CommentDiscussion(),
+        CommentDiscussion = new CommentDiscussion() {CommentDiscussionId = -1, ProjectId = projectId},
       };
 
       if (!string.IsNullOrWhiteSpace(claimText))
       {
         claim.CommentDiscussion.Comments.Add(new Comment
         {
+          CommentDiscussionId = -1,
           AuthorUserId = currentUserId,
           CommentText = new CommentText {Text =  new MarkdownString(claimText)},
           CreatedAt = addClaimDate,
@@ -52,6 +53,7 @@ namespace JoinRpg.Services.Impl
           LastEditTime = addClaimDate,
         });
       }
+
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
       FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);

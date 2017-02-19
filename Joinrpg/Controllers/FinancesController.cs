@@ -104,11 +104,11 @@ namespace JoinRpg.Web.Controllers
       {
         if (paymentTypeId < 0)
         {
-          await FinanceService.CreateCashPaymentType(projectid, CurrentUserId, -paymentTypeId);
+          await FinanceService.CreateCashPaymentType(projectid, -paymentTypeId);
         }
         else
         {
-          await FinanceService.TogglePaymentActivness(projectid, CurrentUserId, paymentTypeId);
+          await FinanceService.TogglePaymentActivness(projectid, paymentTypeId);
         }
         return RedirectToAction("Setup", new { projectid });
       }
@@ -131,7 +131,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.CreateCustomPaymentType(viewModel.ProjectId, CurrentUserId, viewModel.Name, viewModel.UserId);
+        await FinanceService.CreateCustomPaymentType(viewModel.ProjectId, viewModel.Name, viewModel.UserId);
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch
@@ -173,7 +173,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.EditCustomPaymentType(viewModel.ProjectId, CurrentUserId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
+        await FinanceService.EditCustomPaymentType(viewModel.ProjectId, viewModel.PaymentTypeId, viewModel.Name, viewModel.IsDefault);
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch (Exception exc)
@@ -194,7 +194,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.CreateFeeSetting(viewModel.ProjectId, CurrentUserId, viewModel.Fee, viewModel.StartDate);
+        await FinanceService.CreateFeeSetting(viewModel.ProjectId, viewModel.Fee, viewModel.StartDate);
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch
@@ -216,7 +216,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.DeleteFeeSetting(projectid, CurrentUserId, projectFeeSettingId);
+        await FinanceService.DeleteFeeSetting(projectid, projectFeeSettingId);
         return RedirectToAction("Setup", new { projectid });
       }
       catch
@@ -254,6 +254,27 @@ namespace JoinRpg.Web.Controllers
           ExportWithCustomFronend(summary, "money-summary", ExportType.Csv,
             new MoneySummaryByMasterExporter(UriService),
             project.ProjectName);
+    }
+
+    public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
+    {
+      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
+      if (errorResult != null)
+      {
+        return errorResult;
+      }
+
+      try
+      {
+        await FinanceService.SaveGlobalSettings(viewModel.ProjectId, viewModel.WarnOnOverPayment);
+        return RedirectToAction("Setup", new { viewModel.ProjectId });
+      }
+      catch
+      {
+        //TODO: Message that comment is not added
+        return RedirectToAction("Setup", new { viewModel.ProjectId });
+      }
     }
   }
 }

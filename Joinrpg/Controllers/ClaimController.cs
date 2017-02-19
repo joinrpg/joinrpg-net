@@ -171,7 +171,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -197,7 +197,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -228,7 +228,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -258,7 +258,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithMyClaim(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -310,7 +310,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = AsMaster(claim);
-      if (error != null)
+      if (error != null || claim == null)
       {
         return error;
       }
@@ -335,15 +335,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    [MustUseReturnValue]
     private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
     {
-      if (viewModel.CommentDiscussionId != null)
-      {
-        ReturnToClaim((int) viewModel.CommentDiscussionId, viewModel.ProjectId);
-      }
-      throw new InvalidOperationException();
+      return ReturnToClaim(viewModel.CommentDiscussionId, viewModel.ProjectId);
     }
 
+    [MustUseReturnValue]
     private ActionResult ReturnToClaim(int claimId, int projectId)
     {
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
@@ -368,10 +366,6 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
-      if (viewModel.CommentDiscussionId == null)
-      {
-        throw new ArgumentNullException(nameof(viewModel.CommentDiscussionId));
-      }
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithClaim(claim);
       if (error != null || claim == null)
@@ -382,12 +376,12 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
+          return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
         }
 
 
         await
-          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, CurrentUserId,
+          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, 
             viewModel.CommentText, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
             viewModel.PaymentTypeId);
         
@@ -395,7 +389,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
+        return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
       }
     }
 
@@ -404,7 +398,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claim = await _claimsRepository.GetClaim(projectid, claimid);
       var error = WithClaim(claim);
-      if (error != null)
+      if (error != null || claim ==null)
       {
         return error;
       }
@@ -416,7 +410,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         await
-          FinanceService.ChangeFee(claim.ProjectId, claim.ClaimId, feeValue, CurrentUserId);
+          FinanceService.ChangeFee(claim.ProjectId, claim.ClaimId, feeValue);
 
         return RedirectToAction("Edit", "Claim", new { claimid, projectid });
       }

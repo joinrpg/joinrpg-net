@@ -314,6 +314,10 @@
     <Compile Include="Migrations\201702121018582_Forums.Designer.cs">
       <DependentUpon>201702121018582_Forums.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702191017384_NewFinanceGlobalSettings.cs" />
+    <Compile Include="Migrations\201702191017384_NewFinanceGlobalSettings.Designer.cs">
+      <DependentUpon>201702191017384_NewFinanceGlobalSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -541,6 +545,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201702121018582_Forums.resx">
       <DependentUpon>201702121018582_Forums.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702191017384_NewFinanceGlobalSettings.resx">
+      <DependentUpon>201702191017384_NewFinanceGlobalSettings.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -94,6 +94,7 @@ namespace JoinRpg.Web.Models
 
     public string ActionName { get; set; }
 
+    [Display(Name = "С финансовой операцией...")]
     public FinanceOperationAction FinanceAction { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
