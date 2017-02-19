@@ -1,4 +1,4 @@
-﻿@model JoinRpg.DataModel.Project
+﻿@model JoinRpg.Web.Models.ApisIndexViewModel
 
 @{
   ViewBag.Title = "Встраивание на сайт";
@@ -13,7 +13,7 @@
     <pre>&lt;div class="joinrpg-api" data-projectId="_projectId_" data-locationId="_characterGroupId_"&gt;Идет загрузка...&lt;/div&gt;</pre>
     Где <var>_projectId_</var> — ид проекта, а <var >_characterGroupId_</var> ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
     Например, для текущего проекта «получить вообще все роли в проекте» будет выглядеть как:
-    <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId"&gt;
+    <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId"&gt;
   Идет загрузка...
 &lt;/div&gt;</pre>
     И подключите скрипт:
@@ -30,7 +30,7 @@
     Также можно подключить дефолтные стили: <var> @RouteHelper.GetFullHostName()/external/joinrpg-api.css </var>
     <div class="panel panel-default">
         <div class="panel-heading">Пример результата</div>
-        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId">
+        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId">
             Идет загрузка...
         </div>
     </div>
@@ -41,7 +41,7 @@
     Добавьте на страницу код такого вида:
     <br/>
     <code>
-        &lt;div class="joinrpg-hot-roles" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1"&gt;
+        &lt;div class="joinrpg-hot-roles" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroupId" data-maxcount="1"&gt;
 
         &lt/div&gt;
     </code>
@@ -55,10 +55,20 @@
     Пример результата:
     <div class="panel panel-default">
         <div class="panel-heading">Горячие роли</div>
-        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1" data-server="@RouteHelper.GetFullHostName()">
+        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroupId" data-maxcount="1" data-server="@RouteHelper.GetFullHostName()">
             Ожидайте загрузки...
         </div>
     </div>
+</p>
+
+<h3>
+    Автоматический эскпорт персонажей
+</h3>
+<p>
+    @Html.ActionLink("Ссылка на список персонажей", "ActiveToken", "CharacterList", new {Model.ProjectId, Token = Model.CurrentUserToken}, null)
+    <br />
+    Обратите внимание, эта ссылка дает доступ к полному мастерскому списку персонажей всем, у кого она окажется. Не выкладывайте ее в открытые источники!
+    Это экспериментальная фича, она может прекратить работать в любой момент.
 </p>
 @section Scripts
 {
