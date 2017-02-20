@@ -1,6 +1,18 @@
 ﻿@model JoinRpg.Web.Models.ForumThreadListItemViewModel
   
-@Model.ToString()
-____
+<p>
+    @if (Model.UnreadCount > 0)
+    {
+    <span class="badge" title="Непрочитанные ответы">@Model.UnreadCount</span>
+    }
+    <span class="h4"> @Model.Header</span>
+    Автор: @Html.DisplayFor(model => model.Topicstarter), @Model.TotalCount ответов
 
-<h4>@Model.Header</h4>
+</p>
+
+
+<blockquote>
+    @Model.LastMessageText
+    <footer>@Html.DisplayFor(model => model.LastMessageAuthor)
+        @Html.DisplayFor(model => model.UpdatedAt, "EventTime")</footer>
+</blockquote>

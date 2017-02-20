@@ -16,14 +16,16 @@ namespace JoinRpg.Data.Interfaces
     Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<CharacterGroup> groupIds);
   }
 
-  public interface IForumThreadListItem
+  public interface IForumThreadListItem : ICommentDiscussionHeader
   {
-    int ProjectId { get; }
     string Header { get; }
     User Topicstarter { get; }
     MarkdownString LastMessageText { get; }
     User LastMessageAuthor { get; }
     DateTime UpdatedAt { get; }
-    int UnreadCount { get; }
+    int TotalCount { get; }
+    IReadOnlyCollection<ICommentHeader> Comments { get; }
+
+    IReadOnlyCollection<ReadCommentWatermark> Watermarks { get; }
   }
 }
