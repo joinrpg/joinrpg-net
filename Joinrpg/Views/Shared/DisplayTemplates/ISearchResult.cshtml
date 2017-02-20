@@ -11,6 +11,11 @@
 
     </h4>
     <p>
-        @Model.SearchResult.Description.Replace(Model.SearchTarget, "<b>" + "{Model.SearchTarget}" + "</b>")
+        @{
+          string descriptionWithTags =
+              (Model.SearchResult.Description.Contents ?? "")
+              .Replace(Model.SearchTarget, "<b>" + Model.SearchTarget + "</b>");
+        }
+        @Html.Raw(descriptionWithTags)
     </p>
 </div>
