@@ -2,6 +2,79 @@
 @using JoinRpg.Web.Models
 @model GameFieldListViewModel
 
+@helper ShowFieldRow(GameFieldEditViewModel item)
+{
+    <tr class="@(item.IsActive ? "" : "deleted")">
+        <td >
+            @Html.DisplayFor(modelItem => item.Name)
+            @Html.DisplayFor(modelItem => item.MandatoryStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.FieldViewType)
+        </td>
+        <td>
+            @Html.DisplayFor(model => item.FieldBoundTo)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsPublic)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanPlayerView)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.CanPlayerEdit)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+
+        <td>
+
+            @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
+            {
+                if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+                {
+                    @Html.ActionLink("Отчет (непроставленные)", "ByUnAssignedField", "CharacterList",
+                        new {item.ProjectFieldId, item.ProjectId}, null)
+                }
+            }
+            
+            @if (!item.IsActive)
+            {
+                switch (item.FieldBoundTo)
+                {
+                    case FieldBoundToViewModel.Character:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
+                            new {item.ProjectFieldId, item.ProjectId}, null)
+                        break;
+                    case FieldBoundToViewModel.Claim:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
+                            new {item.ProjectFieldId, item.ProjectId}, null)
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            @if (Model.CanEditFields)
+            {
+                <br/>
+                if (item.IsActive)
+                {
+                    @Html.ActionLink("Изменить", "Edit", new {item.ProjectFieldId, item.ProjectId})
+                    <text>|
+                        @Html.ActionLink("Удалить", "Delete", new {item.ProjectFieldId, item.ProjectId})</text>
+                }
+                else
+                {
+                    @Html.ActionLink("Восстановить", "Edit", new {item.ProjectFieldId, item.ProjectId})
+                }
+                @Html.MoveControl(model => item, "Move")
+            }
+        </td>
+    </tr>
+}
+
 @{
     ViewBag.Title = "Поля персонажа / заявки";
 }
@@ -44,56 +117,19 @@
             <th></th>
         </tr>
 
-        @foreach (var item in Model.Items)
+        @foreach (var item in Model.Items.Where(i => i.IsActive))
         {
-            <tr class="@(item.IsActive ? "" : "deleted")">
-                <td >
-                    @Html.DisplayFor(modelItem => item.Name)
-                    @Html.DisplayFor(modelItem => item.MandatoryStatus)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.FieldViewType)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => item.FieldBoundTo)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsPublic)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CanPlayerView)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CanPlayerEdit)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
+            @ShowFieldRow(item)
+        }
+        
+        @if (Model.Items.Any(i => i.IsActive) && Model.Items.Any(i => !i.IsActive))
+        {
+            <tr><td colspan="8"><hr/></td></tr>
+        }
 
-                <td>
-                    @if (item.MandatoryStatus != MandatoryStatusViewType.Optional)
-                    {
-                        @Html.ActionLink("Отчет (непроставленные)", "ByUnAssignedField", "CharacterList", new {item.ProjectFieldId, item.ProjectId}, null)
-                    }
-                    @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && Model.CanEditFields)
-                    {
-                        <text> | </text>
-                    }
-                    @if (Model.CanEditFields)
-                    {
-                        if (item.IsActive)
-                        {
-                            @Html.ActionLink("Изменить", "Edit", new {item.ProjectFieldId, item.ProjectId})<text> | </text>
-                            @Html.ActionLink("Удалить", "Delete", new {item.ProjectFieldId, item.ProjectId})
-                        }
-                        else
-                        {
-                            @Html.ActionLink("Восстановить", "Edit", new {item.ProjectFieldId, item.ProjectId})
-                        }<text> </text>
-                        @Html.MoveControl(model => item, "Move")
-                    }
-                </td>
-            </tr>
+        @foreach (var item in Model.Items.Where(i => !i.IsActive))
+        {
+        @ShowFieldRow(item)
         }
 
     </table>

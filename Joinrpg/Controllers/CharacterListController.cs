@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Models.Characters;
@@ -20,6 +21,30 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public Task<ActionResult> Active(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
+
+    [HttpGet, AllowAnonymous]
+    public async Task<ActionResult> ActiveToken(int projectid, string token)
+    {
+      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(claim => claim.IsActive).ToList();
+
+      var project = await ProjectRepository.GetProjectWithFinances(projectid);
+
+      var guid = new Guid(token.FromHexString());
+
+      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+
+      if (acl == null)
+      {
+        return Content("Unauthorized");
+      }
+
+      var plots = await PlotRepository.GetPlotsWithTargets(projectid);
+
+      var list = new CharacterListViewModel(CurrentUserId, "Все персонажи", characters, plots, project, vm => true);
+
+      return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
+        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
+    }
 
     [HttpGet, Authorize]
     public Task<ActionResult> Deleted(int projectId, string export)
@@ -84,6 +109,15 @@ namespace JoinRpg.Web.Controllers
         await
           MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
             "Персонажи — " + characterGroup.CharacterGroupName, vm => true);
+    }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      return await MasterCharacterList(projectid,
+        character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasValue && character.IsActive, export,
+        "Поле (проставлено): " + field.FieldName);
     }
   }
 }

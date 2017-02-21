@@ -109,6 +109,7 @@ namespace JoinRpg.Domain
     UnApprovedClaimPayment,
     ClaimWorkStopped,
     ClaimDontHaveTarget,
+    [Obsolete, UsedImplicitly]
     DeletedFieldHasValue,
     FieldIsEmpty,
     FieldShouldNotHaveValue,

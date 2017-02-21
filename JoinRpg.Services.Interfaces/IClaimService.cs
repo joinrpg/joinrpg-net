@@ -8,8 +8,7 @@ namespace JoinRpg.Services.Interfaces
   {
     Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields);
 
-    Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer,
-      string commentText, FinanceOperationAction financeAction);
+    Task AddComment(int projectId, int claimId, int currentUserId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
     Task AppoveByMaster(int projectId, int claimId, int currentUserId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText);
@@ -22,7 +21,7 @@ namespace JoinRpg.Services.Interfaces
     Task MoveByMaster(int projectId, int claimId, int currentUserId, string contents, int? characterGroupId,
       int? characterId);
 
-    Task UpdateReadCommentWatermark(int projectId, int claimId, int currentUserId, int maxCommentId);
+    Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int currentUserId, int maxCommentId);
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
   }

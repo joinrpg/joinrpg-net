@@ -60,14 +60,14 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectId);
       return AsMaster(project, pacl => pacl.CanChangeProjectProperties) ?? View(new EditProjectViewModel
       {
-        ClaimApplyRules =project.Details?.ClaimApplyRules.Contents,
-        ProjectAnnounce = project.Details?.ProjectAnnounce.Contents,
+        ClaimApplyRules =project.Details.ClaimApplyRules.Contents,
+        ProjectAnnounce = project.Details.ProjectAnnounce.Contents,
         ProjectId = project.ProjectId,
         ProjectName = project.ProjectName,
         OriginalName = project.ProjectName,
         IsAcceptingClaims = project.IsAcceptingClaims,
-        PublishPlot = project.Details?.PublishPlot ?? false,
-        EnableManyCharacters = project.Details?.EnableManyCharacters ?? false,
+        PublishPlot = project.Details.PublishPlot,
+        StrictlyOneCharacter = !project.Details.EnableManyCharacters,
         Active = project.Active
       });
     }
@@ -86,8 +86,10 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName, viewModel.ClaimApplyRules,
-            viewModel.ProjectAnnounce, viewModel.IsAcceptingClaims, viewModel.EnableManyCharacters, viewModel.PublishPlot);
+          ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName,
+            viewModel.ClaimApplyRules,
+            viewModel.ProjectAnnounce, viewModel.IsAcceptingClaims, !viewModel.StrictlyOneCharacter,
+            viewModel.PublishPlot);
 
         return RedirectTo(project);
       }

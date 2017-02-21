@@ -189,18 +189,23 @@
     <Content Include="App_Code\MoveControlHtmlHelper.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Models\ChangeEmailModel.cs" />
+    <Compile Include="Controllers\ForumController.cs" />
+    <Compile Include="Filter\JoinRpgExceptionHandler.cs" />
+    <Compile Include="Filter\MasterAuthorize.cs" />
     <Compile Include="Helpers\AdminAuthorizeAttribute.cs" />
     <Compile Include="Areas\Admin\Controllers\AllrpgController.cs" />
     <Compile Include="Areas\Admin\Controllers\UsersController.cs" />
     <Compile Include="Areas\Admin\Models\AllrpgProjectViewModels.cs" />
     <Compile Include="Controllers\CharacterListController.cs" />
     <Compile Include="Controllers\ClaimListController.cs" />
-    <Compile Include="Controllers\Common\PluginSetupController.cs" />
+    <Compile Include="Controllers\PluginSetupController.cs" />
     <Compile Include="Controllers\PrintController.cs" />
     <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
+    <Compile Include="Models\ApisIndexViewModel.cs" />
+    <Compile Include="Models\ForumModels.cs" />
     <Compile Include="Models\Exporters\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Models\Exporters\ClaimListItemViewModelExporter.cs" />
     <Compile Include="Models\Exporters\CustomExporter.cs" />
@@ -216,7 +221,6 @@
     <Compile Include="Controllers\AclController.cs" />
     <Compile Include="Controllers\CharacterController.cs" />
     <Compile Include="Controllers\ClaimController.cs" />
-    <Compile Include="Controllers\CommentController.cs" />
     <Compile Include="Controllers\Common\ControllerBase.cs" />
     <Compile Include="Controllers\Common\ControllerGameBase.cs" />
     <Compile Include="Controllers\GameController.cs" />
@@ -264,6 +268,7 @@
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
     <Compile Include="Models\MoneySummaryByMasterListItemViewModel.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
+    <Compile Include="Models\Permission.cs" />
     <Compile Include="Models\Print\PrintCharacterViewModel.cs" />
     <Compile Include="Models\Print\HandoutReportViewModel.cs" />
     <Compile Include="Models\Print\PrintIndexViewModel.cs" />
@@ -445,7 +450,6 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\_ExternalLoginsListPartial.cshtml" />
     <Content Include="Views\Account\ConfirmEmail.cshtml" />
@@ -474,10 +478,9 @@
     <Content Include="Views\Character\Create.cshtml" />
     <Content Include="Views\Claim\Add.cshtml" />
     <Content Include="Views\ClaimList\Index.cshtml" />
-    <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
     <Content Include="Views\Claim\Edit.cshtml" />
     <Content Include="Views\Character\Details.cshtml" />
-    <Content Include="Views\Claim\AddCommentPartial.cshtml" />
+    <Content Include="Views\Comments\AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
@@ -533,7 +536,6 @@
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
     <Content Include="Views\Claim\_ClaimFinancePartial.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\FinanceOperation.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
     <Content Include="Views\Home\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
@@ -541,7 +543,7 @@
     <Content Include="Views\User\PreferredName.cshtml" />
     <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
-    <Content Include="Views\Claim\_CommentPartial.cshtml" />
+    <Content Include="Views\Comments\_CommentPartial.cshtml" />
     <Content Include="Views\GameTools\Apis.cshtml" />
     <Content Include="Views\GameGroups\Hot.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserProfileDetailsViewModel.cshtml" />
@@ -581,8 +583,10 @@
     <Content Include="Views\Home\Funding2016.cshtml" />
     <Content Include="Views\User\AddToProject.cshtml" />
     <Content Include="Views\User\ChangeEmailForm.cshtml" />
-    <Content Include="Scripts\jquery-3.1.1.slim.min.map" />
-    <Content Include="Scripts\jquery-3.1.1.min.map" />
+    <Content Include="Views\Shared\ErrorNoAccessToProject.cshtml" />
+    <Content Include="Views\Forum\CreateThread.cshtml" />
+    <Content Include="Views\Forum\ViewThread.cshtml" />
+    <Content Include="Views\Comments\CommentsListPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

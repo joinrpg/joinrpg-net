@@ -32,6 +32,8 @@ namespace JoinRpg.Web.Models
           return GameObjectLinkType.Claim;
         case LinkType.Comment:
           return GameObjectLinkType.Comment;
+        case LinkType.Project:
+          return GameObjectLinkType.Project;
         default:
         throw new ArgumentOutOfRangeException(nameof(type), type, null);
       }
@@ -50,6 +52,8 @@ namespace JoinRpg.Web.Models
     Claim,
     [Display(Name = "Сюжет")]
     Plot,
-    Comment
-  }
+    Comment,
+    [Display(Name = "Проект")]
+    Project
+    }
 }

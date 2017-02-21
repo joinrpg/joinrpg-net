@@ -50,10 +50,11 @@
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.EnableManyCharacters, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-1">
-                    @Html.EditorFor(model => model.EnableManyCharacters)
-                    @Html.ValidationMessageFor(model => model.EnableManyCharacters, "", new { @class = "text-danger" })
+                @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.StrictlyOneCharacter)
+                    @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
+                    @Html.DescriptionFor(model => model.StrictlyOneCharacter)
                 </div>
             </div>
         }

@@ -195,6 +195,19 @@ namespace JoinRpg.Dal.Impl.Repositories
         
       return project1.RootGroup;
     }
+
+    public async Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId)
+    {
+      if (characterGroupId != null)
+      {
+        return await GetGroupAsync(projectId, (int) characterGroupId);
+      }
+      if (characterId != null)
+      {
+        return await GetCharacterAsync(projectId, (int) characterId);
+      }
+      throw new InvalidOperationException();
+    }
   }
 
 }

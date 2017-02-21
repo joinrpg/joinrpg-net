@@ -22,6 +22,7 @@
   -moz-font-smoothing: antialiased;
   -ms-font-smoothing: antialiased;
   -o-font-smoothing: antialiased;
+  /* ReSharper disable once CssNotResolved */
   font-smoothing: antialiased;
   -webkit-font-feature-settings: "liga" 1, "dlig" 1;
   -moz-font-feature-settings: "liga=1, dlig=1";
@@ -44,6 +45,7 @@
   -moz-font-smoothing: antialiased;
   -ms-font-smoothing: antialiased;
   -o-font-smoothing: antialiased;
+  /* ReSharper disable once CssNotResolved */
   font-smoothing: antialiased;
   -webkit-font-feature-settings: "liga" 1, "dlig" 1;
   -moz-font-feature-settings: "liga=1, dlig=1";

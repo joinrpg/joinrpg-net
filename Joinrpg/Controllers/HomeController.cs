@@ -49,13 +49,6 @@ namespace JoinRpg.Web.Controllers
 
     public ActionResult Funding2016() => View();
 
-    public ActionResult Contact()
-    {
-      ViewBag.Message = "Your contact page.";
-
-      return View();
-    }
-
     public ActionResult HowToHelp() => View();
 
     public ActionResult FromAllrpgInfo() => View();
