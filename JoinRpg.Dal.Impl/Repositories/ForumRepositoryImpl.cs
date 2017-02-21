@@ -50,19 +50,40 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<CharacterGroup> groupIds)
     {
       return await Ctx.Set<ForumThread>()
-          .Where(thread => thread.ProjectId == projectId)
-          .Select(thread => new ForumThreadListImpl()
+        .Where(thread => thread.ProjectId == projectId)
+        .Select(thread => new ForumThreadListImpl()
         {
           ProjectId = thread.ProjectId,
           Header = thread.Header,
-          LastMessageAuthor = thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().Author,
-          LastMessageText = thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().CommentText.Text,
+          LastMessageAuthor =
+            thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().Author,
+          LastMessageText =
+            thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().CommentText.Text,
           Topicstarter = thread.AuthorUser,
-          UnreadCount = 0,
-          UpdatedAt = thread.ModifiedAt
+          UpdatedAt = thread.ModifiedAt,
+          Comments = thread.CommentDiscussion.Comments.Select(c => new CommentHeaderImpl
+          {
+            ProjectId = c.ProjectId,
+            AuthorUserId = c.AuthorUserId,
+            Project = c.Project,
+            IsVisibleToPlayer = c.IsVisibleToPlayer,
+            Id = c.ProjectId
+          }).ToList(),
+          Watermarks = thread.CommentDiscussion.Watermarks.ToList(),
+          Project = thread.Project,
+          Id = thread.ForumThreadId
         })
-          .ToListAsync();
+        .ToListAsync();
     }
+  }
+
+  public class CommentHeaderImpl : ICommentHeader
+  {
+    public int Id { get; set;  }
+    public Project Project { get; set; }
+    public int ProjectId { get; set; }
+    public int AuthorUserId { get; set; }
+    public bool IsVisibleToPlayer { get; set;  }
   }
 
   public class ForumThreadListImpl : IForumThreadListItem
@@ -73,6 +94,13 @@ namespace JoinRpg.Dal.Impl.Repositories
     public MarkdownString LastMessageText { get; set; }
     public User LastMessageAuthor { get; set;  }
     public DateTime UpdatedAt { get; set;  }
-    public int UnreadCount { get; set; }
+    public int Id { get; set; }
+    public Project Project { get; set; }
+    IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;
+
+    IEnumerable<ICommentHeader> ICommentDiscussionHeader.Comments => Comments;
+
+    internal List<CommentHeaderImpl> Comments { private get; set; }
+    internal List<ReadCommentWatermark> Watermarks { private get; set; }
   }
 }

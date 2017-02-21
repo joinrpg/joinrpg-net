@@ -23,9 +23,5 @@ namespace JoinRpg.Data.Interfaces
     MarkdownString LastMessageText { get; }
     User LastMessageAuthor { get; }
     DateTime UpdatedAt { get; }
-    int TotalCount { get; }
-    IReadOnlyCollection<ICommentHeader> Comments { get; }
-
-    IReadOnlyCollection<ReadCommentWatermark> Watermarks { get; }
   }
 }

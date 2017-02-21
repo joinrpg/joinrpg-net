@@ -8,7 +8,8 @@
     Claim,
     Plot,
     Comment,
-    Project
+    Project,
+    CommentDiscussion
   }
 
   public interface ILinkable

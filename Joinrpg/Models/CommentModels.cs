@@ -51,6 +51,7 @@ namespace JoinRpg.Web.Models
           .Select(c => new CommentViewModel(parent, c, currentUserId))
           .OrderBy(c => c.CreatedTime);
       ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
+      IsVisible = comment.IsVisibleTo(currentUserId);
     }
 
     public bool IsRead { get; }
@@ -70,7 +71,7 @@ namespace JoinRpg.Web.Models
 
     public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
 
-    public bool IsVisible => IsVisibleToPlayer || HasMasterAccess;
+    public bool IsVisible { get; }
   }
 
   public class AddCommentViewModel : IValidatableObject

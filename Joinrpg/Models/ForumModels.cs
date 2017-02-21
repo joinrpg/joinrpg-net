@@ -70,12 +70,12 @@ namespace JoinRpg.Web.Models
 
   public class ForumThreadListViewModel
   {
-    public ForumThreadListViewModel(Project project, IEnumerable<IForumThreadListItem> threads)
+    public ForumThreadListViewModel(Project project, IEnumerable<IForumThreadListItem> threads, int currentUserId)
     {
       ProjectName = project.ProjectName;
       ProjectId = project.ProjectId;
       RootGroupId = project.RootGroup.CharacterGroupId;
-      Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, TODO)).ToList();
+      Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
     }
 
     public IEnumerable<ForumThreadListItemViewModel> Items { get; }
@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Models
       LastMessageAuthor = thread.LastMessageAuthor;
       UpdatedAt = thread.UpdatedAt;
       UnreadCount = thread.GetUnreadCount(currentUserId);
-      TotalCount = thread.TotalCount;
+      TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId));
     }
 
     public int ProjectId { get; }

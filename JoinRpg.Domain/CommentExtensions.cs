@@ -40,5 +40,10 @@ namespace JoinRpg.Domain
       return commentDiscussion.Comments.Where(c => c.IsVisibleToPlayer || hasMasterAccess)
         .ToList().GetUnreadCount(currentUserId, commentDiscussion.GetWatermark(currentUserId));
     }
+
+    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId)
+    {
+      return comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(currentUserId);
+    }
   }
 }

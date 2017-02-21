@@ -10,7 +10,9 @@ namespace JoinRpg.DataModel
   
   public interface ICommentDiscussionHeader : IProjectEntity
   {
+    [NotNull, ItemNotNull]
     IEnumerable<ReadCommentWatermark> Watermarks { get; }
+    [NotNull, ItemNotNull]
     IEnumerable<ICommentHeader> Comments { get; }
   }
 

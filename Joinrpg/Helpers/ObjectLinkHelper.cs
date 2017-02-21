@@ -55,6 +55,9 @@ namespace JoinRpg.Web.Helpers
         case LinkType.Comment:
           return new RouteTarget("RedirectToDiscussion", "Forum",
             new { link.ProjectId, CommentId = link.Identification });
+        case LinkType.CommentDiscussion:
+          return new RouteTarget("RedirectToDiscussion", "Forum",
+            new { link.ProjectId, CommentDiscussionId = link.Identification });
         case LinkType.Project:
           return new RouteTarget("Details", "Game", new { link.ProjectId });
         default:
