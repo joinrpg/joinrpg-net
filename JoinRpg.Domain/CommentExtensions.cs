@@ -2,31 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
-  public static  class CommentExtensions
+  public static class CommentExtensions
   {
     public static bool IsReadByUser(this Comment comment, int userId)
     {
-      return IsReadByUserImpl(comment, userId, comment.Discussion.Comments, comment.Discussion.GetWatermark(userId));
-    }
-
-    public static int GetUnreadCount(this IReadOnlyCollection<ICommentHeader> comments, int userId, int watermarkId)
-    {
-      return comments.Count(comment => IsReadByUserImpl(comment, userId, comments, watermarkId));
-    }
-
-    private static bool IsReadByUserImpl(ICommentHeader comment, int userId, IEnumerable<ICommentHeader> allCommentsInDiscussion, int watermark)
-    {
-      return comment.AuthorUserId == userId
-             || allCommentsInDiscussion.Where(c => c.AuthorUserId == userId).Any(c => c.Id > comment.Id)
-             || watermark >= comment.Id;
+      return comment.Discussion.GetWatermark(userId) >= comment.CommentId;
     }
 
     private static int GetWatermark(this ICommentDiscussionHeader discussion, int userId)
     {
-      return discussion.Watermarks.OrderByDescending(wm => wm.CommentId).FirstOrDefault(wm => wm.UserId == userId)?.CommentId  ?? 0;
+      var comments = discussion.Comments.Where(c => c.AuthorUserId == userId).Select(c => c.Id);
+      var watermarks = discussion.Watermarks.Where(wm => wm.UserId == userId).Select(c => c.CommentId);
+      return comments.Union(watermarks).Union(0).Max();
     }
 
     public static IEnumerable<Comment> InLastXDays(this IEnumerable<Comment> masterAnswers, int days)
@@ -36,9 +27,8 @@ namespace JoinRpg.Domain
 
     public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
     {
-      var hasMasterAccess = commentDiscussion.HasMasterAccess(currentUserId);
-      return commentDiscussion.Comments.Where(c => c.IsVisibleToPlayer || hasMasterAccess)
-        .ToList().GetUnreadCount(currentUserId, commentDiscussion.GetWatermark(currentUserId));
+      var watermark = commentDiscussion.GetWatermark(currentUserId);
+      return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId)).Count(comment => watermark < comment.Id);
     }
 
     public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId)
