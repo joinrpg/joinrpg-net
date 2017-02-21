@@ -39,6 +39,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
+          HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
           Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         });
     }
@@ -63,6 +64,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = field.Project.ProjectName,
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
+          HasMasterAccess = field.HasMasterAccess(CurrentUserId),
           Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId)
         });
     }

@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -61,5 +66,45 @@ namespace JoinRpg.Web.Models
 
     [Display(Name="Послать email",Description = "Уведомить всех, у кого есть доступ к этому форуму по email.")]
     public bool EmailEverybody { get; set; }
+  }
+
+  public class ForumThreadListViewModel
+  {
+    public ForumThreadListViewModel(Project project, IEnumerable<IForumThreadListItem> threads, int currentUserId)
+    {
+      ProjectName = project.ProjectName;
+      ProjectId = project.ProjectId;
+      RootGroupId = project.RootGroup.CharacterGroupId;
+      Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
+    }
+
+    public IEnumerable<ForumThreadListItemViewModel> Items { get; }
+    public string ProjectName { get; }
+    public int ProjectId { get; }
+    public int RootGroupId { get; }
+  }
+
+  public class ForumThreadListItemViewModel
+  {
+    public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId)
+    {
+      ProjectId = thread.ProjectId;
+      Header = thread.Header;
+      Topicstarter = thread.Topicstarter;
+      LastMessageText = thread.LastMessageText.ToHtmlString();
+      LastMessageAuthor = thread.LastMessageAuthor;
+      UpdatedAt = thread.UpdatedAt;
+      UnreadCount = thread.GetUnreadCount(currentUserId);
+      TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId));
+    }
+
+    public int ProjectId { get; }
+    public string Header { get; }
+    public User Topicstarter { get; set; }
+    public IHtmlString LastMessageText { get; }
+    public User LastMessageAuthor { get;  }
+    public DateTime UpdatedAt { get; }
+    public int UnreadCount { get; }
+    public int TotalCount { get; }
   }
 }

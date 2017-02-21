@@ -164,11 +164,35 @@ namespace JoinRpg.Web.Controllers
       return HttpNotFound();
     }
 
-    public async Task<ActionResult> RedirectToDiscussion(int projectid, int commentid)
+    public async Task<ActionResult> RedirectToDiscussion(int projectid, int? commentid, int? commentDiscussionId)
     {
-      CommentDiscussion discussion = await ForumRepository.GetDiscussionByComment(projectid, commentid);
+      CommentDiscussion discussion;
+      if (commentid != null)
+      {
+        discussion = await ForumRepository.GetDiscussionByComment(projectid, (int) commentid);
+      }
+      else if (commentDiscussionId != null)
+      {
+        discussion = await ForumRepository.GetDiscussion(projectid, (int) commentDiscussionId);
+      }
+      else
+      {
+        return HttpNotFound();
+      }
       discussion.RequestAnyAccess(CurrentUserId);
-      return ReturnToParent(discussion, $"comment{commentid}");
+      return ReturnToParent(discussion, commentid!= null ?  $"comment{commentid}" : null);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> ListThreads(int projectid)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
+      var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
+      var groupIds = claims.SelectMany(claim => claim.Character.GetGroupsPartOf());
+      var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
+      var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);
+      return View(viewModel);
     }
   }
 }
