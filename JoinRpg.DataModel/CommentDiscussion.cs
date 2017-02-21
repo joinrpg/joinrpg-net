@@ -32,9 +32,9 @@ namespace JoinRpg.DataModel
     public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
     int IOrderableEntity.Id => CommentDiscussionId;
 
-    public LinkType LinkType => LinkType.Comment;
+    public LinkType LinkType => Comments.Any() ? LinkType.Comment : LinkType.CommentDiscussion;
 
-    public string Identification => Comments.LastOrDefault()?.Identification;
+    public string Identification => Comments.Any() ? Comments.Last().Identification : CommentDiscussionId.ToString();
     int? ILinkable.ProjectId => ProjectId;
 
     IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;

@@ -1,4 +1,6 @@
-﻿namespace JoinRpg.DataModel
+﻿using JetBrains.Annotations;
+
+namespace JoinRpg.DataModel
 {
   public enum LinkType
   {
@@ -15,6 +17,7 @@
   public interface ILinkable
   {
     LinkType LinkType { get; }
+    [NotNull]
     string Identification { get; }
     int? ProjectId { get; }
   }
