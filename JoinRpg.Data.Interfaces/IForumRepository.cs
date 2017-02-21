@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -9,5 +12,16 @@ namespace JoinRpg.Data.Interfaces
     Task<CommentDiscussion> GetDiscussion(int projectId, int commentDiscussionId);
 
     Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId);
+
+    Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<CharacterGroup> groupIds);
+  }
+
+  public interface IForumThreadListItem : ICommentDiscussionHeader
+  {
+    string Header { get; }
+    User Topicstarter { get; }
+    MarkdownString LastMessageText { get; }
+    User LastMessageAuthor { get; }
+    DateTime UpdatedAt { get; }
   }
 }

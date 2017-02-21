@@ -8,7 +8,13 @@ using JetBrains.Annotations;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-  public class Comment : IProjectEntity, IValidatableObject, ILinkable
+  public interface ICommentHeader : IProjectEntity
+  {
+    int AuthorUserId { get; set; }
+    bool IsVisibleToPlayer { get; }
+  }
+
+  public class Comment : IValidatableObject, ILinkable, ICommentHeader
   {
     public int CommentId { get; set; } 
 

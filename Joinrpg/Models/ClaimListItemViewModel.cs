@@ -123,6 +123,7 @@ namespace JoinRpg.Web.Models
 
       ClaimId = claim.ClaimId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
+      
       Name = claim.Name;
       Player = claim.Player;
 
@@ -130,9 +131,7 @@ namespace JoinRpg.Web.Models
       CreateDate = claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
-      UnreadCommentsCount =
-        claim.CommentDiscussion.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
-                                                  && !comment.IsReadByUser(currentUserId));
+      UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
 
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;

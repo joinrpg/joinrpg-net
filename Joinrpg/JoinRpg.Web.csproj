@@ -587,6 +587,8 @@
     <Content Include="Views\Forum\CreateThread.cshtml" />
     <Content Include="Views\Forum\ViewThread.cshtml" />
     <Content Include="Views\Comments\CommentsListPartial.cshtml" />
+    <Content Include="Views\Forum\ListThreads.cshtml" />
+    <Content Include="Views\Forum\DisplayTemplates\ForumThreadListItemViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
