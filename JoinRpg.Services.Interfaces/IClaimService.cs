@@ -27,11 +27,10 @@ namespace JoinRpg.Services.Interfaces
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
 
-    //Issue#352
-    Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId,int? CharacterId, int? CharacterGroupId);
-    Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId, int SubscribeId);
+    Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
+    Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
     List<int> GetGroupHierarchy(int? groupId);
-    string GetSubscriptionTooltip(IEnumerable<UserSubscription> subscriptions);
+    Task<IEnumerable<UserSubscription>> GetSubscriptions(User user, Claim claim, List<int> parentGroups);
   }
 
   //TODO[Localize]

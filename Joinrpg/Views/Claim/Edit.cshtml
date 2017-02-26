@@ -52,7 +52,7 @@
                 </dt>
 
                 <dd>
-                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
+                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
                 </dd>
             }
             <dt>
@@ -90,11 +90,11 @@
                         @Html.HiddenFor(model => model.ProjectId)
                         @Html.HiddenFor(model => model.ClaimId)
                         @Html.DropDownListFor(
-                            model => model.ResponsibleMasterId,
-                            Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
-                            htmlAttributes: new {@class = "form-control"})
+                 model => model.ResponsibleMasterId,
+                 Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                 htmlAttributes: new { @class = "form-control" })
 
-                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
+                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                         <input type="submit" value="Изменить" class="btn btn-default btn-xs"/>
                     </div>
                 }
@@ -167,44 +167,34 @@
             }
             @if (Model.Status == Claim.Status.Approved)
             {
-                <a href="@Url.Action("Character", "Print", new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
+                <a href="@Url.Action("Character", "Print", new { Model.ProjectId, Model.CharacterId })" class="btn btn-default">
                     <span class="glyphicon glyphicon-print"></span>
                     Для печати
                 </a>
                 foreach (var plugin in Model.PrintPlugins)
                 {
-                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterId}, null)">
+                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new { Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterId }, null)">
                     <span class="glyphicon glyphicon-print"></span>
                     @plugin.Name
                 </a>
                 }
             }
-            @{ var isDerect = Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId);
-                string preciseTooltip;
-                if (Model.Subscriptions.Count() > 0) { preciseTooltip=Model.SubscriptionTooltip; }
-                else { preciseTooltip="Вы не подписаны на заявку"; }
-                string parentGroup = Model.GroupName ?? Model.ParentGroups.ParentGroups.FirstOrDefault().Name;
-            }
+            
             @if (Model.HasMasterAccess)
             {
-            <a href="@Url.Action("Subscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@preciseTooltip">
-<span class="glyphicon glyphicon-pushpin"></span>
+            <a href="@Url.Action("Subscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+                <span class="glyphicon glyphicon-pushpin"></span>
                 Подписаться
             </a>
 
-                <a href="@Url.Action("Unsubscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку">
-<span class="glyphicon glyphicon-pushpin"></span>
+                <a href="@Url.Action("Unsubscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку"  data-responsed="1">
+                    <span class="glyphicon glyphicon-pushpin"></span>
                     Отписаться
                 </a>
             }
-            @if (Model.HasMasterAccess && Model.Subscriptions.Count() > 0 && isDerect.Count() == 0
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId|| Model.ParentGroups != null && s.CharacterGroupId==Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId) != null
-                && Model.Subscriptions.FirstOrDefault(s=>s.CharacterGroupId==Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).FieldChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).ClaimStatusChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).MoneyOperation
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).Comments)
+            @if(Model.HasMasterAccess && Model.Subscriptions.Count() > 0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
-                <span title='Вы уже подписаны на группу "@parentGroup", в которую входит заявка.'><a href="#" class="btn btn-default disabled" data-placement="top" title="Добавить тултип">
+                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="Добавить тултип">
                     <span class="glyphicon glyphicon-pushpin"></span>
                     Вы подписаны
                 </a></span>
@@ -531,43 +521,50 @@
         if(document.getElementById('subscribe')){
             document.getElementById('subscribe').addEventListener("click", function (event) {
                 event.preventDefault();
-                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId});
-                req.done(data=>{console.log(data)
+                if($('#subscribe').attr('data-responsed')==0)return;
+                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
+                req.done(data=>{
+                    var res=JSON.parse(data);
+                    $('#subscribe').attr('data-responsed','1');
+                    $('#subscribe').attr('title','');
+                    $('#subscribe').attr('data-original-title',res.tooltip);
+                    $('[title]').tooltip({html:true});
                     $('#subscribe').toggleClass('hidden');
                     $('#unsubscribe').toggleClass('hidden');
                 });
+                $('#subscribe').attr('data-responsed','0');
+
             });}
         if(document.getElementById('unsubscribe')){
             document.getElementById('unsubscribe').addEventListener("click", function (event) {
                 event.preventDefault();
-                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,subscribeid:1});
-                req.done(data=>{console.log(data);
+                if($('#unsubscribe').attr('data-responsed')==0)return;
+                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
+                req.done(data=>{
+                    var res=JSON.parse(data);
+                    $('#unsubscribe').attr('data-responsed','1');
+                    $('#subscribe').attr('title','');
+                    $('#subscribe').attr('data-original-title',res.tooltip);
+                    $('[title]').tooltip({html:true});
                     $('#unsubscribe').toggleClass('hidden');
                     $('#subscribe').toggleClass('hidden');
-                                });
+                });
+                $('#unsubscribe').attr('data-responsed','0');
+
             });
         }
         </script>
-        @if (Model.HasMasterAccess&&Model.Subscriptions.Where(s=>s.ClaimId==Model.ClaimId).Count() == 0
-            && !(Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId) != null
-            && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).FieldChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).ClaimStatusChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).MoneyOperation
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).Comments))
+        @if(Model.HasMasterAccess && Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() == 0 && !Model.SubscriptionTooltip.HasFullParentSubscription)
         {
             <script type="text/javascript">
                 $('#subscribe').toggleClass('hidden');
             </script>
         }
-@if (Model.HasMasterAccess && Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() > 0 && isDerect.Count() > 0
-    && !(Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId) !=null
-    && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).FieldChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).ClaimStatusChange
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).MoneyOperation
-                && Model.Subscriptions.FirstOrDefault(s => s.CharacterGroupId == Model.CharacterGroupId || Model.ParentGroups != null && s.CharacterGroupId == Model.ParentGroups.ParentGroups.FirstOrDefault().CharacterGroupId).Comments))
-{
-<script type="text/javascript">
-    $('#unsubscribe').toggleClass('hidden');
-</script>
-}
+
+        @if(Model.HasMasterAccess && Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() > 0 && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        {
+        <script type="text/javascript">
+            $('#unsubscribe').toggleClass('hidden');
+        </script>
+        }
 }

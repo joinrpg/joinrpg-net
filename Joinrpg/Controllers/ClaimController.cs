@@ -14,7 +14,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Data.Write.Interfaces;
+
 using System.Collections.Generic;
 
 namespace JoinRpg.Web.Controllers
@@ -131,23 +131,14 @@ namespace JoinRpg.Web.Controllers
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.ClaimId, CurrentUserId,
             claim.Comments.Max(c => c.CommentId));
       }
-            //Issue#352
+
             var user = await GetCurrentUserAsync();
             List<int> parentGroups= _claimService.GetGroupHierarchy(claim.CharacterGroupId??claim.Character.Groups.FirstOrDefault().CharacterGroupId);
-            bool isHierarchSubscribe;
-            var subscriptions = user.Subscriptions.Where(s=> {
-                isHierarchSubscribe = false;
-                foreach(var el in parentGroups)
-                {
-                    if (s.CharacterGroupId == el)
-                    {
-                        isHierarchSubscribe = true;
-                    }
-                }
-                return s.ProjectId == claim.ProjectId && (s.CharacterGroupId == (claim.CharacterGroupId ?? -1) || s.ClaimId == claim.ClaimId || s.CharacterId == (claim.CharacterId ?? -1)|| isHierarchSubscribe);
-            });
+            var subscriptions= await _claimService.GetSubscriptions(user, claim, parentGroups);
             claimViewModel.Subscriptions = subscriptions;
-            claimViewModel.SubscriptionTooltip = _claimService.GetSubscriptionTooltip(subscriptions);
+
+            claimViewModel.SubscriptionTooltip = claimViewModel.GetSubscriptionTooltip(subscriptions, claimViewModel.CharacterGroupId, claimViewModel.ClaimId);
+
       return View("Edit", claimViewModel);
     }
 
@@ -448,12 +439,15 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectid, claimid);
       }
     }
-        //Issue#352
+        [HttpPost, Authorize, ValidateAntiForgeryToken]
         public async Task<String> Subscribe(int projectid,int claimid)
         {
 
             var user = await GetCurrentUserAsync();
             var claim = await _claimsRepository.GetClaim(projectid, claimid);
+            List<int> parentGroups = _claimService.GetGroupHierarchy(claim.CharacterGroupId ?? claim.Character.Groups.FirstOrDefault().CharacterGroupId);
+
+            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
 
             var error = AsMaster(claim);
             if (error != null)
@@ -461,17 +455,23 @@ namespace JoinRpg.Web.Controllers
                 return error.ToString();
             }
 
-            await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId, claim.CharacterId, claim.CharacterGroupId);
+            await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId);
 
-            return User.Identity.Name+"; "+claim.Name;
+            var subscriptions = await _claimService.GetSubscriptions(user, claim, parentGroups);
+            var tooltip = claimViewModel.GetSubscriptionTooltip(subscriptions, claim.CharacterGroupId, claimid);
+
+            return "{\"tooltip\":\"" + tooltip.Tooltip.Replace("\"", "\\\"") + "\",\"isDirect\":\"" + tooltip.IsDirect.ToString() + "\",\"HasFullParentSubscription\":\"" + tooltip.HasFullParentSubscription.ToString() + "\"}";//return User.Identity.Name+"; "+claim.Name;
         }
 
-        //Issue#352
-        public async Task<String> Unsubscribe(int projectid, int claimid, int subscribeid)
+        [HttpPost, Authorize, ValidateAntiForgeryToken]
+        public async Task<String> Unsubscribe(int projectid, int claimid)
         {
 
             var user = await GetCurrentUserAsync();
             var claim = await _claimsRepository.GetClaim(projectid, claimid);
+            List<int> parentGroups = _claimService.GetGroupHierarchy(claim.CharacterGroupId ?? claim.Character.Groups.FirstOrDefault().CharacterGroupId);
+
+            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
 
             var error = AsMaster(claim);
             if (error != null)
@@ -479,9 +479,12 @@ namespace JoinRpg.Web.Controllers
                 return error.ToString();
             }
 
-            await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId, subscribeid);
+            await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId);
 
-            return User.Identity.Name + "; " + claim.Name+ "; subscribeid " + subscribeid+" - удалено";
+            var subscriptions = await _claimService.GetSubscriptions(user, claim, parentGroups);
+            var tooltip = claimViewModel.GetSubscriptionTooltip(subscriptions, claim.CharacterGroupId, claimid);
+
+            return "{\"tooltip\":\"" + tooltip.Tooltip.Replace("\"","\\\"") + "\",\"isDirect\":\"" + tooltip.IsDirect.ToString()+ "\",\"HasFullParentSubscription\":\"" + tooltip.HasFullParentSubscription.ToString() + "\"}";
         }
     }
 }
