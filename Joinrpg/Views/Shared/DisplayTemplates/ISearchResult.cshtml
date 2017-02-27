@@ -1,4 +1,5 @@
 ﻿@using System.Text.RegularExpressions
+@using Joinrpg.Markdown
 @using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @model TargetedSearchResultViewModel
@@ -13,34 +14,10 @@
     </h4>
     <p>
         @{
-          string descriptionToShow = (Model.SearchResult.Description.Contents ?? "");
+          string descriptionToShow = (Model.SearchResult.Description.ToPlainText() ?? "");
 
           const int maxLengthToShow = 200;
-          if (descriptionToShow.Length > maxLengthToShow)
-          {
-              int startOfSearchedFragment = descriptionToShow.IndexOf(Model.SearchTarget, StringComparison.InvariantCultureIgnoreCase);
-
-              //Try to put the beginning og thr searched fragment in the middle of the substring
-              int startOfSubtringToShow = startOfSearchedFragment > (maxLengthToShow / 2)
-                  ? startOfSearchedFragment - (maxLengthToShow / 2)
-                  : 0;
-
-              //Move substring to the left, if needed
-              startOfSubtringToShow = (startOfSubtringToShow + maxLengthToShow) > descriptionToShow.Length
-                    ? descriptionToShow.Length - maxLengthToShow
-                    : startOfSubtringToShow;
-
-              descriptionToShow = "..." + descriptionToShow.Substring(startOfSubtringToShow, maxLengthToShow);
-
-              if (startOfSubtringToShow > 0)
-              {
-                  descriptionToShow = "..." + descriptionToShow;
-              }
-              if (startOfSubtringToShow + maxLengthToShow < descriptionToShow.Length)
-              {
-                  descriptionToShow = descriptionToShow + "...";
-              }
-          }
+          descriptionToShow = StringFormatHelper.TruncateString(descriptionToShow, Model.SearchTarget, maxLengthToShow);
 
           descriptionToShow = Regex.Replace(
             descriptionToShow,
