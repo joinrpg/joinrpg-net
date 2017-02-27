@@ -4,15 +4,22 @@
 @using JoinRpg.Web.Models
 @model TargetedSearchResultViewModel
 
+<style type="text/css">
+    <!--
+    .searchResultDetails {
+        margin-left: 20px;
+    }
+    -->
+</style>
+
 <div>
     <h4>
         @{
-          var gameObjectLinkViewModel = Model.SearchResult.AsObjectLink();
+            var gameObjectLinkViewModel = Model.SearchResult.AsObjectLink();
         }
         @Html.DisplayFor(model => gameObjectLinkViewModel)
-
     </h4>
-    <p>
+    <p class="searchResultDetails" >
         @{
           string descriptionToShow = (Model.SearchResult.Description.ToPlainText() ?? "");
 
