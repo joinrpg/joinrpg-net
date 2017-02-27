@@ -7,7 +7,8 @@
 <style type="text/css">
     <!--
     .searchResultDetails {
-        margin-left: 20px;
+        margin-left: 2em;
+        margin-bottom: 1.5em;
     }
     -->
 </style>
@@ -15,22 +16,21 @@
 <div>
     <h4>
         @{
-            var gameObjectLinkViewModel = Model.SearchResult.AsObjectLink();
+          var gameObjectLinkViewModel = Model.SearchResult.AsObjectLink();
         }
         @Html.DisplayFor(model => gameObjectLinkViewModel)
     </h4>
-    <p class="searchResultDetails" >
+    <p class="searchResultDetails">
         @{
-          string descriptionToShow = (Model.SearchResult.Description.ToPlainText() ?? "");
+          string descriptionToShow = Model.SearchResult.Description.ToPlainText();
 
           const int maxLengthToShow = 200;
           descriptionToShow = StringFormatHelper.TruncateString(descriptionToShow, Model.SearchTarget, maxLengthToShow);
 
           descriptionToShow = Regex.Replace(
-            descriptionToShow,
-            Model.SearchTarget,
-            "<b><u>" + Model.SearchTarget + "</u></b>", RegexOptions.IgnoreCase);
-
+              descriptionToShow,
+              Model.SearchTarget,
+              "<b><u>" + Model.SearchTarget + "</u></b>", RegexOptions.IgnoreCase);
         }
         @Html.Raw(descriptionToShow)
     </p>
