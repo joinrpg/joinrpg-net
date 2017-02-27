@@ -30,7 +30,7 @@
           descriptionToShow = Regex.Replace(
               descriptionToShow,
               Model.SearchTarget,
-              "<b><u>" + Model.SearchTarget + "</u></b>", RegexOptions.IgnoreCase);
+              match => "<b><u>" + match.Value + "</u></b>", RegexOptions.IgnoreCase);
         }
         @Html.Raw(descriptionToShow)
     </p>
