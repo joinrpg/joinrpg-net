@@ -1,0 +1,13 @@
+﻿@model JoinRpg.Web.Models.ForumThreadViewModel
+
+@{
+    ViewBag.Title = Model.ProjectName + " → "+ Model.Header;
+}
+
+<h2>@Model.Header</h2>
+
+<div>
+    <h4>@Model.ProjectName → @Model.Header</h4>
+    <hr />
+    @Html.Partial("..\\Comments\\CommentsListPartial", Model)
+</div>

@@ -45,7 +45,8 @@ namespace JoinRpg.Services.Impl
         ProjectAcls = new List<ProjectAcl>()
         {
           ProjectAcl.CreateRootAcl(creator.UserId)
-        }
+        },
+        Details = new ProjectDetails()
       };
       project.MarkTreeModified();
       UnitOfWork.GetDbSet<Project>().Add(project);
@@ -169,7 +170,6 @@ namespace JoinRpg.Services.Impl
 
       var user = await UserRepository.GetById(currentUserId);
       RequestProjectAdminAccess(project, user);
-      project.Details = project.Details ?? new ProjectDetails();
 
       project.Active = false;
       project.IsAcceptingClaims = false;
@@ -252,7 +252,6 @@ namespace JoinRpg.Services.Impl
       var project = await ProjectRepository.GetProjectAsync(projectId); 
       project.RequestMasterAccess(currentUserId, acl => acl.CanChangeProjectProperties);
 
-      project.Details = project.Details ?? new ProjectDetails {ProjectId = projectId};
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
       project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
       project.Details.EnableManyCharacters = multipleCharacters;

@@ -12,7 +12,7 @@ namespace JoinRpg.Domain.ClaimProblemFilters
       {
         yield return new ClaimProblem(ClaimProblemType.FinanceModerationRequired, ProblemSeverity.Warning);
       }
-      if (claim.ClaimTotalFee() < claim.ClaimBalance())
+      if (claim.ClaimTotalFee() < claim.ClaimBalance() && claim.Project.Details.FinanceWarnOnOverPayment)
       {
         yield return new ClaimProblem(ClaimProblemType.TooManyMoney, ProblemSeverity.Error);
       }

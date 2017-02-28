@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Apis(int projectId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project) ?? View(project);
+      return AsMaster(project) ?? View(new ApisIndexViewModel(project, CurrentUserId));
     }
 
     [HttpGet, Authorize]

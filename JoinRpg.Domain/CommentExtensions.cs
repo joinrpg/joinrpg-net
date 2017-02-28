@@ -2,26 +2,38 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
-  public static  class CommentExtensions
+  public static class CommentExtensions
   {
     public static bool IsReadByUser(this Comment comment, int userId)
     {
-      return comment.AuthorUserId == userId 
-        || comment.Claim.Comments.Where(c => c.AuthorUserId == userId).Any(c => c.CommentId > comment.CommentId)
-        || comment.Claim.GetWatermark(userId) >= comment.CommentId;
+      return comment.Discussion.GetWatermark(userId) >= comment.CommentId;
     }
 
-    private static int GetWatermark(this Claim claim, int userId)
+    private static int GetWatermark(this ICommentDiscussionHeader discussion, int userId)
     {
-      return claim.Watermarks.OrderByDescending(wm => wm.CommentId).FirstOrDefault(wm => wm.UserId == userId)?.CommentId  ?? 0;
+      var comments = discussion.Comments.Where(c => c.AuthorUserId == userId).Select(c => c.Id);
+      var watermarks = discussion.Watermarks.Where(wm => wm.UserId == userId).Select(c => c.CommentId);
+      return comments.Union(watermarks).Union(0).Max();
     }
 
     public static IEnumerable<Comment> InLastXDays(this IEnumerable<Comment> masterAnswers, int days)
     {
-      return masterAnswers.Where(comment => DateTime.UtcNow.Subtract(comment.CreatedTime) < TimeSpan.FromDays(days));
+      return masterAnswers.Where(comment => DateTime.UtcNow.Subtract(comment.CreatedAt) < TimeSpan.FromDays(days));
+    }
+
+    public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
+    {
+      var watermark = commentDiscussion.GetWatermark(currentUserId);
+      return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId)).Count(comment => watermark < comment.Id);
+    }
+
+    public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId)
+    {
+      return comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(currentUserId);
     }
   }
 }

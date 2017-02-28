@@ -18,7 +18,7 @@
 
             @{
                 var groupLink = Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var editControls = Model.ShowEditControls ? Html.Partial("_GroupEditControls", item) : MvcHtmlString.Empty;
+                var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}}) : MvcHtmlString.Empty;
                 var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
             <div>@switch (item.DeepLevel)
@@ -85,7 +85,21 @@
 
                             @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
                             {
-                                <strong> @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")</strong>
+                                if (Model.HasMasterAccess)
+                                {
+                                    <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
+                                        @Html.ActionLink(
+                                            DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"),
+                                            "ListForGroupDirect",
+                                            "ClaimList",
+                                            new {Model.ProjectId, Model.CharacterGroupId},
+                                            null)
+                                    </strong>
+                                }
+                                else
+                                {
+                                    @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                                }
                             }
                             @if (item.IsAcceptingClaims)
                             {

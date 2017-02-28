@@ -147,7 +147,7 @@ namespace JoinRpg.Services.Email
 
 {model.Initiator.DisplayName}
 
-Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get((ILinkable) model.Claim.Comments.LastOrDefault() ?? model.Claim)}
+Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
 ", model.Initiator.ToRecipient());
     }
 
@@ -174,6 +174,31 @@ namespace JoinRpg.Services.Email
 
     public Task Email(OnHoldByMasterEmail createClaimEmail)
       => SendClaimEmail(createClaimEmail, "изменена", "Заявка поставлена в лист ожидания");
+
+    public async Task Email(ForumEmail model)
+    {
+      var projectEmailEnabled = model.GetEmailEnabled();
+      if (!projectEmailEnabled)
+      {
+        return;
+      }
+      var recepients = model.GetRecepients();
+      if (!recepients.Any())
+      {
+        return;
+      }
+
+      await SendEmail(recepients, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
+        $@"Добрый день, {MailGunRecepientName},
+На форуме появилось новое сообщение: 
+
+{model.Text.Contents}
+
+{model.Initiator.DisplayName}
+
+Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
+", model.Initiator.ToRecipient());
+    }
 
     public Task Email(FinanceOperationEmail model)
     {
@@ -269,7 +294,7 @@ namespace JoinRpg.Services.Email
 
     public static List<User> GetRecepients(this EmailModelBase model)
     {
-      return model.Recepients.Where(u => u.UserId != model.Initiator.UserId) .ToList();
+      return model.Recepients.Where(u => u != null && u.UserId != model.Initiator.UserId).Distinct().ToList();
     }
   }
 }

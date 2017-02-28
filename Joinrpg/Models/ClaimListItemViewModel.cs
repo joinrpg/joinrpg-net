@@ -119,10 +119,11 @@ namespace JoinRpg.Web.Models
     public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
+      var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
+      
       Name = claim.Name;
       Player = claim.Player;
 
@@ -130,9 +131,7 @@ namespace JoinRpg.Web.Models
       CreateDate = claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
-      UnreadCommentsCount =
-        claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
-                                                  && !comment.IsReadByUser(currentUserId));
+      UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
 
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;

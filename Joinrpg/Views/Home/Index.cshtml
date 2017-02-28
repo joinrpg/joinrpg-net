@@ -11,12 +11,12 @@
         {
         <div>
             <p>
-                Перезапуск базы заявок <a href="http://allrpg.info">Allrpg.Info</a> — просто, удобно, универсально. От создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
+                Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База заявок от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
             </p>
-            <p class="alert alert-warning">Использование joinrpg бесплатно, но прямо сейчас идет <a href="@Url.Action("Funding2016", "Home")" class="alert-link">сбор денег</a> на развитие проекта.</p>
 
             @Html.ActionLink("Узнать больше", "About", null, new { @class = "btn btn-primary" })
             @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
+            @Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn btn-default" })
         </div>
         }
         else
@@ -26,7 +26,6 @@
                 Это тестовая версия JoinRpg.ru.<br/>Не используйте ее для реальной работы с игроками<br/>
             Если вы игрок и забрели сюда случайно, вам <a href="http://joinrpg.ru">на основной сервер</a> 
             </div>. 
-            <div class="alert alert-warning">Использование joinrpg бесплатно, но прямо сейчас идет <a href="@Url.Action("Funding2016", "Home")" class="alert-link">сбор денег</a> на развитие проекта.</div>
 
             @Html.ActionLink("Узнать больше", "About", null, new { @class = "btn btn-primary" })
             @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })

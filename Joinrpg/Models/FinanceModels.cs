@@ -155,6 +155,8 @@ namespace JoinRpg.Web.Models
 
     public string CurrentUserToken { get; }
 
+    public FinanceGlobalSettingsViewModel GlobalSettings { get; }
+
     public FinanceSetupViewModel(Project project, int currentUserId)
     {
       ProjectName = project.ProjectName;
@@ -179,6 +181,12 @@ namespace JoinRpg.Web.Models
       FeeSettings = project.ProjectFeeSettings.Select(fs => new ProjectFeeSettingListItemViewModel(fs)).ToList();
 
       CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
+
+      GlobalSettings = new FinanceGlobalSettingsViewModel
+      {
+        ProjectId = ProjectId,
+        WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment
+      };
     }
   }
 
@@ -252,5 +260,14 @@ namespace JoinRpg.Web.Models
       ProjectFeeSettingId = fs.ProjectFeeSettingId;
       ProjectId = fs.ProjectId;
     }
+  }
+
+  public class FinanceGlobalSettingsViewModel
+  {
+    public int ProjectId { get; set; }
+    [Display(
+      Name="Предупреждать о переплате в заявках", 
+      Description = "Показывать предупреждение, если в заявке заплачено больше установленного взноса. Выключите, если вы собираете пожертвования и готовы принять любую сумму.")]
+    public bool WarnOnOverPayment { get; set; }
   }
 }

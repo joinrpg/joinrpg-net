@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -39,8 +40,10 @@ namespace JoinRpg.Domain
         && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));
     }
 
-    public static int[] GenerateSpecialGroupsList(this IEnumerable<FieldWithValue> fieldValues)
+    [NotNull]
+    public static int[] GenerateSpecialGroupsList([NotNull, ItemNotNull] this IEnumerable<FieldWithValue> fieldValues)
     {
+      if (fieldValues == null) throw new ArgumentNullException(nameof(fieldValues));
       return fieldValues.SelectMany(v => v.GetSpecialGroupsToApply().Select(g =>g.CharacterGroupId)).ToArray();
     }
 
