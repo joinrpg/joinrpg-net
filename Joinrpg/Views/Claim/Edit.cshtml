@@ -194,7 +194,7 @@
             }
             @if(Model.HasMasterAccess && Model.Subscriptions.Count() > 0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
-                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="Добавить тултип">
+                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
                     <span class="glyphicon glyphicon-pushpin"></span>
                     Вы подписаны
                 </a></span>
@@ -518,8 +518,7 @@
     </script>
 
     <script type="text/javascript">
-        if(document.getElementById('subscribe')){
-            document.getElementById('subscribe').addEventListener("click", function (event) {
+        $('#subscribe').click(function(event){
                 event.preventDefault();
                 if($('#subscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
@@ -533,10 +532,8 @@
                     $('#unsubscribe').toggleClass('hidden');
                 });
                 $('#subscribe').attr('data-responsed','0');
-
-            });}
-        if(document.getElementById('unsubscribe')){
-            document.getElementById('unsubscribe').addEventListener("click", function (event) {
+        });
+        $('#unsubscribe').click(function(event){
                 event.preventDefault();
                 if($('#unsubscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
@@ -550,9 +547,7 @@
                     $('#subscribe').toggleClass('hidden');
                 });
                 $('#unsubscribe').attr('data-responsed','0');
-
-            });
-        }
+        });
         </script>
         @if(Model.HasMasterAccess && Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() == 0 && !Model.SubscriptionTooltip.HasFullParentSubscription)
         {
