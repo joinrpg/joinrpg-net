@@ -65,8 +65,6 @@ namespace JoinRpg.Services.Impl
             return subscriptions;
         }
 
-        public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
-
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
