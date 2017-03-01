@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Permissions;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -38,6 +39,25 @@ namespace JoinRpg.Services.Impl
       user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
       user.Extra.Vk = vk?.RemoveFromString(tokensToRemove);
 
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+    public async Task ChangeEmail(int userId, string newEmail)
+    {
+      var user = await UserRepository.GetById(userId);
+      user.Email = newEmail;
+      //TODO: Send email
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+    public async Task SetAdminFlag(int userId, bool administratorFlag)
+    {
+      var user = await UserRepository.GetById(userId);
+      user.Auth = user.Auth ?? new UserAuthDetails();
+      user.Auth.IsAdmin = administratorFlag;
+      //TODO: Send email
       await UnitOfWork.SaveChangesAsync();
     }
   }

@@ -8,6 +8,7 @@ namespace JoinRpg.Domain
 {
   public static class ProjectEntityExtensions
   {
+    [MustUseReturnValue]
     public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
     {
       if (entity == null) throw new ArgumentNullException(nameof(entity));
@@ -52,12 +53,14 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
+    [NotNull]
+    public static T EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
     {
       if (!entity.IsActive)
       {
         throw new ProjectEntityDeactivedException(entity);
       }
+      return entity;
     }
 
     public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
@@ -75,7 +78,7 @@ namespace JoinRpg.Domain
     public static bool HasPlotViewAccess(this Character character, int? currentUserIdOrDefault)
     {
       return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault) ||
-             (character.Project.Details?.PublishPlot ?? false);
+             character.Project.Details.PublishPlot;
     }
 
     public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
@@ -89,12 +92,55 @@ namespace JoinRpg.Domain
       return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
     }
 
+    // ReSharper disable once UnusedParameter.Global
     public static void EnsureProjectActive(this IProjectEntity character)
     {
       if (!character.Project.Active)
       {
         throw new ProjectDeactivedException();
       }
+    }
+
+    public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
+    {
+      if (!(discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId)))
+      {
+        throw new NoAccessToProjectException(discussion, currentUserId);
+      }
+    }
+
+    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+    {
+      var forumThread =
+        commentDiscussion.GetForumThread();
+
+      var claim =
+        commentDiscussion.GetClaim();
+      if (forumThread != null)
+      {
+        return forumThread.IsVisibleToPlayer &&
+                   commentDiscussion.Project.Claims.OfUserApproved(currentUserId)
+                     .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+      }
+      if (claim != null)
+      {
+        return claim.HasPlayerAccesToClaim(currentUserId);
+      }
+      throw new InvalidOperationException();
+    }
+
+    [CanBeNull, Pure]
+    public static Claim GetClaim(this CommentDiscussion commentDiscussion)
+    {
+      return commentDiscussion.Project.Claims.SingleOrDefault(
+        c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
+    }
+
+    [CanBeNull, Pure]
+    public static ForumThread GetForumThread(this CommentDiscussion commentDiscussion)
+    {
+      return commentDiscussion.Project.ForumThreads.SingleOrDefault(
+        ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
     }
   }
 }

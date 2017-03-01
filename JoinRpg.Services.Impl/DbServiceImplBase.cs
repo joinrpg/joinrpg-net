@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -11,6 +12,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Services.Impl
 {
@@ -30,8 +32,12 @@ namespace JoinRpg.Services.Impl
     protected IClaimsRepository ClaimsRepository => _claimRepository.Value;
     private readonly Lazy<IClaimsRepository> _claimRepository;
 
+    protected IForumRepository ForumRepository => _forumRepository.Value;
+    private readonly Lazy<IForumRepository> _forumRepository;
+
     private readonly Lazy<IPlotRepository> _plotRepository;
     protected IPlotRepository PlotRepository => _plotRepository.Value;
+    protected static int CurrentUserId => int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
 
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
@@ -40,6 +46,7 @@ namespace JoinRpg.Services.Impl
       _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
       _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
       _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
+      _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
     }
 
     [NotNull]

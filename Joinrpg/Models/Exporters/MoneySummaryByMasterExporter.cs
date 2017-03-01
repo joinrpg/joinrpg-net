@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Exporters
 {
   public class MoneySummaryByMasterExporter : CustomExporter<MoneySummaryByMasterListItemViewModel>
   {
+    public MoneySummaryByMasterExporter(IUriService uriService) : base(uriService)
+    {
+    }
+
     public override IEnumerable<ITableColumn> ParseColumns()
     {
       yield return ShortUserColumn(x => x.Master, "Мастер");

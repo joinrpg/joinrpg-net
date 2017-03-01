@@ -8,7 +8,13 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Dal.Impl
 {
-  public class MyUserStore : IUserPasswordStore<User, int>, IUserLockoutStore<User, int>,IUserTwoFactorStore<User, int>, IUserEmailStore<User, int>, IUserLoginStore<User, int>
+  public class MyUserStore : 
+    IUserPasswordStore<User, int>, 
+    IUserLockoutStore<User, int>,
+    IUserTwoFactorStore<User, int>, 
+    IUserEmailStore<User, int>, 
+    IUserLoginStore<User, int>, 
+    IUserRoleStore<User, int>
   {
     private readonly MyDbContext _ctx;
 
@@ -209,5 +215,41 @@ namespace JoinRpg.Dal.Impl
 
       return uel?.User;
     }
+
+    #region Implementation of IUserRoleStore<User,in int>
+
+    public Task AddToRoleAsync(User user, string roleName)
+    {
+      //This is not managed via UserManager
+      throw new NotSupportedException();
+    }
+
+    public Task RemoveFromRoleAsync(User user, string roleName)
+    {
+      //This is not managed via UserManager
+      throw new NotSupportedException();
+    }
+
+    public Task<IList<string>> GetRolesAsync(User user)
+    {
+      List<string> list;
+      if (user.Auth?.IsAdmin ?? false)
+      {
+        list = new List<string>() { Security.AdminRoleName };
+      }
+      else
+      {
+       list = new List<string>();
+      }
+      return Task.FromResult((IList<string>) list);
+    }
+
+    public async Task<bool> IsInRoleAsync(User user, string roleName)
+    {
+      var roles = await GetRolesAsync(user);
+      return roles.Contains(roleName);
+    }
+
+    #endregion
   }
 }

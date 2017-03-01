@@ -24,6 +24,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; }
 
+    public virtual ICollection<ForumThread> ForumThreads { get; set; }
+
     public virtual ICollection<ProjectField> ProjectFields { get; set; }
 
     public virtual ICollection<CharacterGroup>  CharacterGroups { get; set; }
@@ -34,8 +36,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 
-    [CanBeNull]
-    public virtual ProjectDetails Details { get; set; }
+    [NotNull]
+    public virtual ProjectDetails Details { get; set; } 
 
     public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 
@@ -66,6 +68,7 @@ namespace JoinRpg.DataModel
 
   public class ProjectDetails
   {
+    [Key]
     public int ProjectId { get; set; }
     public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
     public MarkdownString ProjectAnnounce { get; set; } = new MarkdownString();
@@ -73,6 +76,8 @@ namespace JoinRpg.DataModel
     public bool EnableManyCharacters { get; set; }
     public bool PublishPlot { get; set; }
     public int? AllrpgId { get; set; }
+
+    public bool FinanceWarnOnOverPayment { get; set; } = true;
   }
 
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework

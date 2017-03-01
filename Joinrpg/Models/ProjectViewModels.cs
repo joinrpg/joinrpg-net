@@ -46,8 +46,8 @@ namespace JoinRpg.Web.Models
     [DisplayName("Правила подачи заявок"), UIHint("MarkdownString")]
     public string ClaimApplyRules { get; set; }
 
-    [Display(Name = "Разрешить несколько персонажей одному игроку")]
-    public bool EnableManyCharacters { get; set; }
+    [Display(Name = "Проверять, что игрок играет только одного персонажа", Description = "Если эта опция включена, при принятии заявки какого-то игрока на одну роль все другие заявки этого игрока будут автоматически отклонены.")]
+    public bool StrictlyOneCharacter { get; set; }
 
     [Display(Name = "Опубликовать сюжет всем", Description = "Cюжет игры будет раскрыт всем для всеобщего просмотра и послужит обмену опытом среди мастеров.")]
     public bool PublishPlot{ get; set; }

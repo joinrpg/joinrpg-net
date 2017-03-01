@@ -1,4 +1,6 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.CommonUI.Models
+@using JoinRpg.DataModel
+@using JoinRpg.Web.Models
 @model CommentViewModel
 
 @helper ShowCommentWithTree(CommentViewModel comment, int deepLevel)
@@ -27,10 +29,10 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             }
                             @Html.DisplayFor(model => comment.Author) написал(а) @Html.DisplayFor(c => comment.CreatedTime, "EventTime")
 
-                            @if (!comment.IsCommentByPlayer)
+                            @if (!comment.IsVisibleToPlayer)
                             {
                                 <strong>
-                                    @if (comment.IsVisibleToPlayer) {  <span>игроку</span> } else { <span>другим мастерам</span> }
+                                    <span>другим мастерам</span>
                                 </strong>
                             }
 
@@ -38,11 +40,53 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             {
                                 <span class="label label-default" title="Новый комментарий" id="unread">New</span>
                             }
-                            <a href="@Url.Action("Edit", "Claim", new {comment.ProjectId, comment.ClaimId})#comment@(comment.CommentId)">#</a>
+                            <a href="@Url.Action("RedirectToDiscussion", "Forum", new {comment.ProjectId, comment.CommentId})">#</a>
                         </div>
                         @if (comment.Finance != null)
                         {
-                        @Html.DisplayFor(model => comment.Finance)
+                            if (Model.Finance.FeeChange != 0)
+                            {
+                                <span><b>Изменение взноса</b>: @Model.Finance.FeeChange &#8381;</span>
+                                <br/>
+                            }
+                            if (Model.Finance.MoneyAmount > 0)
+                            {
+                                <span><b>Оплата денег игроком</b>: @Model.Finance.MoneyAmount &#8381;</span>
+                                <br/>
+                            }
+                            else if (Model.Finance.MoneyAmount < 0)
+                            {
+                                <span><b>Возврат денег игроку</b>: @Model.Finance.MoneyAmount &#8381;</span>
+                                <br/>
+                            }
+                            <span><b>Дата операции</b>: @Model.Finance.OperationDate.ToShortDateString()</span>
+                            <br/>
+                            if (Model.Finance.PaymentType != null)
+                            {
+                                <span><b>Способ оплаты</b>: @Model.Finance.PaymentType.GetDisplayName()</span>
+                                <br/>
+                            }
+
+                            if (Model.Finance.State == FinanceOperationState.Declined)
+                            {
+                                <span class="label label-warning">Мастер не подтверждает оплату</span>
+                                <br/>
+                            }
+                            else if (Model.Finance.State == FinanceOperationState.Proposed)
+                            {
+                                if (comment.ShowFinanceModeration)
+                                {
+                                    <a data-toggle="collapse"
+                                       href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">
+                                        Подтвердить / отклонить оплату
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="label label-default">Ждет одобрения мастером</span>
+                                    <br/>
+                                }
+                            }
                         }
 
                         @if (comment.ExtraAction != null)
@@ -56,12 +100,12 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             Ответить
                         </a>
                         <div id="answerComment@(comment.CommentId)" class="collapse">
-                            @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                            @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
                             {
-                                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                            {
                                ProjectId = comment.ProjectId,
-                               ClaimId = comment.ClaimId,
+                               CommentDiscussionId = comment.CommentDiscussionId,
                                ParentCommentId = comment.CommentId,
                                EnableFinanceAction = comment.ShowFinanceModeration,
                                EnableHideFromUser = comment.HasMasterAccess,

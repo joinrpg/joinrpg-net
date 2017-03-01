@@ -147,9 +147,7 @@ namespace JoinRpg.Helpers
       return string.IsNullOrEmpty(value) ? defaultValue : value;
     }
 
-    public static string ToHexString(this Guid guid)
-    {
-      return guid.ToByteArray().ToHexString();
-    }
+    [MustUseReturnValue]
+    public static string ToHexString(this Guid guid) => guid.ToByteArray().ToHexString();
   }
 }

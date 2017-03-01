@@ -13,7 +13,7 @@ namespace JoinRpg.Domain
     private string _value;
 
     private IReadOnlyList<int> SelectedIds { get; set; }
-    public FieldWithValue(ProjectField field, string value)
+    public FieldWithValue(ProjectField field, [CanBeNull] string value)
     {
       Field = field;
       Value = value;
@@ -21,6 +21,7 @@ namespace JoinRpg.Domain
 
     public ProjectField Field { get; }
 
+    [CanBeNull]
     public string Value
     {
       get { return _value; }
@@ -43,7 +44,7 @@ namespace JoinRpg.Domain
       {
         if (!Field.HasValueList())
         {
-          return Value;
+          return Value ?? "";
         }
         return
           Field.DropdownValues.Where(dv => SelectedIds.Contains(dv.ProjectFieldDropdownValueId))

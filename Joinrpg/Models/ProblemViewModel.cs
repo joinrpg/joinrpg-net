@@ -22,7 +22,6 @@ namespace JoinRpg.Web.Models
       {ClaimProblemType.UnApprovedClaimPayment, "Оплата в непринятой заявке"},
       {ClaimProblemType.ClaimWorkStopped, "Работа по заявке остановлена"},
       {ClaimProblemType.ClaimDontHaveTarget, "Заявка не привязана ни к чему"},
-      {ClaimProblemType.DeletedFieldHasValue, "Значение в удаленном поле"},
       {ClaimProblemType.FieldIsEmpty, "Поле не заполнено"},
       {ClaimProblemType.FieldShouldNotHaveValue, "Поле не должно быть заполнено для этой группы"},
       {ClaimProblemType.NoParentGroup, "Персонаж не принадлежит ни к одной группе"},

@@ -60,7 +60,7 @@ namespace JoinRpg.Web.Controllers.Common
 
     protected ActionResult RedirectToAction(RouteTarget routeTarget)
     {
-      return Redirect(routeTarget.GetUri(Url));
+      return Redirect(routeTarget.GetUri(Url).ToString());
     }
 
     protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.DataModel
 {
@@ -26,7 +27,6 @@ namespace JoinRpg.DataModel
     public bool ClaimStatusChange { get; set; }
     public bool Comments { get; set; }
     public bool FieldChange { get; set; }
-
     public bool MoneyOperation { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
