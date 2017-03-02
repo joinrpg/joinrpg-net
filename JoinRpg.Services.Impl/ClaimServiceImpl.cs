@@ -149,6 +149,12 @@ namespace JoinRpg.Services.Impl
       var email = await AddCommentWithEmail<AddCommentEmail>(currentUserId, commentText, claim, isVisibleToPlayer,
         predicate, parentComment, extraAction);      
 
+      if (financeAction != FinanceOperationAction.None)
+      {
+        extraAction = PerformFinanceOperation(currentUserId, financeAction, parentComment, now, claim);
+        predicate = s => s.Comments || s.MoneyOperation;
+      }   
+
       await UnitOfWork.SaveChangesAsync();
 
       await EmailService.Email(email);

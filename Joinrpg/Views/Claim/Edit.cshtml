@@ -192,7 +192,7 @@
                     Отписаться
                 </a>
             }
-            @if(Model.HasMasterAccess && Model.Subscriptions.Count() > 0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+            @if(Model.HasMasterAccess && Model.Subscriptions.Count() > 0 && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
                 <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
                     <span class="glyphicon glyphicon-pushpin"></span>

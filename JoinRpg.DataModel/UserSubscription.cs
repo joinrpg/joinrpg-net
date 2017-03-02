@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.DataModel
 {
-  public class UserSubscription:IValidatableObject
-  {
+ // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
+  public class UserSubscription: IValidatableObject {
+
     public int UserSubscriptionId { get; set; }
 
     public int UserId { get; set; }
