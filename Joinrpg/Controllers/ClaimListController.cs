@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
-      ViewBag.CharacterGroupId = characterGroupId;
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroupDirect(projectId, ClaimStatusSpec.Active, characterGroupId);
 
       return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки", claims, GroupNavigationPage.ClaimsDirect);
