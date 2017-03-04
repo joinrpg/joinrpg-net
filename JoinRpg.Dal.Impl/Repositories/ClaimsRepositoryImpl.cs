@@ -118,6 +118,11 @@ namespace JoinRpg.Dal.Impl.Repositories
                   )));
     }
 
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId)
+    {
+      return GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
+    }
+
     public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
     {
       return GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);

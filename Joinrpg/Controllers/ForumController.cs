@@ -164,6 +164,7 @@ namespace JoinRpg.Web.Controllers
       return HttpNotFound();
     }
 
+    [Authorize]
     public async Task<ActionResult> RedirectToDiscussion(int projectid, int? commentid, int? commentDiscussionId)
     {
       CommentDiscussion discussion;
