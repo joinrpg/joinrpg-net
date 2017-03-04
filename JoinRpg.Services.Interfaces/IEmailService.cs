@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -20,6 +21,7 @@ namespace JoinRpg.Services.Interfaces
     Task Email(ChangeResponsibleMasterEmail createClaimEmail);
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
+    Task Email(FieldsChangedEmail createClaimEmail);
   }
 
   public static class EmailTokens
@@ -62,6 +64,8 @@ namespace JoinRpg.Services.Interfaces
     
   }
 
+  public class FieldsChangedEmail : ClaimEmailModel { }
+
   public class RestoreByMasterEmail : ClaimEmailModel {}
 
   public class MoveByMasterEmail : ClaimEmailModel
@@ -97,7 +101,7 @@ namespace JoinRpg.Services.Interfaces
     public ParcipantType InitiatorType { get; set; }
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
-    public IReadOnlyDictionary<string, string> UpdatedFields { get; set; } = new Dictionary<string, string>();
+    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
   }
 
   public class EmailModelBase
