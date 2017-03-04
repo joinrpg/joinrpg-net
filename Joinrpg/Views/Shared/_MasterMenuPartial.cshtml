@@ -49,7 +49,7 @@
                             <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
-                                <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
+                                <li>@Html.ActionLink(cg.Name, "Details", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
                             }
                         </ul>
                     </li>
@@ -104,14 +104,13 @@
                             }
                         </ul>
                     </li>
-                    @*
-    <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
 
-        <ul class="dropdown-menu">
-            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
-        </ul>
-    </li>*@
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы<span class="caret"></span></a>
                         <ul class="dropdown-menu">

@@ -1,0 +1,111 @@
+﻿@using Microsoft.AspNet.Identity
+@model JoinRpg.Web.Models.ClaimListViewModel
+
+@if (Model.ShowCount)
+{
+    ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
+}
+
+@Html.Partial("_ListOperationsDropdown", Model)
+
+@{
+  var firstItem = Model.Items.FirstOrDefault();
+}
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.Name)
+        </th>
+        @if (Model.ShowUserColumn)
+        {
+        <th>
+            @Html.DisplayNameFor(model => firstItem.Player)
+        </th>
+        }
+        @if (Model.ProjectId == null) //We need to differentiate by project
+        {
+        <th>
+            @Html.DisplayNameFor(model => firstItem.ProjectName)
+        </th>
+        }
+        <th>
+            @Html.DisplayNameFor(model => firstItem.ClaimStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => firstItem.UpdateDate)
+        </th>
+        @if (ViewBag.MasterAccessColumn == true)
+        {
+        <th>@Html.DisplayNameFor(model => firstItem.Responsible)</th>
+            <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
+        }
+    </tr>
+
+    @foreach (var item in Model.Items.OrderByDescending(c => c.UpdateDate))
+    {
+    <tr>
+        <td>
+            <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
+                @item.Name
+                @if (item.UnreadCommentsCount > 0)
+                {
+                <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                }
+            </a>
+        </td>
+        @if (Model.ShowUserColumn)
+        {
+        <td>
+            @Html.DisplayFor(modelItem => item.Player)
+            @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
+            {<text><br /> @item.Player.FullName </text>
+            }
+        </td>
+        }
+        @if (Model.ProjectId == null)
+        {
+        <td>
+            @Html.DisplayFor(modelItem => item.ProjectName)
+        </td>
+        }
+        <td>
+            @Html.DisplayFor(modelItem => item.ClaimStatus)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdateDate)
+            @if (item.LastModifiedBy != null)
+            {
+                if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
+                {
+                <text>мной</text>
+                }
+                else if (item.LastModifiedBy == item.Player)
+                {
+                <text>игроком</text>
+                }
+                else if (item.LastModifiedBy == item.Responsible)
+                {
+                <text>отв. мастером</text>
+                }
+                else
+                {
+                @Html.DisplayFor(modelItem => item.LastModifiedBy)
+                }
+            }
+        </td>
+        @if (ViewBag.MasterAccessColumn == true)
+        {
+        <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+                <td>
+                    @foreach (var pr in item.Problems)
+                    {
+                    @Html.DisplayFor(modelItem => pr)
+                    }
+                </td>
+        }
+
+    </tr>
+    }
+
+</table>

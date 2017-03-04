@@ -10,14 +10,14 @@
 @{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
 }
-
+@Html.DisplayFor(model => model.Details)
     @foreach (var item in Model.Data)
     {
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
 
             @{
-                var groupLink = Html.ActionLink(item.Name, "Index", new {Model.ProjectId, item.CharacterGroupId}, null);
+                var groupLink = Html.ActionLink(item.Name, "Details", new {Model.ProjectId, item.CharacterGroupId}, null);
                 var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}}) : MvcHtmlString.Empty;
                 var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
@@ -32,17 +32,6 @@
                          @editControls
                          break;
                      case 0:
-                         <span class="h2">
-                             @if (!item.IsRootGroup)
-                             {
-                                 <text>Сетка ролей: </text>
-                                 @item.Name
-                             }
-                             else
-                             {<text>Сетка ролей</text>
-                             }
-                         </span>
-                         @editControls
                          break;
                      default:
                          <span class="h4" title="@pathString">@groupLink</span>
@@ -76,7 +65,7 @@
                         <li>
                             @if (item.AvaiableDirectSlots > 0)
                             {
-                                <strong>+@item.AvaiableDirectSlots вакансий / </strong>
+                                <strong>+@DisplayCount.OfX(item.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
                             }
                             else if (item.AvaiableDirectSlots < 0)
                             {

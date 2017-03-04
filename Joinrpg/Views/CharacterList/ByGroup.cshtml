@@ -1,0 +1,9 @@
+﻿@model JoinRpg.Web.Models.Characters.CharacterListByGroupViewModel
+
+@{
+      ViewBag.Title = Model.Title;
+}
+
+@Html.DisplayFor(model => model.GroupModel)
+
+@Html.Partial("_CharacterList", Model)

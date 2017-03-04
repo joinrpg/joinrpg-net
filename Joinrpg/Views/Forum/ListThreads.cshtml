@@ -1,7 +1,7 @@
 ﻿@model JoinRpg.Web.Models.ForumThreadListViewModel
 
 @{
-  ViewBag.Title = "Все дискуссии на форумах группы " + Model.ProjectName;
+  ViewBag.Title = "Все дискуссии на форумах " + Model.ProjectName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -20,7 +20,9 @@ else
     }
 }
 
-<hr/>
-<p>
-     Чтобы открыть новую дикуссию, надо выбрать группу в сетке ролей. Или, возможно, <a href="@Url.Action("CreateThread", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId})">открыть дискуссию, доступную всем игрокам</a>?.
-</p>
+@if (Model.HasMasterAccess)
+{
+    <p>
+        Чтобы открыть новую дикуссию, надо выбрать группу в сетке ролей. Или, возможно, <a href="@Url.Action("CreateThread", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId})">открыть дискуссию, доступную всем игрокам</a>?.
+    </p>
+}

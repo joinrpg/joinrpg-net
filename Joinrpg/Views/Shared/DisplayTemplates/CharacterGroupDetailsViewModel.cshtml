@@ -1,0 +1,53 @@
+﻿@using System.Web.Mvc.Html
+@using JetBrains.Annotations
+@using JoinRpg.Web.Models.CharacterGroups
+@model CharacterGroupDetailsViewModel
+
+@helper NavigationItem(GroupNavigationPage page, string linkText, [AspMvcAction] string actionName, [AspMvcController] string controllerName, object args, bool enabled = true)
+{
+if (Model.Page == page)
+{
+    <li role="presentation" class="active">
+        <a>@linkText</a>
+    </li>
+}
+else if (enabled)
+{
+    <li role="presentation">
+        @Html.ActionLink(linkText, actionName, controllerName, args, null)
+    </li>
+}
+else
+{
+    <li role="presentation" class="disabled">
+        <a>@linkText</a>
+    </li>
+}
+}
+
+@{
+  
+      string strikeStyleOfName = Model.IsActive ? "" : "text-decoration: line-through";
+}
+<div style="margin-bottom: 1em">
+    <ul class="nav nav-pills">
+        <li class="disabled">
+            <a href="#" style="cursor: default; @strikeStyleOfName"><span class="h3">@Model.Name</span></a>
+        </li>
+        @if (Model.HasMasterAccess || !Model.IsRootGroup)
+        {
+            @NavigationItem(GroupNavigationPage.Home, "Группа", "Details", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.Roles, "Сетка ролей", "Index", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId})
+        }
+        @if (Model.HasMasterAccess)
+        {
+            @NavigationItem(GroupNavigationPage.ClaimsActive, "Заявки", "ListForGroup", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.ClaimsDiscussing, "Обсуждаемые", "DiscussingForGroup", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.ClaimsDirect, "Заявки в группу", "ListForGroupDirect", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.Characters, "Персонажи", "ByGroup", "CharacterList", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.Report, "Сводный отчет", "Report", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId})
+        }
+        @NavigationItem(GroupNavigationPage.Forums, "Форумы", "ListThreadsByGroup", "Forum", new { Model.ProjectId, Model.CharacterGroupId })
+    </ul>
+
+</div>

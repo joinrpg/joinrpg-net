@@ -102,13 +102,37 @@ namespace JoinRpg.Web.Controllers
       UriService = uriService;
     }
 
-    public async Task<ActionResult> ByGroup(int projectid, int charactergroupid, string export)
+
+    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
     {
-      var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
-      return
-        await
-          MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
-            "Персонажи — " + characterGroup.CharacterGroupName, vm => true);
+      var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(characterGroupId).ToArray();
+    }
+
+    public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
+    {
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
+      var characters =
+        (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
+
+      var error = AsMaster(characterGroup);
+      if (error != null || characterGroup == null) return error;
+
+      var plots = await PlotRepository.GetPlotsWithTargets(projectId);
+
+      var list = new CharacterListByGroupViewModel(CurrentUserId,
+        characters, plots, characterGroup);
+
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
+      {
+        return View("ByGroup", list);
+      }
+
+      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value,
+        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
     [HttpGet, Authorize]

@@ -205,6 +205,7 @@
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Models\ApisIndexViewModel.cs" />
+    <Compile Include="Models\CharacterGroups\CharacterGroupDetailsViewModel.cs" />
     <Compile Include="Models\ForumModels.cs" />
     <Compile Include="Models\Exporters\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Models\Exporters\ClaimListItemViewModelExporter.cs" />
@@ -259,7 +260,7 @@
     <Compile Include="Models\Characters\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\Characters\CharacterGroupListViewModel.cs" />
     <Compile Include="Models\Characters\CharacterGroupListItemViewModel.cs" />
-    <Compile Include="Models\EditCharacterGroupViewModel.cs" />
+    <Compile Include="Models\CharacterGroups\EditCharacterGroupViewModel.cs" />
     <Compile Include="Models\Characters\CharacterViewModel.cs" />
     <Compile Include="Models\ClaimViewModel.cs" />
     <Compile Include="Models\IOperationsAwareView.cs" />
@@ -289,7 +290,7 @@
     <Compile Include="Models\Plot\PlotFolderViewModelBase.cs" />
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
-    <Compile Include="Models\SubscribeSettingsViewModel.cs" />
+    <Compile Include="Models\CharacterGroups\SubscribeSettingsViewModel.cs" />
     <Compile Include="Models\SuperSearchViewModel.cs" />
     <Compile Include="Models\UserProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -516,8 +517,7 @@
     <Content Include="Views\Shared\DisplayTemplates\EventTime.cshtml" />
     <Content Include="Views\GameGroups\_GroupHelpTextPartial.cshtml" />
     <Content Include="Views\Character\Delete.cshtml" />
-    <Content Include="Views\ClaimList\ListForGroupDirect.cshtml" />
-    <Content Include="Views\ClaimList\ListForGroup.cshtml" />
+    <Content Include="Views\ClaimList\ByGroup.cshtml" />
     <Content Include="Views\GameField\ValuesList.cshtml" />
     <Content Include="Views\GameField\CreateValue.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
@@ -555,8 +555,6 @@
     <Content Include="Views\MassMail\Success.cshtml" />
     <Content Include="Views\GameGroups\Report.cshtml" />
     <Content Include="Views\Finances\MoneySummary.cshtml" />
-    <Content Include="Views\ClaimList\DiscussingForGroup.cshtml" />
-    <Content Include="Views\ClaimList\DiscussingForGroupDirect.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
     <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
@@ -589,6 +587,12 @@
     <Content Include="Views\Comments\CommentsListPartial.cshtml" />
     <Content Include="Views\Forum\ListThreads.cshtml" />
     <Content Include="Views\Forum\DisplayTemplates\ForumThreadListItemViewModel.cshtml" />
+    <Content Include="Views\GameGroups\Details.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.cshtml" />
+    <Content Include="Views\ClaimList\_ClaimList.cshtml" />
+    <Content Include="Views\CharacterList\ByGroup.cshtml" />
+    <Content Include="Views\CharacterList\_CharacterList.cshtml" />
+    <Content Include="Views\Forum\ListThreadsByGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
