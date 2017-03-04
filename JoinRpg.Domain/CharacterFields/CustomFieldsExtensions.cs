@@ -83,7 +83,7 @@ namespace JoinRpg.Domain
     }
 
     public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
-      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character, int? currentUserId)
+      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       characterFieldValues.FillFrom(claim);

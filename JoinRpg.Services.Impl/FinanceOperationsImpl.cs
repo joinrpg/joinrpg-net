@@ -72,7 +72,7 @@ namespace JoinRpg.Services.Impl
       claim.UpdateClaimFeeIfRequired(operationDate);
 
       await UnitOfWork.SaveChangesAsync();
-      var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, CurrentUserId, contents,
+      var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, contents,
         s => s.MoneyOperation,
         isVisibleToPlayer: true, commentExtraAction: null, initiator: await UserRepository.GetById(CurrentUserId),
         extraRecepients: new[] {paymentType.User});
