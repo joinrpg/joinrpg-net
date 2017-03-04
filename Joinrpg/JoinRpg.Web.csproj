@@ -592,6 +592,7 @@
     <Content Include="Views\ClaimList\_ClaimList.cshtml" />
     <Content Include="Views\CharacterList\ByGroup.cshtml" />
     <Content Include="Views\CharacterList\_CharacterList.cshtml" />
+    <Content Include="Views\Forum\ListThreadsByGroup.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

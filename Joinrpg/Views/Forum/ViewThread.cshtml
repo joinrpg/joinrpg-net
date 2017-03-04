@@ -3,11 +3,10 @@
 @{
     ViewBag.Title = Model.ProjectName + " → "+ Model.Header;
 }
-
-<h2>@Model.Header</h2>
+@Html.DisplayFor(model => model.GroupDetails)
 
 <div>
-    <h4>@Model.ProjectName → @Model.Header</h4>
+    <h4>Форумы @Html.ActionLink(Model.GroupDetails.Name, "ListThreadsByGroup", new { Model.ProjectId, Model.GroupDetails.CharacterGroupId }) → @Model.Header</h4>
     <hr />
     @Html.Partial("..\\Comments\\CommentsListPartial", Model)
 </div>

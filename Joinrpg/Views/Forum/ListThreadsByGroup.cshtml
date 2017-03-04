@@ -1,0 +1,28 @@
+﻿@model JoinRpg.Web.Models.ForumThreadListForGroupViewModel
+
+@{
+  ViewBag.Title = "Все дискуссии на форумах группы " + Model.ProjectName;
+}
+
+@Html.DisplayFor(model => model.GroupModel)
+
+@if (!Model.Items.Any())
+{
+<p>Пока нет ни одной дискуссии.</p>
+}
+else
+{
+    foreach (var item in Model.Items)
+    {
+    <hr />
+    @Html.DisplayFor(itemModel => item)
+
+    }
+}
+
+@if (Model.HasMasterAccess)
+{
+    <a href="@Url.Action("CreateThread", new {Model.ProjectId, Model.GroupModel.CharacterGroupId})" class="btn btn-success">
+        <span class="glyphicon glyphicon-plus"></span>открыть дискуссию
+    </a>
+}

@@ -7,13 +7,15 @@ namespace JoinRpg.Web.Models.CharacterGroups
 {
   public enum GroupNavigationPage
   {
+    None,
     Home,
     Roles,
     ClaimsActive,
     ClaimsDiscussing,
     ClaimsDirect,
     Characters,
-    Report
+    Report,
+    Forums,
   }
 
   public class CharacterGroupDetailsViewModel : CharacterGroupWithDescViewModel
@@ -32,12 +34,12 @@ namespace JoinRpg.Web.Models.CharacterGroups
       IsRootGroup = group.IsRoot;
     }
 
-    public bool HasMasterAccess { get; private set; }
-    public bool ShowEditControls { get; private set; }
-    public bool IsSpecial { get; private set; }
-    public int AvaiableDirectSlots { get; private set; }
-    public int ActiveClaimsCount { get; private set; }
-    public bool IsAcceptingClaims { get; private set; }
-    public bool IsRootGroup { get; private set; }
+    public bool HasMasterAccess { get;  }
+    public bool ShowEditControls { get;  }
+    public bool IsSpecial { get; }
+    public int AvaiableDirectSlots { get; }
+    public int ActiveClaimsCount { get; }
+    public bool IsAcceptingClaims { get; }
+    public bool IsRootGroup { get; }
   }
 }
