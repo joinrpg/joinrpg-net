@@ -39,6 +39,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "GroupListClaim", url: "{ProjectId}/roles/{CharacterGroupId}/claims",
         defaults: new {controller = "ClaimList", action = "ListForGroup"});
 
+      routes.MapRoute(name: "GroupListClaimDirect", url: "{ProjectId}/roles/{CharacterGroupId}/discussing",
+        defaults: new {controller = "ClaimList", action = "ListForGroupDirect"});
+
       routes.MapRoute(name: "AddCharacter", url: "{ProjectId}/roles/{CharacterGroupId}/add-char",
         defaults: new {controller = "Character", action = "Create",});
 

@@ -85,14 +85,14 @@
 
                             @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
                             {
-                                if (Model.HasMasterAccess)
+                                if (Model.HasMasterAccess && item.ActiveClaimsCount > 0)
                                 {
                                     <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
                                         @Html.ActionLink(
                                             DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"),
                                             "ListForGroupDirect",
                                             "ClaimList",
-                                            new {Model.ProjectId, Model.CharacterGroupId},
+                                            new {Model.ProjectId, item.CharacterGroupId},
                                             null)
                                     </strong>
                                 }

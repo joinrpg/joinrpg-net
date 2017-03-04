@@ -49,7 +49,7 @@
                 {
                     @item.Name
                 }
-                @Html.Partial("_GroupEditControls", item)
+                Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}})
             </td>
 
             <td style="text-align: right">
