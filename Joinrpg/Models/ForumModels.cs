@@ -9,6 +9,7 @@ using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
@@ -22,7 +23,10 @@ namespace JoinRpg.Web.Models
       Header = forumThread.Header;
       ProjectName = forumThread.Project.ProjectName;
       CommentDiscussionId = forumThread.CommentDiscussionId;
+      GroupDetails = new CharacterGroupDetailsViewModel(forumThread.CharacterGroup, currentUserId, GroupNavigationPage.None);
     }
+
+    public CharacterGroupDetailsViewModel GroupDetails { get; }
 
     public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
@@ -76,12 +80,25 @@ namespace JoinRpg.Web.Models
       ProjectId = project.ProjectId;
       RootGroupId = project.RootGroup.CharacterGroupId;
       Items = threads.Select(thread => new ForumThreadListItemViewModel(thread, currentUserId)).ToList();
+      HasMasterAccess = project.HasMasterAccess(currentUserId);
     }
 
     public IEnumerable<ForumThreadListItemViewModel> Items { get; }
     public string ProjectName { get; }
     public int ProjectId { get; }
     public int RootGroupId { get; }
+    public bool HasMasterAccess { get; }
+  }
+
+  public class ForumThreadListForGroupViewModel : ForumThreadListViewModel
+  {
+    public ForumThreadListForGroupViewModel(CharacterGroup group, IEnumerable<IForumThreadListItem> threads,
+      int currentUserId) : base(group.Project, threads, currentUserId)
+    {
+      GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
+    }
+
+    public CharacterGroupDetailsViewModel GroupModel { get; }
   }
 
   public class ForumThreadListItemViewModel
@@ -96,6 +113,7 @@ namespace JoinRpg.Web.Models
       UpdatedAt = thread.UpdatedAt;
       UnreadCount = thread.GetUnreadCount(currentUserId);
       TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId));
+      ForumThreadId = thread.Id;
     }
 
     public int ProjectId { get; }
@@ -106,5 +124,6 @@ namespace JoinRpg.Web.Models
     public DateTime UpdatedAt { get; }
     public int UnreadCount { get; }
     public int TotalCount { get; }
+    public int ForumThreadId { get; }
   }
 }

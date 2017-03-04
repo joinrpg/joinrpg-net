@@ -10,6 +10,18 @@ namespace JoinRpg.Web
       routes.LowercaseUrls = true;
       routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+      routes.MapRoute("ForumList", url: "{ProjectId}/forums/",
+        defaults: new {controller = "Forum", action = "ListThreads"});
+
+      routes.MapRoute("ForumActions", url: "{ProjectId}/forums/{forumThreadId}/{action}",
+        defaults: new {controller = "Forum", action = "ViewThread"});
+
+      routes.MapRoute("ForumByGroup", url: "{ProjectId}/roles/{CharacterGroupId}/forums",
+        defaults: new {controller = "Forum", action = "ListThreadsByGroup" });
+
+      routes.MapRoute("ForumByGroupCreate", url: "{ProjectId}/roles/{CharacterGroupId}/create-thread",
+        defaults: new {controller = "Forum", action = "createthread"});
+
       routes.MapRoute("RedirectToDiscussion", url: "{ProjectId}/goto/discussion/{CommentDiscussionId}",
         defaults: new {controller = "Forum", action = "RedirectToDiscussion"});
 

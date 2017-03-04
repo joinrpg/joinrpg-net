@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
@@ -13,10 +14,10 @@ namespace JoinRpg.Data.Interfaces
 
     Task<CommentDiscussion> GetDiscussionByComment(int projectId, int commentId);
 
-    Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<CharacterGroup> groupIds);
+    Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, [CanBeNull] IEnumerable<int> groupIds);
   }
 
-  public interface IForumThreadListItem : ICommentDiscussionHeader
+  public interface IForumThreadListItem : ICommentDiscussionHeader, IForumThread
   {
     string Header { get; }
     User Topicstarter { get; }

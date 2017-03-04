@@ -67,10 +67,22 @@ namespace JoinRpg.Web.Filter
 
     private static Project LoadProject(HttpContextBase httpContext)
     {
-      var projectId = int.Parse(((string[]) GetRawValue(httpContext, ProjectidKey))[0]);
+      var projectId = GetProjectId(httpContext);
       var repository = (IProjectRepository) httpContext.Items[ProjectrepositoryKey];
-      var project = repository.GetProjectAsync(projectId).GetAwaiter().GetResult();
-      return project;
+      return repository.GetProjectAsync(projectId).GetAwaiter().GetResult();
+    }
+
+    private static int GetProjectId(HttpContextBase httpContext)
+    {
+      var projectIdRawValue = GetRawValue(httpContext, ProjectidKey);
+      if (projectIdRawValue.GetType().IsArray)
+      {
+        return int.Parse(((string[]) projectIdRawValue)[0]);
+      }
+      else
+      {
+        return int.Parse((string)projectIdRawValue);
+      }
     }
 
     [MustUseReturnValue]
