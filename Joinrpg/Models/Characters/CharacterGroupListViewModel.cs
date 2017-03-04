@@ -5,6 +5,7 @@ using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -40,11 +41,11 @@ namespace JoinRpg.Web.Models.Characters
 
       public IList<CharacterGroupListItemViewModel> Generate()
       {
-        GenerateFrom(Root, 0, new List<CharacterGroup>(), new List<CharacterGroup> { Root});
+        GenerateFrom(Root, 0, new List<CharacterGroup>());
         return Results;
       } 
 
-      private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop, IReadOnlyList<CharacterGroup> siblings)
+      private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
       {
         if (!characterGroup.IsVisible(CurrentUserId))
         {
@@ -59,9 +60,7 @@ namespace JoinRpg.Web.Models.Characters
           Name = characterGroup.CharacterGroupName,
           FirstCopy = prevCopy == null,
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ? characterGroup.AvaiableDirectSlots : 0,
-          IsAcceptingClaims =
-            characterGroup.HaveDirectSlots && characterGroup.Project.IsAcceptingClaims &&
-            characterGroup.AvaiableDirectSlots != 0,
+          IsAcceptingClaims = characterGroup.IsAcceptingClaims(),
           ActiveCharacters =
             prevCopy?.ActiveCharacters ??
             GenerateCharacters(characterGroup)
@@ -73,11 +72,15 @@ namespace JoinRpg.Web.Models.Characters
           IsSpecial = characterGroup.IsSpecial,
           IsActive = characterGroup.IsActive,
           IsRootGroup = characterGroup.IsRoot,
-          FirstInGroup = siblings.First() == characterGroup,
-          LastInGroup = siblings.Last() == characterGroup,
           ProjectId = characterGroup.ProjectId,
           RootGroupId = Root.CharacterGroupId,
         };
+
+        if (Root == characterGroup)
+        {
+          vm.First = true;
+          vm.Last = true;
+        }
 
         if (vm.IsSpecial)
         {
@@ -110,7 +113,7 @@ namespace JoinRpg.Web.Models.Characters
         var childGroups = characterGroup.GetOrderedChildGroups().OrderBy(g => g.IsSpecial).Where(g =>g.IsActive && g.IsVisible(CurrentUserId)).ToList();
         var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
-        vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren, childGroups)).ToList();
+        vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren)).ToList().MarkFirstAndLast();
 
         var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
 

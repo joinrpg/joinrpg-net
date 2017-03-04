@@ -1,17 +1,11 @@
 ﻿@using JoinRpg.Web.Models
-@using JoinRpg.Web.Models.Characters
 @model GameRolesViewModel
 
-@helper GetPathString(CharacterGroupListItemViewModel item)
-{
-    @(string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name)
-}
-
 @{
-  ViewBag.Title = "Отчет по заявкам";
+  ViewBag.Title = "Отчет по группе —" + Model.Details.Name;
 }
 
-<h2>@ViewBag.Title</h2>
+@Html.DisplayFor(model => model.Details)
 <table class="table table-bordered">
     <tr>
         <th rowspan="2">Группа</th>
@@ -41,19 +35,15 @@
                 {
                     <text><b>@item.Name</b> (итого)</text>
                 }
-                else if (item.ChildGroups.Any())
-                {
-                    @Html.ActionLink(item.Name, "Report", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
-                }
                 else
                 {
-                    @item.Name
+                    @Html.ActionLink(item.Name, "Details", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
                 }
-                @Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}})
+                @Html.Partial("_GroupEditControls", item, new ViewDataDictionary() { { "ShowEditControls", Model.ShowEditControls } })
             </td>
 
             <td style="text-align: right">
-                @Html.ActionLink(item.TotalCharacters.ToString(), "Index", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+                @Html.ActionLink(item.TotalCharacters.ToString(), "ByGroup", "CharacterList", new {Model.ProjectId, item.CharacterGroupId}, null)
             </td>
             <td style="text-align: right">@item.TotalNpcCharacters</td>
             <td style="text-align: right">@item.TotalCharactersWithPlayers</td>
