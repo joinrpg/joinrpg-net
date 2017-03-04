@@ -133,16 +133,17 @@ namespace JoinRpg.Services.Email
         return;
       }
       var recepients = model.GetRecepients();
-      if (!recepients.Any())
-      {
-        return;
-      }
+
+      var fields = string.Join("\n\n",
+        model.UpdatedFields.Select(updatedField => $@"{updatedField.Field.FieldName}:
+{updatedField.DisplayString}"));
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
         $@"Добрый день, {MailGunRecepientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
+{fields}
 {model.Text.Contents}
 
 {model.Initiator.DisplayName}
@@ -199,6 +200,9 @@ namespace JoinRpg.Services.Email
 Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
 ", model.Initiator.ToRecipient());
     }
+
+    public Task Email(FieldsChangedEmail createClaimEmail)
+      => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
 
     public Task Email(FinanceOperationEmail model)
     {

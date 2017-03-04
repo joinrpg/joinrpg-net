@@ -9,8 +9,7 @@ namespace JoinRpg.Domain
 {
   public static  class SubscribeExtensions
   {
-    public static IEnumerable<User> GetSubscriptions(this ForumThread claim,
-  int initiatorUserId, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
+    public static IEnumerable<User> GetSubscriptions(this ForumThread claim, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
     {
       return
         claim.Subscriptions //get subscriptions on forum
@@ -35,8 +34,8 @@ namespace JoinRpg.Domain
           .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
           .Union(claim.Player) //...and player himself also
           .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
-          .Where(u => isVisibleToPlayer || u != claim.Player) //remove player if we doing something not player visible
-        ;
+          .Where(u => isVisibleToPlayer || !claim.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
+      ;
     }
   }
 }
