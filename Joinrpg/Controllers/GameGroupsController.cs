@@ -13,6 +13,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Controllers
@@ -40,7 +41,8 @@ namespace JoinRpg.Web.Controllers
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
           HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
-          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault),
+          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Roles)
         });
     }
 
@@ -65,7 +67,8 @@ namespace JoinRpg.Web.Controllers
           CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
           HasMasterAccess = field.HasMasterAccess(CurrentUserId),
-          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId)
+          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId),
+          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report)
         });
     }
 
@@ -236,14 +239,14 @@ namespace JoinRpg.Web.Controllers
 
       return View(FillFromCharacterGroup(new EditCharacterGroupViewModel
       {
-        ParentCharacterGroupIds = @group.GetParentGroupsForEdit(),
+        ParentCharacterGroupIds = group.GetParentGroupsForEdit(),
         Description = group.Description.Contents,
-        IsPublic = @group.IsPublic,
-        Name = @group.CharacterGroupName,
-        HaveDirectSlots = GetDirectClaimSettings(@group),
-        DirectSlots = Math.Max(@group.AvaiableDirectSlots, 0),
-        CharacterGroupId = @group.CharacterGroupId,
-        IsRoot = @group.IsRoot,
+        IsPublic = group.IsPublic,
+        Name = group.CharacterGroupName,
+        HaveDirectSlots = GetDirectClaimSettings(group),
+        DirectSlots = Math.Max(group.AvaiableDirectSlots, 0),
+        CharacterGroupId = group.CharacterGroupId,
+        IsRoot = group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
       }, group));
     }
@@ -419,7 +422,7 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
     {
       var group = await ProjectRepository.GetGroupAsync(projectId, charactergroupId);
-      var error = AsMaster(@group);
+      var error = AsMaster(group);
       if (error != null)
       {
         return error;
@@ -450,7 +453,7 @@ namespace JoinRpg.Web.Controllers
 
       var user = await _userRepository.GetWithSubscribe(CurrentUserId);
 
-      return AsMaster(@group) ?? View(new SubscribeSettingsViewModel(user, @group));
+      return AsMaster(group) ?? View(new SubscribeSettingsViewModel(user, group));
     }
 
     [HttpPost, ValidateAntiForgeryToken, Authorize]
@@ -458,7 +461,7 @@ namespace JoinRpg.Web.Controllers
     {
       var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
       var error = AsMaster(group);
-      if (error != null)
+      if (error != null || group == null)
       {
         return error;
       }
@@ -466,7 +469,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-         ProjectService.UpdateSubscribeForGroup(@group.ProjectId, @group.CharacterGroupId, CurrentUserId,
+         ProjectService.UpdateSubscribeForGroup(group.ProjectId, group.CharacterGroupId, CurrentUserId,
            viewModel.ClaimStatusChangeValue, viewModel.CommentsValue,
            viewModel.FieldChangeValue, viewModel.MoneyOperationValue);
 
@@ -478,6 +481,19 @@ namespace JoinRpg.Web.Controllers
         return View(viewModel);
       }
 
+    }
+
+    [HttpGet, AllowAnonymous]
+    public async Task<ActionResult> Details(int projectId, int characterGroupId)
+    {
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      var error = WithEntity(group);
+      if (error != null)
+      {
+        return error;
+      }
+      var viewModel = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Home);
+      return View(viewModel);
     }
   }
 }

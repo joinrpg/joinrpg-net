@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -20,6 +21,18 @@ namespace JoinRpg.Web.Models.Characters
     NotSend,
     [Display(Name = "NPC")]
     Npc,
+  }
+
+  public class CharacterListByGroupViewModel : CharacterListViewModel
+  {
+    public CharacterListByGroupViewModel(int currentUserId, IReadOnlyCollection<Character> characters,
+      IReadOnlyCollection<PlotFolder> plots, CharacterGroup group)
+      : base(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, plots, group.Project)
+    {
+      GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Characters);
+    }
+
+    public CharacterGroupDetailsViewModel GroupModel { get; }
   }
 
   public class CharacterListViewModel : IOperationsAwareView
