@@ -14,10 +14,14 @@
 
 @if (Model.Fields.AnythingAccessible)
 {
-<h1 style="page-break-before: always">Поля персонажа</h1>
-<div class="form-horizontal">
-    @Html.Partial("_EditFieldsPartial", Model.Fields)
-</div>
+    <h1 style="page-break-before: always">Поля персонажа</h1>
+    <dl>
+        @foreach (var field in Model.Fields.Fields.Where(f => f.HasValue && f.CanView))
+        {
+            <dt>@field.FieldName</dt>
+            <dd>@field.DisplayString</dd>
+        }
+    </dl>
 }
 
 @if (Model.Plots.Any(p => p.Status == PlotStatus.Completed))

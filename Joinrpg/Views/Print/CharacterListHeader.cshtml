@@ -67,19 +67,3 @@
     </div>
     }
 </div>
-    @if (Model.Handouts.Any())
-    {
-    <h1>Раздатка</h1>
-    <p>Здесь собраны все вещи, которые нужно положить в конверт.</p>
-    <table style="border-spacing: 10px; border-collapse: separate; font-size: 120%">
-        @foreach (var handout in Model.Handouts)
-        {
-        <tr>
-            <td style="vertical-align: text-top"><div style="width: 2em; height: 2em; border: black solid thick;"></div></td>
-
-            <td>@Html.DisplayFor(m => handout)</td>
-        </tr>
-        }
-
-    </table>
-    }
