@@ -315,6 +315,7 @@
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
+    <Content Include="Content\Print.css" />
     <Content Include="external\joinrpg-api.css" />
     <Content Include="external\joinrpg-api.js" />
     <Content Include="external\roles-1.js" />
@@ -593,6 +594,7 @@
     <Content Include="Views\CharacterList\ByGroup.cshtml" />
     <Content Include="Views\CharacterList\_CharacterList.cshtml" />
     <Content Include="Views\Forum\ListThreadsByGroup.cshtml" />
+    <Content Include="Views\Print\_CharacterHandout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
