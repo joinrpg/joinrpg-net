@@ -16,6 +16,7 @@
 @using JoinRpg.DataModel
 @using JoinRpg.Web.Models
 @using JoinRpg.Domain;
+@using JoinRpg.Helpers.Web
 
 <div>
     @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -173,7 +174,7 @@
                 </a>
                 foreach (var plugin in Model.PrintPlugins)
                 {
-                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterId}, null)">
+                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
                     <span class="glyphicon glyphicon-print"></span>
                     @plugin.Name
                 </a>
