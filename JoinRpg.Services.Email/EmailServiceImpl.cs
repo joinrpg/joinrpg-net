@@ -82,9 +82,12 @@ namespace JoinRpg.Services.Email
         .SetTextBody(text)
         .SetHtmlBody(html)
         .GetMessage();
-      message.RecipientVariables =
-        JObject.Parse("{" + string.Join(", ", recepients.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) +
-                      "}");
+      var recipientVars = new JObject();
+      foreach (var r in recepients)
+      {
+        recipientVars.Add(r.Email, r.DisplayName);
+      }
+      message.RecipientVariables = recipientVars;
       if (_emailEnabled)
       {
         await Send(message);
