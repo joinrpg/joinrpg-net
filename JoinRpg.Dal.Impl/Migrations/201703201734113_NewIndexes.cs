@@ -7,18 +7,17 @@ namespace JoinRpg.Dal.Impl.Migrations
     {
         public override void Up()
         {
-            DropIndex("dbo.Claims", new[] { "ProjectId" });
-            DropIndex("dbo.Characters", new[] { "ProjectId" });
-            CreateIndex("dbo.Claims", new[] { "ProjectId", "ClaimStatus" }, name: "IX_Claim_Project_Status");
-            CreateIndex("dbo.Characters", new[] { "ProjectId", "IsActive" }, name: "IX_Character_Project_Status");
+          Sql(@"
+CREATE NONCLUSTERED INDEX [nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84] 
+ON [dbo].[Claims] 
+([ProjectId], [ClaimStatus]) 
+INCLUDE ([CharacterGroupId], [CharacterId], [CommentDiscussionId], [CreateDate], [CurrentFee], [JsonData], [LastUpdateDateTime], [MasterAcceptedDate], 
+  [MasterDeclinedDate], [PlayerAcceptedDate], [PlayerDeclinedDate], [PlayerUserId], [ResponsibleMasterUserId]) ");
         }
         
         public override void Down()
         {
-            DropIndex("dbo.Characters", "IX_Character_Project_Status");
-            DropIndex("dbo.Claims", "IX_Claim_Project_Status");
-            CreateIndex("dbo.Characters", "ProjectId");
-            CreateIndex("dbo.Claims", "ProjectId");
+          Sql("DROP INDEX [nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84] ON [dbo].[Claims] ");
         }
     }
 }
