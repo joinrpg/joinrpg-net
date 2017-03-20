@@ -176,9 +176,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return (await Ctx.Set<Project>().SingleOrDefaultAsync(p => p.ProjectId == projectId)).Characters; 
     }
 
-    public async Task<IEnumerable<Project>> GetProjectsWithoutAllrpgAsync()
-      => await ActiveProjects.Where(p => p.Details.AllrpgId == null).ToListAsync();
-
     public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId)
     {
       var project = await GetProjectAsync(projectId);

@@ -73,11 +73,9 @@
   <ItemGroup>
     <Compile Include="Allrpg\AllrpgApi.cs" />
     <Compile Include="Allrpg\AllrpgImportUtilities.cs" />
-    <Compile Include="Allrpg\AllrpgProjectImporter.cs" />
     <Compile Include="Allrpg\AllrpgServiceImpl.cs" />
     <Compile Include="Allrpg\PasswordReply.cs" />
     <Compile Include="Allrpg\ProfileReply.cs" />
-    <Compile Include="Allrpg\ProjectReply.cs" />
     <Compile Include="ClaimImplBase.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
