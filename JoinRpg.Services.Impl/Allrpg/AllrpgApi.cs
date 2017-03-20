@@ -93,11 +93,5 @@ namespace JoinRpg.Services.Impl.Allrpg
 
       return Call<PasswordReply>("checkpassword", $"email={Uri.EscapeDataString(email)}&key={key}");
     }
-
-    public Task<Reply<ProjectReply>>  DownloadProject(int allrpgId)
-    {
-      var key = SignPayload(allrpgId.ToString());
-      return Call<ProjectReply>("importproject", $"id={allrpgId}&key={key}");
-    }
   }
 }
