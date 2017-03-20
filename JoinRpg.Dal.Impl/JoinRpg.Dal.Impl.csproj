@@ -35,6 +35,10 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="EntityFramework.IndexingExtensions, Version=1.0.1.26117, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.IndexingExtensions.1.0.1\lib\net40\EntityFramework.IndexingExtensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
@@ -318,6 +322,10 @@
     <Compile Include="Migrations\201702191017384_NewFinanceGlobalSettings.Designer.cs">
       <DependentUpon>201702191017384_NewFinanceGlobalSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201703201734113_NewIndexes.cs" />
+    <Compile Include="Migrations\201703201734113_NewIndexes.Designer.cs">
+      <DependentUpon>201703201734113_NewIndexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -329,7 +337,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\RepositoryImplBase.cs" />
     <Compile Include="Repositories\UserInfoRepository.cs" />
-    <Compile Include="TypeConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj">
@@ -549,6 +556,9 @@
     <EmbeddedResource Include="Migrations\201702191017384_NewFinanceGlobalSettings.resx">
       <DependentUpon>201702191017384_NewFinanceGlobalSettings.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703201734113_NewIndexes.resx">
+      <DependentUpon>201703201734113_NewIndexes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

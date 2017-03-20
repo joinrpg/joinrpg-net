@@ -137,6 +137,16 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany().WillCascadeOnDelete(false);
 
+      modelBuilder.Entity<Claim>()
+        .HasIndex("IX_Claim_Project_Status",
+          e => e.Property(c => c.ProjectId),
+          e => e.Property(c => c.ClaimStatus));
+
+      modelBuilder.Entity<Character>()
+        .HasIndex("IX_Character_Project_Status",
+          e => e.Property(c => c.ProjectId),
+          e => e.Property(c => c.IsActive));
+
       base.OnModelCreating(modelBuilder);
     }
  }
