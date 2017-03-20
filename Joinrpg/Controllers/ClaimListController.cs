@@ -10,6 +10,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -56,6 +57,31 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    private async Task<ActionResult> ShowMasterClaimListForGroup(CharacterGroup characterGroup, string export, string title, IReadOnlyCollection<Claim> claims, GroupNavigationPage page)
+    {
+      var error = AsMaster(characterGroup);
+      if (error != null) return error;
+
+      var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page);
+
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
+      {
+        ViewBag.MasterAccessColumn = true;
+        ViewBag.Title = title + " " + characterGroup.CharacterGroupName;
+        return View("ByGroup", view);
+      }
+      else
+      {
+        return
+          await
+            ExportWithCustomFronend(view.Items, title, exportType.Value,
+              new ClaimListItemViewModelExporter(characterGroup.Project.ProjectFields, UriService), characterGroup.Project.ProjectName);
+      }
+    }
+
+
     #endregion
 
     [HttpGet, Authorize]
@@ -69,20 +95,20 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
     {
-      ViewBag.CharacterGroupId = characterGroupId;
-      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, new[] {characterGroupId});
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      var claims = await ClaimsRepository.GetClaimsForGroupDirect(projectId, ClaimStatusSpec.Active, characterGroupId);
 
-      return await ShowMasterClaimList(projectId, export, "Заявки в группу (напрямую)", "ListForGroupDirect", claims);
+      return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки", claims, GroupNavigationPage.ClaimsDirect);
     }
 
     [HttpGet, Authorize]
     public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
     {
-      ViewBag.CharacterGroupId = characterGroupId;
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Active, groupIds);
 
-      return await ShowMasterClaimList(projectId, export, "Заявки в группу (все)", "ListForGroup", claims);
+      return await ShowMasterClaimListForGroup(group, export, "Заявки в группу (все)", claims, GroupNavigationPage.ClaimsActive);
     }
 
     private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
@@ -94,23 +120,12 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> DiscussingForGroup(int projectId, int characterGroupId, string export)
     {
-      ViewBag.CharacterGroupId = characterGroupId;
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
       var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion, groupIds);
 
-      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (все)", "DiscussingForGroup",
-        claims);
-    }
-
-    [HttpGet, Authorize]
-    public async Task<ActionResult> DiscussingForGroupDirect(int projectId, int characterGroupId, string export)
-    {
-      ViewBag.CharacterGroupId = characterGroupId;
-      var claims = await ClaimsRepository.GetClaimsForGroups(projectId, ClaimStatusSpec.Discussion,
-        new[] {characterGroupId});
-
-      return await ShowMasterClaimList(projectId, export, "Обсуждаемые заявки в группу (напрямую)",
-        "DiscussingForGroupDirect", claims);
+      return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки в группу (все)",
+        claims, GroupNavigationPage.ClaimsDiscussing);
     }
 
     [HttpGet, Authorize]

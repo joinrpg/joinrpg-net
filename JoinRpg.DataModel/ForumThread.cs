@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-  public class ForumThread : IValidatableObject, IProjectEntity
+  public class ForumThread : IValidatableObject, IForumThread
   {
     public int ForumThreadId { get; set; }
     public int CharacterGroupId { get; set; }
-    public CharacterGroup CharacterGroup { get; set; }
+    [NotNull]
+    public virtual CharacterGroup CharacterGroup { get; set; }
     public int ProjectId { get; set; }
     [ForeignKey(nameof(ProjectId))]
     public Project Project { get; set; }
@@ -48,6 +50,12 @@ namespace JoinRpg.DataModel
     int IOrderableEntity.Id => ForumThreadId;
     public virtual ICollection<UserForumSubscription> Subscriptions { get; set; } = new List<UserForumSubscription>();
     
+  }
+
+  public interface IForumThread : IProjectEntity
+  {
+    bool IsVisibleToPlayer { get; }
+    int CharacterGroupId { get; }
   }
 
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by Entity Framework

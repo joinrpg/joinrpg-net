@@ -63,6 +63,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
   internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilter<Character>
   {
     #region Implementation of IProblemFilter<in Character>
+
     public IEnumerable<ClaimProblem> GetProblems(Character character)
     {
       return

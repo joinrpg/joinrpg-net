@@ -16,7 +16,7 @@
 
     @if (Model.IsAvailable)
     {
-        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, null)
+        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, new { @class = "btn btn-default btn-xs" })
         if (Model.IsHot)
         {
             <span class="label label-warning">Горячая роль</span>

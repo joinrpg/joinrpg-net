@@ -31,6 +31,7 @@ namespace JoinRpg.Data.Interfaces
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);
     Task<ICollection<Character>> GetCharacters(int projectId);
+    Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
     Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
   }
 }

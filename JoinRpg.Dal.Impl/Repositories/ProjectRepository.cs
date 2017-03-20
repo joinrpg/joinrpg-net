@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -204,6 +205,20 @@ namespace JoinRpg.Dal.Impl.Repositories
         return await GetCharacterAsync(projectId, (int) characterId);
       }
       throw new InvalidOperationException();
+    }
+
+    public async Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds)
+    {
+      await LoadProjectFields(projectId);
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadMasters(projectId);
+      await LoadProjectClaims(projectId);
+
+      var result = 
+        await Ctx.Set<Character>().Where(
+          character => character.ProjectId == projectId && 
+            characterGroupIds.Any(id => SqlFunctions.CharIndex(id.ToString(), character.ParentGroupsImpl.ListIds) > 0)).ToListAsync();
+      return result.Where(ch => ch.ParentCharacterGroupIds.Intersect(characterGroupIds).Any()).ToList();
     }
   }
 

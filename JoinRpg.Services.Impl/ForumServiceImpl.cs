@@ -142,7 +142,7 @@ namespace JoinRpg.Services.Impl
         new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
         Union(extraSubscriptions ?? Enumerable.Empty<User>());
       var subscriptions =
-        forumThread.GetSubscriptions(CurrentUserId, extraRecepients, visibleToPlayerUpdated).ToList();
+        forumThread.GetSubscriptions(extraRecepients, visibleToPlayerUpdated).ToList();
       return new ForumEmail ()
       {
         ForumThread = forumThread,
