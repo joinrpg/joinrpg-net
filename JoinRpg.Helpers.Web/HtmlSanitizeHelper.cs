@@ -34,10 +34,16 @@ namespace JoinRpg.Helpers.Web
     private static HtmlSanitizer InitHtml5Sanitizer()
     {
       var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
-      sanitizer.Tag("br");
       sanitizer.Tag("img").AllowAttributes("src");
       sanitizer.Tag("hr");
-      sanitizer.Tag("p");
+      //This is temporary changes to be upstreamed into HtmlRuleSanitizer
+      sanitizer.Tag("ol")
+          .AllowAttributes("start")
+          .AllowAttributes("type")
+          .AllowAttributes("reversed");
+      sanitizer.Tag("li")
+          .AllowAttributes("value");
+      //end of
       sanitizer.Tag("blockquote");
       sanitizer.Tag("s");
       sanitizer.Tag("pre");
