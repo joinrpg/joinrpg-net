@@ -133,8 +133,6 @@ namespace JoinRpg.Dal.Impl
         .HasOptional(v => v.CharacterGroup)
         .WithOptionalDependent();
 
-      modelBuilder.Entity<ForumThread>().HasRequired(ft => ft.Project).WithMany().HasForeignKey(ft => ft.ProjectId).WillCascadeOnDelete(false);
-
       modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany().WillCascadeOnDelete(false);
 
       base.OnModelCreating(modelBuilder);

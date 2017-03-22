@@ -20,7 +20,9 @@ namespace JoinRpg.Services.Email
   public class EmailServiceImpl : IEmailService
   {
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
-    private const string MailGunRecepientName = "%recipient.name%";
+    private const string MailGunName = "name";
+    private const string MailGunRecepientName = "%recipient." + MailGunName + " %";
+    
     private readonly string _apiDomain;
 
     private const int MaxRecepientsInChunk = 1000;
@@ -85,7 +87,9 @@ namespace JoinRpg.Services.Email
       var recipientVars = new JObject();
       foreach (var r in recepients)
       {
-        recipientVars.Add(r.Email, r.DisplayName);
+        var jobj = new JObject();
+        jobj.Add(MailGunName, r.DisplayName);
+        recipientVars.Add(r.Email, jobj);
       }
       message.RecipientVariables = recipientVars;
       if (_emailEnabled)
