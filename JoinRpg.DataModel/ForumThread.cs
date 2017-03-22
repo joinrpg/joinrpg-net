@@ -15,9 +15,10 @@ namespace JoinRpg.DataModel
     public int CharacterGroupId { get; set; }
     [NotNull]
     public virtual CharacterGroup CharacterGroup { get; set; }
+    [ForeignKey(nameof(Project))]
     public int ProjectId { get; set; }
-    [ForeignKey(nameof(ProjectId))]
-    public Project Project { get; set; }
+    
+    public virtual Project Project { get; set; }
 
     public string Header { get; set; }
     
