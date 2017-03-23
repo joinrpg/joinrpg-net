@@ -1,6 +1,4 @@
-﻿@using System.Text.RegularExpressions
-@using Joinrpg.Markdown
-@using JoinRpg.Web.Helpers
+﻿@using JoinRpg.Web.Helpers
 @using JoinRpg.Web.Models
 @model TargetedSearchResultViewModel
 
@@ -21,17 +19,6 @@
         @Html.DisplayFor(model => gameObjectLinkViewModel)
     </h4>
     <p class="searchResultDetails">
-        @{
-          string descriptionToShow = Model.SearchResult.Description.ToPlainText();
-
-          const int maxLengthToShow = 200;
-          descriptionToShow = StringFormatHelper.TruncateString(descriptionToShow, Model.SearchTarget, maxLengthToShow);
-
-          descriptionToShow = Regex.Replace(
-              descriptionToShow,
-              Model.SearchTarget,
-              match => "<b><u>" + match.Value + "</u></b>", RegexOptions.IgnoreCase);
-        }
-        @Html.Raw(descriptionToShow)
+        @Html.Raw(Model.GetFormattedDescription(maxLengthToShow: 200));
     </p>
 </div>

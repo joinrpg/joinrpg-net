@@ -27,12 +27,11 @@ namespace JoinRpg.Web.Controllers
 
       return searchResults.Count == 1
         ? RedirectToAction(searchResults.Single().GetRouteTarget())
-        : View(new SearchResultViewModel
-               {
-                  Results = searchResults,
-                  SearchString = viewModel.SearchRequest,
-                  ProjectDetails = new ReadOnlyDictionary<int, ProjectListItemViewModel>(projectDetails)
-        });
+        : View(
+          new SearchResultViewModel(
+            viewModel.SearchRequest,
+            searchResults,
+            projectDetails));
     }
 
     public SearchController(
