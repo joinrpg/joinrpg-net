@@ -1,5 +1,4 @@
-﻿@using JoinRpg.Helpers
-@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
+﻿@model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 
 @{
     Layout = null;
@@ -10,45 +9,13 @@
 <html>
 <head>
     <title>@Model.ProjectName: @Model.CharacterName</title>
-    @Styles.Render("~/Content/css")
+    <link href="~/Content/Print.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
 </head>
 <body>
-<div class="container body-content">
-    <h1 style="page-break-before: always">@Model.CharacterName</h1>
-    <hr />
-<p>
-    @Model.Groups.Where(g => !g.IsRoot).Select(g => g.Name).JoinStrings(" • ")
-</p>
-    <dl>
-        <dt>Мастер</dt>
-        <dd>
-            @if (Model.ResponsibleMaster == null)
-            {
-                <text>нет</text>
-            }
-            else
-            {
-                @Model.ResponsibleMaster.DisplayName
-            }
-        </dd>
-
-        @if (Model.PlayerDisplayName != null)
-        {
-
-            <dt>Игрок</dt>
-            <dd>@Model.PlayerDisplayName</dd>
-
-            <dt>ФИО</dt>
-            <dd>@Model.PlayerFullName</dd>
-            <dt>Телефон</dt>
-            <dd>@Model.PlayerPhoneNumber</dd>
-        }
-        else
-        {
-            <dt>Игрок</dt>
-            <dd>Нет</dd>
-        }
-    </dl>
+<div>
+    @Html.Partial("CharacterListHeader", Model)
+    @Html.Partial("_CharacterHandout", Model)
     @Html.Partial("PrintCharacter", Model)
 </div>
 </body>

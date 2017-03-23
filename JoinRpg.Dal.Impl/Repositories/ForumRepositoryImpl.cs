@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -47,10 +48,16 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(thread => thread.ProjectId == projectId);
     }
 
-    public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<CharacterGroup> groupIds)
+    public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int> groupIds)
     {
+      Expression<Func<ForumThread, bool>> groupPredicate;
+      if (groupIds == null) groupPredicate = thread => true;
+      else groupPredicate = thread => groupIds.Contains(thread.CharacterGroupId);
+
       return await Ctx.Set<ForumThread>()
         .Where(thread => thread.ProjectId == projectId)
+        .Where(groupPredicate)
+        .Where(thread => isMaster || thread.IsVisibleToPlayer)
         .Select(thread => new ForumThreadListImpl()
         {
           ProjectId = thread.ProjectId,
@@ -71,7 +78,9 @@ namespace JoinRpg.Dal.Impl.Repositories
           }).ToList(),
           Watermarks = thread.CommentDiscussion.Watermarks.ToList(),
           Project = thread.Project,
-          Id = thread.ForumThreadId
+          Id = thread.ForumThreadId,
+          CharacterGroupId = thread.CharacterGroupId,
+          IsVisibleToPlayer = thread.IsVisibleToPlayer,
         })
         .ToListAsync();
     }
@@ -102,5 +111,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     internal List<CommentHeaderImpl> Comments { private get; set; }
     internal List<ReadCommentWatermark> Watermarks { private get; set; }
+    public bool IsVisibleToPlayer { get; set; }
+    public int CharacterGroupId { get; set; }
   }
 }

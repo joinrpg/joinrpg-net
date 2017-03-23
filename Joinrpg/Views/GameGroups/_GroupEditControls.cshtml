@@ -42,7 +42,7 @@
                 </a>
             </li>
         }
-        @if ((!Model.FirstInGroup || !Model.LastInGroup) && !Model.IsRoot && !Model.IsSpecial && ViewBag.ShowEditControls)
+        @if ((!Model.First || !Model.Last) && !Model.IsRoot && !Model.IsSpecial && ViewBag.ShowEditControls)
         {
             var moveParameters = new
             {
@@ -52,11 +52,11 @@
                 currentRootGroupId = Model.RootGroupId
             };
             <li class="dropdown-header">Переместить</li>
-            if (!Model.FirstInGroup)
+            if (!Model.First)
             {
                 <li><a href="@Url.Action("MoveUp", "GameGroups", moveParameters, null)">..выше</a></li>
             }
-            if (!Model.LastInGroup)
+            if (!Model.Last)
             {
                 <li><a href="@Url.Action("MoveDown", "GameGroups", moveParameters, null)">..ниже</a></li>
             }

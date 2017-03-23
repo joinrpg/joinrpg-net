@@ -109,30 +109,34 @@ namespace JoinRpg.Domain.CharacterFields
       }
     }
 
-    public static void SaveCharacterFields(
+    [MustUseReturnValue]
+    public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Claim claim,
       [NotNull] IDictionary<int, string> newFieldValue)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      SaveCharacterFieldsImpl(currentUserId, claim.Character, claim, newFieldValue);
+      return SaveCharacterFieldsImpl(currentUserId, claim.Character, claim, newFieldValue);
     }
 
-    public static void SaveCharacterFields(
+    [MustUseReturnValue]
+    public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Character character,
       [NotNull] IDictionary<int, string> newFieldValue)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
-      SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, newFieldValue);
+      return SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, newFieldValue);
     }
 
-    private static void SaveCharacterFieldsImpl(
+    [MustUseReturnValue]
+    private static IReadOnlyCollection<FieldWithValue> SaveCharacterFieldsImpl(
       int currentUserId, 
       [CanBeNull] Character character,
       [CanBeNull] Claim claim,
       [NotNull] IDictionary<int, string> newFieldValue)
     {
+      var updatedValues = new List<FieldWithValue>();
       if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
 
       FieldSaveStrategyBase strategy;
@@ -165,10 +169,13 @@ namespace JoinRpg.Domain.CharacterFields
           field.Value = normalizedValue;
 
           field.MarkUsed();
+
+          updatedValues.Add(field);
         }
       }
 
       strategy.Save(fields);
+      return updatedValues;
     }
 
     private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)

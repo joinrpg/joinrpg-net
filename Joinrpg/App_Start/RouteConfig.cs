@@ -10,6 +10,18 @@ namespace JoinRpg.Web
       routes.LowercaseUrls = true;
       routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+      routes.MapRoute("ForumList", url: "{ProjectId}/forums/",
+        defaults: new {controller = "Forum", action = "ListThreads"});
+
+      routes.MapRoute("ForumActions", url: "{ProjectId}/forums/{forumThreadId}/{action}",
+        defaults: new {controller = "Forum", action = "ViewThread"});
+
+      routes.MapRoute("ForumByGroup", url: "{ProjectId}/roles/{CharacterGroupId}/forums",
+        defaults: new {controller = "Forum", action = "ListThreadsByGroup" });
+
+      routes.MapRoute("ForumByGroupCreate", url: "{ProjectId}/roles/{CharacterGroupId}/create-thread",
+        defaults: new {controller = "Forum", action = "createthread"});
+
       routes.MapRoute("RedirectToDiscussion", url: "{ProjectId}/goto/discussion/{CommentDiscussionId}",
         defaults: new {controller = "Forum", action = "RedirectToDiscussion"});
 
@@ -38,6 +50,9 @@ namespace JoinRpg.Web
 
       routes.MapRoute(name: "GroupListClaim", url: "{ProjectId}/roles/{CharacterGroupId}/claims",
         defaults: new {controller = "ClaimList", action = "ListForGroup"});
+
+      routes.MapRoute(name: "GroupListClaimDirect", url: "{ProjectId}/roles/{CharacterGroupId}/discussing",
+        defaults: new {controller = "ClaimList", action = "ListForGroupDirect"});
 
       routes.MapRoute(name: "AddCharacter", url: "{ProjectId}/roles/{CharacterGroupId}/add-char",
         defaults: new {controller = "Character", action = "Create",});

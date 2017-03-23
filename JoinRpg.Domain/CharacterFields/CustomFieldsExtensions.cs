@@ -11,11 +11,13 @@ namespace JoinRpg.Domain
 {
   public static class CustomFieldsExtensions
   {
-    public static IEnumerable<FieldWithValue> GetFields(this Project project)
+    [NotNull,ItemNotNull,MustUseReturnValue]
+    public static IReadOnlyList<FieldWithValue> GetFields([NotNull] this Project project)
     {
+      if (project == null) throw new ArgumentNullException(nameof(project));
       return
         project.GetOrderedFields()
-          .Select(pf => new FieldWithValue(pf, null));
+          .Select(pf => new FieldWithValue(pf, null)).ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -62,7 +64,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
+    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (container == null)
@@ -80,8 +82,8 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static ICollection<FieldWithValue> FillIfEnabled(
-      [NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character)
+    public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
+      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       characterFieldValues.FillFrom(claim);

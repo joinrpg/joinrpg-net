@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>
+  public class CharacterGroupListItemViewModel : IEquatable<CharacterGroupListItemViewModel>, IMovableListItem
   {
     public int RootGroupId
     { get; set; }
@@ -55,8 +56,8 @@ namespace JoinRpg.Web.Models.Characters
 
     public int ActiveClaimsCount { get; set; }
 
-    public bool FirstInGroup { get; set; }
-    public bool LastInGroup { get; set; }
+    public bool First { get; set; }
+    public bool Last { get; set; }
 
     public int ProjectId { get; set; }
 
@@ -79,6 +80,8 @@ namespace JoinRpg.Web.Models.Characters
     {
       return $"ChGroup(Name={Name})";
     }
+
+    int IMovableListItem.ItemId => CharacterGroupId;
   }
 
 }

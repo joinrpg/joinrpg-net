@@ -42,7 +42,8 @@ namespace JoinRpg.Domain
       return (IClaimSource) claim.Character ?? claim.Group;
     }
 
-    public static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource claimSource)
+    [NotNull, ItemNotNull, MustUseReturnValue]
+    public static IEnumerable<CharacterGroup> GetGroupsPartOf([CanBeNull] this IClaimSource claimSource)
     {
       return claimSource
         .GetParentGroupsToTop() //Get parents

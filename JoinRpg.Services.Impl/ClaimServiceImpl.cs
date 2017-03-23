@@ -56,14 +56,16 @@ namespace JoinRpg.Services.Impl
 
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
+      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
+
+      var claimEmail = EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange, true,
+        CommentExtraAction.NewClaim, await UserRepository.GetById(currentUserId));
+
+      claimEmail.UpdatedFields = updatedFields;
 
       await UnitOfWork.SaveChangesAsync();
 
-      await
-        EmailService.Email(
-          EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, currentUserId, claimText ?? "", s => s.ClaimStatusChange, true,
-              CommentExtraAction.NewClaim, await UserRepository.GetById(currentUserId)));
+      await EmailService.Email(claimEmail);
     }
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
@@ -146,7 +148,7 @@ namespace JoinRpg.Services.Impl
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
       claim.AddCommentImpl(currentUserId, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
-      if (!claim.Project?.Details?.EnableManyCharacters ?? false)
+      if (!claim.Project.Details.EnableManyCharacters)
       {
         foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
         {
@@ -171,15 +173,15 @@ namespace JoinRpg.Services.Impl
 
       //We need to resave fields here, because it may cause some field values to move from Claim to Characters
       //which also could trigger changing of special groups
+      // ReSharper disable once MustUseReturnValue we don't need send email here
       FieldSaveHelper.SaveCharacterFields(currentUserId, claim, new Dictionary<int, string>());
 
-      //TODO: Reorder and save emails only after save
+      await UnitOfWork.SaveChangesAsync();
 
       await
         EmailService.Email(
-          EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, currentUserId, commentText, s => s.ClaimStatusChange, true,
+          EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText, s => s.ClaimStatusChange, true,
               CommentExtraAction.ApproveByMaster, await UserRepository.GetById(currentUserId)));
-      await UnitOfWork.SaveChangesAsync();
     }
 
     public async Task DeclineByMaster(int projectId, int claimId, int currentUserId, string commentText)
@@ -203,7 +205,6 @@ namespace JoinRpg.Services.Impl
     public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
-      var now = DateTime.UtcNow;
 
       claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold);
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
@@ -327,7 +328,7 @@ namespace JoinRpg.Services.Impl
         new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User}.
         Union(extraSubscriptions ?? Enumerable.Empty<User>());
       return
-        EmailHelpers.CreateClaimEmail<T>(claim, currentUserId, commentText, predicate, visibleToPlayerUpdated,
+        EmailHelpers.CreateClaimEmail<T>(claim, commentText, predicate, visibleToPlayerUpdated,
           extraAction, await UserRepository.GetById(currentUserId), extraRecepients);
     }
 
@@ -381,8 +382,14 @@ namespace JoinRpg.Services.Impl
       //TODO: Prevent lazy load here - use repository 
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
-      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue);
+      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue);
+      var user = await UserRepository.GetById(currentUserId);
+      var email = EmailHelpers.CreateClaimEmail<FieldsChangedEmail>(claim, "", s => s.FieldChange, false, null, user);
+      email.UpdatedFields = updatedFields;
+
       await UnitOfWork.SaveChangesAsync();
+
+      await EmailService.Email(email);
     }
 
     public async Task OnHoldByMaster(int projectId, int claimId, int currentUserId, string contents)

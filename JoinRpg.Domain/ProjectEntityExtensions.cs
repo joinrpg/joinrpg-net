@@ -21,7 +21,7 @@ namespace JoinRpg.Domain
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 
-    public static void RequestMasterAccess(this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> lambda)
+    public static void RequestMasterAccess([NotNull] this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> lambda)
     {
       if (field == null)
       {
@@ -118,15 +118,29 @@ namespace JoinRpg.Domain
         commentDiscussion.GetClaim();
       if (forumThread != null)
       {
-        return forumThread.IsVisibleToPlayer &&
-                   commentDiscussion.Project.Claims.OfUserApproved(currentUserId)
-                     .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+        return forumThread.HasPlayerAccess(currentUserId);
       }
       if (claim != null)
       {
         return claim.HasPlayerAccesToClaim(currentUserId);
       }
       throw new InvalidOperationException();
+    }
+
+    [MustUseReturnValue]
+    public static bool HasPlayerAccess([NotNull] this IForumThread forumThread, int? currentUserId)
+    {
+      if (forumThread == null) throw new ArgumentNullException(nameof(forumThread));
+      return currentUserId != null && forumThread.IsVisibleToPlayer &&
+             forumThread.Project.Claims.OfUserApproved((int) currentUserId)
+               .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
+    }
+
+    [MustUseReturnValue]
+    public static bool HasAnyAccess([NotNull] this IForumThread forumThread, int? currentUserId)
+    {
+      if (forumThread == null) throw new ArgumentNullException(nameof(forumThread));
+      return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
     }
 
     [CanBeNull, Pure]

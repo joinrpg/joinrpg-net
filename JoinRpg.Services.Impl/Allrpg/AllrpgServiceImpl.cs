@@ -91,60 +91,6 @@ namespace JoinRpg.Services.Impl.Allrpg
       }
     }
 
-    public async Task AssociateProject(int currentUserId, int projectId, int allrpgProjectId)
-    {
-      var user = await UserRepository.GetById(currentUserId);
-      user.RequestAdminAccess();
-      
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.Details = project.Details ?? new ProjectDetails();
-      if (project.Details.AllrpgId != null)
-      {
-        throw new ValueAlreadySetException("Project is already associated with allrpg");
-      }
-      project.Details.AllrpgId = allrpgProjectId;
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task<IEnumerable<string>> UpdateProject(int currentUserId, int projectId)
-    {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.IsOwner);
-      if (project.Details?.AllrpgId == null)
-      {
-        return new[] {"Проект не ассоциирован с allrpg"};
-      }
-      
-      var reply = await _api.DownloadProject((int) project.Details.AllrpgId);
-
-
-      switch (reply.Status)
-      {
-        case AllrpgApi.Status.Success:
-        {
-          var log = new OperationLog();
-          try
-          {
-            var importer = new AllrpgProjectImporter(project, UnitOfWork, log);
-            await importer.Apply(reply.Result);
-          }
-          catch (Exception e)
-          {
-            log.Error($"EXCEPTION: {e}");
-          }
-          return log.Results;
-        }
-        case AllrpgApi.Status.NetworkError:
-        return new[] { "Сетевая ошибка" };
-        case AllrpgApi.Status.ParseError:
-        return new[] { "Не разобран ответ allrpg" };
-        case AllrpgApi.Status.WrongKey:
-        return new[] { "Ошибочный ключ" };
-        default:
-        throw new ArgumentOutOfRangeException(nameof(reply.Status));
-      }
-    }
-
     public AllrpgServiceImpl(IUnitOfWork unitOfWork, IAllrpgApiKeyStorage keyStorage) : base(unitOfWork)
     {
       _api = new AllrpgApi(keyStorage.Key);

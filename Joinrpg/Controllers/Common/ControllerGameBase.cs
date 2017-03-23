@@ -70,7 +70,6 @@ namespace JoinRpg.Web.Controllers.Common
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.CharacterGroupId,
-          HasAllrpg = project.Details?.AllrpgId != null,
           IsAdmin = IsCurrentUserAdmin(),
         };
       }
@@ -88,7 +87,7 @@ namespace JoinRpg.Web.Controllers.Common
           IsAcceptingClaims = project.IsAcceptingClaims,
           IsActive = project.Active,
           RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,
-          PlotPublished = project.Details?.PublishPlot == true,
+          PlotPublished = project.Details.PublishPlot,
           IsAdmin = IsCurrentUserAdmin(),
         };
       }
@@ -127,7 +126,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (!plot.HasMasterAccess(CurrentUserIdOrDefault) && plot.Project?.Details?.PublishPlot == false)
+      if (!plot.HasMasterAccess(CurrentUserIdOrDefault) && plot.Project?.Details.PublishPlot == false)
       {
         return NoAccesToProjectView(plot.Project);
       }
@@ -141,7 +140,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && project.Details?.PublishPlot == false)
+      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && project.Details.PublishPlot == false)
       {
         return NoAccesToProjectView(project);
       }

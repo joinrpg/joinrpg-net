@@ -8,8 +8,6 @@ namespace JoinRpg.Services.Interfaces.Allrpg
     Task<DownloadResult> DownloadAllrpgProfile(int userId);
 
     Task<LegacyLoginResult> TryToLoginWithOldPassword(string email, string password);
-    Task AssociateProject(int currentUserId, int projectId, int allrpgProjectId);
-    Task<IEnumerable<string>> UpdateProject(int currentUserId, int projectId);
   }
 
   public enum LegacyLoginResult

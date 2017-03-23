@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
@@ -70,6 +71,16 @@ namespace JoinRpg.Web.Models
       ProjectId = projectId;
       ShowCount = showCount;
       ShowUserColumn = showUserColumn;
+    }
+  }
+
+  public class ClaimListForGroupViewModel : ClaimListViewModel
+  {
+    public CharacterGroupDetailsViewModel GroupModel { get; }
+    public ClaimListForGroupViewModel(int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
+      : base(currentUserId, claims, group.ProjectId)
+    {
+      GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
     }
   }
 
