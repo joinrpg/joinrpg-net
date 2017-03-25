@@ -2,15 +2,6 @@
 @using JoinRpg.Web.Models
 @model TargetedSearchResultViewModel
 
-<style type="text/css">
-    <!--
-    .searchResultDetails {
-        margin-left: 2em;
-        margin-bottom: 1.5em;
-    }
-    -->
-</style>
-
 <div>
     <h4>
         @{
@@ -18,7 +9,7 @@
         }
         @Html.DisplayFor(model => gameObjectLinkViewModel)
     </h4>
-    <p class="searchResultDetails">
+    <p style="margin-left: 2em;margin-bottom: 1.5em;">
         @Html.Raw(Model.GetFormattedDescription(maxLengthToShow: 200));
     </p>
 </div>
