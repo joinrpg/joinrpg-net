@@ -7,12 +7,10 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Mailgun.Service;
-using Newtonsoft.Json.Linq;
 
 namespace JoinRpg.Services.Email
 {
@@ -20,8 +18,6 @@ namespace JoinRpg.Services.Email
   public class EmailServiceImpl : IEmailService
   {
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
-    private const string MailGunName = "name";
-    private const string MailGunRecepientName = "%recipient." + MailGunName + " %";
     
     private readonly string _apiDomain;
 
@@ -75,7 +71,7 @@ namespace JoinRpg.Services.Email
       }
     }
 
-    private async Task SendEmailChunkImpl(ICollection<User> recepients, string subject, string text, Recipient sender, string html)
+    private async Task SendEmailChunkImpl(IReadOnlyCollection<User> recepients, string subject, string text, Recipient sender, string html)
     {
       var message = new MessageBuilder().AddUsers(recepients)
         .SetSubject(subject)
@@ -84,14 +80,8 @@ namespace JoinRpg.Services.Email
         .SetTextBody(text)
         .SetHtmlBody(html)
         .GetMessage();
-      var recipientVars = new JObject();
-      foreach (var r in recepients)
-      {
-        var jobj = new JObject();
-        jobj.Add(MailGunName, r.DisplayName);
-        recipientVars.Add(r.Email, jobj);
-      }
-      message.RecipientVariables = recipientVars;
+
+      message.RecipientVariables = recepients.ToRecepientVariables();
       if (_emailEnabled)
       {
         await Send(message);
@@ -146,7 +136,7 @@ namespace JoinRpg.Services.Email
 {updatedField.DisplayString}"));
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
-        $@"Добрый день, {MailGunRecepientName},
+        $@"Добрый день, {MailGunExts.MailGunRecepientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
@@ -197,7 +187,7 @@ namespace JoinRpg.Services.Email
       }
 
       await SendEmail(recepients, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
-        $@"Добрый день, {MailGunRecepientName},
+        $@"Добрый день, {MailGunExts.MailGunRecepientName},
 На форуме появилось новое сообщение: 
 
 {model.Text.Contents}
@@ -208,8 +198,7 @@ namespace JoinRpg.Services.Email
 ", model.Initiator.ToRecipient());
     }
 
-    public Task Email(FieldsChangedEmail createClaimEmail)
-      => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
+    public Task Email(FieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
 
     public Task Email(FinanceOperationEmail model)
     {
@@ -250,7 +239,7 @@ namespace JoinRpg.Services.Email
         throw new ArgumentNullException(nameof(model.Text.Contents));
       }
 
-      var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MailGunRecepientName,
+      var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MailGunExts.MailGunRecepientName,
         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Subject}",
@@ -262,21 +251,7 @@ namespace JoinRpg.Services.Email
 
   }
 
-  internal static class Exts
-  {
-    public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<User> users)
-    {
-      foreach (var user in users.WhereNotNull().Distinct())
-      {
-        builder.AddToRecipient(user.ToRecipient());
-      }
-      return builder;
-    }
-
-    public static Recipient ToRecipient(this User user)
-    {
-      return new Recipient() {DisplayName = user.DisplayName, Email = user.Email};
-    }
+  internal static class Exts { 
 
     public static string GetInitiatorString(this ClaimEmailModel model)
     {
