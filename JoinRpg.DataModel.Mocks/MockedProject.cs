@@ -7,8 +7,8 @@ namespace JoinRpg.DataModel.Mocks
   {
     public Project Project { get; }
     public CharacterGroup Group { get; }
-    public User Player { get; } = new User() {UserId = 1};
-    public User Master { get; } = new User() { UserId = 2 };
+    public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com" };
+    public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com" };
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
     public ProjectField ConditionalField { get; }

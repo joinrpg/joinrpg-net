@@ -4,12 +4,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}</ProjectGuid>
+    <ProjectGuid>{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.Services.Email</RootNamespace>
-    <AssemblyName>JoinRpg.Services.Email</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RootNamespace>JoinRpg.Services.Email.Test</RootNamespace>
+    <AssemblyName>JoinRpg.Services.Email.Test</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -31,27 +31,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mailgun_csharp, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\mailgun_csharp.0.5.0.0\lib\net45\mailgun_csharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,39 +46,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EmailServiceImpl.cs" />
-    <Compile Include="MailGunExts.cs" />
+    <Compile Include="TestMailGunRecepients.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj">
+      <Project>{87ac11e6-9c66-468a-ac68-927d61d1e233}</Project>
+      <Name>JoinRpg.DataModel.Mocks</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
       <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
       <Name>JoinRpg.DataModel</Name>
     </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
-      <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
-      <Name>JoinRpg.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
-      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
-      <Name>JoinRpg.Helpers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj">
-      <Project>{9e52df40-a040-47c2-91dc-2413270ff9b1}</Project>
-      <Name>Joinrpg.Markdown</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
-      <Project>{7032c5d8-131d-4e84-adf4-263399f9626a}</Project>
-      <Name>JoinRpg.Services.Interfaces</Name>
+    <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj">
+      <Project>{4c917f4e-977f-4b8d-b9b1-9a92854e83bf}</Project>
+      <Name>JoinRpg.Services.Email</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
