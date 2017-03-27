@@ -66,6 +66,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Domain.Test", "Join
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.DataModel.Mocks", "JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj", "{87AC11E6-9C66-468A-AC68-927D61D1E233}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Services.Email.Test", "JoinRpg.Services.Email.Test\JoinRpg.Services.Email.Test.csproj", "{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -180,6 +182,10 @@ Global
 		{87AC11E6-9C66-468A-AC68-927D61D1E233}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87AC11E6-9C66-468A-AC68-927D61D1E233}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87AC11E6-9C66-468A-AC68-927D61D1E233}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,5 +204,6 @@ Global
 		{138594D3-38DF-4025-B5B5-1049D686CC29} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{F17A0823-4C0A-40C3-818F-A593FB6ADBEC} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{87AC11E6-9C66-468A-AC68-927D61D1E233} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
+		{4ED65E28-2C8B-4F72-A19A-241368CC4FB2} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 	EndGlobalSection
 EndGlobal
