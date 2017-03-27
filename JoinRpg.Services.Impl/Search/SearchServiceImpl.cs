@@ -43,7 +43,7 @@ namespace JoinRpg.Services.Impl.Search
   {
     public LinkType LinkType { get; set; }
     public string Name { get; set; }
-    public string Description { get; set; }
+    public MarkdownString Description { get; set; }
 
     public bool IsPublic { get; set; }
 
@@ -58,7 +58,7 @@ namespace JoinRpg.Services.Impl.Search
       {
         LinkType = type,
         Name = @group.Name,
-        Description = "",
+        Description = @group.Description,
         Identification = @group.Id.ToString(),
         ProjectId = @group.ProjectId,
         IsPublic = group.IsPublic,

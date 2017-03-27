@@ -26,7 +26,7 @@ namespace JoinRpg.Services.Impl.Search
       {
         LinkType = LinkType.Plot,
         Name = plot.MasterTitle,
-        Description = "",
+        Description = new MarkdownString(""),
         Identification = plot.PlotFolderId.ToString(),
         ProjectId = plot.ProjectId,
         IsPublic = false,

@@ -27,7 +27,7 @@ namespace JoinRpg.Services.Impl.Search
             {
                 LinkType = LinkType.Project,
                 Name = proj.ProjectName,
-                Description = "",
+                Description = new MarkdownString(""),
                 Identification = proj.ProjectId.ToString(),
                 ProjectId = proj.ProjectId,
                 IsPublic = true,

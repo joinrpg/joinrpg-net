@@ -32,7 +32,7 @@ namespace JoinRpg.Services.Impl.Search
       {
         LinkType = LinkType.ResultUser,
         Name = user.DisplayName,
-        Description = "",
+        Description = new MarkdownString(""),
         Identification = user.UserId.ToString(),
         ProjectId = null, //Users not associated with any project
         IsPublic = true,

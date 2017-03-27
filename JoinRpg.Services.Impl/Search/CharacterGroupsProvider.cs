@@ -19,6 +19,7 @@ namespace JoinRpg.Services.Impl.Search
                 || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
               && cg.IsActive && !cg.IsRoot
             )
+            .OrderByDescending(cg => cg.CharacterGroupName.Contains(searchString))
             .ToListAsync();
 
       return GetWorldObjectsResult(currentUserId, results, LinkType.ResultCharacterGroup);
