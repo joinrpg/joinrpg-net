@@ -22,7 +22,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       }
 
       var isAvailableForTarget = fieldWithValue.Field.IsAvailableForTarget(target);
-      var hasValue = fieldWithValue.HasValue;
+      var hasValue = fieldWithValue.HasEditableValue;
 
       if (hasValue)
       {
