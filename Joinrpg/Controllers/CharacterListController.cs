@@ -140,7 +140,7 @@ namespace JoinRpg.Web.Controllers
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
       return await MasterCharacterList(projectid,
-        character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasValue && character.IsActive, export,
+        character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
         "Поле (проставлено): " + field.FieldName);
     }
   }
