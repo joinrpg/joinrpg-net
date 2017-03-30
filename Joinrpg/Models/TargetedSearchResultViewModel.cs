@@ -57,7 +57,7 @@ namespace JoinRpg.Web.Models
               ? stringToTruncate.Length - maxLength
               : startOfSubtringToShow;
 
-        stringToTruncate = "..." + stringToTruncate.Substring(startOfSubtringToShow, maxLength);
+        stringToTruncate = stringToTruncate.Substring(startOfSubtringToShow, maxLength);
 
         if (startOfSubtringToShow > 0)
         {
