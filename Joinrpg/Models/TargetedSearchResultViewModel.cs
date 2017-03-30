@@ -39,36 +39,37 @@ namespace JoinRpg.Web.Models
       {
         targetText = targetText.Substring(0, maxLength);
       }
-
-      if (stringToTruncate.Length > maxLength)
+      if (stringToTruncate.Length <= maxLength)
       {
-        int startOfSearchedFragment = stringToTruncate.IndexOf(targetText, stringComparison);
-
-        //show the beginning of the string if target fragment is not found
-        startOfSearchedFragment = startOfSearchedFragment < 0 ? 0 : startOfSearchedFragment;
-
-        //Try to put the beginning of the searched fragment in the middle of the substring
-        int startOfSubtringToShow = startOfSearchedFragment > (maxLength / 2)
-            ? startOfSearchedFragment - (maxLength / 2)
-            : 0;
-
-        //Move substring to the left, if needed
-        startOfSubtringToShow = (startOfSubtringToShow + maxLength) > stringToTruncate.Length
-              ? stringToTruncate.Length - maxLength
-              : startOfSubtringToShow;
-
-        stringToTruncate = stringToTruncate.Substring(startOfSubtringToShow, maxLength);
-
-        if (startOfSubtringToShow > 0)
-        {
-          stringToTruncate = "..." + stringToTruncate;
-        }
-        if (startOfSubtringToShow + maxLength < stringToTruncate.Length)
-        {
-          stringToTruncate = stringToTruncate + "...";
-        }
+        return stringToTruncate;
       }
-      return stringToTruncate;
+
+      int startOfSearchedFragment = stringToTruncate.IndexOf(targetText, stringComparison);
+
+      //show the beginning of the string if target fragment is not found
+      startOfSearchedFragment = startOfSearchedFragment < 0 ? 0 : startOfSearchedFragment;
+
+      //Try to put the beginning of the searched fragment in the middle of the substring
+      int startOfSubtringToShow = startOfSearchedFragment > (maxLength / 2)
+        ? startOfSearchedFragment - (maxLength / 2)
+        : 0;
+
+      //Move substring to the left, if needed
+      startOfSubtringToShow = (startOfSubtringToShow + maxLength) > stringToTruncate.Length
+        ? stringToTruncate.Length - maxLength
+        : startOfSubtringToShow;
+
+      string truncatedString = stringToTruncate.Substring(startOfSubtringToShow, maxLength);
+
+      if (startOfSubtringToShow > 0)
+      {
+        truncatedString = "..." + truncatedString;
+      }
+      if (startOfSubtringToShow + maxLength < stringToTruncate.Length)
+      {
+        truncatedString = truncatedString + "...";
+      }
+      return truncatedString;
     }
 
     public TargetedSearchResultViewModel(
