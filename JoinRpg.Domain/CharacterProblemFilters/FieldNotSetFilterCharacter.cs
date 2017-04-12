@@ -22,17 +22,13 @@ namespace JoinRpg.Domain.CharacterProblemFilters
       }
 
       var isAvailableForTarget = fieldWithValue.Field.IsAvailableForTarget(target);
-      var hasValue = fieldWithValue.HasValue;
+      var hasValue = fieldWithValue.HasEditableValue;
 
       if (hasValue)
       {
         if (isAvailableForTarget) yield break;
 
-        if (!fieldWithValue.Field.IsActive)
-        {
-          yield return FieldProblem(ClaimProblemType.DeletedFieldHasValue, ProblemSeverity.Hint, fieldWithValue);
-        }
-        else
+        if (fieldWithValue.Field.IsActive)
         {
           yield return FieldProblem(ClaimProblemType.FieldShouldNotHaveValue, ProblemSeverity.Hint, fieldWithValue);
         }
@@ -67,6 +63,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
   internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilter<Character>
   {
     #region Implementation of IProblemFilter<in Character>
+
     public IEnumerable<ClaimProblem> GetProblems(Character character)
     {
       return
@@ -84,9 +81,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
     #region Implementation of IProblemFilter<in Character>
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
-      var projectFields = claim.Project.GetFields().ToList();
-      projectFields.FillFrom(claim);
-      projectFields.FillFrom(claim.Character);
+      var projectFields = claim.GetFields();
 
       return CheckFields(projectFields.Where(pf => pf.Field.FieldBoundTo == FieldBoundTo.Claim || claim.IsApproved).ToList(), claim.GetTarget());
     }

@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Interfaces.Search
     [NotNull]
     string Name { get; }
     [NotNull]
-    string Description { get; }
+    MarkdownString Description { get; }
     bool IsPublic { get; }
     bool IsActive { get; }
   }

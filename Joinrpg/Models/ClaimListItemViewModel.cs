@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
@@ -60,7 +61,7 @@ namespace JoinRpg.Web.Models
     public bool ShowCount { get; }
     public bool ShowUserColumn { get; }
 
-    public ClaimListViewModel (int currentUserId, ICollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
+    public ClaimListViewModel (int currentUserId, IReadOnlyCollection<Claim> claims, int? projectId, bool showCount = true, bool showUserColumn = true)
     {
       Items = claims
         .Select(c => new ClaimListItemViewModel(c, currentUserId).AddProblems(c.GetProblems()))
@@ -73,7 +74,17 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class ClaimListItemViewModel
+  public class ClaimListForGroupViewModel : ClaimListViewModel
+  {
+    public CharacterGroupDetailsViewModel GroupModel { get; }
+    public ClaimListForGroupViewModel(int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
+      : base(currentUserId, claims, group.ProjectId)
+    {
+      GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
+    }
+  }
+
+  public class ClaimListItemViewModel : ILinkable
   {
     [Display(Name="Имя")]
     public string Name { get; set; }
@@ -119,10 +130,11 @@ namespace JoinRpg.Web.Models
     public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      var lastComment = claim.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
+      var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
 
       ClaimId = claim.ClaimId;
       ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
+      
       Name = claim.Name;
       Player = claim.Player;
 
@@ -130,9 +142,7 @@ namespace JoinRpg.Web.Models
       CreateDate = claim.CreateDate;
       Responsible = claim.ResponsibleMasterUser;
       LastModifiedBy = lastComment?.Author ?? claim.Player;
-      UnreadCommentsCount =
-        claim.Comments.Count(comment => (comment.IsVisibleToPlayer || claim.HasMasterAccess(currentUserId))
-                                                  && !comment.IsReadByUser(currentUserId));
+      UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
 
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;
@@ -147,5 +157,13 @@ namespace JoinRpg.Web.Models
         problem.Select(p => new ProblemViewModel(p)).ToList();
       return this;
     }
+
+    #region Implementation of ILinkable
+
+    public LinkType LinkType => LinkType.Claim;
+    public string Identification => ClaimId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
+
+    #endregion
   }
 }

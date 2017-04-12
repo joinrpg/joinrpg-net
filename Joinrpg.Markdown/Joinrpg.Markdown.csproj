@@ -30,12 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=10.1.5.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.1.5\lib\net\JetBrains.Annotations.dll</HintPath>
+    <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Markdig, Version=0.7.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Markdig.0.7.4\lib\net40\Markdig.dll</HintPath>
+    <Reference Include="Markdig, Version=0.10.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Markdig.0.10.6\lib\net40\Markdig.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -59,9 +59,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
       <Project>{dfe0d0a8-980e-49a1-9d9f-c7866faf4c05}</Project>
       <Name>JoinRpg.Helpers.Web</Name>
@@ -70,6 +67,9 @@
       <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
       <Name>JoinRpg.Helpers</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models.Exporters
 {
   public class ClaimListItemViewModelExporter: CustomExporter<ClaimListItemViewModel>
   {
-    public ClaimListItemViewModelExporter(ICollection<ProjectField> fields)
+    public ClaimListItemViewModelExporter(ICollection<ProjectField> fields, IUriService uriService) : base(uriService)
     {
       Fields = fields;
     }
@@ -19,6 +19,7 @@ namespace JoinRpg.Web.Models.Exporters
     public  override IEnumerable<ITableColumn> ParseColumns()
     {
       yield return StringColumn(x => x.Name);
+      yield return UriColumn(x => x);
       yield return EnumColumn(x => x.ClaimStatus);
       yield return DateTimeColumn(x => x.UpdateDate);
       yield return DateTimeColumn(x => x.CreateDate);

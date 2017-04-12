@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -14,6 +15,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
+  [Authorize]
   public class ForumController : ControllerGameBase
   {
     #region Constructor & Services
@@ -37,7 +39,13 @@ namespace JoinRpg.Web.Controllers
     [MasterAuthorize, HttpGet]
     public async Task<ActionResult> CreateThread(int projectId, int charactergroupid)
     {
-      return View(new CreateForumThreadViewModel((await ProjectRepository.GetGroupAsync(projectId, charactergroupid)).EnsureActive()));
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectId, charactergroupid);
+      var error = AsMaster(characterGroup);
+      if (error != null)
+      {
+        return error;
+      }
+      return View(new CreateForumThreadViewModel(characterGroup.EnsureActive()));
     }
 
     [MasterAuthorize, HttpPost, ValidateAntiForgeryToken]
@@ -74,6 +82,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
     {
       var forumThread = await GetForumThread(projectid, forumThreadId);
+      var error = WithEntity(forumThread);
+
+      if (error != null) return error;
       var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
       return View(viewModel);
     }
@@ -164,6 +175,7 @@ namespace JoinRpg.Web.Controllers
       return HttpNotFound();
     }
 
+    [Authorize]
     public async Task<ActionResult> RedirectToDiscussion(int projectid, int? commentid, int? commentDiscussionId)
     {
       CommentDiscussion discussion;
@@ -187,11 +199,40 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListThreads(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
+      var error = WithEntity(project);
+      if (error != null || project == null)
+      {
+        return error;
+      }
       var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
-      var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
-      var groupIds = claims.SelectMany(claim => claim.Character.GetGroupsPartOf());
+      IEnumerable<int> groupIds;
+      if (isMaster)
+      {
+        groupIds = null;
+      }
+      else
+      {
+        var claims = await ClaimsRepository.GetClaimsForPlayer(projectid, ClaimStatusSpec.Approved, CurrentUserId);
+
+        groupIds = claims.SelectMany(claim => claim.Character.GetGroupsPartOf().Select(g => g.CharacterGroupId));
+      }
       var threads = await ForumRepository.GetThreads(projectid, isMaster, groupIds);
       var viewModel = new ForumThreadListViewModel(project, threads, CurrentUserId);
+      return View(viewModel);
+    }
+
+    [HttpGet]
+    public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
+    {
+      var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+      var error = WithEntity(group);
+      if (error != null || group == null)
+      {
+        return error;
+      }
+      var isMaster = group.HasMasterAccess(CurrentUserIdOrDefault);
+      var threads = await ForumRepository.GetThreads(projectid, isMaster, new [] {characterGroupId});
+      var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(CurrentUserIdOrDefault)), CurrentUserId);
       return View(viewModel);
     }
   }

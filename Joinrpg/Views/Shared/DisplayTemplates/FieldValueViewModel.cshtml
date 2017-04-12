@@ -5,7 +5,7 @@
   {
       <h4>@Model.FieldName</h4>
       <div class="help-block">
-          @Html.DisplayFor(model => model.Description)
+          @Model.Description
       </div>
       return;
   }
@@ -39,7 +39,7 @@
                 break;
             case ProjectFieldViewType.String:
             case ProjectFieldViewType.Text:
-            @Html.DisplayFor(model => model.Value, new { htmlAttributes = new { @class = "form-control" } })
+            @Model.DisplayString
                 break;
             case ProjectFieldViewType.Header:
             default:

@@ -14,6 +14,7 @@ namespace JoinRpg.Data.Interfaces
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
+    [NotNull, ItemCanBeNull]
     Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId);
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId);
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId);
@@ -30,6 +31,7 @@ namespace JoinRpg.Data.Interfaces
     Task<Project> GetProjectWithFinances(int projectid);
     Task<Project> GetProjectForFinanceSetup(int projectid);
     Task<ICollection<Character>> GetCharacters(int projectId);
-    Task<IEnumerable<Project>>  GetProjectsWithoutAllrpgAsync();
+    Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
+    Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
   }
 }

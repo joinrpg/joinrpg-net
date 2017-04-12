@@ -42,7 +42,8 @@ namespace JoinRpg.Domain
       return (IClaimSource) claim.Character ?? claim.Group;
     }
 
-    private static IEnumerable<CharacterGroup> GetGroupsPartOf(this IClaimSource claimSource)
+    [NotNull, ItemNotNull, MustUseReturnValue]
+    public static IEnumerable<CharacterGroup> GetGroupsPartOf([CanBeNull] this IClaimSource claimSource)
     {
       return claimSource
         .GetParentGroupsToTop() //Get parents
@@ -96,25 +97,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static IEnumerable<User> GetSubscriptions(this Claim claim, Func<UserSubscription, bool> predicate,
-      int initiatorUserId, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
-    {
-      return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
-        .SelectMany(g => g.Subscriptions) //get subscriptions on groups
-        .Union(claim.Subscriptions) //subscribtions on claim
-        .Union(claim.Character?.Subscriptions ?? new UserSubscription[] {}) //and on characters
-        .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
-        .Select(u => u.User) //Select users
-        .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
-        .Union(claim.Player) //...and player himself also
-        .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
-        .Where(u => isVisibleToPlayer || u != claim.Player) //remove player if we doing something not player visible
-        .Where(u => u != null && u.UserId != initiatorUserId) //Do not send mail to self (and also will remove nulls)
-        .Distinct() //One user can be subscribed by multiple reasons
-        ;
-    }
-
-    public static Claim RequestAccess([NotNull] this Claim claim, int currentUserId)
+    public static Claim RequestAccess([CanBeNull] this Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       if (!claim.HasAnyAccess(currentUserId))
@@ -134,7 +117,7 @@ namespace JoinRpg.Domain
       return claim;
     }
 
-    public static IEnumerable<Comment> GetMasterAnswers(this Claim claim)
+    public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim)
     {
       return claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
     }

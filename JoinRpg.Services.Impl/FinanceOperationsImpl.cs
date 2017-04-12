@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Impl
     {
     }
 
-    public async Task FeeAcceptedOperation(int projectId, int claimId, int currentUserId, string contents, DateTime operationDate,
+    public async Task FeeAcceptedOperation(int projectId, int claimId, string contents, DateTime operationDate,
   int feeChange, int money, int paymentTypeId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
@@ -32,24 +32,24 @@ namespace JoinRpg.Services.Impl
 
       if (feeChange != 0 || money < 0)
       {
-        claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+        claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
       }
       var state = FinanceOperationState.Approved;
 
-      if (paymentType.UserId != currentUserId)
+      if (paymentType.UserId != CurrentUserId)
       {
-        if (claim.PlayerUserId == currentUserId)
+        if (claim.PlayerUserId == CurrentUserId)
         {
           //Player mark that he pay fee. Put this to moderation
           state = FinanceOperationState.Proposed;
         }
         else
         {
-          claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+          claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
         }
       }
 
-      var comment = claim.AddCommentImpl(currentUserId, null, contents, now, isVisibleToPlayer:true, extraAction: null);
+      var comment = claim.AddCommentImpl(CurrentUserId, null, contents, isVisibleToPlayer:true, extraAction: null);
 
       var financeOperation = new FinanceOperation()
       {
@@ -72,8 +72,10 @@ namespace JoinRpg.Services.Impl
       claim.UpdateClaimFeeIfRequired(operationDate);
 
       await UnitOfWork.SaveChangesAsync();
-      var email = await CreateClaimEmail<FinanceOperationEmail>(claim, currentUserId, contents, s => s.MoneyOperation,
-        isVisibleToPlayer: true, commentExtraAction: null, extraRecepients: new [] { paymentType.User});
+      var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, contents,
+        s => s.MoneyOperation,
+        isVisibleToPlayer: true, commentExtraAction: null, initiator: await UserRepository.GetById(CurrentUserId),
+        extraRecepients: new[] {paymentType.User});
       email.FeeChange = feeChange;
       email.Money = money;
 
@@ -81,10 +83,10 @@ namespace JoinRpg.Services.Impl
 
     }
 
-    public async Task CreateCashPaymentType(int projectid, int currentUserId, int targetUserId)
+    public async Task CreateCashPaymentType(int projectid, int targetUserId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
       project.RequestMasterAccess(targetUserId);
 
       var targetMaster = project.ProjectAcls.Single(a => a.UserId == targetUserId);
@@ -99,10 +101,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task TogglePaymentActivness(int projectid, int currentUserId, int paymentTypeId)
+    public async Task TogglePaymentActivness(int projectid, int paymentTypeId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
       var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
@@ -117,10 +119,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateCustomPaymentType(int projectId, int currentUserId, string name, int targetMasterId)
+    public async Task CreateCustomPaymentType(int projectId, string name, int targetMasterId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
       project.RequestMasterAccess(targetMasterId);
 
       project.PaymentTypes.Add(new PaymentType()
@@ -136,10 +138,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditCustomPaymentType(int projectId, int currentUserId, int paymentTypeId, string name, bool isDefault)
+    public async Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
       var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
@@ -158,10 +160,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateFeeSetting(int projectId, int currentUserId, int fee, DateTime startDate)
+    public async Task CreateFeeSetting(int projectId, int fee, DateTime startDate)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
       if (startDate < DateTime.UtcNow.Date.AddDays(-1)) 
       {
@@ -181,10 +183,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteFeeSetting(int projectid, int currentUserId, int projectFeeSettingId)
+    public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
       var feeSetting = project.ProjectFeeSettings.Single(pt => pt.ProjectFeeSettingId == projectFeeSettingId);
 
@@ -198,18 +200,27 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task ChangeFee(int projectId, int claimId, int feeValue, int currentUserId)
+    public async Task ChangeFee(int projectId, int claimId, int feeValue)
     {
       
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      var now = DateTime.UtcNow;
-      claim.RequestMasterAccess(currentUserId, acl => acl.CanManageMoney);
 
-      var comment = claim.AddCommentImpl(currentUserId, null, feeValue.ToString(), now, isVisibleToPlayer: true,
+      claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+
+      claim.AddCommentImpl(CurrentUserId, null, feeValue.ToString(), isVisibleToPlayer: true,
         extraAction: CommentExtraAction.FeeChanged);
 
       claim.CurrentFee = feeValue;
 
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task SaveGlobalSettings(int projectId, bool warnOnOverPayment)
+    {
+      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+
+      project.Details.FinanceWarnOnOverPayment = warnOnOverPayment;
       await UnitOfWork.SaveChangesAsync();
     }
   }

@@ -12,10 +12,16 @@ namespace JoinRpg.Web.Models.Exporters
 {
   public abstract class CustomExporter<TRow> : IGeneratorFrontend
   {
+    protected CustomExporter(IUriService uriService)
+    {
+      UriService = uriService;
+    }
+
     private class TableColumn<T> : ITableColumn
     {
-      public TableColumn(string name, Func<TRow, T> getter)
+      public TableColumn([CanBeNull] string name, [NotNull] Func<TRow, T> getter)
       {
+        if (getter == null) throw new ArgumentNullException(nameof(getter));
         Name = name;
         Getter = getter;
       }
@@ -30,20 +36,26 @@ namespace JoinRpg.Web.Models.Exporters
         return Getter((TRow) row);
       }
 
-      [NotNull]
       public string Name { get; }
 
       [NotNull]
       private Func<TRow, T> Getter { get; }
     }
 
+    private IUriService UriService { get; }
+
     public abstract IEnumerable<ITableColumn> ParseColumns();
 
     [MustUseReturnValue]
     protected ITableColumn StringColumn(Expression<Func<TRow, string>>  func)
     {
-      var member = func.AsPropertyAccess();
-      return new TableColumn<string>(member, func.Compile());
+      return new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
+    }
+
+    [Pure]
+    protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func)
+    {
+      return new TableColumn<Uri>(func.AsPropertyName(), row => UriService.GetUri(func.Compile()(row)));
     }
 
     [MustUseReturnValue]

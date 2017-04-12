@@ -13,7 +13,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
+                <span class="navbar-brand">@Html.ActionLink(Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
             </div>
             <div class="navbar-collapse collapse" id="master-menu-collapse">
                 <ul class="nav navbar-nav">
@@ -49,7 +49,7 @@
                             <li role="separator" class="dropdown-header">По группам:</li>
                             @foreach (var cg in Model.BigGroups)
                             {
-                                <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
+                                <li>@Html.ActionLink(cg.Name, "Details", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
                             }
                         </ul>
                     </li>
@@ -105,6 +105,13 @@
                         </ul>
                     </li>
                     <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
+
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
@@ -124,10 +131,6 @@
                             <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Мастера", "Index", "Acl", new {Model.ProjectId}, null)</li>
-                            @if (Model.HasAllrpg && Model.AccessToProject.IsOwner)
-                            {
-                                <li>@Html.ActionLink("Обновить из allrpg", "AllrpgUpdate", "GameTools", new {Model.ProjectId}, null)</li>
-                            }
                         </ul>
                     </li>
                 </ul>

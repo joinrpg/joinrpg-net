@@ -45,7 +45,8 @@ namespace JoinRpg.Services.Impl
         ProjectAcls = new List<ProjectAcl>()
         {
           ProjectAcl.CreateRootAcl(creator.UserId)
-        }
+        },
+        Details = new ProjectDetails()
       };
       project.MarkTreeModified();
       UnitOfWork.GetDbSet<Project>().Add(project);
@@ -169,7 +170,6 @@ namespace JoinRpg.Services.Impl
 
       var user = await UserRepository.GetById(currentUserId);
       RequestProjectAdminAccess(project, user);
-      project.Details = project.Details ?? new ProjectDetails();
 
       project.Active = false;
       project.IsAcceptingClaims = false;
@@ -252,7 +252,6 @@ namespace JoinRpg.Services.Impl
       var project = await ProjectRepository.GetProjectAsync(projectId); 
       project.RequestMasterAccess(currentUserId, acl => acl.CanChangeProjectProperties);
 
-      project.Details = project.Details ?? new ProjectDetails {ProjectId = projectId};
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
       project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
       project.Details.EnableManyCharacters = multipleCharacters;
@@ -267,7 +266,14 @@ namespace JoinRpg.Services.Impl
       bool canManageMoney, bool canSendMassMails, bool canManagePlots)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+      if (!project.HasMasterAccess(currentUserId, a => a.CanGrantRights))
+      {
+        var user = await UserRepository.GetById(currentUserId);
+        if (!user.Auth?.IsAdmin == true)
+        {
+          project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+        }
+      }
       project.EnsureProjectActive();
 
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);

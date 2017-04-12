@@ -11,11 +11,13 @@ namespace JoinRpg.Domain
 {
   public static class CustomFieldsExtensions
   {
-    public static IEnumerable<FieldWithValue> GetFields(this Project project)
+    [NotNull,ItemNotNull,MustUseReturnValue]
+    public static IReadOnlyList<FieldWithValue> GetFields([NotNull] this Project project)
     {
+      if (project == null) throw new ArgumentNullException(nameof(project));
       return
         project.GetOrderedFields()
-          .Select(pf => new FieldWithValue(pf, null));
+          .Select(pf => new FieldWithValue(pf, null)).ToList().AsReadOnly();
     }
 
     /// <summary>
@@ -35,7 +37,7 @@ namespace JoinRpg.Domain
       return
         JsonConvert.SerializeObject(
           fieldWithValues
-            .Where(v => v.HasValue)
+            .Where(v => v.HasEditableValue)
             .ToDictionary(pair => pair.Field.ProjectFieldId, pair => pair.Value));
     }
 
@@ -62,7 +64,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void FillFrom([NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
+    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (container == null)
@@ -80,18 +82,12 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static ICollection<FieldWithValue> FillIfEnabled(
-      [NotNull] this ICollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character, int? currentUserId)
+    public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
+      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
-      if (claim != null && (claim.HasMasterAccess(currentUserId) || claim.HasPlayerAccesToClaim(currentUserId)))
-      {
-        characterFieldValues.FillFrom(claim);
-      }
-      if (character != null && (character.HasMasterAccess(currentUserId) || character.HasPlayerAccess(currentUserId)))
-      {
-        characterFieldValues.FillFrom(character);
-      }
+      characterFieldValues.FillFrom(claim);
+      characterFieldValues.FillFrom(character);
       return characterFieldValues;
     }
 
@@ -99,6 +95,15 @@ namespace JoinRpg.Domain
     {
       var projectFields = character.Project.GetFields().ToList();
       projectFields.FillFrom(character.ApprovedClaim);
+      projectFields.FillFrom(character);
+      return projectFields;
+    }
+
+
+    public static List<FieldWithValue> GetFields(this Claim character)
+    {
+      var projectFields = character.Project.GetFields().ToList();
+      projectFields.FillFrom(character.Character);
       projectFields.FillFrom(character);
       return projectFields;
     }

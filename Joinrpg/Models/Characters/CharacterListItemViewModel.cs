@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -20,6 +21,18 @@ namespace JoinRpg.Web.Models.Characters
     NotSend,
     [Display(Name = "NPC")]
     Npc,
+  }
+
+  public class CharacterListByGroupViewModel : CharacterListViewModel
+  {
+    public CharacterListByGroupViewModel(int currentUserId, IReadOnlyCollection<Character> characters,
+      IReadOnlyCollection<PlotFolder> plots, CharacterGroup group)
+      : base(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, plots, group.Project)
+    {
+      GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Characters);
+    }
+
+    public CharacterGroupDetailsViewModel GroupModel { get; }
   }
 
   public class CharacterListViewModel : IOperationsAwareView
@@ -69,7 +82,7 @@ namespace JoinRpg.Web.Models.Characters
     public IReadOnlyCollection<ProjectField> Fields { get; }
   }
 
-  public class CharacterListItemViewModel
+  public class CharacterListItemViewModel : ILinkable
   {
     [Display(Name="Занят?")]
     public CharacterBusyStatusView BusyStatus { get; }
@@ -120,6 +133,7 @@ namespace JoinRpg.Web.Models.Characters
       }
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
+      ProjectId = character.ProjectId;
       Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true); //This disable edit will speed up some requests.
       Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
 
@@ -132,5 +146,13 @@ namespace JoinRpg.Web.Models.Characters
 
     [Display(Name="Проблемы")]
     public ICollection<ProblemViewModel> Problems { get; set; }
+
+    #region Implementation of ILinkable
+
+    public LinkType LinkType => LinkType.ResultCharacter;
+    public string Identification => CharacterId.ToString();
+    public int? ProjectId { get; }
+
+    #endregion
   }
 }

@@ -16,6 +16,7 @@
 @using JoinRpg.DataModel
 @using JoinRpg.Web.Models
 @using JoinRpg.Domain;
+@using JoinRpg.Helpers.Web
 
 <div>
     @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -65,12 +66,17 @@
                 @Html.DisplayNameFor(model => model.Description)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.Description)
+                @Model.Description
             </dd>
             @if (Model.ParentGroups != null)
             {
                 <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-                <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+                <dd>@Html.DisplayFor(model => model.ParentGroups)
+                    @if (Model.Navigation.CanEditRoles)
+                    {
+                    <a href="@Url.Action("Edit", "Character", new { Model.ProjectId, Model.CharacterId })"><span class="glyphicon glyphicon-pencil"></span></a>
+                    }
+                </dd>
             }
             @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
             {
@@ -104,7 +110,12 @@
                 @Html.DisplayFor(model => model.ResponsibleMaster)
                 if (Model.HasMasterAccess && !Model.CanManageThisClaim)
                 {
-                    <span class="help-block">Изменять ответственного мастера для чужих заявок могут только администраторы.</span>
+                    <input 
+                           type="button" 
+                           value="Изменить" 
+                           class="btn btn-default btn-xs" 
+                           disabled="disabled"
+                           title="Изменять ответственного мастера для чужих заявок могут только администраторы."/>
                 }
             }
         </dd>
@@ -173,7 +184,7 @@
                 </a>
                 foreach (var plugin in Model.PrintPlugins)
                 {
-                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new { Model.ProjectId, Plugin = plugin.Name, CharacterIds = Model.CharacterId }, null)">
+                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print", new {Model.ProjectId, Plugin = plugin.Name, CharacterIds = new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
                     <span class="glyphicon glyphicon-print"></span>
                     @plugin.Name
                 </a>
@@ -224,10 +235,10 @@
                     }
                     using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                     {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
+                            CommentDiscussionId = Model.ClaimId,
                             ParentCommentId = null,
                             EnableHideFromUser = false,
                             HideFromUser = false,
@@ -249,10 +260,10 @@
                 </div>
                   using (Html.BeginForm("OnHoldByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                   {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
+                            CommentDiscussionId = Model.ClaimId,
                             ParentCommentId = null,
                             EnableHideFromUser = false,
                             HideFromUser = false,
@@ -281,10 +292,10 @@
                 }
                 @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
            {
                ProjectId = Model.ProjectId,
-               ClaimId = Model.ClaimId,
+               CommentDiscussionId = Model.ClaimId,
                ParentCommentId = null,
                EnableHideFromUser = false,
                HideFromUser = false,
@@ -299,8 +310,13 @@
             <div class="panel-body">
                 @if (Model.Status == Claim.Status.Approved)
                 {
-                <div class="alert alert-info">
-                    <span class="glyphicon glyphicon-exclamation-sign"></span> Принятую заявку можно переместить только на конкретную роль (нельзя переместить в локацию).
+                <div class="alert alert-warning">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                    Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к новому персонажу
+                    <br />
+                    Используйте этот инструмент только если хотите передать существующую роль другому игроку.
+                    Если вы хотите изменить состав групп у <b>существующего</b> персонажа, 
+                    <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null )</b> его.
                 </div>
                     ViewBag.ShowGroupsInAvailClaim = false;
                 }
@@ -311,10 +327,10 @@
                 @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
                 {
                 @Html.Partial("AvailClaimTargetsPartial", Model.Data)
-                @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
            {
                ProjectId = Model.ProjectId,
-               ClaimId = Model.ClaimId,
+               CommentDiscussionId = Model.ClaimId,
                ParentCommentId = null,
                EnableHideFromUser = false,
                HideFromUser = false,
@@ -352,10 +368,10 @@
                                 Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
                             </div>
                         }
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
+                    @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
                {
                    ProjectId = Model.ProjectId,
-                   ClaimId = Model.ClaimId,
+                   CommentDiscussionId = Model.ClaimId,
                    ParentCommentId = null,
                    EnableHideFromUser = false,
                    HideFromUser = false,
@@ -370,7 +386,7 @@
     @{ var viewModel = new FeeAcceptanceViewModel
       {
           ProjectId = Model.ProjectId,
-          ClaimId = Model.ClaimId,
+          CommentDiscussionId = Model.ClaimId,
           ParentCommentId = null,
           EnableHideFromUser = false,
           HideFromUser = false,
@@ -380,7 +396,7 @@
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = "Сдан взнос",
           ClaimApproved = Model.Status == Claim.Status.Approved,
-          HasUnApprovedPayments = Model.HasMasterAccess && Model.Comments.Any(c => c.ShowFinanceModeration)
+          HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
       }; }
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>
@@ -392,7 +408,7 @@
     @{ var viewModelFinChange = new FeeAcceptanceViewModel
       {
           ProjectId = Model.ProjectId,
-          ClaimId = Model.ClaimId,
+          CommentDiscussionId = Model.ClaimId,
           ParentCommentId = null,
           EnableHideFromUser = false,
           HideFromUser = false,
@@ -413,10 +429,10 @@
         <div class="panel-body">
             @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-            @Html.Partial("AddCommentPartial", new AddCommentViewModel
+            @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
        {
            ProjectId = Model.ProjectId,
-           ClaimId = Model.ClaimId,
+           CommentDiscussionId = Model.ClaimId,
            ParentCommentId = null,
            EnableHideFromUser = false,
            HideFromUser = false,
@@ -459,49 +475,7 @@
         <div class="panel-heading"><h4>Комментарии к заявке</h4></div>
 
         <div class="panel-body">
-            <a data-toggle="collapse"
-               href="#answerComment0" class="btn btn-default">
-                Добавить комментарий
-            </a> <br/><br/>
-            <div id="answerComment0" class="collapse">
-                @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                {
-                    @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                    {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ParentCommentId = null,
-                        EnableHideFromUser = Model.HasMasterAccess,
-                        HideFromUser = false
-                    })
-                }
-            </div>
-            <div class="media-list">
-                @foreach (var comment in Model.Comments)
-                {
-                    @Html.Partial("_CommentPartial", comment)
-                }
-            </div>
-            @if (Model.Comments.Any())
-            {
-                <a data-toggle="collapse"
-                   href="#answerComment1" class="btn btn-default">
-                    Добавить комментарий
-                </a>
-                <div id="answerComment1" class="collapse">
-                    @using (Html.BeginForm("Create", "Comment", FormMethod.Post, new {enctype = "multipart/form-data"}))
-                    {
-                        @Html.Partial("AddCommentPartial", new AddCommentViewModel
-                        {
-                            ProjectId = Model.ProjectId,
-                            ClaimId = Model.ClaimId,
-                            ParentCommentId = null,
-                            EnableHideFromUser = Model.HasMasterAccess,
-                            HideFromUser = false
-                        })
-                    }
-                </div>
-            }
+            @Html.Partial("..\\Comments\\CommentsListPartial", Model)
         </div>
     </div>
 </div>

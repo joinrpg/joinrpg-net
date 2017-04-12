@@ -1,4 +1,4 @@
-﻿@model JoinRpg.DataModel.Project
+﻿@model JoinRpg.Web.Models.ApisIndexViewModel
 
 @{
   ViewBag.Title = "Встраивание на сайт";
@@ -8,62 +8,44 @@
 
 <p>На этой странице документированы различные способы встраивания сетки ролей на сайт.</p>
 <h3>Встраивание сетки ролей</h3>
-<h4>Javascript библиотека</h4>
 <p>
     Добавьте на страницу код такого вида:
-    <br />
-
-    <code>
-        &lt;div class="joinrpg-api" data-projectId="_projectId_" data-locationId="_characterGroupId_"&gt;Идет загрузка...&lt;/div&gt;
-    </code>
-
-    <br />
-    Где _projectId_ — ид проекта, а _characterGroupId_ ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
+    <pre>&lt;div class="joinrpg-api" data-projectId="_projectId_" data-locationId="_characterGroupId_"&gt;Идет загрузка...&lt;/div&gt;</pre>
+    Где <var>_projectId_</var> — ид проекта, а <var >_characterGroupId_</var> ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
     Например, для текущего проекта «получить вообще все роли в проекте» будет выглядеть как:
-    <br/>
-
-    <code>
-        &lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId"&gt;
-            Идет загрузка...
-        &lt;/div&gt;
-    </code>
-    <br />
+    <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId"&gt;
+  Идет загрузка...
+&lt;/div&gt;</pre>
     И подключите скрипт:
-    <br />
-    <code>
-        &lt;script type="text/javascript"
+<pre>&lt;script type="text/javascript"
         src="@RouteHelper.GetFullHostName()/external/joinrpg-api.js"
-        async defer
-        &gt;&lt;/script&gt;
-        &lt;script type="text/javascript"
+        async defer&gt;
+&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
         $(function() {
-        $('.joinrpg-api').joinrpgroles();
+          $('.joinrpg-api').joinrpgroles();
         });
-        &gt;&lt;/script&gt;
-    </code>
-    <br />
-    Также можно подключить дефолтные стили:
-    <br />
-    <code>
-        @RouteHelper.GetFullHostName()/external/joinrpg-api.css
-    </code>
-    <br />
-    Пример результата:
+&lt;/script&gt;</pre>
+    
+    Также можно подключить дефолтные стили: <var> @RouteHelper.GetFullHostName()/external/joinrpg-api.css </var>
+
+    Обратите внимание: чтобы это работало, необходимо использовать jquery. Если у вас не подключено jquery, подключите его так:
+    <pre>&lt;script type="text/javascript" src="https://yastatic.net/jquery/3.1.1/jquery.min.js"&gt;&lt;/script&gt;</pre>
+
     <div class="panel panel-default">
-        <div class="panel-heading">Сетка ролей</div>
-        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId">
+        <div class="panel-heading">Пример результата</div>
+        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId">
             Идет загрузка...
         </div>
     </div>
 </p>
 
 <h3>Показ горячих ролей</h3>
-<h4>Javascript библиотека</h4>
 <p>
     Добавьте на страницу код такого вида:
     <br/>
     <code>
-        &lt;div class="joinrpg-hot-roles" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1"&gt;
+        &lt;div class="joinrpg-hot-roles" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroupId" data-maxcount="1"&gt;
 
         &lt/div&gt;
     </code>
@@ -77,10 +59,20 @@
     Пример результата:
     <div class="panel panel-default">
         <div class="panel-heading">Горячие роли</div>
-        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1" data-server="http://@Request.Url.Host:@Request.Url.Port">
+        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroupId" data-maxcount="1" data-server="@RouteHelper.GetFullHostName()">
             Ожидайте загрузки...
         </div>
     </div>
+</p>
+
+<h3>
+    Автоматический экспорт персонажей
+</h3>
+<p>
+    @Html.ActionLink("Ссылка на список персонажей", "ActiveToken", "CharacterList", new {Model.ProjectId, Token = Model.CurrentUserToken}, null)
+    <br />
+    Обратите внимание, эта ссылка дает доступ к полному мастерскому списку персонажей всем, у кого она окажется. Не выкладывайте ее в открытые источники!
+    Это экспериментальная фича, она может прекратить работать в любой момент.
 </p>
 @section Scripts
 {
@@ -88,7 +80,7 @@
     <script type="text/javascript" src="~/external/joinrpg-api.js" async defer></script>
     <script type="text/javascript">
         $(function() {
-            $('.joinrpg-api').joinrpgroles();
+            $('.joinrpg-api').joinrpgroles({baseUrl: "@RouteHelper.GetFullHostName()"});
         });
     </script>
 }

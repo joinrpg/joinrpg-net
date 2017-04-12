@@ -5,9 +5,9 @@ using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 
@@ -16,10 +16,35 @@ namespace JoinRpg.Web.Controllers
   public class CharacterListController : ControllerGameBase
   {
     private IPlotRepository PlotRepository { get; }
+    private IUriService UriService { get; }
 
     [HttpGet, Authorize]
     public Task<ActionResult> Active(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
+
+    [HttpGet, AllowAnonymous]
+    public async Task<ActionResult> ActiveToken(int projectid, string token)
+    {
+      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(claim => claim.IsActive).ToList();
+
+      var project = await ProjectRepository.GetProjectWithFinances(projectid);
+
+      var guid = new Guid(token.FromHexString());
+
+      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+
+      if (acl == null)
+      {
+        return Content("Unauthorized");
+      }
+
+      var plots = await PlotRepository.GetPlotsWithTargets(projectid);
+
+      var list = new CharacterListViewModel(CurrentUserId, "Все персонажи", characters, plots, project, vm => true);
+
+      return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
+        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
+    }
 
     [HttpGet, Authorize]
     public Task<ActionResult> Deleted(int projectId, string export)
@@ -68,21 +93,55 @@ namespace JoinRpg.Web.Controllers
         return View("Index", list);
       }
 
-      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields), list.ProjectName);
+      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository) : base(userManager, projectRepository, projectService, exportDataService)
+    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository, IUriService uriService) : base(userManager, projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
+      UriService = uriService;
     }
 
-    public async Task<ActionResult> ByGroup(int projectid, int charactergroupid, string export)
+
+    private async Task<int[]> GetChildrenGroupIds(int projectId, int characterGroupId)
     {
-      var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
-      return
-        await
-          MasterCharacterList(projectid, character => character.IsActive &&  character.IsPartOfGroup(charactergroupid), export,
-            "Персонажи — " + characterGroup.CharacterGroupName, vm => true);
+      var groups = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(characterGroupId).ToArray();
+    }
+
+    public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
+    {
+      var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      var groupIds = await GetChildrenGroupIds(projectId, characterGroupId);
+      var characters =
+        (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
+
+      var error = AsMaster(characterGroup);
+      if (error != null || characterGroup == null) return error;
+
+      var plots = await PlotRepository.GetPlotsWithTargets(projectId);
+
+      var list = new CharacterListByGroupViewModel(CurrentUserId,
+        characters, plots, characterGroup);
+
+      var exportType = GetExportTypeByName(export);
+
+      if (exportType == null)
+      {
+        return View("ByGroup", list);
+      }
+
+      return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value,
+        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
+    }
+
+    [HttpGet, Authorize]
+    public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
+    {
+      var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
+      return await MasterCharacterList(projectid,
+        character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
+        "Поле (проставлено): " + field.FieldName);
     }
   }
 }

@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Areas.Admin.Models
+@using JoinRpg.Web.Models
 @model UserProfileViewModel
 
 @{
@@ -10,27 +11,27 @@
 <div class="container">
     @if (Model.Reason != AccessReason.NoAccess)
     {
-    <div class="col-md-5">
-        <div class="panel panel-default">
-            <div class="panel-body">
-                @Html.DisplayFor(model => model.Details)
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    @Html.DisplayFor(model => model.Details)
 
-            </div>
-            <div class="panel-footer" title="Почему я вижу этот профиль?">
-                @Html.DisplayFor(model => model.Reason)
-                @if (Model.Reason == AccessReason.ItsMe)
-                {
-                <text>[ @Html.ActionLink("Настроить", "SetupProfile", "Manage") ]</text>
-                }
+                </div>
+                <div class="panel-footer" title="Почему я вижу этот профиль?">
+                    @Html.DisplayFor(model => model.Reason)
+                    @if (Model.Reason == AccessReason.ItsMe)
+                    {
+                        <text>[ @Html.ActionLink("Настроить", "SetupProfile", "Manage") ]</text>
+                    }
+                </div>
             </div>
         </div>
-    </div>
     }
     
 
     @if (Model.ThisUserProjects.Any())
     {
-        <div class="col-md-5">
+        <div class="col-md-4">
             <h4>Проекты этого пользователя </h4>
             <ul>
                 @foreach (var master in Model.ThisUserProjects)
@@ -47,114 +48,87 @@
             </ul>
         </div>
     }
+           @if (Model.HasAdminAccess)
+           {
+               <div class="btn-group-vertical">
+                   <button class="btn btn-default" type="button" data-toggle="modal" data-target="#changeEmailModal" aria-expanded="false">
+                       Изменить email
+                   </button>
+
+                   @using (Html.BeginForm(
+                       Model.IsAdmin ? "RevokeAdmin" : "GrantAmin",
+                       "Users",
+                       new {area = "Admin",}, FormMethod.Post))
+                   {
+                       @Html.AntiForgeryToken()
+                       @Html.HiddenFor(model => model.UserId)
+                       if (!Model.IsAdmin)
+                       {
+                           <button class="btn btn-default" type="submit"
+                                   data-toggle="confirmation"
+                                   data-confirm-content="Действительно выдать права администратора на сайте?"
+                                   data-confirm-yesBtn="Выдать">
+                               Сделать администратором
+                           </button>
+
+                       }
+                       else
+                       {
+                           <button class="btn btn-default" type="submit"
+                                   data-toggle="confirmation"
+                                   data-confirm-content="Действительно убрать права администратора на сайте?"
+                                   data-confirm-yesBtn="Убрать">
+                               Убрать из администраторов
+                           </button>
+
+                       }
+                   }
+               </div>
+           }
+
+        
     @if (Model.Claims != null && Model.Claims.Items.Any())
     {
-        @Html.Partial("..\\ClaimList\\Index", Model.Claims, new ViewDataDictionary() {{"HideUserColumn", true}, {"HideOperations", true}})
+        @Html.Partial("..\\ClaimList\\_ClaimList", Model.Claims, new ViewDataDictionary() {{"HideUserColumn", true}, {"HideOperations", true}})
     }
-
-    @if (Model.ProjectsToAdd.Any())
-    {
-        <div class="col-md-10">
-            @using (Html.BeginForm("Add", "Acl", FormMethod.Post))
+    
+    <div class="panel-group">
+            @if (Model.ProjectsToAdd.Any())
             {
-                @Html.AntiForgeryToken()
-                <details>
-                    <summary>Добавить в проект..</summary>
-                    <div class="form-horizontal">
-                        <h4>Проект</h4>
+                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#addToProject"
+                        aria-expanded="false">
+                    Поставить доступ в проект
+                </button>
+            }
+        <div class="panel panel-default collapse" id="addToProject">
+            <div class="panel-heading">Добавление в проект</div>
+            <div class="panel-body">
+                @if (Model.ProjectsToAdd.Any())
+                {
+                @Html.Partial("AddToProject", Model)
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
-                        @*TODO: Move to partial view*@
-                        @Html.HiddenFor(model => Model.UserId)
-
-                        @{ var acl = new AclViewModel()
-                           {
-                               ProjectId = Model.ProjectsToAdd.Select(p => p.ProjectId).First()
-                           };}
-                        @Html.EditorFor(model => acl.ProjectId, "ProjectDropDown", "ProjectId", new {Projects = Model.ProjectsToAdd})
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanManageClaims, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanManageClaims"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanManageClaims, null, htmlFieldName: "CanManageClaims")
-                                    @Html.ValidationMessageFor(model => acl.CanManageClaims, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanChangeFields, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanChangeFields"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanChangeFields, null, htmlFieldName: "CanChangeFields")
-                                    @Html.ValidationMessageFor(model => acl.CanChangeFields, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanChangeProjectProperties, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanChangeProjectProperties"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanChangeProjectProperties, null, htmlFieldName: "CanChangeProjectProperties")
-                                    @Html.ValidationMessageFor(model => acl.CanChangeProjectProperties, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanGrantRights, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanGrantRights"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanGrantRights, null, htmlFieldName: "CanGrantRights")
-                                    @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanEditRoles, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanEditRoles"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanEditRoles, null, htmlFieldName: "CanEditRoles")
-                                    @Html.ValidationMessageFor(model => acl.CanEditRoles, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanManageMoney, htmlAttributes: new {@class = "control-label col-md-5", @for = "CanManageMoney"})
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanManageMoney, null, htmlFieldName: "CanManageMoney")
-                                    @Html.ValidationMessageFor(model => acl.CanManageMoney, "", new {@class = "text-danger"})
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanSendMassMails, htmlAttributes: new { @class = "control-label col-md-5", @for = "CanSendMassMails" })
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
-                                    @Html.ValidationMessageFor(model => acl.CanSendMassMails, "", new { @class = "text-danger" })
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            @Html.LabelFor(model => acl.CanManagePlots, htmlAttributes: new { @class = "control-label col-md-5", @for = "CanManagePlots" })
-                            <div class="col-md-1">
-                                <div class="checkbox">
-                                    @Html.EditorFor(model => acl.CanManagePlots, null, htmlFieldName: "CanManagePlots")
-                                    @Html.ValidationMessageFor(model => acl.CanManagePlots, "", new { @class = "text-danger" })
-                                </div>
-                            </div>
-                        </div>
-
-                        <input type="submit" value="Добавить" class="btn btn-default"/>
-                    </div>
-                </details>
+<div class="modal fade" id="changeEmailModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("ChangeEmail", "Users", new {area = "Admin"}, FormMethod.Post, new { Model.UserId }))
+            {
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">Изменение email</h4>
+                </div>
+                <div class="modal-body">
+                    @Html.Partial("ChangeEmailForm", new ChangeEmailModel() {UserId = Model.UserId})
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Изменить email</button>
+                </div>
             }
         </div>
-    }
+    </div>
 </div>
