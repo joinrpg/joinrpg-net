@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Models
       IsPlayerVisible = ch.Field.CanPlayerView;
       IsDeleted = !ch.Field.IsActive;
 
-      HasValue = ch.HasValue || !ch.Field.CanHaveValue();
+      HasValue = ch.HasViewableValue;
 
       var hasViewAccess = ch.Field.IsPublic
                           || model.HasMasterAccess
@@ -69,15 +69,15 @@ namespace JoinRpg.Web.Models
                           (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
                            ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
-      CanView = hasViewAccess &&
-                (ch.HasValue || (!ch.Field.CanHaveValue() && ch.Field.IsAvailableForTarget(model.Target)));
+      CanView = hasViewAccess && ch.HasViewableValue;
 
       CanEdit = model.EditAllowed 
           && ch.HasEditAccess(
             model.HasMasterAccess, 
             model.HasPlayerAccessToCharacter,
             model.HasPlayerClaimAccess, 
-            model.Target);
+            model.Target)
+            && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
       if (ch.Field.HasValueList())
       {

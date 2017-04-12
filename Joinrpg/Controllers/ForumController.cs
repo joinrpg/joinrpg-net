@@ -15,6 +15,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
+  [Authorize]
   public class ForumController : ControllerGameBase
   {
     #region Constructor & Services

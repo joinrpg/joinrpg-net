@@ -37,7 +37,7 @@ namespace JoinRpg.Domain
       return
         JsonConvert.SerializeObject(
           fieldWithValues
-            .Where(v => v.HasValue)
+            .Where(v => v.HasEditableValue)
             .ToDictionary(pair => pair.Field.ProjectFieldId, pair => pair.Value));
     }
 

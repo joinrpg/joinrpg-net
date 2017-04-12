@@ -24,7 +24,10 @@ namespace JoinRpg.Web.Models.Characters
       if (character == null) throw new ArgumentNullException(nameof(character));
       HasMasterAccess = hasMasterAccess;
       //TODO: Remove special groups from here
-      ParentGroups = character.Groups.Select(g => new CharacterGroupLinkViewModel(g)).ToArray();
+      ParentGroups = character
+        .GetParentGroupsToTop()
+        .Where(group => !group.IsRoot && (!group.IsSpecial || group.GetBoundFieldDropdownValueOrDefault() != null))
+        .Select(g => new CharacterGroupLinkViewModel(g)).ToArray();
     }
   }
 

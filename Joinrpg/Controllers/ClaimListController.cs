@@ -256,7 +256,7 @@ namespace JoinRpg.Web.Controllers
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
       var claims = await ClaimsRepository.GetClaims(projectid, ClaimStatusSpec.Active);
       return await ShowMasterClaimList(projectid, export, "Поле (проставлено): " + field.FieldName, "Index",
-        claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasValue).ToList()
+        claims.Where(c => c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue).ToList()
         );
     }
   }

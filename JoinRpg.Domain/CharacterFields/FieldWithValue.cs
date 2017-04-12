@@ -53,7 +53,9 @@ namespace JoinRpg.Domain
       }
     }
 
-    public bool HasValue => !String.IsNullOrWhiteSpace(Value);
+    public bool HasEditableValue => !String.IsNullOrWhiteSpace(Value);
+
+    public bool HasViewableValue => !String.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
 
     public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
     {
@@ -79,8 +81,7 @@ namespace JoinRpg.Domain
              (characterAccess && Field.CanPlayerEdit &&
               Field.FieldBoundTo == FieldBoundTo.Character)
              ||
-             (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)))
-             && (HasValue || Field.IsAvailableForTarget(target));
+             (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)));
     }
 
     public override string ToString() => $"{Field.FieldName}={Value}";

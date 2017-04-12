@@ -71,7 +71,12 @@
             @if (Model.ParentGroups != null)
             {
                 <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-                <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+                <dd>@Html.DisplayFor(model => model.ParentGroups)
+                    @if (Model.Navigation.CanEditRoles)
+                    {
+                    <a href="@Url.Action("Edit", "Character", new { Model.ProjectId, Model.CharacterId })"><span class="glyphicon glyphicon-pencil"></span></a>
+                    }
+                </dd>
             }
             @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
             {
@@ -105,7 +110,12 @@
                 @Html.DisplayFor(model => model.ResponsibleMaster)
                 if (Model.HasMasterAccess && !Model.CanManageThisClaim)
                 {
-                    <span class="help-block">Изменять ответственного мастера для чужих заявок могут только администраторы.</span>
+                    <input 
+                           type="button" 
+                           value="Изменить" 
+                           class="btn btn-default btn-xs" 
+                           disabled="disabled"
+                           title="Изменять ответственного мастера для чужих заявок могут только администраторы."/>
                 }
             }
         </dd>
@@ -279,8 +289,13 @@
             <div class="panel-body">
                 @if (Model.Status == Claim.Status.Approved)
                 {
-                <div class="alert alert-info">
-                    <span class="glyphicon glyphicon-exclamation-sign"></span> Принятую заявку можно переместить только на конкретную роль (нельзя переместить в локацию).
+                <div class="alert alert-warning">
+                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                    Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к новому персонажу
+                    <br />
+                    Используйте этот инструмент только если хотите передать существующую роль другому игроку.
+                    Если вы хотите изменить состав групп у <b>существующего</b> персонажа, 
+                    <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null )</b> его.
                 </div>
                     ViewBag.ShowGroupsInAvailClaim = false;
                 }
