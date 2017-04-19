@@ -61,7 +61,7 @@ namespace JoinRpg.Domain
     [NotNull]
     public static IEnumerable<CharacterGroup> GetParentGroupsToTop([CanBeNull] this IClaimSource target)
     {
-      return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)) ?? Enumerable.Empty<CharacterGroup>();
+      return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)).Distinct() ?? Enumerable.Empty<CharacterGroup>();
     }
 
     [NotNull]
