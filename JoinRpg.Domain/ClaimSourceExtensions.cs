@@ -93,7 +93,12 @@ namespace JoinRpg.Domain
 
     public static bool IsNpc(this IClaimSource target)
     {
-      return (target as Character)?.IsAcceptingClaims == false;
+      var character = target as Character;
+      if (character == null)
+      {
+        return false;
+      }
+      return !character.IsAcceptingClaims && character.ApprovedClaim == null;
     }
 
     public static bool IsAcceptingClaims(this CharacterGroup characterGroup)
