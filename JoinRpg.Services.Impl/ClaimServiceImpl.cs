@@ -35,11 +35,12 @@ namespace JoinRpg.Services.Impl
                 await UnitOfWork.SaveChangesAsync();
             }
         }
-
+/*
         public List<int> GetGroupHierarchy(int? groupId)
         {
             List<int> res=new List<int>();
             var group = UnitOfWork.GetDbSet<CharacterGroup>().Where(g => g.CharacterGroupId == groupId).First();
+            var parents = group.GetParentGroupsToTop();
             res.Add(group.CharacterGroupId);
             while (group.ParentGroups.Count()>0) {
                 res.Add(group.ParentGroups.First().CharacterGroupId);
@@ -47,7 +48,8 @@ namespace JoinRpg.Services.Impl
             }
             return res;
         }
-
+        */
+        /*
         public async Task<IEnumerable<UserSubscription>> GetSubscriptions(User user, Claim claim, List<int> parentGroups)
         {
             bool isHierarchSubscribe;
@@ -64,7 +66,7 @@ namespace JoinRpg.Services.Impl
             });
             return subscriptions;
         }
-
+        */
         public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);

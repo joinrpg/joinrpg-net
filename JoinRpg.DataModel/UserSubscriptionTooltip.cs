@@ -11,5 +11,6 @@ namespace JoinRpg.DataModel
         public string Tooltip { get; set; }
         public bool HasFullParentSubscription { get; set; }
         public bool IsDirect { get; set; }
+        public int Counter { get; set; }
     }
 }
