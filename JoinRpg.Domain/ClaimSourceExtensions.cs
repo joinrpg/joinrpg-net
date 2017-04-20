@@ -61,7 +61,7 @@ namespace JoinRpg.Domain
     [NotNull]
     public static IEnumerable<CharacterGroup> GetParentGroupsToTop([CanBeNull] this IClaimSource target)
     {
-      return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)) ?? Enumerable.Empty<CharacterGroup>();
+      return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)).Distinct() ?? Enumerable.Empty<CharacterGroup>();
     }
 
     [NotNull]
@@ -93,7 +93,12 @@ namespace JoinRpg.Domain
 
     public static bool IsNpc(this IClaimSource target)
     {
-      return (target as Character)?.IsAcceptingClaims == false;
+      var character = target as Character;
+      if (character == null)
+      {
+        return false;
+      }
+      return !character.IsAcceptingClaims && character.ApprovedClaim == null;
     }
 
     public static bool IsAcceptingClaims(this CharacterGroup characterGroup)
