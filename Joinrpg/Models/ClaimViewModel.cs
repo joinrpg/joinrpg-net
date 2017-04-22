@@ -153,45 +153,6 @@ namespace JoinRpg.Web.Models
 
         }
 
-        //public UserSubscriptionTooltip GetSubscriptionTooltip(IEnumerable<UserSubscription> Subscriptions, int? CharacterGroupId/*, CharacterParentGroupsViewModel ParentGroups*/, int ClaimId)
-        /*{
-            string ParentFullSubscriptionGroupName = "";
-            UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip() { HasFullParentSubscription = false, Tooltip = "", IsDirect = false };
-            subscrTooltip.IsDirect = Subscriptions.FirstOrDefault(s => s.ClaimId == ClaimId) != null ? true : false;
-
-            if (Subscriptions.Count() > 0)
-            {
-                subscrTooltip.Tooltip = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br>";
-                foreach (var el in Subscriptions)
-                {
-                    if (Subscriptions.FirstOrDefault().Project.CharacterGroups.FirstOrDefault(g => g.CharacterGroupId == el.CharacterGroupId) != null)
-                    {
-                        subscrTooltip.Tooltip += "группа <b>" + Subscriptions.FirstOrDefault().Project.CharacterGroups.FirstOrDefault(g => g.CharacterGroupId == el.CharacterGroupId).CharacterGroupName + "</b>:<br><ul>";
-                        subscrTooltip.Tooltip += (el.CharacterGroupId == null) ? "" :
-                                ((el.FieldChange) ? "<li>Изменение полей</li>" : "") +
-                                ((el.MoneyOperation) ? "<li>Финансовые операции</li>" : "") +
-                                ((el.Comments) ? "<li>Комментарии</li>" : "") +
-                                ((el.ClaimStatusChange) ? "<li>Изменение статуса</li>" : "");
-                        subscrTooltip.Tooltip += "</ul> ";
-
-                        subscrTooltip.HasFullParentSubscription = subscrTooltip.HasFullParentSubscription || (el.FieldChange
-                                                                                                          && el.ClaimStatusChange
-                                                                                                          && el.Comments
-                                                                                                          && el.MoneyOperation);
-                        if (el.FieldChange && el.ClaimStatusChange && el.Comments && el.MoneyOperation) ParentFullSubscriptionGroupName = el.Project.CharacterGroups.FirstOrDefault(g => g.CharacterGroupId == el.CharacterGroupId).CharacterGroupName;
-                    }
-                }
-                if (subscrTooltip.IsDirect) subscrTooltip.Tooltip = "Вы подписаны на эту заявку";
-                if (subscrTooltip.HasFullParentSubscription) subscrTooltip.Tooltip = "Вы уже подписаны на группу \"" + ParentFullSubscriptionGroupName + "\", в которую входит заявка.";
-                return subscrTooltip;
-            }
-            else
-            {
-                subscrTooltip.Tooltip = "Вы не подписаны на заявку";
-                return subscrTooltip;
-            }
-        }
-        */
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents, IEnumerable<UserSubscription> subscriptions, int ClaimId)
         {
             UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip() { HasFullParentSubscription = false, Tooltip = "", IsDirect = false };
@@ -217,22 +178,22 @@ namespace JoinRpg.Web.Models
                             }
                             if (subscr.ClaimStatusChange && (counter & 1) == 0)
                             {
-                                counter += 1;
+                                counter |= 1;
                                 subscrTooltip.Tooltip += "<li>Изменение статуса (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
                             if (subscr.Comments && (counter & 2) == 0)
                             {
-                                counter += 2;
+                                counter |= 2;
                                 subscrTooltip.Tooltip += "<li>Комментарии (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
                             if (subscr.FieldChange && (counter & 4) == 0)
                             {
-                                counter += 4;
+                                counter |= 4;
                                 subscrTooltip.Tooltip += "<li>Изменение полей заявки (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
                             if (subscr.MoneyOperation && (counter & 8) == 0)
                             {
-                                counter += 8;
+                                counter |= 8;
                                 subscrTooltip.Tooltip += "<li>Финансовые операции (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
                         }

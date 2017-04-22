@@ -28,8 +28,6 @@ namespace JoinRpg.Services.Interfaces
 
     Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
     Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
-    //List<int> GetGroupHierarchy(int? groupId);
-    //Task<IEnumerable<UserSubscription>> GetSubscriptions(User user, Claim claim, List<int> parentGroups);
     }
 
   //TODO[Localize]

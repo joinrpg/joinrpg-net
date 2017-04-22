@@ -35,38 +35,7 @@ namespace JoinRpg.Services.Impl
                 await UnitOfWork.SaveChangesAsync();
             }
         }
-/*
-        public List<int> GetGroupHierarchy(int? groupId)
-        {
-            List<int> res=new List<int>();
-            var group = UnitOfWork.GetDbSet<CharacterGroup>().Where(g => g.CharacterGroupId == groupId).First();
-            var parents = group.GetParentGroupsToTop();
-            res.Add(group.CharacterGroupId);
-            while (group.ParentGroups.Count()>0) {
-                res.Add(group.ParentGroups.First().CharacterGroupId);
-                group = group.ParentGroups.First();
-            }
-            return res;
-        }
-        */
-        /*
-        public async Task<IEnumerable<UserSubscription>> GetSubscriptions(User user, Claim claim, List<int> parentGroups)
-        {
-            bool isHierarchSubscribe;
-            var subscriptions = user.Subscriptions.Where(s => {
-                isHierarchSubscribe = false;
-                foreach (var el in parentGroups)
-                {
-                    if (s.CharacterGroupId == el)
-                    {
-                        isHierarchSubscribe = true;
-                    }
-                }
-                return s.ProjectId == claim.ProjectId && (s.CharacterGroupId == (claim.CharacterGroupId ?? -1) || s.ClaimId == claim.ClaimId || s.CharacterId == (claim.CharacterId ?? -1) || isHierarchSubscribe);
-            });
-            return subscriptions;
-        }
-        */
+
         public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);

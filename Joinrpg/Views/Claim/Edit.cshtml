@@ -203,7 +203,7 @@
                     Отписаться
                 </a>
             }
-            @if(Model.HasMasterAccess && /*Model.Subscriptions.Count() > 0*/Model.SubscriptionTooltip.Counter>0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+            @if(Model.HasMasterAccess && Model.SubscriptionTooltip.Counter>0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
                 <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
                     <span class="glyphicon glyphicon-pushpin"></span>
@@ -523,14 +523,14 @@
                 $('#unsubscribe').attr('data-responsed','0');
         });
         </script>
-        @if(Model.HasMasterAccess && /*Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() == 0*/!Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        @if(Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
         {
             <script type="text/javascript">
                 $('#subscribe').toggleClass('hidden');
             </script>
         }
 
-        @if(Model.HasMasterAccess && /*Model.Subscriptions.Where(s => s.ClaimId == Model.ClaimId).Count() > 0*/Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        @if(Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
         {
         <script type="text/javascript">
             $('#unsubscribe').toggleClass('hidden');
