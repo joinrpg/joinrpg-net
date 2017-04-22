@@ -173,7 +173,6 @@ namespace JoinRpg.Web.Models
                         {
                             if (counter == 15)
                             {
-                                //res = "Вы подписаны на эту заявку";
                                 break;
                             }
                             if (subscr.ClaimStatusChange && (counter & 1) == 0)

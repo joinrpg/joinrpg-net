@@ -497,10 +497,11 @@
                 if($('#subscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
                 req.done(data=>{
-                    var res=JSON.parse(data);
+                    var res = JSON.parse(data);
+                    console.log(res);
                     $('#subscribe').attr('data-responsed','1');
                     $('#subscribe').attr('title','');
-                    $('#subscribe').attr('data-original-title',res.tooltip);
+                    $('#subscribe').attr('data-original-title',res.Tooltip);
                     $('[title]').tooltip({html:true});
                     $('#subscribe').toggleClass('hidden');
                     $('#unsubscribe').toggleClass('hidden');
@@ -512,10 +513,11 @@
                 if($('#unsubscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
                 req.done(data=>{
-                    var res=JSON.parse(data);
+                    var res = JSON.parse(data);
+                    console.log(res);
                     $('#unsubscribe').attr('data-responsed','1');
                     $('#subscribe').attr('title','');
-                    $('#subscribe').attr('data-original-title',res.tooltip);
+                    $('#subscribe').attr('data-original-title',res.Tooltip);
                     $('[title]').tooltip({html:true});
                     $('#unsubscribe').toggleClass('hidden');
                     $('#subscribe').toggleClass('hidden');

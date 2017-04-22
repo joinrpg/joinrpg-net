@@ -14,8 +14,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -447,7 +446,8 @@ namespace JoinRpg.Web.Controllers
 
             var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-            return "{\"tooltip\":\"" + tooltip.Tooltip.Replace("\"", "\\\"") + "\",\"isDirect\":\"" + tooltip.IsDirect.ToString() + "\",\"HasFullParentSubscription\":\"" + tooltip.HasFullParentSubscription.ToString() + "\"}";
+            var res = JsonConvert.SerializeObject(tooltip);
+            return res;
         }
 
         [HttpPost, Authorize, ValidateAntiForgeryToken]
@@ -470,7 +470,8 @@ namespace JoinRpg.Web.Controllers
 
             var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-            return "{\"tooltip\":\"" + tooltip.Tooltip.Replace("\"","\\\"") + "\",\"isDirect\":\"" + tooltip.IsDirect.ToString()+ "\",\"HasFullParentSubscription\":\"" + tooltip.HasFullParentSubscription.ToString() + "\"}";
+            var res = JsonConvert.SerializeObject(tooltip);
+            return res; 
         }
     }
 }
