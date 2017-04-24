@@ -345,7 +345,11 @@ namespace JoinRpg.Web.Controllers
     [MustUseReturnValue]
     private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
     {
-      return ReturnToClaim(viewModel.CommentDiscussionId, viewModel.ProjectId);
+      if (viewModel.CommentDiscussionId != null)
+      {
+        ReturnToClaim((int) viewModel.CommentDiscussionId, viewModel.ProjectId);
+      }
+      throw new InvalidOperationException();
     }
 
     [MustUseReturnValue]
@@ -373,6 +377,10 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
+      if (viewModel.CommentDiscussionId == null)
+      {
+        throw new ArgumentNullException(nameof(viewModel.CommentDiscussionId));
+      }
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithClaim(claim);
       if (error != null || claim == null)
@@ -383,7 +391,7 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+          return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
         }
 
 
@@ -396,7 +404,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+        return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
       }
     }
 

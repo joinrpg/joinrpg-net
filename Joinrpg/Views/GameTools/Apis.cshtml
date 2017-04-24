@@ -13,7 +13,7 @@
     <pre>&lt;div class="joinrpg-api" data-projectId="_projectId_" data-locationId="_characterGroupId_"&gt;Идет загрузка...&lt;/div&gt;</pre>
     Где <var>_projectId_</var> — ид проекта, а <var >_characterGroupId_</var> ид группы. Посмотреть нужные ИД можно, бродя по @Html.ActionLink("сетке ролей", "Index", "GameGroups", new { Model.ProjectId }, null).
     Например, для текущего проекта «получить вообще все роли в проекте» будет выглядеть как:
-    <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId"&gt;
+    <pre>&lt;div class="joinrpg-api" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId"&gt;
   Идет загрузка...
 &lt;/div&gt;</pre>
     И подключите скрипт:
@@ -34,7 +34,7 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">Пример результата</div>
-        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId">
+        <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroup.CharacterGroupId">
             Идет загрузка...
         </div>
     </div>
@@ -59,7 +59,7 @@
     Пример результата:
     <div class="panel panel-default">
         <div class="panel-heading">Горячие роли</div>
-        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroupId" data-maxcount="1" data-server="@RouteHelper.GetFullHostName()">
+        <div class="joinrpg-hot-roles panel-body" data-project="@Model.ProjectId" data-charactergroup="@Model.RootGroup.CharacterGroupId" data-maxcount="1" data-server="@RouteHelper.GetFullHostName()">
             Ожидайте загрузки...
         </div>
     </div>
