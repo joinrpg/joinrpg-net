@@ -42,6 +42,7 @@ namespace JoinRpg.Services.Impl
       folder.MasterTitle = Required(plotFolderMasterTitle);
       folder.TodoField = todoField;
       folder.IsActive = true; //Restore if deleted
+      folder.ModifiedDateTime = DateTime.UtcNow;
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -79,6 +80,8 @@ namespace JoinRpg.Services.Impl
         ElementType = elementType
       };
 
+      folder.ModifiedDateTime = now;
+
       UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
       await UnitOfWork.SaveChangesAsync();
     }
@@ -90,11 +93,14 @@ namespace JoinRpg.Services.Impl
       {
         throw new DbEntityValidationException();
       }
+      var now = DateTime.UtcNow;
       SmartDelete(folder);
       foreach (var element in folder.Elements)
       {
         element.IsActive = false;
+        element.ModifiedDateTime = now;
       }
+      folder.ModifiedDateTime = now;
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -103,6 +109,7 @@ namespace JoinRpg.Services.Impl
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
 
       SmartDelete(plotElement);
+      plotElement.ModifiedDateTime = DateTime.UtcNow;
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -117,6 +124,7 @@ namespace JoinRpg.Services.Impl
       string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted,
       int currentUserId)
     {
+      var now = DateTime.UtcNow;
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
       plotElement.Texts.Content.Contents = contents;
       plotElement.Texts.TodoField = todoField;
@@ -132,6 +140,8 @@ namespace JoinRpg.Services.Impl
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
       plotElement.IsCompleted = isCompleted;
       plotElement.IsActive = true;
+      plotElement.ModifiedDateTime = now;
+      plotElement.PlotFolder.ModifiedDateTime = now;
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -166,6 +176,7 @@ namespace JoinRpg.Services.Impl
       if (plotElement.IsActive && !plotElement.IsCompleted)
       {
         plotElement.IsCompleted = true;
+        plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
       }
       else
       {
