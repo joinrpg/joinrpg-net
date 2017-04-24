@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
         public int ProjectId { get; set; }
         [DisplayName("Игрок")]
         public User Player { get; set; }
-        [Display(Name = "Статус заявки")]
+        [Display(Name="Статус заявки")]
         public Claim.Status Status { get; set; }
         public bool IsMyClaim { get; }
 
@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Models
         [DisplayName("Заявка в группу")]
         public string GroupName { get; set; }
 
-        public int? CharacterGroupId { get; }
+        public int? CharacterGroupId { get;  }
         public int OtherClaimsForThisCharacterCount { get; }
         public int OtherClaimsFromThisPlayerCount { get; }
 
@@ -93,7 +93,7 @@ namespace JoinRpg.Web.Models
         //public string SubscriptionTooltip { get; set; }
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; } 
 
-        public ClaimViewModel(int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
+        public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
         {
             ClaimId = claim.ClaimId;
             CommentDiscussionId = claim.CommentDiscussionId;

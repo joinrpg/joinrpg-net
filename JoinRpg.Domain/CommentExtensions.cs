@@ -10,9 +10,7 @@ namespace JoinRpg.Domain
   {
     public static bool IsReadByUser(this Comment comment, int userId)
     {
-      return comment.AuthorUserId == userId 
-        || comment.Discussion.Comments.Where(c => c.AuthorUserId == userId).Any(c => c.CommentId > comment.CommentId)
-        || comment.Discussion.GetWatermark(userId) >= comment.CommentId;
+            return comment.Discussion.GetWatermark(userId) >= comment.CommentId;
     }
 
     private static int GetWatermark(this ICommentDiscussionHeader discussion, int userId)
