@@ -86,7 +86,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _plotService.CreatePlotFolder(project.ProjectId, CurrentUserId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+        await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return RedirectToAction("Index", "Plot", new {project.ProjectId});
       }
       catch (Exception)
@@ -115,7 +115,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, CurrentUserId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
       }
       catch (Exception)
@@ -172,8 +172,7 @@ namespace JoinRpg.Web.Controllers
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.AddPlotElement(projectId, plotFolderId, CurrentUserId,  content, todoField, targetGroups, targetChars,
-            (PlotElementType) elementType);
+          _plotService.AddPlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars, (PlotElementType)elementType);
         return ReturnToPlot(plotFolderId, projectId);
       }
       catch (Exception)
@@ -215,7 +214,7 @@ namespace JoinRpg.Web.Controllers
     {
       try
       {
-        await _plotService.DeleteFolder(projectId, plotFolderId, CurrentUserId);
+        await _plotService.DeleteFolder(projectId, plotFolderId);
         return RedirectToAction("Index", new {projectId});
       }
       catch (Exception)
@@ -229,7 +228,7 @@ namespace JoinRpg.Web.Controllers
     {
       try
       {
-        await _plotService.DeleteElement(projectId, plotFolderId, plotelementid, CurrentUserId);
+        await _plotService.DeleteElement(projectId, plotFolderId, plotelementid);
         return ReturnToPlot(plotFolderId, projectId);
       }
       catch (Exception)
@@ -273,7 +272,7 @@ namespace JoinRpg.Web.Controllers
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups, targetChars, isCompleted, CurrentUserId);
+          _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups, targetChars, isCompleted);
         return ReturnToPlot(plotFolderId, projectId);
       }
       catch (Exception)
@@ -299,7 +298,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _plotService.MoveElement(CurrentUserId, projectId, plotElementId, parentCharacterId, direction);
+        await _plotService.MoveElement(projectId, plotElementId, parentCharacterId, direction);
 
 
         return RedirectToAction("Details", "Character", new {projectId, characterId = parentCharacterId});
@@ -315,7 +314,7 @@ namespace JoinRpg.Web.Controllers
     {
       try
       {
-        await _plotService.PublishElement(projectId, plotFolderId, plotelementid, CurrentUserId);
+        await _plotService.PublishElement(projectId, plotFolderId, plotelementid);
         return ReturnToPlot(plotFolderId, projectId);
       }
       catch (Exception)

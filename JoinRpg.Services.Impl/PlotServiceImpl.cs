@@ -17,10 +17,10 @@ namespace JoinRpg.Services.Impl
   {
 
 
-    public async Task CreatePlotFolder(int projectId, int currentUserId, string masterTitle, string todo)
+    public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
     {
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
-      project.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       var startTimeUtc = DateTime.UtcNow;
       project.PlotFolders.Add(new PlotFolder
       {
@@ -34,11 +34,11 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditPlotFolder(int projectId, int plotFolderId, int currentUserId, string plotFolderMasterTitle, string todoField)
+    public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       folder.MasterTitle = Required(plotFolderMasterTitle);
       folder.TodoField = todoField;
       folder.IsActive = true; //Restore if deleted
@@ -46,13 +46,12 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, int currentUserId, string content,
-      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
-      PlotElementType elementType)
+    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField,
+      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
       var now = DateTime.UtcNow;
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
@@ -86,10 +85,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteFolder(int projectId, int plotFolderId, int currentUserId)
+    public async Task DeleteFolder(int projectId, int plotFolderId)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
+      if (!folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
       {
         throw new DbEntityValidationException();
       }
@@ -104,28 +103,27 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
     {
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
 
       SmartDelete(plotElement);
       plotElement.ModifiedDateTime = DateTime.UtcNow;
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      folder.RequestMasterAccess(currentUserId, acl => acl.CanManagePlots);
+      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       return folder.Elements.Single(e => e.PlotElementId == plotelementid);
     }
 
     public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents,
-      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted,
-      int currentUserId)
+      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted)
     {
       var now = DateTime.UtcNow;
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
       plotElement.Texts.Content.Contents = contents;
       plotElement.Texts.TodoField = todoField;
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
@@ -145,10 +143,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveElement(int currentUserId, int projectId, int plotElementId, int parentCharacterId, int direction)
+    public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
     {
       var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-      character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
 
       var plots = await PlotRepository.GetPlotsForCharacter(character);
 
@@ -170,9 +168,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task PublishElement(int projectId, int plotFolderId, int plotelementid, int currentUserId)
+    public async Task PublishElement(int projectId, int plotFolderId, int plotelementid)
     {
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid, currentUserId);
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
       if (plotElement.IsActive && !plotElement.IsCompleted)
       {
         plotElement.IsCompleted = true;
