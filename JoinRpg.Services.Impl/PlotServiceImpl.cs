@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,14 +16,12 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class PlotServiceImpl : DbServiceImplBase, IPlotService
   {
-
-
     public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
     {
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       var startTimeUtc = DateTime.UtcNow;
-      project.PlotFolders.Add(new PlotFolder
+      var plotFolder = new PlotFolder
       {
         CreatedDateTime = startTimeUtc,
         ModifiedDateTime = startTimeUtc,
@@ -30,8 +29,28 @@ namespace JoinRpg.Services.Impl
         MasterTitle = Required(masterTitle),
         TodoField = todo,
         IsActive = true
-      });
+      };
+
+      await AssignTagList(plotFolder.PlotTags, masterTitle);
+
+      project.PlotFolders.Add(plotFolder);
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    private async Task AssignTagList(ICollection<ProjectItemTag> presentTags, string title)
+    {
+      var currentTags = new List<ProjectItemTag>(presentTags);
+      var tagObjects = new List<ProjectItemTag>();
+
+      foreach (var tagName in title.ExtractTagNames())
+      {
+        tagObjects.Add(
+          currentTags.SingleOrDefault(tag => tag.TagName == tagName) ??
+          await UnitOfWork.GetDbSet<ProjectItemTag>().FirstOrDefaultAsync(pit => pit.TagName == tagName) ??
+          new ProjectItemTag() {TagName = tagName});
+      }
+
+      presentTags.AddLinkList(tagObjects);
     }
 
     public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
@@ -39,10 +58,17 @@ namespace JoinRpg.Services.Impl
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
       folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
-      folder.MasterTitle = Required(plotFolderMasterTitle);
+      
       folder.TodoField = todoField;
       folder.IsActive = true; //Restore if deleted
       folder.ModifiedDateTime = DateTime.UtcNow;
+
+      if (folder.MasterTitle != plotFolderMasterTitle)
+      {
+        await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
+      }
+
+      folder.MasterTitle = Required(plotFolderMasterTitle);
       await UnitOfWork.SaveChangesAsync();
     }
 

@@ -101,5 +101,14 @@ namespace JoinRpg.Dal.Impl.Repositories
                      || e.TargetGroups.Select(c => c.CharacterGroupId).Intersect(characterGroupIds).Any()))
           .ToListAsync();
     }
+
+    public async Task<IReadOnlyCollection<PlotFolder>> GetPlotsByTag(int projectid, string tagname)
+    {
+      await LoadProjectGroups(projectid); //TODO[GroupsLoad] it's unclear why we need this
+      return await Ctx.Set<PlotFolder>()
+        .Include(pf => pf.Elements)
+        .Where(pf => pf.ProjectId == projectid && pf.PlotTags.Any(tag => tag.TagName == tagname))
+        .ToListAsync();
+    }
   }
 }

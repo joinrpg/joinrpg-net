@@ -36,6 +36,14 @@ namespace JoinRpg.Web.Controllers
       return await PlotList(projectId, pf => pf.Completed);
     }
 
+
+    public async Task<ActionResult> ByTag(int projectid, string tagname)
+    {
+      var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
+      var project = await GetProjectFromList(projectid, allFolders);
+      return WithPlot(project) ?? View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault));
+    }
+
     public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);

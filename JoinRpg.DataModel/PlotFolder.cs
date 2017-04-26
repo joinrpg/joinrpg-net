@@ -39,5 +39,7 @@ namespace JoinRpg.DataModel
         Elements.Any(e => e.IsActive);
     public bool InWork => IsActive && !Completed;
     public bool CanBePermanentlyDeleted => !Elements.Any();
+
+    public ICollection<ProjectItemTag> PlotTags { get; set; } = new HashSet<ProjectItemTag>();
   }
 }

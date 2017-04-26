@@ -20,5 +20,7 @@ namespace JoinRpg.Data.Interfaces
 
     [ItemNotNull]
     Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds);
+
+    Task<IReadOnlyCollection<PlotFolder>> GetPlotsByTag(int projectid, string tagname);
   }
 }

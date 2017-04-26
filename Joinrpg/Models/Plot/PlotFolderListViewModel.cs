@@ -92,10 +92,13 @@ namespace JoinRpg.Web.Models.Plot
     public int ElementsCount { get; }
     public bool HasEditAccess { get; }
 
+    public IEnumerable<string> TagNames { get; }
+
     public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
     {
       PlotFolderId = folder.PlotFolderId;
-      PlotFolderMasterTitle = folder.MasterTitle;
+      PlotFolderMasterTitle = folder.MasterTitle.RemoveTagNames();
+      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
       ProjectId = folder.ProjectId;
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
