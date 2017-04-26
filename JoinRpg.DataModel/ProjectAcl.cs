@@ -45,7 +45,8 @@ namespace JoinRpg.DataModel
         CanManageClaims = true,
         CanEditRoles =  true,
         CanManageMoney = true,
-        CanSendMassMails = true
+        CanSendMassMails = true,
+        CanManagePlots = true,
       };
     }
   }
