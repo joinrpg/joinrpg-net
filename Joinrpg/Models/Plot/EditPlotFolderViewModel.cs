@@ -19,6 +19,8 @@ namespace JoinRpg.Web.Models.Plot
 
     public bool HasEditAccess { get; private set; }
 
+    public IEnumerable<string> TagNames { get; }
+
     public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
     {
       PlotFolderMasterTitle = folder.MasterTitle;
@@ -27,6 +29,7 @@ namespace JoinRpg.Web.Models.Plot
       ProjectId = folder.ProjectId;
       Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
       Status = folder.GetStatus();
+      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }

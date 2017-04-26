@@ -4,3 +4,12 @@
 {
     <span title="@Model.TodoField">TODO</span>
 }
+@if (Model.TagNames.Any())
+{
+    <br />
+    foreach (var tagName in Model.TagNames)
+    {
+        @Html.ActionLink("#" + tagName, "ByTag", "Plot", new {Model.ProjectId, tagName}, null)
+        <text> </text>
+    }
+}

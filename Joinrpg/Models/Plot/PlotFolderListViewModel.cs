@@ -5,6 +5,7 @@ using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -24,6 +25,18 @@ namespace JoinRpg.Web.Models.Plot
     public int ProjectId { get;  }
     public string ProjectName { get; }
    
+  }
+
+  [ReadOnly(true)]
+  public class PlotFolderListViewModelForGroup : PlotFolderListViewModel
+  {
+    public CharacterGroupDetailsViewModel GroupNavigation { get; }
+
+    public PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, CharacterGroupDetailsViewModel groupNavigation)
+      : base(folders, project, currentUserId)
+    {
+      GroupNavigation = groupNavigation;
+    }
   }
 
   [ReadOnly(true)]
@@ -79,10 +92,13 @@ namespace JoinRpg.Web.Models.Plot
     public int ElementsCount { get; }
     public bool HasEditAccess { get; }
 
+    public IEnumerable<string> TagNames { get; }
+
     public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
     {
       PlotFolderId = folder.PlotFolderId;
-      PlotFolderMasterTitle = folder.MasterTitle;
+      PlotFolderMasterTitle = folder.MasterTitle.RemoveTagNames();
+      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
       ProjectId = folder.ProjectId;
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;

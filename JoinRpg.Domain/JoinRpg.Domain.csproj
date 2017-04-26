@@ -73,6 +73,7 @@
     <Compile Include="ProjectExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubscribeExtensions.cs" />
+    <Compile Include="TagExtensions.cs" />
     <Compile Include="UserExtensions.cs" />
     <Compile Include="WorldObjectExtensions.cs" />
   </ItemGroup>

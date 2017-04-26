@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -10,6 +11,7 @@ namespace JoinRpg.DataModel
   {
     public int PlotFolderId { get; set; }
     public int ProjectId { get; set; }
+    [NotNull]
     public virtual Project Project { get; set; }
 
     int IOrderableEntity.Id => PlotFolderId;
@@ -37,5 +39,7 @@ namespace JoinRpg.DataModel
         Elements.Any(e => e.IsActive);
     public bool InWork => IsActive && !Completed;
     public bool CanBePermanentlyDeleted => !Elements.Any();
+
+    public ICollection<ProjectItemTag> PlotTags { get; set; } = new HashSet<ProjectItemTag>();
   }
 }

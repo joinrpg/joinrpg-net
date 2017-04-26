@@ -46,6 +46,7 @@ else
             @NavigationItem(GroupNavigationPage.ClaimsDirect, "Заявки в группу", "ListForGroupDirect", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
             @NavigationItem(GroupNavigationPage.Characters, "Персонажи", "ByGroup", "CharacterList", new {Model.ProjectId, Model.CharacterGroupId})
             @NavigationItem(GroupNavigationPage.Report, "Сводный отчет", "Report", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId})
+            @NavigationItem(GroupNavigationPage.Plots, "Сюжеты", "ForGroup", "Plot", new { Model.ProjectId, Model.CharacterGroupId })
         }
         @NavigationItem(GroupNavigationPage.Forums, "Форумы", "ListThreadsByGroup", "Forum", new { Model.ProjectId, Model.CharacterGroupId })
     </ul>
