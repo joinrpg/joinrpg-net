@@ -8,6 +8,20 @@
 }
 
 <h2>@ViewBag.Title</h2>
+
+@if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
+{
+    <div class="alert alert-danger">
+        Необходимо настроить размеры взносов, прежде чем принимать оплату.
+    </div>
+}
+else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
+{
+    <div class="alert alert-danger">
+        Необходимо настроить хотя бы один способ приема взносов, прежде чем принимать оплату.
+    </div>
+}
+
 <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
         <div class="panel-heading">
