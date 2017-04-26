@@ -6,10 +6,12 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Web.Controllers
@@ -33,6 +35,34 @@ namespace JoinRpg.Web.Controllers
     {
       return await PlotList(projectId, pf => pf.Completed);
     }
+
+    public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
+    {
+      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
+      if (group == null)
+      {
+        return HttpNotFound();
+      }
+
+      //TODO slow 
+      var characterGroups = group.GetChildrenGroups().Union(new[] {group}).ToList();
+      var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
+      var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
+      var allFolders = await _plotRepository.GetPlotsWithTargets(projectId);
+      var folders =
+        allFolders.Where(
+            pf =>
+              pf.Elements.Any(
+                e => e.TargetCharacters.Select(c => c.CharacterId).Intersect(characters).Any()
+                || e.TargetGroups.Select(c => c.CharacterGroupId).Intersect(characterGroupIds).Any()))
+          .ToList();
+      var project = group.Project;
+
+      var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
+
+      return  WithPlot(project) ?? View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation));
+    }
+
 
     public async Task<ActionResult> FlatList(int projectId)
     {

@@ -64,11 +64,11 @@ namespace JoinRpg.Domain
       return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups)) ?? Enumerable.Empty<CharacterGroup>();
     }
 
-    [NotNull]
+    [NotNull, ItemNotNull]
     public static IEnumerable<CharacterGroup> GetChildrenGroups([NotNull] this CharacterGroup target)
     {
       if (target == null) throw new ArgumentNullException(nameof(target));
-      return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups));
+      return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
     }
 
     public static bool HasActiveClaims(this IClaimSource target)
