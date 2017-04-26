@@ -17,5 +17,8 @@ namespace JoinRpg.Data.Interfaces
     Task<IReadOnlyCollection<PlotFolder>> GetPlotsWithTargetAndText(int projectid);
     [ItemNotNull]
     Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid);
+
+    [ItemNotNull]
+    Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds);
   }
 }

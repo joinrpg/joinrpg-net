@@ -48,14 +48,7 @@ namespace JoinRpg.Web.Controllers
       var characterGroups = group.GetChildrenGroups().Union(new[] {group}).ToList();
       var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
       var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
-      var allFolders = await _plotRepository.GetPlotsWithTargets(projectId);
-      var folders =
-        allFolders.Where(
-            pf =>
-              pf.Elements.Any(
-                e => e.TargetCharacters.Select(c => c.CharacterId).Intersect(characters).Any()
-                || e.TargetGroups.Select(c => c.CharacterGroupId).Intersect(characterGroupIds).Any()))
-          .ToList();
+      var folders = await _plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
       var project = group.Project;
 
       var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);

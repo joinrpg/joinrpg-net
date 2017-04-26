@@ -87,5 +87,19 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
         .ToListAsync();
     }
+
+    public Task<List<PlotFolder>> GetPlotsForTargets(int projectId, List<int> characterIds, List<int> characterGroupIds)
+    {
+      return Ctx.Set<PlotFolder>()
+        .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
+        .Include(pf => pf.Elements.Select(e => e.TargetGroups))
+        .Where(pf => pf.ProjectId == projectId)
+        .Where(
+            pf =>
+              pf.Elements.Any(
+                e => e.TargetCharacters.Select(c => c.CharacterId).Intersect(characterIds).Any()
+                     || e.TargetGroups.Select(c => c.CharacterGroupId).Intersect(characterGroupIds).Any()))
+          .ToListAsync();
+    }
   }
 }
