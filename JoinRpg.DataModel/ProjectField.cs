@@ -107,7 +107,8 @@ namespace JoinRpg.DataModel
     Dropdown,
     Checkbox,
     MultiSelect,
-    Header
+    Header,
+    Number
   }
 
   public enum FieldBoundTo
