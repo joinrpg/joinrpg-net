@@ -18,6 +18,7 @@ namespace JoinRpg.Services.Impl
   {
     public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
     {
+      if (masterTitle == null) throw new ArgumentNullException(nameof(masterTitle));
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       var startTimeUtc = DateTime.UtcNow;

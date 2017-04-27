@@ -2,7 +2,7 @@
 @model JoinRpg.Web.Models.Plot.AddPlotFolderViewModel
 
 @{
-    ViewBag.Title = "Добавить сюжет";
+    ViewBag.Title = "Добавить новый сюжет";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -19,11 +19,11 @@
         @Html.HiddenFor(model => model.ProjectId)
         
         <div class="form-group">
-            @Html.LabelFor(model => model.PlotFolderMasterTitle, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.PlotFolderTitleAndTags, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.PlotFolderMasterTitle, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.PlotFolderMasterTitle, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.PlotFolderMasterTitle)
+                @Html.EditorFor(model => model.PlotFolderTitleAndTags, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.PlotFolderTitleAndTags, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.PlotFolderTitleAndTags)
             </div>
         </div>
 
@@ -38,11 +38,9 @@
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Создать сюжет" class="btn btn-default" />
+                |
+                @Html.ActionLink("Назад к списку сюжетов", "Index", new { Model.ProjectId }, null)
             </div>
         </div>
     </div>
 }
-
-<div>
-    @Html.ActionLink("Назад к списку сюжетов", "Index", new {Model.ProjectId}, null)
-</div>
