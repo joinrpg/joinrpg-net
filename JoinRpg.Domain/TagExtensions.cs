@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -21,7 +22,7 @@ namespace JoinRpg.Domain
         var tagName = title.Skip(i + 1).TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').AsString().Trim();
         if (tagName != "")
         {
-          yield return tagName;
+          yield return tagName.ToLowerInvariant();
         }
       }
     }
@@ -30,9 +31,9 @@ namespace JoinRpg.Domain
     {
       var extractTagNames = title.ExtractTagNames().ToList();
       return title
-        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ","))
-        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ";"))
-        .RemoveFromString(extractTagNames.Select(tag => "#" + tag))
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ","), StringComparison.InvariantCultureIgnoreCase)
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ";"), StringComparison.InvariantCultureIgnoreCase)
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag), StringComparison.InvariantCultureIgnoreCase)
         .Trim();
     }
 

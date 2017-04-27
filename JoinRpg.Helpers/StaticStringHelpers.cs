@@ -87,12 +87,34 @@ namespace JoinRpg.Helpers
       throw new ArgumentException(nameof(ch));
     }
 
-
-    public static string RemoveFromString([NotNull] this string url, [NotNull, ItemNotNull] IEnumerable<string> tokensToRemove)
+    [NotNull]
+    public static string RemoveFromString([NotNull] this string url, [NotNull, ItemNotNull] IEnumerable<string> tokensToRemove, StringComparison stringComparison = StringComparison.CurrentCulture)
     {
       if (url == null) throw new ArgumentNullException(nameof(url));
       if (tokensToRemove == null) throw new ArgumentNullException(nameof(tokensToRemove));
-      return tokensToRemove.Aggregate(url, (current, replaceToken) => current.Replace(replaceToken, ""));
+      return tokensToRemove.Aggregate(url, (current, replaceToken) => current.RemoveFromString(replaceToken, stringComparison));
+    }
+
+    [NotNull, PublicAPI]
+    public static string RemoveFromString([NotNull] this string str, [NotNull] string tokenToRemove, StringComparison stringComparison = StringComparison.CurrentCulture)
+    {
+      if (str == null) throw new ArgumentNullException(nameof(str));
+      if (tokenToRemove == null) throw new ArgumentNullException(nameof(tokenToRemove));
+
+      string retval = str;
+      // find the first occurence of oldValue
+      int pos = retval.IndexOf(tokenToRemove, stringComparison);
+
+      while (pos > -1)
+      {
+        // remove oldValue from the string
+        retval = retval.Remove(pos, tokenToRemove.Length);
+
+        // check if oldValue is found further down
+        pos = retval.IndexOf(tokenToRemove, pos, stringComparison);
+      }
+
+      return retval;
     }
 
     public static string ToHexHash(this string str, HashAlgorithm hashAlgorithm)
