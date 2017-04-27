@@ -40,6 +40,6 @@ namespace JoinRpg.DataModel
     public bool InWork => IsActive && !Completed;
     public bool CanBePermanentlyDeleted => !Elements.Any();
 
-    public ICollection<ProjectItemTag> PlotTags { get; set; } = new HashSet<ProjectItemTag>();
+    public virtual ICollection<ProjectItemTag> PlotTags { get; set; } = new HashSet<ProjectItemTag>();
   }
 }

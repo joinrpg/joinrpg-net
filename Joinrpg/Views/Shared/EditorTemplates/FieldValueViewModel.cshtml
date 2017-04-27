@@ -98,10 +98,13 @@
             case ProjectFieldViewType.String:
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" @requiredMsg>
                 break;
+            case ProjectFieldViewType.Number:
+                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="number" class="form-control" @requiredMsg>
+                break;
             case ProjectFieldViewType.Checkbox:
                 var ch = Model.IsCheckboxSet() ? "checked" : "";
                 <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
-                <input name="@Model.FieldClientId" type="hidden" value="false" />
+                <input name="@Model.FieldClientId" type="hidden" value="false"/>
                 break;
             case ProjectFieldViewType.MultiSelect:
                 <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple" @requiredMsg>

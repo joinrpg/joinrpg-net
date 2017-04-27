@@ -26,7 +26,7 @@ namespace JoinRpg.Services.Impl
         CreatedDateTime = startTimeUtc,
         ModifiedDateTime = startTimeUtc,
         ProjectId = projectId,
-        MasterTitle = Required(masterTitle),
+        MasterTitle = Required(masterTitle.RemoveTagNames()),
         TodoField = todo,
         IsActive = true
       };
@@ -50,7 +50,7 @@ namespace JoinRpg.Services.Impl
           new ProjectItemTag() {TagName = tagName});
       }
 
-      presentTags.AddLinkList(tagObjects);
+      presentTags.AssignLinksList(tagObjects);
     }
 
     public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
@@ -63,12 +63,9 @@ namespace JoinRpg.Services.Impl
       folder.IsActive = true; //Restore if deleted
       folder.ModifiedDateTime = DateTime.UtcNow;
 
-      if (folder.MasterTitle != plotFolderMasterTitle)
-      {
-        await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
-      }
+      await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
 
-      folder.MasterTitle = Required(plotFolderMasterTitle);
+      folder.MasterTitle = Required(plotFolderMasterTitle.RemoveTagNames());
       await UnitOfWork.SaveChangesAsync();
     }
 

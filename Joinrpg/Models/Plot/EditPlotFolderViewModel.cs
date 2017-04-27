@@ -15,21 +15,41 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotFolderViewModel : PlotFolderViewModelBase
   {
     public int PlotFolderId { get; set; }
+    [ReadOnly(true)]
     public IOrderedEnumerable<PlotElementListItemViewModel> Elements { get; private set; }
 
+    [ReadOnly((true))]
     public bool HasEditAccess { get; private set; }
 
-    public IEnumerable<string> TagNames { get; }
+    [ReadOnly((true))]
+    public IEnumerable<string> TagNames { get; private set; }
+
+
+    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
+    public string PlotFolderTitleAndTags { get; set; }
 
     public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
     {
-      PlotFolderMasterTitle = folder.MasterTitle;
       PlotFolderId = folder.PlotFolderId;
       TodoField = folder.TodoField;
       ProjectId = folder.ProjectId;
-      Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
+      Fill(folder, currentUserId);
+      if (TagNames.Any())
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
+      }
+      else
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle;
+      }
+    }
+
+    public void Fill(PlotFolder folder, int? currentUserId)
+    {
+      PlotFolderMasterTitle = folder.MasterTitle;
       Status = folder.GetStatus();
-      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
+      Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }
@@ -37,7 +57,8 @@ namespace JoinRpg.Web.Models.Plot
     [UsedImplicitly] //For binding
     public EditPlotFolderViewModel() {} //For binding
 
-    public bool HasMasterAccess { get; }
+    [ReadOnly(true)]
+    public bool HasMasterAccess { get; private set; }
   }
 
   public class EditPlotElementViewModel  : IProjectIdAware

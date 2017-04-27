@@ -7,5 +7,9 @@ namespace JoinRpg.Web.Models.Plot
   {
     [ReadOnly(true)]
     public string ProjectName { get; set; }
+
+
+    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
+    public string PlotFolderTitleAndTags { get; set; }
   }
 }

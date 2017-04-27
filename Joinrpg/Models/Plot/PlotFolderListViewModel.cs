@@ -97,8 +97,8 @@ namespace JoinRpg.Web.Models.Plot
     public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
     {
       PlotFolderId = folder.PlotFolderId;
-      PlotFolderMasterTitle = folder.MasterTitle.RemoveTagNames();
-      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
+      PlotFolderMasterTitle = folder.MasterTitle;
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
       ProjectId = folder.ProjectId;
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
