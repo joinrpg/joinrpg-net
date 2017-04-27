@@ -50,7 +50,7 @@ namespace JoinRpg.Services.Impl
           new ProjectItemTag() {TagName = tagName});
       }
 
-      presentTags.AddLinkList(tagObjects);
+      presentTags.AssignLinksList(tagObjects);
     }
 
     public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)

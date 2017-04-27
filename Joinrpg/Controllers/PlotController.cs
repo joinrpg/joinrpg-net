@@ -149,8 +149,10 @@ namespace JoinRpg.Web.Controllers
           _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
       }
-      catch (Exception)
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
+        viewModel.Fill(folder, CurrentUserId);
         return View(viewModel);
       }
     }
