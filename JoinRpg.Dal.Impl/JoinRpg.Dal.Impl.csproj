@@ -331,6 +331,10 @@
     <Compile Include="Migrations\201704262108464_PlotTags.Designer.cs">
       <DependentUpon>201704262108464_PlotTags.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704270819596_PlotTags2.cs" />
+    <Compile Include="Migrations\201704270819596_PlotTags2.Designer.cs">
+      <DependentUpon>201704270819596_PlotTags2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -570,6 +574,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704262108464_PlotTags.resx">
       <DependentUpon>201704262108464_PlotTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704270819596_PlotTags2.resx">
+      <DependentUpon>201704270819596_PlotTags2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
