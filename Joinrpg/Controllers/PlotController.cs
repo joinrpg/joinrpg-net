@@ -165,7 +165,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle,
+        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
         ElementType = PlotElementTypeView.RegularPlot
       });
     }
@@ -178,7 +178,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle,
+        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
         ElementType = PlotElementTypeView.Handout
       });
     }
@@ -214,7 +214,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = projectId,
           PlotFolderId = plotFolderId,
-          PlotFolderName = folder.MasterTitle,
+          PlotFolderName = folder.MasterTitle.RemoveTagNames(),
           Content = content,
           TodoField = todoField,
         });
