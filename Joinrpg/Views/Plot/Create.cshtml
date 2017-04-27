@@ -2,7 +2,7 @@
 @model JoinRpg.Web.Models.Plot.AddPlotFolderViewModel
 
 @{
-    ViewBag.Title = "Добавить сюжет";
+    ViewBag.Title = "Добавить новый сюжет";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -13,7 +13,7 @@
     
     <div class="form-horizontal">
         <p>Начните работу с того, что создайте сюжет. Сюжет — это история, она состоит из вводных, которые вы даете персонажам или группам персонажей.
-        Все поля на этой странице — только для мастеров, игроки их не увидят.</p>
+        Все поля на этой странице — только для мастеров, игроки их не увидят. </p>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(model => model.ProjectId)
