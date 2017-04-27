@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure.Annotations;
-using System.Data.Entity.ModelConfiguration.Configuration;
 using System.Threading.Tasks;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
@@ -138,6 +136,7 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany().WillCascadeOnDelete(false);
 
       modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
+      modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
 
       base.OnModelCreating(modelBuilder);
     }
