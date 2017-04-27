@@ -24,20 +24,32 @@ namespace JoinRpg.Web.Models.Plot
     [ReadOnly((true))]
     public IEnumerable<string> TagNames { get; private set; }
 
+
+    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
+    public string PlotFolderTitleAndTags { get; set; }
+
     public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
     {
-      PlotFolderMasterTitle = folder.MasterTitle;
       PlotFolderId = folder.PlotFolderId;
       TodoField = folder.TodoField;
       ProjectId = folder.ProjectId;
       Fill(folder, currentUserId);
+      if (TagNames.Any())
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
+      }
+      else
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle;
+      }
     }
 
     public void Fill(PlotFolder folder, int? currentUserId)
     {
+      PlotFolderMasterTitle = folder.MasterTitle;
       Status = folder.GetStatus();
       Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
-      TagNames = folder.MasterTitle.ExtractTagNames().ToList();
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }
