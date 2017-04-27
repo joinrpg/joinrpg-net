@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
@@ -27,7 +28,17 @@ namespace JoinRpg.Domain
 
     public static string RemoveTagNames(this string title)
     {
-      return title.RemoveFromString(title.ExtractTagNames().Select(tag => "#" + tag)).Trim();
+      var extractTagNames = title.ExtractTagNames().ToList();
+      return title
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ","))
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag + ";"))
+        .RemoveFromString(extractTagNames.Select(tag => "#" + tag))
+        .Trim();
+    }
+
+    public static string GetTagString(this IEnumerable<ProjectItemTag> tags)
+    {
+      return tags.Select(tag => "#" + tag.TagName).JoinStrings(" ");
     }
   }
 }

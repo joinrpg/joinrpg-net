@@ -117,7 +117,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+        await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
         return RedirectToAction("Index", "Plot", new {project.ProjectId});
       }
       catch (Exception)
@@ -146,7 +146,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
+          _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
         return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
       }
       catch (Exception exception)
@@ -165,7 +165,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
+        PlotFolderName = folder.MasterTitle,
         ElementType = PlotElementTypeView.RegularPlot
       });
     }
@@ -178,7 +178,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
+        PlotFolderName = folder.MasterTitle,
         ElementType = PlotElementTypeView.Handout
       });
     }
@@ -214,7 +214,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = projectId,
           PlotFolderId = plotFolderId,
-          PlotFolderName = folder.MasterTitle.RemoveTagNames(),
+          PlotFolderName = folder.MasterTitle,
           Content = content,
           TodoField = todoField,
         });
