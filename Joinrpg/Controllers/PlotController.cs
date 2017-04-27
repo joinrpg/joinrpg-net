@@ -149,8 +149,10 @@ namespace JoinRpg.Web.Controllers
           _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderMasterTitle, viewModel.TodoField);
         return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
       }
-      catch (Exception)
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
+        viewModel.Fill(folder, CurrentUserId);
         return View(viewModel);
       }
     }
@@ -163,7 +165,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle,
+        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
         ElementType = PlotElementTypeView.RegularPlot
       });
     }
@@ -176,7 +178,7 @@ namespace JoinRpg.Web.Controllers
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
-        PlotFolderName = folder.MasterTitle,
+        PlotFolderName = folder.MasterTitle.RemoveTagNames(),
         ElementType = PlotElementTypeView.Handout
       });
     }
@@ -212,7 +214,7 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = projectId,
           PlotFolderId = plotFolderId,
-          PlotFolderName = folder.MasterTitle,
+          PlotFolderName = folder.MasterTitle.RemoveTagNames(),
           Content = content,
           TodoField = todoField,
         });

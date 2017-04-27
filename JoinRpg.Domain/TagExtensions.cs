@@ -8,15 +8,19 @@ namespace JoinRpg.Domain
   {
     public static IEnumerable<string> ExtractTagNames(this string title)
     {
+      return ExtractTagNamesImpl(title).Distinct();
+    }
+
+    private static IEnumerable<string> ExtractTagNamesImpl(string title)
+    {
       for (var i = 0; i < title.Length; i++)
       {
-        if (title[i] == '#')
+        if (title[i] != '#') continue;
+
+        var tagName = title.Skip(i + 1).TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').AsString().Trim();
+        if (tagName != "")
         {
-          var tagName = title.Skip(i + 1).TakeWhile(c => c != '#' && c != ' ').AsString().Trim();
-          if (tagName != "")
-          {
-            yield return tagName;
-          }
+          yield return tagName;
         }
       }
     }
