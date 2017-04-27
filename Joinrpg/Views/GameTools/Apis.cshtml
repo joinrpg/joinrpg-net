@@ -28,6 +28,10 @@
 &lt;/script&gt;</pre>
     
     Также можно подключить дефолтные стили: <var> @RouteHelper.GetFullHostName()/external/joinrpg-api.css </var>
+
+    Обратите внимание: чтобы это работало, необходимо использовать jquery. Если у вас не подключено jquery, подключите его так:
+    <pre>&lt;script type="text/javascript" src="https://yastatic.net/jquery/3.1.1/jquery.min.js"&gt;&lt;/script&gt;</pre>
+
     <div class="panel panel-default">
         <div class="panel-heading">Пример результата</div>
         <div class="joinrpg-api panel-body" data-projectId="@Model.ProjectId" data-locationId="@Model.RootGroupId">

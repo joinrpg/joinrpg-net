@@ -39,16 +39,26 @@
                 <p class="help-block">Публичные персонажи показываются в сетке ролей.</p>
             </div>
 
+        </div>
 
-            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+        @if (Model.IsAcceptingClaimsEnabled)
+        {
+
+        <div class="form-group">
+
+            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.IsAcceptingClaims)
                 </div>
                 <p class="help-block">Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.</p>
             </div>
+        </div>
+        }
 
-            @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new {@class = "control-label col-md-2"})
+        <div class="form-group">
+
+            @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 <div class="checkbox">
                     @Html.EditorFor(model => model.HidePlayerForCharacter)

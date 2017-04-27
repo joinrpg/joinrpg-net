@@ -51,5 +51,12 @@ namespace JoinRpg.Domain
     {
       return projectField.FieldType != ProjectFieldType.Header;
     }
+
+    [CanBeNull, MustUseReturnValue]
+    public static ProjectFieldDropdownValue GetBoundFieldDropdownValueOrDefault(this CharacterGroup group)
+    {
+      return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
+              .SingleOrDefault(pfv => pfv.CharacterGroup == group);
+    }
   }
 }
