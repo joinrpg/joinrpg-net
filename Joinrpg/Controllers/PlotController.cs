@@ -120,8 +120,9 @@ namespace JoinRpg.Web.Controllers
         await _plotService.CreatePlotFolder(project.ProjectId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
         return RedirectToAction("Index", "Plot", new {project.ProjectId});
       }
-      catch (Exception)
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return View(viewModel);
       }
 
