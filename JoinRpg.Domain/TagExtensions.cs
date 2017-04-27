@@ -8,6 +8,11 @@ namespace JoinRpg.Domain
   {
     public static IEnumerable<string> ExtractTagNames(this string title)
     {
+      return ExtractTagNamesImpl(title).Distinct();
+    }
+
+    private static IEnumerable<string> ExtractTagNamesImpl(string title)
+    {
       for (var i = 0; i < title.Length; i++)
       {
         if (title[i] != '#') continue;
