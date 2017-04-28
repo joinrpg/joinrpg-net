@@ -135,7 +135,10 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany().WillCascadeOnDelete(false);
 
+      modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
+      modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
+
       base.OnModelCreating(modelBuilder);
     }
- }
+  }
 }

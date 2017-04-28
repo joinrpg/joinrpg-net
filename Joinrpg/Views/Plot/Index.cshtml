@@ -14,46 +14,4 @@
         <a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
     }
 </p>
-
-@{
-  var firstItem = Model.Folders.FirstOrDefault();
-}
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.PlotFolderMasterTitle)
-        </th>
-        @if (Model.HasEditAccess)
-        {
-            <th>
-                @Html.DisplayNameFor(model => firstItem.Status)
-            </th>
-        }
-        <th>Вводные</th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model.Folders) {
-    <tr>
-        <td>
-            @Html.DisplayFor(model => item)
-        </td>
-        @if (Model.HasEditAccess)
-        {
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-        }
-        <td>
-            @DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")
-        </td>
-        <td>
-           @if (item.Status != PlotStatus.Deleted && item.HasEditAccess)
-           {
-               @Html.ActionLink("Удалить", "Delete", new {item.PlotFolderId, item.ProjectId})
-           }
-        </td>
-    </tr>
-}
-
-</table>
+@Html.Partial("FolderList", Model)

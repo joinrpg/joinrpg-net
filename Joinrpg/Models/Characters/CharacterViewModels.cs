@@ -54,6 +54,8 @@ namespace JoinRpg.Web.Models.Characters
 
     [ReadOnly(true)]
     public int ActiveClaimsCount { get; private set; }
+    [ReadOnly(true)]
+    public bool IsAcceptingClaimsEnabled { get; private set; }
 
     public EditCharacterViewModel Fill(Character field, int currentUserId)
     {
@@ -63,6 +65,9 @@ namespace JoinRpg.Web.Models.Characters
 
       ActiveClaimsCount = field.Claims.Count(claim => claim.IsActive);
       IsActive = field.IsActive;
+      IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
+
+      IsAcceptingClaims = IsAcceptingClaims && !IsAcceptingClaimsEnabled;
 
       return this;
     }

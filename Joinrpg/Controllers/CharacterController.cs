@@ -83,7 +83,9 @@ namespace JoinRpg.Web.Controllers
           CurrentUserId,
           viewModel.CharacterId,
           viewModel.ProjectId,
-          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
+          viewModel.Name, viewModel.IsPublic, 
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), 
+          viewModel.IsAcceptingClaims && field.ApprovedClaim == null, //Force this field to false if has approved claim
           viewModel.Description, 
           viewModel.HidePlayerForCharacter,
           GetCustomFieldValuesFromPost(), 

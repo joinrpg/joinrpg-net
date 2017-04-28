@@ -123,7 +123,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Мультивыбор", Order = 4), UsedImplicitly]
     MultiSelect,
     [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
-    Header
+    Header,
+    [Display(Name = "Число", Order = 6), UsedImplicitly]
+    Number
   }
 
   public enum FieldBoundToViewModel

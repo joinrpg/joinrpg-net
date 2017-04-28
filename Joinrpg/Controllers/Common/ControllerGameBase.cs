@@ -120,19 +120,7 @@ namespace JoinRpg.Web.Controllers.Common
       return WithEntity(claim);
     }
 
-    protected ActionResult WithPlot(PlotFolder plot)
-    {
-      if (plot == null)
-      {
-        return HttpNotFound();
-      }
-      if (!plot.HasMasterAccess(CurrentUserIdOrDefault) && plot.Project?.Details.PublishPlot == false)
-      {
-        return NoAccesToProjectView(plot.Project);
-      }
-
-      return WithEntity(plot);
-    }
+    protected ActionResult WithPlot([CanBeNull] PlotFolder plot) => WithPlot(plot?.Project);
 
     protected ActionResult WithPlot(Project project)
     {
@@ -140,7 +128,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && project.Details.PublishPlot == false)
+      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && !project.Details.PublishPlot)
       {
         return NoAccesToProjectView(project);
       }
