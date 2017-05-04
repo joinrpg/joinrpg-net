@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
@@ -13,13 +14,9 @@ namespace JoinRpg.Web.Controllers
   public class AclController : ControllerGameBase
   { 
     private IClaimsRepository ClaimRepository { get; }
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanChangeProjectProperties, AllowAdmin = true) ]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = await AsMasterOrAdmin(project, a => a.CanGrantRights);
-      if (error != null) return error;
-
       try
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,

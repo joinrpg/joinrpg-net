@@ -6,7 +6,6 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -103,5 +102,7 @@ namespace JoinRpg.Web.Controllers.Common
              (Request.Url.IsDefaultPort ? "" : $":{Request.Url.Port}") +
              Url.Action(actionName, controllerName, routeValues);
     }
+
+    protected bool IsCurrentUserAdmin() => User.IsInRole(Security.AdminRoleName);
   }
 }

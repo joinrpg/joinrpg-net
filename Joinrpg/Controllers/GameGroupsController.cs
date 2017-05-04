@@ -11,6 +11,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -32,8 +33,10 @@ namespace JoinRpg.Web.Controllers
       }
       
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
+
+      if (field == null) return HttpNotFound();
       
-      return WithEntity(field) ?? View(
+      return View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
@@ -46,7 +49,7 @@ namespace JoinRpg.Web.Controllers
         });
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize]
     // GET: GameGroups
     public async Task<ActionResult> Report(int projectId, int? characterGroupId, int? maxDeep)
     {
@@ -59,7 +62,9 @@ namespace JoinRpg.Web.Controllers
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
 
-      return AsMaster(field) ?? View(
+      if (field == null) return HttpNotFound();
+
+      return View(
         new GameRolesViewModel
         {
           ProjectId = field.Project.ProjectId,
@@ -82,7 +87,8 @@ namespace JoinRpg.Web.Controllers
       }
 
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
-      return WithEntity(field) ?? View(GetHotCharacters(field));
+      if (field == null) return HttpNotFound();
+      return  View(GetHotCharacters(field));
     }
 
     [HttpGet]
@@ -277,14 +283,13 @@ namespace JoinRpg.Web.Controllers
       return group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
     }
 
-    [HttpPost, ValidateAntiForgeryToken, Authorize]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(EditCharacterGroupViewModel viewModel)
     {
       var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-      var error = AsMaster(group, acl => acl.CanEditRoles);
-      if (error != null)
+      if (group == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
@@ -312,7 +317,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch (Exception e)
       {
-        ModelState.AddModelError("", e);
+        ModelState.AddException(e);
         viewModel.IsRoot = group.IsRoot;
         return View(FillFromCharacterGroup(viewModel, group));
 
@@ -320,28 +325,28 @@ namespace JoinRpg.Web.Controllers
 
     }
 
-    // GET: GameGroups/Delete/5
-    [HttpGet,Authorize]
+    [HttpGet,MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Delete(int projectId, int characterGroupId)
     {
       var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-      return AsMaster(field, pa => pa.CanEditRoles) ?? View(field);
+      if (field == null) return HttpNotFound();
+
+      return View(field);
     }
 
-    // POST: GameGroups/Delete/5
-    [HttpPost,Authorize,ValidateAntiForgeryToken]
+
+    [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int characterGroupId, FormCollection collection)
     {
       var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-      var error = AsMaster(field, pa => pa.CanEditRoles);
-      if (error != null) return error;
+      if (field == null) return HttpNotFound();
 
       try
       {
-        await ProjectService.DeleteCharacterGroup(projectId, field.CharacterGroupId, CurrentUserId);
+        await ProjectService.DeleteCharacterGroup(projectId, characterGroupId);
 
         return RedirectToIndex(field.Project);
       }
@@ -359,12 +364,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    [Authorize]
+    [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-      return AsMaster(field, pa => pa.CanEditRoles) ??  View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
+      if (field == null) return HttpNotFound();
+
+      return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
         ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
         ResponsibleMasterId = -1
@@ -372,20 +379,17 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [MasterAuthorize(Permission.CanEditRoles)]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
       var field = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
-      var error = AsMaster(field);
+      if (field == null) return HttpNotFound();
       if (!ModelState.IsValid)
       {
         return View(FillFromCharacterGroup(viewModel, field));
       }
-      if (error != null)
-      {
-        return error;
-      }
+      
       try
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
@@ -446,7 +450,7 @@ namespace JoinRpg.Web.Controllers
       return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
     }
 
-    [HttpGet,Authorize]
+    [HttpGet,MasterAuthorize()]
     public async Task<ActionResult> EditSubscribe(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -456,14 +460,14 @@ namespace JoinRpg.Web.Controllers
       return AsMaster(group) ?? View(new SubscribeSettingsViewModel(user, group));
     }
 
-    [HttpPost, ValidateAntiForgeryToken, Authorize]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize()]
     public async Task<ActionResult> EditSubscribe(SubscribeSettingsViewModel viewModel)
     {
       var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
-      var error = AsMaster(group);
-      if (error != null || group == null)
+      
+      if (group == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -477,7 +481,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch (Exception e)
       {
-        ModelState.AddModelError("", e);
+        ModelState.AddException(e);
         return View(viewModel);
       }
 
@@ -487,10 +491,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-      var error = WithEntity(group);
-      if (error != null)
+      if (group == null)
       {
-        return error;
+        return HttpNotFound();
       }
       var viewModel = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Home);
       return View(viewModel);

@@ -82,7 +82,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
     {
       var forumThread = await GetForumThread(projectid, forumThreadId);
-      var error = WithEntity(forumThread);
+      var error = (ActionResult) (((IProjectEntity) forumThread)?.Project == null ? HttpNotFound() : null);
 
       if (error != null) return error;
       var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
@@ -111,7 +111,7 @@ namespace JoinRpg.Web.Controllers
       CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
       discussion.RequestAnyAccess(CurrentUserId);
 
-      var error = WithEntity(discussion);
+      var error = (ActionResult) (((IProjectEntity) discussion)?.Project == null ? HttpNotFound() : null);
 
       if (error != null) return error;
 
@@ -199,7 +199,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListThreads(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      var error = WithEntity(project);
+      var error = (ActionResult) (((IProjectEntity) project)?.Project == null ? HttpNotFound() : null);
       if (error != null || project == null)
       {
         return error;
@@ -225,7 +225,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-      var error = WithEntity(group);
+      var error = (ActionResult) (((IProjectEntity) @group)?.Project == null ? HttpNotFound() : null);
       if (error != null || group == null)
       {
         return error;

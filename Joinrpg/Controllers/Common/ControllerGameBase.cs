@@ -39,17 +39,20 @@ namespace JoinRpg.Web.Controllers.Common
     }
 
 
-    protected ActionResult WithEntity(IProjectEntity field)
+    protected override void OnActionExecuting(ActionExecutingContext filterContext)
     {
-      if (field == null) return HttpNotFound();
-      var project = field.Project;
-      if (project == null)
+      var projectIdValue = ValueProvider.GetValue("projectid");
+      if (projectIdValue == null)
       {
-        return HttpNotFound();
+        return;
       }
+      var projectIdRawValue = projectIdValue.RawValue;
+      var projectId = projectIdRawValue.GetType().IsArray ? int.Parse(((string[])projectIdRawValue)[0]) : int.Parse((string)projectIdRawValue);
 
+      var project = ProjectRepository.GetProjectAsync(projectId).Result;
       RegisterProjectMenu(project);
-      return null;
+
+      base.OnActionExecuting(filterContext);
     }
 
     private void RegisterProjectMenu(Project project)
@@ -99,11 +102,7 @@ namespace JoinRpg.Web.Controllers.Common
       {
         return HttpNotFound();
       }
-      if (claim.PlayerUserId != CurrentUserId)
-      {
-        return NoAccesToProjectView(claim.Project);
-      }
-      return WithEntity(claim);
+      return claim.PlayerUserId != CurrentUserId ? NoAccesToProjectView(claim.Project) : null;
     }
 
     protected ActionResult WithClaim(Claim claim)
@@ -117,23 +116,7 @@ namespace JoinRpg.Web.Controllers.Common
         return NoAccesToProjectView(claim.Project);
       }
 
-      return WithEntity(claim);
-    }
-
-    protected ActionResult WithPlot([CanBeNull] PlotFolder plot) => WithPlot(plot?.Project);
-
-    protected ActionResult WithPlot(Project project)
-    {
-      if (project == null)
-      {
-        return HttpNotFound();
-      }
-      if (!project.HasMasterAccess(CurrentUserIdOrDefault) && !project.Details.PublishPlot)
-      {
-        return NoAccesToProjectView(project);
-      }
-
-      return WithEntity(project);
+      return null;
     }
 
     protected ActionResult WithCharacter(Character character)
@@ -147,7 +130,7 @@ namespace JoinRpg.Web.Controllers.Common
         return NoAccesToProjectView(character.Project);
       }
 
-      return WithEntity(character);
+      return null;
     }
 
     protected IDictionary<int,string> GetCustomFieldValuesFromPost()
@@ -168,29 +151,10 @@ namespace JoinRpg.Web.Controllers.Common
     [CanBeNull]
     protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
     {
-      return WithEntity(entity) ??
+      return entity == null ? HttpNotFound() :
              (entity.HasMasterAccess(CurrentUserId, requiredRights)
                ? null
                : NoAccesToProjectView(entity.Project));
-    }
-
-    [ItemCanBeNull]
-    protected async Task<ActionResult> AsMasterOrAdmin<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
-    {
-      return WithEntity(entity) ??
-             (entity.HasMasterAccess(CurrentUserId, requiredRights) || await IsCurrentUserAdminAsync()
-               ? null
-               : NoAccesToProjectView(entity.Project));
-    }
-
-    private async Task<bool> IsCurrentUserAdminAsync()
-    {
-      return CurrentUserIdOrDefault != null && (await GetCurrentUserAsync()).Auth?.IsAdmin == true;
-    }
-
-    private bool IsCurrentUserAdmin()
-    {
-      return CurrentUserIdOrDefault != null && GetCurrentUser().Auth?.IsAdmin == true;
     }
 
     protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders)
@@ -212,8 +176,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected async Task<ActionResult> RedirectToProject(int projectId, [AspMvcAction] string action = "Index")
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      var errorResult = WithEntity(project);
-      return errorResult ?? RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId, action);
+      return project == null ? HttpNotFound() : RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId, action);
     }
 
     protected static ExportType? GetExportTypeByName(string export)
