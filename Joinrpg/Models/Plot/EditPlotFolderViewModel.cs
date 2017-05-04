@@ -15,10 +15,11 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotFolderViewModel : PlotFolderViewModelBase
   {
     public int PlotFolderId { get; set; }
+
     [ReadOnly(true)]
     public IOrderedEnumerable<PlotElementListItemViewModel> Elements { get; private set; }
 
-    [ReadOnly((true))]
+    [ReadOnly(true)]
     public bool HasEditAccess { get; private set; }
 
     [ReadOnly((true))]
@@ -68,8 +69,8 @@ namespace JoinRpg.Web.Models.Plot
     {
       PlotElementId = e.PlotElementId;
       Targets = e.GetElementBindingsForEdit();
-      Content = e.Texts.Content.Contents;
-      TodoField = e.Texts.TodoField;
+      Content = e.LastVersion().Content.Contents;
+      TodoField = e.LastVersion().TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
@@ -110,13 +111,13 @@ namespace JoinRpg.Web.Models.Plot
 
       PlotElementId = e.PlotElementId;
       TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
-      Content = e.Texts.Content.ToHtmlString(renderer);
-      TodoField = e.Texts.TodoField;
+      Content = e.LastVersion().Content.ToHtmlString(renderer);
+      TodoField = e.LastVersion().TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       ElementType = (PlotElementTypeView)e.ElementType;
-      ShortContent = e.Texts.Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
+      ShortContent = e.LastVersion().Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
     }

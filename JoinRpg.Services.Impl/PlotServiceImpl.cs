@@ -87,11 +87,6 @@ namespace JoinRpg.Services.Impl
       }
       var plotElement = new PlotElement()
       {
-        Texts = new PlotElementTexts()
-        {
-          Content = new MarkdownString(content),
-          TodoField = todoField,
-        },
         CreatedDateTime = now,
         ModifiedDateTime = now,
         IsActive = true,
@@ -102,6 +97,14 @@ namespace JoinRpg.Services.Impl
         TargetCharacters = await ValidateCharactersList(projectId, targetChars),
         ElementType = elementType
       };
+
+      plotElement.Texts.Add(new PlotElementTexts()
+      {
+        Content = new MarkdownString(content),
+        TodoField = todoField,
+        Version = 1,
+        ModifiedDateTime = now
+      });
 
       folder.ModifiedDateTime = now;
 
@@ -148,8 +151,16 @@ namespace JoinRpg.Services.Impl
     {
       var now = DateTime.UtcNow;
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-      plotElement.Texts.Content.Contents = contents;
-      plotElement.Texts.TodoField = todoField;
+      var text = new PlotElementTexts()
+      {
+        Content = new MarkdownString(contents),
+        TodoField = todoField,
+        Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
+        PlotElementId = plotElement.PlotElementId,
+        ModifiedDateTime = now
+      };
+      plotElement.Texts.Add(text);
+      
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
 
       if (characterGroups.Count != targetGroups.Distinct().Count())

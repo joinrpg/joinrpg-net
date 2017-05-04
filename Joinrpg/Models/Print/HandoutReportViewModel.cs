@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Models.Print
   {
     public HandoutReportItemViewModel(PlotElement element, IReadOnlyCollection<Character> characters)
     {
-      Text = element.Texts.Content.ToPlainText().WithDefaultStringValue("(пустой текст)");
+      Text = element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)");
       PlotElementId = element.PlotElementId;
       PlotFolderId = element.PlotFolderId;
       ProjectId = element.ProjectId;

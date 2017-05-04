@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Models.Print
 
       Handouts =
         plotElements.Where(e => e.ElementType == PlotElementType.Handout)
-          .Select(e => e.Texts.Content.ToPlainText())
+          .Select(e => e.LastVersion().Content.ToPlainText())
           .ToArray();
       
       

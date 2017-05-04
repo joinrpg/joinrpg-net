@@ -35,8 +35,8 @@ namespace JoinRpg.Web.Models.Plot
     {
       if (p == null) throw new ArgumentNullException(nameof(p));
 
-      Content = p.Texts.Content.ToHtmlString(linkRendrer);
-      TodoField = p.Texts.TodoField;
+      Content = p.LastVersion().Content.ToHtmlString(linkRendrer);
+      TodoField = p.LastVersion().TodoField;
       HasMasterAccess = p.HasMasterAccess(currentUserId);
       HasEditAccess = p.HasMasterAccess(currentUserId) && p.Project.Active;
       HasPlayerAccess = character?.HasPlayerAccess(currentUserId) ?? false;

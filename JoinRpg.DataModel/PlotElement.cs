@@ -27,7 +27,7 @@ namespace JoinRpg.DataModel
     //TODO: Add here "mentioned characters" concept
 
     [NotNull]
-    public virtual PlotElementTexts Texts { get; set; }
+    public virtual ICollection<PlotElementTexts> Texts { get; set; }
 
     public DateTime CreatedDateTime { get; set; }
 
@@ -39,6 +39,8 @@ namespace JoinRpg.DataModel
     public bool IsActive { get; set; }
 
     public PlotElementType ElementType { get; set; }
+
+    public int? Published { get; set; }
   }
 
   public enum PlotElementType
@@ -57,5 +59,8 @@ namespace JoinRpg.DataModel
 
     public string TodoField { get; set; }
 
+    public int Version { get; set; }
+    public DateTime ModifiedDateTime { get; set; }
+    public PlotElement PlotElement { get; set; }
   }
 }

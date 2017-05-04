@@ -47,5 +47,11 @@ namespace JoinRpg.Domain
         return element.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId));
       });
     }
+
+    public static PlotElementTexts LastVersion(this PlotElement e)
+    {
+      var textVersion = e.Texts.OrderByDescending(text => text.Version).First();
+      return textVersion;
+    }
   }
 }
