@@ -23,6 +23,7 @@
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            @* ReSharper disable once Html.IdNotResolved *@
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @Model.ShortContent
             </a>
@@ -42,27 +43,53 @@
                 <span>Не установлено</span>
             }
         </div>
-
+        <div>
+            <b>Изменено: </b>
+            @Html.DisplayFor(model => model.ModifiedDateTime) @Html.DisplayFor(model => model.Author)
+        </div>
     </div>
     <div class="panel-collapse collapse" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
         <div class="panel-body">
 
             @if (Model.HasEditAccess)
             {
-                <a class="btn btn-default btn-sm"
-                   href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
-
-                if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
-                {
-                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
-                        Опубликовать
-                    </button>
+                if (Model.PrevModifiedDateTime != null)
+                 {
+                     <a
+                         href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion - 1})"
+                         class="btn btn-default btn-sm"
+                         title="Предыдущая версия">
+                         <span class="glyphicon glyphicon-backward"></span>
+                         @Html.DisplayFor(model => model.PrevModifiedDateTime)
+                     </a>
                 }
-                if (Model.Status != PlotStatus.Deleted)
+                if (Model.NextModifiedDateTime == null)
                 {
-                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
-                        Удалить
-                    </button>
+                    <a class="btn btn-default btn-sm"
+                       href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
+
+                    if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
+                    {
+                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
+                            Опубликовать
+                        </button>
+                    }
+                    if (Model.Status != PlotStatus.Deleted)
+                    {
+                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                            Удалить
+                        </button>
+                    }
+                }
+                if (Model.NextModifiedDateTime != null)
+                {
+                    
+                    <a href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion + 1})"
+                       class="btn btn-default btn-sm"
+                       title="Следующая версия">
+                        @Html.DisplayFor(model => model.NextModifiedDateTime)
+                        <span class="glyphicon glyphicon-forward"></span>
+                    </a>
                 }
                 <hr/>
                 if (!string.IsNullOrWhiteSpace(Model.TodoField))

@@ -103,7 +103,8 @@ namespace JoinRpg.Services.Impl
         Content = new MarkdownString(content),
         TodoField = todoField,
         Version = 1,
-        ModifiedDateTime = now
+        ModifiedDateTime = now,
+        AuthorUserId = CurrentUserId
       });
 
       folder.ModifiedDateTime = now;
@@ -157,7 +158,8 @@ namespace JoinRpg.Services.Impl
         TodoField = todoField,
         Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
         PlotElementId = plotElement.PlotElementId,
-        ModifiedDateTime = now
+        ModifiedDateTime = now,
+        AuthorUserId = CurrentUserId
       };
       plotElement.Texts.Add(text);
       

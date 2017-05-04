@@ -61,6 +61,8 @@ namespace JoinRpg.DataModel
 
     public int Version { get; set; }
     public DateTime ModifiedDateTime { get; set; }
+    public virtual User AuthorUser { get; set; }
+    public int? AuthorUserId { get; set; }
     public PlotElement PlotElement { get; set; }
   }
 }

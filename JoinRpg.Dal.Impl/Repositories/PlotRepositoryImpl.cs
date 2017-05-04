@@ -20,7 +20,7 @@ namespace JoinRpg.Dal.Impl.Repositories
       return
         await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements)
-          .Include(pf => pf.Elements.Select(e => e.Texts))
+          .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
           .Include(pf => pf.Project.Claims)
           .SingleOrDefaultAsync(pf => pf.PlotFolderId == plotFolderId && pf.ProjectId == projectId);
     }
@@ -49,7 +49,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         await Ctx.Set<PlotFolder>()
           .Include(pf => pf.Elements.Select(e => e.TargetCharacters))
           .Include(pf => pf.Elements.Select(e => e.TargetGroups))
-          .Include(pf => pf.Elements.Select(e => e.Texts))
+          .Include(pf => pf.Elements.Select(e => e.Texts.Select(t => t.AuthorUser)))
           .Where(pf => pf.ProjectId == projectid)
           .ToListAsync();
 
@@ -77,10 +77,8 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<IReadOnlyCollection<PlotElement>> GetActiveHandouts(int projectid)
     {
-      return  await Ctx.Set<PlotFolder>()
-        
+      return  await Ctx.Set<PlotElement>()
         .Where(pf => pf.ProjectId == projectid)
-        .SelectMany(p => p.Elements)
         .Include(pf => pf.TargetCharacters)
         .Include(e => e.TargetGroups)
         .Include(e => e.Texts)

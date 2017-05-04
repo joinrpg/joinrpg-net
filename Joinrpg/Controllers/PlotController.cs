@@ -305,7 +305,7 @@ namespace JoinRpg.Web.Controllers
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
           _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups, targetChars, isCompleted);
-        return ReturnToPlot(plotFolderId, projectId);
+        return ReturnToPlot(projectId, plotFolderId);
       }
       catch (Exception)
       {
@@ -343,6 +343,14 @@ namespace JoinRpg.Web.Controllers
       {
         return await Edit(projectId, plotFolderId);
       }
+    }
+
+    [HttpGet, MasterAuthorize()]
+    public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version)
+    {
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
+        CurrentUserId, version));
     }
   }
 }

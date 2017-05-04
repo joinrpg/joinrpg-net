@@ -101,8 +101,12 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<PlotElement>().HasRequired(pf => pf.Project).WithMany().WillCascadeOnDelete(false);
 
       modelBuilder.Entity<PlotElement>().HasMany(plotElement => plotElement.Texts).WithRequired(text => text.PlotElement);
-      //modelBuilder.Entity<PlotElementTexts>().Properties(text => text.PlotElementId, text => text.Version).HasIndex("IX_PlotElementId");
       modelBuilder.Entity<PlotElementTexts>().HasKey(text => new {text.PlotElementId, text.Version});
+
+      modelBuilder.Entity<PlotElementTexts>()
+        .HasOptional(text => text.AuthorUser)
+        .WithMany()
+        .HasForeignKey(text => text.AuthorUserId);
 
       modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
       modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);

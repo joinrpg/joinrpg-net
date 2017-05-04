@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -105,21 +106,40 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotElementListItemViewModel : IProjectIdAware
   {
 
-    public PlotElementListItemViewModel(PlotElement e, int? currentUserId)
+    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, int? currentVersion = null)
     {
+      CurrentVersion = currentVersion ?? e.LastVersion().Version;
+
+      var prevVersionText = e.SpecificVersion(CurrentVersion - 1);
+      var currentVersionText = e.SpecificVersion(CurrentVersion);
+      var nextVersionText = e.SpecificVersion(CurrentVersion + 1);
+
+      if (currentVersionText == null)
+      {
+        throw new ArgumentOutOfRangeException(nameof(currentVersion));
+      }
+
       var renderer = new JoinrpgMarkdownLinkRenderer(e.Project);
 
       PlotElementId = e.PlotElementId;
       TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
-      Content = e.LastVersion().Content.ToHtmlString(renderer);
-      TodoField = e.LastVersion().TodoField;
+      Content = currentVersionText.Content.ToHtmlString(renderer);
+      TodoField = currentVersionText.TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       ElementType = (PlotElementTypeView)e.ElementType;
-      ShortContent = e.LastVersion().Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
+      ShortContent = currentVersionText.Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
+      ModifiedDateTime = currentVersionText.ModifiedDateTime;
+      Author = currentVersionText.AuthorUser;
+      PrevModifiedDateTime = prevVersionText?.ModifiedDateTime;
+      PrevAuthor = prevVersionText?.AuthorUser;
+      NextModifiedDateTime = nextVersionText?.ModifiedDateTime;
+      NextAuthor = nextVersionText?.AuthorUser;
+
+      PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
     }
 
     [ReadOnly(true)]
@@ -134,6 +154,21 @@ namespace JoinRpg.Web.Models.Plot
 
     public string ShortContent { get; }
 
+    [UIHint("EventTime")]
+    public DateTime ModifiedDateTime { get; }
+
+    public User Author { get; }
+
+    [UIHint("EventTime")]
+    public DateTime? PrevModifiedDateTime { get; }
+
+    public User PrevAuthor { get; }
+
+    [UIHint("EventTime")]
+    public DateTime? NextModifiedDateTime { get; }
+
+    public User NextAuthor { get; }
+
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; }
 
@@ -147,5 +182,7 @@ namespace JoinRpg.Web.Models.Plot
     public bool HasEditAccess { get; }
 
     public bool HasMasterAccess { get; }
+    public int CurrentVersion { get;}
+    public string PlotFolderMasterTitle { get; }
   }
 }
