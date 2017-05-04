@@ -206,11 +206,12 @@ namespace JoinRpg.Web.Controllers
         var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
         var targetChars = targets.OrEmptyList().GetUnprefixedChars();
         await
-          _plotService.AddPlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars, (PlotElementType)elementType);
+          _plotService.CreatePlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars, (PlotElementType)elementType);
         return ReturnToPlot(plotFolderId, projectId);
       }
-      catch (Exception)
+      catch (Exception exception)
       {
+        ModelState.AddException(exception);
         return View(new AddPlotElementViewModel()
         {
           ProjectId = projectId,
@@ -218,6 +219,7 @@ namespace JoinRpg.Web.Controllers
           PlotFolderName = folder.MasterTitle,
           Content = content,
           TodoField = todoField,
+          ElementType = elementType
         });
       }
     }

@@ -27,7 +27,7 @@ namespace JoinRpg.DataModel
     //TODO: Add here "mentioned characters" concept
 
     [NotNull]
-    public virtual ICollection<PlotElementTexts> Texts { get; set; }
+    public virtual ICollection<PlotElementTexts> Texts { get; set; } = new HashSet<PlotElementTexts>();
 
     public DateTime CreatedDateTime { get; set; }
 

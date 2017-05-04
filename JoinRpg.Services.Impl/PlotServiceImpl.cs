@@ -70,7 +70,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField,
+    public async Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
