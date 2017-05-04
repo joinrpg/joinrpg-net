@@ -497,8 +497,7 @@
                 if($('#subscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
                 req.done(data=>{
-                    var res = JSON.parse(data);
-                    console.log(res);
+                    var res = data;
                     $('#subscribe').attr('data-responsed','1');
                     $('#subscribe').attr('title','');
                     $('#subscribe').attr('data-original-title',res.Tooltip);
@@ -513,8 +512,7 @@
                 if($('#unsubscribe').attr('data-responsed')==0)return;
                 var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
                 req.done(data=>{
-                    var res = JSON.parse(data);
-                    console.log(res);
+                    var res = data;
                     $('#unsubscribe').attr('data-responsed','1');
                     $('#subscribe').attr('title','');
                     $('#subscribe').attr('data-original-title',res.Tooltip);

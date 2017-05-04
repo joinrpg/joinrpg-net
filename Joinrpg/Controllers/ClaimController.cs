@@ -14,7 +14,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -119,10 +118,8 @@ namespace JoinRpg.Web.Controllers
       }
 
             var user = await GetCurrentUserAsync();
-            var parents = claim.CharacterGroupId != null ? claim.Group.GetParentGroupsToTop() : claim.Character.GetParentGroupsToTop();
-            var sbscr = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
-
-            claimViewModel.SubscriptionTooltip = sbscr;
+            var parents = claim.GetTarget().GetParentGroupsToTop();
+            claimViewModel.SubscriptionTooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
       return View("Edit", claimViewModel);
     }
@@ -345,11 +342,7 @@ namespace JoinRpg.Web.Controllers
     [MustUseReturnValue]
     private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
     {
-      if (viewModel.CommentDiscussionId != null)
-      {
-        ReturnToClaim((int) viewModel.CommentDiscussionId, viewModel.ProjectId);
-      }
-      throw new InvalidOperationException();
+      return ReturnToClaim(viewModel.CommentDiscussionId, viewModel.ProjectId);
     }
 
     [MustUseReturnValue]
@@ -377,10 +370,6 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
-      if (viewModel.CommentDiscussionId == null)
-      {
-        throw new ArgumentNullException(nameof(viewModel.CommentDiscussionId));
-      }
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
       var error = WithClaim(claim);
       if (error != null || claim == null)
@@ -391,7 +380,7 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
+          return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
         }
 
 
@@ -404,7 +393,7 @@ namespace JoinRpg.Web.Controllers
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, (int) viewModel.CommentDiscussionId);
+        return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
       }
     }
 
@@ -435,7 +424,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
         [HttpPost, Authorize, ValidateAntiForgeryToken]
-        public async Task<String> Subscribe(int projectid,int claimid)
+        public async Task<ActionResult> Subscribe(int projectid,int claimid)
         {
 
             var user = await GetCurrentUserAsync();
@@ -446,20 +435,19 @@ namespace JoinRpg.Web.Controllers
             var error = AsMaster(claim);
             if (error != null)
             {
-                return error.ToString();
+                return Json(error);
             }
 
             await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId);
-            var parents = claim.CharacterGroupId != null ? claim.Group.GetParentGroupsToTop() : claim.Character.GetParentGroupsToTop();
+            var parents = claim.GetTarget().GetParentGroupsToTop();
 
             var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-            var res = JsonConvert.SerializeObject(tooltip);
-            return res;
+            return Json(tooltip, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost, Authorize, ValidateAntiForgeryToken]
-        public async Task<String> Unsubscribe(int projectid, int claimid)
+        public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
         {
 
             var user = await GetCurrentUserAsync();
@@ -470,16 +458,15 @@ namespace JoinRpg.Web.Controllers
             var error = AsMaster(claim);
             if (error != null)
             {
-                return error.ToString();
+                return Json(error);
             }
 
             await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId);
-            var parents = claim.CharacterGroupId != null ? claim.Group.GetParentGroupsToTop() : claim.Character.GetParentGroupsToTop();
+            var parents = claim.GetTarget().GetParentGroupsToTop();
 
             var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-            var res = JsonConvert.SerializeObject(tooltip);
-            return res; 
+            return Json(tooltip, JsonRequestBehavior.AllowGet);
         }
     }
 }
