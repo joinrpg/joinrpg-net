@@ -203,7 +203,10 @@
                     Отписаться
                 </a>
             }
-            @if(Model.HasMasterAccess && Model.SubscriptionTooltip.Counter>0 && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+            @if(Model.HasMasterAccess && ( Model.SubscriptionTooltip.ClaimStatusChange
+                                        || Model.SubscriptionTooltip.Comments
+                                        || Model.SubscriptionTooltip.FieldChange
+                                        || Model.SubscriptionTooltip.MoneyOperation ) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
                 <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
                     <span class="glyphicon glyphicon-pushpin"></span>
@@ -495,33 +498,29 @@
         $('#subscribe').click(function(event){
                 event.preventDefault();
                 if($('#subscribe').attr('data-responsed')==0)return;
-                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
-                req.done(data=>{
-                    var res = data;
-                    $('#subscribe').attr('data-responsed','1');
-                    $('#subscribe').attr('title','');
-                    $('#subscribe').attr('data-original-title',res.Tooltip);
-                    $('[title]').tooltip({html:true});
-                    $('#subscribe').toggleClass('hidden');
-                    $('#unsubscribe').toggleClass('hidden');
-                });
-                $('#subscribe').attr('data-responsed','0');
+                doSubscription(this);
         });
         $('#unsubscribe').click(function(event){
-                event.preventDefault();
+            event.preventDefault();
                 if($('#unsubscribe').attr('data-responsed')==0)return;
-                var req = $.post(this.href, { projectid:@Model.ProjectId,claimid:@Model.ClaimId,__RequestVerificationToken:$('input[name="__RequestVerificationToken"]').val()});
-                req.done(data=>{
-                    var res = data;
-                    $('#unsubscribe').attr('data-responsed','1');
-                    $('#subscribe').attr('title','');
-                    $('#subscribe').attr('data-original-title',res.Tooltip);
-                    $('[title]').tooltip({html:true});
-                    $('#unsubscribe').toggleClass('hidden');
-                    $('#subscribe').toggleClass('hidden');
-                });
-                $('#unsubscribe').attr('data-responsed','0');
+                doSubscription(this);
         });
+        function doSubscription(context) {
+            var req = $.post(context.href,
+                                {projectid:@Model.ProjectId,
+                                claimid:@Model.ClaimId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()}
+                            );
+            req.done(data => {
+                    $(context).attr('data-responsed','1');
+                    $('#subscribe').attr('title', '');
+                    $('#subscribe').attr('data-original-title',data.Tooltip);
+                    $('[title]').tooltip({html:true});
+                    $('#subscribe').toggleClass('hidden');
+                    $('#unsubscribe').toggleClass('hidden');
+                });
+                $(context).attr('data-responsed','0');
+        }
         </script>
         @if(Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
         {

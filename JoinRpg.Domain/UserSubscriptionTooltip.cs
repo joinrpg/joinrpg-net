@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JoinRpg.DataModel
+namespace JoinRpg.Domain
 {
     public class UserSubscriptionTooltip
     {
         public string Tooltip { get; set; }
         public bool HasFullParentSubscription { get; set; }
         public bool IsDirect { get; set; }
-        public int Counter { get; set; }
+        public bool ClaimStatusChange { get; set; }
+        public bool Comments { get; set; }
+        public bool FieldChange { get; set; }
+        public bool MoneyOperation { get; set; }
     }
 }

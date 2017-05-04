@@ -155,9 +155,16 @@ namespace JoinRpg.Web.Models
 
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents, IEnumerable<UserSubscription> subscriptions, int ClaimId)
         {
-            UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip() { HasFullParentSubscription = false, Tooltip = "", IsDirect = false };
+            UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip() { HasFullParentSubscription = false,
+                                                                                    Tooltip = "",
+                                                                                    IsDirect = false,
+                                                                                    ClaimStatusChange = false,
+                                                                                    Comments = false,
+                                                                                    FieldChange = false,
+                                                                                    MoneyOperation = false};
+
             subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == ClaimId) != null ? true : false;
-            var counter = 0;
+
             if (subscrTooltip.IsDirect)
             {
                 subscrTooltip.Tooltip = "Вы подписаны на эту заявку";
@@ -169,48 +176,47 @@ namespace JoinRpg.Web.Models
                 {
                     foreach (var subscr in subscriptions)
                     {
-                        if (par.CharacterGroupId == subscr.CharacterGroupId && !(((counter & 1) > 0) && ((counter & 2) > 0) && ((counter & 4) > 0) && ((counter & 8) > 0)))
+                        if (par.CharacterGroupId == subscr.CharacterGroupId && !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation/*((counter & 1) > 0) && ((counter & 2) > 0) && ((counter & 4) > 0) && ((counter & 8) > 0)*/))
                         {
-                            if (counter == 15)
+                            if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
                             {
                                 break;
                             }
-                            if (subscr.ClaimStatusChange && (counter & 1) == 0)
+                            if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
                             {
-                                counter |= 1;
+                                subscrTooltip.ClaimStatusChange = true;
                                 subscrTooltip.Tooltip += "<li>Изменение статуса (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
-                            if (subscr.Comments && (counter & 2) == 0)
+                            if (subscr.Comments && !subscrTooltip.Comments)
                             {
-                                counter |= 2;
+                                subscrTooltip.Comments = true;
                                 subscrTooltip.Tooltip += "<li>Комментарии (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
-                            if (subscr.FieldChange && (counter & 4) == 0)
+                            if (subscr.FieldChange && !subscrTooltip.FieldChange)
                             {
-                                counter |= 4;
+                                subscrTooltip.FieldChange = true;
                                 subscrTooltip.Tooltip += "<li>Изменение полей заявки (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
-                            if (subscr.MoneyOperation && (counter & 8) == 0)
+                            if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
                             {
-                                counter |= 8;
+                                subscrTooltip.MoneyOperation = true;
                                 subscrTooltip.Tooltip += "<li>Финансовые операции (группа \"" + par.CharacterGroupName + "\")</li>";
                             }
                         }
                     }
                 }
                 subscrTooltip.Tooltip += "</ul>";
-                if (counter == 15)
+                if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
                 {
                     subscrTooltip.HasFullParentSubscription = true;
                     subscrTooltip.Tooltip = "Вы подписаны на эту заявку";
 
                 }
-                else if(counter==0)
+                else if(!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments || subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
                 {
                     subscrTooltip.Tooltip = "Вы не подписаны на эту заявку";
                 }
             }
-            subscrTooltip.Counter = counter;
             return subscrTooltip;
         }
 

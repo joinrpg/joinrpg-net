@@ -75,7 +75,6 @@
     <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserSubscription.cs" />
-    <Compile Include="UserSubscriptionTooltip.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
