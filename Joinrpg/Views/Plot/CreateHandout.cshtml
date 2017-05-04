@@ -1,8 +1,8 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.Plot.AddPlotElementViewModel
+@model JoinRpg.Web.Models.Plot.AddPlotHandoutViewModel
 
 @{
-    ViewBag.Title = "Добавить вводную";
+    ViewBag.Title = "Добавить элемент раздатки";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -54,12 +54,8 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Добавить вводную" class="btn btn-success" />
+                <input type="submit" value="Добавить элемент раздатки" class="btn btn-success" />
             </div>
         </div>
     </div>
-}
-
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
 }

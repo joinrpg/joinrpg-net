@@ -592,6 +592,7 @@
     <Content Include="Views\Print\_CharacterHandout.cshtml" />
     <Content Include="Views\Plot\ForGroup.cshtml" />
     <Content Include="Views\Plot\FolderList.cshtml" />
+    <Content Include="Views\Plot\CreateHandout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

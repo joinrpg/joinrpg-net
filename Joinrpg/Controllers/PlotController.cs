@@ -10,7 +10,9 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 
@@ -148,7 +150,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           _plotService.EditPlotFolder(viewModel.ProjectId, viewModel.PlotFolderId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
-        return ReturnToPlot(viewModel.PlotFolderId, viewModel.ProjectId);
+        return ReturnToPlot(viewModel.ProjectId, viewModel.PlotFolderId);
       }
       catch (Exception exception)
       {
@@ -158,6 +160,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    #region Create elements & handouts
     [HttpGet, Authorize]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
@@ -167,7 +170,6 @@ namespace JoinRpg.Web.Controllers
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        ElementType = PlotElementTypeView.RegularPlot
       });
     }
 
@@ -175,20 +177,40 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      return AsMaster(folder, acl => acl.CanManagePlots) ?? View("CreateElement", new AddPlotElementViewModel()
+      return AsMaster(folder, acl => acl.CanManagePlots) ?? View(new AddPlotHandoutViewModel()
       {
         ProjectId = projectId,
         PlotFolderId = plotFolderId,
         PlotFolderName = folder.MasterTitle,
-        ElementType = PlotElementTypeView.Handout
       });
     }
 
     [HttpPost, Authorize]
-    public Task<ActionResult> CreateHandout(int projectId, int plotFolderId, string content,
+    public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId, string content,
       string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
     {
-      return CreateElement(projectId, plotFolderId, content, todoField, targets, elementType);
+      var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      var error = AsMaster(folder, acl => acl.CanManagePlots);
+      if (error != null)
+      {
+        return error;
+      }
+      try
+      {
+        return await CreateElementImpl(projectId, plotFolderId, content, todoField, targets, elementType);
+      }
+      catch (Exception exception)
+      {
+        ModelState.AddException(exception);
+        return View(new AddPlotHandoutViewModel()
+        {
+          ProjectId = projectId,
+          PlotFolderId = plotFolderId,
+          PlotFolderName = folder.MasterTitle,
+          Content = content,
+          TodoField = todoField,
+        });
+      }
     }
 
     [HttpPost, Authorize]
@@ -203,11 +225,7 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
-        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
-        await
-          _plotService.CreatePlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars, (PlotElementType)elementType);
-        return ReturnToPlot(plotFolderId, projectId);
+        return await CreateElementImpl(projectId, plotFolderId, content, todoField, targets, elementType);
       }
       catch (Exception exception)
       {
@@ -219,10 +237,21 @@ namespace JoinRpg.Web.Controllers
           PlotFolderName = folder.MasterTitle,
           Content = content,
           TodoField = todoField,
-          ElementType = elementType
         });
       }
     }
+
+    private async Task<ActionResult> CreateElementImpl(int projectId, int plotFolderId, string content, string todoField, ICollection<string> targets,
+      PlotElementTypeView elementType)
+    {
+      var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+      var targetChars = targets.OrEmptyList().GetUnprefixedChars();
+      await
+        _plotService.CreatePlotElement(projectId, plotFolderId, content, todoField, targetGroups, targetChars,
+          (PlotElementType)elementType);
+      return ReturnToPlot(projectId, plotFolderId);
+    }
+    #endregion
 
     #region private methods
 
@@ -265,7 +294,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await _plotService.DeleteElement(projectId, plotFolderId, plotelementid);
-        return ReturnToPlot(plotFolderId, projectId);
+        return ReturnToPlot(projectId, plotFolderId);
       }
       catch (Exception)
       {
@@ -273,7 +302,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    private ActionResult ReturnToPlot(int plotFolderId, int projectId)
+    private ActionResult ReturnToPlot(int projectId, int plotFolderId)
     {
       return RedirectToAction("Edit", new {projectId, plotFolderId});
     }
@@ -337,7 +366,7 @@ namespace JoinRpg.Web.Controllers
         await _plotService.MoveElement(projectId, plotElementId, parentCharacterId, direction);
 
 
-        return RedirectToAction("Details", "Character", new {projectId, characterId = parentCharacterId});
+        return RedirectToAction("Details", "Character", new { projectId, characterId = parentCharacterId });
       }
       catch
       {
@@ -345,13 +374,14 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, Authorize]
+
+    [HttpPost, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId)
     {
       try
       {
         await _plotService.PublishElement(projectId, plotFolderId, plotelementid);
-        return ReturnToPlot(plotFolderId, projectId);
+        return ReturnToPlot(projectId, plotFolderId);
       }
       catch (Exception)
       {
