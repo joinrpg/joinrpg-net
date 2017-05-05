@@ -96,9 +96,9 @@
                         @Html.HiddenFor(model => model.ProjectId)
                         @Html.HiddenFor(model => model.ClaimId)
                         @Html.DropDownListFor(
-                            model => model.ResponsibleMasterId,
-                            Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
-                            htmlAttributes: new {@class = "form-control"})
+                 model => model.ResponsibleMasterId,
+                 Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
+                 htmlAttributes: new {@class = "form-control"})
 
                         @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
                         <input type="submit" value="Изменить" class="btn btn-default btn-xs"/>
@@ -190,6 +190,30 @@
                 </a>
                 }
             }
+            
+            @if (Model.HasMasterAccess)
+            {
+            <a href="@Url.Action("Subscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+                <span class="glyphicon glyphicon-pushpin"></span>
+                Подписаться
+            </a>
+
+                <a href="@Url.Action("Unsubscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку"  data-responsed="1">
+                    <span class="glyphicon glyphicon-pushpin"></span>
+                    Отписаться
+                </a>
+            }
+            @if(Model.HasMasterAccess && ( Model.SubscriptionTooltip.ClaimStatusChange
+                                        || Model.SubscriptionTooltip.Comments
+                                        || Model.SubscriptionTooltip.FieldChange
+                                        || Model.SubscriptionTooltip.MoneyOperation ) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+            {
+                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
+                    <span class="glyphicon glyphicon-pushpin"></span>
+                    Вы подписаны
+                </a></span>
+            }
+            
         </div>
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
@@ -467,5 +491,48 @@
         $(function() {
             $('[data-toggle="popover"]').popover();
         })
+        $('[title]').tooltip({html:true,offset:'1000 1100'});
     </script>
+
+    <script type="text/javascript">
+        $('#subscribe').click(function(event){
+                event.preventDefault();
+                if($('#subscribe').attr('data-responsed')==0)return;
+                doSubscription(this);
+        });
+        $('#unsubscribe').click(function(event){
+            event.preventDefault();
+                if($('#unsubscribe').attr('data-responsed')==0)return;
+                doSubscription(this);
+        });
+        function doSubscription(context) {
+            var req = $.post(context.href,
+                                {projectid:@Model.ProjectId,
+                                claimid:@Model.ClaimId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()}
+                            );
+            req.done(data => {
+                    $(context).attr('data-responsed','1');
+                    $('#subscribe').attr('title', '');
+                    $('#subscribe').attr('data-original-title',data.Tooltip);
+                    $('[title]').tooltip({html:true});
+                    $('#subscribe').toggleClass('hidden');
+                    $('#unsubscribe').toggleClass('hidden');
+                });
+                $(context).attr('data-responsed','0');
+        }
+        </script>
+        @if(Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        {
+            <script type="text/javascript">
+                $('#subscribe').toggleClass('hidden');
+            </script>
+        }
+
+        @if(Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        {
+        <script type="text/javascript">
+            $('#unsubscribe').toggleClass('hidden');
+        </script>
+        }
 }

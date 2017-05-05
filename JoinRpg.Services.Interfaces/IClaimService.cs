@@ -24,7 +24,10 @@ namespace JoinRpg.Services.Interfaces
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int currentUserId, int maxCommentId);
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
-  }
+
+    Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
+    Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
+    }
 
   //TODO[Localize]
   public enum FinanceOperationAction

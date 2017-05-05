@@ -75,6 +75,7 @@
     <Compile Include="SubscribeExtensions.cs" />
     <Compile Include="TagExtensions.cs" />
     <Compile Include="UserExtensions.cs" />
+    <Compile Include="UserSubscriptionTooltip.cs" />
     <Compile Include="WorldObjectExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

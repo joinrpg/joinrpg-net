@@ -117,6 +117,10 @@ namespace JoinRpg.Web.Controllers
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
 
+            var user = await GetCurrentUserAsync();
+            var parents = claim.GetTarget().GetParentGroupsToTop();
+            claimViewModel.SubscriptionTooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
       return View("Edit", claimViewModel);
     }
 
@@ -419,5 +423,50 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectid, claimid);
       }
     }
-  }
+        [HttpPost, Authorize, ValidateAntiForgeryToken]
+        public async Task<ActionResult> Subscribe(int projectid,int claimid)
+        {
+
+            var user = await GetCurrentUserAsync();
+            var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+
+            var error = AsMaster(claim);
+            if (error != null)
+            {
+                return Json(error);
+            }
+
+            await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId);
+            var parents = claim.GetTarget().GetParentGroupsToTop();
+
+            var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
+            return Json(tooltip, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost, Authorize, ValidateAntiForgeryToken]
+        public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
+        {
+
+            var user = await GetCurrentUserAsync();
+            var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+
+            var error = AsMaster(claim);
+            if (error != null)
+            {
+                return Json(error);
+            }
+
+            await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId);
+            var parents = claim.GetTarget().GetParentGroupsToTop();
+
+            var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
+            return Json(tooltip, JsonRequestBehavior.AllowGet);
+        }
+    }
 }
