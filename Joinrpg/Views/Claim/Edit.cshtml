@@ -53,7 +53,7 @@
                 </dt>
 
                 <dd>
-                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
+                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new {Model.CharacterGroupId, Model.ProjectId}, null)
                 </dd>
             }
             <dt>
@@ -97,10 +97,10 @@
                         @Html.HiddenFor(model => model.ClaimId)
                         @Html.DropDownListFor(
                  model => model.ResponsibleMasterId,
-                 Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                 htmlAttributes: new { @class = "form-control" })
+                 Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
+                 htmlAttributes: new {@class = "form-control"})
 
-                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
+                        @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
                         <input type="submit" value="Изменить" class="btn btn-default btn-xs"/>
                     </div>
                 }
@@ -178,7 +178,7 @@
             }
             @if (Model.Status == Claim.Status.Approved)
             {
-                <a href="@Url.Action("Character", "Print", new { Model.ProjectId, Model.CharacterId })" class="btn btn-default">
+                <a href="@Url.Action("Character", "Print", new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
                     <span class="glyphicon glyphicon-print"></span>
                     Для печати
                 </a>

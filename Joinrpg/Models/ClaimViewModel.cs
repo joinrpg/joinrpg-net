@@ -72,7 +72,7 @@ namespace JoinRpg.Web.Models
 
         public CharacterNavigationViewModel Navigation { get; }
 
-        [Display(Name = "Взнос")]
+        [Display(Name="Взнос")]
         public ClaimFeeViewModel ClaimFee { get; set; }
 
         [ReadOnly(true)]
@@ -90,7 +90,6 @@ namespace JoinRpg.Web.Models
 
         public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
-        //public string SubscriptionTooltip { get; set; }
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; } 
 
         public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
@@ -118,7 +117,7 @@ namespace JoinRpg.Web.Models
             Description = claim.Character?.Description.ToHtmlString();
             Masters =
               claim.Project.GetMasterListViewModel()
-                .Union(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+                .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
             ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
             ResponsibleMaster = claim.ResponsibleMasterUser;
             Fields = new CustomFieldsViewModel(currentUserId, claim);
@@ -150,11 +149,15 @@ namespace JoinRpg.Web.Models
             Plot = claim.IsApproved && claim.Character != null
               ? claim.Character.GetOrderedPlots(plotElements).ToViewModels(currentUserId, claim.Character)
               : Enumerable.Empty<PlotElementViewModel>();
-
         }
 
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents, IEnumerable<UserSubscription> subscriptions, int ClaimId)
         {
+            string ClaimStatusChangeGroup="";
+            string CommentsGroup = "";
+            string FieldChangeGroup = "";
+            string MoneyOperationGroup = "";
+
             UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip() { HasFullParentSubscription = false,
                                                                                     Tooltip = "",
                                                                                     IsDirect = false,
@@ -165,18 +168,11 @@ namespace JoinRpg.Web.Models
 
             subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == ClaimId) != null ? true : false;
 
-            if (subscrTooltip.IsDirect)
-            {
-                subscrTooltip.Tooltip = "Вы подписаны на эту заявку";
-            }
-            else
-            {
-                subscrTooltip.Tooltip = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
                 foreach (var par in parents)
                 {
                     foreach (var subscr in subscriptions)
                     {
-                        if (par.CharacterGroupId == subscr.CharacterGroupId && !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation/*((counter & 1) > 0) && ((counter & 2) > 0) && ((counter & 4) > 0) && ((counter & 8) > 0)*/))
+                        if (par.CharacterGroupId == subscr.CharacterGroupId && !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
                         {
                             if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
                             {
@@ -185,41 +181,72 @@ namespace JoinRpg.Web.Models
                             if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
                             {
                                 subscrTooltip.ClaimStatusChange = true;
-                                subscrTooltip.Tooltip += "<li>Изменение статуса (группа \"" + par.CharacterGroupName + "\")</li>";
+                                ClaimStatusChangeGroup = par.CharacterGroupName;
                             }
                             if (subscr.Comments && !subscrTooltip.Comments)
                             {
                                 subscrTooltip.Comments = true;
-                                subscrTooltip.Tooltip += "<li>Комментарии (группа \"" + par.CharacterGroupName + "\")</li>";
+                                CommentsGroup = par.CharacterGroupName;
                             }
                             if (subscr.FieldChange && !subscrTooltip.FieldChange)
                             {
                                 subscrTooltip.FieldChange = true;
-                                subscrTooltip.Tooltip += "<li>Изменение полей заявки (группа \"" + par.CharacterGroupName + "\")</li>";
+                                FieldChangeGroup = par.CharacterGroupName;
                             }
                             if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
                             {
                                 subscrTooltip.MoneyOperation = true;
-                                subscrTooltip.Tooltip += "<li>Финансовые операции (группа \"" + par.CharacterGroupName + "\")</li>";
+                                MoneyOperationGroup = par.CharacterGroupName;
                             }
                         }
                     }
                 }
-                subscrTooltip.Tooltip += "</ul>";
+
                 if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
                 {
                     subscrTooltip.HasFullParentSubscription = true;
-                    subscrTooltip.Tooltip = "Вы подписаны на эту заявку";
+                }
 
-                }
-                else if(!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments || subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
-                {
-                    subscrTooltip.Tooltip = "Вы не подписаны на эту заявку";
-                }
-            }
+            subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, ClaimStatusChangeGroup, CommentsGroup, FieldChangeGroup, MoneyOperationGroup);
             return subscrTooltip;
         }
 
+        public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip, string ClaimStatusChangeGroup, string CommentsGroup, string FieldChangeGroup, string MoneyOperationGroup)
+        {
+            var res = "";
+            if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
+            {
+                res = "Вы подписаны на эту заявку";
+            }
+            else if (!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments || subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
+            {
+                res = "Вы не подписаны на эту заявку";
+            }
+            else
+            {
+                res = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
+
+                if (subscrTooltip.ClaimStatusChange)
+                {
+                    res += "<li>Изменение статуса (группа \"" + ClaimStatusChangeGroup + "\")</li>";
+                }
+                if (subscrTooltip.Comments)
+                {
+                    res += "<li>Комментарии (группа \"" + CommentsGroup + "\")</li>";
+                }
+                if (subscrTooltip.FieldChange)
+                {
+                    res += "<li>Изменение полей заявки (группа \"" + FieldChangeGroup + "\")</li>";
+                }
+                if (subscrTooltip.MoneyOperation)
+                {
+                    res += "<li>Финансовые операции (группа \"" + MoneyOperationGroup + "\")</li>";
+                }
+
+                res += "</ul>";
+            }
+                return res;
+        }
         #region Implementation of IEntityWithCommentsViewModel
 
         public int CommentDiscussionId { get; }
