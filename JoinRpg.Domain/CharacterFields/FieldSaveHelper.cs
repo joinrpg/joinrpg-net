@@ -43,7 +43,7 @@ namespace JoinRpg.Domain.CharacterFields
       public Dictionary<int, FieldWithValue> LoadFields()
       {
         var fields =
-          Project.GetFieldsWithoutOrder()
+          Project.GetFieldsNotFilledWithoutOrder()
             .ToList()
             .FillIfEnabled(Claim, Character)
             .ToDictionary(f => f.Field.ProjectFieldId);
@@ -109,6 +109,10 @@ namespace JoinRpg.Domain.CharacterFields
       }
     }
 
+    /// <summary>
+    /// Saves character fields
+    /// </summary>
+    /// <returns>Fields that have changed.</returns>
     [MustUseReturnValue]
     public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,
@@ -119,6 +123,10 @@ namespace JoinRpg.Domain.CharacterFields
       return SaveCharacterFieldsImpl(currentUserId, claim.Character, claim, newFieldValue);
     }
 
+    /// <summary>
+    /// Saves fields of a character
+    /// </summary>
+    /// <returns>The list of updated fields</returns>
     [MustUseReturnValue]
     public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,

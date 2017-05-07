@@ -9,13 +9,16 @@ namespace JoinRpg.Domain
 {
   public static  class SubscribeExtensions
   {
-    public static IEnumerable<User> GetSubscriptions(this ForumThread claim, [CanBeNull] IEnumerable<User> extraRecepients, bool isVisibleToPlayer)
+    public static IEnumerable<User> GetSubscriptions(
+      this ForumThread forumThread,
+      [CanBeNull] IEnumerable<User> extraRecepients,
+      bool isVisibleToPlayer)
     {
       return
-        claim.Subscriptions //get subscriptions on forum
+        forumThread.Subscriptions //get subscriptions on forum
           .Select(u => u.User) //Select users
           .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
-          .VerifySubscriptions(isVisibleToPlayer, claim);
+          .VerifySubscriptions(isVisibleToPlayer, forumThread);
     }
 
     public static IEnumerable<User> GetSubscriptions(
@@ -37,7 +40,10 @@ namespace JoinRpg.Domain
       ;
     }
 
-    private static IEnumerable<User> VerifySubscriptions<TEntity>(this IEnumerable<User> users, bool isVisibleToPlayer, TEntity entity)
+    private static IEnumerable<User> VerifySubscriptions<TEntity>(
+      this IEnumerable<User> users,
+      bool isVisibleToPlayer,
+      TEntity entity)
       where TEntity : IProjectEntity
     {
       return users

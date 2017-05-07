@@ -74,6 +74,18 @@ namespace JoinRpg.Domain
       return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
     }
 
+    public bool HasViewAccess(bool masterAccess, bool characterAccess, bool claimAccess)
+    {
+      return Field.IsPublic
+        || masterAccess
+        ||
+        (characterAccess && Field.CanPlayerView &&
+         Field.FieldBoundTo == FieldBoundTo.Character)
+        ||
+        (claimAccess && Field.CanPlayerView &&
+         Field.FieldBoundTo == FieldBoundTo.Claim);
+    }
+
     public bool HasEditAccess(bool masterAccess, bool characterAccess, bool claimAccess, IClaimSource target)
     {
       return (masterAccess

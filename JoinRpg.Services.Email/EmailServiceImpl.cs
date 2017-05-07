@@ -50,12 +50,34 @@ namespace JoinRpg.Services.Email
       _lazyService = new Lazy<MessageService>(() => new MessageService(config.ApiKey));
     }
 
-    private Task SendEmail(User recepient, string subject, string text, Recipient sender)
+    private Task SendEmail(
+      User recepient,
+      string subject,
+      string text,
+      Recipient sender)
     {
-      return SendEmail(new[] {recepient}, subject, text, sender);
+      return SendEmail(
+        new[] { new MailRecipient(recepient) },
+        subject, text, sender);
     }
 
-    private async Task SendEmail(ICollection<User> recepients, string subject, string text, Recipient sender)
+    /// <summary>
+    /// Use this method when no additional parameters are needed for users
+    /// </summary>
+    private async Task SendEmail(
+      ICollection<User> recepients,
+      string subject,
+      string text,
+      Recipient sender)
+    {
+      await SendEmail(recepients.Select(r => new MailRecipient(r)).ToList(), subject, text, sender);
+    }
+
+    private async Task SendEmail(
+      ICollection<MailRecipient> recepients,
+      string subject,
+      string text,
+      Recipient sender)
     {
       if (!recepients.Any())
       {
@@ -71,7 +93,7 @@ namespace JoinRpg.Services.Email
       }
     }
 
-    private async Task SendEmailChunkImpl(IReadOnlyCollection<User> recepients, string subject, string text, Recipient sender, string html)
+    private async Task SendEmailChunkImpl(IReadOnlyCollection<MailRecipient> recepients, string subject, string text, Recipient sender, string html)
     {
       var message = new MessageBuilder().AddUsers(recepients)
         .SetSubject(subject)
@@ -122,25 +144,37 @@ namespace JoinRpg.Services.Email
     }
     #endregion
 
-    private async Task SendClaimEmail(ClaimEmailModel model, string actionName, string text = "")
+    private string GetFieldsForUser([NotNull]ClaimEmailModel model, [NotNull]User user)
+    {
+      return string.Join("\n\n",
+        model
+          .UpdatedFields
+          .FilterClaimFieldsForUser(model.Claim, user.UserId)
+          .Select(updatedField => $@"{updatedField.Field.FieldName}:
+{updatedField.DisplayString}"));
+    }
+
+    private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
     {
       var projectEmailEnabled = model.GetEmailEnabled();
       if (!projectEmailEnabled)
       {
         return;
       }
-      var recepients = model.GetRecepients();
-
-      var fields = string.Join("\n\n",
-        model.UpdatedFields.Select(updatedField => $@"{updatedField.Field.FieldName}:
-{updatedField.DisplayString}"));
+      const string changedFieldsKey = "changedFields";
+      IList<MailRecipient> recepients = model
+        .GetRecepients()
+        .Select(r => new MailRecipient(
+          r,
+          new Dictionary<string, string> {{changedFieldsKey, GetFieldsForUser(model, r)}}))
+        .ToList();
 
       await SendEmail(recepients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
         $@"Добрый день, {MailGunExts.MailGunRecepientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
-{fields}
+{MailGunExts.GetUserDependedtValue(changedFieldsKey)}
 {model.Text.Contents}
 
 {model.Initiator.DisplayName}

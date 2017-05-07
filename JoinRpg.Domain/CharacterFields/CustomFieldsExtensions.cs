@@ -12,7 +12,7 @@ namespace JoinRpg.Domain
   public static class CustomFieldsExtensions
   {
     [NotNull,ItemNotNull,MustUseReturnValue]
-    public static IReadOnlyList<FieldWithValue> GetFields([NotNull] this Project project)
+    public static IReadOnlyList<FieldWithValue> GetFieldsNotFilled([NotNull] this Project project)
     {
       if (project == null) throw new ArgumentNullException(nameof(project));
       return
@@ -21,9 +21,9 @@ namespace JoinRpg.Domain
     }
 
     /// <summary>
-    /// That method is faster than GetFields()
+    /// That method is faster than GetFieldsNotFilled()
     /// </summary>
-    public static IEnumerable<FieldWithValue> GetFieldsWithoutOrder([NotNull] this Project project)
+    public static IEnumerable<FieldWithValue> GetFieldsNotFilledWithoutOrder([NotNull] this Project project)
     {
       if (project == null) throw new ArgumentNullException(nameof(project));
       return project.ProjectFields.Select(pf => new FieldWithValue(pf, null));
@@ -91,21 +91,54 @@ namespace JoinRpg.Domain
       return characterFieldValues;
     }
 
-    public static List<FieldWithValue> GetFields(this Character character)
+    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Character character)
     {
-      var projectFields = character.Project.GetFields().ToList();
-      projectFields.FillFrom(character.ApprovedClaim);
-      projectFields.FillFrom(character);
-      return projectFields;
+      if (character == null) throw new ArgumentNullException(nameof(character));
+      return character.Project
+        .GetFieldsNotFilled()
+        .ToList()
+        .FillIfEnabled(character.ApprovedClaim, character);
     }
 
-
-    public static List<FieldWithValue> GetFields(this Claim character)
+    /// <summary>
+    /// Returns only character fields which the user has access to
+    /// </summary>
+    public static IEnumerable<FieldWithValue> FilterCharacterFieldsForUser(
+      this IEnumerable<FieldWithValue> fieldsToFilter, Character character, int userId)
     {
-      var projectFields = character.Project.GetFields().ToList();
-      projectFields.FillFrom(character.Character);
-      projectFields.FillFrom(character);
-      return projectFields;
+      bool hasMasterAccess = character.HasMasterAccess(userId);
+      bool hasCharacterAccess = character.HasPlayerAccess(userId);
+      bool hasClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false;
+
+      return fieldsToFilter
+        .Where(f => f.HasViewAccess(
+          hasMasterAccess,
+          hasCharacterAccess,
+          hasClaimAccess));
+    }
+
+    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Claim claim)
+    {
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      return claim.Project
+        .GetFieldsNotFilled()
+        .ToList()
+        .FillIfEnabled(claim, claim.Character);
+    }
+
+    [MustUseReturnValue]
+    public static IEnumerable<FieldWithValue> FilterClaimFieldsForUser(
+      this IEnumerable<FieldWithValue> fieldsToFilter, Claim claim, int userId)
+    {
+      bool hasMasterAccess = claim.HasMasterAccess(userId);
+      bool hasCharacterAccess = claim.Character != null && claim.Character.HasPlayerAccess(userId);
+      bool hasClaimAccess = claim.HasPlayerAccesToClaim(userId);
+
+      return fieldsToFilter
+        .Where(f => f.HasViewAccess(
+          hasMasterAccess,
+          hasCharacterAccess,
+          hasClaimAccess));
     }
   }
 }

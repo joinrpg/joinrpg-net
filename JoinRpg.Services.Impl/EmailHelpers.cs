@@ -10,8 +10,15 @@ namespace JoinRpg.Services.Impl
 {
   internal static class EmailHelpers
   {
-    public static TEmail CreateClaimEmail<TEmail>([NotNull] Claim claim, [NotNull] string commentText, Func<UserSubscription, bool> subscribePredicate, bool isVisibleToPlayer, CommentExtraAction? commentExtraAction, User initiator, IEnumerable<User> extraRecepients = null)
-      where TEmail : ClaimEmailModel, new()
+    public static TEmail CreateClaimEmail<TEmail>(
+      [NotNull] Claim claim,
+      [NotNull] string commentText,
+      Func<UserSubscription, bool> subscribePredicate,
+      bool isVisibleToPlayer,
+      CommentExtraAction? commentExtraAction,
+      User initiator,
+      IEnumerable<User> extraRecepients = null)
+        where TEmail : ClaimEmailModel, new()
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       if (commentText == null) throw new ArgumentNullException(nameof(commentText));

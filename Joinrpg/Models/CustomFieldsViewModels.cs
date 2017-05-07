@@ -37,20 +37,18 @@ namespace JoinRpg.Web.Models
 
     public IReadOnlyList<ProjectFieldDropdownValue> ValueList { get; }
     public IEnumerable<ProjectFieldDropdownValue> PossibleValueList { get; }
-    public FieldValueViewModel(CustomFieldsViewModel model, [NotNull] FieldWithValue ch, ILinkRenderer renderer)
+    public FieldValueViewModel(
+      CustomFieldsViewModel model,
+      [NotNull] FieldWithValue ch,
+      ILinkRenderer renderer)
     {
       if (ch == null) throw new ArgumentNullException(nameof(ch));
 
       Value = ch.Value;
 
-      if (ch.Field.SupportsMarkdown())
-      {
-        DisplayString = new MarkdownString(ch.DisplayString).ToHtmlString(renderer);
-      }
-      else
-      {
-       DisplayString = ch.DisplayString.SanitizeHtml(); 
-      }
+      DisplayString = ch.Field.SupportsMarkdown()
+        ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
+        : ch.DisplayString.SanitizeHtml();
       FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
       FieldName = ch.Field.FieldName;
       Description = ch.Field.Description.ToHtmlString();
@@ -60,14 +58,11 @@ namespace JoinRpg.Web.Models
 
       HasValue = ch.HasViewableValue;
 
-      var hasViewAccess = ch.Field.IsPublic
-                          || model.HasMasterAccess
-                          ||
-                          (model.HasPlayerAccessToCharacter && ch.Field.CanPlayerView &&
-                           ch.Field.FieldBoundTo == FieldBoundTo.Character)
-                          ||
-                          (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
-                           ch.Field.FieldBoundTo == FieldBoundTo.Claim);
+      var hasViewAccess = ch.HasViewableValue
+        && ch.HasViewAccess(
+          model.HasMasterAccess,
+          model.HasPlayerAccessToCharacter,
+          model.HasPlayerClaimAccess);
 
       CanView = hasViewAccess && ch.HasViewableValue;
 
@@ -97,6 +92,9 @@ namespace JoinRpg.Web.Models
 
     public const string HtmlIdPrefix = "field_";
 
+    /// <summary>
+    /// Value for checkbox filelds only
+    /// </summary>
     public bool IsCheckboxSet() => !string.IsNullOrWhiteSpace(Value);
   }
 
@@ -111,6 +109,9 @@ namespace JoinRpg.Web.Models
 
     public ICollection<FieldValueViewModel> Fields { get; }
 
+    /// <summary>
+    /// Called from AddClaimViewModel
+    /// </summary>
     public CustomFieldsViewModel(int? currentUserId, IClaimSource target)
     {
       CurrentUserId = currentUserId;
@@ -123,12 +124,30 @@ namespace JoinRpg.Web.Models
       var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
       Fields =
-        target.Project.GetFields()
+        target.Project.GetFieldsNotFilled()
           .Select(ch => new FieldValueViewModel(this, ch, renderer))
           .ToList();
     }
 
-    public CustomFieldsViewModel(int? currentUserId, Character character, bool disableEdit = false, bool onlyPlayerVisible = false, bool wherePrintEnabled = false)
+    /// <summary>
+    ///  Called from
+    /// - Character details
+    /// - character list item
+    /// - Edit character
+    /// - print character
+    /// </summary>
+    /// <param name="currentUserId">ID of the currect user logged in</param>
+    /// <param name="disableEdit">disable editing (incl. cases where it's done to speeds up the app)</param>
+    /// <param name="onlyPlayerVisible">
+    /// Used for printing, when the user who prints has master access,
+    /// whereas the print result should contain only user-visible fields.
+    /// </param>
+    public CustomFieldsViewModel(
+      int? currentUserId,
+      Character character,
+      bool disableEdit = false,
+      bool onlyPlayerVisible = false,
+      bool wherePrintEnabled = false)
     {
       EditAllowed = !disableEdit && character.Project.Active;
       CurrentUserId = currentUserId;
@@ -148,7 +167,7 @@ namespace JoinRpg.Web.Models
       Target = character;
       var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
       Fields =
-        character.Project.GetFields()
+        character.Project.GetFieldsNotFilled()
           .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
           .ToList()
           .FillIfEnabled(character.ApprovedClaim, character)
@@ -156,6 +175,9 @@ namespace JoinRpg.Web.Models
           .ToArray();
     }
 
+    /// <summary>
+    /// Called from Claim and Claim list
+    /// </summary>
     public CustomFieldsViewModel(int? currentUserId, Claim claim)
     {
       CurrentUserId = currentUserId;
@@ -169,7 +191,7 @@ namespace JoinRpg.Web.Models
       var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
       Fields =
-        claim.Project.GetFields()
+        claim.Project.GetFieldsNotFilled()
           .ToList()
           .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null)
           .Select(ch => new FieldValueViewModel(this, ch, renderer))
