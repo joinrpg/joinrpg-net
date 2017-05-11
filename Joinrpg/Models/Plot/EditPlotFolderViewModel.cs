@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Models.Plot
       PlotFolderMasterTitle = folder.MasterTitle;
       Status = folder.GetStatus();
       Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
-      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }

@@ -98,7 +98,7 @@ namespace JoinRpg.Web.Models.Plot
     {
       PlotFolderId = folder.PlotFolderId;
       PlotFolderMasterTitle = folder.MasterTitle;
-      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
       ProjectId = folder.ProjectId;
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;
