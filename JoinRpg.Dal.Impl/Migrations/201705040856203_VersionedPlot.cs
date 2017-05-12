@@ -12,7 +12,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         AddColumn("dbo.PlotElements", "Published", c => c.Int());
         Sql(@"
 UPDATE dbo.PlotElements 
-SET Published = 1
+SET Published = 0
 FROM PlotElements PE
 WHERE PE.IsCompleted =1
 ");
@@ -24,6 +24,28 @@ SET ModifiedDateTime = PE.ModifiedDateTime
 FROM dbo.PlotElementTexts PET
 INNER JOIN dbo.PlotElements PE ON PE.PlotElementId = PET.PlotElementId
 ");
+      //Split current published texts with TodoField into 2 versions — 0.Published; 1.With TodoField not empty
+      //so it correctly shown as "working on published plot element".
+        Sql(@"INSERT INTO [dbo].[PlotElementTexts]
+           ([PlotElementId]
+           ,[Content_Contents]
+           ,[TodoField]
+           ,[Version]
+           ,[ModifiedDateTime]
+           ,[AuthorUserId])
+SELECT PET.PlotElementId, Content_Contents, TodoField, 1, GETUTCDATE(), AuthorUserId
+FROM PlotElementTexts PET 
+INNER JOIN PlotElements PE ON PE.PlotElementId = PET.PlotElementId
+WHERE ISNULL(TodoField, '') <> ''
+AND PE.Published IS NOT NULL
+
+UPDATE PlotElementTexts 
+SET TodoField = NULL
+FROM PlotElementTexts PET 
+INNER JOIN PlotElements PE ON PE.PlotElementId = PET.PlotElementId
+WHERE ISNULL(TodoField, '') <> ''
+AND PE.Published = PET.Version");
+
         AlterColumn("dbo.PlotElementTexts", "ModifiedDateTime", c => c.DateTime(nullable: false));
         AddColumn("dbo.PlotElementTexts", "AuthorUserId", c => c.Int());
         AddPrimaryKey("dbo.PlotElementTexts", new[] {"PlotElementId", "Version"});

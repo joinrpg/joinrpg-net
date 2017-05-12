@@ -8,7 +8,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
 
-        <h4 class="@(Model.Status == PlotStatus.Deleted ? "s" : "")">
+        <span class="h4 @(Model.Status == PlotStatus.Deleted ? "s" : "")">
             @if (Model.HasMasterAccess)
             {
                 @Html.DisplayFor(model => model.Status)
@@ -27,7 +27,15 @@
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @Model.ShortContent
             </a>
-        </h4>
+        </span>
+        <span>
+            <b>Изменено: </b>
+            @Html.DisplayFor(model => model.ModifiedDateTime) 
+            @if (Model.Author != null)
+            {
+                @Html.DisplayFor(model => model.Author)
+            }
+        </span>
         <div>
             <b>Для</b>
             @if (Model.TargetsForDisplay.Any())
@@ -42,16 +50,8 @@
                 <span>Не установлено</span>
             }
         </div>
-        <div>
-            <b>Изменено: </b>
-            @Html.DisplayFor(model => model.ModifiedDateTime) @Html.DisplayFor(model => model.Author)
-        </div>
         @if (Model.HasMasterAccess)
         {
-            if (Model.PublishedVersion != null && !Model.ThisPublished)
-            {
-                <div>Вводная изменилась с момента публикации. Перейти к @Html.ActionLink("опубликованной версии", "ShowElementVersion", new { Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.PublishedVersion}).</div>
-            }
             if (Model.ThisPublished && Model.Status != PlotStatus.Completed)
             {
                 <div><b>Опубликованная версия вводной</b>.</div>
@@ -70,48 +70,79 @@
 
             @if (Model.HasEditAccess)
             {
-                if (Model.PrevModifiedDateTime != null)
-                 {
+                if (Model.PublishedVersion < Model.CurrentVersion )
+                {
+                    <a
+                        href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.PublishedVersion})"
+                        class="btn btn-default btn-sm"
+                        title="Предыдущая версия (опубликованная)">
+                        <span class="glyphicon glyphicon-fast-backward"></span>
+                        @Html.DisplayFor(model => model.PrevModifiedDateTime) — опубликованная версия
+                    </a>
+                }
+                if (Model.PrevModifiedDateTime != null && (Model.PublishedVersion != Model.CurrentVersion -1 || Model.PublishedVersion == null))
+                {
                      <a
                          href="@Url.Action("ShowElementVersion", new {Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.CurrentVersion - 1})"
                          class="btn btn-default btn-sm"
                          title="Предыдущая версия">
-                         <span class="glyphicon glyphicon-backward"></span>
+                         <span class="glyphicon glyphicon-step-backward"></span>
                          @Html.DisplayFor(model => model.PrevModifiedDateTime)
                      </a>
                 }
                 if (Model.NextModifiedDateTime == null)
                 {
                     <a class="btn btn-default btn-sm"
-                       href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
+                       href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">
+                        <span class="glyphicon glyphicon-pencil"></span>                                
+                        Изменить
+                    </a>
 
-                    if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any() 
-                  && (Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
+                    if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
                     {
-                        <button 
-                            type="button" 
-                            class="btn btn-success btn-sm" 
-                            data-toggle="modal" 
-                            data-target="#publishElementModal" 
-                            data-element="@Model.PlotElementId"
-                            data-version="@Model.CurrentVersion">
-                            Опубликовать
-                        </button>
+                        if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any())
+                        {
+                            <button
+                                type="button"
+                                class="btn btn-success btn-sm"
+                                data-toggle="modal"
+                                data-target="#publishElementModal"
+                                data-element="@Model.PlotElementId"
+                                data-version="@Model.CurrentVersion">
+                                <span class="glyphicon glyphicon-share-alt"></span>                                
+                                Опубликовать
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-success btn-sm disabled"
+                                    disabled="disabled"
+                                    title="Невозможно опубликовать вводную. Убедитесь что: Все TODO закрыты и поле очищено; вводная привязана к чему-то.">
+                                <span class="glyphicon glyphicon-share-alt"></span>                                
+                                Опубликовать
+                            </button>
+                        }
                     }
 
                     if (Model.PublishedVersion != null)
                     {
-                        <button type="button" 
-                                class="btn btn-success btn-sm" 
-                                data-toggle="modal" 
-                                data-target="#unpublishElementModal" data-element="@Model.PlotElementId">
+                        <button type="button"
+                                class="btn btn-info btn-sm"
+                                data-toggle="modal"
+                                data-target="#unpublishElementModal" data-element="@Model.PlotElementId"
+                                title="Скрыть опубликованную версию от игроков">
+                            <span class="glyphicon glyphicon-remove-sign"></span>
                             Скрыть
                         </button>
                     }
 
                     if (Model.Status != PlotStatus.Deleted)
                     {
-                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                        <button type="button" 
+                                class="btn btn-danger btn-sm" 
+                                data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
+                            <span class="glyphicon glyphicon-trash"></span>
                             Удалить
                         </button>
                     }

@@ -51,3 +51,6 @@ $("#unpublishElementModal").on("show.bs.modal", function (event) {
     var modal = $(this);
     modal.find("#publishPlotElementId").val(plotElementId);
 });
+
+var hash = window.location.hash.substr(1);
+$("#" + hash).collapse('show');
