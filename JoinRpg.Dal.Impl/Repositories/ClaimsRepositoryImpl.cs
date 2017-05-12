@@ -9,6 +9,7 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
@@ -82,7 +83,13 @@ namespace JoinRpg.Dal.Impl.Repositories
       }
     }
 
-    public Task<Claim> GetClaim(int projectId, int? claimId)
+    public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(
+      e => e.ClaimId == claimId && e.ProjectId == projectId);
+
+    public Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId) => GetClaimImpl(
+      e => e.CommentDiscussionId == commentDiscussionId && e.ProjectId == projectId);
+
+    private Task<Claim> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
     {
       return
         Ctx.ClaimSet.Include(c => c.Project)
@@ -90,8 +97,9 @@ namespace JoinRpg.Dal.Impl.Repositories
           .Include(c => c.Character)
           .Include(c => c.Player)
           .Include(c => c.Player.Claims)
-          .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
+          .SingleOrDefaultAsync(predicate);
     }
+
 
     public async Task<Claim> GetClaimWithDetails(int projectId, int claimId)
     {

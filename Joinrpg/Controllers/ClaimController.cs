@@ -12,6 +12,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
@@ -61,10 +62,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = (ActionResult) (((IProjectEntity) project)?.Project == null ? HttpNotFound() : null);
-      if (error != null)
+      if (project == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -109,19 +109,21 @@ namespace JoinRpg.Web.Controllers
 
       var plots = claim.IsApproved && claim.Character != null
         ? await _plotRepository.GetPlotsForCharacter(claim.Character)
-        : new PlotElement[] {};
+        : new PlotElement[] { };
       var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
         await
-          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId, CurrentUserId,
+          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
+            CurrentUserId,
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
 
-            var user = await GetCurrentUserAsync();
-            var parents = claim.GetTarget().GetParentGroupsToTop();
-            claimViewModel.SubscriptionTooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+      var user = await GetCurrentUserAsync();
+      var parents = claim.GetTarget().GetParentGroupsToTop();
+      claimViewModel.SubscriptionTooltip =
+        claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
       return View("Edit", claimViewModel);
     }
@@ -148,14 +150,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -172,14 +173,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -197,15 +197,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [MasterAuthorize()]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -228,15 +227,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [MasterAuthorize]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -258,13 +256,17 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize()]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
       var error = WithMyClaim(claim);
-      if (error != null || claim == null)
+      if (error != null)
       {
         return error;
       }
@@ -288,13 +290,13 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [MasterAuthorize()]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
     {
       var claim = await _claimsRepository.GetClaim(projectId, claimId);
-      var error = AsMaster(claim);
-      if (error != null)
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
       try
       {
@@ -309,16 +311,15 @@ namespace JoinRpg.Web.Controllers
       
     }
 
-
     /// <param name="viewModel"></param>
     /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
+    [MasterAuthorize()]
     public async Task<ActionResult> Move(AddCommentViewModel viewModel, string claimTarget)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -372,9 +373,13 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      var claim = await _claimsRepository.GetClaimByDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
       var error = WithClaim(claim);
-      if (error != null || claim == null)
+      if (error != null)
       {
         return error;
       }
@@ -399,15 +404,9 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [Authorize, HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
     {
-      var claim = await _claimsRepository.GetClaim(projectid, claimid);
-      var error = WithClaim(claim);
-      if (error != null || claim ==null)
-      {
-        return error;
-      }
       try
       {
         if (!ModelState.IsValid)
@@ -416,7 +415,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         await
-          FinanceService.ChangeFee(claim.ProjectId, claim.ClaimId, feeValue);
+          FinanceService.ChangeFee(projectid, claimid, feeValue);
 
         return RedirectToAction("Edit", "Claim", new { claimid, projectid });
       }
@@ -425,50 +424,74 @@ namespace JoinRpg.Web.Controllers
         return await Edit(projectid, claimid);
       }
     }
-        [HttpPost, Authorize, ValidateAntiForgeryToken]
-        public async Task<ActionResult> Subscribe(int projectid,int claimid)
-        {
 
-            var user = await GetCurrentUserAsync();
-            var claim = await _claimsRepository.GetClaim(projectid, claimid);
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> Subscribe(int projectid, int claimid)
+    {
 
-            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+      var user = await GetCurrentUserAsync();
+      var claim = await _claimsRepository.GetClaim(projectid, claimid);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
 
-            var error = AsMaster(claim);
-            if (error != null)
-            {
-                return Json(error);
-            }
+      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
 
-            await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId);
-            var parents = claim.GetTarget().GetParentGroupsToTop();
+      await _claimService.SubscribeClaimToUser(projectid, claimid, user.UserId);
+      var parents = claim.GetTarget().GetParentGroupsToTop();
 
-            var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+      var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-            return Json(tooltip, JsonRequestBehavior.AllowGet);
-        }
-
-        [HttpPost, Authorize, ValidateAntiForgeryToken]
-        public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
-        {
-
-            var user = await GetCurrentUserAsync();
-            var claim = await _claimsRepository.GetClaim(projectid, claimid);
-
-            var claimViewModel = new ClaimViewModel(CurrentUserId, claim, Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
-
-            var error = AsMaster(claim);
-            if (error != null)
-            {
-                return Json(error);
-            }
-
-            await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId);
-            var parents = claim.GetTarget().GetParentGroupsToTop();
-
-            var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
-
-            return Json(tooltip, JsonRequestBehavior.AllowGet);
-        }
+      return Json(tooltip, JsonRequestBehavior.AllowGet);
     }
+
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
+    {
+
+      var user = await GetCurrentUserAsync();
+      var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+
+      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+
+
+      await _claimService.UnsubscribeClaimToUser(projectid, claimid, user.UserId);
+      var parents = claim.GetTarget().GetParentGroupsToTop();
+
+      var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
+      return Json(tooltip, JsonRequestBehavior.AllowGet);
+    }
+
+    protected ActionResult WithMyClaim(Claim claim)
+    {
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+      return claim.PlayerUserId != CurrentUserId ? NoAccesToProjectView(claim.Project) : null;
+    }
+
+    protected ActionResult WithClaim(Claim claim)
+    {
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+      if (!claim.HasAnyAccess(CurrentUserId))
+      {
+        return NoAccesToProjectView(claim.Project);
+      }
+
+      return null;
+    }
+  }
 }

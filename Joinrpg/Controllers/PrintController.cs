@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -93,7 +95,7 @@ namespace JoinRpg.Web.Controllers
 
       if (!pluginInstance.AllowPlayerAccess)
       {
-        var error = await AsMaster(characters, projectid);
+        var error = AsMaster(await GetProjectFromList(projectid, characters), acl => true));
         if (error != null) return error;
       }
       else

@@ -102,7 +102,7 @@ namespace JoinRpg.Services.Impl
       {
         Content = new MarkdownString(content),
         TodoField = todoField,
-        Version = 1,
+        Version = 0,
         ModifiedDateTime = now,
         AuthorUserId = CurrentUserId
       });

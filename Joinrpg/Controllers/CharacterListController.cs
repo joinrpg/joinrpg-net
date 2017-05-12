@@ -8,17 +8,20 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers
 {
+  [MasterAuthorize()]
   public class CharacterListController : ControllerGameBase
   {
+
     private IPlotRepository PlotRepository { get; }
     private IUriService UriService { get; }
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public Task<ActionResult> Active(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
 
@@ -46,21 +49,21 @@ namespace JoinRpg.Web.Controllers
         new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public Task<ActionResult> Deleted(int projectId, string export)
       => MasterCharacterList(projectId, character => !character.IsActive, export, "Удаленные персонажи");
 
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public Task<ActionResult> Problems(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.GetProblems().Any(), export, "Проблемные персонажи");
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public Task<ActionResult> FreeCharactersWithPlot(int projectid, string export)
      => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи с сюжетом", vm => vm.IndAllPlotsCount > 0);
 
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
@@ -77,9 +80,6 @@ namespace JoinRpg.Web.Controllers
     private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title, Func<CharacterListItemViewModel, bool> viewModelPredicate)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
-
-      var error = await AsMaster(characters, projectId);
-      if (error != null) return error;
 
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
       var project = await GetProjectFromList(projectId, characters);
@@ -116,8 +116,7 @@ namespace JoinRpg.Web.Controllers
       var characters =
         (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
-      var error = AsMaster(characterGroup);
-      if (error != null || characterGroup == null) return error;
+      if (characterGroup == null) return HttpNotFound();
 
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
 
@@ -135,7 +134,7 @@ namespace JoinRpg.Web.Controllers
         new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    [HttpGet, Authorize]
+    [HttpGet]
     public async Task<ActionResult> ByAssignedField(int projectfieldid, int projectid, string export)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);

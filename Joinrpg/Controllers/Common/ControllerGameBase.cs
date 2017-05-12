@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers.Common
       ExportDataService = exportDataService;
     }
 
-    private ActionResult NoAccesToProjectView(Project project)
+    protected ActionResult NoAccesToProjectView(Project project)
     {
       return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
     }
@@ -96,29 +96,6 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    protected ActionResult WithMyClaim(Claim claim)
-    {
-      if (claim == null)
-      {
-        return HttpNotFound();
-      }
-      return claim.PlayerUserId != CurrentUserId ? NoAccesToProjectView(claim.Project) : null;
-    }
-
-    protected ActionResult WithClaim(Claim claim)
-    {
-      if (claim == null)
-      {
-        return HttpNotFound();
-      }
-      if (!claim.HasAnyAccess(CurrentUserId))
-      {
-        return NoAccesToProjectView(claim.Project);
-      }
-
-      return null;
-    }
-
     protected ActionResult WithCharacter(Character character)
     {
       if (character == null)
@@ -141,11 +118,6 @@ namespace JoinRpg.Web.Controllers.Common
     protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity
     {
       return AsMaster(entity, acl => true);
-    }
-
-    protected async Task<ActionResult> AsMaster(IEnumerable<IProjectEntity> entity, int projectId)
-    {
-      return AsMaster(await GetProjectFromList(projectId, entity), acl => true);
     }
 
     [CanBeNull]

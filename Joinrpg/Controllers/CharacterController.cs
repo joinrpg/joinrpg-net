@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
       var field = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
-      return (((IProjectEntity) field)?.Project == null ? HttpNotFound() : null) ?? await ShowCharacter(field);
+      return (field?.Project == null ? HttpNotFound() : null) ?? await ShowCharacter(field);
     }
 
     private async Task<ActionResult> ShowCharacter(Character character)
