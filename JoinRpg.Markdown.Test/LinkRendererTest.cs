@@ -26,7 +26,7 @@ namespace JoinRpg.Markdown.Test
     private void NoMatch(string contents)
     {
       var result = new MarkdownString(contents).ToPlainText(_mock);
-      Assert.AreEqual(contents, result);
+      Assert.AreEqual(contents, result.ToHtmlString());
     }
 
     private void Match(string expected, string original)

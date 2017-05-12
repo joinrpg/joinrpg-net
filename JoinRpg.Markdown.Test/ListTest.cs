@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Joinrpg.Markdown;
+﻿using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,10 +13,7 @@ namespace JoinRpg.Markdown.Test
 @"
 6. something
 7. something",
-@"<ol start=""6"">
-<li>something</li>
-<li>something</li>
-</ol>");
+"<ol start=\"6\">\n<li>something</li>\n<li>something</li>\n</ol>");
 
     [TestMethod]
     public void TestBr()
