@@ -22,6 +22,7 @@ namespace JoinRpg.DataModel
 
     public IntList ParentGroupsImpl { get; set; } = new IntList();
 
+    [NotNull]
     public virtual Project Project { get; set; }
 
     IEnumerable<CharacterGroup> IWorldObject.ParentGroups => Groups;

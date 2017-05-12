@@ -27,46 +27,101 @@ namespace JoinRpg.Web.Models.Plot
     public bool First { get; set; }
     public bool Last { get; set; }
 
-    public bool Visible => Status == PlotStatus.Completed || (HasMasterAccess && Status == PlotStatus.InWork);
-
     public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
-    public PlotElementViewModel([NotNull] PlotElement p, [CanBeNull] Character character, int? currentUserId, ILinkRenderer linkRendrer)
+    public PlotElementViewModel([CanBeNull] Character character, int? currentUserId, [NotNull] ILinkRenderer linkRendrer,
+      [NotNull] PlotElementTexts plotElementVersion)
     {
-      if (p == null) throw new ArgumentNullException(nameof(p));
+      if (linkRendrer == null) throw new ArgumentNullException(nameof(linkRendrer));
+      if (plotElementVersion == null) throw new ArgumentNullException(nameof(plotElementVersion));
 
-      Content = p.Texts.Content.ToHtmlString(linkRendrer);
-      TodoField = p.Texts.TodoField;
+      var p = plotElementVersion.PlotElement;
+
+      Content = plotElementVersion.Content.ToHtmlString(linkRendrer);
+      TodoField = plotElementVersion.TodoField;
       HasMasterAccess = p.HasMasterAccess(currentUserId);
       HasEditAccess = p.HasMasterAccess(currentUserId) && p.Project.Active;
-      HasPlayerAccess = character?.HasPlayerAccess(currentUserId) ?? false;
       PlotFolderId = p.PlotFolderId;
       PlotElementId = p.PlotElementId;
       ProjectId = p.ProjectId;
       Status = p.GetStatus();
       TargetsForDisplay = p.GetTargets().AsObjectLinks().ToList();
       CharacterId = character?.CharacterId;
-      PublishMode = !HasMasterAccess && !HasPlayerAccess;
+      PublishMode = !HasMasterAccess && !(character?.HasPlayerAccess(currentUserId) ?? false);
     }
 
     public bool PublishMode { get; }
 
-    public bool HasPlayerAccess { get; }
-
     int IMovableListItem.ItemId => PlotElementId;
-    public int? CharacterId { get; private set; }
+    public int? CharacterId { get; }
 
-    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Status == PlotStatus.InWork;
+    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Status == PlotStatus.InWork || Status == PlotStatus.HasNewVersion;
   }
 
-  public static class PlotElementViewModelExtensions
+
+  public class PlotDisplayViewModel
   {
-    public static IEnumerable<PlotElementViewModel> ToViewModels([NotNull] this IEnumerable<PlotElement> plots, int? currentUserId, [CanBeNull] Character character = null)
+    public static PlotDisplayViewModel Published([NotNull] IReadOnlyCollection<PlotElement> plots, int? currentUserId,
+      Character character)
+    {
+      return new PlotDisplayViewModel(plots, currentUserId, character, true, PlotElementType.RegularPlot);
+    }
+
+    private PlotDisplayViewModel([NotNull] IReadOnlyCollection<PlotElement> plots, int? currentUserId, [CanBeNull] Character character, bool publishedOnly, PlotElementType plotElementType)
     {
       if (plots == null) throw new ArgumentNullException(nameof(plots));
 
-      return plots.Where(p => p.ElementType == PlotElementType.RegularPlot).Select(
-        p => new PlotElementViewModel(p, character, currentUserId, new JoinrpgMarkdownLinkRenderer(p.Project))).MarkFirstAndLast();
+
+      var projectEntity = ((IProjectEntity)character ?? plots.FirstOrDefault())?.Project;
+      var hasMasterAccess = projectEntity?.HasMasterAccess(currentUserId) ?? false;
+
+      var hasPlayerAccess = character?.HasPlayerAccess(currentUserId) ?? false;
+
+      
+
+      if (plots.Any() && projectEntity != null && (hasMasterAccess || hasPlayerAccess || projectEntity.Details.PublishPlot))
+      {
+        if (!hasMasterAccess && !publishedOnly)
+        {
+          throw new NoAccessToProjectException(projectEntity, currentUserId);
+        }
+          var linkRenderer = new JoinrpgMarkdownLinkRenderer(plots.First().Project);
+
+        Func<PlotElement, PlotElementTexts> selector;
+        if (!publishedOnly)
+        {
+          selector = element => element.LastVersion();
+         }
+        else
+        {
+          selector = element => element.PublishedVersion();
+        }
+
+        Elements = plots.Where(p => p.ElementType == plotElementType)
+          .Select(selector)
+          .Where(p => p != null)
+          .Select(
+            p => new PlotElementViewModel(character, currentUserId, linkRenderer, p))
+          .MarkFirstAndLast();
+
+        HasUnready = plots.Any(element => element.ElementType == plotElementType &&
+                                          element.Published != element.Texts.Max(text => text.Version));
+      }
+      else
+      {
+        Elements = Enumerable.Empty<PlotElementViewModel>();
+      }
     }
+
+    public IEnumerable<PlotElementViewModel> Elements { get; }
+    public bool HasUnready { get; }
+
+    public static PlotDisplayViewModel Empty()
+    {
+      return new PlotDisplayViewModel(new PlotElement[] {}, null, null, false, PlotElementType.RegularPlot);
+    }
+  }
+  public static class PlotElementViewModelExtensions
+  {
   }
 }

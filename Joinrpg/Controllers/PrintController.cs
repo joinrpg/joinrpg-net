@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -10,6 +11,7 @@ using JoinRpg.Helpers.Web;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Controllers
@@ -38,12 +40,10 @@ namespace JoinRpg.Web.Controllers
       return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character)));
     }
 
+    [MasterAuthorize()]
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
       var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList());
-
-      var error = await AsMaster(characters, projectid);
-      if (error != null) return error;
 
       var plotElements = (await PlotRepository.GetPlotsWithTargetAndText(projectid)).SelectMany(p => p.Elements).ToArray();
 
@@ -54,11 +54,10 @@ namespace JoinRpg.Web.Controllers
       return View(viewModel);
     }
 
+    [MasterAuthorize()]
     public async Task<ActionResult> Index(int projectId)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
-      var error = await AsMaster(characters, projectId);
-      if (error != null) return error;
 
       var pluginNames =
         (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
@@ -74,14 +73,13 @@ namespace JoinRpg.Web.Controllers
           characters.Select(c => c.CharacterId).ToArray(), pluginNames, configPluginNames));
     }
 
+    [MasterAuthorize()]
     public async Task<ActionResult> HandoutReport(int projectid)
     {
       var plotElements =
         await PlotRepository.GetActiveHandouts(projectid);
 
       var characters = (await ProjectRepository.GetCharacters(projectid)).Where(c => c.IsActive).ToList();
-      var error = await AsMaster(characters, projectid);
-      if (error != null) return error;
 
       return View(new HandoutReportViewModel(plotElements, characters));
     }
@@ -97,7 +95,7 @@ namespace JoinRpg.Web.Controllers
 
       if (!pluginInstance.AllowPlayerAccess)
       {
-        var error = await AsMaster(characters, projectid);
+        var error = AsMaster(await GetProjectFromList(projectid, characters));
         if (error != null) return error;
       }
       else
@@ -114,12 +112,10 @@ namespace JoinRpg.Web.Controllers
       return View(cards);
     }
 
+    [MasterAuthorize()]
     public async Task<ActionResult> Envelopes(int projectid, string characterids)
     {
       var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterids.UnCompressIdList());
-
-      var error = await AsMaster(characters, projectid);
-      if (error != null) return error;
 
       var viewModel =
         characters.Select(

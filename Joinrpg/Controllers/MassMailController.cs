@@ -8,12 +8,13 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  [Authorize]
+  [MasterAuthorize()]
   public class MassMailController : Common.ControllerGameBase
   {
     private IClaimsRepository ClaimRepository { get; }
@@ -26,7 +27,7 @@ namespace JoinRpg.Web.Controllers
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var filteredClaims = claims.Where(c => c.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
-      return AsMaster(project) ?? View(new MassMailViewModel
+      return View(new MassMailViewModel
       {
         AlsoMailToMasters = !claimIds.Any(),
         ProjectId = projectid,
@@ -45,11 +46,7 @@ namespace JoinRpg.Web.Controllers
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var filteredClaims = claims.Where(claim => claim.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
-      var error = AsMaster(project);
-      if (error != null)
-      {
-        return error;
-      }
+      
       try
       {
         

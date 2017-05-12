@@ -14,7 +14,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task EditCharacterGroup(int projectId, int currentUserId, int characterGroupId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlots, int directSlots, int? responsibleMasterId);
 
-    Task DeleteCharacterGroup(int projectId, int characterGroupId, int currentUserId);
+    Task DeleteCharacterGroup(int projectId, int characterGroupId);
 
     Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot);
 

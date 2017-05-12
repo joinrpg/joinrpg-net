@@ -9,11 +9,18 @@ namespace JoinRpg.Services.Interfaces
   {
     Task CreatePlotFolder(int projectId, [NotNull] string masterTitle, [NotNull] string todo);
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
-    Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType);
+
+    Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
+      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType);
+
     Task DeleteFolder(int projectId, int plotFolderId);
     Task DeleteElement(int projectId, int plotFolderId, int plotelementid);
-    Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted);
+
+    Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents, string todoField,
+      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars);
+
     Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction);
-    Task PublishElement(int projectId, int plotFolderId, int plotelementid);
+    Task PublishElementVersion(int projectId, int plotFolderId, int plotelementid, int? version);
+    Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string content, string todoField);
   }
 }

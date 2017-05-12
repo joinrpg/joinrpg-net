@@ -70,7 +70,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task AddPlotElement(int projectId, int plotFolderId, string content, string todoField,
+    public async Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
@@ -87,11 +87,6 @@ namespace JoinRpg.Services.Impl
       }
       var plotElement = new PlotElement()
       {
-        Texts = new PlotElementTexts()
-        {
-          Content = new MarkdownString(content),
-          TodoField = todoField,
-        },
         CreatedDateTime = now,
         ModifiedDateTime = now,
         IsActive = true,
@@ -102,6 +97,15 @@ namespace JoinRpg.Services.Impl
         TargetCharacters = await ValidateCharactersList(projectId, targetChars),
         ElementType = elementType
       };
+
+      plotElement.Texts.Add(new PlotElementTexts()
+      {
+        Content = new MarkdownString(content),
+        TodoField = todoField,
+        Version = 0,
+        ModifiedDateTime = now,
+        AuthorUserId = CurrentUserId
+      });
 
       folder.ModifiedDateTime = now;
 
@@ -144,26 +148,65 @@ namespace JoinRpg.Services.Impl
     }
 
     public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents,
-      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, bool isCompleted)
+      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
     {
       var now = DateTime.UtcNow;
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-      plotElement.Texts.Content.Contents = contents;
-      plotElement.Texts.TodoField = todoField;
+
+      UpdateElementText(contents, todoField, plotElement, now);
+
+      await UpdateElementTarget(projectId, targetGroups, targetChars, plotElement);
+
+      UpdateElementMetadata(plotElement, now);
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private static void UpdateElementMetadata(PlotElement plotElement, DateTime now)
+    {
+      plotElement.IsActive = true;
+      plotElement.IsCompleted = false;
+      plotElement.ModifiedDateTime = now;
+      plotElement.PlotFolder.ModifiedDateTime = now;
+    }
+
+    private async Task UpdateElementTarget(int projectId, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
+      PlotElement plotElement)
+    {
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
 
       if (characterGroups.Count != targetGroups.Distinct().Count())
       {
         var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
         throw new Exception($"Groups {missing} doesn't belong to project");
-
       }
       plotElement.TargetGroups.AssignLinksList(characterGroups);
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
-      plotElement.IsCompleted = isCompleted;
-      plotElement.IsActive = true;
-      plotElement.ModifiedDateTime = now;
-      plotElement.PlotFolder.ModifiedDateTime = now;
+    }
+
+    private static void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
+    {
+      if (plotElement.LastVersion().Content.Contents == contents &&
+          plotElement.LastVersion().TodoField == todoField) return;
+      var text = new PlotElementTexts()
+      {
+        Content = new MarkdownString(contents),
+        TodoField = todoField,
+        Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
+        PlotElementId = plotElement.PlotElementId,
+        ModifiedDateTime = now,
+        AuthorUserId = CurrentUserId
+      };
+      plotElement.Texts.Add(text);
+    }
+
+    public async Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string contents, string todoField)
+    {
+      var now = DateTime.UtcNow;
+      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
+
+      UpdateElementText(contents, todoField, plotElement, now);
+
+      UpdateElementMetadata(plotElement, now);
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -192,21 +235,15 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task PublishElement(int projectId, int plotFolderId, int plotelementid)
+    public async Task PublishElementVersion(int projectId, int plotFolderId, int plotelementid, int? version)
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-      if (plotElement.IsActive && !plotElement.IsCompleted)
-      {
-        plotElement.IsCompleted = true;
-        plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
-      }
-      else
-      {
-        //TODO singal error
-      }
+      plotElement.EnsureActive();
+      plotElement.IsCompleted = version != null;
+      plotElement.Published = version;
+      plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
       await UnitOfWork.SaveChangesAsync();
     }
-
     public PlotServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
     {
     }

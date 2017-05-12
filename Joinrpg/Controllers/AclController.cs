@@ -5,21 +5,18 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  [Authorize]
+  [MasterAuthorize()]
   public class AclController : ControllerGameBase
   { 
     private IClaimsRepository ClaimRepository { get; }
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights, AllowAdmin = true) ]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = await AsMasterOrAdmin(project, a => a.CanGrantRights);
-      if (error != null) return error;
-
       try
       {
         await ProjectService.GrantAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId, viewModel.CanGrantRights,
@@ -47,7 +44,7 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
       var claims = await ClaimRepository.GetClaims(projectId, ClaimStatusSpec.Active);
-      return AsMaster(project) ?? View(project.ProjectAcls.Select(acl =>
+      return View(project.ProjectAcls.Select(acl =>
       {
         var result = AclViewModel.FromAcl(acl, claims.Count(c => c.ResponsibleMasterUserId == acl.UserId));
         result.ProblemClaimsCount =
@@ -57,23 +54,17 @@ namespace JoinRpg.Web.Controllers
       }));
     }
 
-    [HttpGet]
+    [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Delete(int projectid, int projectaclid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      return AsMaster(project, acl => acl.CanGrantRights) ??
-             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
+      return View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
 
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Delete(AclViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project, acl => acl.CanGrantRights);
-      if (error != null)
-        return error;
-
       try
       {
         await ProjectService.RemoveAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId);
@@ -87,22 +78,16 @@ namespace JoinRpg.Web.Controllers
     }
 
 
-    [HttpGet]
+    [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Edit(int projectid, int? projectaclid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      return AsMaster(project, acl => acl.CanGrantRights) ??
-             View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
+      return View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
     public async Task<ActionResult> Edit(AclViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project, acl => acl.CanGrantRights);
-      if (error != null)
-        return error;
-
       try
       {
         await

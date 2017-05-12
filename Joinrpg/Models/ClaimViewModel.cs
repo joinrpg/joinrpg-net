@@ -47,7 +47,7 @@ namespace JoinRpg.Web.Models
         [ReadOnly(true), DisplayName("Входит в группы")]
         public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
-        public IEnumerable<PlotElementViewModel> Plot { get; }
+        public PlotDisplayViewModel Plot { get; }
 
         [Display(Name = "Ответственный мастер")]
         public int ResponsibleMasterId { get; set; }
@@ -146,9 +146,15 @@ namespace JoinRpg.Web.Models
                   claim.HasMasterAccess(currentUserId));
             }
 
-            Plot = claim.IsApproved && claim.Character != null
-              ? claim.Character.GetOrderedPlots(plotElements).ToViewModels(currentUserId, claim.Character)
-              : Enumerable.Empty<PlotElementViewModel>();
+          if (claim.IsApproved && claim.Character != null)
+          {
+            var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
+            Plot = PlotDisplayViewModel.Published(readOnlyList, currentUserId, claim.Character);
+          }
+          else
+          {
+            Plot = PlotDisplayViewModel.Empty();
+          }
         }
 
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents, IEnumerable<UserSubscription> subscriptions, int ClaimId)

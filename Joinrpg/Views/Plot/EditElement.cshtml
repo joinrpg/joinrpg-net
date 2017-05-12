@@ -15,7 +15,26 @@
         <div class="form-group">
             @Html.LabelFor(model => model.Targets, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.MagicSelectBind(model => model.Targets)
+                @if (!Model.HasManageAccess && Model.HasPublishedVersion)
+                {
+                    <b>Для</b>
+                    if (Model.TargetsForDisplay.Any())
+                    {
+                        foreach (var target in Model.TargetsForDisplay)
+                        {
+                            @Html.DisplayFor(model => target)
+                        }
+                    }
+                    else
+                    {
+                        <span>Не установлено</span>
+                    }
+                  <div class="help-block">Только редакторы сюжетов могут редактировать привязку вводных, которые уже опубликованы.</div>
+                }
+                else
+                {
+                    @Html.MagicSelectBind(model => model.Targets)  
+                }
                 @Html.ValidationMessageFor(model => model.Targets, "", new {@class = "text-danger"})
                 @Html.DescriptionFor(model => model.Targets)
             </div>
@@ -24,10 +43,14 @@
         <div class="form-group">
             @Html.LabelFor(model => Model.Content, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => Model.Content, new {htmlAttributes = new {@class = "form-control"}})
+                
                 @if (Model.ElementType == PlotElementTypeView.Handout)
                 {
-                    <div class="help-block">Один элемент раздатки — одна строчка</div>
+                    @Html.TextBoxFor(model => Model.Content,  new {@class = "form-control"})
+                }
+                else
+                {
+                    @Html.EditorFor(model => Model.Content, new { htmlAttributes = new { @class = "form-control" } })
                 }
                 @Html.ValidationMessageFor(model => Model.Content, "", new {@class = "text-danger"})
             </div>
@@ -38,17 +61,6 @@
             <div class="col-md-10">
                 @Html.EditorFor(model => Model.TodoField, new {htmlAttributes = new {@class = "form-control"}})
                 @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => Model.IsCompleted, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @*TODO: Disable this if TODOField!=''*@
-                    @Html.CheckBoxFor(model => Model.IsCompleted)
-                    @Html.ValidationMessageFor(model => Model.TodoField, "", new {@class = "text-danger"})
-                </div>
             </div>
         </div>
 

@@ -220,7 +220,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteCharacterGroup(int projectId, int characterGroupId, int currentUserId)
+    public async Task DeleteCharacterGroup(int projectId, int characterGroupId)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
@@ -231,7 +231,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      characterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
       characterGroup.EnsureProjectActive();
 
 
