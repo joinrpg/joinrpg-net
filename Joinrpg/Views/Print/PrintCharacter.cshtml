@@ -1,5 +1,4 @@
 ﻿@using System.Web.Mvc.Html
-@using JoinRpg.Web.Models.Plot
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 <h1 style="page-break-before: always">@Model.CharacterName</h1>
 @Html.DisplayFor(model => model.CharacterDescription)
@@ -24,12 +23,12 @@
     </dl>
 }
 
-@if (Model.Plots.Any(p => p.Status == PlotStatus.Completed))
+@if (Model.Plots.Elements.Any())
 {
-    <h1 style="page-break-before: always; page-break-after: avoid">Загрузы (@Model.Plots.Count(p => p.Status == PlotStatus.Completed)) </h1>
+    <h1 style="page-break-before: always; page-break-after: avoid">Загрузы (@Model.Plots.Elements.Count()) </h1>
 
 
-    foreach (var plot in Model.Plots.Where(p => p.Status == PlotStatus.Completed))
+    foreach (var plot in Model.Plots.Elements)
     {
         <div style="page-break-inside: avoid">
             @plot.Content

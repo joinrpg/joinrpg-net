@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -82,7 +85,21 @@ namespace JoinRpg.Web.Models.Plot
     public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
     {
       Summary = folder.MasterSummary.ToHtmlString();
-      Elements = folder.Elements.ToViewModels(currentUserId);
+
+      if (folder.Elements.Any())
+      {
+
+        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Elements.First().Project);
+
+        Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
+          .Select(
+            p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion()))
+          .MarkFirstAndLast();
+      }
+      else
+      {
+        Elements = Enumerable.Empty<PlotElementViewModel>();
+      }
     }
   }
 

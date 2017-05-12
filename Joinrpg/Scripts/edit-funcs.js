@@ -39,6 +39,15 @@ $("#deleteElementModal").on("show.bs.modal", function(event) {
 $("#publishElementModal").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget);
     var plotElementId = button.data("element");
+    var version = button.data("version");
+    var modal = $(this);
+    modal.find("#publishPlotElementId").val(plotElementId);
+    modal.find("#publishVersionId").val(version);
+});
+
+$("#unpublishElementModal").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget);
+    var plotElementId = button.data("element");
     var modal = $(this);
     modal.find("#publishPlotElementId").val(plotElementId);
 });

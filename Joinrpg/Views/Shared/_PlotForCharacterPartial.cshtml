@@ -1,25 +1,19 @@
 ﻿@using JoinRpg.Web.Models.Plot
-@model IEnumerable<PlotElementViewModel>
+@model PlotDisplayViewModel
 
-@if (Model != null && Model.Any(m => m.Visible))
+@if (Model != null)
 {
     <div class="panel panel-default">
         <div class="panel-heading" id="headingOne">
             <h4 class="panel-title">
                 <a role="button" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    @DisplayCount.OfX(Model.Count(m => m.Visible), "загруз", "загруза", "загрузов")
+                    @DisplayCount.OfX(Model.Elements.Count(), "загруз", "загруза", "загрузов")
                 </a>
             </h4>
         </div>
         <div id="collapseOne" class="panel-collapse collapse in" aria-labelledby="headingOne">
             <div class="panel-body">
-                @if (Model.Any(item => item.Status == PlotStatus.InWork && item.HasPlayerAccess))
-                {
-                <p>
-                    <b>Часть загрузов пока в работе и скрыта. Мастера откроют их вам, когда они будут готовы.</b>
-                </p>
-                }
-                @foreach (var plot in Model)
+                @foreach (var plot in Model.Elements)
                 {
                     @Html.Partial("../Plot/ShowElementPartial", plot)
                 }

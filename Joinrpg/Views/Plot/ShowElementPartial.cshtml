@@ -2,11 +2,6 @@
 @using JoinRpg.Web.Models.Plot
 @model PlotElementViewModel
 
- @if (!Model.Visible)
- {
-     return;
- }
-
 @{
     var hideClass = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
 }
@@ -17,8 +12,8 @@
     @Html.DisplayFor(model => model.Status)
     @Html.ActionLink("Изменить", "Edit", "Plot", new { Model.PlotFolderId, Model.ProjectId }, null)
     @if (Model.CharacterId != null)
-        {
-    @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+    {
+        @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
     }
 </div>
 }

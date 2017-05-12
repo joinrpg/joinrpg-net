@@ -286,25 +286,35 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Edit", new {projectId, plotFolderId});
     }
 
-    [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
+    [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
-      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid));
+      var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
+        folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots));
       return View(viewModel);
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanManagePlots)]
+    [HttpPost, MasterAuthorize()]
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId, string content, string todoField,
-      bool isCompleted, [CanBeNull] ICollection<string> targets)
+      [CanBeNull] ICollection<string> targets)
     {
       try
       {
-
-        var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
-        var targetChars = targets.OrEmptyList().GetUnprefixedChars();
-        await
-          _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups, targetChars, isCompleted);
+        var project = await ProjectRepository.GetProjectAsync(projectId);
+        if (project.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
+        {
+          var targetGroups = targets.OrEmptyList().GetUnprefixedGroups();
+          var targetChars = targets.OrEmptyList().GetUnprefixedChars();
+          await
+            _plotService.EditPlotElement(projectId, plotFolderId, plotelementid, content, todoField, targetGroups,
+              targetChars);
+        }
+        else
+        {
+          await
+            _plotService.EditPlotElementText(projectId, plotFolderId, plotelementid, content, todoField);
+        }
         return ReturnToPlot(projectId, plotFolderId);
       }
       catch (Exception)
@@ -332,11 +342,11 @@ namespace JoinRpg.Web.Controllers
 
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
-    public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId)
+    public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId, int version)
     {
       try
       {
-        await _plotService.PublishElement(projectId, plotFolderId, plotelementid);
+        await _plotService.PublishElementVersion(projectId, plotFolderId, plotelementid, version);
         return ReturnToPlot(projectId, plotFolderId);
       }
       catch (Exception)
@@ -351,6 +361,20 @@ namespace JoinRpg.Web.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
         CurrentUserId, version));
+    }
+
+    [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
+    public async Task<ActionResult> UnPublishElement(int plotelementid, int plotFolderId, int projectId)
+    {
+      try
+      {
+        await _plotService.PublishElementVersion(projectId, plotFolderId, plotelementid, null);
+        return ReturnToPlot(projectId, plotFolderId);
+      }
+      catch (Exception)
+      {
+        return await Edit(projectId, plotFolderId);
+      }
     }
   }
 }

@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotElementViewModel  : IProjectIdAware
   {
 
-    public EditPlotElementViewModel(PlotElement e)
+    public EditPlotElementViewModel(PlotElement e, bool hasManageAccess)
     {
       PlotElementId = e.PlotElementId;
       Targets = e.GetElementBindingsForEdit();
@@ -75,8 +75,10 @@ namespace JoinRpg.Web.Models.Plot
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
-      IsCompleted = e.IsCompleted;
       ElementType = (PlotElementTypeView) e.ElementType;
+      HasManageAccess = hasManageAccess;
+      HasPublishedVersion = e.Published != null;
+      TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
     }
 
     [ReadOnly(true)]
@@ -96,11 +98,11 @@ namespace JoinRpg.Web.Models.Plot
 
     [ReadOnly(true), Display(Name = "Статус")]
     public PlotStatus Status { get; }
-
-    [Display(Name="Готов", Description = "Готовые загрузы показываются игрокам")]
-    public bool IsCompleted { get; set; }
     
     public PlotElementTypeView ElementType { get; }
+    public bool HasManageAccess { get; }
+    public bool HasPublishedVersion { get; }
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
   }
 
   public class PlotElementListItemViewModel : IProjectIdAware
@@ -135,11 +137,11 @@ namespace JoinRpg.Web.Models.Plot
       ModifiedDateTime = currentVersionText.ModifiedDateTime;
       Author = currentVersionText.AuthorUser;
       PrevModifiedDateTime = prevVersionText?.ModifiedDateTime;
-      PrevAuthor = prevVersionText?.AuthorUser;
       NextModifiedDateTime = nextVersionText?.ModifiedDateTime;
-      NextAuthor = nextVersionText?.AuthorUser;
 
       PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
+
+      PublishedVersion = e.Published;
     }
 
     [ReadOnly(true)]
@@ -162,13 +164,9 @@ namespace JoinRpg.Web.Models.Plot
     [UIHint("EventTime")]
     public DateTime? PrevModifiedDateTime { get; }
 
-    public User PrevAuthor { get; }
-
     [UIHint("EventTime")]
     public DateTime? NextModifiedDateTime { get; }
-
-    public User NextAuthor { get; }
-
+    
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; }
 
@@ -183,6 +181,10 @@ namespace JoinRpg.Web.Models.Plot
 
     public bool HasMasterAccess { get; }
     public int CurrentVersion { get;}
+
+    public int? PublishedVersion { get; }
     public string PlotFolderMasterTitle { get; }
+
+    public bool ThisPublished => CurrentVersion == PublishedVersion;
   }
 }

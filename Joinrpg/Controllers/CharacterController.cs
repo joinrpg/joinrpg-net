@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
         ? await ShowPlotsForCharacter(character)
         : Enumerable.Empty<PlotElement>();
       return View("Details",
-        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots));
+        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots.ToList()));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)

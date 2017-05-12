@@ -27,7 +27,6 @@
             <a role="button" data-toggle="collapse" data-parent="#elementsaccordion" href="#panelPlotElement@(Model.PlotElementId)">
                 @Model.ShortContent
             </a>
-
         </h4>
         <div>
             <b>Для</b>
@@ -47,8 +46,26 @@
             <b>Изменено: </b>
             @Html.DisplayFor(model => model.ModifiedDateTime) @Html.DisplayFor(model => model.Author)
         </div>
+        @if (Model.HasMasterAccess)
+        {
+            if (Model.PublishedVersion != null && !Model.ThisPublished)
+            {
+                <div>Вводная изменилась с момента публикации. Перейти к @Html.ActionLink("опубликованной версии", "ShowElementVersion", new { Model.ProjectId, Model.PlotFolderId, Model.PlotElementId, Version = Model.PublishedVersion}).</div>
+            }
+            if (Model.ThisPublished && Model.Status != PlotStatus.Completed)
+            {
+                <div><b>Опубликованная версия вводной</b>.</div>
+            }
+        }
     </div>
-    <div class="panel-collapse collapse" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
+    @{
+      var collapseClass = "collapse";
+        if (ViewBag.PlotElementUncollapse == Model.PlotElementId)
+        {
+            collapseClass = "";
+        }
+    }
+    <div class="panel-collapse @collapseClass" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
         <div class="panel-body">
 
             @if (Model.HasEditAccess)
@@ -68,12 +85,30 @@
                     <a class="btn btn-default btn-sm"
                        href="@Url.Action("EditElement", "Plot", new {Model.PlotElementId, Model.PlotFolderId, Model.ProjectId}, null)">Изменить</a>
 
-                    if (Model.Status == PlotStatus.InWork && string.IsNullOrWhiteSpace(Model.TodoField))
+                    if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any() 
+                  && (Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
                     {
-                        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#publishElementModal" data-element="@Model.PlotElementId">
+                        <button 
+                            type="button" 
+                            class="btn btn-success btn-sm" 
+                            data-toggle="modal" 
+                            data-target="#publishElementModal" 
+                            data-element="@Model.PlotElementId"
+                            data-version="@Model.CurrentVersion">
                             Опубликовать
                         </button>
                     }
+
+                    if (Model.PublishedVersion != null)
+                    {
+                        <button type="button" 
+                                class="btn btn-success btn-sm" 
+                                data-toggle="modal" 
+                                data-target="#unpublishElementModal" data-element="@Model.PlotElementId">
+                            Скрыть
+                        </button>
+                    }
+
                     if (Model.Status != PlotStatus.Deleted)
                     {
                         <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteElementModal" data-element="@Model.PlotElementId">
@@ -99,7 +134,7 @@
             }
             
             @{
-                var hideClassName = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
+                var hideClassName = Model.ThisPublished ? "" : "world-object-hidden";
             }
             <div class="@hideClassName">
                 @Model.Content
