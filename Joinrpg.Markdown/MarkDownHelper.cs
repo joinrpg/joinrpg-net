@@ -38,7 +38,7 @@ namespace Joinrpg.Markdown
     }
 
     [NotNull]
-    public static string ToPlainText([CanBeNull] this MarkdownString markdownString)
+    public static IHtmlString ToPlainText([CanBeNull] this MarkdownString markdownString)
     {
       return markdownString.ToPlainText(NoLinks);
     }
@@ -53,14 +53,14 @@ namespace Joinrpg.Markdown
     }
 
     [NotNull]
-    public static string ToPlainText([CanBeNull] this MarkdownString markdownString, [NotNull] ILinkRenderer renderer)
+    public static IHtmlString ToPlainText([CanBeNull] this MarkdownString markdownString, [NotNull] ILinkRenderer renderer)
     {
       if (renderer == null) throw new ArgumentNullException(nameof(renderer));
       if (markdownString?.Contents == null)
       {
-        return "";
+        return new HtmlString("");
       }
-      return markdownString.RenderMarkDownToHtmlUnsafe(renderer).RemoveHtml().Trim();
+      return markdownString.RenderMarkDownToHtmlUnsafe(renderer).RemoveHtml();
     }
 
     private static UnSafeHtml RenderMarkDownToHtmlUnsafe(this MarkdownString markdownString,

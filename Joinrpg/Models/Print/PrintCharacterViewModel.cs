@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Models.Print
   {
     public IHtmlString CharacterDescription{ get; }
     public PlotDisplayViewModel Plots { get; }
-    public IReadOnlyCollection<string> Handouts { get; }
+    public IReadOnlyCollection<IHtmlString> Handouts { get; }
     public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
     public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;

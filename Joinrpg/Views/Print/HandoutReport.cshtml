@@ -13,7 +13,9 @@
     @foreach (var item in Model.Handouts)
     {
         <tr><td>
-            @Html.ActionLink(item.Text, "EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)
+            <a href="@Url.Action("EditElement", "Plot", new {item.ProjectId, item.PlotFolderId, item.PlotElementId}, null)">
+                @item.Text
+            </a>
             @if (item.Status != PlotStatus.Completed)
             {
                 @Html.DisplayFor(modelItem => item.Status)

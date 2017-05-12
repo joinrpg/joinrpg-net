@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Plot
@@ -131,7 +131,8 @@ namespace JoinRpg.Web.Models.Plot
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       ElementType = (PlotElementTypeView)e.ElementType;
-      ShortContent = currentVersionText.Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
+      ShortContent = HtmlSanitizeHelper.WithDefaultStringValue(currentVersionText.Content.TakeWords(10)
+          .ToPlainText(renderer), "***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
       ModifiedDateTime = currentVersionText.ModifiedDateTime;
@@ -154,7 +155,7 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public IHtmlString Content { get; }
 
-    public string ShortContent { get; }
+    public IHtmlString ShortContent { get; }
 
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }
