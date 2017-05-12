@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Controllers
 
       if (!pluginInstance.AllowPlayerAccess)
       {
-        var error = AsMaster(await GetProjectFromList(projectid, characters), acl => true));
+        var error = AsMaster(await GetProjectFromList(projectid, characters));
         if (error != null) return error;
       }
       else
