@@ -1,6 +1,26 @@
-﻿@using JoinRpg.Web.Models
+﻿@using System.Linq.Expressions
+@using JoinRpg.Web.Models
 @using Microsoft.AspNet.Identity
 @model IEnumerable<AclViewModel>
+
+@helper ShowRightValue(AclViewModel item, Expression<Func<AclViewModel, bool>> expression)
+{
+    if (expression.Compile()(item))
+    {
+        <span class="label label-success">
+            <span class="glyphicon glyphicon-ok-sign"></span>
+            @Html.DisplayNameFor(expression)
+        </span> 
+    }
+    else
+    {
+        <span class="label label-default">
+            <span class="glyphicon glyphicon-remove-sign"> </span>
+            @Html.DisplayNameFor(expression)
+        </span> 
+    }
+  <br/>
+}
 
 @{
     ViewBag.Title = "Мастера";
@@ -19,97 +39,69 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Master)
+            @Html.DisplayNameFor(model => model.UserDetails)
         </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanManageClaims)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanChangeFields)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanChangeProjectProperties)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanGrantRights)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanEditRoles)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanManageMoney)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanSendMassMails)
-        </th>
-        <th class="hidden-xs">
-            @Html.DisplayNameFor(model => model.CanManagePlots)
+        <th class="hidden-xs" colspan="2">
+            Права доступа
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ClaimsCount)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ProblemClaimsCount)
-        </th>
-        @if (canGrantRights)
-        {
-            <th></th>
-        }
     </tr>
 
 @foreach (var item in Model)
 {
     <tr>
         <td>
-            @Html.DisplayFor(modelItem => item.Master)
+            @Html.DisplayFor(modelItem => item.UserDetails)
         </td>
         <td class="hidden-xs">
-            @Html.DisplayFor(modelItem => item.CanManageClaims)
+            @ShowRightValue(item, model => model.CanEditRoles)
+            @ShowRightValue(item, model => model.CanSendMassMails)
+            @ShowRightValue(item, model => model.CanManagePlots)
+            @ShowRightValue(item, model => model.CanManageClaims)
         </td>
         <td class="hidden-xs">
-            @Html.DisplayFor(modelItem => item.CanChangeFields)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(modelItem => item.CanChangeProjectProperties)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(modelItem => item.CanGrantRights)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(model => item.CanEditRoles)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(model => item.CanManageMoney)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(model => item.CanSendMassMails)
-        </td>
-        <td class="hidden-xs">
-            @Html.DisplayFor(model => item.CanManagePlots)
+            @ShowRightValue(item, model => model.CanManageMoney)
+            @ShowRightValue(item, model => model.CanChangeFields)
+            @ShowRightValue(item, model => model.CanChangeProjectProperties)
+            @ShowRightValue(item, model => model.CanGrantRights)
         </td>
         <td style="white-space: nowrap">
-            @Html.ActionLink(DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"), "Responsible", "ClaimList", new {ResponsibleMasterId = item.Master.UserId, item.ProjectId}, null)
-        </td>
-        <td style="white-space: nowrap">
-            @Html.ActionLink(DisplayCount.OfX(item.ProblemClaimsCount, "проблемная", "проблемные", "проблемных"), "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.Master.UserId, item.ProjectId }, null)
-
-        </td>
-        @if (canGrantRights)
-        {
-            <td>
 
 
-                @Html.ActionLink("Изменить", "Edit", new {item.ProjectId, item.ProjectAclId})
-                @if (item.UserId.ToString() == User.Identity.GetUserId() && countOfCanGrantRights == 1)
+            @if (item.ClaimsCount > 0)
+            {
+                @Html.ActionLink(
+                    DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
+                    "Responsible", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null)
+                <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null))</span>
+                if (canGrantRights)
+                {
+                    <br/>
+                }
+            }
+            @if (canGrantRights)
+            {
+              
+                <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-pencil"></span> Изменить права
+                </a>
+
+
+                if (item.UserId.ToString() == User.Identity.GetUserId() && countOfCanGrantRights == 1)
                 {
 
                 }
                 else
                 {
-                    <text> <nobr> @Html.ActionLink("Снять доступ", "Delete", new {item.ProjectId, item.ProjectAclId}) </nobr> </text>
+                    <a href="@Url.Action("Delete", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-trash"></span> Снять доступ
+                    </a>
                 }
-            </td>
-        }
+
+            }
+        </td>
+
     </tr>
 }
 

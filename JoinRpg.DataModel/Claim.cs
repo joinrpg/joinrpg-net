@@ -28,6 +28,7 @@ namespace JoinRpg.DataModel
     [NotNull]
     public virtual Project Project { get; set; }
 
+    [NotNull]
     public virtual User Player { get; set; }
 
     public DateTime? PlayerAcceptedDate { get; set; }

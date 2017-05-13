@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Filter;
@@ -43,14 +42,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Index(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      var claims = await ClaimRepository.GetClaims(projectId, ClaimStatusSpec.Active);
+      var claims = await ClaimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
       return View(project.ProjectAcls.Select(acl =>
       {
-        var result = AclViewModel.FromAcl(acl, claims.Count(c => c.ResponsibleMasterUserId == acl.UserId));
-        result.ProblemClaimsCount =
-          claims.Where(c => c.ResponsibleMasterUserId == acl.UserId)
-            .Count(claim => claim.GetProblems(ProblemSeverity.Warning).Any());
-        return result;
+        return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId== acl.UserId)?.ClaimCount ?? 0);
       }));
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -40,41 +41,34 @@ namespace JoinRpg.Web.Models
 
   public class UserProfileDetailsViewModel
   {
-    [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber)]
-    public string PhoneNumber { get; set; }
+    [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber), UIHint("PhoneNumber")]
+    public string PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
-    public string Skype { get; set; }
+    public string Skype { get; }
     [Display(Name = "ЖЖ"), UIHint("Livejournal")]
-    public string Livejournal { get; set; }
+    public string Livejournal { get; }
     [Display(Name = "VK"), UIHint("Vkontakte")]
-    public string Vk { get; set; }
+    public string Vk { get;  }
     [UIHint("Email")]
-    public string Email { get; set; }
+    public string Email { get;  }
     [DisplayName("ФИО")]
-    public string FullName { get; set; }
+    public string FullName { get; }
 
-    public int? AllrpgId { get; set; }
+    public int? AllrpgId { get; }
 
-    public User User { get; set; } //TODO: Start using ViewModel here
+    public User User { get; } //TODO: Start using ViewModel here
 
-    [CanBeNull]
-    public static UserProfileDetailsViewModel FromUser([CanBeNull] User user)
+    public UserProfileDetailsViewModel ([NotNull] User user)
     {
-      if (user == null)
-      {
-        return null;
-      }
-      return new UserProfileDetailsViewModel()
-      {
-        Email = user.Email,
-        FullName = user.FullName,
-        User = user,
-        Skype = user.Extra?.Skype,
-        Livejournal = user.Extra?.Livejournal,
-        Vk = user.Extra?.Vk,
-        PhoneNumber = user.Extra?.PhoneNumber ?? "",
-        AllrpgId = user.Allrpg?.Sid,
-      };
+      if (user == null) throw new ArgumentNullException(nameof(user));
+      Email = user.Email;
+      FullName = user.FullName;
+      User = user;
+      Skype = user.Extra?.Skype;
+      Livejournal = user.Extra?.Livejournal;
+      Vk = user.Extra?.Vk;
+      PhoneNumber = user.Extra?.PhoneNumber ?? "";
+      AllrpgId = user.Allrpg?.Sid;
     }
   }
 

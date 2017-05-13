@@ -8,15 +8,9 @@
 
 <h3>Вы действительно хотите снять доступ мастеру?</h3>
 <div>
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Master)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Master)
-        </dd>
-    </dl>
+    <div>
+        @Html.DisplayFor(model => model.UserDetails)
+    </div>
 
     @using (Html.BeginForm())
     {
