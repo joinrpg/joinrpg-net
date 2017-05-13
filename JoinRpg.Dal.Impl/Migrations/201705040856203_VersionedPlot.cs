@@ -32,7 +32,7 @@ INNER JOIN dbo.PlotElements PE ON PE.PlotElementId = PET.PlotElementId
            ,[TodoField]
            ,[Version]
            ,[ModifiedDateTime])
-SELECT PET.PlotElementId, Content_Contents, TodoField, 1, ModifiedDateTime
+SELECT PET.PlotElementId, Content_Contents, TodoField, 1, PET.ModifiedDateTime
 FROM PlotElementTexts PET 
 INNER JOIN PlotElements PE ON PE.PlotElementId = PET.PlotElementId
 WHERE ISNULL(TodoField, '') <> ''
