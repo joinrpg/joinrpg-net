@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
@@ -44,7 +47,10 @@ namespace JoinRpg.Web.Models
     [ReadOnly(true), Display(Name = "Мастер")]
     public UserProfileDetailsViewModel UserDetails { get; set; }
 
-    public static AclViewModel FromAcl(ProjectAcl acl, int count)
+    [ReadOnly(true)]
+    public IEnumerable<GameObjectLinkViewModel> ResponsibleFor { get; set; }
+
+    public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)
     {
       return new AclViewModel()
       {
@@ -61,7 +67,8 @@ namespace JoinRpg.Web.Models
         CanManagePlots = acl.CanManagePlots,
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = count,
-        UserDetails = new UserProfileDetailsViewModel(acl.User)
+        UserDetails = new UserProfileDetailsViewModel(acl.User),
+        ResponsibleFor = groups.Select(group => group.AsObjectLink()),
       };
     }
   }

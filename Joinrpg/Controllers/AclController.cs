@@ -43,17 +43,21 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
       var claims = await ClaimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
+      var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
       return View(project.ProjectAcls.Select(acl =>
       {
-        return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId== acl.UserId)?.ClaimCount ?? 0);
+        return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
+          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId).ToList());
       }));
     }
 
     [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Delete(int projectid, int projectaclid)
+    public async Task<ActionResult> Delete(int projectId, int projectaclid)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectid);
-      return View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+      var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
+      return View(AclViewModel.FromAcl(projectAcl, 0, groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList()));
 
     }
 
@@ -74,10 +78,12 @@ namespace JoinRpg.Web.Controllers
 
 
     [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Edit(int projectid, int? projectaclid)
+    public async Task<ActionResult> Edit(int projectId, int? projectaclid)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectid);
-      return View(AclViewModel.FromAcl(project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid), 0));
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
+      var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+      return View(AclViewModel.FromAcl(projectAcl, 0, groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList()));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
