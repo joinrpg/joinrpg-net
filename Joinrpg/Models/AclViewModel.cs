@@ -7,13 +7,29 @@ using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
-  public class AclViewModel
+  public class AclViewModelBase
   {
+    [ReadOnly(true), Display(Name = "Мастер")]
+    public UserProfileDetailsViewModel UserDetails { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<GameObjectLinkViewModel> ResponsibleFor { get; protected set; }
+
     public int? ProjectAclId { get; set; }
+
     [Display(Name="Проект")]
     public int ProjectId { get; set; }
-    public int UserId { get; set; }
 
+    [Display(Name = "Игра"), ReadOnly(true)]
+    public string ProjectName { get; protected set; }
+
+    [Display(Name = "Заявок"), ReadOnly(true)]
+    public int ClaimsCount { get; protected set; }
+
+    public int UserId { get; set; }
+  }
+  public class AclViewModel : AclViewModelBase
+  {
     [Display(Name = "Администратор заявок")]
     public bool CanManageClaims { get; set; }
 
@@ -32,27 +48,15 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Управлять финансами")]
     public bool CanManageMoney { get; set; }
 
-    [Display(Name = "Игра"), ReadOnly(true)]
-    public string ProjectName { get; set; }
-
-    [Display(Name = "Заявок"), ReadOnly(true)]
-    public int ClaimsCount { get; set; }
-
     [Display(Name = "Делать массовые рассылки")]
     public bool CanSendMassMails { get; set; }
 
     [Display(Name = "Редактор сюжетов")]
     public bool CanManagePlots { get; set; }
 
-    [ReadOnly(true), Display(Name = "Мастер")]
-    public UserProfileDetailsViewModel UserDetails { get; set; }
-
-    [ReadOnly(true)]
-    public IEnumerable<GameObjectLinkViewModel> ResponsibleFor { get; set; }
-
     public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)
     {
-      return new AclViewModel()
+      return new AclViewModel
       {
         ProjectId = acl.ProjectId,
         ProjectAclId = acl.ProjectAclId,
@@ -70,6 +74,32 @@ namespace JoinRpg.Web.Models
         UserDetails = new UserProfileDetailsViewModel(acl.User),
         ResponsibleFor = groups.Select(group => group.AsObjectLink()),
       };
+    }
+  }
+
+  public class DeleteAclViewModel : AclViewModelBase
+  {
+
+    [Display(
+      Name = "Новый ответственный мастер",
+      Description = "Ответственный мастер, который будет назначен тем заявкам, за которые раньше отвечал этот мастер.")]
+    public int? ResponsibleMasterId { get; set; }
+
+    [ReadOnly(true)]
+    public IEnumerable<MasterListItemViewModel> Masters { get; private set; }
+    public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)
+    {
+      return new DeleteAclViewModel
+      {
+        ProjectId = acl.ProjectId,
+        ProjectAclId = acl.ProjectAclId,
+        UserId = acl.UserId,
+        ProjectName = acl.Project.ProjectName,
+        ClaimsCount = count,
+        UserDetails = new UserProfileDetailsViewModel(acl.User),
+        ResponsibleFor = groups.Select(group => group.AsObjectLink()),
+        Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name)
+    };
     }
   }
 }

@@ -55,7 +55,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
-    public Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
     {
       return GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
     }

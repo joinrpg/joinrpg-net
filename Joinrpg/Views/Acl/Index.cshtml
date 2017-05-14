@@ -66,19 +66,23 @@
             @ShowRightValue(item, model => model.CanChangeProjectProperties)
             @ShowRightValue(item, model => model.CanGrantRights)
         </td>
-        <td style="white-space: nowrap">
+        <td>
 
 
             @if (item.ClaimsCount > 0)
             {
-                @Html.ActionLink(
-                    DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
-                    "Responsible", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null)
-                <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null))</span>
-                if (canGrantRights)
-                {
-                    <br/>
-                }
+                <div>
+                    @Html.ActionLink(
+                        DisplayCount.OfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
+                        "Responsible", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null)
+                    <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new {ResponsibleMasterId = item.UserId, item.ProjectId}, null))</span>
+                </div>
+            }
+            @if (item.ResponsibleFor.Any())
+            {
+            <div>
+                <b>Отв. мастер</b>: @(new HtmlString(string.Join(", ", item.ResponsibleFor.Select(respFor => Html.DisplayFor(model => respFor)))))
+            </div>
             }
             @if (canGrantRights)
             {
@@ -99,12 +103,6 @@
                     </a>
                 }
 
-            }
-            @if (item.ResponsibleFor.Any())
-            {
-                <div>
-                    <b>Отв. мастер</b>: @(new HtmlString(string.Join(", ", item.ResponsibleFor.Select(respFor => Html.DisplayFor(model => respFor)))))
-                </div>
             }
         </td>
 

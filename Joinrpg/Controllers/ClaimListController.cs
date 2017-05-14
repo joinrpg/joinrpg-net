@@ -126,7 +126,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ResponsibleDiscussing(int projectid, int responsibleMasterId, string export)
     {
-      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId,
+      var claims = await ClaimsRepository.GetClaimsForMaster(projectid, responsibleMasterId,
         ClaimStatusSpec.Discussion);
 
       return await ShowMasterClaimList(projectid, export, "Обсуждаемые заявки на мастере", "Index", claims);
@@ -135,7 +135,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ResponsibleOnHold(int projectid, int responsiblemasterid, string export)
     {
-      var claims = await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsiblemasterid,
+      var claims = await ClaimsRepository.GetClaimsForMaster(projectid, responsiblemasterid,
         ClaimStatusSpec.OnHold);
 
       return await ShowMasterClaimList(projectid, export, "Лист ожидания на мастере", "Index", claims);
@@ -199,7 +199,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
     {
       var claims =
-        (await ClaimsRepository.GetActiveClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList
+        (await ClaimsRepository.GetClaimsForMaster(projectid, responsibleMasterId, ClaimStatusSpec.Active)).ToList
         ();
 
       return await ShowMasterClaimList(projectid, export, "Заявки на мастере", "Index", claims);
@@ -228,7 +228,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
     {
       var claims =
-        (await ClaimsRepository.GetActiveClaimsForMaster(projectId, responsibleMasterId, ClaimStatusSpec.Any)).Where(
+        (await ClaimsRepository.GetClaimsForMaster(projectId, responsibleMasterId, ClaimStatusSpec.Any)).Where(
           claim =>
             claim.GetProblems().Any(p => p.Severity >= ProblemSeverity.Warning)).ToList();
 

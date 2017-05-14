@@ -9,7 +9,6 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  [MasterAuthorize()]
   public class AclController : ControllerGameBase
   { 
     private IClaimsRepository ClaimRepository { get; }
@@ -56,17 +55,20 @@ namespace JoinRpg.Web.Controllers
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
+      var claims = await ClaimRepository.GetClaimsForMaster(projectId, projectAcl.UserId,  ClaimStatusSpec.Any);
       var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
-      return View(AclViewModel.FromAcl(projectAcl, 0, groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList()));
+      return View(DeleteAclViewModel.FromAcl(projectAcl,
+        claims.Count,
+        groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList()));
 
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
-    public async Task<ActionResult> Delete(AclViewModel viewModel)
+    public async Task<ActionResult> Delete(DeleteAclViewModel viewModel)
     {
       try
       {
-        await ProjectService.RemoveAccess(viewModel.ProjectId, CurrentUserId, viewModel.UserId);
+        await ProjectService.RemoveAccess(viewModel.ProjectId, viewModel.UserId, viewModel.ResponsibleMasterId);
       }
       catch
       {
