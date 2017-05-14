@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers
 
       var plots = await PlotRepository.GetPlotsWithTargets(projectid);
 
-      var list = new CharacterListViewModel(CurrentUserId, "Все персонажи", characters, plots, project, vm => true);
+      var list = new CharacterListViewModel(acl.UserId , "Все персонажи", characters, plots, project, vm => true);
 
       return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
         new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);

@@ -152,7 +152,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     #region Create elements & handouts
-    [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
+    [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
@@ -164,7 +164,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
+    [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
@@ -176,7 +176,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId, string content,
       string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
     {
@@ -199,7 +199,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId, string content,
       string todoField, [CanBeNull] ICollection<string> targets, PlotElementTypeView elementType)
     {
