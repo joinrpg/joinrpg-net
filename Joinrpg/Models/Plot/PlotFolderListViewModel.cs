@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
@@ -46,10 +45,12 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotFolderListViewModel : PlotFolderListViewModelBase
   {
     public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
+    public bool HasMasterAccess { get; private set; }
 
     public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId)
       : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
     {
+      HasMasterAccess = project.HasMasterAccess(currentUserId);
       Folders =
         folders
           .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
