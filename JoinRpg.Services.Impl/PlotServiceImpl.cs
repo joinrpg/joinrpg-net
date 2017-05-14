@@ -134,6 +134,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
+      plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
       SmartDelete(plotElement);
       plotElement.ModifiedDateTime = DateTime.UtcNow;
@@ -143,7 +144,7 @@ namespace JoinRpg.Services.Impl
     private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid)
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+      folder.RequestMasterAccess(CurrentUserId);
       return folder.Elements.Single(e => e.PlotElementId == plotelementid);
     }
 
@@ -239,6 +240,7 @@ namespace JoinRpg.Services.Impl
     {
       var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
       plotElement.EnsureActive();
+      plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
       plotElement.IsCompleted = version != null;
       plotElement.Published = version;
       plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;

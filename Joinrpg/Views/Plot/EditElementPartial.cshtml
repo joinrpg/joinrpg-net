@@ -68,7 +68,7 @@
     <div class="panel-collapse @collapseClass" id="panelPlotElement@(Model.PlotElementId)" role="tabpanel">
         <div class="panel-body">
 
-            @if (Model.HasEditAccess)
+            @if (Model.HasMasterAccess)
             {
                 if (Model.PublishedVersion < Model.CurrentVersion )
                 {
@@ -98,7 +98,7 @@
                         Изменить
                     </a>
 
-                    if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null))
+                    if ((Model.CurrentVersion > Model.PublishedVersion || Model.PublishedVersion == null) && Model.HasEditAccess)
                     {
                         if (string.IsNullOrWhiteSpace(Model.TodoField) && Model.TargetsForDisplay.Any())
                         {
@@ -125,7 +125,7 @@
                         }
                     }
 
-                    if (Model.PublishedVersion != null)
+                    if (Model.PublishedVersion != null && Model.HasEditAccess)
                     {
                         <button type="button"
                                 class="btn btn-info btn-sm"
@@ -137,7 +137,7 @@
                         </button>
                     }
 
-                    if (Model.Status != PlotStatus.Deleted)
+                    if (Model.Status != PlotStatus.Deleted && Model.HasEditAccess)
                     {
                         <button type="button" 
                                 class="btn btn-danger btn-sm" 

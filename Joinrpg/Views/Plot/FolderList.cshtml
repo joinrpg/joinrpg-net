@@ -9,7 +9,7 @@
         <th>
             @Html.DisplayNameFor(model => firstItem.PlotFolderMasterTitle)
         </th>
-        @if (Model.HasEditAccess)
+        @if (Model.HasMasterAccess)
         {
         <th>
             @Html.DisplayNameFor(model => firstItem.Status)
@@ -25,7 +25,7 @@
         <td>
             @Html.DisplayFor(model => item)
         </td>
-        @if (Model.HasEditAccess)
+        @if (Model.HasMasterAccess)
         {
         <td>
             @Html.DisplayFor(modelItem => item.Status)
