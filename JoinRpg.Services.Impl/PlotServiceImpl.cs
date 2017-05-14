@@ -75,7 +75,7 @@ namespace JoinRpg.Services.Impl
     {
       var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+      folder.RequestMasterAccess(CurrentUserId);
 
       var now = DateTime.UtcNow;
       var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);

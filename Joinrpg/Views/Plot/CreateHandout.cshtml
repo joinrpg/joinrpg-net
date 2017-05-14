@@ -18,6 +18,7 @@
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(p => p.ProjectId)
         @Html.HiddenFor(p => p.PlotFolderId)
+        @Html.HiddenFor(p => p.ElementType)
 
         <div class="form-group">
             @Html.LabelFor(model => model.ElementType, htmlAttributes: new { @class = "control-label col-md-2" })

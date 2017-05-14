@@ -30,10 +30,11 @@ namespace JoinRpg.Web.Filter
 
     public override void OnAuthorization(AuthorizationContext filterContext)
     {
-      var projectId = filterContext.Controller.ValueProvider.GetValue("ProjectId");
-      var projectRepository = ((ControllerGameBase) filterContext.Controller).ProjectRepository;
-      filterContext.HttpContext.Items.Add(ProjectidKey, projectId);
-      filterContext.HttpContext.Items.Add(ProjectrepositoryKey, projectRepository);
+      var httpContextItems = filterContext.HttpContext.Items;
+
+      httpContextItems[ProjectidKey] = filterContext.Controller.ValueProvider.GetValue("ProjectId");
+      httpContextItems[ProjectrepositoryKey] = ((ControllerGameBase) filterContext.Controller).ProjectRepository;
+
       base.OnAuthorization(filterContext);
     }
 
