@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Controllers
           Reason = currentUser != null
           ? (AccessReason)user.GetProfileAccess(currentUser)
           : AccessReason.NoAccess,
-          Details = UserProfileDetailsViewModel.FromUser(user),
+          Details = new  UserProfileDetailsViewModel(user),
           HasAdminAccess = currentUser?.Auth?.IsAdmin ?? false,
           IsAdmin = user.Auth?.IsAdmin ?? false
         };

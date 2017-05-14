@@ -17,5 +17,7 @@ namespace JoinRpg.Helpers
     {
       return s == null ? null : new UnSafeHtml(s);
     }
+
+    public override string ToString() => $"UnSafeHtml({UnValidatedValue})";
   }
 }

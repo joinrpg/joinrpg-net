@@ -1,8 +1,9 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.GameFieldEditViewModel
+@using JoinRpg.Web.Models
+@model GameFieldEditViewModel
 
 @{
-    ViewBag.Title = "Редактирование поля персонажа";
+    ViewBag.Title = "Редактирование поля персонажа " + Model.Name;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -103,15 +104,23 @@
                 @Html.DescriptionFor(model => model.ShowForGroups)
             </div>
         </div>
+        
+        @if (Model.FieldBoundTo == FieldBoundToViewModel.Character)
+        {
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.ValidForNpc)
-                @Html.ValidationMessageFor(model => model.ValidForNpc, "", new {@class = "text-danger"})
-                @Html.DescriptionFor(model => model.ValidForNpc)
+            <div class="form-group">
+                @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new {@class = "control-label col-md-3"})
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.ValidForNpc)
+                    @Html.ValidationMessageFor(model => model.ValidForNpc, "", new {@class = "text-danger"})
+                    @Html.DescriptionFor(model => model.ValidForNpc)
+                </div>
             </div>
-        </div>
+        }
+        else
+        {
+          @Html.HiddenFor(model => model.ValidForNpc)
+        }
 
         <div class="form-group">
             @Html.LabelFor(model => model.IncludeInPrint, htmlAttributes: new { @class = "control-label col-md-3" })

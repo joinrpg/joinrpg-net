@@ -124,7 +124,7 @@ namespace JoinRpg.Web.Models
             Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserId, CharacterNavigationPage.Claim);
             ClaimFee = new ClaimFeeViewModel(claim, currentUserId);
             Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-            PlayerDetails = UserProfileDetailsViewModel.FromUser(claim.Player);
+            PlayerDetails = new UserProfileDetailsViewModel(claim.Player);
             PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
             ProjectActive = claim.Project.Active;
 

@@ -4,6 +4,7 @@ using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -299,12 +300,36 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task RemoveAccess(int projectId, int currentUserId, int userId)
+    public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+      project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
 
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
+
+      var respFor = await ProjectRepository.GetGroupsWithResponsible(projectId);
+      if (respFor.Any(item => item.ResponsibleMasterUserId == userId))
+      {
+        throw new MasterHasResponsibleException(acl);
+      }
+
+      var claims = await ClaimsRepository.GetClaimsForMaster(projectId, acl.UserId, ClaimStatusSpec.Any);
+
+      if (claims.Any())
+      {
+        if (newResponsibleMasterId == null)
+        {
+          throw new MasterHasResponsibleException(acl);
+        }
+
+        project.RequestMasterAccess((int) newResponsibleMasterId);
+
+        foreach (var claim in claims)
+        {
+          claim.ResponsibleMasterUserId = newResponsibleMasterId;
+        }
+      }
+
       UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
       await UnitOfWork.SaveChangesAsync();
     }

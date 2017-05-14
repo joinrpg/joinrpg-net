@@ -1,9 +1,10 @@
 ﻿using System;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (required by LINQ)
-  public class ProjectAcl 
+  public class ProjectAcl : IProjectEntity
   {
     public int ProjectAclId { get; set; }
     public int ProjectId { get; set; }
@@ -49,5 +50,7 @@ namespace JoinRpg.DataModel
         CanManagePlots = true,
       };
     }
+
+    int IOrderableEntity.Id => ProjectAclId;
   }
 }
