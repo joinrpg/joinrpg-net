@@ -25,7 +25,15 @@
             <div class="col-md-10">
                 <div class="checkbox">
 
-                    @(!Model.HideFromUser ? Html.CheckBoxFor(model => model.HideFromUser) : Html.DisplayFor(model => model.HideFromUser))
+                    @if (Model.HideFromUser)
+                    {
+                        @Html.DisplayFor(model => model.HideFromUser)
+                        @Html.HiddenFor(model => model.HideFromUser)
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(model => model.HideFromUser)
+                    }
                 </div>
             </div>
         </div>

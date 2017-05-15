@@ -105,11 +105,13 @@ namespace JoinRpg.Web.Models
   {
     public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId)
     {
+      var masterAccess = thread.HasMasterAccess(currentUserId);
       ProjectId = thread.ProjectId;
       Header = thread.Header;
       Topicstarter = thread.Topicstarter;
-      LastMessageText = thread.LastMessageText.ToHtmlString();
-      LastMessageAuthor = thread.LastMessageAuthor;
+
+      LastMessageText = (masterAccess ? thread.LastMessageText : thread.LastMessageTextForPlayer).ToHtmlString();
+      LastMessageAuthor = masterAccess ? thread.LastMessageAuthor : thread.LastMessageAuthorForPlayer;
       UpdatedAt = thread.UpdatedAt;
       UnreadCount = thread.GetUnreadCount(currentUserId);
       TotalCount = thread.Comments.Count(c => c.IsVisibleTo(currentUserId));

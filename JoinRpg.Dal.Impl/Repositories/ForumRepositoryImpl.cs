@@ -66,6 +66,10 @@ namespace JoinRpg.Dal.Impl.Repositories
             thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().Author,
           LastMessageText =
             thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault().CommentText.Text,
+          LastMessageAuthorForPlayer =
+            thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer).Author,
+          LastMessageTextForPlayer =
+            thread.CommentDiscussion.Comments.OrderByDescending(c => c.CommentId).FirstOrDefault(c => c.IsVisibleToPlayer).CommentText.Text,
           Topicstarter = thread.AuthorUser,
           UpdatedAt = thread.ModifiedAt,
           Comments = thread.CommentDiscussion.Comments.Select(c => new CommentHeaderImpl
@@ -74,7 +78,7 @@ namespace JoinRpg.Dal.Impl.Repositories
             AuthorUserId = c.AuthorUserId,
             Project = c.Project,
             IsVisibleToPlayer = c.IsVisibleToPlayer,
-            Id = c.ProjectId
+            Id = c.CommentId
           }).ToList(),
           Watermarks = thread.CommentDiscussion.Watermarks.ToList(),
           Project = thread.Project,
@@ -113,5 +117,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     internal List<ReadCommentWatermark> Watermarks { private get; set; }
     public bool IsVisibleToPlayer { get; set; }
     public int CharacterGroupId { get; set; }
+    public User LastMessageAuthorForPlayer { get; set; }
+    public MarkdownString LastMessageTextForPlayer { get; set; }
   }
 }
