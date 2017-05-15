@@ -39,6 +39,8 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasUnApprovedPayments { get; set; }
+
+    public int ClaimId { get; set; }
   }
 
   public class FinOperationListViewModel : IOperationsAwareView

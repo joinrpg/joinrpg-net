@@ -25,8 +25,8 @@ namespace JoinRpg.Services.Interfaces
 
     Task SaveFieldsFromClaim(int projectId, int claimId, int currentUserId, IDictionary<int, string> newFieldValue);
 
-    Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
-    Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId);
+    Task SubscribeClaimToUser(int projectId, int ClaimId);
+    Task UnsubscribeClaimToUser(int projectId, int ClaimId);
     }
 
   //TODO[Localize]
