@@ -17,24 +17,25 @@ namespace JoinRpg.Services.Impl
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
 
-    public async Task SubscribeClaimToUser(int projectId, int ClaimId, int currentUserId)
+    public async Task SubscribeClaimToUser(int projectId, int claimId)
     {
-      var user = await UserRepository.GetWithSubscribe(currentUserId);
-            var subscriptions = user.Subscriptions;
-            user.Subscriptions.Add(new UserSubscription() { ClaimId = ClaimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
+      var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      user.Subscriptions.Add(new UserSubscription() { ClaimId = claimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
       await UnitOfWork.SaveChangesAsync();
     }
 
-        public async Task UnsubscribeClaimToUser(int projectId, int ClaimId, int currentUserId)
+    public async Task UnsubscribeClaimToUser(int projectId, int claimId)
+    {
+        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      var subscription = user.Subscriptions.FirstOrDefault(s => s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
+        if (subscription != null)
         {
-            var user = await UserRepository.GetWithSubscribe(currentUserId);
-            var subscription = user.Subscriptions.FirstOrDefault(s => s.ProjectId == projectId && s.UserId == currentUserId && s.ClaimId == ClaimId);
-            if (subscription != null)
-            {
-                UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
-                await UnitOfWork.SaveChangesAsync();
-            }
+            UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+            await UnitOfWork.SaveChangesAsync();
         }
+    }
 
         public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
