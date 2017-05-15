@@ -33,5 +33,7 @@ namespace JoinRpg.Data.Interfaces
     Task<ICollection<Character>> GetCharacters(int projectId);
     Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds);
     Task<IClaimSource> GetClaimSource(int projectId, int? characterGroupId, int? characterId);
+    [NotNull, ItemNotNull]
+    Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId);
   }
 }

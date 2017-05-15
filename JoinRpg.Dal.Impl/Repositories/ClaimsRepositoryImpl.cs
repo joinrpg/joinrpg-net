@@ -55,7 +55,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .ToListAsync();
     }
 
-    public Task<IReadOnlyCollection<Claim>> GetActiveClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
+    public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
     {
       return GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
     }
@@ -88,6 +88,14 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public Task<Claim> GetClaimByDiscussion(int projectId, int commentDiscussionId) => GetClaimImpl(
       e => e.CommentDiscussionId == commentDiscussionId && e.ProjectId == projectId);
+
+    public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
+    {
+      return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
+        .Where(GetClaimStatusPredicate(claimStatusSpec)).GroupBy(claim => claim.ResponsibleMasterUserId)
+        .Select(grouping => new ClaimCountByMaster() {ClaimCount = grouping.Count(), MasterId = grouping.Key})
+        .ToListAsync();
+    }
 
     private Task<Claim> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
     {

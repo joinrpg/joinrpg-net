@@ -6,6 +6,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
@@ -82,26 +83,29 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet]
+    [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
     // GET: GameFields/Edit/5
     public async Task<ActionResult> Edit(int projectId, int projectFieldId)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new GameFieldEditViewModel(field));
+      if (field == null)
+      {
+        return HttpNotFound();
+      }
+      return View(new GameFieldEditViewModel(field));
     }
 
     // POST: GameFields/Edit/5
-    [HttpPost, Authorize]
+    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var field = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == viewModel.ProjectFieldId);
 
-      var error = AsMaster(field, pa => pa.CanChangeFields);
-      if (error != null || field == null)
+      if (field == null)
       {
-        return error;
+        return HttpNotFound();
       }
       if (!ModelState.IsValid)
       {

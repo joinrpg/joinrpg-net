@@ -207,6 +207,12 @@ namespace JoinRpg.Dal.Impl.Repositories
       throw new InvalidOperationException();
     }
 
+    public async Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId)
+    {
+      return await Ctx.Set<CharacterGroup>()
+        .Where(group => group.ProjectId == projectId && group.ResponsibleMasterUserId != null).ToListAsync();
+    }
+
     public async Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds)
     {
       await LoadProjectFields(projectId);

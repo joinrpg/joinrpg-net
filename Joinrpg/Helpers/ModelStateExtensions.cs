@@ -62,6 +62,13 @@ namespace JoinRpg.Web.Helpers
         return;
       }
 
+      var failedToRemoveMaster = exception as MasterHasResponsibleException;
+      if (failedToRemoveMaster != null)
+      {
+        dict.AddModelError("", exception.Message);
+        return;
+      }
+
       dict.AddModelError("", exception.ToString());
     }
   }
