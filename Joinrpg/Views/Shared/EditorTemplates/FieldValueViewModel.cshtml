@@ -1,5 +1,4 @@
 ﻿@using System.ComponentModel
-@using Joinrpg.Markdown
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
 
@@ -10,7 +9,7 @@
     {
         <option value="@val.ProjectFieldDropdownValueId"
                 @(selectedValues.Contains(val) ? "selected='selected'" : "")
-                title='@val.Description.ToPlainText()'>
+                title="@val.DescriptionPlainText">
             @val.Label
         </option>
     }

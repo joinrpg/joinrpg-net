@@ -1,4 +1,5 @@
 ﻿using JetBrains.Annotations;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
@@ -12,7 +13,7 @@ namespace JoinRpg.DataModel
 
     public int ProjectId { get; set; }
 
-    public int Id => ProjectFieldDropdownValueId;
+    int IOrderableEntity.Id => ProjectFieldDropdownValueId;
 
     public virtual Project Project { get; set; }
 

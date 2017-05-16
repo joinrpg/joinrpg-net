@@ -11,6 +11,23 @@ using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
+  public class FieldPossibleValueViewModel
+  {
+    public FieldPossibleValueViewModel(ProjectFieldDropdownValue value)
+    {
+      ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+      DescriptionPlainText = value.Description.ToPlainText();
+      Label = value.Label;
+      DescriptionHtml = value.Description.ToHtmlString();
+    }
+
+    public int ProjectFieldDropdownValueId { get; }
+
+    public IHtmlString DescriptionPlainText { get; }
+
+    public string Label { get; }
+    public IHtmlString DescriptionHtml { get; }
+  }
   //Actually most of this logic should be moved to Domain
   public class FieldValueViewModel
   {
@@ -35,8 +52,8 @@ namespace JoinRpg.Web.Models
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
 
-    public IReadOnlyList<ProjectFieldDropdownValue> ValueList { get; }
-    public IEnumerable<ProjectFieldDropdownValue> PossibleValueList { get; }
+    public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
+    public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
     public FieldValueViewModel(CustomFieldsViewModel model, [NotNull] FieldWithValue ch, ILinkRenderer renderer)
     {
       if (ch == null) throw new ArgumentNullException(nameof(ch));
@@ -81,8 +98,8 @@ namespace JoinRpg.Web.Models
 
       if (ch.Field.HasValueList())
       {
-        ValueList = ch.GetDropdownValues().ToArray();
-        PossibleValueList = ch.GetPossibleValues();
+        ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v)).ToArray();
+        PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v)).ToList();
       }
       ProjectFieldId = ch.Field.ProjectFieldId;
 
