@@ -5,7 +5,9 @@ using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -43,10 +45,12 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotFolderListViewModel : PlotFolderListViewModelBase
   {
     public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
+    public bool HasMasterAccess { get; private set; }
 
     public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId)
       : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
     {
+      HasMasterAccess = project.HasMasterAccess(currentUserId);
       Folders =
         folders
           .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
@@ -82,7 +86,21 @@ namespace JoinRpg.Web.Models.Plot
     public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
     {
       Summary = folder.MasterSummary.ToHtmlString();
-      Elements = folder.Elements.ToViewModels(currentUserId);
+
+      if (folder.Elements.Any())
+      {
+
+        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Elements.First().Project);
+
+        Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
+          .Select(
+            p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion()))
+          .MarkFirstAndLast();
+      }
+      else
+      {
+        Elements = Enumerable.Empty<PlotElementViewModel>();
+      }
     }
   }
 
@@ -98,7 +116,7 @@ namespace JoinRpg.Web.Models.Plot
     {
       PlotFolderId = folder.PlotFolderId;
       PlotFolderMasterTitle = folder.MasterTitle;
-      TagNames = folder.PlotTags.Select(tag => tag.TagName).ToList();
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
       ProjectId = folder.ProjectId;
       Status = folder.GetStatus();
       ElementsCount = folder.Elements.Count;

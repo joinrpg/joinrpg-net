@@ -2,42 +2,50 @@
 @using JoinRpg.Web.Models.Plot
 @model PlotElementViewModel
 
- @if (!Model.Visible)
- {
-     return;
- }
-
 @{
     var hideClass = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
 }
 
-@if (Model.HasEditAccess)
-{
-<div>
-    @Html.DisplayFor(model => model.Status)
-    @Html.ActionLink("Изменить", "Edit", "Plot", new { Model.PlotFolderId, Model.ProjectId }, null)
-    @if (Model.CharacterId != null)
-        {
-    @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
-    }
-</div>
-}
-
 @if (Model.HasMasterAccess || Model.PublishMode)
 {
-    <br/>
-    <b>Для</b>
-    if (Model.TargetsForDisplay.Any())
-    {
-        foreach (var target in Model.TargetsForDisplay)
+    <div>
+        @if (Model.HasEditAccess)
         {
-            @Html.DisplayFor(model => target)
+            @Html.DisplayFor(model => model.Status)
         }
-    }
-    else
-    {
-        <span>Не установлено</span>
-    }
+        <b>Для</b>
+        @if (Model.TargetsForDisplay.Any())
+        {
+            foreach (var target in Model.TargetsForDisplay)
+            {
+                @Html.DisplayFor(model => target)
+            }
+        }
+        else
+        {
+            <span>Не установлено</span>
+        }
+        @if (Model.HasEditAccess)
+        {
+
+            <span>
+                @Html.ActionLink(
+             "Изменить",
+             "Edit",
+             "Plot",
+             null,
+             null,
+             "panelPlotElement" + Model.PlotElementId,
+             new {Model.PlotFolderId, Model.ProjectId},
+             new {@class = "btn btn-default btn-sm"})
+
+                @if (Model.CharacterId != null)
+                {
+                    @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+                }
+            </span>
+        }
+    </div>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasMasterAccess)

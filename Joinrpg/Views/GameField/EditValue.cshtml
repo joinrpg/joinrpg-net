@@ -1,4 +1,8 @@
 ﻿@model JoinRpg.Web.Models.GameFieldDropdownValueEditViewModel
+  
+@{
+    ViewBag.Title = "Изменение значения поля";
+}
 
 @using (Html.BeginForm())
 {
@@ -8,7 +12,7 @@
   @Html.HiddenFor(model => model.ProjectId)
     
     <div class="form-horizontal">
-        <h4>GameFieldDropdownValueEditViewModel</h4>
+        <h4>@ViewBag.Title</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">

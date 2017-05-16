@@ -18,5 +18,7 @@ namespace JoinRpg.DataModel
 
     [CanBeNull]
     public string Contents { get; set; }
+
+    public override string ToString() => $"Markdown({Contents})";
   }
 }

@@ -94,7 +94,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                         <b>@Html.DisplayFor(model => comment.ExtraAction)</b>
                         }
 
-                        <span>@comment.CommentText</span>
+                        <div>@comment.CommentText</div>
                         <a data-toggle="collapse"
                            href="#answerComment@(comment.CommentId)">
                             Ответить

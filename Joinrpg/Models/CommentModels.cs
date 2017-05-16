@@ -106,5 +106,16 @@ namespace JoinRpg.Web.Models
       }
     }
   }
+
+  public class ClaimOperationViewModel 
+  {
+    public int ProjectId { get; set; }
+    public int ClaimId { get; set; }
+
+    [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"), UIHint("MarkdownString")]
+    public string CommentText { get; set; }
+
+    public string ActionName { get; set; }
+  }
 }
 

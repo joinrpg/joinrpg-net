@@ -118,6 +118,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "PlotWithId", url: "{ProjectId}/plot/{PlotFolderId}/{action}",
         defaults: new {controller = "Plot", action = "Index"});
 
+      routes.MapRoute(name: "PlotShowVersion", url: "{ProjectId}/plot/{PlotFolderId}/{PlotElementId}/version/{version}",
+        defaults: new { controller = "Plot", action = "ShowElementVersion" });
+
       routes.MapRoute(name: "PlotByTag", url: "{ProjectId}/plots/tag/{tagName}",
        defaults: new { controller = "Plot", action = "ByTag" });
 

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -11,8 +13,9 @@ namespace JoinRpg.Web.Models
     public IEnumerable<User> CanGrantAccess { get; }
     public Permission Permission { get; }
 
-    public ErrorNoAccessToProjectViewModel(Project project, Permission permission = Permission.None)
+    public ErrorNoAccessToProjectViewModel([NotNull] Project project, Permission permission = Permission.None)
     {
+      if (project == null) throw new ArgumentNullException(nameof(project));
       CanGrantAccess = project.ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.User);
       ProjectId = project.ProjectId;
       ProjectName = project.ProjectName;

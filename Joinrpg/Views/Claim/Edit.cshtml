@@ -96,9 +96,9 @@
                         @Html.HiddenFor(model => model.ProjectId)
                         @Html.HiddenFor(model => model.ClaimId)
                         @Html.DropDownListFor(
-                            model => model.ResponsibleMasterId,
-                            Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
-                            htmlAttributes: new {@class = "form-control"})
+                 model => model.ResponsibleMasterId,
+                 Model.Masters.Select(master => new SelectListItem() {Text = master.Name, Value = master.Id}),
+                 htmlAttributes: new {@class = "form-control"})
 
                         @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new {@class = "text-danger"})
                         <input type="submit" value="Изменить" class="btn btn-default btn-xs"/>
@@ -190,6 +190,30 @@
                 </a>
                 }
             }
+            
+            @if (Model.HasMasterAccess)
+            {
+            <a href="@Url.Action("Subscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+                <span class="glyphicon glyphicon-pushpin"></span>
+                Подписаться
+            </a>
+
+                <a href="@Url.Action("Unsubscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку"  data-responsed="1">
+                    <span class="glyphicon glyphicon-pushpin"></span>
+                    Отписаться
+                </a>
+            }
+            @if(Model.HasMasterAccess && ( Model.SubscriptionTooltip.ClaimStatusChange
+                                        || Model.SubscriptionTooltip.Comments
+                                        || Model.SubscriptionTooltip.FieldChange
+                                        || Model.SubscriptionTooltip.MoneyOperation ) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+            {
+                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
+                    <span class="glyphicon glyphicon-pushpin"></span>
+                    Вы подписаны
+                </a></span>
+            }
+            
         </div>
 
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
@@ -214,13 +238,10 @@
                     }
                     using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                     {
-                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            CommentDiscussionId = Model.ClaimId,
-                            ParentCommentId = null,
-                            EnableHideFromUser = false,
-                            HideFromUser = false,
+                            ClaimId = Model.ClaimId,
                             ActionName = "Принять заявку"
                         })
                         <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
@@ -237,15 +258,12 @@
                 <div class="alert alert-info">
                     Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
                 </div>
-                  using (Html.BeginForm("OnHoldByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                  {
-                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
+                    using (Html.BeginForm("OnHoldByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+                    {
+                        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
                         {
                             ProjectId = Model.ProjectId,
-                            CommentDiscussionId = Model.ClaimId,
-                            ParentCommentId = null,
-                            EnableHideFromUser = false,
-                            HideFromUser = false,
+                            ClaimId = Model.ClaimId,
                             ActionName = "В лист ожидания"
                         })
                     }
@@ -269,17 +287,14 @@
                 {
                 <div class="alert alert-info">Объясните причины отклонения заявки игроку.</div>
                 }
-                @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                 {
-                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-           {
-               ProjectId = Model.ProjectId,
-               CommentDiscussionId = Model.ClaimId,
-               ParentCommentId = null,
-               EnableHideFromUser = false,
-               HideFromUser = false,
-               ActionName = "Отклонить заявку"
-           })
+                    @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+                    {
+                        ProjectId = Model.ProjectId,
+                        ClaimId = Model.ClaimId,
+                        ActionName = "Отклонить заявку"
+                    })
                 }
             </div>
         </div>
@@ -303,18 +318,15 @@
                 {
                     ViewBag.ShowGroupsInAvailClaim = true;
                 }
-                @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                 {
-                @Html.Partial("AvailClaimTargetsPartial", Model.Data)
-                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-           {
-               ProjectId = Model.ProjectId,
-               CommentDiscussionId = Model.ClaimId,
-               ParentCommentId = null,
-               EnableHideFromUser = false,
-               HideFromUser = false,
-               ActionName = "Переместить заявку"
-           })
+                    @Html.Partial("AvailClaimTargetsPartial", Model.Data)
+                    @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+                    {
+                        ProjectId = Model.ProjectId,
+                        ClaimId = Model.ClaimId,
+                        ActionName = "Переместить заявку"
+                    })
                 }
             </div>
         </div>
@@ -332,14 +344,14 @@
                 }
                 else
                 {
-                    using (Html.BeginForm("RestoreByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    using (Html.BeginForm("RestoreByMaster", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
                     {
                         if (Model.HasOtherApprovedClaim)
                         {
-                    <div class="alert alert-warning">
-                        На этого персонажа есть другие утвержденные @OtherClaimsForThisCharacterLink().
-                        При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
-                    </div>
+                            <div class="alert alert-warning">
+                                На этого персонажа есть другие утвержденные @OtherClaimsForThisCharacterLink().
+                                При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
+                            </div>
                         }
                         if (Model.CharacterActive == false)
                         {
@@ -347,15 +359,12 @@
                                 Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
                             </div>
                         }
-                    @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-               {
-                   ProjectId = Model.ProjectId,
-                   CommentDiscussionId = Model.ClaimId,
-                   ParentCommentId = null,
-                   EnableHideFromUser = false,
-                   HideFromUser = false,
-                   ActionName = "Восстановить заявку"
-               })
+                        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+                        {
+                            ProjectId = Model.ProjectId,
+                            ClaimId = Model.ClaimId,
+                            ActionName = "Восстановить заявку"
+                        })
 
                     }
                 }
@@ -366,6 +375,7 @@
       {
           ProjectId = Model.ProjectId,
           CommentDiscussionId = Model.ClaimId,
+          ClaimId = Model.ClaimId,
           ParentCommentId = null,
           EnableHideFromUser = false,
           HideFromUser = false,
@@ -384,40 +394,18 @@
     </div>
 </div>
 
-    @{ var viewModelFinChange = new FeeAcceptanceViewModel
-      {
-          ProjectId = Model.ProjectId,
-          CommentDiscussionId = Model.ClaimId,
-          ParentCommentId = null,
-          EnableHideFromUser = false,
-          HideFromUser = false,
-          ActionName = "Изменить взнос",
-          OperationDate = DateTime.Today,
-          PaymentTypes = Model.PaymentTypes,
-          ClaimApproved = Model.Status == Claim.Status.Approved
-      }; }
-    <div class="panel panel-default collapse" id="financeChangeClaimActionPanel">
-        <div class="panel-heading">Изменить взнос</div>
-        <div class="panel-body">
-            @Html.Partial("_ClaimFinancePartial", viewModelFinChange)
-        </div>
-    </div>
-
 <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
         <div class="panel-heading">Отозвать заявку</div>
         <div class="panel-body">
-            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
             {
-            @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-       {
-           ProjectId = Model.ProjectId,
-           CommentDiscussionId = Model.ClaimId,
-           ParentCommentId = null,
-           EnableHideFromUser = false,
-           HideFromUser = false,
-           ActionName = "Отозвать заявку",
-           CommentText = "Извините, я передумал ехать"
-       })
+                @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+                {
+                    ProjectId = Model.ProjectId,
+                    ClaimId = Model.ClaimId,
+                    ActionName = "Отозвать заявку",
+                    CommentText = "Извините, я передумал ехать"
+                })
             }
         </div>
     </div>
@@ -467,5 +455,48 @@
         $(function() {
             $('[data-toggle="popover"]').popover();
         })
+        $('[title]').tooltip({html:true,offset:'1000 1100'});
     </script>
+
+    <script type="text/javascript">
+        $('#subscribe').click(function(event){
+                event.preventDefault();
+                if($('#subscribe').attr('data-responsed')==0)return;
+                doSubscription(this);
+        });
+        $('#unsubscribe').click(function(event){
+            event.preventDefault();
+                if($('#unsubscribe').attr('data-responsed')==0)return;
+                doSubscription(this);
+        });
+        function doSubscription(context) {
+            var req = $.post(context.href,
+                                {projectid:@Model.ProjectId,
+                                claimid:@Model.ClaimId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()}
+                            );
+            req.done(data => {
+                    $(context).attr('data-responsed','1');
+                    $('#subscribe').attr('title', '');
+                    $('#subscribe').attr('data-original-title',data.Tooltip);
+                    $('[title]').tooltip({html:true});
+                    $('#subscribe').toggleClass('hidden');
+                    $('#unsubscribe').toggleClass('hidden');
+                });
+                $(context).attr('data-responsed','0');
+        }
+        </script>
+        @if(Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        {
+            <script type="text/javascript">
+                $('#subscribe').toggleClass('hidden');
+            </script>
+        }
+
+        @if(Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+        {
+        <script type="text/javascript">
+            $('#unsubscribe').toggleClass('hidden');
+        </script>
+        }
 }

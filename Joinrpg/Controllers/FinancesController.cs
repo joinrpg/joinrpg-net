@@ -7,6 +7,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
@@ -63,13 +64,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+    [MasterAuthorize()]
     public async Task<ActionResult> MoneySummary(int projectId, string export)
     {
       var project = await ProjectRepository.GetProjectWithFinances(projectId);
-      var errorResult = AsMaster(project);
-      if (errorResult != null)
+      if (project == null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
       var viewModel = project.PaymentTypes.Select(pt => new PaymentTypeSummaryViewModel()
       {

@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-  public class UserSubscription
+  public class UserSubscription:IValidatableObject
   {
     public int UserSubscriptionId { get; set; }
 
@@ -26,5 +28,12 @@ namespace JoinRpg.DataModel
     public bool Comments { get; set; }
     public bool FieldChange { get; set; }
     public bool MoneyOperation { get; set; }
-  }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) {
+            if (new[] { CharacterGroupId, CharacterId, ClaimId }.Where(id=>id!=null).Count()!=1)
+            {
+                yield return new ValidationResult("Should link to the only one of kind (CharacterGroup, Character, Claim)");
+            }
+        }
+    }
 }

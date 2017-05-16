@@ -24,5 +24,7 @@ namespace JoinRpg.Data.Interfaces
     MarkdownString LastMessageText { get; }
     User LastMessageAuthor { get; }
     DateTime UpdatedAt { get; }
+    User LastMessageAuthorForPlayer { get; set; }
+    MarkdownString LastMessageTextForPlayer { get; set; }
   }
 }

@@ -15,9 +15,9 @@ namespace JoinRpg.Web.Models.Characters
   
   public class CharacterParentGroupsViewModel
   {
-    public bool HasMasterAccess { get; private set; }
+    public bool HasMasterAccess { get; }
     [ReadOnly(true), DisplayName("Входит в группы")]
-    public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; private set; }
+    public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; }
 
     public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
     {
@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Models.Characters
 
     public User Player { get; }
 
-    public IEnumerable<PlotElementViewModel> Plot { get; }
+    public PlotDisplayViewModel Plot { get; }
 
     public bool HidePlayer { get; }
     public bool HasAccess { get; }
@@ -57,7 +57,7 @@ namespace JoinRpg.Web.Models.Characters
 
     public CharacterNavigationViewModel Navigation { get; }
 
-    public CharacterDetailsViewModel (int? currentUserIdOrDefault, Character character, IEnumerable<PlotElement> plots)
+    public CharacterDetailsViewModel (int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots)
     {
       Description = character.Description.ToHtmlString();
       Player = character.ApprovedClaim?.Player;
@@ -68,7 +68,7 @@ namespace JoinRpg.Web.Models.Characters
         CharacterNavigationViewModel.FromCharacter(character, CharacterNavigationPage.Character,
           currentUserIdOrDefault);
       Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, disableEdit: true);
-      Plot = plots.ToViewModels(currentUserIdOrDefault, character);
+      Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character);
     }
   }
 }

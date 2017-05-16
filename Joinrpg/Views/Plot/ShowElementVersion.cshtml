@@ -1,0 +1,13 @@
+﻿@model JoinRpg.Web.Models.Plot.PlotElementListItemViewModel
+
+@{
+    ViewBag.Title = "Сюжет «" + Model.PlotFolderMasterTitle + "» — история";
+    ViewBag.PlotElementUncollapse = Model.PlotElementId;
+}
+
+
+
+<h2>@ViewBag.Title</h2>
+
+@Html.ActionLink("Назад к сюжету", "Edit", new {Model.ProjectId, Model.PlotFolderId}, null)
+@Html.Partial("EditElementPartial", Model)
