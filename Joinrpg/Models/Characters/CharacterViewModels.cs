@@ -67,7 +67,7 @@ namespace JoinRpg.Web.Models.Characters
       IsActive = field.IsActive;
       IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
 
-      IsAcceptingClaims = IsAcceptingClaims && !IsAcceptingClaimsEnabled;
+      IsAcceptingClaims = IsAcceptingClaims && IsAcceptingClaimsEnabled;
 
       return this;
     }
