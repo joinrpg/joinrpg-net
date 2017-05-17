@@ -8,7 +8,7 @@
     foreach (var val in Model.PossibleValueList)
     {
         <option value="@val.ProjectFieldDropdownValueId"
-                @(selectedValues.Contains(val) ? "selected='selected'" : "")
+                @(selectedValues.Any(selectedVal => val.ProjectFieldDropdownValueId == selectedVal.ProjectFieldDropdownValueId) ? "selected='selected'" : "")
                 title="@val.DescriptionPlainText">
             @val.Label
         </option>
