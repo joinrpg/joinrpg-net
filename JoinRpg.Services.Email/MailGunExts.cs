@@ -22,19 +22,17 @@ namespace JoinRpg.Services.Email
       return builder;
     }
 
-    public static Recipient ToRecipient(this User user)
-    {
-      return new Recipient() { DisplayName = user.DisplayName, Email = user.Email };
-    }
+    
+    public static Recipient ToRecipient(this User user) 
+    //TODO: Quotes should be added on mailgun_sharp level, but while we are not here...
+      => new Recipient { DisplayName = "\"" + user.DisplayName + "\"", Email = user.Email };
 
-    public static JObject ToRecepientVariables(this IReadOnlyCollection<User> recepients)
+    public static JObject ToRecepientVariables(this IEnumerable<User> recepients)
     {
       var recipientVars = new JObject();
       foreach (var r in recepients)
       {
-        var jobj = new JObject();
-        jobj.Add(MailGunName, r.DisplayName);
-        recipientVars.Add(r.Email, jobj);
+        recipientVars.Add(r.Email, new JObject {{MailGunName, r.DisplayName}});
       }
       return recipientVars;
     }
