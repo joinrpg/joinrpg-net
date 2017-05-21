@@ -261,20 +261,26 @@ namespace JoinRpg.Services.Email
         .GetRecepients()
         .Select(r => new MailRecipient(
           r,
-          new Dictionary<string, string> { { changedFieldsKey, GetFieldsForUser(model, r) } }))
+          new Dictionary<string, string> {{changedFieldsKey, GetFieldsForUser(model, r)}}))
+        .Where(r => string.IsNullOrEmpty(r.RecepientSpecificValues[changedFieldsKey]))
+        //don't email if no changes are visible to user rights
         .ToList();
 
-      await SendEmail(recepients, $"{model.ProjectName}: персонаж {model.Character.CharacterName}",
-        $@"Добрый день, {MailGunExts.MailGunRecepientName},
-Поля персонажа {model.Character.CharacterName} были изменены:
+      if (recepients.Any())
+      {
+        await SendEmail(recepients, $"{model.ProjectName}: персонаж {model.Character.CharacterName}",
+          $@"Добрый день, {MailGunExts.MailGunRecepientName},
+Поля персонажа {model.Character.CharacterName
+            } были изменены:
 
 {MailGunExts.GetUserDependedtValue(changedFieldsKey)}
 
 {model.Initiator.DisplayName}
 
 ", model.Initiator.ToRecipient());
-      //TODO: KK add a link to the page
-      //TODO: KK Чтобы ответить на комментарий, перейдите на страницу заявки: { _uriService.Get(model.Claim.CommentDiscussion)}
+        //TODO: KK add a link to the page
+        //TODO: KK Чтобы ответить на комментарий, перейдите на страницу заявки: { _uriService.Get(model.Claim.CommentDiscussion)}
+      }
     }
 
     public Task Email(FinanceOperationEmail model)
