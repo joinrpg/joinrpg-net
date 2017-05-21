@@ -100,23 +100,6 @@ namespace JoinRpg.Domain
         .FillIfEnabled(character.ApprovedClaim, character);
     }
 
-    /// <summary>
-    /// Returns only character fields which the user has access to
-    /// </summary>
-    public static IEnumerable<FieldWithValue> FilterCharacterFieldsForUser(
-      this IEnumerable<FieldWithValue> fieldsToFilter, Character character, int userId)
-    {
-      bool hasMasterAccess = character.HasMasterAccess(userId);
-      bool hasCharacterAccess = character.HasPlayerAccess(userId);
-      bool hasClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false;
-
-      return fieldsToFilter
-        .Where(f => f.HasViewAccess(
-          hasMasterAccess,
-          hasCharacterAccess,
-          hasClaimAccess));
-    }
-
     public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Claim claim)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
@@ -127,13 +110,38 @@ namespace JoinRpg.Domain
     }
 
     [MustUseReturnValue]
-    public static IEnumerable<FieldWithValue> FilterClaimFieldsForUser(
-      this IEnumerable<FieldWithValue> fieldsToFilter, Claim claim, int userId)
+    public static IEnumerable<FieldWithValue> FilterFieldsForUser(
+      [NotNull] this IEnumerable<FieldWithValue> fieldsToFilter,
+      [NotNull] IFieldContainter entityWithFields,
+      int userId)
     {
-      bool hasMasterAccess = claim.HasMasterAccess(userId);
-      bool hasCharacterAccess = claim.Character != null && claim.Character.HasPlayerAccess(userId);
-      bool hasClaimAccess = claim.HasPlayerAccesToClaim(userId);
+      if (fieldsToFilter == null) throw new ArgumentNullException(nameof(fieldsToFilter));
+      if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
 
+      Claim claim = entityWithFields as Claim;
+      Character character = entityWithFields as Character;
+
+      bool hasMasterAccess;
+      bool hasCharacterAccess;
+      bool hasClaimAccess;
+
+      if (claim != null)
+      {
+        hasMasterAccess = claim.HasMasterAccess(userId);
+        hasCharacterAccess = claim.Character != null && claim.Character.HasPlayerAccess(userId);
+        hasClaimAccess = claim.HasPlayerAccesToClaim(userId);
+      }
+      else if (character != null)
+      {
+        hasMasterAccess = character.HasMasterAccess(userId);
+        hasCharacterAccess = character.HasPlayerAccess(userId);
+        hasClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false;
+      }
+      else
+      {
+        throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
+      }
+      
       return fieldsToFilter
         .Where(f => f.HasViewAccess(
           hasMasterAccess,

@@ -22,6 +22,25 @@ namespace JoinRpg.Domain
     }
 
     public static IEnumerable<User> GetSubscriptions(
+      this Character character,
+      Func<UserSubscription, bool> predicate,
+      [CanBeNull] IEnumerable<User> extraRecepients,
+      bool isVisibleToPlayer)
+    {
+      if (character == null) return new User[0];
+
+      //TODO: KK recheck
+      return character.GetGroupsPartOf() //Get all groups for the character
+        .SelectMany(g => g.Subscriptions) //get subscriptions on groups
+        .Union(character.Subscriptions) //Subscriptions of the character itself.
+        .Where(predicate) //type of subscribe (on new comments, on new claims etc.)
+        .Select(u => u.User) //Select users
+        .Union(character.ApprovedClaim?.Player) //...and player who claimed for the character
+        .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
+        .VerifySubscriptions(isVisibleToPlayer, character);
+    }
+
+    public static IEnumerable<User> GetSubscriptions(
       this Claim claim, 
       Func<UserSubscription, bool> predicate,
       [CanBeNull] IEnumerable<User> extraRecepients, 

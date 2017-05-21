@@ -36,5 +36,27 @@ namespace JoinRpg.Services.Impl
         CommentExtraAction = commentExtraAction
       };
     }
+
+    public static CharacterFieldsChangedEmail CreateCharacterFieldsEmail(
+      Character character,
+      Func<UserSubscription, bool> subscribePredicate,
+      User initiator)
+    {
+      if (character == null)
+        throw new ArgumentNullException(nameof(character));
+
+      var subscriptions = character
+        .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
+        .ToList();
+
+      return new CharacterFieldsChangedEmail()
+      {
+        Character = character,
+        ProjectName = character.Project.ProjectName,
+        Initiator = initiator,
+        Recepients = subscriptions.ToList(),
+        Text = new MarkdownString()
+      };
+    }
   }
 }

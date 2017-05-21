@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -21,7 +22,8 @@ namespace JoinRpg.Services.Interfaces
     Task Email(ChangeResponsibleMasterEmail createClaimEmail);
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
-    Task Email(FieldsChangedEmail createClaimEmail);
+    Task Email(ClaimFieldsChangedEmail createClaimEmail);
+    Task Email(CharacterFieldsChangedEmail characterFiledsEmail);
   }
 
   public static class EmailTokens
@@ -47,8 +49,10 @@ namespace JoinRpg.Services.Interfaces
   {
   }
 
-  public class NewClaimEmail : ClaimEmailModel
+  public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
+    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IFieldContainter FiledsContainer => Claim;
   }
 
   public class ApproveByMasterEmail : ClaimEmailModel
@@ -64,7 +68,19 @@ namespace JoinRpg.Services.Interfaces
     
   }
 
-  public class FieldsChangedEmail : ClaimEmailModel { }
+  public class ClaimFieldsChangedEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
+  {
+    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IFieldContainter FiledsContainer => Claim;
+  }
+
+  public class CharacterFieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
+  {
+    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IFieldContainter FiledsContainer => Character;
+    [NotNull]
+    public Character Character { get; set; }
+  }
 
   public class RestoreByMasterEmail : ClaimEmailModel {}
 
@@ -101,7 +117,6 @@ namespace JoinRpg.Services.Interfaces
     public ParcipantType InitiatorType { get; set; }
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
-    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
   }
 
   public class EmailModelBase
@@ -117,5 +132,15 @@ namespace JoinRpg.Services.Interfaces
     Nobody,
     Master,
     Player
+  }
+
+  /// <summary>
+  /// This interface to be implemented by emails taht should include the list of updated felds in them.
+  /// </summary>
+  public interface IEmailWithUpdatedFieldsInfo
+  {
+    IReadOnlyCollection<FieldWithValue> UpdatedFields { get; }
+
+    IFieldContainter FiledsContainer { get; }
   }
 }

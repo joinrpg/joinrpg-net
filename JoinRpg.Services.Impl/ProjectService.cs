@@ -16,9 +16,10 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class ProjectService : DbServiceImplBase, IProjectService
   {
-    public ProjectService(IUnitOfWork unitOfWork) : base(unitOfWork)
+    protected IEmailService EmailService { get; }
+    public ProjectService(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
     {
-
+      EmailService = emailService;
     }
 
     public async Task<Project> AddProject(string projectName, User creator)
@@ -134,10 +135,16 @@ namespace JoinRpg.Services.Impl
       character.IsActive = true;
 
       character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
+      IReadOnlyCollection<FieldWithValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
+      var user = await UserRepository.GetById(currentUserId);
+      var email = EmailHelpers.CreateCharacterFieldsEmail(character, s => s.FieldChange, user);
+      email.UpdatedFields = updatedFields;
+
       await UnitOfWork.SaveChangesAsync();
+
+      await EmailService.Email(email);
     }
 
     public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)

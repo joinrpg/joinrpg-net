@@ -18,7 +18,9 @@ namespace JoinRpg.Services.Email
   public class EmailServiceImpl : IEmailService
   {
     private const string JoinRpgTeam = "Команда JoinRpg.Ru";
-    
+
+    private const string changedFieldsKey = "changedFields";
+
     private readonly string _apiDomain;
 
     private const int MaxRecepientsInChunk = 1000;
@@ -144,12 +146,20 @@ namespace JoinRpg.Services.Email
     }
     #endregion
 
-    private string GetFieldsForUser([NotNull]ClaimEmailModel model, [NotNull]User user)
+    private string GetFieldsForUser(
+      [NotNull]EmailModelBase model,
+      [NotNull]User user)
     {
+      IEmailWithUpdatedFieldsInfo mailWithFields = model as IEmailWithUpdatedFieldsInfo;
+      if (mailWithFields == null)
+      {
+        return "";
+      }
+
       return string.Join("\n\n",
-        model
+        mailWithFields
           .UpdatedFields
-          .FilterClaimFieldsForUser(model.Claim, user.UserId)
+          .FilterFieldsForUser(mailWithFields.FiledsContainer, user.UserId)
           .Select(updatedField => $@"{updatedField.Field.FieldName}:
 {updatedField.DisplayString}"));
     }
@@ -161,7 +171,7 @@ namespace JoinRpg.Services.Email
       {
         return;
       }
-      const string changedFieldsKey = "changedFields";
+
       IList<MailRecipient> recepients = model
         .GetRecepients()
         .Select(r => new MailRecipient(
@@ -232,7 +242,35 @@ namespace JoinRpg.Services.Email
 ", model.Initiator.ToRecipient());
     }
 
-    public Task Email(FieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
+    public Task Email(ClaimFieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
+
+    public async Task Email(CharacterFieldsChangedEmail model)
+    {
+      var projectEmailEnabled = model.GetEmailEnabled();
+      if (!projectEmailEnabled)
+      {
+        return;
+      }
+
+      IList<MailRecipient> recepients = model
+        .GetRecepients()
+        .Select(r => new MailRecipient(
+          r,
+          new Dictionary<string, string> { { changedFieldsKey, GetFieldsForUser(model, r) } }))
+        .ToList();
+
+      await SendEmail(recepients, $"{model.ProjectName}: персонаж {model.Character.CharacterName}",
+        $@"Добрый день, {MailGunExts.MailGunRecepientName},
+Поля персонажа {model.Character.CharacterName} были изменены:
+
+{MailGunExts.GetUserDependedtValue(changedFieldsKey)}
+
+{model.Initiator.DisplayName}
+
+", model.Initiator.ToRecipient());
+      //TODO: KK add a link to the page
+      //TODO: KK Чтобы ответить на комментарий, перейдите на страницу заявки: { _uriService.Get(model.Claim.CommentDiscussion)}
+    }
 
     public Task Email(FinanceOperationEmail model)
     {
