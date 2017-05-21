@@ -15,6 +15,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
+  [Authorize]
   public class ForumController : ControllerGameBase
   {
     #region Constructor & Services
@@ -39,10 +40,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> CreateThread(int projectId, int charactergroupid)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, charactergroupid);
-      var error = AsMaster(characterGroup);
-      if (error != null)
+      if (characterGroup == null)
       {
-        return error;
+        return HttpNotFound();
       }
       return View(new CreateForumThreadViewModel(characterGroup.EnsureActive()));
     }
@@ -81,9 +81,8 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
     {
       var forumThread = await GetForumThread(projectid, forumThreadId);
-      var error = WithEntity(forumThread);
+      if (forumThread == null) return HttpNotFound();
 
-      if (error != null) return error;
       var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
       return View(viewModel);
     }
@@ -110,9 +109,7 @@ namespace JoinRpg.Web.Controllers
       CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
       discussion.RequestAnyAccess(CurrentUserId);
 
-      var error = WithEntity(discussion);
-
-      if (error != null) return error;
+      if (discussion == null) return HttpNotFound();
 
       try
 
@@ -198,10 +195,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListThreads(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      var error = WithEntity(project);
-      if (error != null || project == null)
+      if (project == null)
       {
-        return error;
+        return HttpNotFound();
       }
       var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
       IEnumerable<int> groupIds;
@@ -224,10 +220,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-      var error = WithEntity(group);
-      if (error != null || group == null)
+      if (group == null)
       {
-        return error;
+        return HttpNotFound();
       }
       var isMaster = group.HasMasterAccess(CurrentUserIdOrDefault);
       var threads = await ForumRepository.GetThreads(projectid, isMaster, new [] {characterGroupId});

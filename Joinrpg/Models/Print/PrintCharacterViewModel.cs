@@ -43,11 +43,11 @@ namespace JoinRpg.Web.Models.Print
   public class PrintCharacterViewModel : PrintCharacterViewModelSlim
   {
     public IHtmlString CharacterDescription{ get; }
-    public IReadOnlyCollection<PlotElementViewModel> Plots { get; }
-    public IReadOnlyCollection<string> Handouts { get; }
+    public PlotDisplayViewModel Plots { get; }
+    public IReadOnlyCollection<IHtmlString> Handouts { get; }
     public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
-    public bool RegistrationOnHold => FeeDue > 0 && Plots.Any(item => item.Status == PlotStatus.InWork);
+    public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
 
     public PrintCharacterViewModel 
       (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots)
@@ -57,14 +57,13 @@ namespace JoinRpg.Web.Models.Print
       CharacterDescription = character.Description.ToHtmlString();
       
       var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
-      Plots =
-        plotElements
-          .ToViewModels(currentUserId, character)
-          .ToArray();
+      Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character);
 
       Handouts =
         plotElements.Where(e => e.ElementType == PlotElementType.Handout)
-          .Select(e => e.Texts.Content.ToPlainText())
+          .Select(e => e.PublishedVersion())
+          .Where(e => e != null)
+          .Select(e => e.Content.ToPlainText())
           .ToArray();
       
       

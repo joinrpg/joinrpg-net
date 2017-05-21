@@ -56,7 +56,7 @@
                 {
                 <li><b>Доплатить взнос:</b> @Model.FeeDue</li>
                 }
-                @if (Model.Plots.Any(item => item.Status == PlotStatus.InWork))
+                @if (Model.Plots.HasUnready)
                 {
                 <li>
                     Часть загрузов помечены как не готовы!

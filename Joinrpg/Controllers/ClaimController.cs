@@ -12,6 +12,7 @@ using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
@@ -30,7 +31,8 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
-      return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+      if (field == null) return HttpNotFound();
+      return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     [HttpGet]
@@ -38,7 +40,8 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-      return WithEntity(field) ?? View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+      if (field == null) return HttpNotFound();
+      return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
@@ -59,10 +62,9 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = WithEntity(project);
-      if (error != null)
+      if (project == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -107,15 +109,21 @@ namespace JoinRpg.Web.Controllers
 
       var plots = claim.IsApproved && claim.Character != null
         ? await _plotRepository.GetPlotsForCharacter(claim.Character)
-        : new PlotElement[] {};
+        : new PlotElement[] { };
       var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
         await
-          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId, CurrentUserId,
+          _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
+            CurrentUserId,
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
+
+      var user = await GetCurrentUserAsync();
+      var parents = claim.GetTarget().GetParentGroupsToTop();
+      claimViewModel.SubscriptionTooltip =
+        claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
       return View("Edit", claimViewModel);
     }
@@ -142,14 +150,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> ApproveByMaster(AddCommentViewModel viewModel)
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> ApproveByMaster(ClaimOperationViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -157,7 +164,7 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
+        return ReturnToClaim(viewModel);
       }
       catch (Exception exception)
       {
@@ -166,14 +173,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
-    public async Task<ActionResult> OnHoldByMaster(AddCommentViewModel viewModel)
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> OnHoldByMaster(ClaimOperationViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -181,7 +187,7 @@ namespace JoinRpg.Web.Controllers
         await
           _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+        return ReturnToClaim(viewModel);
       }
       catch (Exception exception)
       {
@@ -191,128 +197,125 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [MasterAuthorize()]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> DeclineByMaster(AddCommentViewModel viewModel)
+    public async Task<ActionResult> DeclineByMaster(ClaimOperationViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
       {
-        return error;
-      }
-
-      try
-      {
-        if (viewModel.HideFromUser)
-        {
-          throw new DbEntityValidationException();
-        }
-        await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
-
-        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
-      }
-      catch
-      {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
-      }
-
-    }
-
-    [HttpPost]
-    [Authorize]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> RestoreByMaster(AddCommentViewModel viewModel)
-    {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
-      {
-        return error;
+        return HttpNotFound();
       }
 
       try
       {
         if (!ModelState.IsValid)
         {
-          throw new DbEntityValidationException();
+          return await ShowClaim(claim);
+        }
+        await
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+
+        return ReturnToClaim(viewModel);
+      }
+      catch (Exception exception)
+      {
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
+      }
+
+    }
+
+    [HttpPost]
+    [MasterAuthorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> RestoreByMaster(ClaimOperationViewModel viewModel)
+    {
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return await ShowClaim(claim);
         }
         await
           _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+        return ReturnToClaim(viewModel);
       }
-      catch
+      catch (Exception exception)
       {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
       }
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize()]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> DeclineByPlayer(AddCommentViewModel viewModel)
+    public async Task<ActionResult> DeclineByPlayer(ClaimOperationViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = WithMyClaim(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
+      if (claim.PlayerUserId != CurrentUserId) return NoAccesToProjectView(claim.Project);
       try
       {
-        if (viewModel.HideFromUser)
+        if (!ModelState.IsValid)
         {
-          throw new DbEntityValidationException();
+          return await ShowClaim(claim);
         }
         await
           _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
+        return ReturnToClaim(viewModel);
       }
-      catch
+      catch (Exception exception)
       {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Edit", "Claim", new {ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId});
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
       }
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [MasterAuthorize()]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
     {
       var claim = await _claimsRepository.GetClaim(projectId, claimId);
-      var error = AsMaster(claim);
-      if (error != null)
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
       try
       {
         await _claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
         return ReturnToClaim(claimId, projectId);
       }
-      catch
+      catch (Exception exception)
       {
-        //TODO: Message 
-        return RedirectToAction("Edit", "Claim", new {claimId, projectId});
+        ModelState.AddException(exception);
+        return await ShowClaim(claim);
       }
-      
-    }
 
+    }
 
     /// <param name="viewModel"></param>
     /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
-    public async Task<ActionResult> Move(AddCommentViewModel viewModel, string claimTarget)
+    [MasterAuthorize()]
+    public async Task<ActionResult> Move(ClaimOperationViewModel viewModel, string claimTarget)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
-      var error = AsMaster(claim);
-      if (error != null || claim == null)
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
       {
-        return error;
+        return HttpNotFound();
       }
 
       try
@@ -336,9 +339,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     [MustUseReturnValue]
-    private ActionResult ReturnToClaim(AddCommentViewModel viewModel)
+    private ActionResult ReturnToClaim(ClaimOperationViewModel viewModel)
     {
-      return ReturnToClaim(viewModel.CommentDiscussionId, viewModel.ProjectId);
+      return ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
     }
 
     [MustUseReturnValue]
@@ -366,9 +369,13 @@ namespace JoinRpg.Web.Controllers
     [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> FinanceOperation(FeeAcceptanceViewModel viewModel)
     {
-      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.CommentDiscussionId);
+      var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
       var error = WithClaim(claim);
-      if (error != null || claim == null)
+      if (error != null)
       {
         return error;
       }
@@ -393,15 +400,9 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [Authorize, HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
     {
-      var claim = await _claimsRepository.GetClaim(projectid, claimid);
-      var error = WithClaim(claim);
-      if (error != null || claim ==null)
-      {
-        return error;
-      }
       try
       {
         if (!ModelState.IsValid)
@@ -410,7 +411,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         await
-          FinanceService.ChangeFee(claim.ProjectId, claim.ClaimId, feeValue);
+          FinanceService.ChangeFee(projectid, claimid, feeValue);
 
         return RedirectToAction("Edit", "Claim", new { claimid, projectid });
       }
@@ -418,6 +419,66 @@ namespace JoinRpg.Web.Controllers
       {
         return await Edit(projectid, claimid);
       }
+    }
+
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> Subscribe(int projectid, int claimid)
+    {
+
+      var user = await GetCurrentUserAsync();
+      var claim = await _claimsRepository.GetClaim(projectid, claimid);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+
+      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+
+      await _claimService.SubscribeClaimToUser(projectid, claimid);
+      var parents = claim.GetTarget().GetParentGroupsToTop();
+
+      var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
+      return Json(tooltip, JsonRequestBehavior.AllowGet);
+    }
+
+    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
+    {
+
+      var user = await GetCurrentUserAsync();
+      var claim = await _claimsRepository.GetClaim(projectid, claimid);
+
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+
+      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+
+
+      await _claimService.UnsubscribeClaimToUser(projectid, claimid);
+      var parents = claim.GetTarget().GetParentGroupsToTop();
+
+      var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+
+      return Json(tooltip, JsonRequestBehavior.AllowGet);
+    }
+
+    private ActionResult WithClaim(Claim claim)
+    {
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+      if (!claim.HasAnyAccess(CurrentUserId))
+      {
+        return NoAccesToProjectView(claim.Project);
+      }
+
+      return null;
     }
   }
 }

@@ -14,7 +14,11 @@ namespace JoinRpg.Web.Filter
 
   public class MasterAuthorize : AuthorizeAttribute
   {
-    private Permission Permission { get; }
+    public Permission Permission { get; set; }
+
+    public bool AllowPublish { get; set; }
+
+    public bool AllowAdmin { get; set; }
 
     public MasterAuthorize(Permission permission = Permission.None)
     {
@@ -26,28 +30,34 @@ namespace JoinRpg.Web.Filter
 
     public override void OnAuthorization(AuthorizationContext filterContext)
     {
-      var projectId = filterContext.Controller.ValueProvider.GetValue("ProjectId");
-      var projectRepository = ((ControllerGameBase) filterContext.Controller).ProjectRepository;
-      filterContext.HttpContext.Items.Add(ProjectidKey, projectId);
-      filterContext.HttpContext.Items.Add(ProjectrepositoryKey, projectRepository);
+      var httpContextItems = filterContext.HttpContext.Items;
+
+      httpContextItems[ProjectidKey] = filterContext.Controller.ValueProvider.GetValue("ProjectId");
+      httpContextItems[ProjectrepositoryKey] = ((ControllerGameBase) filterContext.Controller).ProjectRepository;
+
       base.OnAuthorization(filterContext);
     }
 
     protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
     {
-      if (filterContext.HttpContext.User.Identity.IsAuthenticated)
+      if (!filterContext.HttpContext.User.Identity.IsAuthenticated)
       {
-        var project = LoadProject(filterContext.HttpContext);
-        filterContext.Result = new ViewResult()
-        {
+        base.HandleUnauthorizedRequest(filterContext);
+        return;
+      }
 
-          ViewName = "ErrorNoAccessToProject",
-          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(project, Permission))
-        };
+      var project = LoadProject(filterContext.HttpContext);
+      if (project == null)
+      {
+        filterContext.Result = new HttpNotFoundResult();
       }
       else
       {
-        base.HandleUnauthorizedRequest(filterContext);
+        filterContext.Result = new ViewResult()
+        {
+          ViewName = "ErrorNoAccessToProject",
+          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(project, Permission))
+        };
       }
     }
 
@@ -60,11 +70,27 @@ namespace JoinRpg.Web.Filter
     {
       var project = LoadProject(httpContext);
 
-      var user = httpContext.User.Identity.GetUserId();
+      if (project == null)
+      {
+        return false;
+      }
+
+      if (AllowPublish && project.Details.PublishPlot)
+      {
+        return true;
+      }
+
+      var userId = httpContext.User.Identity.GetUserId();
+
+      if (AllowAdmin && httpContext.User.IsInRole(Security.AdminRoleName))
+      {
+        return true;
+      }
       
-      return project.ProjectAcls.Any(acl => acl.UserId.ToString() == user && GetPermssionExpression()(acl));
+      return project.ProjectAcls.Any(acl => acl.UserId.ToString() == userId && GetPermssionExpression()(acl));
     }
 
+    [CanBeNull]
     private static Project LoadProject(HttpContextBase httpContext)
     {
       var projectId = GetProjectId(httpContext);

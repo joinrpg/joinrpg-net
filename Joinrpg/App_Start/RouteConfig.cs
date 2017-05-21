@@ -54,6 +54,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "GroupListClaimDirect", url: "{ProjectId}/roles/{CharacterGroupId}/discussing",
         defaults: new {controller = "ClaimList", action = "ListForGroupDirect"});
 
+      routes.MapRoute(name: "GroupPlots", url: "{ProjectId}/roles/{CharacterGroupId}/plots",
+        defaults: new { controller = "Plot", action = "ForGroup" });
+
       routes.MapRoute(name: "AddCharacter", url: "{ProjectId}/roles/{CharacterGroupId}/add-char",
         defaults: new {controller = "Character", action = "Create",});
 
@@ -114,6 +117,12 @@ namespace JoinRpg.Web
 
       routes.MapRoute(name: "PlotWithId", url: "{ProjectId}/plot/{PlotFolderId}/{action}",
         defaults: new {controller = "Plot", action = "Index"});
+
+      routes.MapRoute(name: "PlotShowVersion", url: "{ProjectId}/plot/{PlotFolderId}/{PlotElementId}/version/{version}",
+        defaults: new { controller = "Plot", action = "ShowElementVersion" });
+
+      routes.MapRoute(name: "PlotByTag", url: "{ProjectId}/plots/tag/{tagName}",
+       defaults: new { controller = "Plot", action = "ByTag" });
 
       routes.MapRoute(name: "Plot", url: "{ProjectId}/plots/{action}",
         defaults: new {controller = "Plot", action = "Index"});

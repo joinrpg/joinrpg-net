@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.Plot
 {
@@ -9,7 +10,7 @@ namespace JoinRpg.Web.Models.Plot
     [Required]
     public int ProjectId{ get; set; }
 
-    [Required, Display(Name="Название сюжета")]
+    [ReadOnly(true), Display(Name = "Название сюжета")]
     public string PlotFolderMasterTitle{ get; set; }
 
     [Display(Name = "TODO (что сделать по сюжету)"), DataType(DataType.MultilineText)]
@@ -29,7 +30,16 @@ namespace JoinRpg.Web.Models.Plot
 
     public static PlotStatus GetStatus(this PlotElement e)
     {
-      return !e.IsActive ? PlotStatus.Deleted : (e.IsCompleted ? PlotStatus.Completed : PlotStatus.InWork);
+      if (!e.IsActive) return PlotStatus.Deleted;
+      if (e.Published == null)
+      {
+        return PlotStatus.InWork;
+      }
+      if (e.LastVersion().Version == e.Published)
+      {
+        return PlotStatus.Completed;
+      }
+      return PlotStatus.HasNewVersion;
     }
   }
 
@@ -41,6 +51,8 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Закончен")]
     Completed,
     [Display(Name = "Удален")]
-    Deleted
+    Deleted,
+    [Display(Name="Есть новая версия")]
+    HasNewVersion
   }
 }

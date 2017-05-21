@@ -2,6 +2,7 @@
 using System.Web;
 using JetBrains.Annotations;
 using Vereyon.Web;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Helpers.Web
 {
@@ -51,9 +52,15 @@ namespace JoinRpg.Helpers.Web
       return sanitizer;
     }
 
-    public static string RemoveHtml(this UnSafeHtml unsafeHtml)
+    /// <summary>
+    /// Remove all Html from string
+    /// </summary>
+    /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
+    [NotNull]
+    public static IHtmlString RemoveHtml([NotNull] this UnSafeHtml unsafeHtml)
     {
-      return RemoveAllHtmlSanitizer.Value.Sanitize(unsafeHtml.UnValidatedValue);
+      if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
+      return new HtmlString(RemoveAllHtmlSanitizer.Value.Sanitize(unsafeHtml.UnValidatedValue));
     }
 
     [NotNull]
@@ -69,6 +76,14 @@ namespace JoinRpg.Helpers.Web
       var unsafeHtml = (UnSafeHtml) str;
       if (unsafeHtml == null) throw new ArgumentNullException(nameof(str));
       return unsafeHtml.SanitizeHtml();
+    }
+
+    [NotNull]
+    public static IHtmlString WithDefaultStringValue([NotNull] this IHtmlString toHtmlString, [NotNull] string defaultValue)
+    {
+      if (toHtmlString == null) throw new ArgumentNullException(nameof(toHtmlString));
+      if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));
+      return new HtmlString(toHtmlString.ToHtmlString().WithDefaultStringValue(defaultValue));
     }
   }
 }

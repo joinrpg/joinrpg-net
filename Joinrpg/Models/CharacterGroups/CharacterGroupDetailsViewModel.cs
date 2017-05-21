@@ -16,6 +16,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
     Characters,
     Report,
     Forums,
+    Plots
   }
 
   public class CharacterGroupDetailsViewModel : CharacterGroupWithDescViewModel

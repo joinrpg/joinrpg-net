@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityFrameworkExtensions.cs" />
     <Compile Include="Migrations\201507212237267_Initial.cs" />
     <Compile Include="Migrations\201507212237267_Initial.Designer.cs">
       <DependentUpon>201507212237267_Initial.cs</DependentUpon>
@@ -326,6 +327,18 @@
     <Compile Include="Migrations\201703222039312_RepairForumThreads.Designer.cs">
       <DependentUpon>201703222039312_RepairForumThreads.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704262108464_PlotTags.cs" />
+    <Compile Include="Migrations\201704262108464_PlotTags.Designer.cs">
+      <DependentUpon>201704262108464_PlotTags.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704270819596_PlotTags2.cs" />
+    <Compile Include="Migrations\201704270819596_PlotTags2.Designer.cs">
+      <DependentUpon>201704270819596_PlotTags2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705040856203_VersionedPlot.cs" />
+    <Compile Include="Migrations\201705040856203_VersionedPlot.Designer.cs">
+      <DependentUpon>201705040856203_VersionedPlot.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -562,6 +575,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201703222039312_RepairForumThreads.resx">
       <DependentUpon>201703222039312_RepairForumThreads.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704262108464_PlotTags.resx">
+      <DependentUpon>201704262108464_PlotTags.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704270819596_PlotTags2.resx">
+      <DependentUpon>201704270819596_PlotTags2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705040856203_VersionedPlot.resx">
+      <DependentUpon>201705040856203_VersionedPlot.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

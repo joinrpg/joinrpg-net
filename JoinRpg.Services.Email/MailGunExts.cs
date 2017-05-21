@@ -23,10 +23,10 @@ namespace JoinRpg.Services.Email
       return builder;
     }
 
-    public static Recipient ToRecipient(this User user)
-    {
-      return new Recipient() { DisplayName = user.DisplayName, Email = user.Email };
-    }
+    
+    public static Recipient ToRecipient(this User user) 
+    //TODO: Quotes should be added on mailgun_sharp level, but while we are not here...
+      => new Recipient { DisplayName = "\"" + user.DisplayName + "\"", Email = user.Email };
 
     public static JObject ToRecepientVariables(this IReadOnlyCollection<MailRecipient> recepients)
     {

@@ -5,6 +5,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
@@ -21,7 +22,8 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return WithEntity(project) ?? View(new ProjectDetailsViewModel(project));
+      if (project == null) return HttpNotFound();
+      return View(new ProjectDetailsViewModel(project));
     }
 
     [Authorize]
@@ -54,11 +56,11 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Details", new {project.ProjectId});
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
     public async Task<ActionResult> Edit(int projectId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      return AsMaster(project, pacl => pacl.CanChangeProjectProperties) ?? View(new EditProjectViewModel
+      return View(new EditProjectViewModel
       {
         ClaimApplyRules =project.Details.ClaimApplyRules.Contents,
         ProjectAnnounce = project.Details.ProjectAnnounce.Contents,
@@ -72,17 +74,10 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    // POST: Game/Edit/5
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(EditProjectViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = AsMaster(project, pacl => pacl.CanChangeProjectProperties);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-
       try
       {
         await
@@ -100,15 +95,10 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize(Permission = Permission.CanChangeProjectProperties, AllowAdmin = true)]
     public async Task<ActionResult> Close(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      var errorResult = await AsMasterOrAdmin(project, pacl => pacl.CanChangeProjectProperties);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
       var isMaster = project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
       return View(new CloseProjectViewModel()
       {
@@ -119,17 +109,9 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpPost, Authorize]
+    [HttpPost, MasterAuthorize(AllowAdmin = true, Permission = Permission.CanChangeProjectProperties)]
     public async Task<ActionResult> Close(CloseProjectViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = await AsMasterOrAdmin(project, pacl => pacl.CanChangeProjectProperties);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-      viewModel.OriginalName = project.ProjectName;
-      viewModel.IsMaster = project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
       if (!ModelState.IsValid)
       {
         return View(viewModel);
@@ -142,6 +124,9 @@ namespace JoinRpg.Web.Controllers
       catch (Exception ex)
       {
         ModelState.AddException(ex);
+        var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        viewModel.OriginalName = project.ProjectName;
+        viewModel.IsMaster = project.HasMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
         return View(viewModel);
       }
     }

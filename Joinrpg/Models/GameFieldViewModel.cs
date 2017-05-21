@@ -59,6 +59,20 @@ namespace JoinRpg.Web.Models
           new ValidationResult("Нельзя скрыть поле от игрока и одновременно разрешить редактирование поля.",
             new[] {nameof(CanPlayerView), nameof(CanPlayerEdit)});
       }
+
+      if (!CanPlayerView && IncludeInPrint)
+      {
+        yield return
+          new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
+      }
+
+      foreach (var validationResult in ValidateCore()) yield return validationResult;
+
+    }
+
+    protected virtual IEnumerable<ValidationResult> ValidateCore()
+    {
+      return Enumerable.Empty<ValidationResult>(); 
     }
   }
 
@@ -123,7 +137,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Мультивыбор", Order = 4), UsedImplicitly]
     MultiSelect,
     [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
-    Header
+    Header,
+    [Display(Name = "Число", Order = 6), UsedImplicitly]
+    Number
   }
 
   public enum FieldBoundToViewModel
@@ -155,6 +171,16 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Привязано к", 
       Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
     public FieldBoundToViewModel FieldBoundTo { get; set; }
+
+    protected override IEnumerable<ValidationResult> ValidateCore()
+    {
+      if (FieldBoundTo == FieldBoundToViewModel.Claim && ValidForNpc)
+      {
+        yield return
+          new ValidationResult("Невозможно разрешить NPC поля, связанные с заявкой.",
+            new List<string> {nameof(DataModel.FieldBoundTo), nameof(ValidForNpc)});
+      }
+    }
   }
 
   public class GameFieldListViewModel

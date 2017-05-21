@@ -13,13 +13,13 @@ namespace JoinRpg.Web.Models
   /// </summary>
   public class TargetedSearchResultViewModel
   { 
-    public string SearchTarget { get; private set; }
-    public ISearchResult SearchResult { get; private set; }
+    public string SearchTarget { get; }
+    public ISearchResult SearchResult { get; }
 
     public IHtmlString GetFormattedDescription(int maxLengthToShow)
     {
       string descriptionToShow = TruncateString(
-        SearchResult.Description.ToPlainText(), SearchTarget, maxLengthToShow);
+        SearchResult.Description.ToPlainText().ToHtmlString(), SearchTarget, maxLengthToShow);
 
       descriptionToShow = Regex.Replace(
           descriptionToShow,

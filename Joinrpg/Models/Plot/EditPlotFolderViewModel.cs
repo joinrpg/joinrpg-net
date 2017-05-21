@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,7 +8,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Plot
@@ -15,18 +16,42 @@ namespace JoinRpg.Web.Models.Plot
   public class EditPlotFolderViewModel : PlotFolderViewModelBase
   {
     public int PlotFolderId { get; set; }
+
+    [ReadOnly(true)]
     public IOrderedEnumerable<PlotElementListItemViewModel> Elements { get; private set; }
 
+    [ReadOnly(true)]
     public bool HasEditAccess { get; private set; }
+
+    [ReadOnly((true))]
+    public IEnumerable<string> TagNames { get; private set; }
+
+
+    [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
+    public string PlotFolderTitleAndTags { get; set; }
 
     public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
     {
-      PlotFolderMasterTitle = folder.MasterTitle;
       PlotFolderId = folder.PlotFolderId;
       TodoField = folder.TodoField;
       ProjectId = folder.ProjectId;
-      Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
+      Fill(folder, currentUserId);
+      if (TagNames.Any())
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle + " " + folder.PlotTags.GetTagString();
+      }
+      else
+      {
+        PlotFolderTitleAndTags = folder.MasterTitle;
+      }
+    }
+
+    public void Fill(PlotFolder folder, int? currentUserId)
+    {
+      PlotFolderMasterTitle = folder.MasterTitle;
       Status = folder.GetStatus();
+      Elements = folder.Elements.Select(e => new PlotElementListItemViewModel(e, currentUserId)).OrderBy(e => e.Status);
+      TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
       HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
       HasMasterAccess = folder.HasMasterAccess(currentUserId);
     }
@@ -34,23 +59,26 @@ namespace JoinRpg.Web.Models.Plot
     [UsedImplicitly] //For binding
     public EditPlotFolderViewModel() {} //For binding
 
-    public bool HasMasterAccess { get; }
+    [ReadOnly(true)]
+    public bool HasMasterAccess { get; private set; }
   }
 
   public class EditPlotElementViewModel  : IProjectIdAware
   {
 
-    public EditPlotElementViewModel(PlotElement e)
+    public EditPlotElementViewModel(PlotElement e, bool hasManageAccess)
     {
       PlotElementId = e.PlotElementId;
       Targets = e.GetElementBindingsForEdit();
-      Content = e.Texts.Content.Contents;
-      TodoField = e.Texts.TodoField;
+      Content = e.LastVersion().Content.Contents;
+      TodoField = e.LastVersion().TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
-      IsCompleted = e.IsCompleted;
       ElementType = (PlotElementTypeView) e.ElementType;
+      HasManageAccess = hasManageAccess;
+      HasPublishedVersion = e.Published != null;
+      TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
     }
 
     [ReadOnly(true)]
@@ -70,31 +98,51 @@ namespace JoinRpg.Web.Models.Plot
 
     [ReadOnly(true), Display(Name = "Статус")]
     public PlotStatus Status { get; }
-
-    [Display(Name="Готов", Description = "Готовые загрузы показываются игрокам")]
-    public bool IsCompleted { get; set; }
     
     public PlotElementTypeView ElementType { get; }
+    public bool HasManageAccess { get; }
+    public bool HasPublishedVersion { get; }
+    public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
   }
 
   public class PlotElementListItemViewModel : IProjectIdAware
   {
 
-    public PlotElementListItemViewModel(PlotElement e, int? currentUserId)
+    public PlotElementListItemViewModel(PlotElement e, int? currentUserId, int? currentVersion = null)
     {
+      CurrentVersion = currentVersion ?? e.LastVersion().Version;
+
+      var prevVersionText = e.SpecificVersion(CurrentVersion - 1);
+      var currentVersionText = e.SpecificVersion(CurrentVersion);
+      var nextVersionText = e.SpecificVersion(CurrentVersion + 1);
+
+      if (currentVersionText == null)
+      {
+        throw new ArgumentOutOfRangeException(nameof(currentVersion));
+      }
+
       var renderer = new JoinrpgMarkdownLinkRenderer(e.Project);
 
       PlotElementId = e.PlotElementId;
       TargetsForDisplay = e.GetTargets().AsObjectLinks().ToList();
-      Content = e.Texts.Content.ToHtmlString(renderer);
-      TodoField = e.Texts.TodoField;
+      Content = currentVersionText.Content.ToHtmlString(renderer);
+      TodoField = currentVersionText.TodoField;
       ProjectId = e.PlotFolder.ProjectId;
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       ElementType = (PlotElementTypeView)e.ElementType;
-      ShortContent = e.Texts.Content.TakeWords(10).ToPlainText(renderer).WithDefaultStringValue("***");
+      ShortContent = HtmlSanitizeHelper.WithDefaultStringValue(currentVersionText.Content.TakeWords(10)
+          .ToPlainText(renderer), "***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
+      ModifiedDateTime = currentVersionText.ModifiedDateTime;
+      Author = currentVersionText.AuthorUser;
+      PrevModifiedDateTime = prevVersionText?.ModifiedDateTime;
+      NextModifiedDateTime = nextVersionText?.ModifiedDateTime;
+
+      PlotFolderMasterTitle = e.PlotFolder.MasterTitle;
+
+      PublishedVersion = e.Published;
     }
 
     [ReadOnly(true)]
@@ -107,8 +155,19 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
     public IHtmlString Content { get; }
 
-    public string ShortContent { get; }
+    public IHtmlString ShortContent { get; }
 
+    [UIHint("EventTime")]
+    public DateTime ModifiedDateTime { get; }
+
+    public User Author { get; }
+
+    [UIHint("EventTime")]
+    public DateTime? PrevModifiedDateTime { get; }
+
+    [UIHint("EventTime")]
+    public DateTime? NextModifiedDateTime { get; }
+    
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
     public string TodoField { get; }
 
@@ -122,5 +181,11 @@ namespace JoinRpg.Web.Models.Plot
     public bool HasEditAccess { get; }
 
     public bool HasMasterAccess { get; }
+    public int CurrentVersion { get;}
+
+    public int? PublishedVersion { get; }
+    public string PlotFolderMasterTitle { get; }
+
+    public bool ThisPublished => CurrentVersion == PublishedVersion;
   }
 }

@@ -106,6 +106,15 @@ namespace JoinRpg.Domain
     public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
   }
 
+  public class MasterHasResponsibleException : JoinRpgProjectEntityException
+  {
+    public User Master { get; }
+    public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.")
+    {
+      Master = entity.User;
+    }
+  }
+
   public class NoAccessToProjectException : JoinRpgProjectEntityException
   {
     [PublicAPI]
@@ -127,6 +136,13 @@ namespace JoinRpg.Domain
   : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}")
     {
       UserId = userId;
+    }
+  }
+
+  public class EmailSendFailedException : JoinRpgBaseException
+  {
+    public EmailSendFailedException(string message) : base(message)
+    {
     }
   }
 

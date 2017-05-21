@@ -26,7 +26,7 @@
         @foreach (var plot in item.Elements.Where(e => !Model.InWorkOnly  || e.HasWorkTodo))
         {
             @Html.Partial("ShowElementPartial", plot)
+            <hr />
         }
-        <hr />
     </div>
 }

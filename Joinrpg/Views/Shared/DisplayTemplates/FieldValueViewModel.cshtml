@@ -22,9 +22,7 @@
                 foreach (var value in Model.ValueList)
                 {
                     @value.Label
-                    <div class="help-block">
-                            @Html.DisplayFor(model => value.Description)
-                    </div>
+                    <div class="help-block">@value.DescriptionHtml</div>
                 }
                 break;
             case ProjectFieldViewType.Checkbox:
@@ -38,6 +36,7 @@
                 }
                 break;
             case ProjectFieldViewType.String:
+            case ProjectFieldViewType.Number:
             case ProjectFieldViewType.Text:
             @Model.DisplayString
                 break;

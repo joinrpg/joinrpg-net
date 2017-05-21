@@ -33,9 +33,14 @@ namespace JoinRpg.Services.Email
     private readonly IUriService _uriService;
     private readonly bool _emailEnabled;
 
-    private Task Send(IMessage message)
+    private async Task Send(IMessage message)
     {
-      return MessageService.SendMessageAsync(_apiDomain, message);
+      var response = await MessageService.SendMessageAsync(_apiDomain, message);
+      if (!response.IsSuccessStatusCode)
+      {
+        throw new EmailSendFailedException(
+          $"Failed to send email. Response is {response.StatusCode} {response.ReasonPhrase}");
+      }
     }
 
     public EmailServiceImpl(IUriService uriService, IMailGunConfig config)

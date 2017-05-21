@@ -97,6 +97,12 @@ namespace JoinRpg.DataModel
           new ValidationResult("Claim-bound field shoudn't be valid for NPC.",
             new List<string> {nameof(FieldBoundTo), nameof(ValidForNpc)});
       }
+
+      if (!CanPlayerView && IncludeInPrint)
+      {
+        yield return 
+          new ValidationResult("Include in print fields must be player visible.");
+      }
     }
   }
 
@@ -107,7 +113,8 @@ namespace JoinRpg.DataModel
     Dropdown,
     Checkbox,
     MultiSelect,
-    Header
+    Header,
+    Number
   }
 
   public enum FieldBoundTo

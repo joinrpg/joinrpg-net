@@ -1,6 +1,11 @@
 ﻿@using System.Web.Mvc.Html
 @model JoinRpg.Web.Models.CharacterGroups.CharacterGroupDetailsViewModel
 
+@if (!Model.IsPublic && !Model.HasMasterAccess)
+{
+<p>Группа не существует, удалена или скрыта.</p>
+    return;
+}
 @{
     ViewBag.Title = "Группа персонажей " + Model.Name;
 }

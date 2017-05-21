@@ -47,5 +47,29 @@ namespace JoinRpg.Domain
         return element.TargetGroups.Any(g => groups.Contains(g.CharacterGroupId));
       });
     }
+
+    [NotNull]
+    public static PlotElementTexts LastVersion([NotNull] this PlotElement e)
+    {
+      return e.Texts.OrderByDescending(text => text.Version).First();
+    }
+
+    [CanBeNull]
+    public static PlotElementTexts SpecificVersion([NotNull] this PlotElement e, int version)
+    {
+      return e.Texts.SingleOrDefault(text => text.Version == version);
+    }
+
+    [CanBeNull]
+    public static PlotElementTexts PublishedVersion([NotNull] this PlotElement e)
+    {
+      return e.Published != null ? e.SpecificVersion((int) e.Published) : null;
+    }
+
+    [CanBeNull]
+    public static PlotElementTexts PrevVersion(this PlotElement e)
+    {
+      return e.Texts.OrderByDescending(text => text.Version).Skip(1).FirstOrDefault();
+    }
   }
 }

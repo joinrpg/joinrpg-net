@@ -84,9 +84,7 @@ namespace JoinRpg.Web.Models.Characters
 
         if (vm.IsSpecial)
         {
-          var variant =
-            characterGroup.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
-              .SingleOrDefault(pfv => pfv.CharacterGroup == characterGroup);
+          var variant = characterGroup.GetBoundFieldDropdownValueOrDefault();
 
           if (variant != null)
           {

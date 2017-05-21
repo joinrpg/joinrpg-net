@@ -8,7 +8,9 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Controllers
@@ -28,7 +30,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
       var field = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
-      return WithEntity(field) ?? await ShowCharacter(field);
+      return (field?.Project == null ? HttpNotFound() : null) ?? await ShowCharacter(field);
     }
 
     private async Task<ActionResult> ShowCharacter(Character character)
@@ -37,7 +39,7 @@ namespace JoinRpg.Web.Controllers
         ? await ShowPlotsForCharacter(character)
         : Enumerable.Empty<PlotElement>();
       return View("Details",
-        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots));
+        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots.ToList()));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)
@@ -45,11 +47,11 @@ namespace JoinRpg.Web.Controllers
       return character.GetOrderedPlots(await PlotRepository.GetPlotsForCharacter(character));
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterId)
     {
       var field = await ProjectRepository.GetCharacterWithDetails(projectId, characterId);
-      return AsMaster(field, s => s.CanEditRoles) ?? View(new EditCharacterViewModel()
+      return View(new EditCharacterViewModel()
       {
         ProjectId = field.ProjectId,
         CharacterId = field.CharacterId,
@@ -64,15 +66,10 @@ namespace JoinRpg.Web.Controllers
       }.Fill(field, CurrentUserId));
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
     {
       var field = await ProjectRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
-      var error = AsMaster(field, s => s.CanEditRoles);
-      if (error != null)
-      {
-        return error;
-      }
       try
       {
         if (!ModelState.IsValid)
@@ -83,7 +80,9 @@ namespace JoinRpg.Web.Controllers
           CurrentUserId,
           viewModel.CharacterId,
           viewModel.ProjectId,
-          viewModel.Name, viewModel.IsPublic, viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.IsAcceptingClaims,
+          viewModel.Name, viewModel.IsPublic, 
+          viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), 
+          viewModel.IsAcceptingClaims && field.ApprovedClaim == null, //Force this field to false if has approved claim
           viewModel.Description, 
           viewModel.HidePlayerForCharacter,
           GetCustomFieldValuesFromPost(), 
@@ -99,12 +98,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
-    [Authorize]
+    [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Create(int projectid, int charactergroupid)
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-      return AsMaster(field, pa => pa.CanEditRoles) ?? View(new AddCharacterViewModel()
+      if (field == null) return HttpNotFound();
+
+      return View(new AddCharacterViewModel()
       {
         ProjectId = projectid,
         ProjectName = field.Project.ProjectName,
@@ -113,16 +114,10 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost]
-    [Authorize]
+    [MasterAuthorize(Permission.CanEditRoles)]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
     {
-      var project1 = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var error = AsMaster(project1);
-      if (error != null)
-      {
-        return error;
-      }
       try
       {
         await ProjectService.AddCharacter(
@@ -138,22 +133,18 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet,Authorize]
+    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Delete(int projectid, int characterid)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
-      return AsMaster(field) ?? View(field);
+      if (field == null) return HttpNotFound();
+      return View(field);
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(int projectId, int characterId, [UsedImplicitly] FormCollection form)
     {
       var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      var error = AsMaster(field);
-      if (error != null)
-      {
-        return error;
-      }
       try
       {
         await ProjectService.DeleteCharacter(projectId, characterId, CurrentUserId);
@@ -166,13 +157,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public Task<ActionResult> MoveUp(int projectid, int characterid, int parentcharactergroupid, int currentrootgroupid)
     {
       return MoveImpl(projectid, characterid, parentcharactergroupid, currentrootgroupid, -1);
     }
 
-    [HttpGet, Authorize]
+    [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public Task<ActionResult> MoveDown(int projectid, int characterid, int parentcharactergroupid, int currentrootgroupid)
     {
       return MoveImpl(projectid, characterid, parentcharactergroupid, currentrootgroupid, +1);
@@ -180,13 +171,6 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> MoveImpl(int projectId, int characterId, int parentCharacterGroupId, int currentRootGroupId, short direction)
     {
-      var group = await ProjectRepository.GetCharacterAsync(projectId, characterId);
-      var error = AsMaster(@group, acl => acl.CanEditRoles);
-      if (error != null)
-      {
-        return error;
-      }
-
       try
       {
         await ProjectService.MoveCharacter(CurrentUserId, projectId, characterId, parentCharacterGroupId, direction);

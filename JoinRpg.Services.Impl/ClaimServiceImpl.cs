@@ -10,13 +10,34 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 
+
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
   public class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
 
-    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
+    public async Task SubscribeClaimToUser(int projectId, int claimId)
+    {
+      var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      user.Subscriptions.Add(new UserSubscription() { ClaimId = claimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UnsubscribeClaimToUser(int projectId, int claimId)
+    {
+        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      var subscription = user.Subscriptions.FirstOrDefault(s => s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
+        if (subscription != null)
+        {
+            UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+            await UnitOfWork.SaveChangesAsync();
+        }
+    }
+
+        public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, int currentUserId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 

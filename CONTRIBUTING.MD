@@ -29,3 +29,8 @@ Submitting your changes
 1. Commit.
 1. Rebase your changes on top of `upstream/master`
 1. Open pull request via Github UI from your branch to `joinrpg/joirpg-net/master`
+
+Telegram chats
+==
+
+We using a lot of tlgrm chats to talk about Joinrpg. Developer's question could be addressed to https://t.me/joinchat/AAAAAEKdDvRjI0Z1n79EJA сhat.
