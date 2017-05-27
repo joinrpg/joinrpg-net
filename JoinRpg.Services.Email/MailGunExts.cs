@@ -26,7 +26,7 @@ namespace JoinRpg.Services.Email
     
     public static Recipient ToRecipient(this User user) 
     //TODO: Quotes should be added on mailgun_sharp level, but while we are not here...
-      => new Recipient { DisplayName = "\"" + user.DisplayName + "\"", Email = user.Email };
+      => new Recipient { DisplayName = "\"" + user.DisplayName.Replace("\"", "") + "\"", Email = user.Email };
 
     public static JObject ToRecepientVariables(this IReadOnlyCollection<MailRecipient> recepients)
     {
