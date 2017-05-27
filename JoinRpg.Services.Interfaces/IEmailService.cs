@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -23,7 +24,7 @@ namespace JoinRpg.Services.Interfaces
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
     Task Email(ClaimFieldsChangedEmail createClaimEmail);
-    Task Email(CharacterFieldsChangedEmail characterFiledsEmail);
+    Task Email(FieldsChangedEmail filedsEmail);
   }
 
   public static class EmailTokens
@@ -74,12 +75,56 @@ namespace JoinRpg.Services.Interfaces
     public IFieldContainter FiledsContainer => Claim;
   }
 
-  public class CharacterFieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
+  public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
   {
     public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
-    public IFieldContainter FiledsContainer => Character;
-    [NotNull]
+    public IFieldContainter FiledsContainer => (IFieldContainter)Claim ?? Character;
+    [CanBeNull]
     public Character Character { get; set; }
+    [CanBeNull]
+    public Claim Claim { get; set; }
+    //Is character is null, Claim is not null and vioce versa. (restricted by constructors).
+    public bool IsCharacterMail => Character != null;
+
+    public FieldsChangedEmail(
+      Claim claim,
+      User initiator,
+      ICollection<User> recepients,
+      IReadOnlyCollection<FieldWithValue> updatedFields)
+      : this(null, claim, initiator, recepients, updatedFields)
+    {
+    }
+
+    public FieldsChangedEmail(
+      Character character,
+      User initiator,
+      ICollection<User> recepients,
+      IReadOnlyCollection<FieldWithValue> updatedFields)
+      : this(character, null, initiator, recepients, updatedFields)
+    {
+    }
+
+    private FieldsChangedEmail(
+      Character character,
+      Claim claim,
+      User initiator,
+      ICollection<User> recepients,
+      [NotNull] IReadOnlyCollection<FieldWithValue> updatedFields)
+    {
+      if (updatedFields == null) throw new ArgumentNullException(nameof(updatedFields));
+      if (character != null && claim != null)
+        throw new ArgumentException($"Both {nameof(character)} and {nameof(claim)} were provided");
+      if (character == null && claim == null)
+        throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+
+      Character = character;
+      Claim = claim;
+      ProjectName = character?.Project.ProjectName ?? claim?.Project.ProjectName;
+      Initiator = initiator;
+      Text = new MarkdownString();
+      Recepients = recepients;
+      UpdatedFields = updatedFields;
+    }
   }
 
   public class RestoreByMasterEmail : ClaimEmailModel {}

@@ -37,26 +37,33 @@ namespace JoinRpg.Services.Impl
       };
     }
 
-    public static CharacterFieldsChangedEmail CreateCharacterFieldsEmail(
-      Character character,
+    public static FieldsChangedEmail CreateFieldsEmail(
+      [NotNull] Claim claim,
       Func<UserSubscription, bool> subscribePredicate,
-      User initiator)
+      User initiator,
+      IReadOnlyCollection<FieldWithValue> updatedFields)
     {
-      if (character == null)
-        throw new ArgumentNullException(nameof(character));
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      var subscriptions = claim
+        .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
+        .ToList();
+
+      return new FieldsChangedEmail(claim, initiator, subscriptions, updatedFields);
+    }
+
+    public static FieldsChangedEmail CreateFieldsEmail(
+      [NotNull] Character character,
+      Func<UserSubscription, bool> subscribePredicate,
+      User initiator,
+      IReadOnlyCollection<FieldWithValue> updatedFields)
+    {
+      if (character == null) throw new ArgumentNullException(nameof(character));
 
       var subscriptions = character
         .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
         .ToList();
 
-      return new CharacterFieldsChangedEmail()
-      {
-        Character = character,
-        ProjectName = character.Project.ProjectName,
-        Initiator = initiator,
-        Recepients = subscriptions.ToList(),
-        Text = new MarkdownString()
-      };
+      return new FieldsChangedEmail(character, initiator, subscriptions, updatedFields);
     }
   }
 }

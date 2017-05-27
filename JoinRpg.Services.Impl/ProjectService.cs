@@ -140,8 +140,7 @@ namespace JoinRpg.Services.Impl
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       var user = await UserRepository.GetById(currentUserId);
-      var email = EmailHelpers.CreateCharacterFieldsEmail(character, s => s.FieldChange, user);
-      email.UpdatedFields = updatedFields;
+      var email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user, updatedFields);
 
       await UnitOfWork.SaveChangesAsync();
 

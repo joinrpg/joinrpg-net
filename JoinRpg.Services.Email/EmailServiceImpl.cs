@@ -165,8 +165,9 @@ namespace JoinRpg.Services.Email
         mailWithFields
           .UpdatedFields
           .FilterFieldsForUser(mailWithFields.FiledsContainer, user.UserId)
-          .Select(updatedField => $@"{updatedField.Field.FieldName}:
-{updatedField.DisplayString}"));
+          .Select(updatedField => 
+            new MarkdownString($@"**{updatedField.Field.FieldName}**: {updatedField.DisplayString}")
+              .ToHtmlString()));
     }
 
     private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
@@ -249,7 +250,7 @@ namespace JoinRpg.Services.Email
 
     public Task Email(ClaimFieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
 
-    public async Task Email(CharacterFieldsChangedEmail model)
+    public async Task Email(FieldsChangedEmail model)
     {
       var projectEmailEnabled = model.GetEmailEnabled();
       if (!projectEmailEnabled)
@@ -262,16 +263,19 @@ namespace JoinRpg.Services.Email
         .Select(r => new MailRecipient(
           r,
           new Dictionary<string, string> {{changedFieldsKey, GetFieldsForUser(model, r)}}))
-        .Where(r => string.IsNullOrEmpty(r.RecepientSpecificValues[changedFieldsKey]))
+        .Where(r => !string.IsNullOrEmpty(r.RecepientSpecificValues[changedFieldsKey]))
         //don't email if no changes are visible to user rights
         .ToList();
 
-      if (recepients.Any())
+      Func<bool, string> target = (forMessageBody) => model.IsCharacterMail
+        ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
+        : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim.Name} {(forMessageBody ? $", игрок {model.Claim.Player.DisplayName}" : "")}";
+
+  if (recepients.Any())
       {
-        await SendEmail(recepients, $"{model.ProjectName}: персонаж {model.Character.CharacterName}",
+        await SendEmail(recepients, $"{model.ProjectName}: {target(false)}",
           $@"Добрый день, {MailGunExts.MailGunRecepientName},
-Поля персонажа {model.Character.CharacterName
-            } были изменены:
+Поля {target(true)} были изменены. Новые значения:
 
 {MailGunExts.GetUserDependedtValue(changedFieldsKey)}
 

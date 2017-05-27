@@ -405,8 +405,7 @@ namespace JoinRpg.Services.Impl
 
       var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue);
       var user = await UserRepository.GetById(currentUserId);
-      var email = EmailHelpers.CreateClaimEmail<ClaimFieldsChangedEmail>(claim, "", s => s.FieldChange, true, null, user);
-      email.UpdatedFields = updatedFields;
+      var email = EmailHelpers.CreateFieldsEmail(claim, s => s.FieldChange, user, updatedFields);
 
       await UnitOfWork.SaveChangesAsync();
 
