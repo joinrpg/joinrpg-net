@@ -339,6 +339,10 @@
     <Compile Include="Migrations\201705040856203_VersionedPlot.Designer.cs">
       <DependentUpon>201705040856203_VersionedPlot.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705312112513_FixDropDownvaluesLinks.cs" />
+    <Compile Include="Migrations\201705312112513_FixDropDownvaluesLinks.Designer.cs">
+      <DependentUpon>201705312112513_FixDropDownvaluesLinks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -584,6 +588,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705040856203_VersionedPlot.resx">
       <DependentUpon>201705040856203_VersionedPlot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705312112513_FixDropDownvaluesLinks.resx">
+      <DependentUpon>201705312112513_FixDropDownvaluesLinks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
