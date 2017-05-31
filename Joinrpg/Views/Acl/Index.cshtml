@@ -1,20 +1,22 @@
 ﻿@using System.Linq.Expressions
+@using JetBrains.Annotations
+@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
 @using Microsoft.AspNet.Identity
 @model IEnumerable<AclViewModel>
 
-@helper ShowRightValue(AclViewModel item, Expression<Func<AclViewModel, bool>> expression)
+@helper ShowRightValue([InstantHandle] Expression<Func<IEnumerable<AclViewModel>, bool>> expression)
 {
-    if (expression.Compile()(item))
+    if (expression.Compile()(Model))
     {
-        <span class="label label-success">
+        <span class="label label-success" title="@Html.GetDescription(expression)" data-toggle="tooltip">
             <span class="glyphicon glyphicon-ok-sign"></span>
             @Html.DisplayNameFor(expression)
         </span> 
     }
     else
     {
-        <span class="label label-default">
+        <span class="label label-default"  title="@Html.GetDescription(expression)" data-toggle="tooltip">
             <span class="glyphicon glyphicon-remove-sign"> </span>
             @Html.DisplayNameFor(expression)
         </span> 
@@ -55,16 +57,16 @@
             @Html.DisplayFor(modelItem => item.UserDetails)
         </td>
         <td class="hidden-xs">
-            @ShowRightValue(item, model => model.CanEditRoles)
-            @ShowRightValue(item, model => model.CanSendMassMails)
-            @ShowRightValue(item, model => model.CanManagePlots)
-            @ShowRightValue(item, model => model.CanManageClaims)
+            @ShowRightValue(model => item.CanEditRoles)
+            @ShowRightValue(model => item.CanSendMassMails)
+            @ShowRightValue(model => item.CanManagePlots)
+            @ShowRightValue(model => item.CanManageClaims)
         </td>
         <td class="hidden-xs">
-            @ShowRightValue(item, model => model.CanManageMoney)
-            @ShowRightValue(item, model => model.CanChangeFields)
-            @ShowRightValue(item, model => model.CanChangeProjectProperties)
-            @ShowRightValue(item, model => model.CanGrantRights)
+            @ShowRightValue(model => item.CanManageMoney)
+            @ShowRightValue(model => item.CanChangeFields)
+            @ShowRightValue(model => item.CanChangeProjectProperties)
+            @ShowRightValue(model => item.CanGrantRights)
         </td>
         <td>
 
