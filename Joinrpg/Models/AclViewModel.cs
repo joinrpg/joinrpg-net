@@ -30,28 +30,30 @@ namespace JoinRpg.Web.Models
   }
   public class AclViewModel : AclViewModelBase
   {
-    [Display(Name = "Администратор заявок")]
+    [Display(
+            Name = "Администратор заявок", 
+            Description = "может изменять статус заявок (принимать, отклонять, переносить в лист ожидания) и переназначать ответственного мастера для любой заявки в базе")]
     public bool CanManageClaims { get; set; }
 
-    [Display(Name = "Настраивать поля персонажа")]
+    [Display(Name = "Настраивать поля персонажа", Description = "может добавлять, удалять или редактировать поля заявки и поля персонажа")]
     public bool CanChangeFields { get; set; }
 
-    [Display(Name="Настраивать проект")]
+    [Display(Name="Настраивать проект", Description = "может изменять свойства проекта, переименовывать его, отправлять проект в архив и т.д.")]
     public bool CanChangeProjectProperties { get; set; }
 
-    [Display(Name = "Давать доступ другим мастерам")]
+    [Display(Name = "Давать доступ другим мастерам", Description = "может добавлять или удалять пользователей, настраивать права доступа")]
     public bool CanGrantRights { get; set; }
 
-    [Display(Name="Редактировать ролевку")]
+    [Display(Name="Редактировать ролевку", Description = "может добавлять новые группы или новых персонажей, редактировать и удалять группы и персонажей")]
     public bool CanEditRoles { get; set; }
 
-    [Display(Name = "Управлять финансами")]
+    [Display(Name = "Управлять финансами", Description = "может настраивать размеры взносов и способы оплаты, отмечать взносы, принятые любым мастером, возвращать взносы и т.д.")]
     public bool CanManageMoney { get; set; }
 
-    [Display(Name = "Делать массовые рассылки")]
+    [Display(Name = "Делать массовые рассылки", Description = "может разослать письма на емейл любой группе игроков (не только своим)")]
     public bool CanSendMassMails { get; set; }
 
-    [Display(Name = "Редактор сюжетов")]
+    [Display(Name = "Редактор сюжетов", Description = "может добавлять и удалять сюжеты и вводные, назначать группы и персонажей, которым они видны, публиковать вводные")]
     public bool CanManagePlots { get; set; }
 
     public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)

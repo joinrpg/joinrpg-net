@@ -45,6 +45,8 @@ namespace JoinRpg.Web.Models
     public string PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
     public string Skype { get; }
+    [Display(Name = "Telegram"), UIHint("Telegram")]
+    public string Telegram { get; }
     [Display(Name = "ЖЖ"), UIHint("Livejournal")]
     public string Livejournal { get; }
     [Display(Name = "VK"), UIHint("Vkontakte")]
@@ -65,6 +67,7 @@ namespace JoinRpg.Web.Models
       FullName = user.FullName;
       User = user;
       Skype = user.Extra?.Skype;
+      Telegram = user.Extra?.Telegram;
       Livejournal = user.Extra?.Livejournal;
       Vk = user.Extra?.Vk;
       PhoneNumber = user.Extra?.PhoneNumber ?? "";

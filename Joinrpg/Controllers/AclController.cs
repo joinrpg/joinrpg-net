@@ -74,6 +74,11 @@ namespace JoinRpg.Web.Controllers
       {
         return View(viewModel);
       }
+      if (viewModel.UserId == CurrentUserId)
+      {
+        //We are removing ourself, need to redirect to public page
+        return await RedirectToProject(viewModel.ProjectId);
+      }
       return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
     }

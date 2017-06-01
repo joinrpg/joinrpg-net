@@ -16,9 +16,9 @@ namespace JoinRpg.Services.Impl
     {
     }
 
-    public async Task UpdateProfile(int currentUserId, int userId, string surName, string fatherName, string bornName, string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string vk, string livejournal)
+    public async Task UpdateProfile(int userId, string surName, string fatherName, string bornName, string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string vk, string livejournal, string telegram)
     {
-      if (currentUserId != userId)
+      if (CurrentUserId != userId)
       {
         throw new JoinRpgInvalidUserException();
       }
@@ -35,9 +35,11 @@ namespace JoinRpg.Services.Impl
       user.Extra.Nicknames = nicknames;
       user.Extra.GroupNames = groupNames;
       user.Extra.Skype = skype;
-      var tokensToRemove = new[] {"http://", "https://", "vk.com/", "vkontakte.ru/", ".livejournal.com", ".lj.ru", "/", };
+      var tokensToRemove = new[]
+        {"http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",};
       user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
       user.Extra.Vk = vk?.RemoveFromString(tokensToRemove);
+      user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove);
 
       await UnitOfWork.SaveChangesAsync();
     }

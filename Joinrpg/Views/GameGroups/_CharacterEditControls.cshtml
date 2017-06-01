@@ -1,6 +1,6 @@
 ﻿@model JoinRpg.Web.Models.Characters.CharacterViewModel
 <span>
-    <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="изменить" class="glyphicon glyphicon-wrench"></span></a>
+    <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="изменить" class="glyphicon glyphicon-pencil"></span></a>
     @if (Model.ActiveClaimsCount == 0)
     {
         <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)"><span title="удалить" class="glyphicon glyphicon-trash"></span></a>

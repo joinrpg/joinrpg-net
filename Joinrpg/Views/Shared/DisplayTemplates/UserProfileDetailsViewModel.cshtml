@@ -14,7 +14,10 @@
 @(new HtmlString(string.Join("<br>", new object[]
   {
       Html.DisplayFor(model => model.Email),
-      @Html.DisplayFor(model => model.PhoneNumber), Html.DisplayFor(model => model.Skype), Html.DisplayFor(model => model.Livejournal),
+      Html.DisplayFor(model => model.PhoneNumber),
+      Html.DisplayFor(model => model.Telegram),
+      Html.DisplayFor(model => model.Skype),
+      Html.DisplayFor(model => model.Livejournal),
       Html.DisplayFor(model => model.Vk)
   }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))))
 @if (Model.AllrpgId != null && Model.AllrpgId != 0)

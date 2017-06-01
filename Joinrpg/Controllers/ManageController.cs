@@ -107,7 +107,7 @@ namespace JoinRpg.Web.Controllers
         }
         return RedirectToAction("Index", new {Message = ManageMessageId.ChangePasswordSuccess});
       }
-      AddErrors(result);
+      ModelState.AddErrors(result);
       return View(model);
     }
 
@@ -136,7 +136,7 @@ namespace JoinRpg.Web.Controllers
           }
           return RedirectToAction("Index", new {Message = ManageMessageId.SetPasswordSuccess});
         }
-        AddErrors(result);
+        ModelState.AddErrors(result);
       }
 
       // If we got this far, something failed, redisplay form
@@ -222,6 +222,7 @@ namespace JoinRpg.Web.Controllers
         GroupNames = user.Extra?.GroupNames,
         Vk = user.Extra?.Vk,
         Livejournal = user.Extra?.Livejournal,
+        Telegram = user.Extra?.Telegram,
         Skype = user.Extra?.Skype,
         LastClaimId = lastClaim?.ClaimId,
         LastClaimProjectId = lastClaim?.ProjectId
@@ -234,9 +235,9 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _userService.UpdateProfile(CurrentUserId, viewModel.UserId, viewModel.SurName, viewModel.FatherName,
+          _userService.UpdateProfile(viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
-            viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal);
+            viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal, viewModel.Telegram);
         if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
         {
           return RedirectToAction("SetupProfile");
@@ -249,25 +250,13 @@ namespace JoinRpg.Web.Controllers
       }
       catch (Exception e)
       {
-        ModelState.AddModelError("", $"Ошибка при сохранении: {e.Message}");
+        ModelState.AddException(e);
         return View(viewModel);
       }
     }
 
     #region Helpers
-
-    // Used for XSRF protection when adding external logins
-    private const string XsrfKey = "XsrfId";
-
     private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
-
-    private void AddErrors(IdentityResult result)
-    {
-      foreach (var error in result.Errors)
-      {
-        ModelState.AddModelError("", error);
-      }
-    }
 
     private bool HasPassword()
     {
