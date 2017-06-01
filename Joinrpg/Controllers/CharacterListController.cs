@@ -142,5 +142,13 @@ namespace JoinRpg.Web.Controllers
         character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
         "Поле (проставлено): " + field.FieldName);
     }
+
+    [HttpGet]
+    public Task<ActionResult> Vacant(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи");
+
+    [HttpGet]
+    public Task<ActionResult> WithPlayers(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim != null, export, "Занятые персонажи");
   }
 }
