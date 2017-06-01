@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Web.Models.Exporters
 {
@@ -26,8 +28,8 @@ namespace JoinRpg.Web.Models.Exporters
         Getter = getter;
       }
 
-      public TableColumn(PropertyInfo member, Func<TRow, T> getter)
-        : this (member.GetDisplayName(), getter)
+      public TableColumn([CanBeNull] PropertyInfo member, Func<TRow, T> getter)
+        : this (member?.GetDisplayName(), getter)
       {
       }
 
@@ -55,7 +57,23 @@ namespace JoinRpg.Web.Models.Exporters
     [Pure]
     protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func)
     {
-      return new TableColumn<Uri>(func.AsPropertyName(), row => UriService.GetUri(func.Compile()(row)));
+      return new TableColumn<Uri>(func.AsPropertyAccess(), row => UriService.GetUri(func.Compile()(row)));
+    }
+
+    [Pure]
+    protected ITableColumn UriListColumn(Expression<Func<TRow, IEnumerable<ILinkable>>> func)
+    {
+      var compiledFunc = func.Compile();
+      return new TableColumn<string>(func.AsPropertyAccess(),
+        row => compiledFunc(row).Select(link => UriService.GetUri(link)).JoinStrings(" | "));
+    }
+
+    [Pure]
+    protected ITableColumn StringListColumn(Expression<Func<TRow, IEnumerable<string>>> func)
+    {
+      var compiledFunc = func.Compile();
+      return new TableColumn<string>(func.AsPropertyAccess(),
+        row => compiledFunc(row).JoinStrings(" | "));
     }
 
     [MustUseReturnValue]
@@ -94,19 +112,18 @@ namespace JoinRpg.Web.Models.Exporters
           u => u.BornName,
           u => u.Email)
         .Union(new[]
-          {ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk)});
+        {
+          ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
+          ComplexElementMemberColumn(func, u => u.Extra, e => e.Skype),
+          ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
+          ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
+        });
     }
 
     [MustUseReturnValue]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string name = null)
     {
       return ComplexElementMemberColumn(func, u => u.DisplayName, name);
-    }
-
-    [MustUseReturnValue]
-    protected ITableColumn FieldColumn<T>(string name, Func<TRow, T> func)
-    {
-      return new TableColumn<T>(name, func);
     }
 
     [MustUseReturnValue]
@@ -118,7 +135,7 @@ namespace JoinRpg.Web.Models.Exporters
     [MustUseReturnValue]
     protected static ITableColumn ComplexElementMemberColumn<T>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, string>> expr, string name = null)
     {
-      name = name ?? $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}";
+      name = name ?? $"{complexGetter.AsPropertyAccess()?.GetDisplayName() ?? ""}.{expr.AsPropertyAccess()?.GetDisplayName() ?? ""}";
       return new TableColumn<string>(name, CombineGetters(complexGetter, expr).Compile());
     }
 
@@ -127,7 +144,7 @@ namespace JoinRpg.Web.Models.Exporters
       Expression<Func<T1, T2>> immed, Expression<Func<T2, string>> expr, string name = null) where T2 : class
     {
       name = name ??
-             $"{complexGetter.AsPropertyAccess().GetDisplayName()}.{immed.AsPropertyAccess().GetDisplayName()}.{expr.AsPropertyAccess().GetDisplayName()}";
+             $"{complexGetter.AsPropertyAccess()?.GetDisplayName()}.{immed.AsPropertyAccess()?.GetDisplayName()}.{expr.AsPropertyAccess()?.GetDisplayName()}";
       return new TableColumn<string>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
     }
 
@@ -136,6 +153,19 @@ namespace JoinRpg.Web.Models.Exporters
     {
       //TODO: Combine getters before compile 
       return arg => complexGetter.Compile()(arg) == null ? null : expr.Compile()(complexGetter.Compile()(arg));
+    }
+
+    [Pure]
+    protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, CustomFieldsViewModel> fieldsFunc)
+    {
+      return FieldColumn(projectField, fieldsFunc, projectField.FieldName);
+    }
+
+    [Pure]
+    protected static ITableColumn FieldColumn(ProjectField projectField, Func<TRow, CustomFieldsViewModel> fieldsFunc, string name)
+    {
+      return new TableColumn<IHtmlString>(name,
+        x => fieldsFunc(x).FieldById(projectField.ProjectFieldId)?.DisplayString);
     }
   }
 }

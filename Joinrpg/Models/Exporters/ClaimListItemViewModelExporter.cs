@@ -3,7 +3,6 @@ using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models.Exporters
 {
@@ -35,8 +34,7 @@ namespace JoinRpg.Web.Models.Exporters
       foreach (var projectField in Fields.Where(f => f.CanHaveValue()))
       {
         yield return
-          FieldColumn(projectField.FieldName,
-            x => x.Fields.FieldById(projectField.ProjectFieldId)?.DisplayString);
+          FieldColumn(projectField, x => x.Fields);
       }
     }
   }

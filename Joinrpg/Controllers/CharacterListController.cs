@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Controllers
       var list = new CharacterListViewModel(acl.UserId , "Все персонажи", characters, plots, project, vm => true);
 
       return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
-        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
+        new CharacterListForAutomaticExporter(list.Fields, UriService), list.ProjectName);
     }
 
     [HttpGet]
