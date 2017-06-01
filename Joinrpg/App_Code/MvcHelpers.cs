@@ -31,6 +31,12 @@ namespace JoinRpg.Web.App_Code
             return MvcHtmlString.Create(string.Format(@"<div class=""help-block"">{0}</div>", description));
         }
 
+        public static MvcHtmlString HelpLink(string link, string message)
+        {
+            return new MvcHtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
+                                     "\">" + message + "</a>");
+        }
+
         public static TValue GetValue<TModel, TValue>(this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
