@@ -94,20 +94,33 @@
             </div>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Vk, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-7">
-                <div class="input-group">
-                    <span class="input-group-addon">https://vk.com/</span>
-                    @Html.EditorFor(model => model.Vk, new {htmlAttributes = new {@class = "form-control"}})
+      <div class="form-group">
+        @Html.LabelFor(model => model.Vk, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-7">
+          <div class="input-group">
+            <span class="input-group-addon">https://vk.com/</span>
+            @Html.EditorFor(model => model.Vk, new {htmlAttributes = new {@class = "form-control"}})
 
-                </div>
-                @Html.DescriptionFor(model => model.Vk)
-                @Html.ValidationMessageFor(model => model.Vk, "", new {@class = "text-danger"})
-            </div>
+          </div>
+          @Html.DescriptionFor(model => model.Vk)
+          @Html.ValidationMessageFor(model => model.Vk, "", new {@class = "text-danger"})
         </div>
+      </div>
+      
+      <div class="form-group">
+        @Html.LabelFor(model => model.Telegram, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-7">
+          <div class="input-group">
+            <span class="input-group-addon">https://t.me/</span>
+            @Html.EditorFor(model => model.Telegram, new {htmlAttributes = new {@class = "form-control"}})
 
-        <div class="form-group">
+          </div>
+          @Html.DescriptionFor(model => model.Telegram)
+          @Html.ValidationMessageFor(model => model.Telegram, "", new {@class = "text-danger"})
+        </div>
+      </div>
+
+      <div class="form-group">
             @Html.LabelFor(model => model.Nicknames, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-7">
                 @Html.EditorFor(model => model.Nicknames, new {htmlAttributes = new {@class = "form-control"}})

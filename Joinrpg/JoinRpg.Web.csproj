@@ -605,6 +605,7 @@
     <Content Include="Views\Plot\ShowElementVersion.cshtml" />
     <Content Include="Views\Claim\ClaimOperationPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PhoneNumber.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\Telegram.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

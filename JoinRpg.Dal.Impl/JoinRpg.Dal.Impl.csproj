@@ -343,6 +343,10 @@
     <Compile Include="Migrations\201705312112513_FixDropDownvaluesLinks.Designer.cs">
       <DependentUpon>201705312112513_FixDropDownvaluesLinks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706011909219_Telegram.cs" />
+    <Compile Include="Migrations\201706011909219_Telegram.Designer.cs">
+      <DependentUpon>201706011909219_Telegram.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -591,6 +595,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201705312112513_FixDropDownvaluesLinks.resx">
       <DependentUpon>201705312112513_FixDropDownvaluesLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706011909219_Telegram.resx">
+      <DependentUpon>201706011909219_Telegram.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
