@@ -14,7 +14,8 @@ namespace JoinRpg.Services.Export
       private IDictionary<Type, Func<object, string>> DisplayFunctions { get; } =
         new Dictionary<Type, Func<object, string>>();
 
-    public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data)
+      [Obsolete]
+      public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data)
       {
         return GetGenerator(type, data, new AutoFrontend<T>(DisplayFunctions));
       }
@@ -24,6 +25,7 @@ namespace JoinRpg.Services.Export
         return new TableGenerator<T>(data, GetGeneratorBackend(type), frontend);
     }
 
+      [Obsolete]
       public void BindDisplay<T>(Func<T, string> displayFunc)
       {
         DisplayFunctions.Add(typeof(T), arg => displayFunc((T) arg));
