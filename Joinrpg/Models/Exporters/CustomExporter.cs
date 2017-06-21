@@ -133,26 +133,35 @@ namespace JoinRpg.Web.Models.Exporters
     }
 
     [MustUseReturnValue]
-    protected static ITableColumn ComplexElementMemberColumn<T>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, string>> expr, string name = null)
+    protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr, string name = null)
+      where T: class
     {
-      name = name ?? $"{complexGetter.AsPropertyAccess()?.GetDisplayName() ?? ""}.{expr.AsPropertyAccess()?.GetDisplayName() ?? ""}";
-      return new TableColumn<string>(name, CombineGetters(complexGetter, expr).Compile());
+
+      name = name ?? CombineName(complexGetter.AsPropertyAccess(), expr.AsPropertyAccess());
+      return new TableColumn<TOut>(name, CombineGetters(complexGetter, expr).Compile());
+    }
+
+    [Pure]
+    private static string CombineName(params PropertyInfo[] propertyAccessors)
+    {
+      return string.Join(".", propertyAccessors.Select(prop => prop?.GetDisplayName()));
     }
 
     [MustUseReturnValue]
-    protected static ITableColumn ComplexElementMemberColumn<T1, T2>(Expression<Func<TRow, T1>> complexGetter,
-      Expression<Func<T1, T2>> immed, Expression<Func<T2, string>> expr, string name = null) where T2 : class
+    protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1>> complexGetter,
+      Expression<Func<T1, T2>> immed, Expression<Func<T2, TOut>> expr, string name = null) 
+      where T2 : class
+      where T1 : class
     {
-      name = name ??
-             $"{complexGetter.AsPropertyAccess()?.GetDisplayName()}.{immed.AsPropertyAccess()?.GetDisplayName()}.{expr.AsPropertyAccess()?.GetDisplayName()}";
-      return new TableColumn<string>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
+      name = name ?? CombineName(complexGetter.AsPropertyAccess(), immed.AsPropertyAccess(), expr.AsPropertyAccess());
+      return new TableColumn<TOut>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
     }
 
     private static Expression<Func<TRow, TOut>> CombineGetters<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr)
-      where TOut : class 
+      where T: class
     {
       //TODO: Combine getters before compile 
-      return arg => complexGetter.Compile()(arg) == null ? null : expr.Compile()(complexGetter.Compile()(arg));
+      return arg => complexGetter.Compile()(arg) == null ? default(TOut) : expr.Compile()(complexGetter.Compile()(arg));
     }
 
     [Pure]
