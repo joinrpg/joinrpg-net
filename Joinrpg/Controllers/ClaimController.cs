@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -107,10 +106,12 @@ namespace JoinRpg.Web.Controllers
           p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
         : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
 
+      var currentUser = await GetCurrentUserAsync();
+
       var plots = claim.IsApproved && claim.Character != null
         ? await _plotRepository.GetPlotsForCharacter(claim.Character)
         : new PlotElement[] { };
-      var claimViewModel = new ClaimViewModel(CurrentUserId, claim, printPlugins, plots);
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
@@ -120,10 +121,10 @@ namespace JoinRpg.Web.Controllers
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
 
-      var user = await GetCurrentUserAsync();
+      
       var parents = claim.GetTarget().GetParentGroupsToTop();
       claimViewModel.SubscriptionTooltip =
-        claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
+        claimViewModel.GetFullSubscriptionTooltip(parents, currentUser.Subscriptions, claimViewModel.ClaimId);
 
       return View("Edit", claimViewModel);
     }
@@ -432,7 +433,7 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
-      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+      var claimViewModel = new ClaimViewModel(user, claim,
         Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
 
       await _claimService.SubscribeClaimToUser(projectid, claimid);
@@ -455,7 +456,7 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
-      var claimViewModel = new ClaimViewModel(CurrentUserId, claim,
+      var claimViewModel = new ClaimViewModel(user, claim,
         Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
 
 

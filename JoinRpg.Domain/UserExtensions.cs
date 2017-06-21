@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
@@ -12,8 +13,13 @@ namespace JoinRpg.Domain
       return user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
     }
 
-    public static AccessReason GetProfileAccess(this User user, User currentUser)
+    public static AccessReason GetProfileAccess([NotNull] this User user, [CanBeNull] User currentUser)
     {
+      if (user == null) throw new ArgumentNullException(nameof(user));
+      if (currentUser == null)
+      {
+        return AccessReason.NoAccess;
+      }
       if (user.UserId == currentUser.UserId)
       {
         return AccessReason.ItsMe;
