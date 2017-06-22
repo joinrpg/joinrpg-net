@@ -7,7 +7,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       public DetectivePlugin()
       {
         Register("Улики", c => new CluePrinterOperation(c), "Распечатка улик к игре стимпанк");
-        Register("JSON", c => new ShowRawJsonConfiguration(c), "Конфигурация улик (в исходном виде)");
+        RegisterShowJsonConfiguraton();
         Register("Настройки", c => new ShowDetectiveConfiguration(c), "Конфигурация улик (в правильном виде)");
       }
 

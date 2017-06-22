@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Data.Interfaces;
@@ -9,6 +10,7 @@ using JoinRpg.Domain;
 
 namespace JoinRpg.PluginHost.Impl
 {
+  [UsedImplicitly]
   public class PluginFactoryImpl : IPluginFactory
   {
     private IProjectRepository ProjectRepository { get; }
@@ -49,8 +51,9 @@ namespace JoinRpg.PluginHost.Impl
             new PluginOperationData<T>(
               $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
               () =>
-                projectPlugin.Plugin.GetOperationInstance<T>(project.ProjectId, pluginOperationMetadata.Name,
-                  projectPlugin.Configuration), pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
+                projectPlugin.Plugin.GetOperationInstance<T>(pluginOperationMetadata.Name,
+                  new PluginConfiguration(project.ProjectName, projectPlugin.Configuration)),
+              pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
         }
 
       }
@@ -82,13 +85,15 @@ namespace JoinRpg.PluginHost.Impl
 
     private static CharacterInfo PrepareCharacterForPlugin(Character character)
     {
+      var player = character.ApprovedClaim?.Player;
       return new CharacterInfo(character.CharacterName,
         character.GetFields()
           .Select(f => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString)),
         character.CharacterId,
         character.GetParentGroupsToTop().Distinct()
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
-          .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)));
+          .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
+        player?.DisplayName, player?.FullName);
     }
   }
 }

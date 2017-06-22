@@ -144,7 +144,7 @@ namespace JoinRpg.Helpers
     }
 
     [NotNull]
-    public static IEnumerable<byte> AsUtf8BytesWithLimit([NotNull] string formattableString, int bytesLimit)
+    public static IEnumerable<byte> AsUtf8BytesWithLimit([NotNull] this string formattableString, int bytesLimit)
     {
       if (formattableString == null) throw new ArgumentNullException(nameof(formattableString));
 

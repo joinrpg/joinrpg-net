@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.Experimental.Plugin.Interfaces;
 
 namespace JoinRpg.Experimental.Plugin.HelloWorld
@@ -11,9 +10,9 @@ namespace JoinRpg.Experimental.Plugin.HelloWorld
     {
       private string Config { get; }
 
-      public HellowWorldOperation(string config)
+      public HellowWorldOperation(PluginConfiguration config)
       {
-        Config = config;
+        Config = config.ConfigurationString;
       }
 
       public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
