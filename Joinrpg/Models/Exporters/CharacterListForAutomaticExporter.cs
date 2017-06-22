@@ -28,6 +28,8 @@ namespace JoinRpg.Web.Models.Exporters
       }
 
 
+      yield return ComplexElementMemberColumn(x => x.Player, p => p.UserId);
+      
       foreach (var tableColumn in UserColumn(x => x.Player))
       {
         yield return tableColumn;

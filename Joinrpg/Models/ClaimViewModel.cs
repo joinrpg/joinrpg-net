@@ -12,7 +12,6 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.Print;
-using JoinRpg.Web.Controllers.Common;
 
 
 namespace JoinRpg.Web.Models
@@ -92,14 +91,14 @@ namespace JoinRpg.Web.Models
 
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; } 
 
-        public ClaimViewModel (int currentUserId, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
+        public ClaimViewModel (User currentUser, Claim claim, IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas, IReadOnlyCollection<PlotElement> plotElements)
         {
-            ClaimId = claim.ClaimId;
+          ClaimId = claim.ClaimId;
             CommentDiscussionId = claim.CommentDiscussionId;
-            RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUserId);
-            HasMasterAccess = claim.HasMasterAccess(currentUserId);
-            CanManageThisClaim = claim.CanManageClaim(currentUserId);
-            IsMyClaim = claim.PlayerUserId == currentUserId;
+            RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.Id);
+            HasMasterAccess = claim.HasMasterAccess(currentUser.Id);
+            CanManageThisClaim = claim.CanManageClaim(currentUser.Id);
+            IsMyClaim = claim.PlayerUserId == currentUser.Id;
             Player = claim.Player;
             ProjectId = claim.ProjectId;
             Status = claim.ClaimStatus;
@@ -109,9 +108,9 @@ namespace JoinRpg.Web.Models
             CharacterActive = claim.Character?.IsActive;
             OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count();
             HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-            Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUserId).Generate();
+            Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.Id).Generate();
             OtherClaimsFromThisPlayerCount =
-              OtherClaimsFromThisPlayerCount = claim.IsApproved || (claim.Project.Details?.EnableManyCharacters ?? false)
+              OtherClaimsFromThisPlayerCount = claim.IsApproved || claim.Project.Details.EnableManyCharacters
                 ? 0
                 : claim.OtherPendingClaimsForThisPlayer().Count();
             Description = claim.Character?.Description.ToHtmlString();
@@ -120,15 +119,15 @@ namespace JoinRpg.Web.Models
                 .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
             ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
             ResponsibleMaster = claim.ResponsibleMasterUser;
-            Fields = new CustomFieldsViewModel(currentUserId, claim);
-            Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUserId, CharacterNavigationPage.Claim);
-            ClaimFee = new ClaimFeeViewModel(claim, currentUserId);
+            Fields = new CustomFieldsViewModel(currentUser.Id, claim);
+            Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.Id, CharacterNavigationPage.Claim);
+            ClaimFee = new ClaimFeeViewModel(claim, currentUser.Id);
             Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-            PlayerDetails = new UserProfileDetailsViewModel(claim.Player);
+            PlayerDetails = new UserProfileDetailsViewModel(claim.Player, (AccessReason) claim.Player.GetProfileAccess(currentUser));
             PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
             ProjectActive = claim.Project.Active;
 
-            if (claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney))
+            if (claim.PlayerUserId == currentUser.Id || claim.HasMasterAccess(currentUser.Id, acl => acl.CanManageMoney))
             {
                 //Finance admins can create any payment. User also can create any payment, but it will be moderated
                 PaymentTypes = claim.Project.ActivePaymentTypes;
@@ -136,20 +135,20 @@ namespace JoinRpg.Web.Models
             else
             {
                 //All other master can create only payment from user to himself.
-                PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUserId);
+                PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.Id);
             }
 
 
             if (claim.Character != null)
             {
                 ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-                  claim.HasMasterAccess(currentUserId));
+                  claim.HasMasterAccess(currentUser.Id));
             }
 
           if (claim.IsApproved && claim.Character != null)
           {
             var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-            Plot = PlotDisplayViewModel.Published(readOnlyList, currentUserId, claim.Character);
+            Plot = PlotDisplayViewModel.Published(readOnlyList, currentUser.Id, claim.Character);
           }
           else
           {
@@ -159,7 +158,7 @@ namespace JoinRpg.Web.Models
 
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents, IEnumerable<UserSubscription> subscriptions, int ClaimId)
         {
-            string ClaimStatusChangeGroup="";
+            string claimStatusChangeGroup="";
             string CommentsGroup = "";
             string FieldChangeGroup = "";
             string MoneyOperationGroup = "";
@@ -187,7 +186,7 @@ namespace JoinRpg.Web.Models
                             if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
                             {
                                 subscrTooltip.ClaimStatusChange = true;
-                                ClaimStatusChangeGroup = par.CharacterGroupName;
+                                claimStatusChangeGroup = par.CharacterGroupName;
                             }
                             if (subscr.Comments && !subscrTooltip.Comments)
                             {
@@ -213,13 +212,13 @@ namespace JoinRpg.Web.Models
                     subscrTooltip.HasFullParentSubscription = true;
                 }
 
-            subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, ClaimStatusChangeGroup, CommentsGroup, FieldChangeGroup, MoneyOperationGroup);
+            subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, claimStatusChangeGroup, CommentsGroup, FieldChangeGroup, MoneyOperationGroup);
             return subscrTooltip;
         }
 
         public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip, string ClaimStatusChangeGroup, string CommentsGroup, string FieldChangeGroup, string MoneyOperationGroup)
         {
-            var res = "";
+            string res;
             if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
             {
                 res = "Вы подписаны на эту заявку";

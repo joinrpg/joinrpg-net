@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -56,7 +57,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Редактор сюжетов", Description = "может добавлять и удалять сюжеты и вводные, назначать группы и персонажей, которым они видны, публиковать вводные")]
     public bool CanManagePlots { get; set; }
 
-    public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)
+    public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, User currentUser)
     {
       return new AclViewModel
       {
@@ -73,7 +74,7 @@ namespace JoinRpg.Web.Models
         CanManagePlots = acl.CanManagePlots,
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = count,
-        UserDetails = new UserProfileDetailsViewModel(acl.User),
+        UserDetails = new UserProfileDetailsViewModel(acl.User, (AccessReason) acl.User.GetProfileAccess(currentUser)),
         ResponsibleFor = groups.Select(group => group.AsObjectLink()),
       };
     }
@@ -98,7 +99,7 @@ namespace JoinRpg.Web.Models
         UserId = acl.UserId,
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = count,
-        UserDetails = new UserProfileDetailsViewModel(acl.User),
+        UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
         ResponsibleFor = groups.Select(group => group.AsObjectLink()),
         Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name)
     };
