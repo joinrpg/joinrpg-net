@@ -654,6 +654,10 @@
       <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>
       <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.PlayerIdCard\JoinRpg.Experimental.Plugin.PlayerIdCard.csproj">
+      <Project>{18686e89-984c-45c8-8d2b-da9cdfd64e89}</Project>
+      <Name>JoinRpg.Experimental.Plugin.PlayerIdCard</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.SteampunkDetective\JoinRpg.Experimental.Plugin.SteampunkDetective.csproj">
       <Project>{FBF44C48-6861-4662-B808-2C154A5C3CAE}</Project>
       <Name>JoinRpg.Experimental.Plugin.SteampunkDetective</Name>

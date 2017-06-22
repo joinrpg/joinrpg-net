@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -25,11 +24,11 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     private ClueConfiguration Config { get; }
 
 
-    public CluePrinterOperation([NotNull] string config)
+    public CluePrinterOperation([NotNull] PluginConfiguration config)
     {
       if (config == null) throw new ArgumentNullException(nameof(config));
 
-      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config);
+      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config.ConfigurationString);
 
       var maxCode = 1;
       var digits = Config.Digits;
@@ -80,11 +79,11 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
         var characterQrCodeContents =
         $"{i}.{character.CharacterId} {character.Groups.Where(g => Config.GroupsToShowInQr.Contains(g.CharacterGroupId)).Select(g => g.ToString()).JoinStrings(",")} {character.CharacterName}";
         var qrCodeForCharacter = GenerateQrCodeForCharacter(character, characterQrCodeContents);
-        yield return GenerateClue(character, possibleSigns, random, qrCodeForCharacter);
+        yield return GenerateClue(possibleSigns, random, qrCodeForCharacter);
       }
     }
 
-    private HtmlCardPrintResult GenerateClue(CharacterInfo character, IReadOnlyCollection<SignDefinition> possibleSigns, Random random, string embeddedImageTag)
+    private HtmlCardPrintResult GenerateClue(IReadOnlyCollection<SignDefinition> possibleSigns, Random random, string embeddedImageTag)
     {
       var randomCodes = random.GetRandomSource().Select(c => c % MaxCode).Where(c => !UsedCodes.Contains(c));
 
@@ -117,7 +116,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
     private string GenerateQrCodeForCharacter(CharacterInfo character, string qrCodeContents)
     {
       var qrGenerator = new QRCodeGenerator();
-      var utf8Bytes = StaticStringHelpers.AsUtf8BytesWithLimit(qrCodeContents, 90).ToArray();
+      var utf8Bytes = qrCodeContents.AsUtf8BytesWithLimit(90).ToArray();
 
       var key = Config.QrEncryptionKey;
       var encryptedBytes = key != null ? BouncyFacade.Encrypt(key, utf8Bytes) : Convert.ToBase64String(utf8Bytes);

@@ -6,6 +6,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
   [PublicAPI]
   public interface IPrintCardPluginOperation : IPluginOperation
   {
-    IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character);
+    [NotNull, ItemNotNull]
+    IEnumerable<HtmlCardPrintResult> PrintForCharacter([NotNull] CharacterInfo character);
   }
 }
