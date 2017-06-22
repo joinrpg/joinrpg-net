@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+п»їusing System.Collections.Generic;
 using System.Linq;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using Newtonsoft.Json;
@@ -29,14 +29,14 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
     {
       return new HtmlCardPrintResult($@"
 <b>{_config.ProjectName}</b><br>
-<b>Игрок</b>: {character.PlayerName}<br>
-<b>ФИО</b>: {character.PlayerFullName}<br>
-<b>Персонаж</b>: {character.CharacterName}
+<b>РРіСЂРѕРє</b>: {character.PlayerName}<br>
+<b>Р¤РРћ</b>: {character.PlayerFullName}<br>
+<b>РџРµСЂСЃРѕРЅР°Р¶</b>: {character.CharacterName}
 {string.Join("",  ParsedConfig.Fields.Select(
         parsedConfigField =>
           GetCardField(character, parsedConfigField)))}
 <hr>
-Особые отметки:
+РћСЃРѕР±С‹Рµ РѕС‚РјРµС‚РєРё:
 ", CardSize.A7);
     }
 
