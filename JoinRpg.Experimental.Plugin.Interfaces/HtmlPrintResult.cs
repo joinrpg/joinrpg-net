@@ -5,10 +5,11 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
 {
   public class HtmlCardPrintResult
   {
-    public HtmlCardPrintResult(string html, CardSize cardSize)
+    public HtmlCardPrintResult(string html, CardSize cardSize, string backgroundUrl = null)
     {
       Html = html;
       CardSize = cardSize;
+      BackgroundUrl = backgroundUrl;
     }
 
     [PublicAPI]
@@ -16,6 +17,9 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
 
     [PublicAPI]
     public CardSize CardSize { get; }
+
+    [PublicAPI, CanBeNull]
+    public string BackgroundUrl { get; }
   }
 
   public enum CardSize

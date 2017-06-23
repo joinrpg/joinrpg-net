@@ -13,7 +13,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
   {
     public CharacterInfo([NotNull] string characterName, [NotNull] IEnumerable<CharacterFieldInfo> fields,
       int characterId, IEnumerable<CharacterGroupInfo> groups, [CanBeNull] string playerName,
-      [CanBeNull] string playerFullName)
+      [CanBeNull] string playerFullName, int? playerId)
     {
       if (characterName == null) throw new ArgumentNullException(nameof(characterName));
       if (fields == null) throw new ArgumentNullException(nameof(fields));
@@ -23,6 +23,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       PlayerName = playerName;
       PlayerFullName = playerFullName;
       Groups = groups.ToArray();
+      PlayerId = playerId;
     }
 
     public int CharacterId { get; }
@@ -36,12 +37,16 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
     [NotNull, ItemNotNull]
     public IEnumerable<CharacterGroupInfo> Groups { get; }
 
+    //TODO: Move all this into PlayerInfo
     [CanBeNull]
     public string PlayerName { get; }
 
     [CanBeNull]
     public string PlayerFullName { get; }
 
-    public bool HasPlayer => PlayerName != null;
+    public bool HasPlayer => PlayerId != null;
+
+    [CanBeNull]
+    public int? PlayerId { get; }
   }
 }

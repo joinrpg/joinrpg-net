@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -36,7 +36,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
 
     protected  void RegisterShowJsonConfiguraton()
     {
-      Register("JSON", c => new ShowRawJsonConfiguration(c), " ÓÌÙË„Û‡ˆËˇ (‚ ËÒıÓ‰ÌÓÏ ‚Ë‰Â)");
+      Register("JSON", c => new ShowRawJsonConfiguration(c), "–ö–æ–Ω—Ñ–∏–≥—É—Ä–∞—Ü–∏—è (–≤ –∏—Å—Ö–æ–¥–Ω–æ–º –≤–∏–¥–µ)");
     }
 
     public IEnumerable<PluginOperationMetadata> GetOperations()
