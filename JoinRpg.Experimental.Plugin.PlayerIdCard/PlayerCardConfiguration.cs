@@ -1,4 +1,4 @@
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace JoinRpg.Experimental.Plugin.PlayerIdCard
 {
@@ -7,6 +7,8 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
   {
     [UsedImplicitly]
     public MagicFieldConfig[] Fields { get; set; }
+    [UsedImplicitly]
+    public string LogoUrl { get; set; }
   }
 
   [UsedImplicitly]

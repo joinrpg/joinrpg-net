@@ -60,7 +60,8 @@
 <div>
       @foreach (var card in Model)
       {
-          <div class="a7card">
+        var background = card.BackgroundUrl != null ? new HtmlString("style=\"background-image:url(" + card.BackgroundUrl + "); background-position: center; background-size: contain; background-repeat: no-repeat;\"") : new HtmlString("");
+          <div class="a7card" @background>
             <div class="card-content">
               @(ViewBag.CardSanitizeDisable == true ? new MvcHtmlString(card.Html.UnValidatedValue) : card.Html.SanitizeHtml())
             </div>

@@ -1,20 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.Experimental.Plugin.Interfaces;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Experimental.Plugin.PlayerIdCard
 {
   public class PlayerIdCardOperation : IPrintCardPluginOperation
   {
-    private readonly PluginConfiguration _config;
-
     private PlayerCardConfiguration ParsedConfig { get; }
+    public string ProjectName { get; }
 
-    public PlayerIdCardOperation(PluginConfiguration config)
+    internal PlayerIdCardOperation(PlayerCardConfiguration config, string projectName)
     {
-      _config = config;
-      ParsedConfig = JsonConvert.DeserializeObject<PlayerCardConfiguration>(config.ConfigurationString);
+      ParsedConfig = config;
+      ProjectName = projectName;
     }
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
@@ -28,8 +26,8 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
     private HtmlCardPrintResult PrintOneCardForCharacter(CharacterInfo character)
     {
       return new HtmlCardPrintResult($@"
-<b>{_config.ProjectName}</b><br>
-<b>Игрок</b>: {character.PlayerName}<br>
+<b>{ProjectName}</b><br>
+<b>Игрок{character.PlayerId}</b>: {character.PlayerName}<br>
 <b>ФИО</b>: {character.PlayerFullName}<br>
 <b>Персонаж</b>: {character.CharacterName}
 {string.Join("",  ParsedConfig.Fields.Select(
@@ -37,7 +35,7 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
           GetCardField(character, parsedConfigField)))}
 <hr>
 Особые отметки:
-", CardSize.A7);
+", CardSize.A7, ParsedConfig.LogoUrl);
     }
 
     private static string GetCardField(CharacterInfo character, MagicFieldConfig parsedConfigField)
