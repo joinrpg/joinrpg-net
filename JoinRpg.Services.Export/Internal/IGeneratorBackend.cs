@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.Internal
 {
@@ -8,5 +9,6 @@ namespace JoinRpg.Services.Export.Internal
     string FileExtension { get; }
     void WriteRow(IEnumerable<Cell> cells);
     byte[] Generate();
+    void WriteHeaders(IEnumerable<ITableColumn> columns);
   }
 }

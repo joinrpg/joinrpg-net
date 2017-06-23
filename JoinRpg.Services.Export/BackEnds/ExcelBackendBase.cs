@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using JoinRpg.Services.Export.Internal;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.BackEnds
 {
@@ -26,7 +28,7 @@ namespace JoinRpg.Services.Export.BackEnds
       }
     }
 
-    public virtual void WriteRow(IEnumerable<Cell> cells)
+    public void WriteRow(IEnumerable<Cell> cells)
     {
       var columnIndex = 1;
       foreach (var cell in cells)
@@ -44,5 +46,15 @@ namespace JoinRpg.Services.Export.BackEnds
     protected abstract void AdjustColumnToContent(int columnIndex);
 
     protected abstract void FreezeHeader();
+
+    public void WriteHeaders(IEnumerable<ITableColumn> columns)
+    {
+      var headerCells = columns.Select(c => new Cell()
+      {
+        Content = c.Name,
+        ColumnHeader = true
+      });
+      WriteRow(headerCells);
+    }
   }
 }

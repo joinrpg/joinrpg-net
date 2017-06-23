@@ -27,9 +27,6 @@ namespace JoinRpg.Web.Models
     public UserProfileDetailsViewModel Details { get; set; }
 
     [ReadOnly(true)]
-    public AccessReason Reason { get; set; }
-
-    [ReadOnly(true)]
     public string Hash { get; set; }
 
     [ReadOnly(true)]
@@ -45,6 +42,8 @@ namespace JoinRpg.Web.Models
     public string PhoneNumber { get; }
     [Display(Name = "Skype"), UIHint("Skype")]
     public string Skype { get; }
+    [Display(Name = "Telegram"), UIHint("Telegram")]
+    public string Telegram { get; }
     [Display(Name = "ЖЖ"), UIHint("Livejournal")]
     public string Livejournal { get; }
     [Display(Name = "VK"), UIHint("Vkontakte")]
@@ -58,18 +57,24 @@ namespace JoinRpg.Web.Models
 
     public User User { get; } //TODO: Start using ViewModel here
 
-    public UserProfileDetailsViewModel ([NotNull] User user)
+    public AccessReason Reason { get; }
+
+    public UserProfileDetailsViewModel ([NotNull] User user, AccessReason reason)
     {
       if (user == null) throw new ArgumentNullException(nameof(user));
       Email = user.Email;
       FullName = user.FullName;
       User = user;
+      Reason = reason;
       Skype = user.Extra?.Skype;
+      Telegram = user.Extra?.Telegram;
       Livejournal = user.Extra?.Livejournal;
       Vk = user.Extra?.Vk;
       PhoneNumber = user.Extra?.PhoneNumber ?? "";
       AllrpgId = user.Allrpg?.Sid;
     }
+
+    public bool HasAccess => Reason != AccessReason.NoAccess;
   }
 
   public enum AccessReason

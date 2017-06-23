@@ -13,11 +13,11 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
   {
     private ClueConfiguration Config { get; }
 
-    public ShowDetectiveConfiguration(string config)
+    public ShowDetectiveConfiguration(PluginConfiguration config)
     {
       if (config == null) throw new ArgumentNullException(nameof(config));
 
-      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config);
+      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config.ConfigurationString);
 
     }
 

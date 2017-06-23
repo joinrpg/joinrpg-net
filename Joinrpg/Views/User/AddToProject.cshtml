@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
 @using Markdig.Renderers.Html
 @model UserProfileViewModel
 
@@ -25,6 +26,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanManageClaims, null, htmlFieldName: "CanManageClaims")
+                    @Html.DescriptionFor(model => acl.CanManageClaims)
                     @Html.ValidationMessageFor(model => acl.CanManageClaims, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -35,6 +37,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanChangeFields, null, htmlFieldName: "CanChangeFields")
+                    @Html.DescriptionFor(model => acl.CanChangeFields)
                     @Html.ValidationMessageFor(model => acl.CanChangeFields, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -45,6 +48,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanChangeProjectProperties, null, htmlFieldName: "CanChangeProjectProperties")
+                    @Html.DescriptionFor(model => acl.CanChangeProjectProperties)
                     @Html.ValidationMessageFor(model => acl.CanChangeProjectProperties, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -55,6 +59,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanGrantRights, null, htmlFieldName: "CanGrantRights")
+                    @Html.DescriptionFor(model => acl.CanGrantRights)
                     @Html.ValidationMessageFor(model => acl.CanGrantRights, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -65,6 +70,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanEditRoles, null, htmlFieldName: "CanEditRoles")
+                    @Html.DescriptionFor(model => acl.CanEditRoles)
                     @Html.ValidationMessageFor(model => acl.CanEditRoles, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -75,6 +81,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanManageMoney, null, htmlFieldName: "CanManageMoney")
+                    @Html.DescriptionFor(model => acl.CanManageMoney)
                     @Html.ValidationMessageFor(model => acl.CanManageMoney, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -85,6 +92,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
+                    @Html.DescriptionFor(model => acl.CanSendMassMails)
                     @Html.ValidationMessageFor(model => acl.CanSendMassMails, "", new {@class = "text-danger"})
                 </div>
             </div>
@@ -95,6 +103,7 @@
             <div class="col-md-1">
                 <div class="checkbox">
                     @Html.EditorFor(model => acl.CanManagePlots, null, htmlFieldName: "CanManagePlots")
+                    @Html.DescriptionFor(model => acl.CanManagePlots)
                     @Html.ValidationMessageFor(model => acl.CanManagePlots, "", new {@class = "text-danger"})
                 </div>
             </div>

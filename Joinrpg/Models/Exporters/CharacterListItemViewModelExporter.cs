@@ -1,36 +1,34 @@
 using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models.Exporters
 {
-  public class CharacterListItemViewModelExporter : CustomExporter<CharacterListItemViewModel>
+  public class CharacterListItemViewModelExporter : CharacterListExporterBase
   {
-    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields, IUriService uriService)
-      : base(uriService)
-    {
-      Fields = fields;
-    }
 
-    private IReadOnlyCollection<ProjectField> Fields { get; }
+    public CharacterListItemViewModelExporter(IReadOnlyCollection<ProjectField> fields, IUriService uriService) :
+      base(fields, uriService)
+    {
+    }
 
     public override IEnumerable<ITableColumn> ParseColumns()
     {
-      yield return StringColumn(x => x.Name);
-      yield return UriColumn(x => x);
+      foreach (var tableColumn in BasicColumns())
+      {
+        yield return tableColumn;
+      }
 
       foreach (var projectField in Fields)
       {
         yield return
-          FieldColumn(projectField.FieldName,
-            x => x.Fields.FieldById(projectField.ProjectFieldId)?.DisplayString);
+          FieldColumn(projectField, x => x.Fields);
       }
 
-      yield return EnumColumn(x => x.BusyStatus);
-      foreach (var c in UserColumn(x => x.Player))
+
+      foreach (var tableColumn in UserColumn(x => x.Player))
       {
-        yield return c;
+        yield return tableColumn;
       }
     }
   }

@@ -44,13 +44,16 @@
     <Compile Include="CharacterInfo.cs" />
     <Compile Include="HtmlPrintResult.cs" />
     <Compile Include="IPlugin.cs" />
+    <Compile Include="IPluginConfiguration.cs" />
     <Compile Include="IPluginOperation.cs" />
     <Compile Include="IPrintCardPluginOperation.cs" />
     <Compile Include="IShowConfigurationPluginOperation.cs" />
     <Compile Include="PluginConfigurationIncorrectException.cs" />
+    <Compile Include="PluginImplementationBase.cs" />
     <Compile Include="PluginOperationMetadata.cs" />
     <Compile Include="ProjectFieldInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShowRawJsonConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">

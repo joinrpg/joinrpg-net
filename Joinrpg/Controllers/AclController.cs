@@ -43,10 +43,12 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
       var claims = await ClaimRepository.GetClaimsCountByMasters(projectId, ClaimStatusSpec.Active);
       var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
+      var currentUser = await GetCurrentUserAsync();
+
       return View(project.ProjectAcls.Select(acl =>
-      {
+      {  
         return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId).ToList());
+          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId).ToList(), currentUser);
       }));
     }
 
@@ -74,6 +76,11 @@ namespace JoinRpg.Web.Controllers
       {
         return View(viewModel);
       }
+      if (viewModel.UserId == CurrentUserId)
+      {
+        //We are removing ourself, need to redirect to public page
+        return await RedirectToProject(viewModel.ProjectId);
+      }
       return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
     }
@@ -85,7 +92,9 @@ namespace JoinRpg.Web.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectId);
       var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
       var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
-      return View(AclViewModel.FromAcl(projectAcl, 0, groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList()));
+      var currentUser = await GetCurrentUserAsync();
+      return View(AclViewModel.FromAcl(projectAcl, 0,
+        groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(), currentUser));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]

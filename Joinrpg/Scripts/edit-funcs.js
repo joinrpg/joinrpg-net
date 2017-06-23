@@ -53,4 +53,10 @@ $("#unpublishElementModal").on("show.bs.modal", function (event) {
 });
 
 var hash = window.location.hash.substr(1);
-$("#" + hash).collapse('show');
+if (hash) {
+    $("#" + hash).collapse('show');
+}
+
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+})

@@ -28,8 +28,8 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Игрок может менять")]
     public bool CanPlayerEdit { get; set; }
 
-    [Display(Name = "Описание"), UIHint("MarkdownString")]
-    public string Description { get; set; }
+    [Display(Name = "Описание")]
+    public IHtmlString DescriptionDisplay { get; set; }
 
     [Display(Name = "Обязательное?")]
     public MandatoryStatusViewType MandatoryStatus { get; set; }
@@ -82,28 +82,33 @@ namespace JoinRpg.Web.Models
 
     public bool HasValueList { get; }
 
-    public GameFieldEditViewModel(ProjectField field)
-    {
-      CanPlayerView = field.CanPlayerView;
-      CanPlayerEdit = field.CanPlayerEdit;
-      Description = field.Description.Contents;
-      ProjectFieldId = field.ProjectFieldId;
-      IsPublic = field.IsPublic;
-      Name = field.FieldName;
-      ProjectId = field.ProjectId;
-      IsActive = field.IsActive;
-      HasValueList = field.HasValueList();
-      DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv)).MarkFirstAndLast();
-      FieldViewType = (ProjectFieldViewType) field.FieldType;
-      FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
-      MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
-      ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
-      IncludeInPrint = field.IncludeInPrint;
-      ValidForNpc = field.ValidForNpc;
-      ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
-    }
+      [Display(Name = "Описание"), UIHint("MarkdownString")]
+      public string DescriptionEditable { get; set; }
 
-    public GameFieldEditViewModel()
+      public GameFieldEditViewModel(ProjectField field)
+      {
+          CanPlayerView = field.CanPlayerView;
+          CanPlayerEdit = field.CanPlayerEdit;
+          DescriptionEditable = field.Description.Contents;
+          DescriptionDisplay = field.Description.ToHtmlString();
+          ProjectFieldId = field.ProjectFieldId;
+          IsPublic = field.IsPublic;
+          Name = field.FieldName;
+          ProjectId = field.ProjectId;
+          IsActive = field.IsActive;
+          HasValueList = field.HasValueList();
+          DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
+              .MarkFirstAndLast();
+          FieldViewType = (ProjectFieldViewType) field.FieldType;
+          FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
+          MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
+          ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
+          IncludeInPrint = field.IncludeInPrint;
+          ValidForNpc = field.ValidForNpc;
+          ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
+      }
+
+      public GameFieldEditViewModel()
     { }
 
     [ReadOnly(true)]
@@ -168,7 +173,10 @@ namespace JoinRpg.Web.Models
     [Display(Name="Тип поля")]
     public ProjectFieldViewType FieldViewType { get; set; }
 
-    [Display(Name = "Привязано к", 
+    [Display(Name = "Описание"), UIHint("MarkdownString")]
+    public string DescriptionEditable { get; set; }
+
+        [Display(Name = "Привязано к", 
       Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
     public FieldBoundToViewModel FieldBoundTo { get; set; }
 
@@ -210,38 +218,43 @@ namespace JoinRpg.Web.Models
     public int ProjectFieldId { get; set; }
   }
 
-  public class GameFieldDropdownValueListItemViewModel : IMovableListItem
-  {
-    [Display(Name = "Значение"), Required]
-    public string Label { get; set; }
-
-    [Display(Name = "Описание")]
-    public IHtmlString Description { get; }
-
-    public int ProjectId { get; }
-    public int ProjectFieldId { get; }
-    public bool IsActive { get; }
-
-    public int ProjectFieldDropdownValueId { get;  }
-
-    public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
+    public class GameFieldDropdownValueListItemViewModel : IMovableListItem
     {
-      Label = value.Label;
-      Description = value.Description.ToHtmlString();
-      IsActive = value.IsActive;
-      ProjectId = value.ProjectId;
-      ProjectFieldId = value.ProjectFieldId;
-      ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+        [Display(Name = "Значение"), Required]
+        public string Label { get; set; }
+
+        [Display(Name = "Описание")]
+        public IHtmlString Description { get; }
+
+        public int ProjectId { get; }
+        public int ProjectFieldId { get; }
+        public bool IsActive { get; }
+
+        public int? CharacterGroupId { get; }
+
+        public int ProjectFieldDropdownValueId { get; }
+
+        public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
+        {
+            Label = value.Label;
+            Description = value.Description.ToHtmlString();
+            IsActive = value.IsActive;
+            ProjectId = value.ProjectId;
+            ProjectFieldId = value.ProjectFieldId;
+            ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+            CharacterGroupId = value.CharacterGroup?.CharacterGroupId;
+        }
+
+        #region Implementation of IMovableListItem
+
+        public bool First { get; set; }
+        public bool Last { get; set; }
+        int IMovableListItem.ItemId => ProjectFieldDropdownValueId;
+
+        #endregion
     }
 
-    #region Implementation of IMovableListItem
-    public bool First { get; set; }
-    public bool Last { get; set; }
-    int IMovableListItem.ItemId => ProjectFieldDropdownValueId;
-    #endregion
-  }
-
-  public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewModelBase
+    public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewModelBase
   {
     public bool IsActive
     { get; set; }

@@ -3,12 +3,12 @@
     ViewBag.Title = "Регистрация";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewBag.Title</h2>
 
 @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
 {
     @Html.AntiForgeryToken()
-    <h4>Создать аккаунт.</h4>
+    <h4>Создать аккаунт</h4>
     <p>Если вы уже зарегистрированы на сайте allrpg.info, пожалуйста, введите тот же email, на который вы были зарегистрированы там. Профиль будет автоматически импортирован. Пароль рекомендуем ввести новый.</p>
     <hr />
     @Html.ValidationSummary("", new { @class = "text-danger" })

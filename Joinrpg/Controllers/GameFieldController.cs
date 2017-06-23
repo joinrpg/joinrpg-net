@@ -69,7 +69,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
-          viewModel.Description,
+          viewModel.DescriptionEditable,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
           viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
           viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, viewModel.ShowForUnApprovedClaim);
@@ -115,7 +115,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
-            viewModel.Name, viewModel.Description, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
+            viewModel.Name, viewModel.DescriptionEditable, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
             viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
             viewModel.ShowForUnApprovedClaim);

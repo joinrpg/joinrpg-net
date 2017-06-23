@@ -94,11 +94,13 @@ namespace JoinRpg.DataModel
 
     public string GroupNames { get; set; }
 
+    public string Telegram { get; set; }
+
     public DateTime? BirthDate { get; set; }
 
     public override string ToString()
     {
-      return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate})";
+      return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
     }
   }
 
