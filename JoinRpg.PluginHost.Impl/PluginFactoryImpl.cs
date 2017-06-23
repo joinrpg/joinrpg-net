@@ -22,7 +22,8 @@ namespace JoinRpg.PluginHost.Impl
     }
 
 
-    public async Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId) where T : IPluginOperation
+    public async Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId)
+      where T : IPluginOperation
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
       return ReturnPlugins<T>(project);
@@ -93,7 +94,7 @@ namespace JoinRpg.PluginHost.Impl
         character.GetParentGroupsToTop().Distinct()
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
           .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
-        player?.DisplayName, player?.FullName);
+        player?.DisplayName, player?.FullName, player?.Id);
     }
   }
 }
