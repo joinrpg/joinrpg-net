@@ -26,7 +26,12 @@ namespace JoinRpg.Services.Impl.Search
         //TODO: We can stop here when we have X results.
         results.AddRange(rGroup);
       }
-      return results.AsReadOnly(); 
+
+      // If there're results that perfectly match the search string - return them only. 
+      // e.g. контакты123 should return only useer with ID=123
+      return results.Any(r => r.IsPerfectMatch) 
+        ? results.Where(r => r.IsPerfectMatch).ToList().AsReadOnly() 
+        : results.AsReadOnly();
     }
 
     private IEnumerable<ISearchProvider> GetProviders()
