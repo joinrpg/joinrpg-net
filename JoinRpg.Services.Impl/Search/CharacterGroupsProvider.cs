@@ -36,7 +36,8 @@ namespace JoinRpg.Services.Impl.Search
         currentUserId,
         characterGroups,
         LinkType.ResultCharacterGroup,
-        wo => false);
+        wasFoundByIdPredicate: cg => cg.Id == characterGroupIdToFind,
+        perfectMatchPredicte: cg => false);
     }
   }
 }

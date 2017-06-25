@@ -44,7 +44,8 @@ namespace JoinRpg.Services.Impl.Search
         currentUserId,
         characters,
         LinkType.ResultCharacter,
-        wo => wo.Id == characterIdToFind && matchByIdIsPerfect);
+        wasFoundByIdPredicate: c => c.Id == characterIdToFind,
+        perfectMatchPredicte: c => c.Id == characterIdToFind && matchByIdIsPerfect);
     }
   }
 }

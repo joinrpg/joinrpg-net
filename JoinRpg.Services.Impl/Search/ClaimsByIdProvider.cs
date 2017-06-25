@@ -49,7 +49,7 @@ namespace JoinRpg.Services.Impl.Search
           {
             LinkType = LinkType.Claim,
             Name = claim.Name,
-            Description = new MarkdownString(""),
+            Description = new MarkdownString(WorldObjectProviderBase.GetFoundByIdDescription(claim.ClaimId)),
             Identification = claim.ClaimId.ToString(),
             ProjectId = claim.ProjectId,
             IsPublic = false,

@@ -14,10 +14,24 @@ namespace JoinRpg.Services.Impl.Search
       int? currentUserId,
       [InstantHandle] IEnumerable<IWorldObject> results,
       LinkType linkType,
+      [InstantHandle] Predicate<IWorldObject> wasFoundByIdPredicate,
       [InstantHandle] Predicate<IWorldObject> perfectMatchPredicte)
     {
       return results.Where(cg => cg.IsVisible(currentUserId))
-        .Select(@result => SearchResultImpl.FromWorldObject(@result, linkType, perfectMatchPredicte(@result)))
+        .Select(@result =>
+          new SearchResultImpl
+          {
+            LinkType = linkType,
+            Name = @result.Name,
+            Description = wasFoundByIdPredicate(@result) 
+              ? new MarkdownString(GetFoundByIdDescription(@result.Id))
+              : @result.Description,
+            Identification = @result.Id.ToString(),
+            ProjectId = @result.ProjectId,
+            IsPublic = @result.IsPublic,
+            IsActive = @result.IsActive,
+            IsPerfectMatch = perfectMatchPredicte(@result)
+          })
         .ToList();
     }
 
@@ -33,6 +47,11 @@ namespace JoinRpg.Services.Impl.Search
       return
         entity.Id != searchedEntityId
         || entity.Project.HasMasterAccess(currentUserId);
+    }
+
+    public static string GetFoundByIdDescription(int idToFind)
+    {
+      return $"ID: {idToFind}";
     }
 
     public IUnitOfWork UnitOfWork { protected get; set; }

@@ -44,16 +44,24 @@ namespace JoinRpg.Services.Impl.Search
             )
             .ToListAsync();
 
-      return results.Select(user => new SearchResultImpl
+      return results.Select(user =>
       {
-        LinkType = LinkType.ResultUser,
-        Name = user.DisplayName,
-        Description = new MarkdownString(""),
-        Identification = user.UserId.ToString(),
-        ProjectId = null, //Users not associated with any project
-        IsPublic = true,
-        IsActive = true,
-        IsPerfectMatch = user.UserId == idToFind && matchByIdIsPerfect //Only some mathes by Id can be "perfect"
+        bool wasfoundById = user.UserId == idToFind;
+        var description = new MarkdownString(wasfoundById
+          ? WorldObjectProviderBase.GetFoundByIdDescription(user.UserId)
+          : "");
+
+        return new SearchResultImpl
+                {
+                  LinkType = LinkType.ResultUser,
+                  Name = user.DisplayName,
+                  Description = description,
+                  Identification = user.UserId.ToString(),
+                  ProjectId = null, //Users not associated with any project
+                  IsPublic = true,
+                  IsActive = true,
+                  IsPerfectMatch = wasfoundById && matchByIdIsPerfect
+                };
       }).ToList();
     }
   }
