@@ -11,18 +11,32 @@ namespace JoinRpg.Services.Impl.Search
   { 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-      var results =
+      int parsedValue;
+      int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out parsedValue)
+        ? (int?)parsedValue
+        : null;
+
+      var queryResults =
         await
           UnitOfWork.GetDbSet<CharacterGroup>()
             .Where(cg =>
-              (cg.CharacterGroupName.Contains(searchString) 
-                || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
+              (cg.CharacterGroupId == characterGroupIdToFind
+              ||cg.CharacterGroupName.Contains(searchString) 
+              || (cg.Description.Contents != null && cg.Description.Contents.Contains(searchString)))
               && cg.IsActive && !cg.IsRoot
             )
             .OrderByDescending(cg => cg.CharacterGroupName.Contains(searchString))
             .ToListAsync();
 
-      return GetWorldObjectsResult(currentUserId, results, LinkType.ResultCharacterGroup, wo => false);
+      //search by ID is only for masters of the group's project
+      var characterGroups = queryResults.Where(cg => 
+        CheckMasterAccessIfMatchById(cg, currentUserId, characterGroupIdToFind));
+
+      return GetWorldObjectsResult(
+        currentUserId,
+        characterGroups,
+        LinkType.ResultCharacterGroup,
+        wo => false);
     }
   }
 }

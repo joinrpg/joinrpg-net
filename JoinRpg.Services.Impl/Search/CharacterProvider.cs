@@ -19,7 +19,7 @@ namespace JoinRpg.Services.Impl.Search
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
       bool matchByIdIsPerfect;
-      int? characterID = SearchKeywordsResolver.TryGetId(
+      int? characterIdToFind = SearchKeywordsResolver.TryGetId(
         searchString,
         keysForPerfectMath,
         out matchByIdIsPerfect);
@@ -28,19 +28,23 @@ namespace JoinRpg.Services.Impl.Search
         await
           UnitOfWork.GetDbSet<Character>()
             .Where(c =>
-              (c.CharacterId == characterID
+              (c.CharacterId == characterIdToFind
               || c.CharacterName.Contains(searchString)
               || (c.Description.Contents != null && c.Description.Contents.Contains(searchString)))
               && c.IsActive
             )
             .OrderByDescending(cg => cg.CharacterName.Contains(searchString))
             .ToListAsync();
+      
+      //search by ID is only for masters of the character's project
+      var characters = results.Where(c => 
+        CheckMasterAccessIfMatchById(c, currentUserId, characterIdToFind));
 
       return GetWorldObjectsResult(
         currentUserId,
-        results.Where(c => CheckMasterAccessIfMatchById(c, currentUserId, characterID)),
+        characters,
         LinkType.ResultCharacter,
-        wo => wo.Id == characterID && matchByIdIsPerfect);
+        wo => wo.Id == characterIdToFind && matchByIdIsPerfect);
     }
   }
 }
