@@ -21,7 +21,7 @@ namespace JoinRpg.Services.Impl.Search
       }
 
       //"%контакты4196", "персонаж4196", etc provide a perfect match
-      if (keysForPerfectMath.Any(k => searchString.StartsWith(k, StringComparison.CurrentCultureIgnoreCase)))
+      if (keysForPerfectMath.Any(k => searchString.StartsWith(k, StringComparison.InvariantCultureIgnoreCase)))
       {
         keysForPerfectMath.ForEach(k =>
           searchString = Regex.Replace(searchString, Regex.Escape(k), "", RegexOptions.IgnoreCase));

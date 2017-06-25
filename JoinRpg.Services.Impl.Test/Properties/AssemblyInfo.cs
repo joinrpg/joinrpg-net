@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JoinRpg.Services.Impl")]
+[assembly: AssemblyTitle("JoinRpg.Services.Impl.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("JoinRpg.Services.Impl")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyProduct("JoinRpg.Services.Impl.Test")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,9 +20,8 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("835eb33a-f3d1-49c7-9c85-1f5f2387a052")]
+[assembly: Guid("d21bdcde-6a40-4afc-8d72-e7441e638e17")]
 
-[assembly: InternalsVisibleTo("JoinRpg.Services.Impl.Test")]
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version
