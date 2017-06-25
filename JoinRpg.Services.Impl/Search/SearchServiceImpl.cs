@@ -48,6 +48,7 @@ namespace JoinRpg.Services.Impl.Search
     public bool IsPublic { get; set; }
 
     public bool IsActive { get; set; }
+    public bool IsPerfectMatch { get; set; } = false;
 
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
