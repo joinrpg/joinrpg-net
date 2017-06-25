@@ -53,7 +53,7 @@ namespace JoinRpg.Services.Impl.Search
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
 
-    public static SearchResultImpl FromWorldObject(IWorldObject @group, LinkType type)
+    public static SearchResultImpl FromWorldObject(IWorldObject @group, LinkType type, bool isPerfectMatch)
     {
       return new SearchResultImpl
       {
@@ -63,7 +63,8 @@ namespace JoinRpg.Services.Impl.Search
         Identification = @group.Id.ToString(),
         ProjectId = @group.ProjectId,
         IsPublic = group.IsPublic,
-        IsActive = group.IsActive
+        IsActive = group.IsActive,
+        IsPerfectMatch = isPerfectMatch
       };
     }
   }

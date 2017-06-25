@@ -22,7 +22,7 @@ namespace JoinRpg.Services.Impl.Search
             .OrderByDescending(cg => cg.CharacterGroupName.Contains(searchString))
             .ToListAsync();
 
-      return GetWorldObjectsResult(currentUserId, results, LinkType.ResultCharacterGroup);
+      return GetWorldObjectsResult(currentUserId, results, LinkType.ResultCharacterGroup, wo => false);
     }
   }
 }
