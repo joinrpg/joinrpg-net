@@ -19,8 +19,6 @@ namespace JoinRpg.Web.Models.Exporters
         yield return tableColumn;
       }
 
-      yield return UriListColumn(x => x.Groups.ParentGroups);
-
       foreach (var projectField in Fields)
       {
         yield return

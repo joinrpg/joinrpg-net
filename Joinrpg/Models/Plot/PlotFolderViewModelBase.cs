@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Models.Plot
     [ReadOnly(true), Display(Name = "Название сюжета")]
     public string PlotFolderMasterTitle{ get; set; }
 
-    [Display(Name = "TODO (что сделать по сюжету)"), DataType(DataType.MultilineText)]
+    [Display(Name = "TODO"), DataType(DataType.MultilineText), Description("Что сделать по сюжету")]
     public string TodoField
     { get; set; }
 

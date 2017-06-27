@@ -165,7 +165,6 @@ namespace JoinRpg.Services.Impl
     private static void UpdateElementMetadata(PlotElement plotElement, DateTime now)
     {
       plotElement.IsActive = true;
-      plotElement.IsCompleted = false;
       plotElement.ModifiedDateTime = now;
       plotElement.PlotFolder.ModifiedDateTime = now;
     }
@@ -198,6 +197,7 @@ namespace JoinRpg.Services.Impl
         AuthorUserId = CurrentUserId
       };
       plotElement.Texts.Add(text);
+      plotElement.IsCompleted = false;
     }
 
     public async Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string contents, string todoField)
