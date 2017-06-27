@@ -130,6 +130,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault));
     }
 
@@ -156,6 +160,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> CreateElement(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       return View(new AddPlotElementViewModel()
       {
         ProjectId = projectId,
@@ -168,6 +176,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> CreateHandout(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       return View(new AddPlotHandoutViewModel()
       {
         ProjectId = projectId,
@@ -188,6 +200,10 @@ namespace JoinRpg.Web.Controllers
       {
         ModelState.AddException(exception);
         var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        if (folder == null)
+        {
+          return HttpNotFound();
+        }
         return View(new AddPlotHandoutViewModel()
         {
           ProjectId = projectId,
@@ -211,6 +227,10 @@ namespace JoinRpg.Web.Controllers
       {
         ModelState.AddException(exception);
         var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+        if (folder == null)
+        {
+          return HttpNotFound();
+        }
         return View(new AddPlotElementViewModel()
         {
           ProjectId = projectId,
@@ -250,6 +270,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Delete(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       return View(new EditPlotFolderViewModel(folder, CurrentUserId));
     }
 
@@ -290,6 +314,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
         folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots));
       return View(viewModel);
@@ -359,6 +387,10 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
+      if (folder == null)
+      {
+        return HttpNotFound();
+      }
       return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
         CurrentUserId, version));
     }
