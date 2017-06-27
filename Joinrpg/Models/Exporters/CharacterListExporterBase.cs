@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Models.Exporters
       yield return UriColumn(x => x);
       yield return EnumColumn(x => x.BusyStatus);
       yield return StringListColumn(x => x.Groups.ParentGroups.Select(g => g.Name));
+      yield return UriListColumn(x => x.Groups.ParentGroups);
     }
   }
 }

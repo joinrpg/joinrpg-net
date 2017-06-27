@@ -17,17 +17,16 @@ namespace JoinRpg.Web.Models.Characters
   {
     public bool HasMasterAccess { get; }
     [ReadOnly(true), DisplayName("Входит в группы")]
-    public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; }
+    public IReadOnlyCollection<CharacterGroupLinkViewModel> ParentGroups { get; }
 
     public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
       HasMasterAccess = hasMasterAccess;
-      //TODO: Remove special groups from here
       ParentGroups = character
         .GetParentGroupsToTop()
-        .Where(group => !group.IsRoot && (!group.IsSpecial || group.GetBoundFieldDropdownValueOrDefault() != null))
-        .Select(g => new CharacterGroupLinkViewModel(g)).ToArray();
+        .Where(group => !group.IsRoot && !group.IsSpecial)
+        .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
     }
   }
 
