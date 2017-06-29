@@ -14,11 +14,12 @@ namespace JoinRpg.PluginHost.Impl
   public class PluginFactoryImpl : IPluginFactory
   {
     private IProjectRepository ProjectRepository { get; }
-    private IPluginResolver PluginResolver { get; }
-    public PluginFactoryImpl(IProjectRepository projectRepository, IPluginResolver pluginResolver)
+    private IReadOnlyCollection<IPlugin> Plugins { get; }
+    
+    public PluginFactoryImpl(IProjectRepository projectRepository, IPlugin[] plugins)
     {
       ProjectRepository = projectRepository;
-      PluginResolver = pluginResolver;
+      Plugins = plugins;
     }
 
 
@@ -26,10 +27,10 @@ namespace JoinRpg.PluginHost.Impl
       where T : IPluginOperation
     {
       var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return ReturnPlugins<T>(project);
+      return GetProjectOperatons<T>(project);
     }
 
-    private IEnumerable<PluginOperationData<T>> ReturnPlugins<T>(Project project) where T : IPluginOperation
+    private IEnumerable<PluginOperationData<T>> GetProjectOperatons<T>(Project project) where T : IPluginOperation
     {
       if (!project.ProjectPlugins.Any())
       {
@@ -37,7 +38,7 @@ namespace JoinRpg.PluginHost.Impl
       }
       foreach (
         var projectPlugin in
-          project.ProjectPlugins.Join(PluginResolver.Resolve(), pp => pp.Name, p => p.GetName(),
+          project.ProjectPlugins.Join(Plugins, pp => pp.Name, p => p.GetName(),
             (pp, p) => new
             {
               Plugin = p,

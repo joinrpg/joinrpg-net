@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPluginResolver.cs" />
     <Compile Include="PluginOperationData.cs" />
     <Compile Include="IPluginFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
