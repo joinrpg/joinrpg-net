@@ -610,7 +610,6 @@
     <Content Include="Views\Shared\DisplayTemplates\Telegram.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Views\Allrpg\" />
     <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Properties\PublishProfiles\" />
