@@ -1,0 +1,53 @@
+﻿@model JoinRpg.Web.Models.Plugins.PluginListViewModel
+
+@{
+  ViewBag.Title = "Плагины";
+}
+
+<h2>@ViewBag.Title</h2>
+
+
+<div class="alert alert-info">
+  Чтобы подключить и настроить плагины, обратитесь в техподдержку
+</div>
+<table class="table">
+  <tr>
+    <th>
+      @Html.DisplayNameFor(model => model.Plugins.FirstOrDefault().Name)
+    </th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+  @foreach (var plugin in Model.Plugins.OrderByDescending(p => p.Installed).ThenBy(p => p.Name))
+  {
+    <tr>
+      <td>
+        @Html.DisplayFor(item => plugin.Name)
+      </td>
+      <td>
+        @if (plugin.Installed)
+        {
+          <span class="label label-success">Установлен</span>
+        }
+      </td>
+      <td>
+        @if (plugin.Installed)
+        {
+          foreach (var page in plugin.StaticPages)
+          {
+            <a href="@Url.Action("DisplayPage", new {Model.ProjectId, Operation = page})">@page</a>
+          }
+        }
+      </td>
+      <td>
+        @if (plugin.Installed)
+        {
+          @*<a href="@Url.Action("Delete", new {Model.ProjectId, Plugin = plugin.Name})" class="btn btn-danger">Удалить</a>
+          <br />*@
+          <a href="@Url.Action("DisplayConfig", new {Model.ProjectId, Plugin = plugin.Name})" >Посмотреть настройки</a>
+        }
+      </td>
+    </tr>
+  }
+</table>

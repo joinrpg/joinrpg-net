@@ -7,6 +7,7 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Filter;
+using JoinRpg.Web.Models.Plugins;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -21,10 +22,23 @@ namespace JoinRpg.Web.Controllers
       PluginFactory = pluginFactory;
     }
 
-    [MasterAuthorize()]
+    [MasterAuthorize]
     public async Task<ActionResult> DisplayConfig(int projectid, string plugin)
     {
-      var pluginInstance = await PluginFactory.GetOperationInstance<IShowConfigurationPluginOperation>(projectid, plugin);
+      var pluginInstance = await PluginFactory.GetConfiguration(projectid, plugin);
+      if (pluginInstance == null)
+      {
+        return HttpNotFound();
+      }
+
+      ViewBag.Title = pluginInstance.Name;
+      return View("ShowMarkdown", pluginInstance.Configuration.ToHtmlString());
+    }
+
+    [MasterAuthorize]
+    public async Task<ActionResult> DisplayPage(int projectid, string operation)
+    {
+      var pluginInstance = await PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(projectid, operation);
       if (pluginInstance == null)
       {
         return HttpNotFound();
@@ -34,8 +48,16 @@ namespace JoinRpg.Web.Controllers
 
       ViewBag.Title = pluginInstance.OperationName;
       return View("ShowMarkdown",
-        PluginFactory.ShowPluginConfiguration(pluginInstance, project).ToHtmlString());
+        PluginFactory.ShowStaticPage(pluginInstance, project).ToHtmlString());
       ;
+    }
+
+    [MasterAuthorize()]
+    public async Task<ActionResult> Index(int projectid)
+    {
+      var plugins = await PluginFactory.GetPluginsForProject(projectid);
+
+      return View(new PluginListViewModel(projectid, plugins, CurrentUserId));
     }
   }
 }

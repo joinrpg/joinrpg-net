@@ -10,7 +10,6 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
       Register("Распечатка аусвайсов",
         config => new PlayerIdCardOperation(
           JsonConvert.DeserializeObject<PlayerCardConfiguration>(config.ConfigurationString), config.ProjectName));
-      RegisterShowJsonConfiguraton();
     }
 
     public override string GetName() => "Распечатка аусвайсов";

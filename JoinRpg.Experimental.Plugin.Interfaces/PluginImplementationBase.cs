@@ -34,11 +34,6 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       _operations.Add(name, new OperationLink(typeof(T), c => implementer(c), description, allowPlayerAccess));
     }
 
-    protected  void RegisterShowJsonConfiguraton()
-    {
-      Register("JSON", c => new ShowRawJsonConfiguration(c), "Конфигурация (в исходном виде)");
-    }
-
     public IEnumerable<PluginOperationMetadata> GetOperations()
     {
       return

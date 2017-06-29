@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -63,14 +61,9 @@ namespace JoinRpg.Web.Controllers
         (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
           PluginOperationDescriptionViewModel.Create);
 
-      //TODO: That doesn't belong here
-      var configPluginNames =
-  (await PluginFactory.GetPossibleOperations<IShowConfigurationPluginOperation>(projectId)).Select(
-    PluginOperationDescriptionViewModel.Create);
-
       return
         View(new PrintIndexViewModel(projectId,
-          characters.Select(c => c.CharacterId).ToArray(), pluginNames, configPluginNames));
+          characters.Select(c => c.CharacterId).ToArray(), pluginNames));
     }
 
     [MasterAuthorize()]

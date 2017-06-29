@@ -278,6 +278,7 @@
     <Compile Include="Models\MoneySummaryByMasterListItemViewModel.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
     <Compile Include="Models\Permission.cs" />
+    <Compile Include="Models\Plugins\PluginListViewModel.cs" />
     <Compile Include="Models\Print\PrintCharacterViewModel.cs" />
     <Compile Include="Models\Print\HandoutReportViewModel.cs" />
     <Compile Include="Models\Print\PrintIndexViewModel.cs" />
@@ -608,11 +609,12 @@
     <Content Include="Views\Claim\ClaimOperationPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\PhoneNumber.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Telegram.cshtml" />
+    <Content Include="Views\PluginSetup\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Views\Allrpg\" />
     <Folder Include="Areas\Admin\Views\Shared\" />
-    <Folder Include="Properties\PublishProfiles\" />
     <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>

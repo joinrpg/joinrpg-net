@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 {
-  public class ShowDetectiveConfiguration : IShowConfigurationPluginOperation
+  public class ShowDetectiveConfiguration : IStaticPagePluginOperation
   {
     private ClueConfiguration Config { get; }
 
@@ -21,7 +21,7 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 
     }
 
-    public MarkdownString ShowPluginConfiguration(IEnumerable<CharacterGroupInfo> projectGroups, IEnumerable<ProjectFieldInfo> fields)
+    public MarkdownString ShowStaticPage(IEnumerable<CharacterGroupInfo> projectGroups, IEnumerable<ProjectFieldInfo> fields)
     {
       var buffer = new StringBuilder();
       var fieldBuf = fields.ToArray();
