@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Services.Interfaces;
@@ -27,12 +26,7 @@ namespace JoinRpg.Services.Export.Internal
         
         var columns = Frontend.ParseColumns().ToList();
 
-        var headerCells = columns.Select(c => new Cell()
-        {
-          Content = c.Name,
-          ColumnHeader = true
-        });
-        Backend.WriteRow(headerCells);
+        Backend.WriteHeaders(columns);
 
         foreach (var row in Data)
         {

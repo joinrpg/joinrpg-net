@@ -121,6 +121,14 @@
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
         @ValidationMessage()
+        @if (Model.HasMasterAccess)
+        {
+          @Html.Raw(
+            string.Join(" • ",
+              Model.ValueList
+                .Where(v => v.SpecialGroupId != null)
+                .Select(value => Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null))))
+        }
         @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
             <div class="help-block">@Model.Description </div>

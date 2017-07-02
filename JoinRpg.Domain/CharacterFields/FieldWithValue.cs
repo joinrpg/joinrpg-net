@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
@@ -30,7 +29,7 @@ namespace JoinRpg.Domain
         _value = value;
         if (Field.HasValueList())
         {
-          SelectedIds = String.IsNullOrWhiteSpace(Value)
+          SelectedIds = string.IsNullOrWhiteSpace(Value)
             ? new int[] { }
             : Value.ToIntList();
         }
@@ -53,9 +52,9 @@ namespace JoinRpg.Domain
       }
     }
 
-    public bool HasEditableValue => !String.IsNullOrWhiteSpace(Value);
+    public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
 
-    public bool HasViewableValue => !String.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
+    public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
 
     public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
     {

@@ -3,6 +3,7 @@ using System.Data.Entity.Validation;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Domain;
+using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Helpers
 {
@@ -20,7 +21,7 @@ namespace JoinRpg.Web.Helpers
           foreach (var error in dbValidationErrors)
           {
             dict.AddModelError("",
-              string.IsNullOrWhiteSpace(error.PropertyName)
+              String.IsNullOrWhiteSpace(error.PropertyName)
                 ? error.ErrorMessage
                 : $"{error.PropertyName}: {error.ErrorMessage}");
           }
@@ -70,6 +71,14 @@ namespace JoinRpg.Web.Helpers
       }
 
       dict.AddModelError("", exception.ToString());
+    }
+
+    public static void AddErrors(this ModelStateDictionary modelStateDictionary, IdentityResult result)
+    {
+      foreach (var error in result.Errors)
+      {
+        modelStateDictionary.AddModelError("", error);
+      }
     }
   }
 }

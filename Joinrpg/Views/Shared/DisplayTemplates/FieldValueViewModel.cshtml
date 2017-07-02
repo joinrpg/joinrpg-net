@@ -19,12 +19,20 @@
         {
             case ProjectFieldViewType.Dropdown:
             case ProjectFieldViewType.MultiSelect:
-                foreach (var value in Model.ValueList)
+              foreach (var value in Model.ValueList)
+              {
+                if (Model.HasMasterAccess && value.SpecialGroupId != null)
                 {
-                    @value.Label
-                    <div class="help-block">@value.DescriptionHtml</div>
+                  @Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null)
+                  <text>&nbsp;</text>
                 }
-                break;
+                else
+                {
+                  @value.Label
+                }
+                <div class="help-block">@value.DescriptionHtml</div>
+              }
+              break;
             case ProjectFieldViewType.Checkbox:
                 if (Model.Value != "")
                 {
@@ -44,8 +52,8 @@
             default:
                 throw new InvalidEnumArgumentException();
         }
-        <div class="help-block">
-            @Model.Description
-        </div>
+      <div class="help-block">
+        @Model.Description
+      </div>
     </div>
 </div>

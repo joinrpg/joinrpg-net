@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Controllers
       var list = new CharacterListViewModel(acl.UserId , "Все персонажи", characters, plots, project, vm => true);
 
       return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
-        new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
+        new CharacterListForAutomaticExporter(list.Fields, UriService), list.ProjectName);
     }
 
     [HttpGet]
@@ -142,5 +142,13 @@ namespace JoinRpg.Web.Controllers
         character => character.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue && character.IsActive, export,
         "Поле (проставлено): " + field.FieldName);
     }
+
+    [HttpGet]
+    public Task<ActionResult> Vacant(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи");
+
+    [HttpGet]
+    public Task<ActionResult> WithPlayers(int projectid, string export)
+      => MasterCharacterList(projectid, character => character.ApprovedClaim != null, export, "Занятые персонажи");
   }
 }

@@ -161,6 +161,7 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
+    [Obsolete]
     protected Task<FileContentResult> Export<T>(IEnumerable<T> select, string fileName, ExportType exportType = ExportType.Csv)
     {
       ExportDataService.BindDisplay<User>(user => user?.DisplayName);

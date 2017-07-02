@@ -6,11 +6,15 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  public class CharacterGroupLinkViewModel
+  public class CharacterGroupLinkViewModel : ILinkable
   {
     public int CharacterGroupId { get; }
     public string Name { get; }
     public bool IsPublic { get; }
+    public LinkType LinkType => LinkType.ResultCharacterGroup;
+    public string Identification => CharacterGroupId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
+
     public int ProjectId { get; }
     public bool IsActive { get; }
 

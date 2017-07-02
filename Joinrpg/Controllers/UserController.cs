@@ -21,15 +21,13 @@ namespace JoinRpg.Web.Controllers
         var user = await UserManager.FindByIdAsync(userId);
         var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
 
+        var accessReason = (AccessReason) user.GetProfileAccess(currentUser);
         var userProfileViewModel = new UserProfileViewModel()
         {
           DisplayName = user.DisplayName,
           ThisUserProjects = user.ProjectAcls,
           UserId = user.UserId,
-          Reason = currentUser != null
-          ? (AccessReason)user.GetProfileAccess(currentUser)
-          : AccessReason.NoAccess,
-          Details = new  UserProfileDetailsViewModel(user),
+          Details = new  UserProfileDetailsViewModel(user, accessReason),
           HasAdminAccess = currentUser?.Auth?.IsAdmin ?? false,
           IsAdmin = user.Auth?.IsAdmin ?? false
         };

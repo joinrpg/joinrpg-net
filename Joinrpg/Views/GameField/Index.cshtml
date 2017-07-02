@@ -6,55 +6,102 @@
 {
     <tr class="@(item.IsActive ? "" : "deleted")">
         <td >
-            @Html.DisplayFor(modelItem => item.Name)
+            <b>@Html.DisplayFor(modelItem => item.Name)</b>
             @Html.DisplayFor(modelItem => item.MandatoryStatus)
-        </td>
-        <td>
+            <br/>
+            @Html.DisplayNameFor(model => item.FieldViewType)
             @Html.DisplayFor(modelItem => item.FieldViewType)
-        </td>
-        <td>
+            @Html.DisplayNameFor(model => item.FieldBoundTo)
             @Html.DisplayFor(model => item.FieldBoundTo)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.IsPublic)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CanPlayerView)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.CanPlayerEdit)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-
-        <td>
-
-            @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
+            @if (item.IsPublic)
             {
-                if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-                {
-                    @Html.ActionLink("Отчет (непроставленные)", "ByUnAssignedField", "CharacterList",
-                        new {item.ProjectFieldId, item.ProjectId}, null)
-                }
+                <span class="label label-primary">Публичное</span>
             }
-            
-            @if (!item.IsActive)
+            else if (item.CanPlayerView)
             {
-                switch (item.FieldBoundTo)
-                {
-                    case FieldBoundToViewModel.Character:
-                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-                            new {item.ProjectFieldId, item.ProjectId}, null)
-                        break;
-                    case FieldBoundToViewModel.Claim:
-                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-                            new {item.ProjectFieldId, item.ProjectId}, null)
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                <span class="label label-info">Игроку</span>
             }
+            else
+            {
+                <span class="label label-default">Только мастерам</span>
+            }
+            <br/>
+            @if (item.CanPlayerEdit)
+            {
+                <span class="label label-warning">Игрок может менять</span>
+            }
+        </td>
+        <td>
+            @item.DescriptionDisplay
+        </td>
+        <td>
+            @if (item.HasValueList)
+            {
+                <ul>
+                    @foreach (var value in item.DropdownValues)
+                    {
+                        <li>
+                            @if (value.CharacterGroupId != null)
+                            {
+                                @Html.ActionLink(value.Label, "ByGroup", "CharacterList", new {item.ProjectId, value.CharacterGroupId}, null)
+                            }
+                            else
+                            {
+                                @value.Label
+                            }
+                        </li>
+                    }
+                    @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
+                    {
+                        if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+                        {
+                            <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
+                                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
+                        }
+                        else
+                        {
+                            <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
+                                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
+                        }
+                    }
+                </ul>
+            }
+            else
+            {
+                if (!item.IsActive)
+                 {
+                     switch (item.FieldBoundTo)
+                     {
+                         case FieldBoundToViewModel.Character:
+                             @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
+                                 new {item.ProjectFieldId, item.ProjectId}, null)
+                             break;
+                         case FieldBoundToViewModel.Claim:
+                             @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
+                                 new {item.ProjectFieldId, item.ProjectId}, null)
+                             break;
+                         default:
+                             throw new ArgumentOutOfRangeException();
+                     }
+                 }
+                 else
+                 {
+                     if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+                     {
+                         <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
+                                new {item.ProjectFieldId, item.ProjectId}, null)</i>
+                     }
+                     else
+                     {
+                         <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
+                                 new {item.ProjectFieldId, item.ProjectId}, null)</i>
+                     }
+                 }
+            }
+        </td>
+        <td>
 
             @if (Model.CanEditFields)
             {
@@ -94,26 +141,15 @@
     <table class="table" style="margin-top: 1em">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => firstItem.Name)
+                <b>Поле</b>
             </th>
             <th>
-                @Html.DisplayNameFor(model => firstItem.FieldViewType)
-            </th>
-            <th style="white-space: nowrap">
-                @Html.DisplayNameFor(model => firstItem.FieldBoundTo)
+                <b>Видимость</b>
             </th>
             <th>
-                @Html.DisplayNameFor(model => firstItem.IsPublic)
+                @Html.DisplayNameFor(model => firstItem.DescriptionDisplay)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => firstItem.CanPlayerView)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => firstItem.CanPlayerEdit)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => firstItem.Description)
-            </th>
+            <th></th>
             <th></th>
         </tr>
 

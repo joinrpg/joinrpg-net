@@ -22,6 +22,7 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("835eb33a-f3d1-49c7-9c85-1f5f2387a052")]
 
+[assembly: InternalsVisibleTo("JoinRpg.Services.Impl.Test")]
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version

@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
 using System.Web;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Experimental.Plugin.HelloWorld;
 using JoinRpg.Experimental.Plugin.Interfaces;
-using JoinRpg.Experimental.Plugin.SteampunkDetective;
 using JoinRpg.PluginHost.Impl;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
@@ -86,8 +85,9 @@ namespace JoinRpg.Web
       container.RegisterType<IPluginResolver>(new InjectionFactory(c => new UnityPluginResolver(c)));
       container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 
-      container.RegisterType<IPlugin, HelloWorldPlugin>(nameof(HelloWorldPlugin));
-      container.RegisterType<IPlugin, DetectivePlugin>(nameof(DetectivePlugin));
+      //TODO Automatically load all assemblies that start with JoinRpg.Experimental.Plugin.*
+      container.RegisterTypes(AllClasses.FromLoadedAssemblies().Where(type => typeof(IPlugin).IsAssignableFrom(type)),
+        WithMappings.FromAllInterfaces, WithName.TypeName);
     }
 
     private class UnityPluginResolver : IPluginResolver

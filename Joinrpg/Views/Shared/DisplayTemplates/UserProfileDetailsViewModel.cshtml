@@ -4,23 +4,28 @@
     <tr>
         <td style="vertical-align: top"><img style="border: 1px solid black; margin-right: 5px" width="64" height="64" src="@Html.Action("GetAvatar", "User", new {Model.User.UserId})" /></td>
         <td>
-
-@Html.DisplayFor(model => model.User)
-@if (!string.IsNullOrWhiteSpace(Model.FullName))
+@if (Model.HasAccess)
 {
-    <text><br/> @Model.FullName </text>
-}
-<br />
-@(new HtmlString(string.Join("<br>", new object[]
-  {
+  @Html.DisplayFor(model => model.User)
+if (!string.IsNullOrWhiteSpace(Model.FullName))
+ {
+   <text><br/> @Model.FullName </text>
+ }
+  <br/>
+  @(new HtmlString(string.Join("<br>", new object[]
+    {
       Html.DisplayFor(model => model.Email),
-      @Html.DisplayFor(model => model.PhoneNumber), Html.DisplayFor(model => model.Skype), Html.DisplayFor(model => model.Livejournal),
+      Html.DisplayFor(model => model.PhoneNumber),
+      Html.DisplayFor(model => model.Telegram),
+      Html.DisplayFor(model => model.Skype),
+      Html.DisplayFor(model => model.Livejournal),
       Html.DisplayFor(model => model.Vk)
-  }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))))
-@if (Model.AllrpgId != null && Model.AllrpgId != 0)
-{
-<br />
-    <a href="http://inf.allrpg.info/users/@Model.AllrpgId/">Профиль на allrpg</a>
+    }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))))
+if (Model.AllrpgId != null && Model.AllrpgId != 0)
+ {
+   <br/>
+   <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
+ }
 }</td>
     </tr>    
 </table>
