@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.CharacterFields
 {
+  //TODO That should be service with interface and costructed via DI container
   public static class FieldSaveHelper
   {
     private abstract class FieldSaveStrategyBase
@@ -13,14 +14,16 @@ namespace JoinRpg.Domain.CharacterFields
       protected Claim Claim { get; }
       protected Character Character { get; }
       private int CurrentUserId { get; }
-
+      public IFieldDefaultValueGenerator Generator { get; }
       private Project Project { get; }
+      private List<FieldWithValue> UpdatedFields { get; } = new List<FieldWithValue>();
 
-      protected FieldSaveStrategyBase(Claim claim, Character character, int currentUserId)
+      protected FieldSaveStrategyBase(Claim claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator)
       {
         Claim = claim;
         Character = character;
         CurrentUserId = currentUserId;
+        Generator = generator;
         Project = character?.Project ?? claim?.Project;
 
         if (Project == null)
@@ -29,7 +32,7 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      
+      public IReadOnlyCollection<FieldWithValue> GetUpdatedFields() => UpdatedFields;
 
       public abstract void Save(Dictionary<int, FieldWithValue> fields);
 
@@ -62,11 +65,37 @@ namespace JoinRpg.Domain.CharacterFields
           throw new NoAccessToProjectException(Project, CurrentUserId);
         }
       }
+
+      public void AssignFieldValue(FieldWithValue field, string newValue)
+      {
+        if (field.Value == newValue) return;
+
+        field.Value = newValue;
+        field.MarkUsed();
+        UpdatedFields.Add(field);
+      }
+
+      public string GenerateDefaultValue(FieldWithValue field)
+      {
+        string newValue;
+        switch (field.Field.FieldBoundTo)
+        {
+          case FieldBoundTo.Character:
+            newValue = Generator.CreateDefaultValue(Character, field.Field);
+            break;
+          case FieldBoundTo.Claim:
+            newValue = Generator.CreateDefaultValue(Claim, field.Field);
+            break;
+          default:
+            throw new ArgumentOutOfRangeException();
+        }
+        return newValue;
+      }
     }
     private class SaveToCharacterOnlyStrategy : FieldSaveStrategyBase
     {
 
-      public SaveToCharacterOnlyStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
+      public SaveToCharacterOnlyStrategy(Claim claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator) : base(claim, character, currentUserId, generator)
       {
       }
 
@@ -80,7 +109,7 @@ namespace JoinRpg.Domain.CharacterFields
 
     private class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
     {
-      public SaveToClaimOnlyStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
+      public SaveToClaimOnlyStrategy(Claim claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator) : base(claim, character, currentUserId, generator)
       {
       }
 
@@ -93,7 +122,7 @@ namespace JoinRpg.Domain.CharacterFields
 
     private class SaveToCharacterAndClaimStrategy : FieldSaveStrategyBase
     {
-      public SaveToCharacterAndClaimStrategy(Claim claim, Character character, int currentUserId) : base(claim, character, currentUserId)
+      public SaveToCharacterAndClaimStrategy(Claim claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator) : base(claim, character, currentUserId, generator)
       {
       }
 
@@ -113,49 +142,46 @@ namespace JoinRpg.Domain.CharacterFields
     public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Claim claim,
-      [NotNull] IDictionary<int, string> newFieldValue)
+      [NotNull] IDictionary<int, string> newFieldValue,
+      IFieldDefaultValueGenerator generator)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      return SaveCharacterFieldsImpl(currentUserId, claim.Character, claim, newFieldValue);
+      return SaveCharacterFieldsImpl(currentUserId, claim.Character, claim, newFieldValue, generator);
     }
 
     [MustUseReturnValue]
     public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Character character,
-      [NotNull] IDictionary<int, string> newFieldValue)
+      [NotNull] IDictionary<int, string> newFieldValue,
+      IFieldDefaultValueGenerator generator)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
-      return SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, newFieldValue);
+      return SaveCharacterFieldsImpl(currentUserId, character, character.ApprovedClaim, newFieldValue, generator);
     }
 
     [MustUseReturnValue]
-    private static IReadOnlyCollection<FieldWithValue> SaveCharacterFieldsImpl(
-      int currentUserId, 
-      [CanBeNull] Character character,
-      [CanBeNull] Claim claim,
-      [NotNull] IDictionary<int, string> newFieldValue)
+    private static IReadOnlyCollection<FieldWithValue> SaveCharacterFieldsImpl(int currentUserId,
+      [CanBeNull] Character character, [CanBeNull] Claim claim, [NotNull] IDictionary<int, string> newFieldValue,
+      IFieldDefaultValueGenerator generator)
     {
-      var updatedValues = new List<FieldWithValue>();
       if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
 
       FieldSaveStrategyBase strategy;
       if (claim == null)
       {
-        strategy = new SaveToCharacterOnlyStrategy(null, character, currentUserId);
+        strategy = new SaveToCharacterOnlyStrategy(null, character, currentUserId, generator);
       }
       else if (!claim.IsApproved)
       {
-        strategy = new SaveToClaimOnlyStrategy(claim, null, currentUserId);
+        strategy = new SaveToClaimOnlyStrategy(claim, null, currentUserId, generator);
       }
       else
       {
-        strategy = new SaveToCharacterAndClaimStrategy(claim, character, currentUserId);
+        strategy = new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator);
       }
 
       var fields = strategy.LoadFields();
-
-     
 
       foreach (var keyValuePair in newFieldValue)
       {
@@ -164,18 +190,18 @@ namespace JoinRpg.Domain.CharacterFields
         strategy.EnsureEditAccess(field);
 
         var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
-        if (field.Value != normalizedValue)
-        {
-          field.Value = normalizedValue;
+        strategy.AssignFieldValue(field, normalizedValue);
+      }
 
-          field.MarkUsed();
+      foreach (var field in fields.Values.Where(f => !f.HasEditableValue && f.Field.CanHaveValue()))
+      {
+        var newValue = strategy.GenerateDefaultValue(field);
 
-          updatedValues.Add(field);
-        }
+        strategy.AssignFieldValue(field, newValue);
       }
 
       strategy.Save(fields);
-      return updatedValues;
+      return strategy.GetUpdatedFields();
     }
 
     private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)

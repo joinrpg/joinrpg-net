@@ -57,8 +57,10 @@ namespace JoinRpg.Web.Controllers
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
 
+      var project = await GetProjectFromList(projectId, characters);
+
       var pluginNames =
-        (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
+        PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(project).Select(
           PluginOperationDescriptionViewModel.Create);
 
       return
@@ -79,16 +81,18 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
-      var pluginInstance = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
+      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
+      var project = await GetProjectFromList(projectid, characters);
+      var pluginInstance = PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(project, plugin);
       if (pluginInstance == null)
       {
         return HttpNotFound();
       }
-      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
 
       if (!pluginInstance.AllowPlayerAccess)
       {
-        var error = AsMaster(await GetProjectFromList(projectid, characters));
+        
+        var error = AsMaster(project);
         if (error != null) return error;
       }
       else

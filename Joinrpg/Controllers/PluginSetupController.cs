@@ -38,13 +38,12 @@ namespace JoinRpg.Web.Controllers
     [MasterAuthorize]
     public async Task<ActionResult> DisplayPage(int projectid, string operation)
     {
-      var pluginInstance = await PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(projectid, operation);
+      var project = await ProjectRepository.GetProjectAsync(projectid);
+      var pluginInstance = PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(project, operation);
       if (pluginInstance == null)
       {
         return HttpNotFound();
       }
-
-      var project = await ProjectRepository.GetProjectAsync(projectid);
 
       ViewBag.Title = pluginInstance.OperationName;
       return View("ShowMarkdown",

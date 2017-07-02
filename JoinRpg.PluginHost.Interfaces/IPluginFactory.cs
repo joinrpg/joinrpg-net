@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -36,11 +37,6 @@ namespace JoinRpg.PluginHost.Interfaces
 
   public interface IPluginFactory
   {
-    Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId) where T:IPluginOperation;
-
-    [ItemCanBeNull]
-    Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin) where T : IPluginOperation;
-
     IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c);
 
     [NotNull]
@@ -51,5 +47,20 @@ namespace JoinRpg.PluginHost.Interfaces
 
     [ItemCanBeNull]
     Task<ProjectPluginConfiguraton> GetConfiguration(int projectid, string plugin);
+
+    [NotNull, ItemNotNull]
+    IEnumerable<PluginOperationData<T>> GetProjectOperations<T>(Project project) where T : IPluginOperation;
+
+    string GenerateDefaultCharacterFieldValue(ProjectField field);
+  }
+
+  public static class IPluginFactoryExtenstions
+  {
+    [CanBeNull]
+    public static PluginOperationData<T> GetOperationInstance<T>(this IPluginFactory self, Project project, string plugin)
+      where T : IPluginOperation
+    {
+      return self.GetProjectOperations<T>(project).SingleOrDefault(p => p.OperationName == plugin);
+    }
   }
 }

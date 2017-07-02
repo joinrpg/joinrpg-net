@@ -44,6 +44,7 @@
     <Compile Include="DomainModel\CharacterInfo.cs" />
     <Compile Include="HtmlPrintResult.cs" />
     <Compile Include="IPlugin.cs" />
+    <Compile Include="Operations\IGenerateFieldOperation.cs" />
     <Compile Include="PluginConfiguration.cs" />
     <Compile Include="IPluginOperation.cs" />
     <Compile Include="Operations\IPrintCardPluginOperation.cs" />

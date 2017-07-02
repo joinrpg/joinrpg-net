@@ -11,10 +11,13 @@ namespace JoinRpg.Domain.Test
   public class FieldSaveHelperTest
   {
     private MockedProject _original;
+    private IFieldDefaultValueGenerator generator;
+
     [TestInitialize]
     public void SetUp()
     {
       _original = new MockedProject();
+      generator = new MockedFieldDefaultValueGenerator();
     }
 
     [TestMethod]
@@ -29,7 +32,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.CharacterField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
       Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData, "Adding claim should not modify any character fields");
       CollectionAssert.AreEqual(
         _original.Character.Groups.Select(g => g.CharacterGroupId).ToList(), 
@@ -49,7 +53,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.MasterOnlyField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
     }
 
     [TestMethod]
@@ -65,7 +70,8 @@ namespace JoinRpg.Domain.Test
         {
           {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
           {mock.CharacterField.ProjectFieldId, null }
-        });
+        },
+        generator);
       Assert.AreEqual(
   $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
   mock.Character.JsonData);
@@ -83,7 +89,8 @@ namespace JoinRpg.Domain.Test
         {
           {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
           {mock.CharacterField.ProjectFieldId, null }
-        });
+        },
+        generator);
       Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}", mock.Character.JsonData);
     }
 
@@ -99,7 +106,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.CharacterField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
       Assert.AreEqual(
         $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
         mock.Character.JsonData);
@@ -118,7 +126,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.ConditionalField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
       Assert.AreEqual($"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
       Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData,
         "Adding claim should not modify any character fields");
@@ -137,7 +146,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.ConditionalField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
       Assert.AreEqual($"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
       Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData,
         "Adding claim should not modify any character fields");
@@ -157,7 +167,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.HideForUnApprovedClaim.ProjectFieldId, "test"}
-        });
+        },
+        generator);
     }
 
     [TestMethod]
@@ -171,7 +182,8 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.CharacterField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
       Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData, "Adding claim should not modify any character fields");
       CollectionAssert.AreEqual(
         _original.Character.Groups.Select(g => g.CharacterGroupId).ToList(),
@@ -191,7 +203,14 @@ namespace JoinRpg.Domain.Test
         new Dictionary<int, string>()
         {
           {mock.CharacterField.ProjectFieldId, "test"}
-        });
+        },
+        generator);
     }
+  }
+
+  public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
+  {
+    public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
+    public string CreateDefaultValue(Character claim, ProjectField field) => null;
   }
 }

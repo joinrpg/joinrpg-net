@@ -24,15 +24,7 @@ namespace JoinRpg.PluginHost.Impl
       Plugins = plugins;
     }
 
-
-    public async Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId)
-      where T : IPluginOperation
-    {
-      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return GetProjectOperatons<T>(project);
-    }
-
-    private IEnumerable<PluginOperationData<T>> GetProjectOperatons<T>(Project project) where T : IPluginOperation
+    public IEnumerable<PluginOperationData<T>> GetProjectOperations<T>(Project project) where T : IPluginOperation
     {
       return from projectPlugin in GetProjectInstalledPlugins(project)
         from pluginOperationMetadata in GetOperationsOfType<T>(projectPlugin.Plugin)
@@ -64,13 +56,6 @@ namespace JoinRpg.PluginHost.Impl
     {
       return project.ProjectPlugins.Join(Plugins, pp => pp.Name, p => p.GetName(),
         (pp, p) => new PluginWithConfig {Plugin = p, Configuration = pp.Configuration});
-    }
-
-    public async Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin)
-      where T:IPluginOperation
-    {
-      return (await GetPossibleOperations<T>(projectid)).SingleOrDefault(
-        p => p.OperationName == plugin);
     }
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c)
@@ -125,6 +110,14 @@ namespace JoinRpg.PluginHost.Impl
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
           .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
         player?.DisplayName, player?.FullName, player?.Id);
+    }
+
+    public string GenerateDefaultCharacterFieldValue(ProjectField field)
+    {
+      var operations = GetProjectOperations<IGenerateFieldOperation>(field.Project);
+      return operations.Select(o => o.CreatePluginInstance()
+          .GenerateFieldValue(new CharacterFieldInfo(field.ProjectFieldId, null, field.FieldName, null)))
+        .FirstOrDefault(newValue => newValue != null);
     }
   }
 
