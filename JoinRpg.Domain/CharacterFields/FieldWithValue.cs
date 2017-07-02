@@ -29,27 +29,24 @@ namespace JoinRpg.Domain
         _value = value;
         if (Field.HasValueList())
         {
-          SelectedIds = string.IsNullOrWhiteSpace(Value)
-            ? new int[] { }
-            : Value.ToIntList();
+          SelectedIds = Value.ToIntList();
         }
       }
     }
 
     [NotNull]
-    public string DisplayString
+    public string DisplayString => GetDisplayValue(Value, SelectedIds);
+
+    protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
     {
-      get
+      if (!Field.HasValueList())
       {
-        if (!Field.HasValueList())
-        {
-          return Value ?? "";
-        }
-        return
-          Field.DropdownValues.Where(dv => SelectedIds.Contains(dv.ProjectFieldDropdownValueId))
-            .Select(dv => dv.Label)
-            .JoinStrings(", ");
+        return value ?? "";
       }
+      return
+        Field.DropdownValues.Where(dv => selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
+          .Select(dv => dv.Label)
+          .JoinStrings(", ");
     }
 
     public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
