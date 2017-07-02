@@ -56,7 +56,8 @@ namespace JoinRpg.Services.Impl
       [NotNull] Character character,
       Func<UserSubscription, bool> subscribePredicate,
       User initiator,
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
+      Dictionary<string, OldAndNewValue> otherChangedAttributes)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 
@@ -64,7 +65,7 @@ namespace JoinRpg.Services.Impl
         .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
         .ToList();
 
-      return new FieldsChangedEmail(character, initiator, subscriptions, updatedFields);
+      return new FieldsChangedEmail(character, initiator, subscriptions, updatedFields, otherChangedAttributes);
     }
   }
 }

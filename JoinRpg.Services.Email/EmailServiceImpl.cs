@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
@@ -162,14 +163,18 @@ namespace JoinRpg.Services.Email
       }
       Predicate<FieldWithValue> accessRightsPredicate =
         CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FiledsContainer, user.UserId);
+      IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
+        .OtherChangedAttributes
+        .Select(changedAttribute =>
+          new MarkdownString($@"**{changedAttribute.Key}**: {MarkDownHelper.HighlightDiff_placeholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString)}"));
 
-      return string.Join("\n\n",
-        mailWithFields
-          .UpdatedFields
-          .Where(f => accessRightsPredicate(f))
-          .Select(updatedField => 
-            new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiff_placeholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}")
-              .ToHtmlString()));
+      IEnumerable<MarkdownString> fieldString = mailWithFields
+        .UpdatedFields
+        .Where(f => accessRightsPredicate(f))
+        .Select(updatedField => 
+          new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiff_placeholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}"));
+
+      return string.Join("\n\n", otherAttributesStrings.Union(fieldString).Select(x => x.ToHtmlString()));
     }
 
     private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
@@ -277,7 +282,7 @@ namespace JoinRpg.Services.Email
       {
         await SendEmail(recepients, $"{model.ProjectName}: {target(false)}",
           $@"Добрый день, {MailGunExts.MailGunRecepientName},
-Поля {target(true)} были изменены. Новые значения:
+Данные {target(true)} были изменены. Новые значения:
 
 {MailGunExts.GetUserDependedtValue(changedFieldsKey)}
 

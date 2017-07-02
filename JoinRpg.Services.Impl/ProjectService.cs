@@ -127,20 +127,43 @@ namespace JoinRpg.Services.Impl
 
       character.EnsureProjectActive();
 
-      character.CharacterName = Required(name);
+      var changedAttributes = new Dictionary<string, OldAndNewValue>();
+
+      if (character.CharacterName != Required(name))
+      {
+        changedAttributes.Add("Имя персонажа", new OldAndNewValue(name, character.CharacterName));
+        character.CharacterName = name.Trim();
+      }
+      
       character.IsAcceptingClaims = isAcceptingClaims;
       character.IsPublic = isPublic;
-      character.Description = new MarkdownString(contents);
+
+      var newDescription = new MarkdownString(contents);
+      if (character.Description != newDescription)
+      {
+        changedAttributes.Add("Описание персонажа", new OldAndNewValue(newDescription, character.Description));
+        character.Description = newDescription;
+      }
       character.HidePlayerForCharacter = hidePlayerForCharacter;
       character.IsHot = isHot;
       character.IsActive = true;
 
-      character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+      int[] newCharacterGroupIds = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+      if (character.ParentCharacterGroupIds.OrderBy(x => x).SequenceEqual(newCharacterGroupIds.OrderBy(x => x)))
+      {
+        string previousGroupsList = string.Join(",", character.Groups.Select(g => g.CharacterGroupName));
+
+        character.ParentCharacterGroupIds = newCharacterGroupIds;
+
+        changedAttributes.Add("Входит в группы", new OldAndNewValue(
+          previousGroupsList,
+          string.Join(",", character.Groups.Select(g => g.CharacterGroupName))));
+      }
       IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       var user = await UserRepository.GetById(currentUserId);
-      var email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user, updatedFields);
+      var email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user, updatedFields, changedAttributes);
 
       await UnitOfWork.SaveChangesAsync();
 
