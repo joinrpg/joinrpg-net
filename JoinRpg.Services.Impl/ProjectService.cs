@@ -136,7 +136,7 @@ namespace JoinRpg.Services.Impl
       character.IsActive = true;
 
       character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      IReadOnlyCollection<FieldWithValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       var user = await UserRepository.GetById(currentUserId);

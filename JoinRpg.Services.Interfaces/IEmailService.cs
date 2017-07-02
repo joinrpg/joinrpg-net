@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -52,7 +53,7 @@ namespace JoinRpg.Services.Interfaces
 
   public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
     public IFieldContainter FiledsContainer => Claim;
   }
 
@@ -71,13 +72,13 @@ namespace JoinRpg.Services.Interfaces
 
   public class ClaimFieldsChangedEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
     public IFieldContainter FiledsContainer => Claim;
   }
 
   public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
+    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
     public IFieldContainter FiledsContainer => (IFieldContainter)Claim ?? Character;
     [CanBeNull]
     public Character Character { get; set; }
@@ -90,7 +91,7 @@ namespace JoinRpg.Services.Interfaces
       Claim claim,
       User initiator,
       ICollection<User> recepients,
-      IReadOnlyCollection<FieldWithValue> updatedFields)
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
       : this(null, claim, initiator, recepients, updatedFields)
     {
     }
@@ -99,7 +100,7 @@ namespace JoinRpg.Services.Interfaces
       Character character,
       User initiator,
       ICollection<User> recepients,
-      IReadOnlyCollection<FieldWithValue> updatedFields)
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
       : this(character, null, initiator, recepients, updatedFields)
     {
     }
@@ -109,7 +110,7 @@ namespace JoinRpg.Services.Interfaces
       Claim claim,
       User initiator,
       ICollection<User> recepients,
-      [NotNull] IReadOnlyCollection<FieldWithValue> updatedFields)
+      [NotNull] IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
     {
       if (updatedFields == null) throw new ArgumentNullException(nameof(updatedFields));
       if (character != null && claim != null)
@@ -184,7 +185,7 @@ namespace JoinRpg.Services.Interfaces
   /// </summary>
   public interface IEmailWithUpdatedFieldsInfo
   {
-    IReadOnlyCollection<FieldWithValue> UpdatedFields { get; }
+    IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; }
 
     IFieldContainter FiledsContainer { get; }
   }

@@ -4,6 +4,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -41,7 +42,7 @@ namespace JoinRpg.Services.Impl
       [NotNull] Claim claim,
       Func<UserSubscription, bool> subscribePredicate,
       User initiator,
-      IReadOnlyCollection<FieldWithValue> updatedFields)
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var subscriptions = claim
@@ -55,7 +56,7 @@ namespace JoinRpg.Services.Impl
       [NotNull] Character character,
       Func<UserSubscription, bool> subscribePredicate,
       User initiator,
-      IReadOnlyCollection<FieldWithValue> updatedFields)
+      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 

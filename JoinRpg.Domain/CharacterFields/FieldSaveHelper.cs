@@ -114,7 +114,7 @@ namespace JoinRpg.Domain.CharacterFields
     /// </summary>
     /// <returns>Fields that have changed.</returns>
     [MustUseReturnValue]
-    public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
+    public static IReadOnlyCollection<FieldWithOldAndNewValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Claim claim,
       [NotNull] IDictionary<int, string> newFieldValue)
@@ -128,7 +128,7 @@ namespace JoinRpg.Domain.CharacterFields
     /// </summary>
     /// <returns>The list of updated fields</returns>
     [MustUseReturnValue]
-    public static IReadOnlyCollection<FieldWithValue> SaveCharacterFields(
+    public static IReadOnlyCollection<FieldWithOldAndNewValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Character character,
       [NotNull] IDictionary<int, string> newFieldValue)
@@ -138,13 +138,13 @@ namespace JoinRpg.Domain.CharacterFields
     }
 
     [MustUseReturnValue]
-    private static IReadOnlyCollection<FieldWithValue> SaveCharacterFieldsImpl(
+    private static IReadOnlyCollection<FieldWithOldAndNewValue> SaveCharacterFieldsImpl(
       int currentUserId, 
       [CanBeNull] Character character,
       [CanBeNull] Claim claim,
       [NotNull] IDictionary<int, string> newFieldValue)
     {
-      var updatedValues = new List<FieldWithValue>();
+      var updatedValues = new List<FieldWithOldAndNewValue>();
       if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
 
       FieldSaveStrategyBase strategy;
@@ -174,11 +174,11 @@ namespace JoinRpg.Domain.CharacterFields
         var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
         if (field.Value != normalizedValue)
         {
+          updatedValues.Add(new FieldWithOldAndNewValue(field, field.Value));
+
           field.Value = normalizedValue;
 
           field.MarkUsed();
-
-          updatedValues.Add(field);
         }
       }
 
