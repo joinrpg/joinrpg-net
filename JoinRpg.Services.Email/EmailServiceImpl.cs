@@ -160,13 +160,15 @@ namespace JoinRpg.Services.Email
       {
         return "";
       }
+      Predicate<FieldWithValue> accessRightsPredicate =
+        CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FiledsContainer, user.UserId);
 
       return string.Join("\n\n",
         mailWithFields
           .UpdatedFields
-          .FilterFieldsForUser(mailWithFields.FiledsContainer, user.UserId)
+          .Where(f => accessRightsPredicate(f))
           .Select(updatedField => 
-            new MarkdownString($@"**{updatedField.Field.FieldName}**: {updatedField.DisplayString}")
+            new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiff_placeholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}")
               .ToHtmlString()));
     }
 

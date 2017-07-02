@@ -88,6 +88,12 @@ namespace Joinrpg.Markdown
       var mdContents = markdownString.Contents.Substring(0, idx);
       return new MarkdownString(mdContents);
     }
+
+    public static MarkdownString HighlightDiff_placeholder(string newString, string oldString)
+    {
+      //TODO: look for diff algorithms
+      return new MarkdownString(newString);
+    }
   }
 }
 

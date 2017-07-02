@@ -110,12 +110,10 @@ namespace JoinRpg.Domain
     }
 
     [MustUseReturnValue]
-    public static IEnumerable<FieldWithValue> FilterFieldsForUser(
-      [NotNull] this IEnumerable<FieldWithValue> fieldsToFilter,
+    public static Predicate<FieldWithValue> GetShowForUserPredicate(
       [NotNull] IFieldContainter entityWithFields,
       int userId)
     {
-      if (fieldsToFilter == null) throw new ArgumentNullException(nameof(fieldsToFilter));
       if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
 
       Claim claim = entityWithFields as Claim;
@@ -142,11 +140,10 @@ namespace JoinRpg.Domain
         throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
       }
       
-      return fieldsToFilter
-        .Where(f => f.HasViewAccess(
+      return f => f.HasViewAccess(
           hasMasterAccess,
           hasCharacterAccess,
-          hasClaimAccess));
+          hasClaimAccess);
     }
   }
 }
