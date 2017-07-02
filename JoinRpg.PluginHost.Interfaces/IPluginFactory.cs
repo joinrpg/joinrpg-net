@@ -8,16 +8,18 @@ namespace JoinRpg.PluginHost.Interfaces
 {
   public sealed class ProjectPluginInfo
   {
-    public ProjectPluginInfo(string name, bool installed, IReadOnlyCollection<string> staticPages)
+    public ProjectPluginInfo(string name, bool installed, IReadOnlyCollection<string> staticPages, string description)
     {
       Name = name;
       Installed = installed;
       StaticPages = staticPages;
+      Description = description;
     }
 
     public string Name { get; }
     public bool Installed { get; }
     public IReadOnlyCollection<string> StaticPages { get; }
+    public string Description { get;  }
   }
 
   public sealed class ProjectPluginConfiguraton

@@ -1,5 +1,4 @@
 ﻿using JoinRpg.Experimental.Plugin.Interfaces;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Experimental.Plugin.PlayerIdCard
 {
@@ -7,11 +6,10 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
   {
     public PlayerIdCardPlugin()
     {
-      Register("Распечатка аусвайсов",
-        config => new PlayerIdCardOperation(
-          JsonConvert.DeserializeObject<PlayerCardConfiguration>(config.ConfigurationString), config.ProjectName));
+      Register<PlayerIdCardOperation>("Распечатка аусвайсов");
     }
 
     public override string GetName() => "Распечатка аусвайсов";
+    public override string GetDescripton() => "Предназначен для игры Третья Эпоха и позволяет печатать аусвайсы.";
   }
 }

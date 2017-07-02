@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -7,6 +8,7 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using Newtonsoft.Json;
 
 namespace JoinRpg.PluginHost.Impl
 {
@@ -48,8 +50,7 @@ namespace JoinRpg.PluginHost.Impl
       return new PluginOperationData<T>(
         $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
         () =>
-          projectPlugin.Plugin.GetOperationInstance<T>(pluginOperationMetadata.Name,
-            new PluginConfiguration(project.ProjectName, projectPlugin.Configuration)),
+          (T) pluginOperationMetadata.CreateInstance(new PluginConfiguration(project.ProjectName, projectPlugin.Configuration)),
         pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
     }
 
@@ -97,7 +98,8 @@ namespace JoinRpg.PluginHost.Impl
             var pluginName = plugin.GetName();
             return new ProjectPluginInfo(pluginName,
               project.ProjectPlugins.Any(pp => pp.Name == pluginName),
-                GetOperationsOfType<IStaticPagePluginOperation>(plugin).Select(o => pluginName + "." + o.Name).ToList());
+                GetOperationsOfType<IStaticPagePluginOperation>(plugin).Select(o => pluginName + "." + o.Name).ToList(),
+                plugin.GetDescripton());
           }
         )
         .ToList();
@@ -124,5 +126,24 @@ namespace JoinRpg.PluginHost.Impl
           .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
         player?.DisplayName, player?.FullName, player?.Id);
     }
+  }
+
+  public class PluginConfiguration : IPluginConfiguration
+  {
+    public PluginConfiguration([NotNull] string projectName, [NotNull] string configurationString)
+    {
+      if (projectName == null) throw new ArgumentNullException(nameof(projectName));
+      if (configurationString == null) throw new ArgumentNullException(nameof(configurationString));
+      ProjectName = projectName;
+      ConfigurationString = configurationString;
+    }
+
+    private string ConfigurationString { get; }
+
+    [NotNull]
+    public T GetConfiguration<T>() => JsonConvert.DeserializeObject<T>(ConfigurationString);
+
+    [NotNull]
+    public string ProjectName { get; }
   }
 }

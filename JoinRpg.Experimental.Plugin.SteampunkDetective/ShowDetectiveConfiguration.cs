@@ -5,21 +5,12 @@ using System.Text;
 using JoinRpg.DataModel;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Experimental.Plugin.SteampunkDetective
 {
   public class ShowDetectiveConfiguration : IStaticPagePluginOperation
   {
-    private ClueConfiguration Config { get; }
-
-    public ShowDetectiveConfiguration(PluginConfiguration config)
-    {
-      if (config == null) throw new ArgumentNullException(nameof(config));
-
-      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config.ConfigurationString);
-
-    }
+    private ClueConfiguration Config { get; set; }
 
     public MarkdownString ShowStaticPage(IEnumerable<CharacterGroupInfo> projectGroups, IEnumerable<ProjectFieldInfo> fields)
     {
@@ -64,6 +55,13 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
           groupId => groupBuf.SingleOrDefault(f => f.CharacterGroupId == groupId)?.CharacterGroupName ?? "??");
       buffer.AppendLine(grs.JoinStrings(", "));
       buffer.AppendLine();
+    }
+
+    public void SetConfiguration(IPluginConfiguration config)
+    {
+      if (config == null) throw new ArgumentNullException(nameof(config));
+
+      Config = config.GetConfiguration<ClueConfiguration>();
     }
   }
 }

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
-using Newtonsoft.Json;
 using QRCoder;
 
 namespace JoinRpg.Experimental.Plugin.SteampunkDetective
@@ -21,39 +19,9 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       public int GetHashCode(SignDefinition obj) => obj.FieldId;
     }
 
-    private ClueConfiguration Config { get; }
+    private ClueConfiguration Config { get; set; }
 
-
-    public CluePrinterOperation([NotNull] PluginConfiguration config)
-    {
-      if (config == null) throw new ArgumentNullException(nameof(config));
-
-      Config = JsonConvert.DeserializeObject<ClueConfiguration>(config.ConfigurationString);
-
-      var maxCode = 1;
-      var digits = Config.Digits;
-      while (digits > 0)
-      {
-        maxCode *= 10;
-        digits--;
-      }
-      MaxCode = maxCode - 1;
-
-      foreach (var signDefinition in Config.SignDefinitions)
-      {
-        if (signDefinition.Code > MaxCode)
-        {
-          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is too large. Should be less than {MaxCode}");
-        }
-        if (UsedCodes.Contains(signDefinition.Code))
-        {
-          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is duplicated");
-        }
-        UsedCodes.Add(signDefinition.Code);
-      }
-    }
-
-    private int MaxCode { get; }
+    private int MaxCode { get; set; }
     private HashSet<int> UsedCodes { get; } = new HashSet<int>();
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
@@ -125,6 +93,35 @@ namespace JoinRpg.Experimental.Plugin.SteampunkDetective
       var qrCode = new QRCode(qrCodeData);
       var qrCodeImage = qrCode.GetGraphic(pixelsPerModule: 2);
       return qrCodeImage.ToEmbeddedImageTag();
+    }
+
+    public void SetConfiguration(IPluginConfiguration config)
+    {
+      if (config == null) throw new ArgumentNullException(nameof(config));
+
+      Config = config.GetConfiguration<ClueConfiguration>();
+
+      var maxCode = 1;
+      var digits = Config.Digits;
+      while (digits > 0)
+      {
+        maxCode *= 10;
+        digits--;
+      }
+      MaxCode = maxCode - 1;
+
+      foreach (var signDefinition in Config.SignDefinitions)
+      {
+        if (signDefinition.Code > MaxCode)
+        {
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is too large. Should be less than {MaxCode}");
+        }
+        if (UsedCodes.Contains(signDefinition.Code))
+        {
+          throw new PluginConfigurationIncorrectException($"Code {signDefinition.Code} is duplicated");
+        }
+        UsedCodes.Add(signDefinition.Code);
+      }
     }
   }
 }

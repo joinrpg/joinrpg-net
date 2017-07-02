@@ -6,14 +6,8 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
 {
   public class PlayerIdCardOperation : IPrintCardPluginOperation
   {
-    private PlayerCardConfiguration ParsedConfig { get; }
-    public string ProjectName { get; }
-
-    internal PlayerIdCardOperation(PlayerCardConfiguration config, string projectName)
-    {
-      ParsedConfig = config;
-      ProjectName = projectName;
-    }
+    private PlayerCardConfiguration ParsedConfig { get; set; }
+    public string ProjectName { get; set; }
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(CharacterInfo character)
     {
@@ -45,6 +39,12 @@ namespace JoinRpg.Experimental.Plugin.PlayerIdCard
           (o, i) => o.AddToLabel));
 
       return labels == "" ? "" : $"<br><b>{parsedConfigField.Label}</b>: {labels}";
+    }
+
+    public void SetConfiguration(IPluginConfiguration pluginConfiguration)
+    {
+      ParsedConfig = pluginConfiguration.GetConfiguration<PlayerCardConfiguration>();
+      ProjectName = pluginConfiguration.ProjectName;
     }
   }
 }

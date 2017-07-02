@@ -15,21 +15,22 @@
     <th>
       @Html.DisplayNameFor(model => model.Plugins.FirstOrDefault().Name)
     </th>
-    <th></th>
-    <th></th>
+    <th>@Html.DisplayNameFor(item => Model.Plugins.FirstOrDefault().Description)</th>
+    <th>@Html.DisplayNameFor(item => Model.Plugins.FirstOrDefault().StaticPages)</th>
     <th></th>
   </tr>
   @foreach (var plugin in Model.Plugins.OrderByDescending(p => p.Installed).ThenBy(p => p.Name))
   {
     <tr>
       <td>
-        @Html.DisplayFor(item => plugin.Name)
-      </td>
-      <td>
         @if (plugin.Installed)
         {
           <span class="label label-success">Установлен</span>
         }
+        @Html.DisplayFor(item => plugin.Name)
+      </td>
+      <td>
+        @Html.DisplayFor(item => plugin.Description)
       </td>
       <td>
         @if (plugin.Installed)

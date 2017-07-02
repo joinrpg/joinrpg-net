@@ -24,6 +24,7 @@ namespace JoinRpg.Web.Models.Plugins
       Name = pi.Name;
       Installed = pi.Installed;
       StaticPages = pi.StaticPages;
+      Description = pi.Description;
     }
 
     [Display(Name = "Страницы")]
@@ -31,6 +32,9 @@ namespace JoinRpg.Web.Models.Plugins
 
     [Display(Name = "Имя плагина")]
     public string Name { get; }
+
+    [Display(Name = "Описание")]
+    public string Description { get; }
     public bool Installed { get; }
   }
 }

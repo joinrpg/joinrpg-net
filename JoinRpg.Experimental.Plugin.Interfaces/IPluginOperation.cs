@@ -1,7 +1,9 @@
-﻿namespace JoinRpg.Experimental.Plugin.Interfaces
+﻿using JetBrains.Annotations;
+
+namespace JoinRpg.Experimental.Plugin.Interfaces
 {
-  public interface IPluginOperation 
+  public interface IPluginOperation
   {
-    
+    void SetConfiguration([NotNull] IPluginConfiguration pluginConfiguration);
   }
 }

@@ -44,10 +44,10 @@
     <Compile Include="DomainModel\CharacterInfo.cs" />
     <Compile Include="HtmlPrintResult.cs" />
     <Compile Include="IPlugin.cs" />
-    <Compile Include="IPluginConfiguration.cs" />
+    <Compile Include="PluginConfiguration.cs" />
     <Compile Include="IPluginOperation.cs" />
-    <Compile Include="IPrintCardPluginOperation.cs" />
-    <Compile Include="IStaticPagePluginOperation.cs" />
+    <Compile Include="Operations\IPrintCardPluginOperation.cs" />
+    <Compile Include="Operations\IStaticPagePluginOperation.cs" />
     <Compile Include="PluginConfigurationIncorrectException.cs" />
     <Compile Include="PluginImplementationBase.cs" />
     <Compile Include="PluginOperationMetadata.cs" />
