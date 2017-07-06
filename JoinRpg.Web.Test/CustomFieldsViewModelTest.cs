@@ -99,6 +99,42 @@ namespace JoinRpg.Web.Test
 
       Assert.IsTrue(characterField.CanEdit);
     }
+
+    [TestMethod]
+    public void ProperlyHideConditionalHeader()
+    {
+      var mock = new MockedProject();
+      var claim = mock.CreateClaim(mock.CharacterWithoutGroup, mock.Player);
+      claim.ClaimStatus = Claim.Status.Approved;
+
+      var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
+      var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
+
+      Assert.IsNotNull(characterField);
+      Assert.IsFalse(characterField.CanView);
+      Assert.IsNull(characterField.Value);
+
+      Assert.IsFalse(characterField.CanEdit);
+    }
+
+    [TestMethod]
+    public void ProperlyShowConditionalHeaderTest()
+    {
+      var mock = new MockedProject();
+      var claim = mock.CreateClaim(mock.Character, mock.Player);
+      claim.ClaimStatus = Claim.Status.Approved;
+
+      var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
+      var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
+
+      Assert.IsNotNull(characterField);
+      Assert.IsTrue(characterField.CanView);
+      Assert.IsNull(characterField.Value);
+
+      Assert.IsTrue(characterField.CanEdit);
+    }
+
+
     [TestMethod]
     public void AllowCharactersFieldOnAddClaimForGroupTest()
     {

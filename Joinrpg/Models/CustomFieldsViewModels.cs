@@ -93,7 +93,7 @@ namespace JoinRpg.Web.Models
                           (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
                            ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
-      CanView = hasViewAccess && ch.HasViewableValue;
+      CanView = hasViewAccess && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
       CanEdit = model.EditAllowed 
           && ch.HasEditAccess(
