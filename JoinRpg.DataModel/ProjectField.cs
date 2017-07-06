@@ -105,6 +105,11 @@ namespace JoinRpg.DataModel
         yield return 
           new ValidationResult("Include in print fields must be player visible.");
       }
+
+      if (MandatoryStatus != MandatoryStatus.Optional && FieldType == ProjectFieldType.Header)
+      {
+        yield return  new ValidationResult("Header can't be mandatory");
+      }
     }
   }
 
