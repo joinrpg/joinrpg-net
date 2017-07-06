@@ -15,11 +15,13 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
-  public class ProjectService : DbServiceImplBase, IProjectService
+  internal class ProjectService : DbServiceImplBase, IProjectService
   {
-    public ProjectService(IUnitOfWork unitOfWork) : base(unitOfWork)
-    {
+    private IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
+    public ProjectService(IUnitOfWork unitOfWork, IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
+    {
+      FieldDefaultValueGenerator = fieldDefaultValueGenerator;
     }
 
     public async Task<Project> AddProject(string projectName, User creator)
@@ -135,7 +137,7 @@ namespace JoinRpg.Services.Impl
       character.IsActive = true;
 
       character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
+      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields, FieldDefaultValueGenerator);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       await UnitOfWork.SaveChangesAsync();

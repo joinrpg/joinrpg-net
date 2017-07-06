@@ -8,11 +8,21 @@ namespace JoinRpg.PluginHost.Interfaces
 {
   public interface IPluginFactory
   {
-    Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId) where T:IPluginOperation;
+    IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c);
+
+    [NotNull]
+    MarkdownString ShowStaticPage(PluginOperationData<IStaticPagePluginOperation> pluginInstance, Project project);
+
+    [ItemNotNull]
+    Task<IReadOnlyCollection<ProjectPluginInfo>> GetPluginsForProject(int projectId);
 
     [ItemCanBeNull]
-    Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin) where T : IPluginOperation;
-    IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c);
-    MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance, Project project);
+    Task<ProjectPluginConfiguraton> GetConfiguration(int projectid, string plugin);
+
+    [NotNull, ItemNotNull]
+    IEnumerable<PluginOperationData<T>> GetProjectOperations<T>(Project project) where T : IPluginOperation;
+
+    [CanBeNull]
+    string GenerateDefaultCharacterFieldValue([NotNull] Character character, [NotNull] ProjectField field);
   }
 }

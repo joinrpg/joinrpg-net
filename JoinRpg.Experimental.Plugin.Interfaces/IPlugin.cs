@@ -10,10 +10,9 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
     IEnumerable<PluginOperationMetadata> GetOperations();
 
     [NotNull]
-    T GetOperationInstance<T>(string operationName, [NotNull] PluginConfiguration pluginConfiguration)
-      where T : IPluginOperation;
+    string GetName();
 
     [NotNull]
-    string GetName();
+    string GetDescripton();
   }
 }

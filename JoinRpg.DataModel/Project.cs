@@ -59,13 +59,6 @@ namespace JoinRpg.DataModel
     #endregion
   }
 
-  public class ProjectPlugin
-  {
-    public int ProjectPluginId { get; set; }
-    public string Name { get; set; }
-    public string Configuration { get; set; }
-  }
-
   public class ProjectDetails
   {
     [Key]

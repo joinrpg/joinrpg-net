@@ -7,7 +7,9 @@ namespace JoinRpg.Helpers
 {
   public static class DisplayAttributeHelper
   {
-    public static string GetDisplayName(this Enum enumValue) => enumValue.GetAttribute<DisplayAttribute>().GetName();
+    [NotNull]
+    public static string GetDisplayName(this Enum enumValue) =>
+      enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
 
     [NotNull]
     public static string GetDisplayName([NotNull] this PropertyInfo propertyInfo)

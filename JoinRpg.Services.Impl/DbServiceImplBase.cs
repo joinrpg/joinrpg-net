@@ -1,6 +1,5 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,7 +10,9 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
+using JoinRpg.PluginHost.Interfaces;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Services.Impl
@@ -19,7 +20,6 @@ namespace JoinRpg.Services.Impl
   //TODO: Split on specific and not specific to domain helpers
   public class DbServiceImplBase
   {
-
     protected readonly IUnitOfWork UnitOfWork;
     protected IUserRepository UserRepository => _userRepository.Value;
 

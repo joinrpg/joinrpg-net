@@ -35,19 +35,15 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPluginResolver.cs" />
+    <Compile Include="PluginFactoryExtenstions.cs" />
     <Compile Include="PluginOperationData.cs" />
     <Compile Include="IPluginFactory.cs" />
+    <Compile Include="ProjectPluginConfiguraton.cs" />
+    <Compile Include="ProjectPluginInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
