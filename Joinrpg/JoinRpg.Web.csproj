@@ -647,6 +647,10 @@
       <Project>{fee778a6-b9e7-4305-b985-3c4fa5f1b1d8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.DeusEx\JoinRpg.Experimental.Plugin.DeusEx.csproj">
+      <Project>{75c5529a-a892-4692-9b5f-8d01290bf1b3}</Project>
+      <Name>JoinRpg.Experimental.Plugin.DeusEx</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj">
       <Project>{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}</Project>
       <Name>JoinRpg.Experimental.Plugin.HelloWorld</Name>
