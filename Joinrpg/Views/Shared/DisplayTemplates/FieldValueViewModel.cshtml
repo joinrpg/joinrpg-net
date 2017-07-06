@@ -1,16 +1,17 @@
 ﻿@using System.ComponentModel
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
+@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
+
   @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
-      <h4>@Model.FieldName</h4>
-      <div class="help-block">
+      <h4 class="@hideClassName">@Model.FieldName</h4>
+      <div class="help-block @hideClassName">
           @Model.Description
       </div>
       return;
   }
 
-@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 <div class="form-group @hideClassName">
     <label class="control-label col-md-2">@Model.FieldName</label>
     <div class="col-md-10">
