@@ -39,8 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginFactoryExtenstions.cs" />
     <Compile Include="PluginOperationData.cs" />
     <Compile Include="IPluginFactory.cs" />
+    <Compile Include="ProjectPluginConfiguraton.cs" />
+    <Compile Include="ProjectPluginInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

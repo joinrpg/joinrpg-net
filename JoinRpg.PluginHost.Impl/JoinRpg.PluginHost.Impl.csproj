@@ -50,6 +50,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PluginConfiguration.cs" />
+    <Compile Include="PluginDataPreparer.cs" />
     <Compile Include="PluginFactoryImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

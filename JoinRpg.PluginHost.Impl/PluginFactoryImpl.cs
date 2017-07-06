@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -7,8 +6,6 @@ using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using Newtonsoft.Json;
 
 namespace JoinRpg.PluginHost.Impl
 {
@@ -27,13 +24,8 @@ namespace JoinRpg.PluginHost.Impl
     public IEnumerable<PluginOperationData<T>> GetProjectOperations<T>(Project project) where T : IPluginOperation
     {
       return from projectPlugin in GetProjectInstalledPlugins(project)
-        from pluginOperationMetadata in GetOperationsOfType<T>(projectPlugin.Plugin)
+        from pluginOperationMetadata in projectPlugin.Plugin.GetOperations().GetOperationsOfType<T>()
         select CreatePluginOperationData<T>(project, projectPlugin, pluginOperationMetadata);
-    }
-
-    private static IEnumerable<PluginOperationMetadata> GetOperationsOfType<T>(IPlugin plugin) where T : IPluginOperation
-    {
-      return plugin.GetOperations().Where(o => typeof(T).IsAssignableFrom(o.Operation));
     }
 
     private static PluginOperationData<T> CreatePluginOperationData<T>(Project project, PluginWithConfig projectPlugin,
@@ -42,8 +34,11 @@ namespace JoinRpg.PluginHost.Impl
       return new PluginOperationData<T>(
         $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
         () =>
-          (T) pluginOperationMetadata.CreateInstance(new PluginConfiguration(project.ProjectName, projectPlugin.Configuration)),
-        pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
+          (T) pluginOperationMetadata.CreateInstance(
+            new PluginConfiguration(project.ProjectName,
+            projectPlugin.Configuration)),
+        pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess,
+        pluginOperationMetadata.FieldMapping);
     }
 
     private class PluginWithConfig
@@ -60,7 +55,7 @@ namespace JoinRpg.PluginHost.Impl
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c)
     {
-      return pluginInstance.CreatePluginInstance().PrintForCharacter(PrepareCharacterForPlugin(c));
+      return pluginInstance.CreatePluginInstance().PrintForCharacter(c.ToPluginModel());
     }
 
     public MarkdownString ShowStaticPage(PluginOperationData<IStaticPagePluginOperation> pluginInstance, Project project)
@@ -81,10 +76,15 @@ namespace JoinRpg.PluginHost.Impl
         .Select(plugin =>
           {
             var pluginName = plugin.GetName();
-            return new ProjectPluginInfo(pluginName,
-              project.ProjectPlugins.Any(pp => pp.Name == pluginName),
-                GetOperationsOfType<IStaticPagePluginOperation>(plugin).Select(o => pluginName + "." + o.Name).ToList(),
-                plugin.GetDescripton());
+            var projectPlugin = project.ProjectPlugins.SingleOrDefault(pp => pp.Name == pluginName);
+            return new ProjectPluginInfo(
+                pluginName, 
+                plugin.GetOperations().GetOperationsOfType<IStaticPagePluginOperation>().Select(o => pluginName + "." + o.Name).ToList(),
+                plugin.GetDescripton(),
+                plugin.GetOperations().Select(o => o.FieldMapping).ToList(),
+                projectPlugin?.PluginFieldMappings.ToList(),
+                projectPlugin?.ProjectPluginId
+                );
           }
         )
         .ToList();
@@ -99,44 +99,30 @@ namespace JoinRpg.PluginHost.Impl
         new MarkdownString($"```\n{pluginInstance.Configuration}\n```"));
     }
 
-    private static CharacterInfo PrepareCharacterForPlugin(Character character)
+    public string GenerateDefaultCharacterFieldValue(Character character, ProjectField field)
     {
-      var player = character.ApprovedClaim?.Player;
-      return new CharacterInfo(character.CharacterName,
-        character.GetFields()
-          .Select(f => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString)),
-        character.CharacterId,
-        character.GetParentGroupsToTop().Distinct()
-          .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
-          .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
-        player?.DisplayName, player?.FullName, player?.Id);
-    }
-
-    public string GenerateDefaultCharacterFieldValue(ProjectField field)
-    {
-      var operations = GetProjectOperations<IGenerateFieldOperation>(field.Project);
+      var operations = GetProjectOperations<IGenerateFieldOperation>(field.Project).HasMapping(field);
       return operations.Select(o => o.CreatePluginInstance()
-          .GenerateFieldValue(new CharacterFieldInfo(field.ProjectFieldId, null, field.FieldName, null)))
+          .GenerateFieldValue(character.ToPluginModel(), new CharacterFieldInfo(field.ProjectFieldId, null, field.FieldName, null)))
         .FirstOrDefault(newValue => newValue != null);
     }
   }
 
-  public class PluginConfiguration : IPluginConfiguration
+  public static class OperationsFilters
   {
-    public PluginConfiguration([NotNull] string projectName, [NotNull] string configurationString)
+    public static IEnumerable<PluginOperationData<T>> HasMapping<T>(
+      this IEnumerable<PluginOperationData<T>> operations, ProjectField field)
+    where T : IPluginOperation, IFieldOperation
     {
-      if (projectName == null) throw new ArgumentNullException(nameof(projectName));
-      if (configurationString == null) throw new ArgumentNullException(nameof(configurationString));
-      ProjectName = projectName;
-      ConfigurationString = configurationString;
+      return operations
+        .Where(o => field.Mappings.Any(m => m.MappingName == o.FieldMapping &&
+                                            m.PluginFieldMappingType ==
+                                            PluginFieldMappingType.GenerateDefault));
     }
 
-    private string ConfigurationString { get; }
-
-    [NotNull]
-    public T GetConfiguration<T>() => JsonConvert.DeserializeObject<T>(ConfigurationString);
-
-    [NotNull]
-    public string ProjectName { get; }
+    public static IEnumerable<PluginOperationMetadata> GetOperationsOfType<T>(
+      this IEnumerable<PluginOperationMetadata> operations)
+      where T : IPluginOperation 
+      => operations.Where(o => typeof(T).IsAssignableFrom(o.Operation));
   }
 }

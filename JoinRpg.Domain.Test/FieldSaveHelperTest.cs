@@ -211,6 +211,6 @@ namespace JoinRpg.Domain.Test
   public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
   {
     public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
-    public string CreateDefaultValue(Character claim, ProjectField field) => null;
+    public string CreateDefaultValue(Character character, ProjectField field) => null;
   }
 }

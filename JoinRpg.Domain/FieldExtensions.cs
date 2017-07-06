@@ -33,8 +33,9 @@ namespace JoinRpg.Domain
       return $"{field.FieldName}";
     }
 
-    public static bool IsAvailableForTarget(this ProjectField field, IClaimSource target)
+    public static bool IsAvailableForTarget([NotNull] this ProjectField field, [CanBeNull] IClaimSource target)
     {
+      if (field == null) throw new ArgumentNullException(nameof(field));
       return field.IsActive
         && (field.FieldBoundTo == FieldBoundTo.Claim || field.ValidForNpc || !target.IsNpc())
         && (!field.GroupsAvailableFor.Any() || target.IsPartOfAnyOfGroups(field.GroupsAvailableFor));

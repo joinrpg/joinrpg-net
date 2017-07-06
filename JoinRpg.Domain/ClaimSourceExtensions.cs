@@ -92,7 +92,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static bool IsNpc(this IClaimSource target)
+    public static bool IsNpc([CanBeNull] this IClaimSource target)
     {
       var character = target as Character;
       if (character == null)

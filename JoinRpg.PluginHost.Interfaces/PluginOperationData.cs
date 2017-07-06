@@ -6,8 +6,12 @@ namespace JoinRpg.PluginHost.Interfaces
 {
   public class PluginOperationData<T> where T : IPluginOperation
   {
-    public PluginOperationData([NotNull] string operationName, [NotNull] Func<T> createPluginInstance,
-      [NotNull] string description, bool allowPlayerAccess)
+    public PluginOperationData(
+      [NotNull] string operationName, 
+      [NotNull] Func<T> createPluginInstance, 
+      [NotNull] string description, 
+      bool allowPlayerAccess, 
+      [CanBeNull] string fieldMapping)
     {
       if (operationName == null) throw new ArgumentNullException(nameof(operationName));
       if (createPluginInstance == null) throw new ArgumentNullException(nameof(createPluginInstance));
@@ -17,6 +21,7 @@ namespace JoinRpg.PluginHost.Interfaces
       CreatePluginInstance = createPluginInstance;
       Description = description;
       AllowPlayerAccess = allowPlayerAccess;
+      FieldMapping = fieldMapping;
     }
 
     [PublicAPI, NotNull]
@@ -30,5 +35,8 @@ namespace JoinRpg.PluginHost.Interfaces
 
     [PublicAPI]
     public bool AllowPlayerAccess{ get; }
+
+    [PublicAPI, CanBeNull]
+    public string FieldMapping { get; }
   }
 }

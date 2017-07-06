@@ -71,6 +71,7 @@
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectField.cs" />
     <Compile Include="ProjectFieldDropdownValue.cs" />
+    <Compile Include="ProjectPlugin.cs" />
     <Compile Include="ReadCommentWatermark.cs" />
     <Compile Include="Security.cs" />
     <Compile Include="User.cs" />

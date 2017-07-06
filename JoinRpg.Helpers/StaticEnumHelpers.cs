@@ -8,7 +8,7 @@ namespace JoinRpg.Helpers
 {
   public static class StaticEnumHelpers
   {
-    [PublicAPI]
+    [PublicAPI, CanBeNull]
     public static TAttribute GetAttribute<TAttribute>(this Enum enumValue) where TAttribute:Attribute
     {
       return enumValue.GetType()

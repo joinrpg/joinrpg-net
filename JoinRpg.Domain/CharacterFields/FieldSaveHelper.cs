@@ -14,7 +14,7 @@ namespace JoinRpg.Domain.CharacterFields
       protected Claim Claim { get; }
       protected Character Character { get; }
       private int CurrentUserId { get; }
-      public IFieldDefaultValueGenerator Generator { get; }
+      private IFieldDefaultValueGenerator Generator { get; }
       private Project Project { get; }
       private List<FieldWithValue> UpdatedFields { get; } = new List<FieldWithValue>();
 
@@ -193,7 +193,9 @@ namespace JoinRpg.Domain.CharacterFields
         strategy.AssignFieldValue(field, normalizedValue);
       }
 
-      foreach (var field in fields.Values.Where(f => !f.HasEditableValue && f.Field.CanHaveValue()))
+      foreach (var field in fields.Values.Where(
+        f => !f.HasEditableValue && f.Field.CanHaveValue() &&
+             f.Field.IsAvailableForTarget(character)))
       {
         var newValue = strategy.GenerateDefaultValue(field);
 

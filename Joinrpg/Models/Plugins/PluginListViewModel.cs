@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using JoinRpg.DataModel;
 using JoinRpg.PluginHost.Interfaces;
 
 namespace JoinRpg.Web.Models.Plugins
@@ -25,7 +26,10 @@ namespace JoinRpg.Web.Models.Plugins
       Installed = pi.Installed;
       StaticPages = pi.StaticPages;
       Description = pi.Description;
+      ActiveMappings = pi.ActiveMappings.Select(m => new PluginFieldMappingViewModel(m)).ToList();
     }
+
+    public List<PluginFieldMappingViewModel> ActiveMappings { get; }
 
     [Display(Name = "Страницы")]
     public IReadOnlyCollection<string> StaticPages { get; }
@@ -36,5 +40,21 @@ namespace JoinRpg.Web.Models.Plugins
     [Display(Name = "Описание")]
     public string Description { get; }
     public bool Installed { get; }
+  }
+
+  public class PluginFieldMappingViewModel
+  {
+    public string FieldName { get; }
+    public int ProjectFieldId { get; }
+    public string MappingName { get; }
+    public PluginFieldMappingType MappingType { get; }
+
+    public PluginFieldMappingViewModel(PluginFieldMapping m)
+    {
+      FieldName = m.ProjectField.FieldName;
+      ProjectFieldId = m.ProjectFieldId;
+      MappingName = m.MappingName;
+      MappingType = m.PluginFieldMappingType;
+    }
   }
 }

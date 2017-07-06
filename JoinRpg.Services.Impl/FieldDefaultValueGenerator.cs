@@ -16,9 +16,7 @@ namespace JoinRpg.Services.Impl
     private IPluginFactory PluginFactory { get; }
     public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
 
-    public string CreateDefaultValue(Character claim, ProjectField field)
-    {
-      return PluginFactory.GenerateDefaultCharacterFieldValue(field);
-    }
+    public string CreateDefaultValue(Character character, ProjectField field) => PluginFactory
+      .GenerateDefaultCharacterFieldValue(character, field);
   }
 }
