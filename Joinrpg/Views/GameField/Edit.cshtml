@@ -3,7 +3,7 @@
 @model GameFieldEditViewModel
 
 @{
-    ViewBag.Title = "Редактирование поля персонажа " + Model.Name;
+    ViewBag.Title = "Редактирование поля персонажа/заявки " + Model.Name;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -133,8 +133,8 @@
 
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/>
-                 @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new {@class="btn btn-default"})
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/> 
+                | @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId })
             </div>
         </div>
     </div>
@@ -142,10 +142,51 @@
 
 @if (Model.HasValueList)
 {
-    <hr/>
-    <p>@Html.ActionLink("Добавить значение", "CreateValue", new {Model.ProjectId, Model.ProjectFieldId})</p>
-    Html.RenderPartial("ValuesList", Model.DropdownValues, null);
+  <hr/>
+  <p>
+    <a href="@Url.Action("CreateValue", new {Model.ProjectId, Model.ProjectFieldId})" class="btn btn-default">
+      <span class="glyphicon glyphicon-plus"></span>Добавить значение
+    </a>
+    <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal">
+      <span class="glyphicon glyphicon-plus"></span>Добавить несколько значений
+    </button>
+  </p>
+  Html.RenderPartial("ValuesList", Model.DropdownValues, null);
 }
+
+<div class="modal fade" id="massAddValueModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      @using (Html.BeginForm("MassCreateValueVariants", "GameField"))
+      {
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.ProjectFieldId)
+        @Html.AntiForgeryToken()
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Добавить значения</h4>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-horizontal">
+            <div class="form-group">
+              <div class="col-md-10">
+              <textarea type="text" required id="valuesToAdd" name="valuesToAdd" rows="4" class="form-control"></textarea>
+                <div class="help-block">Введите сюда значения, которые хотите добавить этому полю. <br/> Одна строчка — одно значение</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Добавить</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+
+        </div>
+      }
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

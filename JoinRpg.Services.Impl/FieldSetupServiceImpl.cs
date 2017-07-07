@@ -67,10 +67,10 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteField(int currentUserId, int projectId, int projectFieldId)
+    public async Task DeleteField(int projectId, int projectFieldId)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
       {
@@ -93,12 +93,26 @@ namespace JoinRpg.Services.Impl
     {
     }
 
-    public async Task CreateFieldValueVariant(int projectId, int projectCharacterFieldId, int currentUserId, string label, string description)
+    public async Task CreateFieldValueVariant(
+      int projectId, 
+      int projectCharacterFieldId, 
+      string label, 
+      string description)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
 
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
+      CreateFieldValueVariantImpl(field, label, description);
+
+      await UnitOfWork.SaveChangesAsync();
+    }
+
+    private static void CreateFieldValueVariantImpl(
+      [NotNull] ProjectField field, 
+      [NotNull] string label,
+      [CanBeNull] string description)
+    {
       var fieldValue = new ProjectFieldDropdownValue()
       {
         Description = new MarkdownString(description),
@@ -114,8 +128,6 @@ namespace JoinRpg.Services.Impl
       CreateOrUpdateSpecialGroup(fieldValue);
 
       field.DropdownValues.Add(fieldValue);
-
-      await UnitOfWork.SaveChangesAsync();
     }
 
     private static void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)
@@ -215,19 +227,19 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task MoveField(int currentUserId, int projectId, int projectcharacterfieldid, short direction)
+    public async Task MoveField(int projectId, int projectcharacterfieldid, short direction)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectcharacterfieldid);
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       field.Project.ProjectFieldsOrdering = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveFieldValue(int currentUserId, int projectid, int projectFieldId, int projectFieldVariantId, short direction)
+    public async Task MoveFieldValue(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       field.ValuesOrdering =
         field.GetFieldValuesContainer()
@@ -235,6 +247,21 @@ namespace JoinRpg.Services.Impl
           .GetStoredOrder();
 
       await UnitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateFieldValueVariants(int projectId, int projectFieldId, string valuesToAdd)
+    {
+      var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+
+      foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
+      {
+        CreateFieldValueVariantImpl(field, label, null);
+      }
+
+      await UnitOfWork.SaveChangesAsync();
+
     }
   }
 }

@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -23,6 +24,7 @@ namespace JoinRpg.DataModel
 
         public bool WasEverUsed { get; set; }
 
+        [Required]
         public string Label { get; set; }
 
         public MarkdownString Description { get; set; }

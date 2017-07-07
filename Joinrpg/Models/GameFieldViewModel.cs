@@ -80,52 +80,65 @@ namespace JoinRpg.Web.Models
   {
     public int ProjectFieldId { get; set; }
 
-    public bool HasValueList { get; }
+    [ReadOnly(true)]
+    public bool HasValueList { get; private set; }
 
       [Display(Name = "Описание"), UIHint("MarkdownString")]
       public string DescriptionEditable { get; set; }
 
-      public GameFieldEditViewModel(ProjectField field)
-      {
-          CanPlayerView = field.CanPlayerView;
-          CanPlayerEdit = field.CanPlayerEdit;
-          DescriptionEditable = field.Description.Contents;
-          DescriptionDisplay = field.Description.ToHtmlString();
-          ProjectFieldId = field.ProjectFieldId;
-          IsPublic = field.IsPublic;
-          Name = field.FieldName;
-          ProjectId = field.ProjectId;
-          IsActive = field.IsActive;
-          HasValueList = field.HasValueList();
-          DropdownValues = field.GetOrderedValues().Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
-              .MarkFirstAndLast();
-          FieldViewType = (ProjectFieldViewType) field.FieldType;
-          FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
-          MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
-          ShowForGroups = field.GroupsAvailableFor.Select(c => c.CharacterGroupId).PrefixAsGroups().ToList();
-          IncludeInPrint = field.IncludeInPrint;
-          ValidForNpc = field.ValidForNpc;
-          ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
-      }
+    public GameFieldEditViewModel(ProjectField field, int currentUserId)
+    {
+      CanPlayerView = field.CanPlayerView;
+      CanPlayerEdit = field.CanPlayerEdit;
+      DescriptionEditable = field.Description.Contents;
+      DescriptionDisplay = field.Description.ToHtmlString();
+      ProjectFieldId = field.ProjectFieldId;
+      IsPublic = field.IsPublic;
+      Name = field.FieldName;
+      ProjectId = field.ProjectId;
+      MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
+      ShowForGroups = field
+        .GroupsAvailableFor
+        .Select(c => c.CharacterGroupId)
+        .PrefixAsGroups()
+        .ToList();
+      IncludeInPrint = field.IncludeInPrint;
+      ValidForNpc = field.ValidForNpc;
+      ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
+      FillNotEditable(field, currentUserId);
+    }
 
-      public GameFieldEditViewModel()
+    public void FillNotEditable(ProjectField field, int currentUserId)
+    {
+      DropdownValues = field.GetOrderedValues()
+        .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
+        .MarkFirstAndLast();
+      FieldViewType = (ProjectFieldViewType) field.FieldType;
+      FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
+      IsActive = field.IsActive;
+      HasValueList = field.HasValueList();
+      CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
+    }
+
+    public GameFieldEditViewModel()
     { }
 
     [ReadOnly(true)]
-    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; }
+    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; private set; }
 
     [Display(Name = "Тип поля"), ReadOnly(true)]
-    public ProjectFieldViewType FieldViewType { get; }
+    public ProjectFieldViewType FieldViewType { get; private set; }
 
     [Display(Name = "Привязано к"), ReadOnly(true)]
-    public FieldBoundToViewModel FieldBoundTo { get; }
+    public FieldBoundToViewModel FieldBoundTo { get; private set; }
 
     [ReadOnly(true)]
-    public bool IsActive { get; }
+    public bool IsActive { get; private set; }
 
     public bool First { get; set; }
     public bool Last { get; set; }
     int IMovableListItem.ItemId => ProjectFieldId;
+    public bool CanEditFields { get; private set; }
   }
 
 
@@ -201,7 +214,7 @@ namespace JoinRpg.Web.Models
     public GameFieldListViewModel (Project project, int currentUserId)
     {
       ProjectId = project.ProjectId;
-      Items = project.GetOrderedFields().ToViewModels();
+      Items = project.GetOrderedFields().ToViewModels(currentUserId);
       CanEditFields = project.HasMasterAccess(currentUserId, pa => pa.CanChangeFields) && project.Active;
     }
   }
@@ -290,9 +303,9 @@ namespace JoinRpg.Web.Models
 
   public static class GameFieldViewModelsExtensions
   {
-    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields)
+    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields, int currentUserId)
     {
-      return gameFields.Select(pf => new GameFieldEditViewModel(pf)).MarkFirstAndLast();
+      return gameFields.Select(pf => new GameFieldEditViewModel(pf, currentUserId)).MarkFirstAndLast();
     }
   }
 }
