@@ -86,7 +86,7 @@ namespace JoinRpg.Web.Models
       [Display(Name = "Описание"), UIHint("MarkdownString")]
       public string DescriptionEditable { get; set; }
 
-    public GameFieldEditViewModel(ProjectField field)
+    public GameFieldEditViewModel(ProjectField field, int currentUserId)
     {
       CanPlayerView = field.CanPlayerView;
       CanPlayerEdit = field.CanPlayerEdit;
@@ -105,10 +105,10 @@ namespace JoinRpg.Web.Models
       IncludeInPrint = field.IncludeInPrint;
       ValidForNpc = field.ValidForNpc;
       ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
-      FillNotEditable(field);
+      FillNotEditable(field, currentUserId);
     }
 
-    public void FillNotEditable(ProjectField field)
+    public void FillNotEditable(ProjectField field, int currentUserId)
     {
       DropdownValues = field.GetOrderedValues()
         .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
@@ -117,6 +117,7 @@ namespace JoinRpg.Web.Models
       FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
       IsActive = field.IsActive;
       HasValueList = field.HasValueList();
+      CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
     }
 
     public GameFieldEditViewModel()
@@ -137,6 +138,7 @@ namespace JoinRpg.Web.Models
     public bool First { get; set; }
     public bool Last { get; set; }
     int IMovableListItem.ItemId => ProjectFieldId;
+    public bool CanEditFields { get; private set; }
   }
 
 
@@ -212,7 +214,7 @@ namespace JoinRpg.Web.Models
     public GameFieldListViewModel (Project project, int currentUserId)
     {
       ProjectId = project.ProjectId;
-      Items = project.GetOrderedFields().ToViewModels();
+      Items = project.GetOrderedFields().ToViewModels(currentUserId);
       CanEditFields = project.HasMasterAccess(currentUserId, pa => pa.CanChangeFields) && project.Active;
     }
   }
@@ -301,9 +303,9 @@ namespace JoinRpg.Web.Models
 
   public static class GameFieldViewModelsExtensions
   {
-    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields)
+    public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields, int currentUserId)
     {
-      return gameFields.Select(pf => new GameFieldEditViewModel(pf)).MarkFirstAndLast();
+      return gameFields.Select(pf => new GameFieldEditViewModel(pf, currentUserId)).MarkFirstAndLast();
     }
   }
 }

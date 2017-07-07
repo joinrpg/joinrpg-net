@@ -38,6 +38,13 @@ namespace JoinRpg.Web.Controllers
       return project == null ? (ActionResult) HttpNotFound() : View(new GameFieldListViewModel(project, CurrentUserId));
     }
 
+    [HttpGet, MasterAuthorize()]
+    public async Task<ActionResult> DeletedList(int projectId)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      return project == null ? (ActionResult)HttpNotFound() : View(new GameFieldListViewModel(project, CurrentUserId));
+    }
+
     [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> Create(int projectId)
     {
@@ -84,7 +91,6 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
-    // GET: GameFields/Edit/5
     public async Task<ActionResult> Edit(int projectId, int projectFieldId)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
@@ -92,10 +98,9 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-      return View(new GameFieldEditViewModel(field));
+      return View(new GameFieldEditViewModel(field, CurrentUserId));
     }
 
-    // POST: GameFields/Edit/5
     [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
@@ -109,7 +114,7 @@ namespace JoinRpg.Web.Controllers
       }
       if (!ModelState.IsValid)
       {
-        viewModel.FillNotEditable(field);
+        viewModel.FillNotEditable(field, CurrentUserId);
         return View(viewModel);
       }
       try
@@ -126,20 +131,18 @@ namespace JoinRpg.Web.Controllers
       catch (Exception exception)
       {
         ModelState.AddException(exception);
-        viewModel.FillNotEditable(field);
+        viewModel.FillNotEditable(field, CurrentUserId);
         return View(viewModel);
       }
     }
 
     [HttpGet]
-    // GET: GameFields/Delete/5
     public async Task<ActionResult> Delete(int projectId, int projectFieldId)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
       return AsMaster(field, pa => pa.CanChangeFields) ?? View(field);
     }
 
-    // POST: GameFields/Delete/5
     [HttpPost]
     [ValidateAntiForgeryToken]
     // ReSharper disable once UnusedParameter.Global

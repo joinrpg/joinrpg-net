@@ -610,6 +610,8 @@
     <Content Include="Views\Shared\DisplayTemplates\PhoneNumber.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\Telegram.cshtml" />
     <Content Include="Views\PluginSetup\Index.cshtml" />
+    <Content Include="Views\GameField\FieldList.cshtml" />
+    <Content Include="Views\GameField\DeletedList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
