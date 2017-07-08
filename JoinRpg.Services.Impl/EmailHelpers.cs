@@ -18,13 +18,13 @@ namespace JoinRpg.Services.Impl
       CommentExtraAction? commentExtraAction,
       User initiator,
       bool mastersOnly = false,
-      IEnumerable<User> extraRecepients = null)
+      IEnumerable<User> extraRecipients = null)
         where TEmail : ClaimEmailModel, new()
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       if (commentText == null) throw new ArgumentNullException(nameof(commentText));
       var subscriptions =
-        claim.GetSubscriptions(subscribePredicate, extraRecepients ?? Enumerable.Empty<User>(),
+        claim.GetSubscriptions(subscribePredicate, extraRecipients ?? Enumerable.Empty<User>(),
           mastersOnly).ToList();
       return new TEmail()
       {
@@ -32,7 +32,7 @@ namespace JoinRpg.Services.Impl
         ProjectName = claim.Project.ProjectName,
         Initiator = initiator,
         InitiatorType = initiator.UserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
-        Recepients = subscriptions.ToList(),
+        Recipients = subscriptions.ToList(),
         Text = new MarkdownString(commentText),
         CommentExtraAction = commentExtraAction
       };

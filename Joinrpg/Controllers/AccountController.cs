@@ -172,7 +172,7 @@ namespace JoinRpg.Web.Controllers
       var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.Id, code = code},
         protocol: Request.Url.Scheme);
 
-      await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recepient = user});
+      await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recipient = user});
     }
 
     //
@@ -225,7 +225,7 @@ namespace JoinRpg.Web.Controllers
         var callbackUrl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code},
           protocol: Request.Url.Scheme);
 
-        await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recepient = user});
+        await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recipient = user});
 
         return RedirectToAction("ForgotPasswordConfirmation", "Account");
       }

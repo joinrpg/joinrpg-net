@@ -345,14 +345,14 @@ namespace JoinRpg.Services.Impl
       var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false; 
       claim.AddCommentImpl(currentUserId, parentComment, commentText, visibleToPlayerUpdated, extraAction);
 
-      var extraRecepients =
+      var extraRecipients =
         new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User}.
         Union(extraSubscriptions ?? Enumerable.Empty<User>());
 
       bool mastersOnly = !visibleToPlayerUpdated;
       return
         EmailHelpers.CreateClaimEmail<T>(claim, commentText, predicate,
-          extraAction, await UserRepository.GetById(currentUserId), mastersOnly, extraRecepients);
+          extraAction, await UserRepository.GetById(currentUserId), mastersOnly, extraRecipients);
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)

@@ -36,14 +36,14 @@ namespace JoinRpg.Services.Interfaces
   public class RemindPasswordEmail 
   {
     public string CallbackUrl { get; set; }
-    public User Recepient { get; set; }
+    public User Recipient { get; set; }
   }
 
   public class ConfirmEmail
   {
     public string CallbackUrl
     { get; set; }
-    public User Recepient
+    public User Recipient
     { get; set; }
   }
 
@@ -100,19 +100,19 @@ namespace JoinRpg.Services.Interfaces
     public FieldsChangedEmail(
       Claim claim,
       User initiator,
-      ICollection<User> recepients,
+      ICollection<User> recipients,
       IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
-      : this(null, claim, initiator, recepients, updatedFields, null)
+      : this(null, claim, initiator, recipients, updatedFields, null)
     {
     }
 
     public FieldsChangedEmail(
       Character character,
       User initiator,
-      ICollection<User> recepients,
+      ICollection<User> recipients,
       IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
       Dictionary<string, OldAndNewValue> otherChangedAttributes)
-      : this(character, null, initiator, recepients, updatedFields, otherChangedAttributes)
+      : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
     {
     }
 
@@ -120,7 +120,7 @@ namespace JoinRpg.Services.Interfaces
       Character character,
       Claim claim,
       User initiator,
-      ICollection<User> recepients,
+      ICollection<User> recipients,
       [NotNull] IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
       [CanBeNull] Dictionary<string, OldAndNewValue> otherChangedAttributes)
     {
@@ -136,7 +136,7 @@ namespace JoinRpg.Services.Interfaces
       ProjectName = character?.Project.ProjectName ?? claim?.Project.ProjectName;
       Initiator = initiator;
       Text = new MarkdownString();
-      Recepients = recepients;
+      Recipients = recipients;
       UpdatedFields = updatedFields;
       OtherChangedAttributes = otherChangedAttributes;
     }
@@ -184,7 +184,7 @@ namespace JoinRpg.Services.Interfaces
     public string ProjectName { get; set; }
     public User Initiator { get; set; }
     public MarkdownString Text { get; set; }
-    public ICollection<User> Recepients { get; set; }
+    public ICollection<User> Recipients { get; set; }
   }
 
   public enum ParcipantType 

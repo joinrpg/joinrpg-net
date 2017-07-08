@@ -11,7 +11,7 @@ namespace JoinRpg.Services.Email
   internal static class MailGunExts
   {
     private const string MailGunName = "name";
-    public static readonly string MailGunRecepientName = GetUserDependedtValue(MailGunName);
+    public static readonly string MailGunRecipientName = GetUserDependedtValue(MailGunName);
     public static string GetUserDependedtValue(string valueKey) => "%recipient." + valueKey + "%";
 
     public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<MailRecipient> recipients)
@@ -27,15 +27,15 @@ namespace JoinRpg.Services.Email
     public static Recipient ToRecipient(this User user) 
       => new Recipient { DisplayName = user.DisplayName, Email = user.Email };
 
-    public static JObject ToRecepientVariables(this IReadOnlyCollection<MailRecipient> recepients)
+    public static JObject ToRecipientVariables(this IReadOnlyCollection<MailRecipient> recipients)
     {
       var recipientVars = new JObject();
-      foreach (var r in recepients)
+      foreach (var r in recipients)
       {
         var jobj = new JObject();
         jobj.Add(MailGunName, r.User.DisplayName);
 
-        foreach (var nameAndValue in r.RecepientSpecificValues)
+        foreach (var nameAndValue in r.RecipientSpecificValues)
         {
           jobj.Add(nameAndValue.Key, nameAndValue.Value);
         }

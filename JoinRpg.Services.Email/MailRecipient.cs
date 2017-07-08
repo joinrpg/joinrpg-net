@@ -13,18 +13,18 @@ namespace JoinRpg.Services.Email
     [NotNull]
     public User User;
     /// <summary>
-    /// A dictionary of named recepient-specific values, where key is value name
+    /// A dictionary of named recipient-specific values, where key is value name
     /// </summary>
     [NotNull]
-    public Dictionary<string, string> RecepientSpecificValues;
+    public Dictionary<string, string> RecipientSpecificValues;
 
     public MailRecipient([NotNull] User user,
-      Dictionary<string, string> recepientSpecificValues = null)
+      Dictionary<string, string> recipientSpecificValues = null)
     {
       if (user == null) throw new ArgumentNullException(nameof(user));
 
       User = user;
-      RecepientSpecificValues = recepientSpecificValues ?? new Dictionary<string, string>();
+      RecipientSpecificValues = recipientSpecificValues ?? new Dictionary<string, string>();
     }
   }
 }

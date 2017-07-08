@@ -24,20 +24,20 @@ namespace JoinRpg.Domain
 
     public static IEnumerable<User> GetSubscriptions(
       this ForumThread forumThread,
-      [CanBeNull] IEnumerable<User> extraRecepients,
+      [CanBeNull] IEnumerable<User> extraRecipients,
       bool isVisibleToPlayer)
     {
       return
         forumThread.Subscriptions //get subscriptions on forum
           .Select(u => u.User) //Select users
-          .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
+          .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
           .VerifySubscriptions(isVisibleToPlayer, forumThread);
     }
 
     public static IEnumerable<User> GetSubscriptions(
       this Character character,
       Func<UserSubscription, bool> predicate,
-      [CanBeNull] IEnumerable<User> extraRecepients = null,
+      [CanBeNull] IEnumerable<User> extraRecipients = null,
       bool mastersOnly = false
       )
     {
@@ -51,7 +51,7 @@ namespace JoinRpg.Domain
         .Union(character.ApprovedClaim?.Player) //...and player who claimed for the character
         .Union(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
         .Union((character.ResponsibleMasterUser)) //...and the measter who's responsible for the character
-        .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
+        .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
         .VerifySubscriptions(mastersOnly, character)
         .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
@@ -59,7 +59,7 @@ namespace JoinRpg.Domain
     public static IEnumerable<User> GetSubscriptions(
       this Claim claim, 
       Func<UserSubscription, bool> predicate,
-      [CanBeNull] IEnumerable<User> extraRecepients = null, 
+      [CanBeNull] IEnumerable<User> extraRecipients = null, 
       bool mastersOnly = false)
     {
       return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
@@ -70,7 +70,7 @@ namespace JoinRpg.Domain
           .Select(u => u.User) //Select users
           .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
           .Union(claim.Player) //...and player himself also
-          .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
+          .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
           .VerifySubscriptions(mastersOnly, claim)
           .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }

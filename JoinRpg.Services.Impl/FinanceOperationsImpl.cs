@@ -77,7 +77,7 @@ namespace JoinRpg.Services.Impl
         commentExtraAction: null,
         initiator: await UserRepository.GetById(CurrentUserId),
         mastersOnly: false,
-        extraRecepients: new[] {paymentType.User});
+        extraRecipients: new[] {paymentType.User});
       email.FeeChange = feeChange;
       email.Money = money;
 
