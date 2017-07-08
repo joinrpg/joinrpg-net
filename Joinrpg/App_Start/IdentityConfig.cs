@@ -14,14 +14,14 @@ namespace JoinRpg.Web
   // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class ApplicationUserManager : UserManager<User, int>
     {
-      private ApplicationUserManager(IUserStore<User, int> store)
+      internal ApplicationUserManager(IUserStore<User, int> store)
             : base(store)
         {
         }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
         {
-            //TODO: Fix this to use MyUserStore from DI container
+            //TODO[DI]: Fix this to use MyUserStore from DI container
             var manager = new ApplicationUserManager(new MyUserStore(context.Get<MyDbContext>()));
             // Configure validation logic for usernames
             manager.UserValidator = new UserValidator<User, int>(manager)
@@ -67,14 +67,12 @@ namespace JoinRpg.Web
         {
         }
 
-        public override async Task<ClaimsIdentity> CreateUserIdentityAsync(User user)
-        {
-          return await user.GenerateUserIdentityAsync(UserManager);
-        }
+      public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user) => user
+        .GenerateUserIdentityAsync(UserManager, AuthenticationType);
 
-        public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
-        {
-            return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
-        }
+      public static ApplicationSignInManager Create(
+        IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context) => new
+        ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(),
+          context.Authentication);
     }
 }

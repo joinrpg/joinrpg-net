@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
-  public class GameRepositoryImplBase : RepositoryImplBase
+  internal class GameRepositoryImplBase : RepositoryImplBase
   {
     protected GameRepositoryImplBase(MyDbContext ctx) : base(ctx)
     {

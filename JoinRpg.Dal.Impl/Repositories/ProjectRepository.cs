@@ -12,7 +12,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class ProjectRepository : GameRepositoryImplBase, IProjectRepository
+  internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
   {
     public ProjectRepository(MyDbContext ctx) : base(ctx) 
     {
@@ -107,12 +107,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return
         await Ctx.Set<Character>()
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-
-    public async Task<IReadOnlyCollection<Character>> LoadCharacters(int projectId, IReadOnlyCollection<int> characterIds)
-    {
-      return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
     }
 
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)

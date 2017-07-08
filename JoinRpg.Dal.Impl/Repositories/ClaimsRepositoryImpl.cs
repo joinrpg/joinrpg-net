@@ -9,12 +9,11 @@ using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class ClaimsRepositoryImpl : GameRepositoryImplBase, IClaimsRepository
+  internal class ClaimsRepositoryImpl : GameRepositoryImplBase, IClaimsRepository
   {
     public ClaimsRepositoryImpl(MyDbContext ctx) : base(ctx)
     {

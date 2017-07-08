@@ -19,13 +19,17 @@ namespace JoinRpg.Web.Controllers
   {
     private IPlotRepository PlotRepository { get; }
     private IPluginFactory PluginFactory { get; }
+    private ICharacterRepository CharacterRepository { get; }
 
     public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository,
-      IPluginFactory pluginFactory) : base(userManager, projectRepository, projectService, exportDataService)
+      IProjectService projectService, IExportDataService exportDataService,
+      IPlotRepository plotRepository,
+      IPluginFactory pluginFactory, ICharacterRepository characterRepository) : base(userManager,
+      projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
       PluginFactory = pluginFactory;
+      CharacterRepository = characterRepository;
     }
 
 
@@ -81,7 +85,7 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
-      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
+      var characters = await CharacterRepository.GetCharacters(projectid, characterIds.UnCompressIdList());
       var project = await GetProjectFromList(projectid, characters);
       var pluginInstance = PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(project, plugin);
       if (pluginInstance == null)

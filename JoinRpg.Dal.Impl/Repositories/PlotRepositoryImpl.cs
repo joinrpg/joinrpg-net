@@ -10,7 +10,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
+  internal class PlotRepositoryImpl : GameRepositoryImplBase, IPlotRepository
   {
     public async Task<PlotFolder> GetPlotFolderAsync(int projectId, int plotFolderId)
     {
