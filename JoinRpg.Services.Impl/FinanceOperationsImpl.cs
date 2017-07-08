@@ -74,7 +74,9 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
       var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, contents,
         s => s.MoneyOperation,
-        isVisibleToPlayer: true, commentExtraAction: null, initiator: await UserRepository.GetById(CurrentUserId),
+        commentExtraAction: null,
+        initiator: await UserRepository.GetById(CurrentUserId),
+        mastersOnly: false,
         extraRecepients: new[] {paymentType.User});
       email.FeeChange = feeChange;
       email.Money = money;

@@ -79,7 +79,7 @@ namespace JoinRpg.Services.Impl
 
       var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
 
-      var claimEmail = EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange, true,
+      var claimEmail = EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
         CommentExtraAction.NewClaim, await UserRepository.GetById(currentUserId));
 
       claimEmail.UpdatedFields = updatedFields;
@@ -201,7 +201,7 @@ namespace JoinRpg.Services.Impl
 
       await
         EmailService.Email(
-          EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText, s => s.ClaimStatusChange, true,
+          EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText, s => s.ClaimStatusChange,
               CommentExtraAction.ApproveByMaster, await UserRepository.GetById(currentUserId)));
     }
 
@@ -259,7 +259,7 @@ namespace JoinRpg.Services.Impl
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
       //Grab subscribtions before change 
-      var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange, null, true);
+      var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange, null);
 
       EnsureCanAddClaim(claim.PlayerUserId, source);
 
@@ -348,9 +348,11 @@ namespace JoinRpg.Services.Impl
       var extraRecepients =
         new[] {parentComment?.Author, parentComment?.Finance?.PaymentType?.User}.
         Union(extraSubscriptions ?? Enumerable.Empty<User>());
+
+      bool mastersOnly = !visibleToPlayerUpdated;
       return
-        EmailHelpers.CreateClaimEmail<T>(claim, commentText, predicate, visibleToPlayerUpdated,
-          extraAction, await UserRepository.GetById(currentUserId), extraRecepients);
+        EmailHelpers.CreateClaimEmail<T>(claim, commentText, predicate,
+          extraAction, await UserRepository.GetById(currentUserId), mastersOnly, extraRecepients);
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)

@@ -37,11 +37,11 @@ namespace JoinRpg.Domain
     public static IEnumerable<User> GetSubscriptions(
       this Character character,
       Func<UserSubscription, bool> predicate,
-      [CanBeNull] IEnumerable<User> extraRecepients,
-      bool isVisibleToPlayer)
+      [CanBeNull] IEnumerable<User> extraRecepients = null,
+      bool mastersOnly = false
+      )
     {
       if (character == null) return Enumerable.Empty<User>();
-
       return character.GetGroupsPartOf() //Get all groups for the character
         .SelectMany(g => g.Subscriptions) //get subscriptions on groups
         .Union(character.Subscriptions) //Subscriptions of the character itself.
@@ -52,15 +52,15 @@ namespace JoinRpg.Domain
         .Union(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
         .Union((character.ResponsibleMasterUser)) //...and the measter who's responsible for the character
         .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
-        .VerifySubscriptions(isVisibleToPlayer, character)
+        .VerifySubscriptions(mastersOnly, character)
         .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
 
     public static IEnumerable<User> GetSubscriptions(
       this Claim claim, 
       Func<UserSubscription, bool> predicate,
-      [CanBeNull] IEnumerable<User> extraRecepients, 
-      bool isVisibleToPlayer)
+      [CanBeNull] IEnumerable<User> extraRecepients = null, 
+      bool mastersOnly = false)
     {
       return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
           .SelectMany(g => g.Subscriptions) //get subscriptions on groups
@@ -71,19 +71,20 @@ namespace JoinRpg.Domain
           .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
           .Union(claim.Player) //...and player himself also
           .Union(extraRecepients ?? Enumerable.Empty<User>()) //add extra recepients
-          .VerifySubscriptions(isVisibleToPlayer, claim)
+          .VerifySubscriptions(mastersOnly, claim)
           .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
 
     private static IEnumerable<User> VerifySubscriptions<TEntity>(
       this IEnumerable<User> users,
-      bool isVisibleToPlayer,
+      bool mastersOnly,
       TEntity entity)
       where TEntity : IProjectEntity
     {
+      //TODO: currently there're no need to check for user access to entity but in general it's good to have
       return users
           .Where(u => u != null)
-          .Where(u => isVisibleToPlayer || entity.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
+          .Where(u => !mastersOnly || entity.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
     }
   }
 }

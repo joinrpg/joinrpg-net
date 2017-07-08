@@ -15,9 +15,9 @@ namespace JoinRpg.Services.Impl
       [NotNull] Claim claim,
       [NotNull] string commentText,
       Func<UserSubscription, bool> subscribePredicate,
-      bool isVisibleToPlayer,
       CommentExtraAction? commentExtraAction,
       User initiator,
+      bool mastersOnly = false,
       IEnumerable<User> extraRecepients = null)
         where TEmail : ClaimEmailModel, new()
     {
@@ -25,7 +25,7 @@ namespace JoinRpg.Services.Impl
       if (commentText == null) throw new ArgumentNullException(nameof(commentText));
       var subscriptions =
         claim.GetSubscriptions(subscribePredicate, extraRecepients ?? Enumerable.Empty<User>(),
-          isVisibleToPlayer).ToList();
+          mastersOnly).ToList();
       return new TEmail()
       {
         Claim = claim,
@@ -46,7 +46,7 @@ namespace JoinRpg.Services.Impl
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var subscriptions = claim
-        .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
+        .GetSubscriptions(subscribePredicate)
         .ToList();
 
       return new FieldsChangedEmail(claim, initiator, subscriptions, updatedFields);
@@ -62,7 +62,7 @@ namespace JoinRpg.Services.Impl
       if (character == null) throw new ArgumentNullException(nameof(character));
 
       var subscriptions = character
-        .GetSubscriptions(subscribePredicate, Enumerable.Empty<User>(), true)
+        .GetSubscriptions(subscribePredicate)
         .ToList();
 
       return new FieldsChangedEmail(character, initiator, subscriptions, updatedFields, otherChangedAttributes);
