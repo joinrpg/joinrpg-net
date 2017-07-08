@@ -17,6 +17,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   internal class ProjectService : DbServiceImplBase, IProjectService
   {
+    private IEmailService EmailService;
     private IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
     public ProjectService(IUnitOfWork unitOfWork, IEmailService emailService, IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)

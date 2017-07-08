@@ -16,7 +16,7 @@ namespace JoinRpg.Domain.CharacterFields
       private int CurrentUserId { get; }
       private IFieldDefaultValueGenerator Generator { get; }
       private Project Project { get; }
-      private List<FieldWithValue> UpdatedFields { get; } = new List<FieldWithValue>();
+      private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } = new List<FieldWithPreviousAndNewValue>();
 
       protected FieldSaveStrategyBase(Claim claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator)
       {
@@ -32,7 +32,7 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      public IReadOnlyCollection<FieldWithValue> GetUpdatedFields() => UpdatedFields;
+      public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() => UpdatedFields;
 
       public abstract void Save(Dictionary<int, FieldWithValue> fields);
 
@@ -68,13 +68,18 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      public void AssignFieldValue(FieldWithValue field, string newValue)
+      /// <summary>
+      /// Returns true is the value has changed
+      /// </summary>
+      public bool AssignFieldValue(FieldWithValue field, string newValue)
       {
-        if (field.Value == newValue) return;
+        if (field.Value == newValue) return false;
 
+        UpdatedFields.Add(new FieldWithPreviousAndNewValue(field, field.Value));
         field.Value = newValue;
         field.MarkUsed();
-        UpdatedFields.Add(field);
+        
+        return true;
       }
 
       public string GenerateDefaultValue(FieldWithValue field)
@@ -210,12 +215,10 @@ namespace JoinRpg.Domain.CharacterFields
              f.Field.IsAvailableForTarget(character)))
       {
         var newValue = strategy.GenerateDefaultValue(field);
-        updatedValues.Add(new FieldWithPreviousAndNewValue(field, field.Value));
         strategy.AssignFieldValue(field, newValue);
       }
 
       strategy.Save(fields);
-      //TODO: KK fix return updatedValues;
       return strategy.GetUpdatedFields();
     }
 
