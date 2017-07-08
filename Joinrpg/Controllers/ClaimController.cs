@@ -102,7 +102,7 @@ namespace JoinRpg.Web.Controllers
       }
 
       var printPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
-        ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Where(
+        ? (PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(claim.Project)).Where(
           p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
         : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
 

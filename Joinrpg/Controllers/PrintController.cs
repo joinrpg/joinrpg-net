@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -59,18 +57,15 @@ namespace JoinRpg.Web.Controllers
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
 
-      var pluginNames =
-        (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(projectId)).Select(
-          PluginOperationDescriptionViewModel.Create);
+      var project = await GetProjectFromList(projectId, characters);
 
-      //TODO: That doesn't belong here
-      var configPluginNames =
-  (await PluginFactory.GetPossibleOperations<IShowConfigurationPluginOperation>(projectId)).Select(
-    PluginOperationDescriptionViewModel.Create);
+      var pluginNames =
+        PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(project).Select(
+          PluginOperationDescriptionViewModel.Create);
 
       return
         View(new PrintIndexViewModel(projectId,
-          characters.Select(c => c.CharacterId).ToArray(), pluginNames, configPluginNames));
+          characters.Select(c => c.CharacterId).ToArray(), pluginNames));
     }
 
     [MasterAuthorize()]
@@ -86,16 +81,18 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
-      var pluginInstance = await PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(projectid, plugin);
+      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
+      var project = await GetProjectFromList(projectid, characters);
+      var pluginInstance = PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(project, plugin);
       if (pluginInstance == null)
       {
         return HttpNotFound();
       }
-      var characters = await ProjectRepository.LoadCharacters(projectid, characterIds.UnCompressIdList());
 
       if (!pluginInstance.AllowPlayerAccess)
       {
-        var error = AsMaster(await GetProjectFromList(projectid, characters));
+        
+        var error = AsMaster(project);
         if (error != null) return error;
       }
       else

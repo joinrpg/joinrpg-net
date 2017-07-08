@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using JoinRpg.Domain;
 
 namespace JoinRpg.DataModel.Mocks
@@ -14,7 +14,10 @@ namespace JoinRpg.DataModel.Mocks
     public ProjectField ConditionalField { get; }
     public ProjectField HideForUnApprovedClaim { get; }
     public ProjectField PublicField { get; }
+    public ProjectField ConditionalHeader { get; }
+
     public Character Character { get; }
+    public Character CharacterWithoutGroup { get; }
 
     private static void FixProjectSubEntities(Project project1)
     {
@@ -98,9 +101,27 @@ namespace JoinRpg.DataModel.Mocks
         ShowOnUnApprovedClaims =  true,
       };
 
+      ConditionalHeader = new ProjectField()
+      {
+        CanPlayerEdit = true,
+        CanPlayerView = true,
+        IsActive = true,
+        ShowOnUnApprovedClaims = true,
+        FieldBoundTo = FieldBoundTo.Character,
+        AvailableForCharacterGroupIds = new int[0],
+        FieldType = ProjectFieldType.Header
+      };
+
       var characterFieldValue = new FieldWithValue(CharacterField, "Value");
       var publicFieldValue = new FieldWithValue(PublicField, "Public");
       Character = new Character
+      {
+        IsActive = true,
+        IsAcceptingClaims = true,
+        ParentCharacterGroupIds = new int[0]
+      };
+
+      CharacterWithoutGroup = new Character
       {
         IsActive = true,
         IsAcceptingClaims = true,
@@ -124,9 +145,9 @@ namespace JoinRpg.DataModel.Mocks
         },
         ProjectFields = new List<ProjectField>()
         {
-          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim, PublicField
+          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim, PublicField, ConditionalHeader
         },
-        Characters = new List<Character>() { Character },
+        Characters = new List<Character>() { Character, CharacterWithoutGroup },
         CharacterGroups = new List<CharacterGroup> {  Group},
         Claims = new List<Claim>()
       };
@@ -138,6 +159,7 @@ namespace JoinRpg.DataModel.Mocks
       Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
 
       ConditionalField.AvailableForCharacterGroupIds = new[] {Group.CharacterGroupId};
+      ConditionalHeader.AvailableForCharacterGroupIds = new[] { Group.CharacterGroupId };
     }
 
     public Claim CreateClaim(Character mockCharacter, User mockUser)

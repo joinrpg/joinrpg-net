@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -12,7 +13,9 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
   {
-    public FinanceOperationsImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork, emailService)
+    public FinanceOperationsImpl(IUnitOfWork unitOfWork, IEmailService emailService,
+      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork, emailService,
+      fieldDefaultValueGenerator)
     {
     }
 

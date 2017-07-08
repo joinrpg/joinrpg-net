@@ -14,7 +14,7 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
-  public class ClaimServiceImpl : ClaimImplBase, IClaimService
+  internal class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
 
     public async Task SubscribeClaimToUser(int projectId, int claimId)
@@ -77,7 +77,7 @@ namespace JoinRpg.Services.Impl
 
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
-      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields);
+      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, fields, FieldDefaultValueGenerator);
 
       var claimEmail = EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
         CommentExtraAction.NewClaim, await UserRepository.GetById(currentUserId));
@@ -195,7 +195,8 @@ namespace JoinRpg.Services.Impl
       //We need to resave fields here, because it may cause some field values to move from Claim to Characters
       //which also could trigger changing of special groups
       // ReSharper disable once MustUseReturnValue we don't need send email here
-      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, new Dictionary<int, string>());
+      FieldSaveHelper.SaveCharacterFields(currentUserId, claim, new Dictionary<int, string>(),
+        FieldDefaultValueGenerator);
 
       await UnitOfWork.SaveChangesAsync();
 
@@ -405,7 +406,8 @@ namespace JoinRpg.Services.Impl
       //TODO: Prevent lazy load here - use repository 
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
 
-      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue);
+      var updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, claim, newFieldValue,
+        FieldDefaultValueGenerator);
       var user = await UserRepository.GetById(currentUserId);
       var email = EmailHelpers.CreateFieldsEmail(claim, s => s.FieldChange, user, updatedFields);
 
@@ -429,7 +431,9 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
-    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork, emailService)
+    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
+      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork, emailService,
+      fieldDefaultValueGenerator)
     {
     }
   }

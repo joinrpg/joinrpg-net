@@ -347,6 +347,14 @@
     <Compile Include="Migrations\201706011909219_Telegram.Designer.cs">
       <DependentUpon>201706011909219_Telegram.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707051809070_PluginFieldMapping.cs" />
+    <Compile Include="Migrations\201707051809070_PluginFieldMapping.Designer.cs">
+      <DependentUpon>201707051809070_PluginFieldMapping.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707071848540_RequiredFieldLabel.cs" />
+    <Compile Include="Migrations\201707071848540_RequiredFieldLabel.Designer.cs">
+      <DependentUpon>201707071848540_RequiredFieldLabel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -598,6 +606,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706011909219_Telegram.resx">
       <DependentUpon>201706011909219_Telegram.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707051809070_PluginFieldMapping.resx">
+      <DependentUpon>201707051809070_PluginFieldMapping.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707071848540_RequiredFieldLabel.resx">
+      <DependentUpon>201707071848540_RequiredFieldLabel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

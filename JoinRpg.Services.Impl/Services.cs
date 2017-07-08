@@ -1,5 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Impl.Allrpg;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
@@ -23,6 +24,7 @@ namespace JoinRpg.Services.Impl
       container.RegisterType<IFinanceService, FinanceOperationsImpl>();
       container.RegisterType<IForumService, ForumServiceImpl>();
       container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
+      container.RegisterType<IFieldDefaultValueGenerator, FieldDefaultValueGenerator>();
     }
   }
 }

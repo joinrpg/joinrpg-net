@@ -85,7 +85,7 @@ namespace JoinRpg.Web.Models
       var hasViewAccess = ch.HasViewableValue
         && ch.HasViewAccess(model.AccessArguments);
 
-      CanView = hasViewAccess && ch.HasViewableValue;
+      CanView = hasViewAccess && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
       CanEdit = model.EditAllowed 
         && ch.HasEditAccess(model.AccessArguments, model.Target)

@@ -53,6 +53,7 @@
     <Compile Include="CharacterFields\CustomFieldsExtensions.cs" />
     <Compile Include="CharacterFields\FieldWithPreviousAndNewValue.cs" />
     <Compile Include="CharacterFields\FieldWithValue.cs" />
+    <Compile Include="CharacterFields\IFieldDefaultValueGenerator.cs" />
     <Compile Include="CharacterFields\PreviousAndNewValue.cs" />
     <Compile Include="CharacterProblemFilters\BrokenCharactersFilter.cs" />
     <Compile Include="CharacterFields\FieldSaveHelper.cs" />

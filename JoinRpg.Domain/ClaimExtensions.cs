@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -56,7 +56,7 @@ namespace JoinRpg.Domain
       return cl.GetTarget().IsPartOfGroup(characterGroupId);
     }
 
-    public static bool IsPartOfAnyOfGroups(this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
+    public static bool IsPartOfAnyOfGroups([CanBeNull] this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
     {
       //TODO we can do faster than this
       return claimSource.GetGroupsPartOf().Intersect(groups).Any();

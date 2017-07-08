@@ -15,11 +15,13 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
-  public class ProjectService : DbServiceImplBase, IProjectService
+  internal class ProjectService : DbServiceImplBase, IProjectService
   {
-    protected IEmailService EmailService { get; }
-    public ProjectService(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
+    private IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
+
+    public ProjectService(IUnitOfWork unitOfWork, IEmailService emailService, IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
     {
+      FieldDefaultValueGenerator = fieldDefaultValueGenerator;
       EmailService = emailService;
     }
 
@@ -147,7 +149,6 @@ namespace JoinRpg.Services.Impl
       character.HidePlayerForCharacter = hidePlayerForCharacter;
       character.IsHot = isHot;
       character.IsActive = true;
-
       int[] newCharacterGroupIds = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
       if (character.ParentCharacterGroupIds.OrderBy(x => x).SequenceEqual(newCharacterGroupIds.OrderBy(x => x)))
       {
@@ -159,7 +160,8 @@ namespace JoinRpg.Services.Impl
           previousGroupsList,
           string.Join(",", character.Groups.Select(g => g.CharacterGroupName))));
       }
-      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields, FieldDefaultValueGenerator);
+      ;
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       var user = await UserRepository.GetById(currentUserId);
