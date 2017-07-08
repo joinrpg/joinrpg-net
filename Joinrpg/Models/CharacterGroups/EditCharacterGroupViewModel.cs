@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models.CharacterGroups
 {
 
   public abstract class CharacterGroupViewModelBase : GameObjectViewModelBase

@@ -75,7 +75,7 @@ namespace JoinRpg.DataModel
     [Required]
     public DateTime CreatedAt { get; set; }
 
-    [Required, ForeignKey(nameof(CreatedById))]
+    [ForeignKey(nameof(CreatedById))]
     public virtual User CreatedBy { get; set; }
 
     public int CreatedById { get; set; }
@@ -83,7 +83,7 @@ namespace JoinRpg.DataModel
     [Required]
     public DateTime UpdatedAt { get; set; }
 
-    [Required, ForeignKey(nameof(UpdatedById))]
+    [ForeignKey(nameof(UpdatedById))]
     public virtual User UpdatedBy { get; set; }
 
     public int UpdatedById { get; set; }

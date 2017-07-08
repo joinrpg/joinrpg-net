@@ -5,6 +5,7 @@ using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
