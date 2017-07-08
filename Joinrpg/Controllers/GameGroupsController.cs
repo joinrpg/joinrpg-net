@@ -254,7 +254,11 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = group.CharacterGroupId,
         IsRoot = group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
-      }, group));
+        CreatedAt = group.CreatedAt,
+        UpdatedAt = group.UpdatedAt,
+        CreatedBy = group.CreatedBy,
+        UpdatedBy = group.UpdatedBy,
+    }, group));
     }
 
     private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
@@ -394,8 +398,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
-          viewModel.ProjectId, 
-          CurrentUserId,
+          viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);

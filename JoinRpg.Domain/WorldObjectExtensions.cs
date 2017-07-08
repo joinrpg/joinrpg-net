@@ -9,7 +9,7 @@ namespace JoinRpg.Domain
     public static bool IsVisible([NotNull] this IWorldObject cg, int? currentUserId)
     {
       if (cg == null) throw new ArgumentNullException(nameof(cg));
-      return cg.IsPublic || cg.Project.IsPlotPublished() || cg.HasMasterAccess(currentUserId);
+      return cg.IsPublic || cg.Project.Details.PublishPlot || cg.HasMasterAccess(currentUserId);
     }
   }
 }

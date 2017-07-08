@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Web.Mvc;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.App_Code
 {

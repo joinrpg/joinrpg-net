@@ -23,12 +23,11 @@ namespace JoinRpg.Services.Impl
   int feeChange, int money, int paymentTypeId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      var now = DateTime.UtcNow;
       var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
       paymentType.EnsureActive();
 
-      if (operationDate > now.AddDays(1)) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
+      if (operationDate > Now.AddDays(1)) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
       {
         throw new CannotPerformOperationInFuture();
       }
@@ -52,14 +51,14 @@ namespace JoinRpg.Services.Impl
         }
       }
 
-      var comment = claim.AddCommentImpl(CurrentUserId, null, contents, isVisibleToPlayer:true, extraAction: null);
+      var comment = AddCommentImpl(claim, null, contents, isVisibleToPlayer:true, extraAction: null);
 
       var financeOperation = new FinanceOperation()
       {
-        Created = now,
+        Created = Now,
         FeeChange = feeChange,
         MoneyAmount = money,
-        Changed = now,
+        Changed = Now,
         Claim = claim,
         Comment = comment,
         PaymentType = paymentType,
@@ -210,7 +209,7 @@ namespace JoinRpg.Services.Impl
 
       claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      claim.AddCommentImpl(CurrentUserId, null, feeValue.ToString(), isVisibleToPlayer: true,
+      AddCommentImpl(claim, null, feeValue.ToString(), isVisibleToPlayer: true,
         extraAction: CommentExtraAction.FeeChanged);
 
       claim.CurrentFee = feeValue;

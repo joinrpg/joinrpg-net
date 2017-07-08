@@ -35,10 +35,7 @@ namespace JoinRpg.Dal.Impl
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
 
-    public static MyDbContext Create()
-    {
-      return new MyDbContext();
-    }
+    public static MyDbContext Create() => new MyDbContext();
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {

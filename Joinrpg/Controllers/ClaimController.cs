@@ -68,8 +68,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-          CurrentUserId, viewModel.ClaimText, 
+        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText, 
           GetCustomFieldValuesFromPost());
 
         return RedirectToAction(
@@ -117,7 +116,6 @@ namespace JoinRpg.Web.Controllers
       {
         await
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
-            CurrentUserId,
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
 
@@ -141,7 +139,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.SaveFieldsFromClaim(projectId, claimId, CurrentUserId, GetCustomFieldValuesFromPost());
+          _claimService.SaveFieldsFromClaim(projectId, claimId, GetCustomFieldValuesFromPost());
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
       catch (Exception exception)
@@ -163,7 +161,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -215,7 +213,7 @@ namespace JoinRpg.Web.Controllers
           return await ShowClaim(claim);
         }
         await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -274,7 +272,7 @@ namespace JoinRpg.Web.Controllers
           return await ShowClaim(claim);
         }
         await
-          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }

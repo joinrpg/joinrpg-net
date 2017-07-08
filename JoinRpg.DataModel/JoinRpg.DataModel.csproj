@@ -56,6 +56,7 @@
     <Compile Include="CommentDiscussion.cs" />
     <Compile Include="FinanceOperation.cs" />
     <Compile Include="ForumThread.cs" />
+    <Compile Include="ICreatedUpdatedTracked.cs" />
     <Compile Include="Interfaces\IClaimSource.cs" />
     <Compile Include="Interfaces\IDeletableSubEntity.cs" />
     <Compile Include="Interfaces\IFieldContainter.cs" />

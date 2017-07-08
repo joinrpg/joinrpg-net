@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -12,11 +13,11 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class  FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
   {
-    public async Task AddField(int projectId, int currentUserId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims)
+    public async Task AddField(int projectId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
-      project.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       var field = new ProjectField
       {
@@ -44,11 +45,11 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateFieldParams(int? currentUserId, int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims)
+    public async Task UpdateFieldParams(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims)
     {
       var field = await ProjectRepository.GetProjectField(projectId, fieldId);
 
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       field.FieldName = Required(name);
       field.Description.Contents = fieldHint;
@@ -108,7 +109,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void CreateFieldValueVariantImpl(
+    private void CreateFieldValueVariantImpl(
       [NotNull] ProjectField field, 
       [NotNull] string label,
       [CanBeNull] string description)
@@ -130,67 +131,106 @@ namespace JoinRpg.Services.Impl
       field.DropdownValues.Add(fieldValue);
     }
 
-    private static void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)
+    private void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)
     {
-      if (!fieldValue.ProjectField.HasSpecialGroup())
+      var field = fieldValue.ProjectField;
+      if (!field.HasSpecialGroup())
       {
         return;
       }
-      CreateOrUpdateSpecialGroup(fieldValue.ProjectField);
+      CreateOrUpdateSpecialGroup(field);
 
-      fieldValue.CharacterGroup = fieldValue.CharacterGroup ?? new CharacterGroup()
+      if (fieldValue.CharacterGroup == null)
       {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = false,
-        ParentCharacterGroupIds = new [] { fieldValue.ProjectField.CharacterGroup.CharacterGroupId },
-        ProjectId = fieldValue.ProjectId,
-        IsRoot = false,
-        IsSpecial = true,
-        ResponsibleMasterUserId = null,
-      };
-
-      fieldValue.CharacterGroup.IsPublic = fieldValue.ProjectField.IsPublic;
-      fieldValue.CharacterGroup.IsActive = fieldValue.IsActive;
-      fieldValue.CharacterGroup.Description = fieldValue.Description;
-      fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
+        fieldValue.CharacterGroup = new CharacterGroup()
+        {
+          AvaiableDirectSlots = 0,
+          HaveDirectSlots = false,
+          ParentCharacterGroupIds = new[] {field.CharacterGroup.CharacterGroupId},
+          ProjectId = fieldValue.ProjectId,
+          IsRoot = false,
+          IsSpecial = true,
+          ResponsibleMasterUserId = null,
+        };
+        MarkCreatedNow(fieldValue.CharacterGroup);
+      }
+      UpdateSpecialGroupProperties(fieldValue);
     }
 
-    private static void CreateOrUpdateSpecialGroup(ProjectField field)
+    private void UpdateSpecialGroupProperties(ProjectFieldDropdownValue fieldValue)
+    {
+      var field = fieldValue.ProjectField;
+      var characterGroup = fieldValue.CharacterGroup;
+      var specialGroupName = fieldValue.GetSpecialGroupName();
+
+      Debug.Assert(characterGroup != null, "characterGroup != null");
+
+      if (characterGroup.IsPublic != field.IsPublic ||
+          characterGroup.IsActive != fieldValue.IsActive ||
+          characterGroup.Description != fieldValue.Description ||
+          characterGroup.CharacterGroupName != specialGroupName)
+      {
+        characterGroup.IsPublic = field.IsPublic;
+        characterGroup.IsActive = fieldValue.IsActive;
+        characterGroup.Description = fieldValue.Description;
+        characterGroup.CharacterGroupName = specialGroupName;
+        MarkChanged(characterGroup);
+      }
+    }
+
+    private void CreateOrUpdateSpecialGroup(ProjectField field)
     {
       if (!field.HasSpecialGroup())
       {
         return;
       }
 
-      field.CharacterGroup = field.CharacterGroup ?? new CharacterGroup()
+      if (field.CharacterGroup == null)
       {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = false,
-        ParentCharacterGroupIds = new [] { field.Project.RootGroup.CharacterGroupId},
-        ProjectId = field.ProjectId,
-        IsRoot = false,
-        IsSpecial = true,
-        ResponsibleMasterUserId = null,
-      };
+        field.CharacterGroup = new CharacterGroup()
+        {
+          AvaiableDirectSlots = 0,
+          HaveDirectSlots = false,
+          ParentCharacterGroupIds = new[] {field.Project.RootGroup.CharacterGroupId},
+          ProjectId = field.ProjectId,
+          IsRoot = false,
+          IsSpecial = true,
+          ResponsibleMasterUserId = null,
+        };
+        MarkCreatedNow(field.CharacterGroup);
+      }
 
-      field.CharacterGroup.IsPublic = field.IsPublic;
       foreach (var fieldValue in field.DropdownValues)
       {
         if (fieldValue.CharacterGroup == null) continue; //We can't convert to LINQ because of RSRP-457084
-        fieldValue.CharacterGroup.IsPublic = field.IsPublic;
-        fieldValue.CharacterGroup.CharacterGroupName = fieldValue.GetSpecialGroupName();
+        UpdateSpecialGroupProperties(fieldValue);
       }
-      field.CharacterGroup.IsActive = field.IsActive;
-      field.CharacterGroup.Description = field.Description;
 
-      field.CharacterGroup.CharacterGroupName = field.GetSpecialGroupName();
+      UpdateSpecialGroupProperties(field);
     }
 
-    public async Task UpdateFieldValueVariant(int projectId, int projectFieldDropdownValueId, int currentUserId, string label, string description, int projectFieldId)
+    private void UpdateSpecialGroupProperties(ProjectField field)
+    {
+      var characterGroup = field.CharacterGroup;
+      var specialGroupName = field.GetSpecialGroupName();
+
+      if (characterGroup.IsPublic != field.IsPublic || characterGroup.IsActive != field.IsActive ||
+          characterGroup.Description != field.Description ||
+          characterGroup.CharacterGroupName != specialGroupName)
+      {
+        characterGroup.IsPublic = field.IsPublic;
+        characterGroup.IsActive = field.IsActive;
+        characterGroup.Description = field.Description;
+        characterGroup.CharacterGroupName = specialGroupName;
+        MarkChanged(characterGroup);
+      }
+    }
+
+    public async Task UpdateFieldValueVariant(int projectId, int projectFieldDropdownValueId, string label, string description, int projectFieldId)
     {
       var field = await ProjectRepository.GetFieldValue(projectId, projectFieldId, projectFieldDropdownValueId);
 
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       field.Description = new MarkdownString(description);
       field.Label = label;
@@ -201,11 +241,11 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int currentUserId, int projectFieldId)
+    public async Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int projectFieldId)
     {
       var field = await ProjectRepository.GetFieldValue(projectId, projectFieldId, projectFieldDropdownValueId);
 
-      field.RequestMasterAccess(currentUserId, acl => acl.CanChangeFields);
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       DeleteFieldVariantValueImpl(field);
       await UnitOfWork.SaveChangesAsync();

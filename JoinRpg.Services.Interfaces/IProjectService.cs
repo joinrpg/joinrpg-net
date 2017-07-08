@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Interfaces
   {
     Task<Project> AddProject(string projectName, User creator);
 
-    Task AddCharacterGroup(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
+    Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
 
     Task AddCharacter(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
 

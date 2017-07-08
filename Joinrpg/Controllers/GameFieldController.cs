@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
+        await FieldSetupService.AddField(project.ProjectId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.DescriptionEditable,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
           viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
@@ -120,7 +120,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
+          FieldSetupService.UpdateFieldParams(project.ProjectId, field.ProjectFieldId,
             viewModel.Name, viewModel.DescriptionEditable, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
             viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
@@ -221,7 +221,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId,
+          FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
             viewModel.Label, viewModel.Description, viewModel.ProjectFieldId);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
@@ -254,7 +254,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId, viewModel.ProjectFieldId);
+          FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, viewModel.ProjectFieldId);
 
         return ReturnToField(value.ProjectField);
       }

@@ -9,7 +9,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity
   {
 
 
@@ -116,8 +116,25 @@ namespace JoinRpg.DataModel
     }
     #endregion
 
-    public bool Equals(CharacterGroup other) => other.CharacterGroupId == CharacterGroupId;
+    public bool Equals(CharacterGroup other) => other?.CharacterGroupId == CharacterGroupId;
 
-    public virtual ICollection<ForumThread> ForumThreads { get; set; }
+    public virtual ICollection<ForumThread> ForumThreads { get; set; } = new HashSet<ForumThread>();
+
+    [Required]
+    public DateTime CreatedAt { get; set; }
+
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
+
+    public int CreatedById { get; set; }
+
+    [Required]
+    public DateTime UpdatedAt { get; set; }
+
+    [ForeignKey(nameof(UpdatedById))]
+    public virtual User UpdatedBy { get; set; }
+
+    public int UpdatedById { get; set; }
+
   }
 }

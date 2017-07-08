@@ -9,6 +9,7 @@ using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.Print;

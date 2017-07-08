@@ -355,6 +355,10 @@
     <Compile Include="Migrations\201707071848540_RequiredFieldLabel.Designer.cs">
       <DependentUpon>201707071848540_RequiredFieldLabel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707081413240_CharacterAndGroupsCreateUpdateDates.cs" />
+    <Compile Include="Migrations\201707081413240_CharacterAndGroupsCreateUpdateDates.Designer.cs">
+      <DependentUpon>201707081413240_CharacterAndGroupsCreateUpdateDates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -612,6 +616,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707071848540_RequiredFieldLabel.resx">
       <DependentUpon>201707071848540_RequiredFieldLabel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707081413240_CharacterAndGroupsCreateUpdateDates.resx">
+      <DependentUpon>201707081413240_CharacterAndGroupsCreateUpdateDates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
