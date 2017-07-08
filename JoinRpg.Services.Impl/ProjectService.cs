@@ -127,11 +127,11 @@ namespace JoinRpg.Services.Impl
 
       character.EnsureProjectActive();
 
-      var changedAttributes = new Dictionary<string, OldAndNewValue>();
+      var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
       if (character.CharacterName != Required(name))
       {
-        changedAttributes.Add("Имя персонажа", new OldAndNewValue(name, character.CharacterName));
+        changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName));
         character.CharacterName = name.Trim();
       }
       
@@ -141,7 +141,7 @@ namespace JoinRpg.Services.Impl
       var newDescription = new MarkdownString(contents);
       if (character.Description != newDescription)
       {
-        changedAttributes.Add("Описание персонажа", new OldAndNewValue(newDescription, character.Description));
+        changedAttributes.Add("Описание персонажа", new PreviousAndNewValue(newDescription, character.Description));
         character.Description = newDescription;
       }
       character.HidePlayerForCharacter = hidePlayerForCharacter;
@@ -155,11 +155,11 @@ namespace JoinRpg.Services.Impl
 
         character.ParentCharacterGroupIds = newCharacterGroupIds;
 
-        changedAttributes.Add("Входит в группы", new OldAndNewValue(
+        changedAttributes.Add("Входит в группы", new PreviousAndNewValue(
           previousGroupsList,
           string.Join(",", character.Groups.Select(g => g.CharacterGroupName))));
       }
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields);
       character.Project.MarkTreeModified(); //TODO: Can be smarter
 
       var user = await UserRepository.GetById(currentUserId);

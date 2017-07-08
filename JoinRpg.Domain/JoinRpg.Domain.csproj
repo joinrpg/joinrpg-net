@@ -51,9 +51,9 @@
   <ItemGroup>
     <Compile Include="CharacterFields\AccessArguments.cs" />
     <Compile Include="CharacterFields\CustomFieldsExtensions.cs" />
-    <Compile Include="CharacterFields\FieldWithOldAndNewValue.cs" />
+    <Compile Include="CharacterFields\FieldWithPreviousAndNewValue.cs" />
     <Compile Include="CharacterFields\FieldWithValue.cs" />
-    <Compile Include="CharacterFields\OldAndNewValue.cs" />
+    <Compile Include="CharacterFields\PreviousAndNewValue.cs" />
     <Compile Include="CharacterProblemFilters\BrokenCharactersFilter.cs" />
     <Compile Include="CharacterFields\FieldSaveHelper.cs" />
     <Compile Include="PlotExtensions.cs" />

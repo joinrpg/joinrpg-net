@@ -42,7 +42,7 @@ namespace JoinRpg.Services.Impl
       [NotNull] Claim claim,
       Func<UserSubscription, bool> subscribePredicate,
       User initiator,
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var subscriptions = claim
@@ -56,8 +56,8 @@ namespace JoinRpg.Services.Impl
       [NotNull] Character character,
       Func<UserSubscription, bool> subscribePredicate,
       User initiator,
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
-      Dictionary<string, OldAndNewValue> otherChangedAttributes)
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+      Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 

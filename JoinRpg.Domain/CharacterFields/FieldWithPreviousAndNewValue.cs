@@ -7,13 +7,13 @@ namespace JoinRpg.Domain.CharacterFields
   /// <summary>
   /// A class to store project field's previous and new value
   /// </summary>
-  public class FieldWithOldAndNewValue : FieldWithValue
+  public class FieldWithPreviousAndNewValue : FieldWithValue
   {
     public string PreviousValue { get; private set; }
 
     public string PreviousDisplayString => GetDisplayValue(PreviousValue, PreviousValue.ToIntList());
 
-    public FieldWithOldAndNewValue(
+    public FieldWithPreviousAndNewValue(
       ProjectField field,
       [CanBeNull] string value,
       [CanBeNull] string previousValue) : base(field, value)
@@ -21,7 +21,7 @@ namespace JoinRpg.Domain.CharacterFields
       PreviousValue = previousValue;
     }
 
-    public FieldWithOldAndNewValue(
+    public FieldWithPreviousAndNewValue(
       FieldWithValue fieldWithValue,
       string previousValue) :
         this(fieldWithValue.Field, fieldWithValue.Value, previousValue)

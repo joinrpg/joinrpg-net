@@ -53,11 +53,11 @@ namespace JoinRpg.Services.Interfaces
 
   public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
     public IFieldContainter FiledsContainer => Claim;
 
-    public IReadOnlyDictionary<string, OldAndNewValue> OtherChangedAttributes { get; } =
-      new Dictionary<string, OldAndNewValue>();
+    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
+      new Dictionary<string, PreviousAndNewValue>();
   }
 
   public class ApproveByMasterEmail : ClaimEmailModel
@@ -75,21 +75,21 @@ namespace JoinRpg.Services.Interfaces
 
   public class ClaimFieldsChangedEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
     public IFieldContainter FiledsContainer => Claim;
 
-    public IReadOnlyDictionary<string, OldAndNewValue> OtherChangedAttributes { get; } =
-      new Dictionary<string, OldAndNewValue>();
+    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
+      new Dictionary<string, PreviousAndNewValue>();
   }
 
   public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
   {
-    public IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; set; } = new List<FieldWithOldAndNewValue>();
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
     public IFieldContainter FiledsContainer => (IFieldContainter)Claim ?? Character;
 
     [CanBeNull]
-    public IReadOnlyDictionary<string, OldAndNewValue> OtherChangedAttributes { get; set; } =
-      new Dictionary<string, OldAndNewValue>();
+    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; set; } =
+      new Dictionary<string, PreviousAndNewValue>();
 
     public Character Character { get; set; }
     [CanBeNull]
@@ -101,7 +101,7 @@ namespace JoinRpg.Services.Interfaces
       Claim claim,
       User initiator,
       ICollection<User> recipients,
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields)
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
       : this(null, claim, initiator, recipients, updatedFields, null)
     {
     }
@@ -110,8 +110,8 @@ namespace JoinRpg.Services.Interfaces
       Character character,
       User initiator,
       ICollection<User> recipients,
-      IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
-      Dictionary<string, OldAndNewValue> otherChangedAttributes)
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+      Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
       : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
     {
     }
@@ -121,15 +121,15 @@ namespace JoinRpg.Services.Interfaces
       Claim claim,
       User initiator,
       ICollection<User> recipients,
-      [NotNull] IReadOnlyCollection<FieldWithOldAndNewValue> updatedFields,
-      [CanBeNull] Dictionary<string, OldAndNewValue> otherChangedAttributes)
+      [NotNull] IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+      [CanBeNull] Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
     {
       if (updatedFields == null) throw new ArgumentNullException(nameof(updatedFields));
       if (character != null && claim != null)
         throw new ArgumentException($"Both {nameof(character)} and {nameof(claim)} were provided");
       if (character == null && claim == null)
         throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
-      otherChangedAttributes = otherChangedAttributes ?? new Dictionary<string, OldAndNewValue>();
+      otherChangedAttributes = otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();
 
       Character = character;
       Claim = claim;
@@ -202,7 +202,7 @@ namespace JoinRpg.Services.Interfaces
     /// <summary>
     /// Project fields that changed
     /// </summary>
-    IReadOnlyCollection<FieldWithOldAndNewValue> UpdatedFields { get; }
+    IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
     /// <summary>
     /// Entity the updated fields belong to
     /// </summary>
@@ -210,6 +210,6 @@ namespace JoinRpg.Services.Interfaces
     /// <summary>
     /// Other attributes that have changed. Those atribute don't need access verification
     /// </summary>
-    IReadOnlyDictionary<string, OldAndNewValue> OtherChangedAttributes { get; }
+    IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
   }
 }
