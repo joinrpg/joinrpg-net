@@ -197,7 +197,7 @@ namespace JoinRpg.Services.Email
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
-{MailGunExts.GetUserDependedtValue(changedFieldsKey)}
+{MailGunExts.GetUserDependentValue(changedFieldsKey)}
 {model.Text.Contents}
 
 {model.Initiator.DisplayName}
@@ -284,7 +284,7 @@ namespace JoinRpg.Services.Email
           $@"Добрый день, {MailGunExts.MailGunRecipientName},
 Данные {target(true)} были изменены. Новые значения:
 
-{MailGunExts.GetUserDependedtValue(changedFieldsKey)}
+{MailGunExts.GetUserDependentValue(changedFieldsKey)}
 
 {model.Initiator.DisplayName}
 

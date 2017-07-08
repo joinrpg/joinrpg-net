@@ -11,8 +11,8 @@ namespace JoinRpg.Services.Email
   internal static class MailGunExts
   {
     private const string MailGunName = "name";
-    public static readonly string MailGunRecipientName = GetUserDependedtValue(MailGunName);
-    public static string GetUserDependedtValue(string valueKey) => "%recipient." + valueKey + "%";
+    public static readonly string MailGunRecipientName = GetUserDependentValue(MailGunName);
+    public static string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
 
     public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<MailRecipient> recipients)
     {
