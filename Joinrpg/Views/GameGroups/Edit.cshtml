@@ -6,7 +6,11 @@
   ViewBag.Title = "Редактирование группы персонажей «" + Model.Name + "»";
 }
 
-<h2>@ViewBag.Title</h2>
+<div>
+  <span class="h2">@ViewBag.Title</span>
+  
+</div>
+@Html.Partial("CreateUpdated", Model)
 @Html.Partial("_GroupHelpTextPartial")
 @using (Html.BeginForm())
 {
@@ -25,7 +29,7 @@
                     @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
                 </div>
             </div>
-
+            
             <div class="form-group">
                 @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-8">

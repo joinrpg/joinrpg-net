@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -32,12 +33,17 @@ namespace JoinRpg.Web.Models
     public int DirectSlotsForSave() => HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited ? -1 : DirectSlots;
   }
 
-  public class EditCharacterGroupViewModel : CharacterGroupViewModelBase
+  public class EditCharacterGroupViewModel : CharacterGroupViewModelBase, ICreatedUpdatedTracked
   {
     public int CharacterGroupId { get; set; }
 
     [ReadOnly(true)]
     public bool IsRoot { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public User CreatedBy { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public User UpdatedBy { get; set; }
   }
 
   public class MasterListItemViewModel  

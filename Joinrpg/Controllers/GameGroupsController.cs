@@ -254,7 +254,11 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = group.CharacterGroupId,
         IsRoot = group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
-      }, group));
+        CreatedAt = group.CreatedAt,
+        UpdatedAt = group.UpdatedAt,
+        CreatedBy = group.CreatedBy,
+        UpdatedBy = group.UpdatedBy,
+    }, group));
     }
 
     private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)

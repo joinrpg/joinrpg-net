@@ -10,7 +10,7 @@ namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
 
-  public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTracked
+  public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -76,7 +76,7 @@ namespace JoinRpg.DataModel
     public DateTime CreatedAt { get; set; }
 
     [Required, ForeignKey(nameof(CreatedById))]
-    public User CreatedBy { get; set; }
+    public virtual User CreatedBy { get; set; }
 
     public int CreatedById { get; set; }
 
@@ -84,7 +84,7 @@ namespace JoinRpg.DataModel
     public DateTime UpdatedAt { get; set; }
 
     [Required, ForeignKey(nameof(UpdatedById))]
-    public User UpdatedBy { get; set; }
+    public virtual User UpdatedBy { get; set; }
 
     public int UpdatedById { get; set; }
   }

@@ -154,20 +154,20 @@ namespace JoinRpg.Services.Impl
       return characters.ToArray();
     }
 
-    protected void MarkCreatedNow([NotNull] ICreatedUpdatedTracked entity)
+    protected void MarkCreatedNow([NotNull] ICreatedUpdatedTrackedForEntity entity)
     {
       entity.UpdatedAt = entity.CreatedAt = Now;
       entity.UpdatedById = entity.CreatedById = CurrentUserId;
     }
 
-    protected void Create<T>([NotNull] T entity) where T : class, ICreatedUpdatedTracked
+    protected void Create<T>([NotNull] T entity) where T : class, ICreatedUpdatedTrackedForEntity
     {
       MarkCreatedNow(entity);
 
       UnitOfWork.GetDbSet<T>().Add(entity);
     }
 
-    protected void MarkChanged([NotNull] ICreatedUpdatedTracked entity)
+    protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)
     {
       entity.UpdatedAt = Now;
       entity.UpdatedById = CurrentUserId;

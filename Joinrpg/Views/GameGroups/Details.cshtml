@@ -19,42 +19,44 @@
 @if (Model.HasMasterAccess)
 {
     <div class="panel-heading">
-        <div class="btn-group" role="group">
+      <div class="btn-group" role="group">
 
-           @if (!Model.IsSpecial && Model.ShowEditControls)
-            {
-            <a type="button" class="btn btn-default" href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
-                <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
-            </a>
-            }
-            <a type="button" class="btn btn-default" href="@Url.Action("EditSubscribe", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
-                <span class="glyphicon glyphicon-pushpin"></span> подписка
-            </a>
+        @if (!Model.IsSpecial && Model.ShowEditControls)
+        {
+          <a type="button" class="btn btn-default" href="@Url.Action("Edit", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+            <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
+          </a>
+        }
+        <a type="button" class="btn btn-default" href="@Url.Action("EditSubscribe", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+          <span class="glyphicon glyphicon-pushpin"></span> подписка
+        </a>
 
-            @if (!Model.IsRootGroup && !Model.IsSpecial && Model.ShowEditControls)
-            {
-            var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
-            var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
-            <a href="@uri" type="button" class="btn btn-default @disabled">
-                <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
-            </a>
-            }
+        @if (!Model.IsRootGroup && !Model.IsSpecial && Model.ShowEditControls)
+        {
+          var disabled = Model.ActiveClaimsCount != 0 ? "disabled" : "";
+          var uri = Model.ActiveClaimsCount != 0 ? "#" : Url.Action("Delete", "GameGroups", new { Model.ProjectId, Model.CharacterGroupId }, null);
+          <a href="@uri" type="button" class="btn btn-default @disabled">
+            <span title="удалить" class="glyphicon glyphicon-trash"></span>удалить
+          </a>
+        }
 
 
-            @if (!Model.IsSpecial && Model.ShowEditControls)
-            {
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Добавить...
-                    <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a></li>
-                    <li>@Html.ActionLink("..подгруппу", "AddGroup", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
-                </ul>
-            </div>
-            }
-        </div>
+        @if (!Model.IsSpecial && Model.ShowEditControls)
+        {
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Добавить...
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="@Url.Action("Create", "Character", new {Model.ProjectId, Model.CharacterGroupId}, null)">..персонажа</a></li>
+              <li>@Html.ActionLink("..подгруппу", "AddGroup", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)</li>
+            </ul>
+          </div>
+        }
+           
+      </div>
+      @Html.Partial("CreateUpdated", Model)
     </div>
 }
 
