@@ -180,7 +180,6 @@ namespace JoinRpg.Domain.CharacterFields
       [CanBeNull] Character character, [CanBeNull] Claim claim, [NotNull] IDictionary<int, string> newFieldValue,
       IFieldDefaultValueGenerator generator)
     {
-      var updatedValues = new List<FieldWithPreviousAndNewValue>();
       if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
 
       FieldSaveStrategyBase strategy;
