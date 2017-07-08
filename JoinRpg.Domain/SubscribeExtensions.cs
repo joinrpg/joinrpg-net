@@ -9,19 +9,6 @@ namespace JoinRpg.Domain
 {
   public static  class SubscribeExtensions
   {
-    private class UserComparerById : IEqualityComparer<User>
-    {
-      public bool Equals(User x, User y)
-      {
-        return x?.Id == y?.Id;
-      }
-
-      public int GetHashCode(User obj)
-      {
-        return obj?.Id.GetHashCode() ?? 0;
-      }
-    }
-
     public static IEnumerable<User> GetSubscriptions(
       this ForumThread forumThread,
       [CanBeNull] IEnumerable<User> extraRecipients,
@@ -53,7 +40,7 @@ namespace JoinRpg.Domain
         .Union((character.ResponsibleMasterUser)) //...and the measter who's responsible for the character
         .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
         .VerifySubscriptions(mastersOnly, character)
-        .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
+        .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
 
     public static IEnumerable<User> GetSubscriptions(
@@ -72,7 +59,7 @@ namespace JoinRpg.Domain
           .Union(claim.Player) //...and player himself also
           .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
           .VerifySubscriptions(mastersOnly, claim)
-          .Distinct(new UserComparerById()); //we make union of subscriptions and directly taken users. Duplicates may appear.
+          .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
 
     private static IEnumerable<User> VerifySubscriptions<TEntity>(
