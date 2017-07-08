@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using Newtonsoft.Json;
 
@@ -116,34 +117,19 @@ namespace JoinRpg.Domain
     {
       if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
 
-      Claim claim = entityWithFields as Claim;
-      Character character = entityWithFields as Character;
-
-      bool hasMasterAccess;
-      bool hasCharacterAccess;
-      bool hasClaimAccess;
+      var claim = entityWithFields as Claim;
+      var character = entityWithFields as Character;
 
       if (claim != null)
       {
-        hasMasterAccess = claim.HasMasterAccess(userId);
-        hasCharacterAccess = claim.Character != null && claim.Character.HasPlayerAccess(userId);
-        hasClaimAccess = claim.HasPlayerAccesToClaim(userId);
+        return f => f.HasViewAccess(new AccessArguments(claim, userId));
       }
-      else if (character != null)
+      if (character != null)
       {
-        hasMasterAccess = character.HasMasterAccess(userId);
-        hasCharacterAccess = character.HasPlayerAccess(userId);
-        hasClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false;
+        return f => f.HasViewAccess(new AccessArguments(character, userId));
       }
-      else
-      {
-        throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
-      }
-      
-      return f => f.HasViewAccess(
-          hasMasterAccess,
-          hasCharacterAccess,
-          hasClaimAccess);
+      throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
+
     }
   }
 }

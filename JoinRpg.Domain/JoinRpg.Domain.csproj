@@ -49,6 +49,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CharacterFields\AccessArguments.cs" />
     <Compile Include="CharacterFields\CustomFieldsExtensions.cs" />
     <Compile Include="CharacterFields\FieldWithOldAndNewValue.cs" />
     <Compile Include="CharacterFields\FieldWithValue.cs" />

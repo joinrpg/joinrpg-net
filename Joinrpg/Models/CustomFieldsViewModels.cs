@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
@@ -82,20 +83,13 @@ namespace JoinRpg.Web.Models
       HasValue = ch.HasViewableValue;
 
       var hasViewAccess = ch.HasViewableValue
-        && ch.HasViewAccess(
-          model.HasMasterAccess,
-          model.HasPlayerAccessToCharacter,
-          model.HasPlayerClaimAccess);
+        && ch.HasViewAccess(model.AccessArguments);
 
       CanView = hasViewAccess && ch.HasViewableValue;
 
       CanEdit = model.EditAllowed 
-          && ch.HasEditAccess(
-            model.HasMasterAccess, 
-            model.HasPlayerAccessToCharacter,
-            model.HasPlayerClaimAccess, 
-            model.Target)
-            && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+        && ch.HasEditAccess(model.AccessArguments, model.Target)
+        && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
       //if not "HasValues" types, will be empty
       ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v)).ToArray();
@@ -125,9 +119,7 @@ namespace JoinRpg.Web.Models
   public class CustomFieldsViewModel
   {
     private int? CurrentUserId { get; }
-    public bool HasPlayerAccessToCharacter { get; }
-    public bool HasPlayerClaimAccess { get; }
-    public bool HasMasterAccess { get; }
+    public AccessArguments AccessArguments { get; }
     public bool EditAllowed { get; } 
     public IClaimSource Target { get;  }
 
@@ -139,12 +131,16 @@ namespace JoinRpg.Web.Models
     public CustomFieldsViewModel(int? currentUserId, IClaimSource target)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = target.HasMasterAccess(currentUserId);
+
+      AccessArguments = new AccessArguments(
+        target.HasMasterAccess(currentUserId),
+        characterAccess: false,
+        playerAccesToClaim: true);
+
       EditAllowed = target.Project.Active;
 
       Target = target;
 
-      HasPlayerClaimAccess = true;
       var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
       Fields =
@@ -177,15 +173,14 @@ namespace JoinRpg.Web.Models
       CurrentUserId = currentUserId;
       if (onlyPlayerVisible)
       {
-        HasMasterAccess = false;
-        HasPlayerAccessToCharacter = character.HasAnyAccess(currentUserId);
-        HasPlayerClaimAccess = character.ApprovedClaim?.HasAnyAccess(currentUserId) ?? false;
+        AccessArguments = new AccessArguments(
+          masterAccess: false,
+          characterAccess: character.HasAnyAccess(currentUserId),
+          playerAccesToClaim: character.ApprovedClaim?.HasAnyAccess(currentUserId) ?? false);
       }
       else
       {
-        HasMasterAccess = character.HasMasterAccess(currentUserId);
-        HasPlayerAccessToCharacter = character.HasPlayerAccess(CurrentUserId);
-        HasPlayerClaimAccess = character.ApprovedClaim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
+        AccessArguments = new AccessArguments(character, currentUserId);
       }
 
       Target = character;
@@ -205,12 +200,11 @@ namespace JoinRpg.Web.Models
     public CustomFieldsViewModel(int? currentUserId, Claim claim)
     {
       CurrentUserId = currentUserId;
-      HasMasterAccess = claim.HasMasterAccess(currentUserId);
+
+      AccessArguments = new AccessArguments(claim, currentUserId);
+
       Target = claim.GetTarget();
       EditAllowed = claim.Project.Active;
-
-      HasPlayerClaimAccess = claim.HasPlayerAccesToClaim(CurrentUserId);
-      HasPlayerAccessToCharacter = claim.Character != null && claim.Character.HasPlayerAccess(CurrentUserId);
 
       var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 

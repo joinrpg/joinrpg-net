@@ -52,11 +52,13 @@ namespace JoinRpg.Domain.CharacterFields
 
       public void EnsureEditAccess(FieldWithValue field)
       {
-        var hasMasterAccess = Project.HasMasterAccess(CurrentUserId);
-        var characterAccess = Character?.HasPlayerAccess(CurrentUserId) ?? false;
-        var hasPlayerAccesToClaim = Claim?.HasPlayerAccesToClaim(CurrentUserId) ?? false;
-        var editAccess = field.HasEditAccess(hasMasterAccess,
-          characterAccess, hasPlayerAccesToClaim, Character ?? Claim.GetTarget());
+        // TODO: for review: LEO, can I use Character.HasMasterAccess() or Claim.HasMAsterAccess
+        // instead of Project.HasMasterAccess() in this case? I believe so but please confirm.
+        var accessArguments = Character != null
+          ? new AccessArguments(Character, CurrentUserId)
+          : new AccessArguments(Claim, CurrentUserId);
+
+        var editAccess = field.HasEditAccess(accessArguments, Character ?? Claim.GetTarget());
         if (!editAccess)
         {
           throw new NoAccessToProjectException(Project, CurrentUserId);
@@ -162,8 +164,6 @@ namespace JoinRpg.Domain.CharacterFields
       }
 
       var fields = strategy.LoadFields();
-
-     
 
       foreach (var keyValuePair in newFieldValue)
       {

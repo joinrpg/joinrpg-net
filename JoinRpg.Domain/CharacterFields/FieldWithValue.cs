@@ -2,6 +2,7 @@
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 
 // ReSharper disable once CheckNamespace
@@ -70,26 +71,27 @@ namespace JoinRpg.Domain
       return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
     }
 
-    public bool HasViewAccess(bool masterAccess, bool characterAccess, bool claimAccess)
+    public bool HasViewAccess(AccessArguments accessArguments)
     {
       return Field.IsPublic
-        || masterAccess
+        || accessArguments.MasterAccess
         ||
-        (characterAccess && Field.CanPlayerView &&
+        (accessArguments.CharacterAccess && Field.CanPlayerView &&
          Field.FieldBoundTo == FieldBoundTo.Character)
         ||
-        (claimAccess && Field.CanPlayerView &&
+        (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
          Field.FieldBoundTo == FieldBoundTo.Claim);
     }
 
-    public bool HasEditAccess(bool masterAccess, bool characterAccess, bool claimAccess, IClaimSource target)
+    public bool HasEditAccess(AccessArguments accessArguments, IClaimSource target)
     {
-      return (masterAccess
+      return (accessArguments.MasterAccess
              ||
-             (characterAccess && Field.CanPlayerEdit &&
+             (accessArguments.CharacterAccess && Field.CanPlayerEdit &&
               Field.FieldBoundTo == FieldBoundTo.Character)
              ||
-             (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)));
+             (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
+             (Field.ShowOnUnApprovedClaims || accessArguments.CharacterAccess)));
     }
 
     public override string ToString() => $"{Field.FieldName}={Value}";
