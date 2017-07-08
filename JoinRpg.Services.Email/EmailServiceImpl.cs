@@ -162,7 +162,7 @@ namespace JoinRpg.Services.Email
         return "";
       }
       Predicate<FieldWithValue> accessRightsPredicate =
-        CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FiledsContainer, user.UserId);
+        CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
       IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
         .OtherChangedAttributes
         .Select(changedAttribute =>

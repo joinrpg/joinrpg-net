@@ -54,7 +54,7 @@ namespace JoinRpg.Services.Interfaces
   public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
-    public IFieldContainter FiledsContainer => Claim;
+    public IFieldContainter FieldsContainer => Claim;
 
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
       new Dictionary<string, PreviousAndNewValue>();
@@ -76,7 +76,7 @@ namespace JoinRpg.Services.Interfaces
   public class ClaimFieldsChangedEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
-    public IFieldContainter FiledsContainer => Claim;
+    public IFieldContainter FieldsContainer => Claim;
 
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
       new Dictionary<string, PreviousAndNewValue>();
@@ -85,7 +85,7 @@ namespace JoinRpg.Services.Interfaces
   public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
   {
     public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
-    public IFieldContainter FiledsContainer => (IFieldContainter)Claim ?? Character;
+    public IFieldContainter FieldsContainer => (IFieldContainter)Claim ?? Character;
 
     [CanBeNull]
     public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; set; } =
@@ -206,7 +206,7 @@ namespace JoinRpg.Services.Interfaces
     /// <summary>
     /// Entity the updated fields belong to
     /// </summary>
-    IFieldContainter FiledsContainer { get; }
+    IFieldContainter FieldsContainer { get; }
     /// <summary>
     /// Other attributes that have changed. Those atribute don't need access verification
     /// </summary>
