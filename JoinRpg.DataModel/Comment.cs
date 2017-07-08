@@ -43,8 +43,8 @@ namespace JoinRpg.DataModel
     public virtual CommentText CommentText { get; set; }
 
     [Column("CreatedTime")]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime LastEditTime { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } 
+    public DateTime LastEditTime { get; set; }
 
     public virtual User Author { get; set; }
     public int AuthorUserId { get; set; }

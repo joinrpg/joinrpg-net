@@ -26,24 +26,27 @@ namespace JoinRpg.Services.Impl
 
     public async Task<Project> AddProject(string projectName, User creator)
     {
+      var rootGroup = new CharacterGroup()
+      {
+        IsPublic = true,
+        IsRoot = true,
+        //TODO[Localize]
+        CharacterGroupName = "Все роли",
+        IsActive = true,
+        ResponsibleMasterUserId = creator.UserId,
+        HaveDirectSlots = true,
+        AvaiableDirectSlots = -1,
+      };
+      MarkCreatedNow(rootGroup);
       var project = new Project()
       {
         Active = true,
         IsAcceptingClaims = false,
-        CreatedDate = DateTime.UtcNow,
+        CreatedDate = Now,
         ProjectName = Required(projectName),
         CharacterGroups = new List<CharacterGroup>()
         {
-          new CharacterGroup()
-          {
-            IsPublic = true,
-            IsRoot = true,
-            CharacterGroupName = "Все роли",
-            IsActive = true,
-            ResponsibleMasterUserId = creator.UserId,
-            HaveDirectSlots = true,
-            AvaiableDirectSlots = -1
-          }
+          rootGroup
         },
         ProjectAcls = new List<ProjectAcl>()
         {
@@ -51,15 +54,16 @@ namespace JoinRpg.Services.Impl
         },
         Details = new ProjectDetails()
       };
-      project.MarkTreeModified();
+      MarkTreeModified(project);
       UnitOfWork.GetDbSet<Project>().Add(project);
       await UnitOfWork.SaveChangesAsync();
       return project;
     }
 
 
-
-    public async Task AddCharacterGroup(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
+    public async Task AddCharacterGroup(int projectId, string name, bool isPublic,
+      IReadOnlyCollection<int> parentCharacterGroupIds, string description,
+      bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -70,15 +74,16 @@ namespace JoinRpg.Services.Impl
         throw new Exception("No such master");
       }
 
-      project.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
       project.EnsureProjectActive();
 
-      UnitOfWork.GetDbSet<CharacterGroup>().Add(new CharacterGroup()
+      Create(new CharacterGroup()
       {
         AvaiableDirectSlots = directSlotsForSave,
         HaveDirectSlots = haveDirectSlotsForSave,
         CharacterGroupName = Required(name),
-        ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId, Required(() => parentCharacterGroupIds)),
+        ParentCharacterGroupIds =
+          await ValidateCharacterGroupList(projectId, Required(() => parentCharacterGroupIds)),
         ProjectId = projectId,
         IsRoot = false,
         IsSpecial = false,
@@ -87,7 +92,8 @@ namespace JoinRpg.Services.Impl
         Description = new MarkdownString(description),
         ResponsibleMasterUserId = responsibleMasterId,
       });
-      project.MarkTreeModified();
+
+      MarkTreeModified(project);
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -101,21 +107,21 @@ namespace JoinRpg.Services.Impl
       project.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
       project.EnsureProjectActive();
 
-      UnitOfWork.GetDbSet<Character>().Add(
-        new Character
-        {
-          CharacterName = Required(name),
-          ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)),
-          ProjectId = projectId,
-          IsPublic = isPublic,
-          IsActive = true,
-          IsAcceptingClaims = isAcceptingClaims,
-          Description = new MarkdownString(description),
-          HidePlayerForCharacter = hidePlayerForCharacter,
-          IsHot = isHot
-        });
+      var character = new Character
+      {
+        CharacterName = Required(name),
+        ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)),
+        ProjectId = projectId,
+        IsPublic = isPublic,
+        IsActive = true,
+        IsAcceptingClaims = isAcceptingClaims,
+        Description = new MarkdownString(description),
+        HidePlayerForCharacter = hidePlayerForCharacter,
+        IsHot = isHot
+      };
+      Create(character);
+      MarkTreeModified(project);
 
-      project.MarkTreeModified();
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -136,9 +142,12 @@ namespace JoinRpg.Services.Impl
       character.IsHot = isHot;
       character.IsActive = true;
 
-      character.ParentCharacterGroupIds  = await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds), ensureNotSpecial: true);
+      character.ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId,
+        Required(parentCharacterGroupIds), ensureNotSpecial: true);
       FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields, FieldDefaultValueGenerator);
-      character.Project.MarkTreeModified(); //TODO: Can be smarter
+
+      MarkChanged(character);
+      MarkTreeModified(character.Project); //TODO: Can be smarter
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -219,7 +228,8 @@ namespace JoinRpg.Services.Impl
       characterGroup.AvaiableDirectSlots = directSlots;
       characterGroup.HaveDirectSlots = haveDirectSlots;
 
-      characterGroup.Project.MarkTreeModified(); // Can be smarted than this
+      MarkTreeModified(characterGroup.Project); // Can be smarted than this
+      MarkChanged(characterGroup);
       await UnitOfWork.SaveChangesAsync();
     }
 
@@ -238,13 +248,15 @@ namespace JoinRpg.Services.Impl
       characterGroup.EnsureProjectActive();
 
 
-      characterGroup.Project.MarkTreeModified();
+      MarkTreeModified(characterGroup.Project);
+      MarkChanged(characterGroup);
 
       if (characterGroup.CanBePermanentlyDeleted)
       {
         characterGroup.DirectlyRelatedPlotFolders.CleanLinksList();
         characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
       }
+
       SmartDelete(characterGroup);
       
       await UnitOfWork.SaveChangesAsync();
@@ -282,11 +294,10 @@ namespace JoinRpg.Services.Impl
       var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
       if (acl == null)
       {
-        acl = new ProjectAcl()
+        acl = new ProjectAcl
         {
           ProjectId = project.ProjectId,
           UserId = userId,
-          Project = project //Used inside UpdatePaymentTypes()
         };
         project.ProjectAcls.Add(acl);
       }
@@ -306,6 +317,11 @@ namespace JoinRpg.Services.Impl
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+
+      if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
+      {
+        throw new DbEntityValidationException();
+      }
 
       var acl = project.ProjectAcls.Single(a => a.ProjectId == projectId && a.UserId == userId);
 
@@ -329,6 +345,20 @@ namespace JoinRpg.Services.Impl
         foreach (var claim in claims)
         {
           claim.ResponsibleMasterUserId = newResponsibleMasterId;
+        }
+      }
+
+      if (acl.IsOwner)
+      {
+        if (acl.UserId == CurrentUserId)
+        {
+          // if owner removing himself, assign "random" owner
+          project.ProjectAcls.OrderBy(a => a.UserId).First().IsOwner = true;
+        }
+        else
+        {
+          //who kills the king, becomes one
+          project.ProjectAcls.Single(a => a.UserId == CurrentUserId).IsOwner = true;
         }
       }
 
@@ -404,13 +434,14 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
 
-      character.Project.MarkTreeModified();
+      MarkTreeModified(character.Project);
 
       if (character.CanBePermanentlyDeleted)
       {
         character.DirectlyRelatedPlotElements.CleanLinksList();
       }
       character.IsActive = false;
+      MarkChanged(character);
       await UnitOfWork.SaveChangesAsync();
     }
   }
