@@ -24,12 +24,13 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimsRepository _claimsRepository;
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
+    private ICharacterRepository CharacterRepository { get; }
 
     [HttpGet]
     [Authorize]
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
       if (field == null) return HttpNotFound();
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
@@ -45,7 +46,9 @@ namespace JoinRpg.Web.Controllers
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository, IFinanceService financeService, IExportDataService exportDataService, IPluginFactory pluginFactory)
+      IClaimsRepository claimsRepository, IFinanceService financeService,
+      IExportDataService exportDataService, IPluginFactory pluginFactory,
+      ICharacterRepository characterRepository)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       _claimService = claimService;
@@ -53,6 +56,7 @@ namespace JoinRpg.Web.Controllers
       _claimsRepository = claimsRepository;
       FinanceService = financeService;
       PluginFactory = pluginFactory;
+      CharacterRepository = characterRepository;
     }
 
     [HttpPost]

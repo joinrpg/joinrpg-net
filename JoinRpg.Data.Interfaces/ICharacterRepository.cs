@@ -12,5 +12,9 @@ namespace JoinRpg.Data.Interfaces
     Task<IReadOnlyCollection<int>> GetCharacterIds(int projectId, DateTime? modifiedSince);
     [ItemNotNull]
     Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
+
+    Task<Character> GetCharacterAsync(int projectId, int characterId);
+    Task<Character> GetCharacterWithGroups(int projectId, int characterId);
+    Task<Character> GetCharacterWithDetails(int projectId, int characterId);
   }
 }

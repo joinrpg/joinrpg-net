@@ -80,35 +80,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
     }
 
-
-    public async Task<Character> GetCharacterAsync(int projectId, int characterId)
-    {
-      await LoadProjectFields(projectId);
-      return
-        await Ctx.Set<Character>()
-          .Include(c => c.Project)
-          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-    public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
-    {
-      await LoadProjectGroups(projectId);
-      await LoadProjectFields(projectId);
-
-      return
-        await Ctx.Set<Character>().SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-    public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)
-    {
-      await LoadProjectCharactersAndGroups(projectId);
-      await LoadProjectClaims(projectId);
-      await LoadProjectFields(projectId);
-
-      return
-        await Ctx.Set<Character>()
-          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)
     {
       await LoadProjectGroups(projectId);
@@ -196,7 +167,10 @@ namespace JoinRpg.Dal.Impl.Repositories
       }
       if (characterId != null)
       {
-        return await GetCharacterAsync(projectId, (int) characterId);
+        await LoadProjectFields(projectId);
+        return await Ctx.Set<Character>()
+          .Include(c => c.Project)
+          .SingleOrDefaultAsync(e => e.CharacterId == (int) characterId && e.ProjectId == projectId);
       }
       throw new InvalidOperationException();
     }

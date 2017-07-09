@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Controllers
 
     public async Task<ActionResult> Character(int projectid, int characterid)
     {
-      var character = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
+      var character = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
       var error = WithCharacter(character);
       if (error != null) return error;
 

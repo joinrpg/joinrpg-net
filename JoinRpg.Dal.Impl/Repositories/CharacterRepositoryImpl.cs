@@ -10,7 +10,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  internal class CharacterRepositoryImpl : RepositoryImplBase, ICharacterRepository
+  internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepository
   {
     public async Task<IReadOnlyCollection<int>> GetCharacterIds(int projectId, DateTime? modifiedSince)
     {
@@ -23,6 +23,34 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds)
     {
       return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
+    }
+
+    public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
+    {
+      await LoadProjectGroups(projectId);
+      await LoadProjectFields(projectId);
+
+      return
+        await Ctx.Set<Character>().SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
+    }
+    public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)
+    {
+      await LoadProjectCharactersAndGroups(projectId);
+      await LoadProjectClaims(projectId);
+      await LoadProjectFields(projectId);
+
+      return
+        await Ctx.Set<Character>()
+          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
+    }
+
+    public async Task<Character> GetCharacterAsync(int projectId, int characterId)
+    {
+      await LoadProjectFields(projectId);
+      return
+        await Ctx.Set<Character>()
+          .Include(c => c.Project)
+          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
     public CharacterRepositoryImpl(MyDbContext ctx) : base(ctx)
