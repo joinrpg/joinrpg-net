@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models.Characters
     [Display(Name = "Обсуждается")]
     Discussed,
     [Display(Name = "Нет заявок")]
-    NotSend,
+    NoClaims,
     [Display(Name = "NPC")]
     Npc,
   }
