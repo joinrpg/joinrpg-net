@@ -11,18 +11,6 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  public enum CharacterBusyStatusView
-  {
-    [Display(Name = "Занят")]
-    HasPlayer,
-    [Display(Name = "Обсуждается")]
-    Discussed,
-    [Display(Name = "Нет заявок")]
-    NotSend,
-    [Display(Name = "NPC")]
-    Npc,
-  }
-
   public class CharacterListByGroupViewModel : CharacterListViewModel
   {
     public CharacterListByGroupViewModel(int currentUserId, IReadOnlyCollection<Character> characters,
@@ -112,24 +100,12 @@ namespace JoinRpg.Web.Models.Characters
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 
-      
+      BusyStatus = character.GetBusyStatus();
+
       if (character.ApprovedClaim != null)
       {
-        BusyStatus = CharacterBusyStatusView.HasPlayer;
         ApprovedClaimId = character.ApprovedClaim.ClaimId;
         Player = character.ApprovedClaim.Player;
-      }
-      else if (character.Claims.Any(c => c.IsActive))
-      {
-        BusyStatus = CharacterBusyStatusView.Discussed;
-      }
-      else if (character.IsAcceptingClaims)
-      {
-        BusyStatus = CharacterBusyStatusView.NotSend;
-      }
-      else
-      {
-        BusyStatus = CharacterBusyStatusView.Npc;
       }
       Name = character.CharacterName;
       CharacterId = character.CharacterId;

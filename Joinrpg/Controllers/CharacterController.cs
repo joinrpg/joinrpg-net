@@ -18,18 +18,22 @@ namespace JoinRpg.Web.Controllers
   public class CharacterController : Common.ControllerGameBase
   {
     private IPlotRepository PlotRepository { get; }
+    private ICharacterRepository CharacterRepository { get; }
 
-    public CharacterController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IPlotRepository plotRepository, IExportDataService exportDataService)
+    public CharacterController(ApplicationUserManager userManager,
+      IProjectRepository projectRepository,
+      IProjectService projectService, IPlotRepository plotRepository,
+      IExportDataService exportDataService, ICharacterRepository characterRepository)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
+      CharacterRepository = characterRepository;
     }
 
     [HttpGet]
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterWithGroups(projectid, characterid);
+      var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
       return (field?.Project == null ? HttpNotFound() : null) ?? await ShowCharacter(field);
     }
 
@@ -50,7 +54,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterId)
     {
-      var field = await ProjectRepository.GetCharacterWithDetails(projectId, characterId);
+      var field = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
       return View(new EditCharacterViewModel()
       {
         ProjectId = field.ProjectId,
@@ -69,7 +73,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(EditCharacterViewModel viewModel)
     {
-      var field = await ProjectRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
+      var field = await CharacterRepository.GetCharacterAsync(viewModel.ProjectId, viewModel.CharacterId);
       try
       {
         if (!ModelState.IsValid)
@@ -136,7 +140,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Delete(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
       if (field == null) return HttpNotFound();
       return View(field);
     }
@@ -144,7 +148,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     public async Task<ActionResult> Delete(int projectId, int characterId, [UsedImplicitly] FormCollection form)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
       try
       {
         await ProjectService.DeleteCharacter(projectId, characterId, CurrentUserId);

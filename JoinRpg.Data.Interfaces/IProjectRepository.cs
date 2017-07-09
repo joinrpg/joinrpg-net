@@ -20,11 +20,7 @@ namespace JoinRpg.Data.Interfaces
     Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
     Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
-    Task<Character> GetCharacterAsync(int projectId, int characterId);
-    Task<Character> GetCharacterWithGroups(int projectId, int characterId);
-    Task<Character> GetCharacterWithDetails(int projectId, int characterId);
     Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);
-    Task<IReadOnlyCollection<Character>> LoadCharacters(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
     Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
     Task<ProjectField> GetProjectField(int projectId, int projectCharacterFieldId);
     Task<ProjectFieldDropdownValue> GetFieldValue(int projectId, int projectFieldId, int projectCharacterFieldDropdownValueId);

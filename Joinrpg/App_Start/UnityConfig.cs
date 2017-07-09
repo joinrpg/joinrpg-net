@@ -56,11 +56,7 @@ namespace JoinRpg.Web
       container.RegisterType<IUnitOfWork, MyDbContext>();
       container.RegisterType<DbContext, MyDbContext>();
 
-      container.RegisterType<IProjectRepository, ProjectRepository>();
-      container.RegisterType<IUserRepository, UserInfoRepository>();
-      container.RegisterType<IClaimsRepository, ClaimsRepositoryImpl>();
-      container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
-      container.RegisterType<IForumRepository, ForumRepositoryImpl>();
+      RepositoriesRegistraton.Register(container);
 
       Services.Impl.Services.Register(container);
 

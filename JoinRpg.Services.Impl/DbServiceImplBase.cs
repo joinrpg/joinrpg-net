@@ -35,6 +35,9 @@ namespace JoinRpg.Services.Impl
 
     private readonly Lazy<IPlotRepository> _plotRepository;
     protected IPlotRepository PlotRepository => _plotRepository.Value;
+
+    private readonly Lazy<ICharacterRepository> _charactersRepository;
+    protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
     protected static int CurrentUserId => int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
 
     /// <summary>
@@ -50,6 +53,7 @@ namespace JoinRpg.Services.Impl
       _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
       _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
       _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
+      _charactersRepository = new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
       Now = DateTime.UtcNow;
     }
 
@@ -145,7 +149,7 @@ namespace JoinRpg.Services.Impl
     protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)
     {
       var characters =
-        await ProjectRepository.LoadCharacters(projectId, characterIds);
+        await CharactersRepository.GetCharacters(projectId, characterIds);
 
       if (characters.Count != characterIds.Distinct().Count())
       {

@@ -424,7 +424,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task DeleteCharacter(int projectId, int characterId, int currentUserId)
     {
-      var character = await ProjectRepository.GetCharacterAsync(projectId, characterId);
+      var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
       character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
       character.EnsureProjectActive();

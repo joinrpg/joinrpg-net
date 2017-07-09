@@ -34,6 +34,7 @@ namespace JoinRpg.Dal.Impl
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
+    public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
     public static MyDbContext Create() => new MyDbContext();
 

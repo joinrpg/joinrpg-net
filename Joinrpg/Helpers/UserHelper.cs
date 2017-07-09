@@ -7,9 +7,9 @@ namespace JoinRpg.Web.Helpers
 {
   static class UserHelper
   {
-    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this User user, UserManager<User, int> manager)
+    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this User user, UserManager<User, int> manager, string authenticationType)
     {
-      return manager.ClaimsIdentityFactory.CreateAsync(manager, user, DefaultAuthenticationTypes.ApplicationCookie);
+      return manager.ClaimsIdentityFactory.CreateAsync(manager, user, authenticationType);
     }
 
     public static async Task<IdentityResult> SetPasswordWithoutValidationAsync(this ApplicationUserManager applicationUserManager, int userId, string password)

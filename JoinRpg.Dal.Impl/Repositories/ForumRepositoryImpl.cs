@@ -11,7 +11,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly(ImplicitUseTargetFlags.Itself)]
-  public class ForumRepositoryImpl : GameRepositoryImplBase, IForumRepository
+  internal class ForumRepositoryImpl : GameRepositoryImplBase, IForumRepository
   {
     public ForumRepositoryImpl(MyDbContext ctx) : base(ctx)
     {
