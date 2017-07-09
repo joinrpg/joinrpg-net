@@ -331,5 +331,32 @@ namespace JoinRpg.Web.Controllers
         return ReturnToField(value);
       }
     }
+
+    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
+    {
+      var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+      if (value == null)
+      {
+        return HttpNotFound();
+      }
+
+      if (afterFieldId == -1)
+      {
+        afterFieldId = null;
+      }
+
+      try
+      {
+        await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+
+
+        return ReturnToIndex(value.Project);
+      }
+      catch
+      {
+        return ReturnToIndex(value.Project);
+      }
+    }
   }
 }

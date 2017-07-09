@@ -303,5 +303,20 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
 
     }
+
+    public async Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId)
+    {
+      var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+      var afterField = afterFieldId == null
+        ? null
+        : await ProjectRepository.GetProjectField(projectId, (int) afterFieldId);
+
+      field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+
+      field.Project.ProjectFieldsOrdering = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
+
+      await UnitOfWork.SaveChangesAsync();
+    }
   }
 }

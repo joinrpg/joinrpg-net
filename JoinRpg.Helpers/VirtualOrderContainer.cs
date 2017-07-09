@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using JetBrains.Annotations;
 
@@ -72,37 +71,49 @@ namespace JoinRpg.Helpers
 
     public IReadOnlyList<TItem> OrderedItems => Items.AsReadOnly();
 
-    public void MoveDown(TItem item)
-    {
-      Move(item, 1);
-    }
+    public void MoveDown(TItem item) => Move(item, 1);
 
-    public void MoveUp(TItem item)
-    {
-      Move(item, -1);
-    }
+    public void MoveUp(TItem item) => Move(item, -1);
 
-    private void MoveImpl(TItem item, int direction)
+    private void MoveToIndex(int fromIndex, int targetIndex)
     {
-      var index = Items.IndexOf(item);
-      if (index == -1)
-      {
-        throw new ArgumentException("Item not exists in list", nameof(item));
-      }
-      var targetIndex = index + direction;
-      if (targetIndex >= Items.Count || targetIndex < 0)
+      if (targetIndex > Items.Count || targetIndex < 0)
       {
         throw new InvalidOperationException("Can't move item beyond the edges");
       }
 
-      var nextItem = Items[targetIndex];
-      Items[targetIndex] = item;
-      Items[index] = nextItem;
+      if (targetIndex == Items.Count && fromIndex == Items.Count)
+      {
+        throw new InvalidOperationException("Can't move item beyond the edges");
+      }
+
+      var movingItem = Items[fromIndex];
+      if (fromIndex > targetIndex)
+      {
+        for (var i = fromIndex; i > targetIndex; i--)
+        {
+          Items[i] = Items[i-1];
+        }
+       
+      } 
+      else if (targetIndex > fromIndex)
+      {
+        for (var i = fromIndex; i < targetIndex; i++)
+        {
+          Items[i] = Items[i + 1];
+        }
+      }
+      Items[targetIndex] = movingItem;
     }
 
-    public ReadOnlyCollection<TItem> GetOrderedItemsWithFilter(Func<TItem, bool> predicate)
+    private int GetIndex(TItem field)
     {
-      return Items.Where(predicate).ToList().AsReadOnly();
+      var index = Items.IndexOf(field);
+      if (index == -1)
+      {
+        throw new ArgumentException("Item not exists in list", nameof(field));
+      }
+      return index;
     }
 
     public VirtualOrderContainer<TItem> Move(TItem field, short direction)
@@ -111,7 +122,34 @@ namespace JoinRpg.Helpers
       {
         throw new ArgumentException(nameof(direction));
       }
-      MoveImpl(field, direction);
+
+      var index = GetIndex(field);
+      var targetIndex = index + direction;
+      if (targetIndex == Items.Count)
+      {
+        throw new InvalidOperationException("Can't move item beyond the edges");
+      }
+      MoveToIndex(index, targetIndex);
+      return this;
+    }
+
+    public VirtualOrderContainer<TItem> MoveAfter(TItem field, TItem afterItem)
+    {
+      var index = GetIndex(field);
+      if (afterItem == null)
+      {
+        MoveToIndex(index, 0);
+      }
+      else
+      {
+        var targetIndex = GetIndex(afterItem) + 1;
+        if (targetIndex > index)
+        {
+          targetIndex--;
+        }
+        MoveToIndex(index, targetIndex);
+      }
+      
       return this;
     }
   }

@@ -26,5 +26,6 @@ namespace JoinRpg.Services.Interfaces
     Task MoveFieldValue(int projectid, int projectFieldId, int projectFieldVariantId, short direction);
 
     Task CreateFieldValueVariants(int projectId, int projectFieldId, [NotNull] string valuesToAdd);
+    Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
   }
 }
