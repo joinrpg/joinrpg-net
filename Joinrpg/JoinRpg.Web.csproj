@@ -206,9 +206,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\ApiSignInProvider.cs" />
+    <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
+    <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
     <Content Include="App_Code\MvcHelpers.cs" />

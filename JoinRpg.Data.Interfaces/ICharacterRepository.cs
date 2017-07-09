@@ -6,10 +6,16 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Data.Interfaces
 {
+  public class CharacterHeader
+  {
+    public int CharacterId { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public bool IsActive { get; set; }
+  }
   public interface ICharacterRepository : IDisposable
   {
     [ItemNotNull]
-    Task<IReadOnlyCollection<int>> GetCharacterIds(int projectId, DateTime? modifiedSince);
+    Task<IReadOnlyCollection<CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince);
     [ItemNotNull]
     Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, [NotNull] IReadOnlyCollection<int> characterIds);
 

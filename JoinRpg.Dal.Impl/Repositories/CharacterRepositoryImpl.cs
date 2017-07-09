@@ -12,12 +12,18 @@ namespace JoinRpg.Dal.Impl.Repositories
   [UsedImplicitly]
   internal class CharacterRepositoryImpl : GameRepositoryImplBase, ICharacterRepository
   {
-    public async Task<IReadOnlyCollection<int>> GetCharacterIds(int projectId, DateTime? modifiedSince)
+    public async Task<IReadOnlyCollection<CharacterHeader>> GetCharacterHeaders(int projectId, DateTime? modifiedSince)
     {
-      return await Ctx.Set<Character>().Where(c => c.ProjectId == projectId && c.IsActive &&
-                                             (modifiedSince == null ||
-                                              c.UpdatedAt >= modifiedSince))
-        .Select(c => c.CharacterId).ToListAsync();
+      return await Ctx.Set<Character>()
+        .Where(c => c.ProjectId == projectId && c.IsActive &&
+                                                   (modifiedSince == null ||
+                                                    c.UpdatedAt >= modifiedSince))
+        .Select(c => new CharacterHeader
+        {
+          IsActive = c.IsActive,
+          CharacterId = c.CharacterId,
+          UpdatedAt = c.UpdatedAt
+        }).ToListAsync();
     }
 
     public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds)

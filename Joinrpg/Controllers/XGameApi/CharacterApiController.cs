@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Web.Filter;
-using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
@@ -19,14 +20,42 @@ namespace JoinRpg.Web.Controllers.XGameApi
     }
 
     [Route("get/{modifiedSince?}")]
-    public async Task<IEnumerable<object>> Get(int projectId, DateTime? modifiedSince = null)
+    public async Task<IEnumerable<object>> GetList(int projectId, DateTime? modifiedSince = null)
     {
-      return (await CharacterRepository.GetCharacterIds(projectId, modifiedSince)).Select(id =>
+      return (await CharacterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(character =>
         new
         {
-          CharacterId = id,
-          CharacterLink = $"/x-game-api/{projectId}/characters/{id}/details"
+          character.CharacterId,
+          character.UpdatedAt,
+          character.IsActive,
+          CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/details"
         });
+    }
+
+    [Route("{characterId}/details")]
+    public async Task<object> GetOne(int projectId, int characterId )
+    {
+      var character = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
+      return
+        new
+        {
+          character.CharacterId,
+          BusyStatus = character.GetBusyStatus().ToString(),
+          Groups = character.Groups.Where(group => group.IsActive && !group.IsSpecial).Select(
+            group => new
+            {
+              group.CharacterGroupId,
+              group.CharacterGroupName,
+            }).OrderBy(group => group.CharacterGroupId),
+          Fields = character.GetFields().Where(field => field.HasViewableValue).Select(field => new
+          {
+            field.Field.ProjectFieldId,
+            field.Value,
+            field.DisplayString
+          }),
+          character.ApprovedClaim?.PlayerUserId,
+          character.IsActive
+        };
     }
   }
 }
