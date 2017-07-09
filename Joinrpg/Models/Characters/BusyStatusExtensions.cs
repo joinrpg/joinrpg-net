@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Models.Characters
       }
       if (character.IsAcceptingClaims)
       {
-        return CharacterBusyStatusView.NotSend;
+        return CharacterBusyStatusView.NoClaims;
       }
       return CharacterBusyStatusView.Npc;
     }

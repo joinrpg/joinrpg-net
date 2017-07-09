@@ -40,6 +40,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
         new
         {
           character.CharacterId,
+          character.UpdatedAt,
+          character.IsActive,
           BusyStatus = character.GetBusyStatus().ToString(),
           Groups = character.Groups.Where(group => group.IsActive && !group.IsSpecial).Select(
             group => new
@@ -54,7 +56,6 @@ namespace JoinRpg.Web.Controllers.XGameApi
             field.DisplayString
           }),
           character.ApprovedClaim?.PlayerUserId,
-          character.IsActive
         };
     }
   }
