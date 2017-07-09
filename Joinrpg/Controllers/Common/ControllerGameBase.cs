@@ -60,40 +60,42 @@ namespace JoinRpg.Web.Controllers.Common
       ViewBag.ProjectId = project.ProjectId;
 
       var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
-      //TODO[GroupsLoad]. If we not loaded groups already, that's slow
-      var bigGroups =
-        project.RootGroup.ChildGroups.Where(
-            cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserId))
-          .Select(cg => new CharacterGroupLinkViewModel(cg));
+      
+      MenuViewModelBase menuModel;
       if (acl != null)
       {
-        ViewBag.MasterMenu = new MasterMenuViewModel
+        menuModel = new MasterMenuViewModel()
         {
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName,
-          AccessToProject = acl,
-          BigGroups = bigGroups,
-          IsAcceptingClaims = project.IsAcceptingClaims,
-          IsActive = project.Active,
-          RootGroupId = project.RootGroup.CharacterGroupId,
-          IsAdmin = IsCurrentUserAdmin(),
+          AccessToProject = acl
         };
       }
       else
       {
-        ViewBag.PlayerMenu = new PlayerMenuViewModel
+        menuModel = new PlayerMenuViewModel()
         {
-          ProjectId = project.ProjectId,
-          ProjectName = project.ProjectName,
-          Claims =
-            project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          BigGroups = bigGroups,
-          IsAcceptingClaims = project.IsAcceptingClaims,
-          IsActive = project.Active,
-          RootGroupId = project.RootGroup.IsAvailable ? (int?) project.RootGroup.CharacterGroupId : null,
-          PlotPublished = project.Details.PublishPlot,
-          IsAdmin = IsCurrentUserAdmin(),
+          Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+          PlotPublished = project.Details.PublishPlot
         };
+      }
+      menuModel.ProjectId = project.ProjectId;
+      menuModel.ProjectName = project.ProjectName;
+      //TODO[GroupsLoad]. If we not loaded groups already, that's slow
+      menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
+          cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserIdOrDefault))
+        .Select(cg => new CharacterGroupLinkViewModel(cg)).ToList();
+      menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
+      menuModel.IsActive = project.Active;
+      menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
+      menuModel.IsAdmin = IsCurrentUserAdmin();
+
+
+      if (acl != null)
+      {
+        ViewBag.MasterMenu = menuModel;
+      }
+      else
+      {
+        ViewBag.PlayerMenu = menuModel;
       }
     }
 
