@@ -19,7 +19,10 @@ namespace JoinRpg.Web.Models
       DescriptionPlainText = value.Description.ToPlainText();
       Label = value.Label;
       DescriptionHtml = value.Description.ToHtmlString();
+      SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
     }
+
+    public int? SpecialGroupId { get; }
 
     public int ProjectFieldDropdownValueId { get; }
 
@@ -39,6 +42,8 @@ namespace JoinRpg.Web.Models
 
     public bool IsPlayerVisible { get; }
 
+    public bool HasMasterAccess { get; }
+
     public string Value { get; }
 
     public bool HasValue { get; }
@@ -51,8 +56,9 @@ namespace JoinRpg.Web.Models
     public IHtmlString Description { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
-
+    [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
+    [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
     public FieldValueViewModel(CustomFieldsViewModel model, [NotNull] FieldWithValue ch, ILinkRenderer renderer)
     {
@@ -77,6 +83,7 @@ namespace JoinRpg.Web.Models
 
       HasValue = ch.HasViewableValue;
 
+      HasMasterAccess = model.HasMasterAccess;
       var hasViewAccess = ch.Field.IsPublic
                           || model.HasMasterAccess
                           ||
@@ -86,7 +93,7 @@ namespace JoinRpg.Web.Models
                           (model.HasPlayerClaimAccess && ch.Field.CanPlayerView &&
                            ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
-      CanView = hasViewAccess && ch.HasViewableValue;
+      CanView = hasViewAccess && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
       CanEdit = model.EditAllowed 
           && ch.HasEditAccess(
@@ -96,21 +103,22 @@ namespace JoinRpg.Web.Models
             model.Target)
             && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
-      if (ch.Field.HasValueList())
-      {
-        ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v)).ToArray();
-        PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v)).ToList();
-      }
+      //if not "HasValues" types, will be empty
+      ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v)).ToArray();
+      PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v)).ToList();
+
       ProjectFieldId = ch.Field.ProjectFieldId;
 
       FieldBound =  (FieldBoundToViewModel) ch.Field.FieldBoundTo;
       MandatoryStatus = IsDeleted ? MandatoryStatusViewType.Optional : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
+
+      ProjectId = ch.Field.ProjectId;
     }
 
     public MandatoryStatusViewType MandatoryStatus { get; }
 
     public FieldBoundToViewModel FieldBound { get; }
-
+    public int ProjectId { get; }
 
     public const string HtmlIdPrefix = "field_";
 

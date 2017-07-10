@@ -22,17 +22,17 @@
     }
 }
 
+@{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
+
 @if (Model.FieldViewType == ProjectFieldViewType.Header)
-  {
-      <h4>@Model.FieldName</h4>
-      <div class="help-block">
-          @Model.Description
-      </div>
-      return;
-  }
-@{
-    var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; 
+{
+  <h4 class="@hideClassName">@Model.FieldName</h4>
+  <div class="help-block @hideClassName">
+    @Model.Description
+  </div>
+  return;
 }
+
 <div class="form-group @hideClassName">
     <label class="control-label col-md-2">
         @if (Model.IsDeleted)
@@ -121,6 +121,14 @@
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
         @ValidationMessage()
+        @if (Model.HasMasterAccess)
+        {
+          @Html.Raw(
+            string.Join(" • ",
+              Model.ValueList
+                .Where(v => v.SpecialGroupId != null)
+                .Select(value => Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null))))
+        }
         @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
             <div class="help-block">@Model.Description </div>

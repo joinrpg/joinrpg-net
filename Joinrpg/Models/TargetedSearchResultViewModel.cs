@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
 
       descriptionToShow = Regex.Replace(
           descriptionToShow,
-          SearchTarget,
+          Regex.Escape(SearchTarget),
           match => "<b><u>" + match.Value + "</u></b>", RegexOptions.IgnoreCase);
 
       return new HtmlString(descriptionToShow);

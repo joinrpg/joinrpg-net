@@ -30,8 +30,9 @@ namespace JoinRpg.Web.Models.Plot
     [Required, Display(Name = "Название сюжета", Description = "Вы можете указать теги прямо в названии. Пример: #мордор #гондор #костромская_область")]
     public string PlotFolderTitleAndTags { get; set; }
 
-    public EditPlotFolderViewModel (PlotFolder folder, int? currentUserId)
+    public EditPlotFolderViewModel ([NotNull] PlotFolder folder, int? currentUserId)
     {
+      if (folder == null) throw new ArgumentNullException(nameof(folder));
       PlotFolderId = folder.PlotFolderId;
       TodoField = folder.TodoField;
       ProjectId = folder.ProjectId;

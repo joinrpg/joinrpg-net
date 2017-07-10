@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.RegisterViewModel
+﻿@using JoinRpg.Web.App_Code;
+@model JoinRpg.Web.Models.RegisterViewModel
 @{
     ViewBag.Title = "Регистрация";
 }
@@ -9,7 +10,7 @@
 {
     @Html.AntiForgeryToken()
     <h4>Создать аккаунт</h4>
-    <p>Если вы уже зарегистрированы на сайте allrpg.info, пожалуйста, введите тот же email, на который вы были зарегистрированы там. Профиль будет автоматически импортирован. Пароль рекомендуем ввести новый.</p>
+    <p>@MvcHtmlHelpers.HelpLink("register", "Подробнее о регистрации")</p>
     <hr />
     @Html.ValidationSummary("", new { @class = "text-danger" })
     <div class="form-group">

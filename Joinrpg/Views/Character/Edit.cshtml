@@ -2,7 +2,7 @@
 @model JoinRpg.Web.Models.Characters.EditCharacterViewModel
 
 @Html.Partial("CharacterNavigation", Model.Navigation, new ViewDataDictionary())
-
+@Html.Partial("CreateUpdated", Model)
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()

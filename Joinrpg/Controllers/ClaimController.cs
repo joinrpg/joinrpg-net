@@ -24,12 +24,13 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimsRepository _claimsRepository;
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
+    private ICharacterRepository CharacterRepository { get; }
 
     [HttpGet]
     [Authorize]
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
-      var field = await ProjectRepository.GetCharacterAsync(projectid, characterid);
+      var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
       if (field == null) return HttpNotFound();
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
@@ -45,7 +46,9 @@ namespace JoinRpg.Web.Controllers
 
     public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository, IFinanceService financeService, IExportDataService exportDataService, IPluginFactory pluginFactory)
+      IClaimsRepository claimsRepository, IFinanceService financeService,
+      IExportDataService exportDataService, IPluginFactory pluginFactory,
+      ICharacterRepository characterRepository)
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       _claimService = claimService;
@@ -53,6 +56,7 @@ namespace JoinRpg.Web.Controllers
       _claimsRepository = claimsRepository;
       FinanceService = financeService;
       PluginFactory = pluginFactory;
+      CharacterRepository = characterRepository;
     }
 
     [HttpPost]
@@ -68,8 +72,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId,
-          CurrentUserId, viewModel.ClaimText, 
+        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText, 
           GetCustomFieldValuesFromPost());
 
         return RedirectToAction(
@@ -102,7 +105,7 @@ namespace JoinRpg.Web.Controllers
       }
 
       var printPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
-        ? (await PluginFactory.GetPossibleOperations<IPrintCardPluginOperation>(claim.ProjectId)).Where(
+        ? (PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(claim.Project)).Where(
           p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
         : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
 
@@ -117,7 +120,6 @@ namespace JoinRpg.Web.Controllers
       {
         await
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
-            CurrentUserId,
             claim.CommentDiscussion.Comments.Max(c => c.CommentId));
       }
 
@@ -141,7 +143,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.SaveFieldsFromClaim(projectId, claimId, CurrentUserId, GetCustomFieldValuesFromPost());
+          _claimService.SaveFieldsFromClaim(projectId, claimId, GetCustomFieldValuesFromPost());
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
       catch (Exception exception)
@@ -163,7 +165,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -215,7 +217,7 @@ namespace JoinRpg.Web.Controllers
           return await ShowClaim(claim);
         }
         await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -274,7 +276,7 @@ namespace JoinRpg.Web.Controllers
           return await ShowClaim(claim);
         }
         await
-          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
+          _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }

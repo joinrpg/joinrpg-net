@@ -40,7 +40,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -56,6 +56,7 @@
     <Compile Include="CommentDiscussion.cs" />
     <Compile Include="FinanceOperation.cs" />
     <Compile Include="ForumThread.cs" />
+    <Compile Include="ICreatedUpdatedTracked.cs" />
     <Compile Include="Interfaces\IClaimSource.cs" />
     <Compile Include="Interfaces\IDeletableSubEntity.cs" />
     <Compile Include="Interfaces\IFieldContainter.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectField.cs" />
     <Compile Include="ProjectFieldDropdownValue.cs" />
+    <Compile Include="ProjectPlugin.cs" />
     <Compile Include="ReadCommentWatermark.cs" />
     <Compile Include="Security.cs" />
     <Compile Include="User.cs" />

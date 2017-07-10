@@ -4,22 +4,29 @@
     ViewBag.Title = Model.Navigation.Name;
 }
 
-<div>
-    @Html.Partial("CharacterNavigation", Model.Navigation)
-    <dl class="dl-horizontal">
-        <dt>Игрок</dt>
-        <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
-        <dt>@Html.DisplayNameFor(model => model.Description)</dt>
-        <dd>@Model.Description</dd>
-        <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-        <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
-    </dl>
 
-@if (Model.Fields.AnythingAccessible)
-{
+@Html.Partial("CharacterNavigation", Model.Navigation)
+<div>
+  @if (Model.HasMasterAccess)
+  {
+    @Html.Partial("CreateUpdated", Model)
+  }
+</div>
+<div>
+  <dl class="dl-horizontal">
+    <dt>Игрок</dt>
+    <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
+    <dt>@Html.DisplayNameFor(model => model.Description)</dt>
+    <dd>@Model.Description</dd>
+    <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+    <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+  </dl>
+
+  @if (Model.Fields.AnythingAccessible)
+  {
     <div class="form-horizontal">
-        @Html.Partial("_EditFieldsPartial", Model.Fields)
+      @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>
-}
-    @Html.Partial("_PlotForCharacterPartial", Model.Plot)
+  }
+  @Html.Partial("_PlotForCharacterPartial", Model.Plot)
 </div>

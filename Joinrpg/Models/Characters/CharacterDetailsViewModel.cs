@@ -17,17 +17,16 @@ namespace JoinRpg.Web.Models.Characters
   {
     public bool HasMasterAccess { get; }
     [ReadOnly(true), DisplayName("Входит в группы")]
-    public IEnumerable<CharacterGroupLinkViewModel> ParentGroups { get; }
+    public IReadOnlyCollection<CharacterGroupLinkViewModel> ParentGroups { get; }
 
     public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
       HasMasterAccess = hasMasterAccess;
-      //TODO: Remove special groups from here
       ParentGroups = character
         .GetParentGroupsToTop()
-        .Where(group => !group.IsRoot && (!group.IsSpecial || group.GetBoundFieldDropdownValueOrDefault() != null))
-        .Select(g => new CharacterGroupLinkViewModel(g)).ToArray();
+        .Where(group => !group.IsRoot && !group.IsSpecial)
+        .Select(g => new CharacterGroupLinkViewModel(g)).ToList();
     }
   }
 
@@ -38,7 +37,7 @@ namespace JoinRpg.Web.Models.Characters
     bool HasAccess { get; }
   }
 
-  public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel
+  public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreatedUpdatedTracked
   {
     [Display(Name = "Описание персонажа")]
     public IHtmlString Description { get; }
@@ -56,6 +55,7 @@ namespace JoinRpg.Web.Models.Characters
     public CustomFieldsViewModel Fields { get; }
 
     public CharacterNavigationViewModel Navigation { get; }
+    public bool HasMasterAccess { get; }
 
     public CharacterDetailsViewModel (int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots)
     {
@@ -69,6 +69,17 @@ namespace JoinRpg.Web.Models.Characters
           currentUserIdOrDefault);
       Fields = new CustomFieldsViewModel(currentUserIdOrDefault, character, disableEdit: true);
       Plot = PlotDisplayViewModel.Published(plots, currentUserIdOrDefault, character);
+
+      HasMasterAccess = character.HasMasterAccess(currentUserIdOrDefault);
+      CreatedAt = character.CreatedAt;
+      UpdatedAt = character.UpdatedAt;
+      CreatedBy = character.CreatedBy;
+      UpdatedBy = character.UpdatedBy;
     }
+
+    public DateTime CreatedAt { get; }
+    public User CreatedBy { get; }
+    public DateTime UpdatedAt { get; }
+    public User UpdatedBy { get; }
   }
 }

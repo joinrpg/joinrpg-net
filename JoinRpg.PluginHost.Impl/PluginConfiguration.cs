@@ -1,10 +1,11 @@
 ﻿using System;
 using JetBrains.Annotations;
+using JoinRpg.Experimental.Plugin.Interfaces;
+using Newtonsoft.Json;
 
-namespace JoinRpg.Experimental.Plugin.Interfaces
+namespace JoinRpg.PluginHost.Impl
 {
-  [PublicAPI]
-  public class PluginConfiguration
+  public class PluginConfiguration : IPluginConfiguration
   {
     public PluginConfiguration([NotNull] string projectName, [NotNull] string configurationString)
     {
@@ -14,8 +15,10 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
       ConfigurationString = configurationString;
     }
 
+    private string ConfigurationString { get; }
+
     [NotNull]
-    public string ConfigurationString { get; }
+    public T GetConfiguration<T>() => JsonConvert.DeserializeObject<T>(ConfigurationString);
 
     [NotNull]
     public string ProjectName { get; }

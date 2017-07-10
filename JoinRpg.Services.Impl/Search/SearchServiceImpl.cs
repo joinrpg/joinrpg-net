@@ -26,7 +26,12 @@ namespace JoinRpg.Services.Impl.Search
         //TODO: We can stop here when we have X results.
         results.AddRange(rGroup);
       }
-      return results.AsReadOnly(); 
+
+      // If there're results that perfectly match the search string - return them only. 
+      // e.g. контакты123 should return only useer with ID=123
+      return results.Any(r => r.IsPerfectMatch) 
+        ? results.Where(r => r.IsPerfectMatch).ToList().AsReadOnly() 
+        : results.AsReadOnly();
     }
 
     private IEnumerable<ISearchProvider> GetProviders()
@@ -36,6 +41,7 @@ namespace JoinRpg.Services.Impl.Search
       yield return new CharacterProvider { UnitOfWork = UnitOfWork };
       yield return new PlotSearchProvider {UnitOfWork = UnitOfWork};
       yield return new ProjectSearchProvider{ UnitOfWork = UnitOfWork };
+      yield return new ClaimsByIdProvider { UnitOfWork = UnitOfWork };
     }
   }
 
@@ -48,23 +54,10 @@ namespace JoinRpg.Services.Impl.Search
     public bool IsPublic { get; set; }
 
     public bool IsActive { get; set; }
+    public bool IsPerfectMatch { get; set; } = false;
 
     public string Identification { get; set; }
     public int? ProjectId {get;set;}
-
-    public static SearchResultImpl FromWorldObject(IWorldObject @group, LinkType type)
-    {
-      return new SearchResultImpl
-      {
-        LinkType = type,
-        Name = @group.Name,
-        Description = @group.Description,
-        Identification = @group.Id.ToString(),
-        ProjectId = @group.ProjectId,
-        IsPublic = group.IsPublic,
-        IsActive = group.IsActive
-      };
-    }
   }
 
   internal interface ISearchProvider

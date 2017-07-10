@@ -60,7 +60,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -80,6 +80,7 @@
     <Compile Include="ClaimServiceImpl.cs" />
     <Compile Include="DbServiceImplBase.cs" />
     <Compile Include="EmailHelpers.cs" />
+    <Compile Include="FieldDefaultValueGenerator.cs" />
     <Compile Include="FieldSetupServiceImpl.cs" />
     <Compile Include="FinanceOperationsImpl.cs" />
     <Compile Include="ForumServiceImpl.cs" />
@@ -87,8 +88,10 @@
     <Compile Include="ProjectService.cs" />
     <Compile Include="Search\CharacterGroupsProvider.cs" />
     <Compile Include="Search\CharacterProvider.cs" />
+    <Compile Include="Search\ClaimsByIdProvider.cs" />
     <Compile Include="Search\PlotSearchProvider.cs" />
     <Compile Include="Search\ProjectSearchProvider.cs" />
+    <Compile Include="Search\SearchKeywordsResolver.cs" />
     <Compile Include="Search\SearchServiceImpl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\UserSearchProvider.cs" />
@@ -113,9 +116,17 @@
       <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
+      <Project>{6c11ae85-e1f7-47b8-8b1a-a9b4d8edf8f4}</Project>
+      <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
       <Name>JoinRpg.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj">
+      <Project>{916C67F2-50B1-45DA-B970-222CEE4FC8D8}</Project>
+      <Name>JoinRpg.PluginHost.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>

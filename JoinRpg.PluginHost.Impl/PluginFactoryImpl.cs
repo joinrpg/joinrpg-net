@@ -6,7 +6,6 @@ using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 
 namespace JoinRpg.PluginHost.Impl
 {
@@ -14,87 +13,116 @@ namespace JoinRpg.PluginHost.Impl
   public class PluginFactoryImpl : IPluginFactory
   {
     private IProjectRepository ProjectRepository { get; }
-    private IPluginResolver PluginResolver { get; }
-    public PluginFactoryImpl(IProjectRepository projectRepository, IPluginResolver pluginResolver)
+    private IReadOnlyCollection<IPlugin> Plugins { get; }
+    
+    public PluginFactoryImpl(IProjectRepository projectRepository, IPlugin[] plugins)
     {
       ProjectRepository = projectRepository;
-      PluginResolver = pluginResolver;
+      Plugins = plugins;
     }
 
-
-    public async Task<IEnumerable<PluginOperationData<T>>> GetPossibleOperations<T>(int projectId)
-      where T : IPluginOperation
+    public IEnumerable<PluginOperationData<T>> GetProjectOperations<T>(Project project) where T : IPluginOperation
     {
-      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      return ReturnPlugins<T>(project);
+      return from projectPlugin in GetProjectInstalledPlugins(project)
+        from pluginOperationMetadata in projectPlugin.Plugin.GetOperations().GetOperationsOfType<T>()
+        select CreatePluginOperationData<T>(project, projectPlugin, pluginOperationMetadata);
     }
 
-    private IEnumerable<PluginOperationData<T>> ReturnPlugins<T>(Project project) where T : IPluginOperation
+    private static PluginOperationData<T> CreatePluginOperationData<T>(Project project, PluginWithConfig projectPlugin,
+      PluginOperationMetadata pluginOperationMetadata) where T : IPluginOperation
     {
-      if (!project.ProjectPlugins.Any())
-      {
-        yield break;
-      }
-      foreach (
-        var projectPlugin in
-          project.ProjectPlugins.Join(PluginResolver.Resolve(), pp => pp.Name, p => p.GetName(),
-            (pp, p) => new
-            {
-              Plugin = p,
-              pp.Configuration
-            }))
-      {
-        foreach (
-          var pluginOperationMetadata in
-            projectPlugin.Plugin.GetOperations().Where(o => typeof(T).IsAssignableFrom(o.Operation)))
-        {
-          yield return
-            new PluginOperationData<T>(
-              $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
-              () =>
-                projectPlugin.Plugin.GetOperationInstance<T>(pluginOperationMetadata.Name,
-                  new PluginConfiguration(project.ProjectName, projectPlugin.Configuration)),
-              pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess);
-        }
-
-      }
+      return new PluginOperationData<T>(
+        $"{projectPlugin.Plugin.GetName()}.{pluginOperationMetadata.Name}",
+        () =>
+          (T) pluginOperationMetadata.CreateInstance(
+            new PluginConfiguration(project.ProjectName,
+            projectPlugin.Configuration)),
+        pluginOperationMetadata.Description, pluginOperationMetadata.AllowPlayerAccess,
+        pluginOperationMetadata.FieldMapping);
     }
 
-    public async Task<PluginOperationData<T>> GetOperationInstance<T>(int projectid, string plugin)
-      where T:IPluginOperation
+    private class PluginWithConfig
     {
-      return (await GetPossibleOperations<T>(projectid)).SingleOrDefault(
-        p => p.OperationName == plugin);
+      public IPlugin Plugin { get; set; }
+      public string Configuration { get; set; }
+    }
+
+    private IEnumerable<PluginWithConfig> GetProjectInstalledPlugins(Project project)
+    {
+      return project.ProjectPlugins.Join(Plugins, pp => pp.Name, p => p.GetName(),
+        (pp, p) => new PluginWithConfig {Plugin = p, Configuration = pp.Configuration});
     }
 
     public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c)
     {
-      return pluginInstance.CreatePluginInstance().PrintForCharacter(PrepareCharacterForPlugin(c));
+      return pluginInstance.CreatePluginInstance().PrintForCharacter(c.ToPluginModel());
     }
 
-    public MarkdownString ShowPluginConfiguration(PluginOperationData<IShowConfigurationPluginOperation> pluginInstance, Project project)
+    public MarkdownString ShowStaticPage(PluginOperationData<IStaticPagePluginOperation> pluginInstance, Project project)
     {
       return
         pluginInstance.CreatePluginInstance()
-          .ShowPluginConfiguration(
-            project.CharacterGroups.Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
+          .ShowStaticPage(project.CharacterGroups.Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
             project.ProjectFields.Select(
               f =>
                 new ProjectFieldInfo(f.ProjectFieldId, f.FieldName,
                   f.DropdownValues.ToDictionary(fv => fv.ProjectFieldDropdownValueId, fv => fv.Label))));
     }
 
-    private static CharacterInfo PrepareCharacterForPlugin(Character character)
+    public async Task<IReadOnlyCollection<ProjectPluginInfo>> GetPluginsForProject(int projectId)
     {
-      var player = character.ApprovedClaim?.Player;
-      return new CharacterInfo(character.CharacterName,
-        character.GetFields()
-          .Select(f => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString)),
-        character.CharacterId,
-        character.GetParentGroupsToTop().Distinct()
-          .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
-          .Select(g => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName)),
-        player?.DisplayName, player?.FullName, player?.Id);
+      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+      return Plugins
+        .Select(plugin =>
+          {
+            var pluginName = plugin.GetName();
+            var projectPlugin = project.ProjectPlugins.SingleOrDefault(pp => pp.Name == pluginName);
+            return new ProjectPluginInfo(
+                pluginName, 
+                plugin.GetOperations().GetOperationsOfType<IStaticPagePluginOperation>().Select(o => pluginName + "." + o.Name).ToList(),
+                plugin.GetDescripton(),
+                plugin.GetOperations().Select(o => o.FieldMapping).ToList(),
+                projectPlugin?.PluginFieldMappings.ToList(),
+                projectPlugin?.ProjectPluginId
+                );
+          }
+        )
+        .ToList();
     }
+
+    public async Task<ProjectPluginConfiguraton> GetConfiguration(int projectid, string plugin)
+    {
+      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectid);
+      var pluginInstance = GetProjectInstalledPlugins(project).SingleOrDefault(p => p.Plugin.GetName() == plugin);
+      if (pluginInstance == null) return null;
+      return new ProjectPluginConfiguraton(pluginInstance.Plugin.GetName(),
+        new MarkdownString($"```\n{pluginInstance.Configuration}\n```"));
+    }
+
+    public string GenerateDefaultCharacterFieldValue(Character character, ProjectField field)
+    {
+      var operations = GetProjectOperations<IGenerateFieldOperation>(field.Project).HasMapping(field);
+      return operations.Select(o => o.CreatePluginInstance()
+          .GenerateFieldValue(character.ToPluginModel(), new CharacterFieldInfo(field.ProjectFieldId, null, field.FieldName, null)))
+        .FirstOrDefault(newValue => newValue != null);
+    }
+  }
+
+  public static class OperationsFilters
+  {
+    public static IEnumerable<PluginOperationData<T>> HasMapping<T>(
+      this IEnumerable<PluginOperationData<T>> operations, ProjectField field)
+    where T : IPluginOperation, IFieldOperation
+    {
+      return operations
+        .Where(o => field.Mappings.Any(m => m.MappingName == o.FieldMapping &&
+                                            m.PluginFieldMappingType ==
+                                            PluginFieldMappingType.GenerateDefault));
+    }
+
+    public static IEnumerable<PluginOperationMetadata> GetOperationsOfType<T>(
+      this IEnumerable<PluginOperationMetadata> operations)
+      where T : IPluginOperation 
+      => operations.Where(o => typeof(T).IsAssignableFrom(o.Operation));
   }
 }

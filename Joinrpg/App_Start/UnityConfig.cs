@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -57,11 +56,7 @@ namespace JoinRpg.Web
       container.RegisterType<IUnitOfWork, MyDbContext>();
       container.RegisterType<DbContext, MyDbContext>();
 
-      container.RegisterType<IProjectRepository, ProjectRepository>();
-      container.RegisterType<IUserRepository, UserInfoRepository>();
-      container.RegisterType<IClaimsRepository, ClaimsRepositoryImpl>();
-      container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
-      container.RegisterType<IForumRepository, ForumRepositoryImpl>();
+      RepositoriesRegistraton.Register(container);
 
       Services.Impl.Services.Register(container);
 
@@ -82,30 +77,11 @@ namespace JoinRpg.Web
       container.RegisterType<ApplicationUserManager>(
         new InjectionFactory(o => HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>()));
 
-      container.RegisterType<IPluginResolver>(new InjectionFactory(c => new UnityPluginResolver(c)));
       container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 
       //TODO Automatically load all assemblies that start with JoinRpg.Experimental.Plugin.*
       container.RegisterTypes(AllClasses.FromLoadedAssemblies().Where(type => typeof(IPlugin).IsAssignableFrom(type)),
         WithMappings.FromAllInterfaces, WithName.TypeName);
-    }
-
-    private class UnityPluginResolver : IPluginResolver
-    {
-      public UnityPluginResolver(IUnityContainer container)
-      {
-        this.Container = container;
-      }
-
-      private IUnityContainer Container { get; }
-      #region Implementation of IPluginResolver
-
-      public IEnumerable<IPlugin> Resolve()
-      {
-        return Container.ResolveAll<IPlugin>();
-      }
-
-      #endregion
     }
   }
 }

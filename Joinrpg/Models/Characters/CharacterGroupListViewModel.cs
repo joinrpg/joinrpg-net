@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -150,7 +150,7 @@ namespace JoinRpg.Web.Models.Characters
           Description =  arg.Description.ToHtmlString(),
           IsPublic =  arg.IsPublic,
           IsActive = arg.IsActive,
-          HidePlayer = arg.HidePlayerForCharacter && !arg.Project.IsPlotPublished(),
+          HidePlayer = arg.HidePlayerForCharacter && !arg.Project.Details.PublishPlot,
           ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
           Player = arg.ApprovedClaim?.Player,
           HasMasterAccess = HasMasterAccess,

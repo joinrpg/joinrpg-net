@@ -38,16 +38,11 @@
       <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="QRCoder, Version=1.2.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.2.8\lib\net40\QRCoder.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -66,10 +61,6 @@
     <Compile Include="SignType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
-      <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
-      <Name>JoinRpg.DataModel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
       <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>
       <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>

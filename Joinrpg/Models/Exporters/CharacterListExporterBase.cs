@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
@@ -18,9 +18,10 @@ namespace JoinRpg.Web.Models.Exporters
     protected IEnumerable<ITableColumn> BasicColumns()
     {
       yield return StringColumn(x => x.Name);
-      yield return UriColumn(x => x);
+      yield return UriColumn(x => x, "Персонаж");
       yield return EnumColumn(x => x.BusyStatus);
-      yield return StringListColumn(x => x.Groups.ParentGroups.Select(g => g.Name));
+      yield return StringListColumn(x => x.Groups.ParentGroups.Select(g => g.Name), "Группы");
+      yield return UriListColumn(x => x.Groups.ParentGroups);
     }
   }
 }

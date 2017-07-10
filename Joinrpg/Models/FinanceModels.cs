@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {

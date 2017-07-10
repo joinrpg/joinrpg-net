@@ -5,11 +5,39 @@ root = true
 
 # Default settings:
 # A newline ending every file
-# Use 4 spaces as indentation
 [*]
 insert_final_newline = true
 indent_style = space
 indent_size = 2
-
+trim_trailing_whitespace = true
+max_line_length  = 100
 [*.{cs, cshtml, js}]
 charset = utf-8
+
+[*.cs]
+dotnet_style_predefined_type_for_locals_parameters_members = true:warning
+dotnet_style_predefined_type_for_member_access = true:warning
+
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+dotnet_style_explicit_tuple_names = true:warning
+dotnet_style_coalesce_expression = true:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_expression_bodied_methods = true:suggestion
+
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+dotnet_sort_system_directives_first = true
+
+csharp_style_conditional_delegate_call = true:suggestion
+
+#disable C#7 features until "GO" from all contributors
+csharp_style_expression_bodied_constructors = false:error
+csharp_style_expression_bodied_accessors = false:error
+csharp_style_pattern_matching_over_is_with_cast_check = false:error
+csharp_style_inlined_variable_declaration = false:error
+csharp_style_throw_expression = false:error

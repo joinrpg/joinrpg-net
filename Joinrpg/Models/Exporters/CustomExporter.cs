@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -55,9 +55,9 @@ namespace JoinRpg.Web.Models.Exporters
     }
 
     [Pure]
-    protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func)
+    protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string name = null)
     {
-      return new TableColumn<Uri>(func.AsPropertyAccess(), row => UriService.GetUri(func.Compile()(row)));
+      return new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
     }
 
     [Pure]
@@ -69,10 +69,10 @@ namespace JoinRpg.Web.Models.Exporters
     }
 
     [Pure]
-    protected ITableColumn StringListColumn(Expression<Func<TRow, IEnumerable<string>>> func)
+    protected ITableColumn StringListColumn(Expression<Func<TRow, IEnumerable<string>>> func, string name = null)
     {
       var compiledFunc = func.Compile();
-      return new TableColumn<string>(func.AsPropertyAccess(),
+      return new TableColumn<string>(name ?? func.AsPropertyAccess()?.GetDisplayName(),
         row => compiledFunc(row).JoinStrings(" | "));
     }
 
