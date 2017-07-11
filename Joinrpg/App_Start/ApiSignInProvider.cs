@@ -28,7 +28,7 @@ namespace JoinRpg.Web
 
       var user = await Manager.FindByEmailAsync(context.UserName);
 
-      if (await Manager.CheckPasswordAsync(user, context.Password))
+      if (!await Manager.CheckPasswordAsync(user, context.Password))
       {
         context.SetError("invalid_grant", "The user name or password is incorrect.");
         return;
