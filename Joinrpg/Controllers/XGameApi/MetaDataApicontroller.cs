@@ -14,6 +14,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
     {
     }
 
+    [HttpGet]
     [Route("fields")]
     public async Task<object> GetFieldsList(int projectId)
     {

@@ -19,8 +19,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
       CharacterRepository = characterRepository;
     }
 
-    [Route("get/{modifiedSince?}")]
-    public async Task<IEnumerable<object>> GetList(int projectId, DateTime? modifiedSince = null)
+    [HttpGet]
+    [Route("")]
+    public async Task<IEnumerable<object>> GetList(int projectId, [FromUri] DateTime? modifiedSince = null)
     {
       return (await CharacterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(character =>
         new
@@ -28,11 +29,12 @@ namespace JoinRpg.Web.Controllers.XGameApi
           character.CharacterId,
           character.UpdatedAt,
           character.IsActive,
-          CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/details"
+          CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/"
         });
     }
 
-    [Route("{characterId}/details")]
+    [HttpGet]
+    [Route("{characterId}/")]
     public async Task<object> GetOne(int projectId, int characterId )
     {
       var character = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
