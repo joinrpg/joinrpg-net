@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Models
         [DisplayName("Игрок")]
         public User Player { get; set; }
         [Display(Name="Статус заявки")]
-        public Claim.Status Status { get; set; }
+        public ClaimStatusView Status { get; set; }
         public bool IsMyClaim { get; }
 
         public bool HasMasterAccess { get; }
@@ -102,7 +102,7 @@ namespace JoinRpg.Web.Models
             IsMyClaim = claim.PlayerUserId == currentUser.Id;
             Player = claim.Player;
             ProjectId = claim.ProjectId;
-            Status = claim.ClaimStatus;
+            Status = (ClaimStatusView) claim.ClaimStatus;
             CharacterGroupId = claim.CharacterGroupId;
             GroupName = claim.Group?.CharacterGroupName;
             CharacterId = claim.CharacterId;

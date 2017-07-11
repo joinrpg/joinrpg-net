@@ -234,6 +234,7 @@
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Models\ApisIndexViewModel.cs" />
     <Compile Include="Models\CharacterGroups\CharacterGroupDetailsViewModel.cs" />
+    <Compile Include="Models\ClaimStatusView.cs" />
     <Compile Include="Models\Exporters\CharacterListExporterBase.cs" />
     <Compile Include="Models\Exporters\CharacterListForAutomaticExporter.cs" />
     <Compile Include="Models\ForumModels.cs" />

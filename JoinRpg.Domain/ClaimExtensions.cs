@@ -68,6 +68,7 @@ namespace JoinRpg.Domain
       return claimSource.GetGroupsPartOf().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
+    [Obsolete]
     public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
     {
       if (!possibleStatus.Contains(claim.ClaimStatus))
@@ -76,6 +77,7 @@ namespace JoinRpg.Domain
       }
     }
 
+    [Pure]
     public static bool CanChangeTo(this Claim.Status fromStatus, Claim.Status targetStatus)
     {
       switch (targetStatus)
@@ -84,9 +86,29 @@ namespace JoinRpg.Domain
           return new[] {Claim.Status.AddedByUser, Claim.Status.Discussed}.Contains(fromStatus);
         case Claim.Status.OnHold:
           return
-            new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}.Contains(fromStatus);
+            new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}
+              .Contains(fromStatus);
+        case Claim.Status.AddedByUser:
+          return new[]
+              {Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold}
+            .Contains(fromStatus);
+        case Claim.Status.AddedByMaster:
+          return false;
+        case Claim.Status.DeclinedByUser:
+        case Claim.Status.DeclinedByMaster:
+          return
+            new[]
+            {
+              Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster,
+              Claim.Status.Approved, Claim.Status.OnHold
+            }.Contains(fromStatus);
+        case Claim.Status.Discussed:
+          return
+            new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}
+              .Contains(fromStatus);
+        default:
+          throw new ArgumentOutOfRangeException(nameof(targetStatus), targetStatus, null);
       }
-      throw new ArgumentException("Not implemented for target status", nameof(targetStatus));
     }
 
     public static void EnsureCanChangeStatus(this Claim claim, Claim.Status targetStatus)

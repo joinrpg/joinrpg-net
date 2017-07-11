@@ -105,7 +105,7 @@ namespace JoinRpg.Services.Impl
     {
       var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
 
-      claim.SetDiscussed(CurrentUserId, isVisibleToPlayer);
+      SetDiscussed(claim, isVisibleToPlayer);
 
       var parentComment = claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
@@ -171,8 +171,7 @@ namespace JoinRpg.Services.Impl
       {
         foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
         {
-          otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed,
-            Claim.Status.OnHold);
+          otherClaim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
           otherClaim.MasterDeclinedDate = Now;
           otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
           await
@@ -234,7 +233,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold, Claim.Status.Approved);
+      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
 
       claim.MasterDeclinedDate = Now;
 
@@ -254,8 +253,9 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
 
-      claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold);
+      claim.EnsureCanChangeStatus(Claim.Status.AddedByUser); 
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
+      SetDiscussed(claim, true);
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
 
@@ -364,7 +364,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
       claim.RequestPlayerAccess(CurrentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved, Claim.Status.OnHold, Claim.Status.Discussed);
+      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
       claim.PlayerDeclinedDate = Now;
       MarkCharacterChangedIfApproved(claim);
@@ -489,19 +489,16 @@ namespace JoinRpg.Services.Impl
       fieldDefaultValueGenerator)
     {
     }
-  }
 
-  internal static class ClaimStaticExtensions
-  {
-    public static void SetDiscussed(this Claim claim, int currentUserId, bool isVisibleToPlayer)
+    private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
     {
-      claim.LastUpdateDateTime = DateTime.UtcNow;
-      if (claim.ClaimStatus == Claim.Status.AddedByMaster && currentUserId == claim.PlayerUserId)
+      claim.LastUpdateDateTime = Now;
+      if (claim.ClaimStatus == Claim.Status.AddedByMaster && CurrentUserId == claim.PlayerUserId)
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }
-
-      if (claim.ClaimStatus == Claim.Status.AddedByUser && currentUserId != claim.PlayerUserId && isVisibleToPlayer)
+      
+      if (claim.ClaimStatus == Claim.Status.AddedByUser && CurrentUserId != claim.PlayerUserId && isVisibleToPlayer)
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }

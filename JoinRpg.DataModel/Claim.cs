@@ -70,13 +70,13 @@ namespace JoinRpg.DataModel
     //TODO[Localize]
     public enum Status
     {
-      [Display(Name = "Подана")] AddedByUser,
-      [Display(Name = "Предложена")] AddedByMaster,
-      [Display(Name = "Принята")] Approved,
-      [Display(Name = "Отозвана")] DeclinedByUser,
-      [Display(Name = "Отклонена")] DeclinedByMaster,
-      [Display(Name = "Обсуждается")] Discussed,
-      [Display(Name = "В листе ожидания")] OnHold,
+      AddedByUser,
+      AddedByMaster,
+      Approved,
+      DeclinedByUser,
+      DeclinedByMaster,
+      Discussed,
+      OnHold,
     }
 
     public Status ClaimStatus { get; set; }
