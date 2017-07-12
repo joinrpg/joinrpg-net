@@ -95,5 +95,23 @@ namespace JoinRpg.Web.Controllers
       on = 1,
       off = 0
     }
+
+    [HttpGet]
+    public async Task<ActionResult> SecondRole(int projectId, int claimId)
+    {
+      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+      if (claim.ClaimStatus != Claim.Status.Approved)
+      {
+        RedirectToAction("Edit", "Claim", new {projectId, claimId});
+      }
+
+      var characters = ProjectService.Lo
+
+      return View(new SecondRoleViewModel(claim, characters));
+    }
   }
 }

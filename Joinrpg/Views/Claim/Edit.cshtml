@@ -189,14 +189,22 @@
               }
               if (Model.CheckInStarted)
               {
-                <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+                <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
                   <span class="glyphicon glyphicon-tree-conifer"></span>
                   Зарегистрировать
                 </a>
               }
             }
-          
-            @if (Model.HasMasterAccess)
+            
+          @if (Model.Status == ClaimStatusView.CheckedIn)
+          {
+            <a href="@Url.Action("SecondRole", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+              <span class="glyphicon glyphicon-duplicate"></span>
+              Вторая роль
+            </a>
+          }
+
+          @if (Model.HasMasterAccess)
             {
               <a href="@Url.Action("Subscribe", "Claim", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
                 <span class="glyphicon glyphicon-pushpin"></span>
