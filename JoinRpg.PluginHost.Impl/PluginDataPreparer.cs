@@ -17,7 +17,7 @@ namespace JoinRpg.PluginHost.Impl
         character.GetParentGroupsToTop().Distinct()
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
           .Select(g => g.ToPluginModel()),
-        player?.DisplayName, player?.FullName, player?.Id);
+        player?.DisplayName, player?.FullName, player?.UserId);
     }
 
     private static CharacterGroupInfo ToPluginModel(this CharacterGroup g)

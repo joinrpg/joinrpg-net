@@ -19,9 +19,11 @@ namespace JoinRpg.Web.Controllers.Common
   [JoinRpgExceptionHandler]
   public class ControllerGameBase : ControllerBase
   {
+    [ProvidesContext, NotNull]
     protected IProjectService ProjectService { get; }
+    [ProvidesContext, NotNull]
     private IExportDataService ExportDataService { get; }
-    [NotNull]
+    [ProvidesContext, NotNull]
     public IProjectRepository ProjectRepository { get; }
 
     protected ControllerGameBase(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,

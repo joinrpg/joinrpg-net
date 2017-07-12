@@ -80,13 +80,13 @@ namespace JoinRpg.Web.Models
   public enum AccessReason
   {
     NoAccess,
-    [Display(Name="Это мой профиль")]
+    [Display(Name="Это мой профиль"),UsedImplicitly]
     ItsMe,
-    [Display(Name = "Есть заявка на мою игру")]
+    [Display(Name = "Есть заявка на мою игру"),UsedImplicitly]
     Master,
-    [Display(Name = "Со-мастер")]
+    [Display(Name = "Со-мастер"),UsedImplicitly]
     CoMaster,
-    [Display(Name = "Я вижу все, т.к. администратор сайта")]
+    [Display(Name = "Я вижу все, т.к. администратор сайта"),UsedImplicitly]
     Administrator
   }
 }

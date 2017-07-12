@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Models.Print
   {
     public IHtmlString CharacterDescription{ get; }
     public PlotDisplayViewModel Plots { get; }
-    public IReadOnlyCollection<IHtmlString> Handouts { get; }
+    public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
     public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
@@ -63,12 +63,18 @@ namespace JoinRpg.Web.Models.Print
         plotElements.Where(e => e.ElementType == PlotElementType.Handout)
           .Select(e => e.PublishedVersion())
           .Where(e => e != null)
-          .Select(e => e.Content.ToPlainText())
+          .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
           .ToArray();
-      
       
       PlayerPhoneNumber = character.ApprovedClaim?.Player.Extra?.PhoneNumber;
       Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true, onlyPlayerVisible: true, wherePrintEnabled: true);
+    }
+  }
+
+  public class HandoutListItemViewModel : HandoutViewModelBase
+  {
+    public HandoutListItemViewModel(IHtmlString text, User master) : base(text, master)
+    {
     }
   }
 }

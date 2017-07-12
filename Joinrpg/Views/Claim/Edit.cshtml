@@ -186,7 +186,14 @@
                     <span class="glyphicon glyphicon-print"></span>
                     @plugin.Name
                 </a>
-                }
+              }
+              if (Model.CheckInStarted)
+              {
+                <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+                  <span class="glyphicon glyphicon-tree-conifer"></span>
+                  Зарегистрировать
+                </a>
+              }
             }
           
             @if (Model.HasMasterAccess)

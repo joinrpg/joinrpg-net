@@ -38,6 +38,54 @@ namespace JoinRpg.Services.Impl
         }
     }
 
+    public async Task CheckInClaim(int projectId, int claimId, int money)
+    {
+      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);
+
+      var validator = new ClaimCheckInValidator(claim);
+      if (!validator.CanCheckInInPrinciple)
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
+
+      FinanceOperationEmail financeEmail = null;
+      if (money > 0)
+      {
+        var paymentType = claim.Project.ProjectAcls.Single(acl => acl.UserId == CurrentUserId)
+          .GetCashPaymentType();
+        financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
+      } else if (money < 0)
+      {
+        throw new InvalidOperationException();
+      }
+  
+      if (!validator.CanCheckInNow)
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
+
+      claim.ClaimStatus = Claim.Status.CheckedIn;
+      claim.CheckInDate = Now;
+      Debug.Assert(claim.Character != null, "claim.Character != null");
+      MarkChanged(claim.Character);
+      claim.Character.InGame = true;
+      
+      AddCommentImpl(claim, null, ".", true, CommentExtraAction.CheckedIn);
+
+      await UnitOfWork.SaveChangesAsync();
+
+      await
+        EmailService.Email(
+          EmailHelpers.CreateClaimEmail<CheckedInEmal>(claim, ".", s => s.ClaimStatusChange, true,
+            CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
+
+      if (financeEmail != null)
+      {
+        await EmailService.Email(financeEmail);
+      }
+    }
+
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);

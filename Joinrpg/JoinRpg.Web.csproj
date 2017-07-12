@@ -220,6 +220,7 @@
     <Compile Include="Areas\Admin\Models\ChangeEmailModel.cs" />
     <Compile Include="Controllers\XGameApi\CharacterApiController.cs" />
     <Compile Include="Controllers\ForumController.cs" />
+    <Compile Include="Controllers\CheckInController.cs" />
     <Compile Include="Filter\JoinRpgExceptionHandler.cs" />
     <Compile Include="Filter\MasterAuthorize.cs" />
     <Compile Include="Helpers\AdminAuthorizeAttribute.cs" />
@@ -234,6 +235,8 @@
     <Compile Include="Helpers\CharacterAndGroupPrefixer.cs" />
     <Compile Include="Models\ApisIndexViewModel.cs" />
     <Compile Include="Models\CharacterGroups\CharacterGroupDetailsViewModel.cs" />
+    <Compile Include="Models\CheckIn\CheckInClaimModel.cs" />
+    <Compile Include="Models\CheckIn\CheckInVewModel.cs" />
     <Compile Include="Models\ClaimStatusView.cs" />
     <Compile Include="Models\Exporters\CharacterListExporterBase.cs" />
     <Compile Include="Models\Exporters\CharacterListForAutomaticExporter.cs" />
@@ -635,6 +638,9 @@
     <Content Include="Views\GameField\FieldList.cshtml" />
     <Content Include="Views\GameField\DeletedList.cshtml" />
     <Content Include="Views\Shared\CreateUpdated.cshtml" />
+    <Content Include="Views\CheckIn\CheckInNotStarted.cshtml" />
+    <Content Include="Views\CheckIn\Index.cshtml" />
+    <Content Include="Views\CheckIn\CheckIn.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -22,6 +22,7 @@ namespace JoinRpg.Services.Interfaces
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
     Task Email(FieldsChangedEmail createClaimEmail);
+    Task Email(CheckedInEmal createClaimEmail);
   }
 
   public static class EmailTokens
@@ -53,6 +54,11 @@ namespace JoinRpg.Services.Interfaces
 
   public class ApproveByMasterEmail : ClaimEmailModel
   {
+  }
+
+  public class CheckedInEmal : ClaimEmailModel
+  {
+    
   }
 
   public class DeclineByMasterEmail : ClaimEmailModel

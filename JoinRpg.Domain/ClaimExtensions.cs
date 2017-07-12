@@ -83,7 +83,7 @@ namespace JoinRpg.Domain
       switch (targetStatus)
       {
         case Claim.Status.Approved:
-          return new[] {Claim.Status.AddedByUser, Claim.Status.Discussed}.Contains(fromStatus);
+          return new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.CheckedIn}.Contains(fromStatus);
         case Claim.Status.OnHold:
           return
             new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}
@@ -106,6 +106,8 @@ namespace JoinRpg.Domain
           return
             new[] {Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster}
               .Contains(fromStatus);
+        case Claim.Status.CheckedIn:
+          return fromStatus == Claim.Status.Approved;
         default:
           throw new ArgumentOutOfRangeException(nameof(targetStatus), targetStatus, null);
       }

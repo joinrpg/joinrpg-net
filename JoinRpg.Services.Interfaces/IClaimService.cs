@@ -27,7 +27,8 @@ namespace JoinRpg.Services.Interfaces
 
     Task SubscribeClaimToUser(int projectId, int claimId);
     Task UnsubscribeClaimToUser(int projectId, int claimId);
-    }
+    Task CheckInClaim(int projectId, int claimId, int money);
+  }
 
   //TODO[Localize]
   public enum FinanceOperationAction

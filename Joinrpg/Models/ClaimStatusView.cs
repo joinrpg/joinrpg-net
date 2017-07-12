@@ -21,6 +21,8 @@ namespace JoinRpg.Web.Models
     Discussed,
     [Display(Name = "В листе ожидания"), UsedImplicitly]
     OnHold,
+    [Display(Name = "Игрок заехал"), UsedImplicitly]
+    CheckedIn,
   }
 
   public static class ClaimStatusViewExtensions

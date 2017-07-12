@@ -97,6 +97,7 @@ namespace JoinRpg.DataModel
     ChangeResponsible,
     NewClaim,
     OnHoldByMaster,
-    FeeChanged
+    FeeChanged,
+    CheckedIn
   }
 }

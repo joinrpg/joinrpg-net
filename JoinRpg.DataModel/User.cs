@@ -16,7 +16,7 @@ namespace JoinRpg.DataModel
     public override string ToString()
     {
       return
-        $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {Id}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, DisplayName: {DisplayName}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
+        $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, DisplayName: {DisplayName}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
     }
 
     public string BornName { get; set; }
@@ -25,7 +25,7 @@ namespace JoinRpg.DataModel
 
     public string SurName { get; set; }
 
-    public int Id => UserId;
+    int IUser<int>.Id => UserId;
     public string UserName { get; set; }
     public string Email { get; set; }
 
