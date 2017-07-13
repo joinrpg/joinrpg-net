@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
     [Route("fields")]
     public async Task<object> GetFieldsList(int projectId)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
       return
         new
         {
@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
              FieldType = field.FieldType.ToString(),
              ValueList = field.GetOrderedValues().Select(variant =>
              new {
-               variant.ProjectId,
+               ProjectFieldVariantId =  variant.ProjectFieldDropdownValueId,
                variant.Label,
                variant.IsActive
              })
