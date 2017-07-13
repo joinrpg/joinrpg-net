@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Models
         [DisplayName("Игрок")]
         public User Player { get; set; }
         [Display(Name="Статус заявки")]
-        public Claim.Status Status { get; set; }
+        public ClaimStatusView Status { get; set; }
         public bool IsMyClaim { get; }
 
         public bool HasMasterAccess { get; }
@@ -96,20 +96,20 @@ namespace JoinRpg.Web.Models
         {
           ClaimId = claim.ClaimId;
             CommentDiscussionId = claim.CommentDiscussionId;
-            RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.Id);
-            HasMasterAccess = claim.HasMasterAccess(currentUser.Id);
-            CanManageThisClaim = claim.CanManageClaim(currentUser.Id);
-            IsMyClaim = claim.PlayerUserId == currentUser.Id;
+            RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
+            HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
+            CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+            IsMyClaim = claim.PlayerUserId == currentUser.UserId;
             Player = claim.Player;
             ProjectId = claim.ProjectId;
-            Status = claim.ClaimStatus;
+            Status = (ClaimStatusView) claim.ClaimStatus;
             CharacterGroupId = claim.CharacterGroupId;
             GroupName = claim.Group?.CharacterGroupName;
             CharacterId = claim.CharacterId;
             CharacterActive = claim.Character?.IsActive;
             OtherClaimsForThisCharacterCount = claim.IsApproved ? 0 : claim.OtherClaimsForThisCharacter().Count();
             HasOtherApprovedClaim = !claim.IsApproved && claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-            Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.Id).Generate();
+            Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
             OtherClaimsFromThisPlayerCount =
               OtherClaimsFromThisPlayerCount = claim.IsApproved || claim.Project.Details.EnableManyCharacters
                 ? 0
@@ -120,15 +120,16 @@ namespace JoinRpg.Web.Models
                 .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
             ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
             ResponsibleMaster = claim.ResponsibleMasterUser;
-            Fields = new CustomFieldsViewModel(currentUser.Id, claim);
-            Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.Id, CharacterNavigationPage.Claim);
-            ClaimFee = new ClaimFeeViewModel(claim, currentUser.Id);
+            Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
+            Navigation = CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId, CharacterNavigationPage.Claim);
+            ClaimFee = new ClaimFeeViewModel(claim, currentUser.UserId);
             Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
             PlayerDetails = new UserProfileDetailsViewModel(claim.Player, (AccessReason) claim.Player.GetProfileAccess(currentUser));
             PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
             ProjectActive = claim.Project.Active;
+          CheckInStarted = claim.Project.Details.CheckInProgress;
 
-            if (claim.PlayerUserId == currentUser.Id || claim.HasMasterAccess(currentUser.Id, acl => acl.CanManageMoney))
+            if (claim.PlayerUserId == currentUser.UserId || claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
             {
                 //Finance admins can create any payment. User also can create any payment, but it will be moderated
                 PaymentTypes = claim.Project.ActivePaymentTypes;
@@ -136,20 +137,20 @@ namespace JoinRpg.Web.Models
             else
             {
                 //All other master can create only payment from user to himself.
-                PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.Id);
+                PaymentTypes = claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
             }
 
 
             if (claim.Character != null)
             {
                 ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-                  claim.HasMasterAccess(currentUser.Id));
+                  claim.HasMasterAccess(currentUser.UserId));
             }
 
           if (claim.IsApproved && claim.Character != null)
           {
             var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-            Plot = PlotDisplayViewModel.Published(readOnlyList, currentUser.Id, claim.Character);
+            Plot = PlotDisplayViewModel.Published(readOnlyList, currentUser.UserId, claim.Character);
           }
           else
           {
@@ -253,11 +254,9 @@ namespace JoinRpg.Web.Models
             }
                 return res;
         }
-        #region Implementation of IEntityWithCommentsViewModel
 
-        public int CommentDiscussionId { get; }
-
-        #endregion
+      public int CommentDiscussionId { get; }
+      public bool CheckInStarted { get; }
     }
   
 

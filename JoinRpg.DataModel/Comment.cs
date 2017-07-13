@@ -1,4 +1,4 @@
-﻿using System;
+﻿  using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -97,6 +97,9 @@ namespace JoinRpg.DataModel
     ChangeResponsible,
     NewClaim,
     OnHoldByMaster,
-    FeeChanged
+    FeeChanged,
+    CheckedIn,
+    SecondRole,
+    OutOfGame
   }
 }

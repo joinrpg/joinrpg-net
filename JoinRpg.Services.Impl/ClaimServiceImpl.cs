@@ -38,6 +38,122 @@ namespace JoinRpg.Services.Impl
         }
     }
 
+    public async Task CheckInClaim(int projectId, int claimId, int money)
+    {
+      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);
+
+      var validator = new ClaimCheckInValidator(claim);
+      if (!validator.CanCheckInInPrinciple)
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
+
+      FinanceOperationEmail financeEmail = null;
+      if (money > 0)
+      {
+        var paymentType = claim.Project.ProjectAcls.Single(acl => acl.UserId == CurrentUserId)
+          .GetCashPaymentType();
+        financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
+      } else if (money < 0)
+      {
+        throw new InvalidOperationException();
+      }
+  
+      if (!validator.CanCheckInNow)
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
+
+      claim.ClaimStatus = Claim.Status.CheckedIn;
+      claim.CheckInDate = Now;
+      Debug.Assert(claim.Character != null, "claim.Character != null");
+      MarkChanged(claim.Character);
+      claim.Character.InGame = true;
+      
+      AddCommentImpl(claim, null, ".", true, CommentExtraAction.CheckedIn);
+
+      await UnitOfWork.SaveChangesAsync();
+
+      await
+        EmailService.Email(
+          EmailHelpers.CreateClaimEmail<CheckedInEmal>(claim, ".", s => s.ClaimStatusChange, true,
+            CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
+
+      if (financeEmail != null)
+      {
+        await EmailService.Email(financeEmail);
+      }
+    }
+
+    public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
+    {
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      oldClaim.EnsureStatus(Claim.Status.CheckedIn);
+
+      Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
+      oldClaim.Character.InGame = false;
+      MarkChanged(oldClaim.Character);
+
+      var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+
+      MarkChanged(source);
+
+      EnsureCanAddClaim(oldClaim.PlayerUserId, source);
+
+      var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+      var claim = new Claim()
+      {
+        CharacterGroupId = null,
+        CharacterId = characterId,
+        ProjectId = projectId,
+        PlayerUserId = oldClaim.PlayerUserId,
+        PlayerAcceptedDate = Now,
+        CreateDate = Now,
+        ClaimStatus = Claim.Status.Approved,
+        CurrentFee = 0,
+        ResponsibleMasterUserId = responsibleMaster?.UserId,
+        ResponsibleMasterUser = responsibleMaster,
+        LastUpdateDateTime = Now,
+        MasterAcceptedDate = Now,
+        CommentDiscussion =
+          new CommentDiscussion() {CommentDiscussionId = -1, ProjectId = projectId},
+      };
+
+      claim.CommentDiscussion.Comments.Add(new Comment
+      {
+        CommentDiscussionId = -1,
+        AuthorUserId = CurrentUserId,
+        CommentText = new CommentText {Text = new MarkdownString(".")},
+        CreatedAt = Now,
+        IsCommentByPlayer = false,
+        IsVisibleToPlayer = true,
+        ProjectId = projectId,
+        LastEditTime = Now,
+        ExtraAction = CommentExtraAction.SecondRole
+      });
+
+      oldClaim.ClaimStatus = Claim.Status.Approved;
+      AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
+
+      
+      UnitOfWork.GetDbSet<Claim>().Add(claim);
+
+      var updatedFields =
+        FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(), 
+          FieldDefaultValueGenerator);
+
+      var claimEmail = EmailHelpers.CreateClaimEmail<SecondRoleEmail>(claim, "",
+        s => s.ClaimStatusChange, true,
+        CommentExtraAction.NewClaim, await UserRepository.GetById(CurrentUserId));
+
+      await UnitOfWork.SaveChangesAsync();
+
+      await EmailService.Email(claimEmail);
+
+      return claim.ClaimId;
+    }
+
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
@@ -105,7 +221,7 @@ namespace JoinRpg.Services.Impl
     {
       var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
 
-      claim.SetDiscussed(CurrentUserId, isVisibleToPlayer);
+      SetDiscussed(claim, isVisibleToPlayer);
 
       var parentComment = claim.CommentDiscussion.Comments.SingleOrDefault(c => c.CommentId == parentCommentId);
 
@@ -171,8 +287,7 @@ namespace JoinRpg.Services.Impl
       {
         foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
         {
-          otherClaim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed,
-            Claim.Status.OnHold);
+          otherClaim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
           otherClaim.MasterDeclinedDate = Now;
           otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
           await
@@ -234,7 +349,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Discussed, Claim.Status.OnHold, Claim.Status.Approved);
+      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
 
       claim.MasterDeclinedDate = Now;
 
@@ -254,8 +369,9 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
 
-      claim.EnsureStatus(Claim.Status.DeclinedByUser, Claim.Status.DeclinedByMaster, Claim.Status.OnHold);
+      claim.EnsureCanChangeStatus(Claim.Status.AddedByUser); 
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
+      SetDiscussed(claim, true);
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
 
@@ -364,7 +480,7 @@ namespace JoinRpg.Services.Impl
         throw new DbEntityValidationException();
       }
       claim.RequestPlayerAccess(CurrentUserId);
-      claim.EnsureStatus(Claim.Status.AddedByUser, Claim.Status.AddedByMaster, Claim.Status.Approved, Claim.Status.OnHold, Claim.Status.Discussed);
+      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
       claim.PlayerDeclinedDate = Now;
       MarkCharacterChangedIfApproved(claim);
@@ -489,19 +605,16 @@ namespace JoinRpg.Services.Impl
       fieldDefaultValueGenerator)
     {
     }
-  }
 
-  internal static class ClaimStaticExtensions
-  {
-    public static void SetDiscussed(this Claim claim, int currentUserId, bool isVisibleToPlayer)
+    private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
     {
-      claim.LastUpdateDateTime = DateTime.UtcNow;
-      if (claim.ClaimStatus == Claim.Status.AddedByMaster && currentUserId == claim.PlayerUserId)
+      claim.LastUpdateDateTime = Now;
+      if (claim.ClaimStatus == Claim.Status.AddedByMaster && CurrentUserId == claim.PlayerUserId)
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }
-
-      if (claim.ClaimStatus == Claim.Status.AddedByUser && currentUserId != claim.PlayerUserId && isVisibleToPlayer)
+      
+      if (claim.ClaimStatus == Claim.Status.AddedByUser && CurrentUserId != claim.PlayerUserId && isVisibleToPlayer)
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }

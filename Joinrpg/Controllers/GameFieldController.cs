@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Index(int projectId)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
       return project == null ? (ActionResult) HttpNotFound() : View(new GameFieldListViewModel(project, CurrentUserId));
     }
 

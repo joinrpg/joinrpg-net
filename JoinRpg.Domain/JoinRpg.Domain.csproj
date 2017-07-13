@@ -54,6 +54,7 @@
     <Compile Include="CharacterFields\IFieldDefaultValueGenerator.cs" />
     <Compile Include="CharacterProblemFilters\BrokenCharactersFilter.cs" />
     <Compile Include="CharacterFields\FieldSaveHelper.cs" />
+    <Compile Include="ClaimCheckInValidator.cs" />
     <Compile Include="PlotExtensions.cs" />
     <Compile Include="ProblemExtensions.cs" />
     <Compile Include="ClaimProblemFilters\BrokenClaimsAndCharacters.cs" />

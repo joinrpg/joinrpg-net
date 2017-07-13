@@ -50,6 +50,15 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
     }
 
+    public async Task<IEnumerable<Character>> GetAvailableCharacters(int projectId)
+    {
+      return await Ctx.Set<Character>()
+        .Where(c => c.ProjectId == projectId && c.IsAcceptingClaims && c.IsActive &&
+                    !c.Project.Claims.Any(claim => (claim.ClaimStatus == Claim.Status.Approved ||
+                                      claim.ClaimStatus == Claim.Status.CheckedIn) && claim.CharacterId == c.CharacterId))
+        .OrderBy(c => c.CharacterName).ToListAsync();
+    }
+
     public async Task<Character> GetCharacterAsync(int projectId, int characterId)
     {
       await LoadProjectFields(projectId);

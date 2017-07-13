@@ -22,5 +22,6 @@ namespace JoinRpg.Data.Interfaces
     Task<Character> GetCharacterAsync(int projectId, int characterId);
     Task<Character> GetCharacterWithGroups(int projectId, int characterId);
     Task<Character> GetCharacterWithDetails(int projectId, int characterId);
+    Task<IEnumerable<Character>> GetAvailableCharacters(int projectId);
   }
 }
