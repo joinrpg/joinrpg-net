@@ -41,5 +41,11 @@ namespace JoinRpg.CommonUI.Models
     [Display(Name = "Пройдена регистрация на полигоне", ShortName = "изменена")]
     [UsedImplicitly]
     CheckedIn,
+    [Display(Name = "Выпущен второй ролью", ShortName = "изменена")]
+    [UsedImplicitly]
+    SecondRole,
+    [Display(Name = "Игрок вышел из игры", ShortName = "изменена")]
+    [UsedImplicitly]
+    OutOfGame
   }
 }

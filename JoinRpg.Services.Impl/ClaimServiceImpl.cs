@@ -86,6 +86,74 @@ namespace JoinRpg.Services.Impl
       }
     }
 
+    public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
+    {
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      oldClaim.EnsureStatus(Claim.Status.CheckedIn);
+
+      Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
+      oldClaim.Character.InGame = false;
+      MarkChanged(oldClaim.Character);
+
+      var source = await CharactersRepository.GetCharacterAsync(projectId, characterId);
+
+      MarkChanged(source);
+
+      EnsureCanAddClaim(oldClaim.PlayerUserId, source);
+
+      var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+      var claim = new Claim()
+      {
+        CharacterGroupId = null,
+        CharacterId = characterId,
+        ProjectId = projectId,
+        PlayerUserId = oldClaim.PlayerUserId,
+        PlayerAcceptedDate = Now,
+        CreateDate = Now,
+        ClaimStatus = Claim.Status.Approved,
+        CurrentFee = 0,
+        ResponsibleMasterUserId = responsibleMaster?.UserId,
+        ResponsibleMasterUser = responsibleMaster,
+        LastUpdateDateTime = Now,
+        MasterAcceptedDate = Now,
+        CommentDiscussion =
+          new CommentDiscussion() {CommentDiscussionId = -1, ProjectId = projectId},
+      };
+
+      claim.CommentDiscussion.Comments.Add(new Comment
+      {
+        CommentDiscussionId = -1,
+        AuthorUserId = CurrentUserId,
+        CommentText = new CommentText {Text = new MarkdownString(".")},
+        CreatedAt = Now,
+        IsCommentByPlayer = false,
+        IsVisibleToPlayer = true,
+        ProjectId = projectId,
+        LastEditTime = Now,
+        ExtraAction = CommentExtraAction.SecondRole
+      });
+
+      oldClaim.ClaimStatus = Claim.Status.Approved;
+      AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
+
+      
+      UnitOfWork.GetDbSet<Claim>().Add(claim);
+
+      var updatedFields =
+        FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(), 
+          FieldDefaultValueGenerator);
+
+      var claimEmail = EmailHelpers.CreateClaimEmail<SecondRoleEmail>(claim, "",
+        s => s.ClaimStatusChange, true,
+        CommentExtraAction.NewClaim, await UserRepository.GetById(CurrentUserId));
+
+      await UnitOfWork.SaveChangesAsync();
+
+      await EmailService.Email(claimEmail);
+
+      return claim.ClaimId;
+    }
+
     public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, string claimText, IDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);

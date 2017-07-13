@@ -68,7 +68,6 @@ namespace JoinRpg.Domain
       return claimSource.GetGroupsPartOf().Any(g => g.CharacterGroupId == characterGroupId);
     }
 
-    [Obsolete]
     public static void EnsureStatus(this Claim claim, params Claim.Status[] possibleStatus)
     {
       if (!possibleStatus.Contains(claim.ClaimStatus))

@@ -10,6 +10,9 @@ namespace JoinRpg.Web
       routes.LowercaseUrls = true;
       routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+      routes.MapRoute(name: "PluginSetup", url: "{ProjectId}/plugins",
+        defaults: new { controller = "PluginSetup", action = "Index" });
+
       routes.MapRoute("ForumList", url: "{ProjectId}/forums/",
         defaults: new {controller = "Forum", action = "ListThreads"});
 
@@ -103,6 +106,9 @@ namespace JoinRpg.Web
 
       routes.MapRoute(name: "ClaimCheckIn", url: "{ProjectId}/claim/{ClaimId}/checkin",
         defaults: new { controller = "CheckIn", action = "CheckIn" });
+
+      routes.MapRoute(name: "SecondRole", url: "{ProjectId}/claim/{ClaimId}/secondrole",
+        defaults: new { controller = "CheckIn", action = "SecondRole" });
 
       routes.MapRoute(name: "Claim", url: "{ProjectId}/claim/{ClaimId}/{action}",
         defaults: new { controller = "Claim", action = "Edit" });

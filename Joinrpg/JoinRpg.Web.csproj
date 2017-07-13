@@ -212,6 +212,7 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
+    <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
     <Content Include="App_Code\MvcHelpers.cs" />
@@ -641,6 +642,7 @@
     <Content Include="Views\CheckIn\CheckInNotStarted.cshtml" />
     <Content Include="Views\CheckIn\Index.cshtml" />
     <Content Include="Views\CheckIn\CheckIn.cshtml" />
+    <Content Include="Views\CheckIn\SecondRole.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

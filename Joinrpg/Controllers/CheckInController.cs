@@ -24,6 +24,9 @@ namespace JoinRpg.Web.Controllers
     [ProvidesContext]
     private IClaimService ClaimService { get; }
 
+    [ProvidesContext]
+    private ICharacterRepository CharacterRepository { get; }
+
     public CheckInController(
       ApplicationUserManager userManager,
       [NotNull] IProjectRepository projectRepository, 
@@ -31,13 +34,14 @@ namespace JoinRpg.Web.Controllers
       IExportDataService exportDataService,
       IClaimsRepository claimsRepository, 
       IPlotRepository plotRepository, 
-      IClaimService claimService
-      ) 
+      IClaimService claimService, 
+      ICharacterRepository characterRepository) 
       : base(userManager, projectRepository, projectService, exportDataService)
     {
       ClaimsRepository = claimsRepository;
       PlotRepository = plotRepository;
       ClaimService = claimService;
+      CharacterRepository = characterRepository;
     }
 
     [HttpGet]
@@ -99,19 +103,45 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> SecondRole(int projectId, int claimId)
     {
+      return await ShowSecondRole(projectId, claimId);
+    }
+
+    private async Task<ActionResult> ShowSecondRole(int projectId, int claimId)
+    {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
       if (claim == null)
       {
         return HttpNotFound();
       }
-      if (claim.ClaimStatus != Claim.Status.Approved)
+      if (claim.ClaimStatus != Claim.Status.CheckedIn)
       {
-        RedirectToAction("Edit", "Claim", new {projectId, claimId});
+        return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
 
-      var characters = ProjectService.Lo
+      var characters = await CharacterRepository.GetAvailableCharacters(projectId);
 
-      return View(new SecondRoleViewModel(claim, characters));
+      return View(new SecondRoleViewModel(claim, characters, await GetCurrentUserAsync()));
+    }
+
+    [ValidateAntiForgeryToken]
+    [HttpPost]
+    public async Task<ActionResult> SecondRole(SecondRoleViewModel model)
+    {
+      var claim = await ClaimsRepository.GetClaim(model.ProjectId, model.ClaimId);
+      if (claim == null)
+      {
+        return HttpNotFound();
+      }
+      try
+      {
+        var newClaim = await ClaimService.MoveToSecondRole(model.ProjectId, model.ClaimId, model.CharacterId);
+        return RedirectToAction("CheckIn", new { model.ProjectId, claimId = newClaim});
+      }
+      catch (Exception ex)
+      {
+        ModelState.AddException(ex);
+        return await ShowSecondRole(model.ProjectId, model.ClaimId);
+      }
     }
   }
 }
