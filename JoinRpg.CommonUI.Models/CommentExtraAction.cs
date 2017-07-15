@@ -37,6 +37,15 @@ namespace JoinRpg.CommonUI.Models
     OnHoldByMaster,
     [Display(Name = "Сумма взноса установлена вручную", ShortName = "изменена")]
     [UsedImplicitly]
-    FeeChanged
+    FeeChanged,
+    [Display(Name = "Пройдена регистрация на полигоне", ShortName = "изменена")]
+    [UsedImplicitly]
+    CheckedIn,
+    [Display(Name = "Выпущен второй ролью", ShortName = "изменена")]
+    [UsedImplicitly]
+    SecondRole,
+    [Display(Name = "Игрок вышел из игры", ShortName = "изменена")]
+    [UsedImplicitly]
+    OutOfGame
   }
 }

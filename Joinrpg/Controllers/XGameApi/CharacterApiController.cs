@@ -44,6 +44,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
           character.CharacterId,
           character.UpdatedAt,
           character.IsActive,
+          character.InGame,
           BusyStatus = character.GetBusyStatus().ToString(),
           Groups = character.Groups.Where(group => group.IsActive && !group.IsSpecial).Select(
             group => new

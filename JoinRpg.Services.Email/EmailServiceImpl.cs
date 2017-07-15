@@ -205,6 +205,12 @@ namespace JoinRpg.Services.Email
 
     public Task Email(FieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
 
+    public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
+      "Игрок прошел регистрацию на полигоне");
+
+    public Task Email(SecondRoleEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
+      "Игрок выпущен новой ролью");
+
     public Task Email(FinanceOperationEmail model)
     {
       var message = "";

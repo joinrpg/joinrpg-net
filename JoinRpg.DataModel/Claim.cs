@@ -1,6 +1,5 @@
-﻿using System;
+﻿  using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
@@ -25,7 +24,6 @@ namespace JoinRpg.DataModel
 
     public int ProjectId { get; set; }
     int IOrderableEntity.Id => ClaimId;
-    [NotNull]
     public virtual Project Project { get; set; }
 
     [NotNull]
@@ -36,6 +34,7 @@ namespace JoinRpg.DataModel
     public DateTime? PlayerDeclinedDate { get; set; }
     public DateTime? MasterAcceptedDate { get; set; }
     public DateTime? MasterDeclinedDate { get; set; }
+    public DateTime? CheckInDate { get; set; }
 
     public DateTime CreateDate { get; set; }
 
@@ -53,7 +52,7 @@ namespace JoinRpg.DataModel
 
     public bool IsPending => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser;
     public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser || ClaimStatus == Status.Discussed;
-    public bool IsApproved => ClaimStatus == Status.Approved;
+    public bool IsApproved => ClaimStatus == Status.Approved || ClaimStatus == Status.CheckedIn;
 
     //TODO[Localize]
     public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
@@ -67,16 +66,16 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
 
-    //TODO[Localize]
     public enum Status
     {
-      [Display(Name = "Подана")] AddedByUser,
-      [Display(Name = "Предложена")] AddedByMaster,
-      [Display(Name = "Принята")] Approved,
-      [Display(Name = "Отозвана")] DeclinedByUser,
-      [Display(Name = "Отклонена")] DeclinedByMaster,
-      [Display(Name = "Обсуждается")] Discussed,
-      [Display(Name = "В листе ожидания")] OnHold,
+      AddedByUser,
+      AddedByMaster,
+      Approved,
+      DeclinedByUser,
+      DeclinedByMaster,
+      Discussed,
+      OnHold,
+      CheckedIn
     }
 
     public Status ClaimStatus { get; set; }

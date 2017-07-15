@@ -206,8 +206,8 @@ namespace JoinRpg.Web.Controllers
         ch.CharacterName,
         Description = ch.Description?.ToHtmlString(),
         PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-        PlayerId = ch.HidePlayer ? null : ch.Player?.Id, //TODO Remove
-        PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {UserId =  ch.Player?.Id }),
+        PlayerId = ch.HidePlayer ? null : ch.Player?.UserId, //TODO Remove
+        PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {ch.Player?.UserId }),
         ch.ActiveClaimsCount,
         ClaimLink =
           ch.IsAvailable

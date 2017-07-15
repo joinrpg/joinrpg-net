@@ -87,6 +87,11 @@ namespace JoinRpg.DataModel
     public virtual User UpdatedBy { get; set; }
 
     public int UpdatedById { get; set; }
+
+    /// <summary>
+    /// Sets to true if this character is actually playing NOW.
+    /// </summary>
+    public bool InGame { get; set; } = false;
   }
 
   

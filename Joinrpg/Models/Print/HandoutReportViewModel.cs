@@ -16,14 +16,30 @@ namespace JoinRpg.Web.Models.Print
     {
       Handouts = elements.Select(e => new HandoutReportItemViewModel(e, characters));
     }
-    public IEnumerable<HandoutReportItemViewModel> Handouts { get; private set; }
+    public IEnumerable<HandoutReportItemViewModel> Handouts { get; }
   }
 
-  public class HandoutReportItemViewModel
+  public class HandoutViewModelBase 
+  {
+    public HandoutViewModelBase(IHtmlString text, User master)
+    {
+      Text = text;
+      Master = master;
+    }
+
+    [Display(Name = "Что раздавать")]
+    public IHtmlString Text { get; }
+
+    [Display(Name="Мастер")]
+    public User Master { get; }
+  }
+
+  public class HandoutReportItemViewModel : HandoutViewModelBase
   {
     public HandoutReportItemViewModel(PlotElement element, IReadOnlyCollection<Character> characters)
-    {
-      Text = element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)");
+      : base(element.LastVersion().Content.ToPlainText().WithDefaultStringValue("(пустой текст)"),
+          element.LastVersion().AuthorUser)
+   {
       PlotElementId = element.PlotElementId;
       PlotFolderId = element.PlotFolderId;
       ProjectId = element.ProjectId;
@@ -31,13 +47,12 @@ namespace JoinRpg.Web.Models.Print
       Status = element.GetStatus();
     }
 
-    [Display(Name="Что раздавать")]
-    public IHtmlString Text { get; private set; }
-    public int PlotElementId { get; private set; }
-    public int PlotFolderId { get; private set; }
-    public int ProjectId { get; private set; }
+    
+    public int PlotElementId { get; }
+    public int PlotFolderId { get; }
+    public int ProjectId { get; }
     [Display(Name = "Количество")]
-    public int Count { get; private set; }
+    public int Count { get; }
     public PlotStatus Status { get; }
   }
 }
