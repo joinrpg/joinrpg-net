@@ -50,7 +50,7 @@ namespace JoinRpg.DataModel
     [CanBeNull]
     public virtual UserExtra Extra { get; set; }
 
-    public virtual ICollection<UserSubscription> Subscriptions{ get; set; }
+    public virtual HashSet<UserSubscription> Subscriptions{ get; set; }
 
     public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; } = new List<UserExternalLogin>();
   }

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Web.Filter;
@@ -35,7 +36,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
              new {
                ProjectFieldVariantId =  variant.ProjectFieldDropdownValueId,
                variant.Label,
-               variant.IsActive
+               variant.IsActive,
+               Description = variant.Description.ToHtmlString()
              })
            }
           )
