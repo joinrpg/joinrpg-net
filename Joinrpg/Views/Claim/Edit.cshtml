@@ -30,6 +30,11 @@
             
         </div>
     }
+    
+  @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
+  {
+    @Html.Partial("_CheckInStatusBoard", Model.Validator)
+  }
 
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 <div class="panel panel-default">
@@ -187,7 +192,7 @@
                     @plugin.Name
                 </a>
               }
-              if (Model.CheckInStarted)
+              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready)
               {
                 <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
                   <span class="glyphicon glyphicon-tree-conifer"></span>
