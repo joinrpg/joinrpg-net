@@ -1,10 +1,13 @@
-﻿using JoinRpg.DataModel;
+﻿using JetBrains.Annotations;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.CharacterFields
 {
   public interface IFieldDefaultValueGenerator
   {
-    string CreateDefaultValue(Claim claim, ProjectField feld);
-    string CreateDefaultValue(Character character, ProjectField field);
+    [CanBeNull]
+    string CreateDefaultValue([CanBeNull] Claim claim, [NotNull] ProjectField feld);
+    [CanBeNull]
+    string CreateDefaultValue([CanBeNull] Character character, [NotNull] ProjectField field);
   }
 }
