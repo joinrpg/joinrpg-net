@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
@@ -37,7 +38,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
     [Route("{characterId}/")]
     public async Task<object> GetOne(int projectId, int characterId )
     {
-      var character = await CharacterRepository.GetCharacterWithDetails(projectId, characterId);
+      var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
+      var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
       return
         new
         {
@@ -52,7 +54,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
               group.CharacterGroupId,
               group.CharacterGroupName,
             }).OrderBy(group => group.CharacterGroupId),
-          Fields = character.GetFields().Where(field => field.HasViewableValue).Select(field => new
+          Fields = GetFields(character, project).Where(field => field.HasViewableValue).Select(field => new
           {
             field.Field.ProjectFieldId,
             field.Value,
@@ -60,6 +62,14 @@ namespace JoinRpg.Web.Controllers.XGameApi
           }),
           character.ApprovedClaim?.PlayerUserId,
         };
+    }
+
+    private List<FieldWithValue> GetFields(CharacterView character, Project project)
+    {
+      var projectFields = project.GetFields().ToList();
+      projectFields.FillFrom(character.ApprovedClaim);
+      projectFields.FillFrom(character);
+      return projectFields;
     }
   }
 }

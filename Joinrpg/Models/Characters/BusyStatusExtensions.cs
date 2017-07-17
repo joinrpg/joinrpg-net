@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Characters
@@ -21,5 +22,23 @@ namespace JoinRpg.Web.Models.Characters
       }
       return CharacterBusyStatusView.Npc;
     }
+
+    public static CharacterBusyStatusView GetBusyStatus(this CharacterView character)
+    {
+      if (character.ApprovedClaim != null)
+      {
+        return CharacterBusyStatusView.HasPlayer;
+      }
+      if (character.Claims.Any(c => c.IsActive))
+      {
+        return CharacterBusyStatusView.Discussed;
+      }
+      if (character.IsAcceptingClaims)
+      {
+        return CharacterBusyStatusView.NoClaims;
+      }
+      return CharacterBusyStatusView.Npc;
+    }
   }
+
 }
