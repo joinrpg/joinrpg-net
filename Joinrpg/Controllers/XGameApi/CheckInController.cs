@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.XGameApi.Contract;
 
@@ -17,29 +18,34 @@ namespace JoinRpg.Web.Controllers.XGameApi
     [ProvidesContext]
     private IClaimsRepository ClaimsRepository { get; }
 
+    [ProvidesContext]
+    private IClaimService ClaimsService { get; }
+
+
     public CheckInController(IProjectRepository projectRepository,
-      IClaimsRepository claimsRepository) : base(projectRepository)
+      IClaimsRepository claimsRepository, IClaimService claimsService) : base(projectRepository)
     {
       ClaimsRepository = claimsRepository;
+      ClaimsService = claimsService;
     }
 
     [Route("allclaims")]
     public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
     {
-      return new[]
-      {
+      return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.Approved)).Select(claim =>
+
         new ClaimHeaderInfo
         {
-          ClaimId = 1111,
-          CharacterName = "Арагорн, сын Арахорна",
+          ClaimId = claim.ClaimId,
+          CharacterName = claim.CharacterName,
           Player = new PlayerInfo()
           {
-            NickName = "Лео",
-            FullName = "Леонид Алексеевич Царев",
-            OtherNicks = "ЛеоЦарев, Царев, Грязный Лео"
+            PlayerId = claim.Player.UserId,
+            NickName = claim.Player.DisplayName,
+            FullName = claim.Player.FullName,
+            OtherNicks = claim.Player.Extra?.Nicknames ?? ""
           },
-        }
-      };
+        });
     }
 
     [Route("{claimId}/prepare")]
@@ -47,16 +53,23 @@ namespace JoinRpg.Web.Controllers.XGameApi
     public async Task<ClaimCheckInValidationResult> PrepareClaimFoCheckIn([FromUri] int projectId,
       [FromUri] int claimId)
     {
+      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+      if (claim == null)
+      {
+        throw new HttpResponseException(HttpStatusCode.NotFound);
+      }
+
+      var validator = new ClaimCheckInValidator(claim);
       return
         new ClaimCheckInValidationResult
         {
-          ClaimId = 1111,
-          CheckedIn = false,
-          Approved = true,
-          CheckInPossible = true,
-          EverythingFilled = true,
-          ClaimFeeBalance = 3000,
-          Handouts = new[]
+          ClaimId = claim.ClaimId,
+          CheckedIn = !validator.NotCheckedInAlready,
+          Approved = validator.IsApproved,
+          CheckInPossible = validator.CanCheckInInPrinciple,
+          EverythingFilled = !validator.NotFilledFields.Any(),
+          ClaimFeeBalance = validator.FeeDue,
+          Handouts =  new[] //TODO FIX ME
           {
             new HandoutItem {Label = "Хайратник"},
             new HandoutItem {Label = "Ленточка"}
@@ -69,7 +82,13 @@ namespace JoinRpg.Web.Controllers.XGameApi
     public async Task<string> CheckinClaim([FromUri] int projectId,
       [FromBody] CheckInCommand command)
     {
-      return "Ok";
+      var claim = await ClaimsRepository.GetClaim(projectId, command.ClaimId);
+      if (claim == null)
+      {
+        throw new HttpResponseException(HttpStatusCode.NotFound);
+      }
+      await ClaimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
+      return "OK";
     }
   }
 }

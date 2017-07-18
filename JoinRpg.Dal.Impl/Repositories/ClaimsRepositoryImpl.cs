@@ -73,6 +73,22 @@ namespace JoinRpg.Dal.Impl.Repositories
         .ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec claimStatusSpec)
+    {
+      return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
+        .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
+        .Include(c => c.Player.Extra)
+        .Select(
+          claim => new ClaimWithPlayer()
+          {
+            Player = claim.Player,
+            ClaimId = claim.ClaimId,
+            CharacterName = claim.Character.CharacterName,
+            Extra =  claim.Player.Extra,
+          })
+        .ToListAsync();
+    }
+
     private Task<Claim> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
     {
       return

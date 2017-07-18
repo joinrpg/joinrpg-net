@@ -57,4 +57,12 @@ namespace JoinRpg.Data.Interfaces
   {
     public bool IsActive { get; set; }
   }
+
+  public class ClaimWithPlayer
+  {
+    public int ClaimId { get; set; }
+    public string CharacterName { get; set; }
+    public User Player { get; set; }
+    public UserExtra Extra { get; set; }
+  }
 }
