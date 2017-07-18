@@ -99,6 +99,86 @@
             NPC should not have any claims
             </summary>
         </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.CheckInCommand">
+            <summary>
+            Command to check-in some claim
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CheckInCommand.ClaimId">
+            <summary>
+            Claim id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CheckInCommand.MoneyPaid">
+            <summary>
+            Money paid
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CheckInCommand.CheckInTime">
+            <summary>
+            Check in time to support offlne checkin scenario. Put null here for now
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult">
+            <summary>
+            Validation of claim for checkin
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.ClaimId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.CheckedIn">
+            <summary>
+            Checked in already (couldnot checkin twice)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.Approved">
+            <summary>
+            Approved claim or not (not approved could not checkin)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.EverythingFilled">
+            <summary>
+            Every filed filled (if not, could not checkin)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.CheckInPossible">
+            <summary>
+            Could we checkin !CheckedIn AND Approved AND EverythingFilled
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.ClaimFeeBalance">
+            <summary>
+            Balance to pay
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult.Handouts">
+            <summary>
+            Handouts to deliver
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ClaimHeaderInfo">
+            <summary>
+            Claim info
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimHeaderInfo.ClaimId">
+            <summary>
+            id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimHeaderInfo.CharacterName">
+            <summary>
+            Name of characters
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ClaimHeaderInfo.Player">
+            <summary>
+            Player
+            </summary>
+        </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.FieldValue">
             <summary>
             Field value for character
@@ -132,6 +212,41 @@
         <member name="P:JoinRpg.Web.XGameApi.Contract.GroupHeader.CharacterGroupName">
             <summary>
             Name
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.HandoutItem">
+            <summary>
+            Handout item
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.HandoutItem.Label">
+            <summary>
+            Label
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.PlayerInfo">
+            <summary>
+            Player info
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.PlayerInfo.PlayerId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.PlayerInfo.NickName">
+            <summary>
+            Nick name
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.PlayerInfo.FullName">
+            <summary>
+            Fulll name
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.PlayerInfo.OtherNicks">
+            <summary>
+            Other nicks to search
             </summary>
         </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo">

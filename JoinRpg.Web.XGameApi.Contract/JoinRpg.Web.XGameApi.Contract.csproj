@@ -46,8 +46,13 @@
   <ItemGroup>
     <Compile Include="CharacterHeader.cs" />
     <Compile Include="CharacterInfo.cs" />
+    <Compile Include="CheckInCommand.cs" />
+    <Compile Include="ClaimCheckInValidationResult.cs" />
+    <Compile Include="ClaimHeaderInfo.cs" />
     <Compile Include="FieldValue.cs" />
     <Compile Include="GroupHeader.cs" />
+    <Compile Include="HandoutItem.cs" />
+    <Compile Include="PlayerInfo.cs" />
     <Compile Include="ProjectFieldInfo.cs" />
     <Compile Include="ProjectFieldsMetadata.cs" />
     <Compile Include="ProjectFieldVariant.cs" />
