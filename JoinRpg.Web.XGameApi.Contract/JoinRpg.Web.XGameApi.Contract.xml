@@ -1,0 +1,228 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JoinRpg.Web.XGameApi.Contract</name>
+    </assembly>
+    <members>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.CharacterHeader">
+            <summary>
+            Short info about character
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterHeader.CharacterId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterHeader.UpdatedAt">
+            <summary>
+            Last modified (UTC)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterHeader.IsActive">
+            <summary>
+            Active/deleted
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterHeader.CharacterLink">
+            <summary>
+            URI to full profile
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.CharacterInfo">
+            <summary>
+            Full character info
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.CharacterId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.UpdatedAt">
+            <summary>
+            Last modified (UTC)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.IsActive">
+            <summary>
+            Active /deleted
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.InGame">
+            <summary>
+            True, if character in game (player checked in and not checked out)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.BusyStatus">
+            <summary>
+            Has player or not
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.Groups">
+            <summary>
+            Groups that character part of 
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.Fields">
+            <summary>
+            Field values
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.PlayerUserId">
+            <summary>
+            Player user id
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus">
+            <summary>
+            Has player or not
+            </summary>
+        </member>
+        <member name="F:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus.HasPlayer">
+            <summary>
+            Has player
+            </summary>
+        </member>
+        <member name="F:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus.Discussed">
+            <summary>
+            Has some claims, but nothing approved
+            </summary>
+        </member>
+        <member name="F:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus.NoClaims">
+            <summary>
+            No actve claims
+            </summary>
+        </member>
+        <member name="F:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus.Npc">
+            <summary>
+            NPC should not have any claims
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.FieldValue">
+            <summary>
+            Field value for character
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.FieldValue.ProjectFieldId">
+            <summary>
+            Field id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.FieldValue.Value">
+            <summary>
+            Actual value. If dropdown, id of variant
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.FieldValue.DisplayString">
+            <summary>
+            Value how it meant to be displayed. If dropdown, label of variant
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.GroupHeader">
+            <summary>
+            Character group
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.GroupHeader.CharacterGroupId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.GroupHeader.CharacterGroupName">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo">
+            <summary>
+            Field metadata description
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.FieldName">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.ProjectFieldId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.IsActive">
+            <summary>
+            Is active or deleted. Note that deleted fields still can have values
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.FieldType">
+            <summary>
+            Field type string
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.ValueList">
+            <summary>
+            Variants
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectFieldsMetadata">
+            <summary>
+            Project fields
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldsMetadata.ProjectId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldsMetadata.ProjectName">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldsMetadata.Fields">
+            <summary>
+            Fields
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant">
+            <summary>
+            Variant (possible dropdown value)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.ProjectFieldVariantId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.Label">
+            <summary>
+            Label
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.IsActive">
+            <summary>
+            Active/deleted. Note that deleted variants can still occur!
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.Description">
+            <summary>
+            Descripton (HTML)
+            </summary>
+        </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectHeader">
+            <summary>
+            Project
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectHeader.ProjectId">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectHeader.ProjectName">
+            <summary>
+            Name
+            </summary>
+        </member>
+    </members>
+</doc>

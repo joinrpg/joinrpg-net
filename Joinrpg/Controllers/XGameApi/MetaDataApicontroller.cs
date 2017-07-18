@@ -5,6 +5,7 @@ using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Web.Filter;
+using JoinRpg.Web.XGameApi.Contract;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
@@ -17,30 +18,30 @@ namespace JoinRpg.Web.Controllers.XGameApi
 
     [HttpGet]
     [Route("fields")]
-    public async Task<object> GetFieldsList(int projectId)
+    public async Task<ProjectFieldsMetadata> GetFieldsList(int projectId)
     {
       var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
       return
-        new
+        new ProjectFieldsMetadata
         {
-          project.ProjectId,
-          project.ProjectName,
+          ProjectId = project.ProjectId,
+          ProjectName = project.ProjectName,
           Fields = project.GetOrderedFields().Select(field =>
-           new
-           {
-             field.FieldName,
-             field.ProjectFieldId,
-             field.IsActive,
-             FieldType = field.FieldType.ToString(),
-             ValueList = field.GetOrderedValues().Select(variant =>
-             new {
-               ProjectFieldVariantId =  variant.ProjectFieldDropdownValueId,
-               variant.Label,
-               variant.IsActive,
-               Description = variant.Description.ToHtmlString()
-             })
-           }
-          )
+            new ProjectFieldInfo
+            {
+              FieldName = field.FieldName,
+              ProjectFieldId = field.ProjectFieldId,
+              IsActive = field.IsActive,
+              FieldType = field.FieldType.ToString(),
+              ValueList = field.GetOrderedValues().Select(variant =>
+                new ProjectFieldVariant
+                {
+                  ProjectFieldVariantId = variant.ProjectFieldDropdownValueId,
+                  Label = variant.Label,
+                  IsActive = variant.IsActive,
+                  Description = variant.Description.ToHtmlString().ToHtmlString()
+                })
+            })
         };
     }
   }
