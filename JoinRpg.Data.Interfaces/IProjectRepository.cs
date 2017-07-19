@@ -11,7 +11,9 @@ namespace JoinRpg.Data.Interfaces
     Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount();
     Task<IEnumerable<Project>> GetArchivedProjectsWithClaimCount();
     Task<IEnumerable<Project>> GetAllProjectsWithClaimCount();
+    [Obsolete("Use GetMyActiveProjectsAsync")]
     IEnumerable<Project> GetMyActiveProjects(int? userInfoId);
+    Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId);
     Task<Project> GetProjectAsync(int project);
     Task<Project> GetProjectWithDetailsAsync(int project);
     Task<Project> GetProjectWithFieldsAsync(int project);

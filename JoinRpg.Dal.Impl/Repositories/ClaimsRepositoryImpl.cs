@@ -37,7 +37,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(c => c.CommentDiscussion.Watermarks)
         .Include(c => c.Player)
         .Include(c => c.FinanceOperations)
-        .Where(GetClaimStatusPredicate(status))
+        .Where(ClaimPredicates.GetClaimStatusPredicate(status))
         .Where(predicate)
         .Where(
           c =>
@@ -59,29 +59,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
     }
 
-    private Expression<Func<Claim, bool>> GetClaimStatusPredicate(ClaimStatusSpec status)
-    {
-      switch (status)
-      {
-        case ClaimStatusSpec.Any:
-          return claim => true;
-        case ClaimStatusSpec.Active:
-          return c => c.ClaimStatus != Claim.Status.DeclinedByMaster && c.ClaimStatus != Claim.Status.DeclinedByUser &&
-                      c.ClaimStatus != Claim.Status.OnHold;
-        case ClaimStatusSpec.InActive:
-          return c => c.ClaimStatus == Claim.Status.DeclinedByMaster || c.ClaimStatus == Claim.Status.DeclinedByUser &&
-                      c.ClaimStatus == Claim.Status.OnHold;
-        case ClaimStatusSpec.Discussion:
-          return c => c.ClaimStatus == Claim.Status.AddedByMaster || c.ClaimStatus == Claim.Status.AddedByUser || c.ClaimStatus == Claim.Status.Discussed;
-        case ClaimStatusSpec.OnHold:
-          return c => c.ClaimStatus == Claim.Status.OnHold;
-        case ClaimStatusSpec.Approved:
-          return c => c.ClaimStatus == Claim.Status.Approved || c.ClaimStatus == Claim.Status.CheckedIn;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(status), status, null);
-      }
-    }
-
     public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(
       e => e.ClaimId == claimId && e.ProjectId == projectId);
 
@@ -91,8 +68,24 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec)
     {
       return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
-        .Where(GetClaimStatusPredicate(claimStatusSpec)).GroupBy(claim => claim.ResponsibleMasterUserId)
+        .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec)).GroupBy(claim => claim.ResponsibleMasterUserId)
         .Select(grouping => new ClaimCountByMaster() {ClaimCount = grouping.Count(), MasterId = grouping.Key})
+        .ToListAsync();
+    }
+
+    public async Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec claimStatusSpec)
+    {
+      return await Ctx.Set<Claim>().Where(claim => claim.ProjectId == projectId)
+        .Where(ClaimPredicates.GetClaimStatusPredicate(claimStatusSpec))
+        .Include(c => c.Player.Extra)
+        .Select(
+          claim => new ClaimWithPlayer()
+          {
+            Player = claim.Player,
+            ClaimId = claim.ClaimId,
+            CharacterName = claim.Character.CharacterName,
+            Extra =  claim.Player.Extra,
+          })
         .ToListAsync();
     }
 

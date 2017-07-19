@@ -43,6 +43,9 @@
       <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="LinqKit.EntityFramework, Version=1.1.9.0, Culture=neutral, PublicKeyToken=b6c8cfc71f7a6a80, processorArchitecture=MSIL">
+      <HintPath>..\packages\LinqKit.EntityFramework.1.1.9.0\lib\net45\LinqKit.EntityFramework.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
       <Private>True</Private>
@@ -375,11 +378,16 @@
     <Compile Include="Migrations\201707120745136_RegistratonField.Designer.cs">
       <DependentUpon>201707120745136_RegistratonField.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707171846480_ApprovedClaimDirectLink.cs" />
+    <Compile Include="Migrations\201707171846480_ApprovedClaimDirectLink.Designer.cs">
+      <DependentUpon>201707171846480_ApprovedClaimDirectLink.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
+    <Compile Include="Repositories\ClaimPredicates.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />
     <Compile Include="Repositories\ForumRepositoryImpl.cs" />
     <Compile Include="Repositories\GameRepositoryImplBase.cs" />
@@ -409,7 +417,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201507212237267_Initial.resx">
@@ -640,6 +650,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707120745136_RegistratonField.resx">
       <DependentUpon>201707120745136_RegistratonField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707171846480_ApprovedClaimDirectLink.resx">
+      <DependentUpon>201707171846480_ApprovedClaimDirectLink.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

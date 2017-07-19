@@ -51,8 +51,11 @@ namespace JoinRpg.DataModel
 
     public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
-    [CanBeNull]
-    public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
+    [CanBeNull, InverseProperty(null)]
+    public virtual  Claim ApprovedClaim { get; set; }
+
+    [ForeignKey(nameof(ApprovedClaim)), InverseProperty(null)]
+    public int? ApprovedClaimId { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
     public bool IsRoot => false; //Character is not "root group"

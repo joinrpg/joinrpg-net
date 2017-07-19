@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -98,7 +98,6 @@ namespace JoinRpg.Domain
       projectFields.FillFrom(character);
       return projectFields;
     }
-
 
     public static List<FieldWithValue> GetFields(this Claim character)
     {

@@ -109,7 +109,7 @@ namespace JoinRpg.Web.Controllers
     {
       return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         .SelectMany(
-          g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
+          g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
     [HttpGet, Compress]
