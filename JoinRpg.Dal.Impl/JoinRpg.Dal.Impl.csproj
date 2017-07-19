@@ -382,6 +382,10 @@
     <Compile Include="Migrations\201707171846480_ApprovedClaimDirectLink.Designer.cs">
       <DependentUpon>201707171846480_ApprovedClaimDirectLink.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707192031488_AutoCreatedAndFix.cs" />
+    <Compile Include="Migrations\201707192031488_AutoCreatedAndFix.Designer.cs">
+      <DependentUpon>201707192031488_AutoCreatedAndFix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -653,6 +657,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707171846480_ApprovedClaimDirectLink.resx">
       <DependentUpon>201707171846480_ApprovedClaimDirectLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707192031488_AutoCreatedAndFix.resx">
+      <DependentUpon>201707192031488_AutoCreatedAndFix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
