@@ -36,5 +36,7 @@ namespace JoinRpg.Data.Interfaces
     
     [NotNull, ItemNotNull]
     Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec);
+
+    Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec approved);
   }
 }

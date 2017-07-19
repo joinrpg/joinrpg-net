@@ -61,8 +61,7 @@ namespace JoinRpg.Domain.Test
     public void ApprovedClaimHiddenChangeTest()
     {
       var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-      claim.ClaimStatus = Claim.Status.Approved;
+      var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
       FieldSaveHelper.SaveCharacterFields(
         mock.Player.UserId,
         claim,

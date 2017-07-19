@@ -33,6 +33,9 @@ namespace JoinRpg.Dal.Impl.Repositories
     public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
       => userInfoId == null ? Enumerable.Empty<Project>() :  ActiveProjects.Where(MyProjectPredicate(userInfoId));
 
+    public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
+      ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
+
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<Project> GetProjectWithDetailsAsync(int project)

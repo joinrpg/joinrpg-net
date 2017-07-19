@@ -305,6 +305,8 @@ namespace JoinRpg.Services.Impl
       }
 
       MarkCharacterChangedIfApproved(claim);
+      Debug.Assert(claim.Character != null, "claim.Character != null");
+      claim.Character.ApprovedClaimId = claim.ClaimId;
 
       //We need to resave fields here, because it may cause some field values to move from Claim to Characters
       //which also could trigger changing of special groups
@@ -349,6 +351,7 @@ namespace JoinRpg.Services.Impl
     public async Task DeclineByMaster(int projectId, int claimId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+
       claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
 
       claim.MasterDeclinedDate = Now;
@@ -356,6 +359,13 @@ namespace JoinRpg.Services.Impl
       MarkCharacterChangedIfApproved(claim);
 
       claim.ClaimStatus = Claim.Status.DeclinedByMaster;
+
+      if (claim.Character == null)
+      {
+        throw new InvalidOperationException("Unexpected");
+      }
+
+      claim.Character.ApprovedClaimId = null;
       var email =
         await
           AddCommentWithEmail<DeclineByMasterEmail>(commentText, claim, true,
@@ -485,6 +495,13 @@ namespace JoinRpg.Services.Impl
       claim.PlayerDeclinedDate = Now;
       MarkCharacterChangedIfApproved(claim);
       claim.ClaimStatus = Claim.Status.DeclinedByUser;
+
+      if (claim.Character == null)
+      {
+        throw new InvalidOperationException("Unexpected");
+      }
+
+      claim.Character.ApprovedClaimId = null;
 
       var email =
         await

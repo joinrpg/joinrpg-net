@@ -59,9 +59,12 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<Claim>().HasOptional(c => c.Group).WithMany().WillCascadeOnDelete(false);
-      modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().WillCascadeOnDelete(false);
-      modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().HasForeignKey(c => c.CharacterId).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasRequired(c => c.Player).WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
+
+      modelBuilder.Entity<Character>().HasOptional(c => c.ApprovedClaim).WithMany()
+        .HasForeignKey(c => c.ApprovedClaimId).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments).WithRequired(c => c.Discussion);
 

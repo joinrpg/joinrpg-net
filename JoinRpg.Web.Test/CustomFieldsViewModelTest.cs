@@ -104,8 +104,7 @@ namespace JoinRpg.Web.Test
     public void ProperlyHideConditionalHeader()
     {
       var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.CharacterWithoutGroup, mock.Player);
-      claim.ClaimStatus = Claim.Status.Approved;
+      var claim = mock.CreateApprovedClaim(mock.CharacterWithoutGroup, mock.Player);
 
       var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
       var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
@@ -121,8 +120,7 @@ namespace JoinRpg.Web.Test
     public void ProperlyShowConditionalHeaderTest()
     {
       var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-      claim.ClaimStatus = Claim.Status.Approved;
+      var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
       var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
       var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
