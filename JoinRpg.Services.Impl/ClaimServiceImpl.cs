@@ -339,7 +339,8 @@ namespace JoinRpg.Services.Impl
         IsPublic = claim.Group.IsPublic,
         IsActive = true,
         ParentCharacterGroupIds = new[] { claim.Group.CharacterGroupId},
-        CharacterId = -1
+        CharacterId = -1,
+        AutoCreated = true
       };
       MarkCreatedNow(character);
       claim.CharacterGroupId = null;
@@ -423,10 +424,19 @@ namespace JoinRpg.Services.Impl
 
       MarkCharacterChangedIfApproved(claim); // before move
 
+      if (claim.Character != null)
+      {
+        claim.Character.ApprovedClaim = null;
+      }
       claim.CharacterGroupId = characterGroupId;
       claim.CharacterId = characterId;
       claim.Group = source as CharacterGroup; //That fields is required later
       claim.Character = source as Character; //That fields is required later
+
+      if (claim.Character != null)
+      {
+        claim.Character.ApprovedClaim = claim;
+      }
 
       MarkCharacterChangedIfApproved(claim); // after move
 
