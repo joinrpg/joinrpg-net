@@ -65,7 +65,7 @@ namespace JoinRpg.Web.Filter
 
       else
       {
-        HandleUnauthorizedRequest(actionContext);
+        actionContext.Response = actionContext.Request.CreateResponse(HttpStatusCode.Forbidden);
       }
     }
 
