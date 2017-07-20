@@ -52,7 +52,14 @@ namespace JoinRpg.Web.Controllers
       {
         return View("CheckInNotStarted");
       }
-      return View(new CheckInIndexViewModel(project));
+      var claims = await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.Approved);
+      return View(new CheckInIndexViewModel(project, claims));
+    }
+
+    [HttpPost]
+    public ActionResult Index(int projectId, int claimId)
+    {
+      return RedirectToAction("CheckIn", new {projectId, claimId});
     }
 
     [HttpGet]

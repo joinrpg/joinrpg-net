@@ -137,7 +137,11 @@
                             <li @GetDisabled(Model.AccessToProject.CanChangeProjectProperties)>@Html.ActionLink("Свойства проекта", "Edit", "Game", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Поля персонажа / заявки", "Index", "GameField", new {Model.ProjectId}, null)</li>
                             <li>@Html.ActionLink("Мастера", "Index", "Acl", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Плагины", "Index", "PluginSetup", new { Model.ProjectId }, null)</li>
+                          <li>@Html.ActionLink("Плагины", "Index", "PluginSetup", new { Model.ProjectId }, null)</li>
+                          @if (Model.CheckInModuleEnabled)
+                          {
+                            <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
+                          }
                         </ul>
                     </li>
                 </ul>
