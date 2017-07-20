@@ -42,5 +42,6 @@ namespace JoinRpg.Services.Interfaces
 
     Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, short direction);
     Task CloseProject(int projectId, int currentUserId, bool publishPlot);
+    Task SetCheckInOptions(int projectId, bool checkInProgress, bool enableCheckInModule, bool modelAllowSecondRoles);
   }
 }

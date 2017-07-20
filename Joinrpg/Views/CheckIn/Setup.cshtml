@@ -1,0 +1,56 @@
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.CheckIn.CheckInSetupModel
+
+@{
+    ViewBag.Title = "Настройка модуля регистрации";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+  @Html.HiddenFor(model => model.ProjectId)
+    
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.EnableCheckInModule, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.EnableCheckInModule)
+                  @Html.DescriptionFor(model => model.EnableCheckInModule)
+                    @Html.ValidationMessageFor(model => model.EnableCheckInModule, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CheckInProgress, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CheckInProgress)
+                  @Html.DescriptionFor(model => model.CheckInProgress)
+                    @Html.ValidationMessageFor(model => model.CheckInProgress, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.AllowSecondRoles, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.AllowSecondRoles)
+                  @Html.DescriptionFor(model => model.AllowSecondRoles)
+                    @Html.ValidationMessageFor(model => model.AllowSecondRoles, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Сохранить настройки" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}

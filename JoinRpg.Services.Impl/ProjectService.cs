@@ -190,6 +190,18 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    public async Task SetCheckInOptions(int projectId, bool checkInProgress, bool enableCheckInModule,
+      bool modelAllowSecondRoles)
+    {
+      var project = await ProjectRepository.GetProjectAsync(projectId);
+      project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+
+      project.Details.CheckInProgress = checkInProgress && enableCheckInModule;
+      project.Details.EnableCheckInModule = enableCheckInModule;
+      project.Details.AllowSecondRoles = modelAllowSecondRoles && enableCheckInModule;
+      await UnitOfWork.SaveChangesAsync();
+    }
+
     private static void RequestProjectAdminAccess(Project project, User user)
     {
       if (project == null)
