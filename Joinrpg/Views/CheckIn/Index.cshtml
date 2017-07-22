@@ -10,20 +10,16 @@
 {
   @Html.HiddenFor(model => model.ProjectId)
   @Html.AntiForgeryToken()
-  <select 
-    class="selectpicker" 
-    data-live-search="true" 
-    data-live-search-normalize="true" 
-    data-size="10" 
-    name="claimId"
-            >
-    @foreach (var item in Model.Claims)
-    {
-      <option data-tokens="@item.OtherNicks" data-subtext="<br/>@item.NickName (@item.Fullname)" value="@item.ClaimId">
-        @item.CharacterName
-      </option>
-    }
-  </select>
 
+  @Html.SearchableDropdownFor(model => model.ClaimId, Model.Claims.Select(
+  claim =>
+  new ImprovedSelectListItem()
+  {
+    Value = claim.ClaimId.ToString(),
+    Text = claim.CharacterName,
+    ExtraSearch = claim.OtherNicks,
+    Subtext = "<br />" + claim.NickName + " (" + claim.Fullname + " )"
+  }))
+  
   <input type="submit" class="btn btn-success" value="Зарегистрировать"/>
 }

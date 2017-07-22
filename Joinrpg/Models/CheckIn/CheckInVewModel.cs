@@ -16,6 +16,8 @@ namespace JoinRpg.Web.Models.CheckIn
 
     public int ProjectId { get; }
 
+    public int ClaimId { get; set; }
+
     public IReadOnlyCollection<CheckInListItemViewModel> Claims { get; }
   }
 
