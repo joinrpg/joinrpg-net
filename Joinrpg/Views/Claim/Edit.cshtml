@@ -46,7 +46,15 @@
 
             <dd>
                 @Html.DisplayFor(model => model.Player)
-                <button type="button" class="btn btn-xs btn-default" data-toggle="popover" title="Контакты" data-html="true" data-content='@Html.DisplayFor(model => model.PlayerDetails)'>контакты</button>
+              <button 
+                type="button" 
+                class="btn btn-xs btn-default" 
+                data-toggle="popover" 
+                title="Контакты" 
+                data-html="true" 
+                data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+                контакты
+              </button>
             </dd>
             @if (Model.CharacterGroupId != null)
             {
