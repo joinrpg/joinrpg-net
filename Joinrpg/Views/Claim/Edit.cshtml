@@ -136,7 +136,7 @@
         <div class="btn-group">
             @if (Model.CanManageThisClaim && Model.ProjectActive)
             {
-                if (Model.Status.CanChangeTo(ClaimStatusView.Approved))
+                if (Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
                         aria-expanded="false">

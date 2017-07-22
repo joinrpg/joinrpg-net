@@ -277,6 +277,10 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
+      if (claim.ClaimStatus == Claim.Status.CheckedIn)
+      {
+        throw new ClaimWrongStatusException(claim);
+      }
       claim.MasterAcceptedDate = Now;
       claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
