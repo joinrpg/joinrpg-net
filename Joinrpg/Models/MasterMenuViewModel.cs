@@ -24,5 +24,6 @@ namespace JoinRpg.Web.Models
   public class MasterMenuViewModel : MenuViewModelBase
   {
     public ProjectAcl AccessToProject { get; set; }
+    public bool CheckInModuleEnabled { get; set; }
   }
 }

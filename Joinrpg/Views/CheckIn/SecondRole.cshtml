@@ -22,15 +22,15 @@
     <div class="form-group">
       @Html.LabelFor(model => model.CharacterId, htmlAttributes: new { @class = "control-label col-md-2" })
       <div class="col-md-10">
-        @Html.DropDownListFor(
-          model => model.CharacterId,
-          Model.Characters.Select(character
-            => new SelectListItem()
+        
+        @Html.SearchableDropdownFor(model => model.CharacterId, Model.Characters.Select(
+          character =>
+            new ImprovedSelectListItem()
             {
-              Text = character.Name + " (" + character.Master + " )", Value = character.Id
-            }),
-          htmlAttributes: new {@class = "form-control"})
-
+              Value = character.Id.ToString(),
+              Text = character.Name,
+              Subtext = "<br /> Мастер: " + character.Master
+            }))
         @Html.ValidationMessageFor(model => model.CharacterId, "", new {@class = "text-danger"})
       </div>
     </div>

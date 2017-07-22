@@ -1,5 +1,4 @@
-﻿using System.Data.Entity;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JoinRpg.Web.Helpers;
 using Microsoft.Owin.Security.OAuth;
 
@@ -25,6 +24,13 @@ namespace JoinRpg.Web
       OAuthGrantResourceOwnerCredentialsContext context)
     {
       context.OwinContext.Response.Headers.Add("Access-Control-Allow-Origin", new[] {"*"});
+
+      if (string.IsNullOrWhiteSpace(context.UserName) ||
+          string.IsNullOrWhiteSpace(context.Password))
+      {
+        context.SetError("invalid_grant", "Please supply susername and password.");
+        return;
+      }
 
       var user = await Manager.FindByEmailAsync(context.UserName);
 

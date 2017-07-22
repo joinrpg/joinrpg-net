@@ -68,7 +68,8 @@ namespace JoinRpg.Web.Controllers.Common
       {
         menuModel = new MasterMenuViewModel()
         {
-          AccessToProject = acl
+          AccessToProject = acl,
+          CheckInModuleEnabled = project.Details.EnableCheckInModule,
         };
       }
       else

@@ -46,7 +46,15 @@
 
             <dd>
                 @Html.DisplayFor(model => model.Player)
-                <button type="button" class="btn btn-xs btn-default" data-toggle="popover" title="Контакты" data-html="true" data-content='@Html.DisplayFor(model => model.PlayerDetails)'>контакты</button>
+              <button 
+                type="button" 
+                class="btn btn-xs btn-default" 
+                data-toggle="popover" 
+                title="Контакты" 
+                data-html="true" 
+                data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+                контакты
+              </button>
             </dd>
             @if (Model.CharacterGroupId != null)
             {
@@ -128,7 +136,7 @@
         <div class="btn-group">
             @if (Model.CanManageThisClaim && Model.ProjectActive)
             {
-                if (Model.Status.CanChangeTo(ClaimStatusView.Approved))
+                if (Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
                         aria-expanded="false">
@@ -139,6 +147,7 @@
               {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
                         aria-expanded="false">
+                  <span class="glyphicon glyphicon-transfer"></span>
                   Переместить заявку
                 </button>
               }
@@ -192,7 +201,7 @@
                     @plugin.Name
                 </a>
               }
-              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready)
+              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
               {
                 <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
                   <span class="glyphicon glyphicon-tree-conifer"></span>

@@ -7,6 +7,11 @@
 
 <h2>@ViewBag.Title</h2>
 
+<div class="btn-group">
+  <a class="btn btn-default" href="@Url.Action("Index", "PluginSetup", new {Model.ProjectId})"> Настройки плагинов</a>
+  <a class="btn btn-default" href="@Url.Action("Setup", "CheckIn", new {Model.ProjectId})"> Настройки регистрации</a>
+</div>
+<hr/>
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
