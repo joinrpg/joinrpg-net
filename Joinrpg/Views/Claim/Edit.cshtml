@@ -201,7 +201,7 @@
                     @plugin.Name
                 </a>
               }
-              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready)
+              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
               {
                 <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
                   <span class="glyphicon glyphicon-tree-conifer"></span>
