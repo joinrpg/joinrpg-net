@@ -428,7 +428,7 @@ namespace JoinRpg.Services.Impl
 
       MarkCharacterChangedIfApproved(claim); // before move
 
-      if (claim.Character != null)
+      if (claim.Character != null && claim.IsApproved)
       {
         claim.Character.ApprovedClaim = null;
       }
@@ -437,7 +437,7 @@ namespace JoinRpg.Services.Impl
       claim.Group = source as CharacterGroup; //That fields is required later
       claim.Character = source as Character; //That fields is required later
 
-      if (claim.Character != null)
+      if (claim.Character != null && claim.IsApproved)
       {
         claim.Character.ApprovedClaim = claim;
       }
