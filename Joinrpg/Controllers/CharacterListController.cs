@@ -38,11 +38,6 @@ namespace JoinRpg.Web.Controllers
      => MasterCharacterList(projectid, claim => claim.GetProblems().Any(), export, "Проблемные персонажи");
 
     [HttpGet]
-    public Task<ActionResult> FreeCharactersWithPlot(int projectid, string export)
-     => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи с сюжетом", vm => vm.IndAllPlotsCount > 0);
-
-
-    [HttpGet]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
@@ -50,20 +45,13 @@ namespace JoinRpg.Web.Controllers
         character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
     }
 
-    private Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export,
-      string title)
-    {
-      return MasterCharacterList(projectId, predicate, export, title, vm => true);
-    }
-
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title, Func<CharacterListItemViewModel, bool> viewModelPredicate)
+    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
-      var plots = await PlotRepository.GetPlotsWithTargets(projectId);
       var project = await GetProjectFromList(projectId, characters);
 
-      var list = new CharacterListViewModel(CurrentUserId, title, characters, plots, project, viewModelPredicate);
+      var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
 
       var exportType = GetExportTypeByName(export);
 
@@ -101,7 +89,7 @@ namespace JoinRpg.Web.Controllers
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
 
       var list = new CharacterListByGroupViewModel(CurrentUserId,
-        characters, plots, characterGroup);
+        characters, characterGroup);
 
       var exportType = GetExportTypeByName(export);
 

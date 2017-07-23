@@ -14,18 +14,17 @@
 
 <table class="table">
     <tr>
-        <th rowspan="2">
+        <th>
             @Html.DisplayNameFor(model => firstItem.Name)
         </th>
-        <th rowspan="2">
+        <th>
             @Html.DisplayNameFor(model => firstItem.Player)
         </th>
-        <th rowspan="2">
+        <th>
             @Html.DisplayNameFor(model => firstItem.Groups)
         </th>
 
-        <th rowspan="2">@Html.DisplayNameFor(model => firstItem.Problems)</th>
-        <th colspan="2">Загрузы (готовых/всего)</th>
+        <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
         @foreach (var field in Model.Fields)
         {
             switch (field.FieldType)
@@ -37,20 +36,16 @@
                 case ProjectFieldType.Dropdown:
                 case ProjectFieldType.Checkbox:
                 case ProjectFieldType.MultiSelect:
-            <th rowspan="2">@field.FieldName</th>
+            <th>@field.FieldName</th>
                     break;
                 case ProjectFieldType.Header:
-            <th rowspan="2">&nbsp;</th>
+            <th>&nbsp;</th>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-    </tr>
-    <tr>
-        <th>Личные</th>
-        <th>Коллективные</th>
     </tr>
 
     @foreach (var item in Model.Items.OrderBy(c => c.BusyStatus).ThenBy(c => c.Name))
@@ -120,25 +115,25 @@
                     <br />
             }
         </td>
-        <td>
-            @item.IndReadyPlotsCount / @item.IndAllPlotsCount
-        </td>
-        <td>
-            @item.ColReadyPlotsCount / @item.ColAllPlotsCount
-        </td>
 
         @foreach (var field in Model.Fields)
         {
-            switch (field.FieldType)
-            {
-                case ProjectFieldType.Text:
-                    continue;
-                case ProjectFieldType.String:
-                case ProjectFieldType.Number:
-                case ProjectFieldType.Dropdown:
-                case ProjectFieldType.Checkbox:
-                case ProjectFieldType.MultiSelect:
-            <td>@item.Fields.FieldById(field.ProjectFieldId).DisplayString</td>
+          var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
+          switch (field.FieldType)
+          {
+            case ProjectFieldType.Text:
+              continue;
+            case ProjectFieldType.String:
+            case ProjectFieldType.Number:
+            case ProjectFieldType.Dropdown:
+            case ProjectFieldType.Checkbox:
+            case ProjectFieldType.MultiSelect:
+              <td>
+                @if (fieldValueViewModel != null)
+                {
+                  @fieldValueViewModel.DisplayString
+                }
+              </td>
                     break;
                 case ProjectFieldType.Header:
             <td>*</td>

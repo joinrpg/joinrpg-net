@@ -13,9 +13,8 @@ namespace JoinRpg.Web.Models.Characters
 {
   public class CharacterListByGroupViewModel : CharacterListViewModel
   {
-    public CharacterListByGroupViewModel(int currentUserId, IReadOnlyCollection<Character> characters,
-      IReadOnlyCollection<PlotFolder> plots, CharacterGroup group)
-      : base(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, plots, group.Project)
+    public CharacterListByGroupViewModel(int currentUserId, IReadOnlyCollection<Character> characters, CharacterGroup group)
+      : base(currentUserId, $"Персонажи — {group.CharacterGroupName}", characters, group.Project)
     {
       GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Characters);
     }
@@ -34,37 +33,22 @@ namespace JoinRpg.Web.Models.Characters
 
     public bool HasEditAccess { get; }
 
-    public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
-      IReadOnlyCollection<PlotFolder> plots, Project project)
-      : this (currentUserId, title, characters, plots, project, vm => true)
+    public CharacterListViewModel(
+      int currentUserId, 
+      string title, 
+      IReadOnlyCollection<Character> characters, 
+      Project project)
     {
-      
-    }
-
-    public CharacterListViewModel(int currentUserId, string title, IReadOnlyCollection<Character> characters,
-      IReadOnlyCollection<PlotFolder> plots, Project project, Func<CharacterListItemViewModel, bool> viewPredicate)
-    {
-      var selectMany = plots.SelectMany(p => p.Elements).ToArray();
-
-      var viewModel =
-        characters.Select(
-          character =>
-            new CharacterListItemViewModel(character, currentUserId, character.GetProblems(),
-              character.SelectPlots(selectMany)));
-
-      Items = viewModel.Where(viewPredicate).ToArray();
+      Items = characters.Select(
+        character =>
+          new CharacterListItemViewModel(character, currentUserId, character.GetProblems())).ToArray();
       ProjectName = project.ProjectName;
       ProjectId = project.ProjectId;
       Title = title;
-      Fields = project.GetOrderedFields().Where(f => f.IsActive && AnyItemHasValue(f.ProjectFieldId)).ToArray();
+      Fields = project.GetOrderedFields().Where(f => f.IsActive).ToArray();
       ClaimIds = characters.Select(c => c.ApprovedClaim?.ClaimId).WhereNotNull().ToArray();
       CharacterIds = characters.Select(c => c.CharacterId).ToArray();
       HasEditAccess = project.HasEditRolesAccess(currentUserId);
-    }
-
-    private bool AnyItemHasValue(int projectFieldId)
-    {
-      return Items.Select(i => i.Fields.FieldById(projectFieldId)).Any(f1 => f1?.HasValue == true);
     }
 
     public IReadOnlyCollection<ProjectField> Fields { get; }
@@ -81,22 +65,20 @@ namespace JoinRpg.Web.Models.Characters
     public int CharacterId { get; }
 
     [NotNull, ReadOnly(true)]
-    public CustomFieldsViewModel Fields { get; }
+    public IReadOnlyCollection<FieldWithValue> Fields { get; }
 
     public int? ApprovedClaimId { get; }
 
     [Display(Name = "Игрок"), CanBeNull]
     public User Player { get; set; }
 
-    public int IndReadyPlotsCount { get; }
-    public int IndAllPlotsCount { get; }
-    public int ColReadyPlotsCount { get; }
-    public int ColAllPlotsCount{ get; }
-
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel Groups { get; }
 
-    public CharacterListItemViewModel ([NotNull] Character character, int currentUserId, IEnumerable<ClaimProblem> problems, IReadOnlyCollection<PlotElement> plots)
+    public CharacterListItemViewModel (
+      [NotNull] Character character, 
+      int currentUserId, 
+      IEnumerable<ClaimProblem> problems)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
 
@@ -110,13 +92,11 @@ namespace JoinRpg.Web.Models.Characters
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
       ProjectId = character.ProjectId;
-      Fields = new CustomFieldsViewModel(currentUserId, character, disableEdit: true); //This disable edit will speed up some requests.
+      Fields = character.Project.GetFieldsWithoutOrder().ToList();
+      Fields.FillFrom(character);
+      Fields.FillFrom(character.ApprovedClaim);
       Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
 
-      IndReadyPlotsCount = plots.Count(p => p.IsCompleted && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
-      IndAllPlotsCount = plots.Count(p => p.IsActive && p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
-      ColReadyPlotsCount = plots.Count(p => p.IsCompleted && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
-      ColAllPlotsCount = plots.Count(p => p.IsActive && !p.TargetCharacters.Select(c => c.CharacterId).Contains(character.CharacterId));
       Groups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserId));
     }
 
