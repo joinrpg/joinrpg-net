@@ -80,7 +80,7 @@
                     }
                 </dd>
             }
-            @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
+            @if (Model.ClaimFee != null && (Model.PaymentTypes.Any()  || Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
             {
                 <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
                 <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
