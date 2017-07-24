@@ -178,5 +178,12 @@ namespace JoinRpg.Web.Controllers
         return await ShowSecondRole(model.ProjectId, model.ClaimId);
       }
     }
+
+    [HttpGet]
+    public ActionResult Stat(int projectid)
+    {
+      ViewBag.ProjectId = projectid;
+      return View();
+    }
   }
 }

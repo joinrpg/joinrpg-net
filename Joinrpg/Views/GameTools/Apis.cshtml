@@ -65,15 +65,6 @@
     </div>
 </p>
 
-<h3>
-    Автоматический экспорт персонажей
-</h3>
-<p>
-    @Html.ActionLink("Ссылка на список персонажей", "ActiveToken", "CharacterList", new {Model.ProjectId, Token = Model.CurrentUserToken}, null)
-    <br />
-    Обратите внимание, эта ссылка дает доступ к полному мастерскому списку персонажей всем, у кого она окажется. Не выкладывайте ее в открытые источники!
-    Это экспериментальная фича, она может прекратить работать в любой момент.
-</p>
 @section Scripts
 {
     <script type="text/javascript" src="~/external/roles-1.js" async defer></script>

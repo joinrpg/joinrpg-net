@@ -248,7 +248,6 @@
     <Compile Include="Models\CheckIn\CheckInVewModel.cs" />
     <Compile Include="Models\ClaimStatusView.cs" />
     <Compile Include="Models\Exporters\CharacterListExporterBase.cs" />
-    <Compile Include="Models\Exporters\CharacterListForAutomaticExporter.cs" />
     <Compile Include="Models\ForumModels.cs" />
     <Compile Include="Models\Exporters\CharacterListItemViewModelExporter.cs" />
     <Compile Include="Models\Exporters\ClaimListItemViewModelExporter.cs" />
@@ -731,6 +730,7 @@
     <Content Include="Views\CheckIn\SecondRole.cshtml" />
     <Content Include="Views\Claim\_CheckInStatusBoard.cshtml" />
     <Content Include="Views\CheckIn\Setup.cshtml" />
+    <Content Include="Views\CheckIn\Stat.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

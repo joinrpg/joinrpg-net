@@ -365,12 +365,11 @@ namespace JoinRpg.Services.Impl
 
       claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
-      if (claim.Character == null)
+      if (claim.Character?.ApprovedClaim == claim)
       {
-        throw new InvalidOperationException("Unexpected");
+        claim.Character.ApprovedClaimId = null;
       }
 
-      claim.Character.ApprovedClaimId = null;
       var email =
         await
           AddCommentWithEmail<DeclineByMasterEmail>(commentText, claim, true,
