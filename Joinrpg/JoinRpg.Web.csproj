@@ -730,6 +730,7 @@
     <Content Include="Views\CheckIn\SecondRole.cshtml" />
     <Content Include="Views\Claim\_CheckInStatusBoard.cshtml" />
     <Content Include="Views\CheckIn\Setup.cshtml" />
+    <Content Include="Views\CheckIn\Stat.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
