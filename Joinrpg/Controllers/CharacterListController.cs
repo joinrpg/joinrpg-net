@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -20,34 +21,12 @@ namespace JoinRpg.Web.Controllers
 
     private IPlotRepository PlotRepository { get; }
     private IUriService UriService { get; }
+    [ProvidesContext]
+    private ICharacterRepository CharacterRepository { get; }
 
     [HttpGet]
     public Task<ActionResult> Active(int projectid, string export)
      => MasterCharacterList(projectid, claim => claim.IsActive, export, "Все персонажи");
-
-    [HttpGet, AllowAnonymous]
-    public async Task<ActionResult> ActiveToken(int projectid, string token)
-    {
-      var characters = (await ProjectRepository.GetCharacters(projectid)).Where(claim => claim.IsActive).ToList();
-
-      var project = await ProjectRepository.GetProjectWithFinances(projectid);
-
-      var guid = new Guid(token.FromHexString());
-
-      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
-
-      if (acl == null)
-      {
-        return Content("Unauthorized");
-      }
-
-      var plots = await PlotRepository.GetPlotsWithTargets(projectid);
-      
-      var list = new CharacterListViewModel(acl.UserId , "Все персонажи", characters, plots, project, vm => true);
-
-      return await ExportWithCustomFronend(list.Items, list.Title, ExportType.Csv,
-        new CharacterListForAutomaticExporter(list.Fields, UriService), list.ProjectName);
-    }
 
     [HttpGet]
     public Task<ActionResult> Deleted(int projectId, string export)
@@ -59,11 +38,6 @@ namespace JoinRpg.Web.Controllers
      => MasterCharacterList(projectid, claim => claim.GetProblems().Any(), export, "Проблемные персонажи");
 
     [HttpGet]
-    public Task<ActionResult> FreeCharactersWithPlot(int projectid, string export)
-     => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи с сюжетом", vm => vm.IndAllPlotsCount > 0);
-
-
-    [HttpGet]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectfieldid);
@@ -71,20 +45,13 @@ namespace JoinRpg.Web.Controllers
         character => character.HasProblemsForField(field) && character.IsActive, export, "Поле (непроставлено): " + field.FieldName);
     }
 
-    private Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export,
-      string title)
-    {
-      return MasterCharacterList(projectId, predicate, export, title, vm => true);
-    }
-
-    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title, Func<CharacterListItemViewModel, bool> viewModelPredicate)
+    private async Task<ActionResult> MasterCharacterList(int projectId, Func<Character, bool> predicate, string export, string title)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(predicate).ToList();
 
-      var plots = await PlotRepository.GetPlotsWithTargets(projectId);
       var project = await GetProjectFromList(projectId, characters);
 
-      var list = new CharacterListViewModel(CurrentUserId, title, characters, plots, project, viewModelPredicate);
+      var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
 
       var exportType = GetExportTypeByName(export);
 
@@ -96,10 +63,11 @@ namespace JoinRpg.Web.Controllers
       return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository, IUriService uriService) : base(userManager, projectRepository, projectService, exportDataService)
+    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository, IUriService uriService, ICharacterRepository characterRepository) : base(userManager, projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
       UriService = uriService;
+      CharacterRepository = characterRepository;
     }
 
 
@@ -121,7 +89,7 @@ namespace JoinRpg.Web.Controllers
       var plots = await PlotRepository.GetPlotsWithTargets(projectId);
 
       var list = new CharacterListByGroupViewModel(CurrentUserId,
-        characters, plots, characterGroup);
+        characters, characterGroup);
 
       var exportType = GetExportTypeByName(export);
 

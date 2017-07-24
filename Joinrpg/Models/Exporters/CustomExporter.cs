@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using Microsoft.Practices.ObjectBuilder2;
@@ -165,16 +166,16 @@ namespace JoinRpg.Web.Models.Exporters
     }
 
     [Pure]
-    protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, CustomFieldsViewModel> fieldsFunc)
+    protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc)
     {
       return FieldColumn(projectField, fieldsFunc, projectField.FieldName);
     }
 
     [Pure]
-    protected static ITableColumn FieldColumn(ProjectField projectField, Func<TRow, CustomFieldsViewModel> fieldsFunc, string name)
+    protected static ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)
     {
-      return new TableColumn<IHtmlString>(name,
-        x => fieldsFunc(x).FieldById(projectField.ProjectFieldId)?.DisplayString);
+      return new TableColumn<string>(name,
+        x => fieldsFunc(x).SingleOrDefault(f => f.Field.ProjectFieldId == projectField.ProjectFieldId)?.DisplayString);
     }
   }
 }
