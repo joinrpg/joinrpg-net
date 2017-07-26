@@ -4,15 +4,11 @@ using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models
 {
-  public class GameRolesViewModel
+  public class GameRolesReportViewModel
   {
     public int ProjectId { get; set; }
 
-    public string ProjectName{ get; set; }
-
-    public bool ShowEditControls { get; set; }
-    public bool HasMasterAccess { get; set; }
-    public IEnumerable<CharacterGroupListItemViewModel> Data { get; set; }
+    public IEnumerable<CharacterGroupReportItemViewModel> Data { get; set; }
 
     public CharacterGroupDetailsViewModel Details { get; set; }
   }

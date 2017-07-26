@@ -29,15 +29,6 @@ namespace JoinRpg.Web.Models.Characters
 
     public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
 
-    public int TotalSlots { get; set; }
-    public int TotalCharacters { get; set; }
-
-    public int TotalNpcCharacters { get; set; }
-
-    public int TotalCharactersWithPlayers { get; set; }
-
-    public int TotalDiscussedClaims { get; set; }
-
     public int TotalActiveClaims { get; set; }
 
     public IHtmlString Description { get; set; }
@@ -47,7 +38,7 @@ namespace JoinRpg.Web.Models.Characters
     public bool IsRoot => DeepLevel == 0;
 
     public bool IsRootGroup { get; set; }
-    public bool IsActive { get; set; }
+
     public bool IsPublic { get; set; }
 
     public bool IsSpecial { get; set; }
@@ -62,10 +53,6 @@ namespace JoinRpg.Web.Models.Characters
     public int ProjectId { get; set; }
 
     public bool IsAcceptingClaims { get; set; }
-
-    public int TotalAcceptedClaims { get; set; }
-
-    public bool Unlimited  { get; set; }
 
     public bool Equals(CharacterGroupListItemViewModel other) => other != null && other.CharacterGroupId == CharacterGroupId;
 

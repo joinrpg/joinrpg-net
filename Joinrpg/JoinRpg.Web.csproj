@@ -220,7 +220,10 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
+    <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
+    <Compile Include="Models\Characters\CharacterGroupReportViewModel.cs" />
     <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
+    <Compile Include="Models\GameRolesReportViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
     <Content Include="App_Code\MvcHelpers.cs" />

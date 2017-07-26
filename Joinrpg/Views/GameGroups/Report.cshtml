@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.Web.Models
-@model GameRolesViewModel
+@model GameRolesReportViewModel
 
 @{
   ViewBag.Title = "Отчет по группе —" + Model.Details.Name;
@@ -23,10 +23,6 @@
     </tr>
     @foreach (var item in Model.Data)
     {
-        if (ViewBag.MaxDeep != null && item.DeepLevel > ViewBag.MaxDeep)
-        {
-            continue;
-        }
         var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
         <tr class="@hideClassName">
             <td style="text-overflow: ellipsis">
@@ -39,7 +35,6 @@
                 {
                     @Html.ActionLink(item.Name, "Details", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
                 }
-                @Html.Partial("_GroupEditControls", item, new ViewDataDictionary() { { "ShowEditControls", Model.ShowEditControls } })
             </td>
 
             <td style="text-align: right">
