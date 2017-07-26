@@ -24,7 +24,6 @@ namespace JoinRpg.Web.Controllers
     private readonly IUserRepository _userRepository;
 
     [HttpGet]
-    // GET: GameGroups
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
       if (characterGroupId == null)
@@ -41,7 +40,6 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
-          CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
           HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
           Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault),
@@ -50,35 +48,27 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, MasterAuthorize]
-    // GET: GameGroups
-    public async Task<ActionResult> Report(int projectId, int? characterGroupId, int? maxDeep)
+    public async Task<ActionResult> Report(int projectId, int? characterGroupId)
     {
       if (characterGroupId == null)
       {
         return await RedirectToProject(projectId, "Report");
       }
 
-      ViewBag.MaxDeep = maxDeep ?? 1;
-
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
 
       if (field == null) return HttpNotFound();
 
       return View(
-        new GameRolesViewModel
+        new GameRolesReportViewModel
         {
           ProjectId = field.Project.ProjectId,
-          ProjectName = field.Project.ProjectName,
-          CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
-          HasMasterAccess = field.HasMasterAccess(CurrentUserId),
-          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId),
+          Data = CharacterGroupReportViewModel.GetGroups(field),
           Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report)
         });
     }
 
     [HttpGet]
-    // GET: GameGroups
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
       if (characterGroupId == null)

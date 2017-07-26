@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Generic; 
 using System.Linq;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -70,7 +70,6 @@ namespace JoinRpg.Web.Models.Characters
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
           IsPublic = characterGroup.IsPublic,
           IsSpecial = characterGroup.IsSpecial,
-          IsActive = characterGroup.IsActive,
           IsRootGroup = characterGroup.IsRoot,
           ProjectId = characterGroup.ProjectId,
           RootGroupId = Root.CharacterGroupId,
@@ -97,14 +96,7 @@ namespace JoinRpg.Web.Models.Characters
         if (prevCopy != null)
         {
           vm.ChildGroups = prevCopy.ChildGroups;
-          vm.TotalSlots = prevCopy.TotalSlots;
-          vm.TotalCharacters = prevCopy.TotalCharacters;
-          vm.TotalCharactersWithPlayers = prevCopy.TotalCharactersWithPlayers;
-          vm.TotalDiscussedClaims = prevCopy.TotalDiscussedClaims;
           vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
-          vm.TotalNpcCharacters = prevCopy.TotalNpcCharacters;
-          vm.Unlimited = prevCopy.Unlimited;
-          vm.TotalAcceptedClaims = prevCopy.TotalAcceptedClaims;
           return vm;
         }
         
@@ -112,22 +104,6 @@ namespace JoinRpg.Web.Models.Characters
         var pathForChildren = pathToTop.Union(new[] { characterGroup }).ToList();
 
         vm.ChildGroups = childGroups.Select(childGroup => GenerateFrom(childGroup, deepLevel + 1, pathForChildren)).ToList().MarkFirstAndLast();
-
-        var flatChilds = vm.FlatTree(model => model.ChildGroups).Distinct().ToList();
-
-        var flatCharacters = flatChilds.SelectMany(c => c.ActiveCharacters).Distinct().ToList();
-
-        vm.TotalSlots = flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots) +
-                        flatCharacters.Count(c => c.IsAvailable);
-        
-        vm.TotalCharacters = flatCharacters.Count + flatChilds.Sum(c => c.AvaiableDirectSlots == -1 ? 0 : c.AvaiableDirectSlots);
-        vm.TotalNpcCharacters = flatCharacters.Count(c => !c.IsAcceptingClaims);
-        vm.TotalCharactersWithPlayers = flatCharacters.Count(c => c.Player != null);
-
-        vm.TotalDiscussedClaims = flatCharacters.Where(c => c.Player == null).Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
-        vm.TotalActiveClaims = flatCharacters.Sum(c => c.ActiveClaimsCount) + flatChilds.Sum(c => c.ActiveClaimsCount);
-        vm.TotalAcceptedClaims = flatCharacters.Count(c => c.Player != null);
-        vm.Unlimited = vm.AvaiableDirectSlots == -1 || flatChilds.Any(c => c.AvaiableDirectSlots == -1);
 
         return vm;
       }
