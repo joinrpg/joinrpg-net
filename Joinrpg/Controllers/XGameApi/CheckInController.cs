@@ -32,7 +32,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
     [Route("allclaims")]
     public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
     {
-      return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.Approved)).Select(claim =>
+      return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.ReadyForCheckIn)).Select(claim =>
 
         new ClaimHeaderInfo
         {
