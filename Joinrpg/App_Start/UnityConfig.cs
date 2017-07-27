@@ -3,8 +3,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using JoinRpg.Dal.Impl;
-using JoinRpg.Dal.Impl.Repositories;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Experimental.Plugin.Interfaces;
@@ -16,7 +14,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
 
@@ -53,8 +50,15 @@ namespace JoinRpg.Web
     public static void RegisterTypes(IUnityContainer container)
     {
 
-      container.RegisterType<IUnitOfWork, MyDbContext>();
-      container.RegisterType<DbContext, MyDbContext>();
+      container.RegisterType<IUnitOfWork, MyDbContext>(new PerRequestLifetimeManager());
+      container.RegisterType<DbContext, MyDbContext>(new PerRequestLifetimeManager());
+
+      container.RegisterType<ApplicationUserManager>(new PerRequestLifetimeManager());
+      container.RegisterType<IAuthenticationManager>(
+        new InjectionFactory(c => HttpContext.Current.GetOwinContext().Authentication));
+      container.RegisterType<ApplicationSignInManager>(new PerRequestLifetimeManager());
+
+      container.RegisterType<IIdentityMessageService, EmailService>();
 
       RepositoriesRegistraton.Register(container);
 
@@ -70,12 +74,6 @@ namespace JoinRpg.Web
       container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();
-
-      container.RegisterType<IAuthenticationManager>(
-        new InjectionFactory(o => HttpContext.Current.GetOwinContext().Authentication));
-
-      container.RegisterType<ApplicationUserManager>(
-        new InjectionFactory(o => HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>()));
 
       container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 

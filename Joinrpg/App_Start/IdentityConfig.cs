@@ -1,78 +1,62 @@
 ﻿using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using JoinRpg.Dal.Impl;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin;
 using Microsoft.Owin.Security;
 
 namespace JoinRpg.Web
 {
-  // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
-    public class ApplicationUserManager : UserManager<User, int>
+  [UsedImplicitly]
+  public class ApplicationUserManager : UserManager<User, int>
+  {
+    public ApplicationUserManager(IUserStore<User, int> store, IIdentityMessageService messageService)
+      : base(store)
     {
-      internal ApplicationUserManager(IUserStore<User, int> store)
-            : base(store)
-        {
-        }
+      // Configure validation logic for usernames
+      UserValidator = new UserValidator<User, int>(this)
+      {
+        AllowOnlyAlphanumericUserNames = false,
+        RequireUniqueEmail = true
+      };
 
-        public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context) 
-        {
-            //TODO[DI]: Fix this to use MyUserStore from DI container
-            var manager = new ApplicationUserManager(new MyUserStore(context.Get<MyDbContext>()));
-            // Configure validation logic for usernames
-            manager.UserValidator = new UserValidator<User, int>(manager)
-            {
-                AllowOnlyAlphanumericUserNames = false,
-                RequireUniqueEmail = true
-            };
+      // Configure validation logic for passwords
+      PasswordValidator = new PasswordValidator
+      {
+        RequiredLength = 6,
+        RequireNonLetterOrDigit = false,
+        RequireDigit = false,
+        RequireLowercase = false,
+        RequireUppercase = false,
+      };
 
-            // Configure validation logic for passwords
-            manager.PasswordValidator = new PasswordValidator
-            {
-                RequiredLength = 6,
-                RequireNonLetterOrDigit = false,
-                RequireDigit = false,
-                RequireLowercase = false,
-                RequireUppercase = false,
-            };
+      // Configure user lockout defaults
+      UserLockoutEnabledByDefault = false;
+      DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+      MaxFailedAccessAttemptsBeforeLockout = 5;
 
-            // Configure user lockout defaults
-            manager.UserLockoutEnabledByDefault = false;
-            manager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
-            manager.MaxFailedAccessAttemptsBeforeLockout = 5;
+      EmailService = messageService;
 
-            manager.EmailService = new EmailService(new ApiSecretsStorage());
+      UserTokenProvider =
+        new DataProtectorTokenProvider<User, int>(
+          Startup.DataProtectionProvider.Create("ASP.NET Identity"));
 
+    }
+  }
 
-
-            //manager.SmsService = new SmsService();
-            var dataProtectionProvider = options.DataProtectionProvider;
-            
-                manager.UserTokenProvider = 
-                    new DataProtectorTokenProvider<User,int>(dataProtectionProvider.Create("ASP.NET Identity"));
-            
-            return manager;
-        }
+  [UsedImplicitly]
+  public class ApplicationSignInManager : SignInManager<User, int>
+  {
+    public ApplicationSignInManager(ApplicationUserManager userManager,
+      IAuthenticationManager authenticationManager)
+      : base(userManager, authenticationManager)
+    {
     }
 
-    // Configure the application sign-in manager which is used in this application.
-    public class ApplicationSignInManager : SignInManager<User, int>
-    {
-        public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
-            : base(userManager, authenticationManager)
-        {
-        }
-
-      public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user) => user
-        .GenerateUserIdentityAsync(UserManager, AuthenticationType);
-
-      public static ApplicationSignInManager Create(
-        IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context) => new
-        ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(),
-          context.Authentication);
-    }
+    public override Task<ClaimsIdentity> CreateUserIdentityAsync(User user) => user
+      .GenerateUserIdentityAsync(UserManager, AuthenticationType);
+  }
 }
