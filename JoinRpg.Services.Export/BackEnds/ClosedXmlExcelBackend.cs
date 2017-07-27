@@ -3,7 +3,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using JoinRpg.Services.Export.Internal;
-using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.BackEnds
 {
@@ -25,10 +24,6 @@ namespace JoinRpg.Services.Export.BackEnds
       if (cell.Content is DateTime)
       {
         xlCell.SetValue((DateTime) cell.Content);
-      }
-      else if (cell.Content is DateTime?)
-      {
-        xlCell.SetValue((DateTime?) cell.Content);
       }
       else if (uri != null)
       {

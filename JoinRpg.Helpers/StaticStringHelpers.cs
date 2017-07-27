@@ -119,7 +119,7 @@ namespace JoinRpg.Helpers
 
     public static string ToHexHash(this string str, HashAlgorithm hashAlgorithm)
     {
-      var bytes = Encoding.UTF8.GetBytes(str); //TODO: In what encoding Allrpg.info saves passwords? Do not want to think about it....
+      var bytes = Encoding.UTF8.GetBytes(str); 
       return hashAlgorithm.ComputeHash(bytes).ToHexString();
     }
 

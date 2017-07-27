@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Web;
-using JoinRpg.Dal.Impl;
+using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
 using KatanaContrib.Security.VK;
@@ -10,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OAuth;
 using Owin;
@@ -18,13 +18,14 @@ namespace JoinRpg.Web
 {
   public partial class Startup
   {
-    // For more information on configuring authentication, please visit http://go.microsoft.com/fwlink/?LinkId=301864
+    internal static IDataProtectionProvider DataProtectionProvider { get; private set; }
+
+    
     private void ConfigureAuth(IAppBuilder app)
     {
-      // Configure the db context, user manager and signin manager to use a single instance per request
-      app.CreatePerOwinContext(MyDbContext.Create);
-      app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
-      app.CreatePerOwinContext<ApplicationSignInManager>(ApplicationSignInManager.Create);
+      DataProtectionProvider = app.GetDataProtectionProvider();
+      app.CreatePerOwinContext(() => DependencyResolver.Current.GetService<ApplicationUserManager>());
+      app.CreatePerOwinContext(() => DependencyResolver.Current.GetService<ApplicationSignInManager>());
 
       RegisterCookieAuth(app);
 
@@ -38,8 +39,7 @@ namespace JoinRpg.Web
       var oAuthOptions = new OAuthAuthorizationServerOptions
       {
         TokenEndpointPath = new PathString("/x-api/Token"),
-        //TODO[DI]
-        Provider = new ApiSignInProvider(new ApplicationUserManager(new MyUserStore(MyDbContext.Create()))),
+        Provider = new ApiSignInProvider(() => DependencyResolver.Current.GetService<ApplicationUserManager>()),
         AuthorizeEndpointPath = new PathString("/x-api/Account/ExternalLogin"),
         AccessTokenExpireTimeSpan = TimeSpan.FromDays(30),
         //TODO[SSL]
