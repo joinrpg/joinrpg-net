@@ -11,7 +11,6 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
@@ -70,7 +69,6 @@ namespace JoinRpg.Web
 
       container.RegisterType<IEmailService, EmailServiceImpl>();
 
-      container.RegisterType<IAllrpgApiKeyStorage, ApiSecretsStorage>();
       container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 
       container.RegisterType<IUserStore<User, int>, MyUserStore>();

@@ -4,7 +4,6 @@ using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
@@ -16,21 +15,16 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class AccountController : Common.ControllerBase
   {
-    private readonly ApplicationSignInManager _signInManager;
-
-    private readonly IAllrpgService _allrpgService;
     private readonly IEmailService _emailService;
 
-    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager,
-      IAllrpgService allrpgService, IEmailService emailService) : base(userManager)
+    public AccountController(ApplicationUserManager userManager,
+      ApplicationSignInManager signInManager, IEmailService emailService) : base(userManager)
     {
-      _signInManager = signInManager;
-      _allrpgService = allrpgService;
+      SignInManager = signInManager;
       _emailService = emailService;
     }
 
-    private ApplicationSignInManager SignInManager
-      => _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+    private ApplicationSignInManager SignInManager { get; }
 
     //
     // GET: /Account/Login
@@ -70,47 +64,6 @@ namespace JoinRpg.Web.Controllers
       var result =
         await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
 
-      if (result == SignInStatus.Failure)
-      {
-        var legacyLoginResult = await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password);
-        switch (legacyLoginResult)            
-        {
-          case LegacyLoginResult.NoSuchUserOrPassword:
-          case LegacyLoginResult.ImportDisabled:
-            ModelState.AddModelError("", "Не найден логин или пароль");
-            return View(model);
-          case LegacyLoginResult.Success:
-            //Change password to imported
-            var changePasswordResult = await UserManager.SetPasswordWithoutValidationAsync(user.UserId, model.Password);
-            //Login again
-            result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
-            break;
-          case LegacyLoginResult.NetworkError:
-          case LegacyLoginResult.ParseError:
-          case LegacyLoginResult.WrongKey:
-            ModelState.AddModelError("", $"Не удалось установить связь с сервером allrpg.info: {legacyLoginResult}.");
-            return View(model);
-          case LegacyLoginResult.RegisterNewUser:
-            user = new User { UserName = model.Email, Email = model.Email };
-            var registerResult = await UserManager.CreateAsync(user, model.Password);
-            if (registerResult.Succeeded)
-            {
-              string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.UserId);
-              if (await UserManager.ConfirmEmailAsync(user.UserId, code) == IdentityResult.Success)
-              {
-                result = SignInStatus.Success;
-              }
-            }
-            break;
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
-      }
-
-      if (result == SignInStatus.Success)
-      {
-        await _allrpgService.DownloadAllrpgProfile(user.UserId);
-      }
       switch (result)
       {
         case SignInStatus.Success:

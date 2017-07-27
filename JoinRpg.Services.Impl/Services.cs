@@ -1,10 +1,8 @@
 ﻿using System;
 using JetBrains.Annotations;
 using JoinRpg.Domain.CharacterFields;
-using JoinRpg.Services.Impl.Allrpg;
 using JoinRpg.Services.Impl.Search;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Allrpg;
 using Microsoft.Practices.Unity;
 
 namespace JoinRpg.Services.Impl
@@ -19,7 +17,6 @@ namespace JoinRpg.Services.Impl
       container.RegisterType<IClaimService, ClaimServiceImpl>();
       container.RegisterType<ISearchService, SearchServiceImpl>();
       container.RegisterType<IPlotService, PlotServiceImpl>();
-      container.RegisterType<IAllrpgService, AllrpgServiceImpl>();
       container.RegisterType<IUserService, UserServiceImpl>();
       container.RegisterType<IFinanceService, FinanceOperationsImpl>();
       container.RegisterType<IForumService, ForumServiceImpl>();

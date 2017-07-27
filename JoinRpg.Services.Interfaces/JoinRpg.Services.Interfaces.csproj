@@ -49,9 +49,6 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Allrpg\DownloadResult.cs" />
-    <Compile Include="Allrpg\IAllrpgApiKeyStorage.cs" />
-    <Compile Include="Allrpg\IAllrpgService.cs" />
     <Compile Include="IClaimService.cs" />
     <Compile Include="IEmailService.cs" />
     <Compile Include="IExportDataService.cs" />
