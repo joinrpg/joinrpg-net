@@ -1,7 +1,6 @@
-namespace JoinRpg.Dal.Impl.Migrations
+﻿namespace JoinRpg.Dal.Impl.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
+  using System.Data.Entity.Migrations;
     
     public partial class ReadComments : DbMigration
     {
@@ -19,8 +18,8 @@ namespace JoinRpg.Dal.Impl.Migrations
                     })
                 .PrimaryKey(t => t.ReadCommentWatermarkId)
                 .ForeignKey("dbo.Claims", t => t.ClaimId, cascadeDelete: true)
-                .ForeignKey("dbo.Comments", t => t.CommentId, cascadeDelete: false)
-                .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: false)
+                .ForeignKey("dbo.Comments", t => t.CommentId)
+                .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.ClaimId)
                 .Index(t => t.UserId)
                 .Index(t => t.CommentId);
