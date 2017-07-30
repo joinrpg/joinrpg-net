@@ -134,6 +134,7 @@ namespace JoinRpg.Services.Impl
       });
 
       oldClaim.ClaimStatus = Claim.Status.Approved;
+      source.ApprovedClaim = claim;
       AddCommentImpl(oldClaim, null, ".", true, CommentExtraAction.OutOfGame);
 
       

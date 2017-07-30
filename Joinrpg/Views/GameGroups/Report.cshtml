@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.Web.Models
-@model GameRolesViewModel
+@model GameRolesReportViewModel
 
 @{
   ViewBag.Title = "Отчет по группе —" + Model.Details.Name;
@@ -7,66 +7,77 @@
 
 @Html.DisplayFor(model => model.Details)
 <table class="table table-bordered">
-    <tr>
-        <th rowspan="2">Группа</th>
-        <th colspan="4">Персонажей</th>
-        <th colspan="3">Заявок</th>
-    </tr>
-    <tr>
-        <th>Всего</th>
-        <th>NPC</th>
-        <th>Занято</th>
-        <th>Свободно</th>
-        <th>Всего</th>
-        <th>Принято</th>
-        <th>Обсуждается</th>
-    </tr>
-    @foreach (var item in Model.Data)
+  <tr>
+    <th rowspan="2">Группа</th>
+    <th colspan="@(Model.CheckinModuleEnabled ? 5 : 4)">Персонажей</th>
+    <th colspan="@(Model.CheckinModuleEnabled ? 4 : 3)">Заявок</th>
+  </tr>
+  <tr>
+    <th>Всего</th>
+    <th>NPC</th>
+    <th>Занято</th>
+    <th>Свободно</th>
+    @if (Model.CheckinModuleEnabled)
     {
-        if (ViewBag.MaxDeep != null && item.DeepLevel > ViewBag.MaxDeep)
-        {
-            continue;
-        }
-        var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
-        <tr class="@hideClassName">
-            <td style="text-overflow: ellipsis">
-                @(new String('→', item.DeepLevel))
-                @if (item.DeepLevel == 0)
-                {
-                    <text><b>@item.Name</b> (итого)</text>
-                }
-                else
-                {
-                    @Html.ActionLink(item.Name, "Details", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
-                }
-                @Html.Partial("_GroupEditControls", item, new ViewDataDictionary() { { "ShowEditControls", Model.ShowEditControls } })
-            </td>
-
-            <td style="text-align: right">
-                @Html.ActionLink(item.TotalCharacters.ToString(), "ByGroup", "CharacterList", new {Model.ProjectId, item.CharacterGroupId}, null)
-            </td>
-            <td style="text-align: right">@item.TotalNpcCharacters</td>
-            <td style="text-align: right">@item.TotalCharactersWithPlayers</td>
-            <td style="text-align: right">@item.TotalSlots
-                @if (item.AvaiableDirectSlots == -1)
-                {
-                    <span title="Разрешены неограниченные прямые заявки">∞</span>
-                }
-                else if (item.Unlimited)
-                {
-                <span title="В подгруппу разрешены неограниченные прямые заявки">+</span>
-                }
-            </td>
-            <td style="text-align: right">
-                @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "ClaimList", new {Model.ProjectId, item.CharacterGroupId}, null)
-            </td>
-            <td style="text-align: right">
-                @item.TotalAcceptedClaims
-            </td>
-            <td style="text-align: right">
-                @Html.ActionLink(item.TotalDiscussedClaims.ToString(), "DiscussingForGroup", "ClaimList", new { Model.ProjectId, item.CharacterGroupId }, null)
-            </td>
-
-        </tr>
+      <th>В игре</th>
     }
+    <th>Всего</th>
+    <th>Принято</th>
+    @if (Model.CheckinModuleEnabled)
+    {
+      <th>Заехало</th>
+    }
+    <th>Обсуждается</th>
+  </tr>
+  @foreach (var item in Model.Data)
+  {
+    var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
+    <tr class="@hideClassName">
+      <td style="text-overflow: ellipsis">
+        @(new String('→', item.DeepLevel))
+        @if (item.DeepLevel == 0)
+        {
+          <text><b>@item.Name</b> (итого)</text>
+        }
+        else
+        {
+          @Html.ActionLink(item.Name, "Details", "GameGroups", new {Model.ProjectId, item.CharacterGroupId}, null)
+        }
+      </td>
+
+      <td style="text-align: right">
+        @Html.ActionLink(item.TotalCharacters.ToString(), "ByGroup", "CharacterList", new {Model.ProjectId, item.CharacterGroupId}, null)
+      </td>
+      <td style="text-align: right">@item.TotalNpcCharacters</td>
+      <td style="text-align: right">@item.TotalCharactersWithPlayers</td>
+      <td style="text-align: right">@item.TotalSlots
+        @if (item.AvaiableDirectSlots == -1)
+        {
+          <span title="Разрешены неограниченные прямые заявки">∞</span>
+        }
+        else if (item.Unlimited)
+        {
+          <span title="В подгруппу разрешены неограниченные прямые заявки">+</span>
+        }
+      </td>
+      @if (Model.CheckinModuleEnabled)
+      {
+        <td>@item.TotalInGameCharacters</td>
+      }
+      <td style="text-align: right">
+        @Html.ActionLink(item.TotalActiveClaims.ToString(), "ListForGroup", "ClaimList", new {Model.ProjectId, item.CharacterGroupId}, null)
+      </td>
+      <td style="text-align: right">
+        @item.TotalAcceptedClaims
+      </td>
+      @if (Model.CheckinModuleEnabled)
+      {
+        <td>@item.TotalCheckedInClaims</td>
+      }
+      <td style="text-align: right">
+        @Html.ActionLink(item.TotalDiscussedClaims.ToString(), "DiscussingForGroup", "ClaimList", new { Model.ProjectId, item.CharacterGroupId }, null)
+      </td>
+
+    </tr>
+  }
 </table>

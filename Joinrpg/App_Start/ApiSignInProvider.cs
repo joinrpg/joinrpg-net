@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using JoinRpg.Web.Helpers;
 using Microsoft.Owin.Security.OAuth;
 
@@ -6,11 +7,11 @@ namespace JoinRpg.Web
 {
   internal class ApiSignInProvider : OAuthAuthorizationServerProvider
   {
-    private ApplicationUserManager Manager { get; }
+    private Func<ApplicationUserManager> ManagerFactory { get; }
 
-    public ApiSignInProvider(ApplicationUserManager manager)
+    public ApiSignInProvider(Func<ApplicationUserManager> managerFactory)
     {
-      Manager = manager;
+      ManagerFactory = managerFactory;
     }
     /// <inheritdoc />
     public override Task ValidateClientAuthentication(
@@ -32,15 +33,17 @@ namespace JoinRpg.Web
         return;
       }
 
-      var user = await Manager.FindByEmailAsync(context.UserName);
+      var manager = ManagerFactory();
 
-      if (!await Manager.CheckPasswordAsync(user, context.Password))
+      var user = await manager.FindByEmailAsync(context.UserName);
+
+      if (!await manager.CheckPasswordAsync(user, context.Password))
       {
         context.SetError("invalid_grant", "The user name or password is incorrect.");
         return;
       }
 
-      var x = await user.GenerateUserIdentityAsync(Manager, context.Options.AuthenticationType);
+      var x = await user.GenerateUserIdentityAsync(manager, context.Options.AuthenticationType);
 
       context.Validated(x);
 
