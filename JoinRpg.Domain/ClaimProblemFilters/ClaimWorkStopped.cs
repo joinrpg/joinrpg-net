@@ -9,6 +9,11 @@ namespace JoinRpg.Domain.ClaimProblemFilters
   {
     public IEnumerable<ClaimProblem> GetProblems(Claim claim)
     {
+      if (claim.Project.Active)
+      {
+        yield break;
+      }
+
       if (!claim.IsApproved) // Our concern is only approved claims
       {
         yield break;

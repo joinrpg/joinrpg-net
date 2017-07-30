@@ -60,6 +60,7 @@ namespace JoinRpg.Domain
       return e.Texts.SingleOrDefault(text => text.Version == version);
     }
 
+    //TODO consider return NUll if deleted
     [CanBeNull]
     public static PlotElementTexts PublishedVersion([NotNull] this PlotElement e)
     {
