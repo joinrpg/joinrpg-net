@@ -60,7 +60,7 @@ namespace JoinRpg.Web.Models.Print
       Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character);
 
       Handouts =
-        plotElements.Where(e => e.ElementType == PlotElementType.Handout)
+        plotElements.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
           .Select(e => e.PublishedVersion())
           .Where(e => e != null)
           .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))

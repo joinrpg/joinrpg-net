@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Models.CheckIn
       ProjectId = claim.ProjectId;
       Master = claim.ResponsibleMasterUser;
       Handouts =
-        plotElements?.Where(e => e.ElementType == PlotElementType.Handout)
+        plotElements?.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
           .Select(e => e.PublishedVersion())
           .Where(e => e != null)
           .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
