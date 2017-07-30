@@ -10,6 +10,9 @@ namespace JoinRpg.Web
       routes.LowercaseUrls = true;
       routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+      routes.MapRoute(name: "Report2D", url: "{ProjectId}/reports/2d/{gameReport2DTemplateId}",
+        defaults: new { controller = "Reports", action = "Report2D" });
+
       routes.MapRoute(name: "PluginSetup", url: "{ProjectId}/plugins",
         defaults: new { controller = "PluginSetup", action = "Index" });
 

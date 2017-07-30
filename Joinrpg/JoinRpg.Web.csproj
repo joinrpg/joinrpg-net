@@ -212,6 +212,7 @@
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
     <Compile Include="Controllers\XGameApi\MyProfileController.cs" />
@@ -224,6 +225,7 @@
     <Compile Include="Models\Characters\CharacterGroupReportViewModel.cs" />
     <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
     <Compile Include="Models\GameRolesReportViewModel.cs" />
+    <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
     <Content Include="App_Code\MvcHelpers.cs" />
@@ -734,6 +736,7 @@
     <Content Include="Views\Claim\_CheckInStatusBoard.cshtml" />
     <Content Include="Views\CheckIn\Setup.cshtml" />
     <Content Include="Views\CheckIn\Stat.cshtml" />
+    <Content Include="Views\Reports\Report2D.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
