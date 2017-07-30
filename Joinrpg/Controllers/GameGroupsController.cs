@@ -26,12 +26,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId);
-      }
-      
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
       if (field == null) return HttpNotFound();
       
@@ -50,12 +45,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize]
     public async Task<ActionResult> Report(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId, "Report");
-      }
-
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
       if (field == null) return HttpNotFound();
 
@@ -72,12 +62,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId, "Hot");
-      }
-
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null) return HttpNotFound();
       return  View(GetHotCharacters(field));
     }

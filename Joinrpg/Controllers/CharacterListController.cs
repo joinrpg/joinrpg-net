@@ -35,7 +35,9 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     public Task<ActionResult> Problems(int projectid, string export)
-     => MasterCharacterList(projectid, claim => claim.GetProblems().Any(), export, "Проблемные персонажи");
+      => MasterCharacterList(projectid,
+        character => character.ApprovedClaimId != null && character.GetProblems().Any(), export,
+        "Проблемные персонажи");
 
     [HttpGet]
     public async Task<ActionResult> ByUnAssignedField(int projectfieldid, int projectid, string export)

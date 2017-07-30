@@ -135,6 +135,5 @@ namespace JoinRpg.DataModel
     public virtual User UpdatedBy { get; set; }
 
     public int UpdatedById { get; set; }
-
   }
 }

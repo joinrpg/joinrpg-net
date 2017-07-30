@@ -57,6 +57,8 @@ namespace JoinRpg.DataModel
 
     public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
     #endregion
+
+    public virtual ICollection<GameReport2DTemplate> GameReport2DTemplates { get; set; }
   }
 
   public class ProjectDetails
