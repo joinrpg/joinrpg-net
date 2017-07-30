@@ -11,5 +11,6 @@ namespace JoinRpg.Web.Models
     public IEnumerable<CharacterGroupReportItemViewModel> Data { get; set; }
 
     public CharacterGroupDetailsViewModel Details { get; set; }
+    public bool CheckinModuleEnabled { get; set; }
   }
 }

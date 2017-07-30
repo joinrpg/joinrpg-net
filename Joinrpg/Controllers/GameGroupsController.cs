@@ -64,7 +64,8 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = field.Project.ProjectId,
           Data = CharacterGroupReportViewModel.GetGroups(field),
-          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report)
+          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report),
+          CheckinModuleEnabled = field.Project.Details.EnableCheckInModule,
         });
     }
 
