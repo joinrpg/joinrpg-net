@@ -7,18 +7,20 @@
 <h2>@ViewBag.Title</h2>
 
 <div class="h1">
-  Осталось зарегистрировать: <span id="checkinStat"></span>
+  Осталось зарегистрировать: <span id="readyStat"></span>
+  <br />
+  Прошло регистрацию: <span id="checkinStat"></span>
 </div>
 
 @section Scripts {
   <script type="text/javascript">
     $(function() {
       function load() {
-        $.getJSON("/x-game-api/@ViewBag.ProjectId/checkin/allclaims",
+        $.getJSON("/x-game-api/@ViewBag.ProjectId/checkin/stat",
           function(data) {
-            var x = data.length;
-            $('#checkinStat').text(x);
-            setTimeout(load, 1000);
+            $('#checkinStat').text(data.CheckIn);
+            $('#readyStat').text(data.Ready);
+            setTimeout(load, 5000);
           });
       };
 
