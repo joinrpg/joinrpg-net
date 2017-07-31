@@ -47,6 +47,7 @@
     <Compile Include="CharacterHeader.cs" />
     <Compile Include="CharacterInfo.cs" />
     <Compile Include="CheckInCommand.cs" />
+    <Compile Include="CheckInStats.cs" />
     <Compile Include="ClaimCheckInValidationResult.cs" />
     <Compile Include="ClaimHeaderInfo.cs" />
     <Compile Include="FieldValue.cs" />
