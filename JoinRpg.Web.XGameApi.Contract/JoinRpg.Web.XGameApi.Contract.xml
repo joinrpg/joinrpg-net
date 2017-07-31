@@ -119,6 +119,21 @@
             Check in time to support offlne checkin scenario. Put null here for now
             </summary>
         </member>
+        <member name="T:JoinRpg.Web.XGameApi.Contract.CheckInStats">
+            <summary>
+            Stats about check-in
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CheckInStats.CheckIn">
+            <summary>
+            Прошло регистрацию
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CheckInStats.Ready">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.ClaimCheckInValidationResult">
             <summary>
             Validation of claim for checkin
