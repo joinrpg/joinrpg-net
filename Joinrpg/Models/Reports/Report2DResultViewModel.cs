@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Web.Models.Reports
 {
@@ -23,11 +24,22 @@ namespace JoinRpg.Web.Models.Reports
         );
     }
 
+    private static IReadOnlyCollection<Character> GetFlatCharacters(CharacterGroup group)
+    {
+      var flatChilds = group.FlatTree(model => model.ChildGroups);
+
+      var flatCharacters = flatChilds.SelectMany(c => c.Characters).Distinct().ToList();
+      return flatCharacters;
+    }
+
     private static Dictionary<int, GroupChars> GenerateSet(GameReport2DTemplate template, CharacterGroup group)
     {
-      var rowsSet = group.ChildGroups.ToDictionary(
+      
+      var rowsSet = group.ChildGroups
+        .Where(g => !g.IsSpecial || !g.ChildGroups.Any())
+        .ToDictionary(
         g => g.CharacterGroupId,
-        g => new GroupChars {Name = g.CharacterGroupName, Characters = g.Characters.ToList()});
+        g => new GroupChars {Name = g.CharacterGroupName, Characters =GetFlatCharacters(g)});
 
       rowsSet.Add(-1,
         new GroupChars
@@ -42,7 +54,7 @@ namespace JoinRpg.Web.Models.Reports
     private class GroupChars
     {
       public string Name { get; set; }
-      public List<Character> Characters { get; set; }
+      public IReadOnlyCollection<Character> Characters { get; set; }
     }
 
     private static Dictionary<int, string> GetChildGroups(Dictionary<int, GroupChars> gr)
