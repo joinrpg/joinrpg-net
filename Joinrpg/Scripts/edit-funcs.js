@@ -64,6 +64,6 @@ if (hash) {
     $("#" + hash).collapse('show');
 }
 
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-})
+$(function() {
+  $('[data-toggle="tooltip"]').tooltip();
+});
