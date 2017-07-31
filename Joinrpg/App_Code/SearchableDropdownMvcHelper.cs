@@ -14,9 +14,9 @@ namespace JoinRpg.Web
     {
       //TODO: selected value from model
       var itemsString =
-        string.Join("",
+        string.Join("\n",
           items.Select(item => string.Format(
-            "<option data-tokens=\"{0}\" data-subtext=\"{1}\" value=\"{2}\">{3}</option >",
+            "<option data-tokens=\"{0} {1} {3}\" data-subtext=\"{1}\" value=\"{2}\">{3}</option >",
             item.ExtraSearch, item.Subtext, item.Value, item.Text)));
 
       // ReSharper disable once UseStringInterpolation we are inside Razor
