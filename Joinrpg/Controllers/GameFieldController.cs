@@ -75,11 +75,15 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await FieldSetupService.AddField(project.ProjectId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
+        await FieldSetupService.AddField(project.ProjectId,
+          (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.DescriptionEditable,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
-          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, viewModel.ShowForUnApprovedClaim);
+          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo,
+          (MandatoryStatus) viewModel.MandatoryStatus,
+          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc,
+          viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
+          viewModel.ShowForUnApprovedClaim);
 
         return ReturnToIndex(project);
       }
@@ -155,11 +159,12 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      var project = field.Project;
       try
       {
         await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
-        return ReturnToIndex(field.Project);
+        return ReturnToIndex(project);
       }
       catch (Exception exception)
       {
@@ -189,7 +194,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-            viewModel.Description);
+            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -222,7 +227,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
-            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId);
+            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -298,7 +303,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FieldSetupService.MoveFieldValue(projectid, parentObjectId, listItemId, direction);
+        await FieldSetupService.MoveFieldVariant(projectid, parentObjectId, listItemId, direction);
 
 
         return ReturnToField(value);

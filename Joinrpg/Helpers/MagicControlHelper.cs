@@ -74,21 +74,15 @@ namespace JoinRpg.Web.Helpers
 
     private static string GetStrategyString(MagicControlStrategy strategy)
     {
-      string strategyString;
       switch (strategy)
       {
         case MagicControlStrategy.Changer:
-          strategyString
-            = "changer";
-          break;
+          return "changer";
         case MagicControlStrategy.NonChanger:
-          strategyString
-            = "nonchanger";
-          break;
+          return "nonchanger";
         default:
           throw new ArgumentOutOfRangeException(nameof(strategy), strategy, null);
       }
-      return strategyString;
     }
   }
 }

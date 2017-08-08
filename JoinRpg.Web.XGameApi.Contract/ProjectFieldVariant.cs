@@ -21,5 +21,13 @@
     /// Descripton (HTML)
     /// </summary>
     public string Description { get; set; }
+    /// <summary>
+    /// Master Descripton (HTML)
+    /// </summary>
+    public string MasterDescription { get; set; }
+    /// <summary>
+    /// Programmatic Value. Ignored by Joinrpg, to use by external system
+    /// </summary>
+    public string ProgrammaticValue { get; set; }
   }
 }
