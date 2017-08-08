@@ -40,9 +40,6 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Доступно NPC", Description = "Доступно для персонажей-NPC")]
     public bool ValidForNpc { get; set; }
 
-    [Display(Name = "Включать в распечатки")]
-    public bool IncludeInPrint { get; set; } = true;
-
     [Display(Name = "Показывать даже при непринятой заявке")]
     public bool ShowForUnApprovedClaim { get; set; } = true;
 
@@ -60,11 +57,6 @@ namespace JoinRpg.Web.Models
             new[] {nameof(CanPlayerView), nameof(CanPlayerEdit)});
       }
 
-      if (!CanPlayerView && IncludeInPrint)
-      {
-        yield return
-          new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
-      }
 
       foreach (var validationResult in ValidateCore()) yield return validationResult;
 
@@ -139,6 +131,18 @@ namespace JoinRpg.Web.Models
     public bool Last { get; set; }
     int IMovableListItem.ItemId => ProjectFieldId;
     public bool CanEditFields { get; private set; }
+
+    [Display(Name = "Включать в распечатки")]
+    public bool IncludeInPrint { get; set; } = true;
+
+    protected override IEnumerable<ValidationResult> ValidateCore()
+    {
+      if (!CanPlayerView && IncludeInPrint)
+      {
+        yield return
+          new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
+      }
+    }
   }
 
 

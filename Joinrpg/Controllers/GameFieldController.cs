@@ -75,11 +75,15 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await FieldSetupService.AddField(project.ProjectId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
+        await FieldSetupService.AddField(project.ProjectId,
+          (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.DescriptionEditable,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
-          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, viewModel.ShowForUnApprovedClaim);
+          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo,
+          (MandatoryStatus) viewModel.MandatoryStatus,
+          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc,
+          viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
+          viewModel.ShowForUnApprovedClaim);
 
         return ReturnToIndex(project);
       }
@@ -155,11 +159,12 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      var project = field.Project;
       try
       {
         await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
-        return ReturnToIndex(field.Project);
+        return ReturnToIndex(project);
       }
       catch (Exception exception)
       {
