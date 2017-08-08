@@ -1,7 +1,7 @@
 ﻿@using JoinRpg.Web.Models.Plot
 @model PlotDisplayViewModel
 
-@if (Model != null)
+@if (Model != null && Model.Elements.Any())
 {
     <div class="panel panel-default">
         <div class="panel-heading" id="headingOne">
