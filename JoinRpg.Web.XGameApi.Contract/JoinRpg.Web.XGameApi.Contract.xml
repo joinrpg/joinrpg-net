@@ -339,6 +339,16 @@
             Descripton (HTML)
             </summary>
         </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.MasterDescription">
+            <summary>
+            Master Descripton (HTML)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldVariant.ProgrammaticValue">
+            <summary>
+            Programmatic Value. Ignored by Joinrpg, to use by external system
+            </summary>
+        </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectHeader">
             <summary>
             Project

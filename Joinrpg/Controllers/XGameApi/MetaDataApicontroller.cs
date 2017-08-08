@@ -39,7 +39,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
                   ProjectFieldVariantId = variant.ProjectFieldDropdownValueId,
                   Label = variant.Label,
                   IsActive = variant.IsActive,
-                  Description = variant.Description.ToHtmlString().ToHtmlString()
+                  Description = variant.Description.ToHtmlString().ToHtmlString(),
+                  MasterDescription = variant.MasterDescription.ToHtmlString().ToHtmlString(),
+                  ProgrammaticValue = variant.ProgrammaticValue
                 })
             })
         };
