@@ -324,11 +324,12 @@ namespace JoinRpg.Web.Controllers
 
       if (field == null) return HttpNotFound();
 
+      var project = field.Project;
       try
       {
         await ProjectService.DeleteCharacterGroup(projectId, characterGroupId);
 
-        return RedirectToIndex(field.Project);
+        return RedirectToIndex(project);
       }
       catch
       {
