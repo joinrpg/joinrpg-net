@@ -6,10 +6,10 @@
   @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
       <h4 class="@hideClassName">@Model.FieldName</h4>
-      <div class="help-block @hideClassName">
-          @Model.Description
-      </div>
-      return;
+    <div class="help-block @hideClassName">
+      @Model.Description
+    </div>
+    return;
   }
 
 <div class="form-group @hideClassName">
@@ -32,11 +32,15 @@
                   @value.Label
                 }
                 <div class="help-block">@value.DescriptionHtml</div>
+              if (Model.HasMasterAccess)
+              {
+                <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
               }
-              break;
-            case ProjectFieldViewType.Checkbox:
-                if (!string.IsNullOrWhiteSpace(Model.Value))
-                {
+            }
+            break;
+          case ProjectFieldViewType.Checkbox:
+            if (!string.IsNullOrWhiteSpace(Model.Value))
+            {
                     <span class="glyphicon glyphicon-ok"></span>
                 }
                 else

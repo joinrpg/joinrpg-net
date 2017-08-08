@@ -98,13 +98,16 @@ namespace JoinRpg.Services.Impl
       int projectId, 
       int projectCharacterFieldId, 
       string label, 
-      string description)
+      string description, 
+      string masterDescription, 
+      string programmaticValue
+      )
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectCharacterFieldId);
 
       field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
-      CreateFieldValueVariantImpl(field, label, description);
+      CreateFieldValueVariantImpl(field, label, description, masterDescription, programmaticValue);
 
       await UnitOfWork.SaveChangesAsync();
     }
@@ -112,7 +115,9 @@ namespace JoinRpg.Services.Impl
     private void CreateFieldValueVariantImpl(
       [NotNull] ProjectField field, 
       [NotNull] string label,
-      [CanBeNull] string description)
+      [CanBeNull] string description, 
+      [CanBeNull] string masterDescription,
+      [CanBeNull] string programmaticValue)
     {
       var fieldValue = new ProjectFieldDropdownValue()
       {
@@ -123,7 +128,9 @@ namespace JoinRpg.Services.Impl
         ProjectId = field.ProjectId,
         ProjectFieldId = field.ProjectFieldId,
         Project = field.Project,
-        ProjectField = field
+        ProjectField = field,
+        MasterDescription = new MarkdownString(masterDescription),
+        ProgrammaticValue = programmaticValue,
       };
 
       CreateOrUpdateSpecialGroup(fieldValue);
@@ -226,7 +233,7 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task UpdateFieldValueVariant(int projectId, int projectFieldDropdownValueId, string label, string description, int projectFieldId)
+    public async Task UpdateFieldValueVariant(int projectId, int projectFieldDropdownValueId, string label, string description, int projectFieldId, string masterDescription, string programmaticValue)
     {
       var field = await ProjectRepository.GetFieldValue(projectId, projectFieldId, projectFieldDropdownValueId);
 
@@ -235,6 +242,8 @@ namespace JoinRpg.Services.Impl
       field.Description = new MarkdownString(description);
       field.Label = label;
       field.IsActive = true;
+      field.MasterDescription = new MarkdownString(masterDescription);
+      field.ProgrammaticValue = programmaticValue;
 
       CreateOrUpdateSpecialGroup(field);
 
@@ -276,7 +285,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task MoveFieldValue(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
+    public async Task MoveFieldVariant(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
     {
       var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
       field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
@@ -297,7 +306,7 @@ namespace JoinRpg.Services.Impl
 
       foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
       {
-        CreateFieldValueVariantImpl(field, label, null);
+        CreateFieldValueVariantImpl(field, label, null, null, null);
       }
 
       await UnitOfWork.SaveChangesAsync();

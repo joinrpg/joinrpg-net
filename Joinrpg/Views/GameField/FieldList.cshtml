@@ -6,11 +6,10 @@
 {
   <tr>
     <td>
-      <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>
-      @Html.DisplayFor(modelItem => item.MandatoryStatus)
+      <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>@Html.DisplayFor(modelItem => item.MandatoryStatus)
       <br/>
-      @Html.DisplayNameFor(model => model.FieldViewType)
       @Html.DisplayFor(modelItem => item.FieldViewType)
+      <br />
       @Html.DisplayNameFor(model => model.FieldBoundTo)
       @Html.DisplayFor(model => item.FieldBoundTo)
     </td>

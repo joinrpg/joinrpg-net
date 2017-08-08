@@ -227,6 +227,13 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Описание"), UIHint("MarkdownString")]
     public string Description { get; set; }
 
+    [Display(Name = "Описание для мастеров"), UIHint("MarkdownString")]
+    public string MasterDescription { get; set; }
+
+    [Display(Name = "Программный ID", 
+      Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
+    public string ProgrammaticValue { get; set; }
+
     public int ProjectId { get; set; }
     public int ProjectFieldId { get; set; }
   }

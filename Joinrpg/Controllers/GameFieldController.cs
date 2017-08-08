@@ -189,7 +189,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-            viewModel.Description);
+            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -222,7 +222,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
-            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId);
+            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -298,7 +298,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FieldSetupService.MoveFieldValue(projectid, parentObjectId, listItemId, direction);
+        await FieldSetupService.MoveFieldVariant(projectid, parentObjectId, listItemId, direction);
 
 
         return ReturnToField(value);
