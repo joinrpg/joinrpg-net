@@ -139,21 +139,17 @@ namespace JoinRpg.Services.Impl
 
       var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
-      if (character.CharacterName != Required(name))
-      {
-        changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName));
-        character.CharacterName = name.Trim();
-      }
+      changedAttributes.Add("Имя персонажа", new PreviousAndNewValue(name, character.CharacterName.Trim()));
+      character.CharacterName = name.Trim();
       
       character.IsAcceptingClaims = isAcceptingClaims;
       character.IsPublic = isPublic;
 
       var newDescription = new MarkdownString(contents);
-      if (character.Description != newDescription)
-      {
-        changedAttributes.Add("Описание персонажа", new PreviousAndNewValue(newDescription, character.Description));
-        character.Description = newDescription;
-      }
+
+      changedAttributes.Add("Описание персонажа", new PreviousAndNewValue(newDescription, character.Description));
+      character.Description = newDescription;
+
       character.HidePlayerForCharacter = hidePlayerForCharacter;
       character.IsHot = isHot;
       character.IsActive = true;
@@ -166,6 +162,9 @@ namespace JoinRpg.Services.Impl
       MarkTreeModified(character.Project); //TODO: Can be smarter
 
       FieldsChangedEmail email = null;
+      changedAttributes = changedAttributes
+        .Where(attr => attr.Value.DisplayString != attr.Value.PreviousDisplayString)
+        .ToDictionary(x => x.Key, x => x.Value);
       if (changedAttributes.Any())
       {
         //Currently no attributes case is checked in email service as well, but that's not too reliable in future.
