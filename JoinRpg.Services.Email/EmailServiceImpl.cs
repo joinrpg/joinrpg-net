@@ -255,8 +255,6 @@ namespace JoinRpg.Services.Email
 ", model.Initiator.ToRecipient());
     }
 
-    public Task Email(ClaimFieldsChangedEmail createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена", "изменены поля");
-
     public async Task Email(FieldsChangedEmail model)
     {
       var projectEmailEnabled = model.GetEmailEnabled();

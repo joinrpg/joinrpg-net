@@ -26,7 +26,6 @@ namespace JoinRpg.Services.Interfaces
     Task Email(ForumEmail model);
     Task Email(CheckedInEmal createClaimEmail);
     Task Email(SecondRoleEmail createClaimEmail);
-    Task Email(ClaimFieldsChangedEmail createClaimEmail);
     Task Email(FieldsChangedEmail filedsEmail);
   }
 
@@ -79,15 +78,6 @@ namespace JoinRpg.Services.Interfaces
   public class OnHoldByMasterEmail : ClaimEmailModel
   {
     
-  }
-
-  public class ClaimFieldsChangedEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
-  {
-    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
-    public IFieldContainter FieldsContainer => Claim;
-
-    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
-      new Dictionary<string, PreviousAndNewValue>();
   }
 
   public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
