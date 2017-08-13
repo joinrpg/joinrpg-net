@@ -37,7 +37,7 @@ namespace JoinRpg.Domain
         .Select(u => u.User) //Select users
         .Union(character.ApprovedClaim?.Player) //...and player who claimed for the character
         .Union(character.ApprovedClaim?.ResponsibleMasterUser) //claim esponsible master is always subscribed on everything related to the claim
-        .Union((character.ResponsibleMasterUser)) //...and the measter who's responsible for the character
+        .Union((character.ResponsibleMasterUser)) //...and the master who's responsible for the character
         .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
         .VerifySubscriptions(mastersOnly, character)
         .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
