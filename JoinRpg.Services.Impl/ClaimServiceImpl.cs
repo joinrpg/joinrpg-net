@@ -422,7 +422,7 @@ namespace JoinRpg.Services.Impl
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
       //Grab subscribtions before change 
-      var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange, null);
+      var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
       EnsureCanAddClaim(claim.PlayerUserId, source);
 
