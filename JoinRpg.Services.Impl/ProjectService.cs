@@ -164,12 +164,20 @@ namespace JoinRpg.Services.Impl
       MarkChanged(character);
       MarkTreeModified(character.Project); //TODO: Can be smarter
 
-      var user = await UserRepository.GetById(currentUserId);
-      var email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user, updatedFields, changedAttributes);
-
+      FieldsChangedEmail email = null;
+      if (changedAttributes.Any())
+      {
+        //Currently no attributes case is checked in email service as well, but that's not too reliable in future.
+        var user = await UserRepository.GetById(currentUserId);
+        email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user,
+          new FieldWithPreviousAndNewValue[0], changedAttributes);
+      }
       await UnitOfWork.SaveChangesAsync();
 
-      await EmailService.Email(email);
+      if (email != null)
+      {
+        await EmailService.Email(email);
+      }
     }
 
     public async Task MoveCharacterGroup(int currentUserId, int projectId, int charactergroupId, int parentCharacterGroupId, short direction)
