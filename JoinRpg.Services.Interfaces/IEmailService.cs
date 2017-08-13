@@ -193,7 +193,7 @@ namespace JoinRpg.Services.Interfaces
   }
 
   /// <summary>
-  /// This interface to be implemented by emails taht should include the list of updated felds in them.
+  /// This interface to be implemented by emails that should include the list of updated felds in them.
   /// </summary>
   public interface IEmailWithUpdatedFieldsInfo
   {
