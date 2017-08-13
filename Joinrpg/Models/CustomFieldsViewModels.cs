@@ -136,7 +136,7 @@ namespace JoinRpg.Web.Models
 
       AccessArguments = new AccessArguments(
         target.HasMasterAccess(currentUserId),
-        characterAccess: false,
+        playerAccessToCharacter: false,
         playerAccesToClaim: true);
 
       EditAllowed = target.Project.Active;
@@ -177,7 +177,8 @@ namespace JoinRpg.Web.Models
       {
         AccessArguments = new AccessArguments(
           masterAccess: false,
-          characterAccess: character.HasAnyAccess(currentUserId),
+          //TODO: this printing code might do smth wrong. Why Any access if we need palyer visible only?
+          playerAccessToCharacter: character.HasAnyAccess(currentUserId),
           playerAccesToClaim: character.ApprovedClaim?.HasAnyAccess(currentUserId) ?? false);
       }
       else

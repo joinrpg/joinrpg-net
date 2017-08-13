@@ -76,7 +76,7 @@ namespace JoinRpg.Domain
       return Field.IsPublic
         || accessArguments.MasterAccess
         ||
-        (accessArguments.CharacterAccess && Field.CanPlayerView &&
+        (accessArguments.PlayerAccessToCharacter && Field.CanPlayerView &&
          Field.FieldBoundTo == FieldBoundTo.Character)
         ||
         (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
@@ -87,11 +87,11 @@ namespace JoinRpg.Domain
     {
       return (accessArguments.MasterAccess
              ||
-             (accessArguments.CharacterAccess && Field.CanPlayerEdit &&
+             (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
               Field.FieldBoundTo == FieldBoundTo.Character)
              ||
              (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
-             (Field.ShowOnUnApprovedClaims || accessArguments.CharacterAccess)));
+             (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter)));
     }
 
     public override string ToString() => $"{Field.FieldName}={Value}";

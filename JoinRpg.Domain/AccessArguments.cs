@@ -6,10 +6,10 @@ namespace JoinRpg.Domain
 {
   public class AccessArguments
   {
-    public AccessArguments(bool masterAccess, bool characterAccess, bool playerAccesToClaim)
+    public AccessArguments(bool masterAccess, bool playerAccessToCharacter, bool playerAccesToClaim)
     {
       MasterAccess = masterAccess;
-      CharacterAccess = characterAccess;
+      PlayerAccessToCharacter = playerAccessToCharacter;
       PlayerAccesToClaim = playerAccesToClaim;
     }
 
@@ -18,7 +18,7 @@ namespace JoinRpg.Domain
       if (character == null) throw new ArgumentNullException(nameof(character));
 
       MasterAccess = character.HasMasterAccess(userId);
-      CharacterAccess = character.HasPlayerAccess(userId);
+      PlayerAccessToCharacter = character.HasPlayerAccess(userId);
       PlayerAccesToClaim = character.ApprovedClaim?.HasPlayerAccesToClaim(userId) ?? false;
     }
 
@@ -27,17 +27,17 @@ namespace JoinRpg.Domain
       if (claim == null) throw new ArgumentNullException(nameof(claim));
 
       MasterAccess = claim.HasMasterAccess(userId);
-      CharacterAccess = claim.Character?.HasPlayerAccess(userId) ?? false;
+      PlayerAccessToCharacter = claim.Character?.HasPlayerAccess(userId) ?? false;
       PlayerAccesToClaim = claim.HasPlayerAccesToClaim(userId);
     }
 
     public bool MasterAccess { get; }
-    public bool CharacterAccess { get; }
+    public bool PlayerAccessToCharacter { get; }
     public bool PlayerAccesToClaim { get; }
 
     public override string ToString()
     {
-      return $"AccessArguments(MasterAccess:{MasterAccess}, CharacterAccess:{CharacterAccess}, PlayerAccesToClaim:{PlayerAccesToClaim}";
+      return $"AccessArguments(MasterAccess:{MasterAccess}, CharacterAccess:{PlayerAccessToCharacter}, PlayerAccesToClaim:{PlayerAccesToClaim}";
     }
   }
 }
