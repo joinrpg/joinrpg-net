@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Domain.CharacterFields
+namespace JoinRpg.Domain
 {
   public class AccessArguments
   {
