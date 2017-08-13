@@ -127,6 +127,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
+    //TODO: move character operations to a separate service.
     public async Task EditCharacter(int currentUserId, int characterId, int projectId, string name, bool isPublic,
       IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string contents,
       bool hidePlayerForCharacter, IDictionary<int, string> characterFields, bool isHot)
