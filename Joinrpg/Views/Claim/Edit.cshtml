@@ -12,10 +12,7 @@
         new {Model.ProjectId, Model.Player.UserId}, null)
 }
 
-
-@using JoinRpg.DataModel
 @using JoinRpg.Web.Models
-@using JoinRpg.Domain;
 @using JoinRpg.Helpers.Web
 
 <div>
@@ -33,6 +30,11 @@
             
         </div>
     }
+    
+  @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
+  {
+    @Html.Partial("_CheckInStatusBoard", Model.Validator)
+  }
 
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 <div class="panel panel-default">
@@ -44,7 +46,15 @@
 
             <dd>
                 @Html.DisplayFor(model => model.Player)
-                <button type="button" class="btn btn-xs btn-default" data-toggle="popover" title="Контакты" data-html="true" data-content='@Html.DisplayFor(model => model.PlayerDetails)'>контакты</button>
+              <button 
+                type="button" 
+                class="btn btn-xs btn-default" 
+                data-toggle="popover" 
+                title="Контакты" 
+                data-html="true" 
+                data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+                контакты
+              </button>
             </dd>
             @if (Model.CharacterGroupId != null)
             {
@@ -78,7 +88,7 @@
                     }
                 </dd>
             }
-            @if (Model.ClaimFee != null && (Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
+            @if (Model.ClaimFee != null && (Model.PaymentTypes.Any()  || Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
             {
                 <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
                 <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
@@ -126,32 +136,36 @@
         <div class="btn-group">
             @if (Model.CanManageThisClaim && Model.ProjectActive)
             {
-                if (Model.Status.CanChangeTo(Claim.Status.Approved))
+                if (Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
                         aria-expanded="false">
                     Принять заявку
                 </button>
                 }
-                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved || Model.Status == Claim.Status.Discussed || Model.Status == Claim.Status.OnHold)
-                {
+              if (Model.Status == ClaimStatusView.AddedByUser || Model.Status == ClaimStatusView.Approved || Model.Status == ClaimStatusView.Discussed || Model.Status == ClaimStatusView.OnHold)
+              {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
                         aria-expanded="false">
-                    Переместить заявку
+                  <span class="glyphicon glyphicon-transfer"></span>
+                  Переместить заявку
                 </button>
+              }
+              if (Model.Status.CanChangeTo(ClaimStatusView.DeclinedByMaster))
+                  {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declineClaimActionPanel"
                         aria-expanded="false">
                     Отклонить заявку
                 </button>
                 }
-                if (Model.Status.CanChangeTo(Claim.Status.OnHold))
+                if (Model.Status.CanChangeTo(ClaimStatusView.OnHold))
                 {
                     <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#holdClaimActionPanel"
                             aria-expanded="false">
                         В лист ожидания
                     </button>
                 }
-                if (Model.Status == Claim.Status.DeclinedByMaster || Model.Status == Claim.Status.DeclinedByUser || Model.Status == Claim.Status.OnHold)
+                if (Model.Status == ClaimStatusView.DeclinedByMaster || Model.Status == ClaimStatusView.DeclinedByUser || Model.Status == ClaimStatusView.OnHold)
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
                         aria-expanded="false">
@@ -166,17 +180,15 @@
                 <span class="glyphicon glyphicon-usd"></span> Отметить взнос
             </button>
             }
-            @if (Model.IsMyClaim && Model.ProjectActive)
+            @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.DeclinedByUser))
             {
-                if (Model.Status == Claim.Status.AddedByUser || Model.Status == Claim.Status.Approved || Model.Status == Claim.Status.Discussed)
-                {
-                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
-                        aria-expanded="false">
-                    Отозвать заявку
-                </button>
-                }
+              <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
+                      aria-expanded="false">
+                Отозвать заявку
+              </button>
+
             }
-            @if (Model.Status == Claim.Status.Approved)
+            @if (Model.Status == ClaimStatusView.Approved)
             {
                 <a href="@Url.Action("Character", "Print", new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
                     <span class="glyphicon glyphicon-print"></span>
@@ -188,34 +200,49 @@
                     <span class="glyphicon glyphicon-print"></span>
                     @plugin.Name
                 </a>
-                }
+              }
+              if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
+              {
+                <a href="@Url.Action("CheckIn", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
+                  <span class="glyphicon glyphicon-tree-conifer"></span>
+                  Зарегистрировать
+                </a>
+              }
             }
             
-            @if (Model.HasMasterAccess)
+          @if (Model.Status == ClaimStatusView.CheckedIn)
+          {
+            <a href="@Url.Action("SecondRole", "CheckIn", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+              <span class="glyphicon glyphicon-duplicate"></span>
+              Вторая роль
+            </a>
+          }
+
+          @if (Model.HasMasterAccess)
             {
-            <a href="@Url.Action("Subscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+              <a href="@Url.Action("Subscribe", "Claim", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
                 <span class="glyphicon glyphicon-pushpin"></span>
                 Подписаться
-            </a>
+              </a>
 
-                <a href="@Url.Action("Unsubscribe", "Claim", new { Model.ProjectId, Model.ClaimId })" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку"  data-responsed="1">
-                    <span class="glyphicon glyphicon-pushpin"></span>
-                    Отписаться
-                </a>
+              <a href="@Url.Action("Unsubscribe", "Claim", new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку" data-responsed="1">
+                <span class="glyphicon glyphicon-pushpin"></span>
+                Отписаться
+              </a>
             }
             @if(Model.HasMasterAccess && ( Model.SubscriptionTooltip.ClaimStatusChange
                                         || Model.SubscriptionTooltip.Comments
                                         || Model.SubscriptionTooltip.FieldChange
                                         || Model.SubscriptionTooltip.MoneyOperation ) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
             {
-                <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
-                    <span class="glyphicon glyphicon-pushpin"></span>
-                    Вы подписаны
-                </a></span>
+              <span title='@Model.SubscriptionTooltip.Tooltip'><a href="#" class="btn btn-default disabled" data-placement="top" title="">
+                <span class="glyphicon glyphicon-pushpin"></span>
+                Вы подписаны
+              </a></span>
             }
             
         </div>
-
+    
         <div class="panel panel-default collapse" id="approveClaimActionPanel">
 
             <div class="panel-heading">Принятие заявки</div>
@@ -276,7 +303,7 @@
 
             <div class="panel-heading">Отклонение заявки</div>
             <div class="panel-body">
-                @if (Model.Status == Claim.Status.AddedByUser)
+                @if (Model.Status == ClaimStatusView.AddedByUser)
                 {
                 <div class="alert alert-info">
                     При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
@@ -302,11 +329,12 @@
         <div class="panel panel-default collapse" id="moveClaimActionPanel">
             <div class="panel-heading">Перемещение заявки</div>
             <div class="panel-body">
-                @if (Model.Status == Claim.Status.Approved)
+                @if (Model.Status == ClaimStatusView.Approved)
                 {
                 <div class="alert alert-warning">
                     <span class="glyphicon glyphicon-exclamation-sign"></span>
-                    Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к новому персонажу
+                  Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к 
+                  новому персонажу.
                     <br />
                     Используйте этот инструмент только если хотите передать существующую роль другому игроку.
                     Если вы хотите изменить состав групп у <b>существующего</b> персонажа, 
@@ -384,9 +412,10 @@
           PaymentTypes = Model.PaymentTypes,
           Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
           CommentText = "Сдан взнос",
-          ClaimApproved = Model.Status == Claim.Status.Approved,
-          HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
+        ClaimApproved = Model.Status == ClaimStatusView.Approved,
+        HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
       }; }
+  
 <div class="panel panel-default collapse" id="financeClaimActionPanel">
     <div class="panel-heading">Отметить взнос</div>
     <div class="panel-body">
@@ -451,52 +480,55 @@
 
 @section scripts
 {
+  <script type="text/javascript">
+    $(function() {
+      $('[data-toggle="popover"]').popover();
+    })
+    $('[title]').tooltip({ html: true, offset: '1000 1100' });
+  </script>
+
+  <script type="text/javascript">
+    $('#subscribe').click(function(event) {
+      event.preventDefault();
+      if ($('#subscribe').attr('data-responsed') == 0) return;
+      doSubscription(this);
+    });
+    $('#unsubscribe').click(function(event) {
+      event.preventDefault();
+      if ($('#unsubscribe').attr('data-responsed') == 0) return;
+      doSubscription(this);
+    });
+
+    function doSubscription(context) {
+      var req = $.post(context.href,
+        {
+          projectid: @Model.ProjectId,
+          claimid: @Model.ClaimId,
+          __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+        }
+      );
+      req.done(data => {
+        $(context).attr('data-responsed', '1');
+        $('#subscribe').attr('title', '');
+        $('#subscribe').attr('data-original-title', data.Tooltip);
+        $('[title]').tooltip({ html: true });
+        $('#subscribe').toggleClass('hidden');
+        $('#unsubscribe').toggleClass('hidden');
+      });
+      $(context).attr('data-responsed', '0');
+    }
+  </script>
+  @if (Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+  {
     <script type="text/javascript">
-        $(function() {
-            $('[data-toggle="popover"]').popover();
-        })
-        $('[title]').tooltip({html:true,offset:'1000 1100'});
+      $('#subscribe').toggleClass('hidden');
     </script>
+  }
 
+  @if (Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
+  {
     <script type="text/javascript">
-        $('#subscribe').click(function(event){
-                event.preventDefault();
-                if($('#subscribe').attr('data-responsed')==0)return;
-                doSubscription(this);
-        });
-        $('#unsubscribe').click(function(event){
-            event.preventDefault();
-                if($('#unsubscribe').attr('data-responsed')==0)return;
-                doSubscription(this);
-        });
-        function doSubscription(context) {
-            var req = $.post(context.href,
-                                {projectid:@Model.ProjectId,
-                                claimid:@Model.ClaimId,
-                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()}
-                            );
-            req.done(data => {
-                    $(context).attr('data-responsed','1');
-                    $('#subscribe').attr('title', '');
-                    $('#subscribe').attr('data-original-title',data.Tooltip);
-                    $('[title]').tooltip({html:true});
-                    $('#subscribe').toggleClass('hidden');
-                    $('#unsubscribe').toggleClass('hidden');
-                });
-                $(context).attr('data-responsed','0');
-        }
-        </script>
-        @if(Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
-        {
-            <script type="text/javascript">
-                $('#subscribe').toggleClass('hidden');
-            </script>
-        }
-
-        @if(Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
-        {
-        <script type="text/javascript">
-            $('#unsubscribe').toggleClass('hidden');
-        </script>
-        }
+      $('#unsubscribe').toggleClass('hidden');
+    </script>
+  }
 }

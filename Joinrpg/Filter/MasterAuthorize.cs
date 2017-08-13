@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -87,7 +86,7 @@ namespace JoinRpg.Web.Filter
         return true;
       }
       
-      return project.ProjectAcls.Any(acl => acl.UserId.ToString() == userId && GetPermssionExpression()(acl));
+      return project.ProjectAcls.Any(acl => acl.UserId.ToString() == userId && Permission.GetPermssionExpression()(acl));
     }
 
     [CanBeNull]
@@ -108,34 +107,6 @@ namespace JoinRpg.Web.Filter
       else
       {
         return int.Parse((string)projectIdRawValue);
-      }
-    }
-
-    [MustUseReturnValue]
-    private Func<ProjectAcl, bool> GetPermssionExpression()
-    {
-      switch (Permission)
-      {
-        case Permission.CanChangeFields:
-          return acl => acl.CanChangeFields;
-        case Permission.CanChangeProjectProperties:
-          return acl => acl.CanChangeProjectProperties;
-        case Permission.CanGrantRights:
-          return acl => acl.CanGrantRights;
-        case Permission.CanManageClaims:
-          return acl => acl.CanManageClaims;
-        case Permission.CanEditRoles:
-          return acl => acl.CanEditRoles;
-        case Permission.CanManageMoney:
-          return acl => acl.CanManageMoney;
-        case Permission.CanSendMassMails:
-          return acl => acl.CanSendMassMails;
-        case Permission.CanManagePlots:
-          return acl => acl.CanManagePlots;
-        case Permission.None:
-          return acl => true;
-        default:
-          throw new ArgumentOutOfRangeException();
       }
     }
 

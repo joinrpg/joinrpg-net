@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Services.Interfaces;
 using Mailgun.Messages;
 using Mailgun.Service;
@@ -6,6 +7,7 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Helpers
 {
+  [UsedImplicitly]
   public class EmailService : IIdentityMessageService
   {
     private readonly IMailGunConfig _config;

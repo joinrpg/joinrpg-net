@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
@@ -7,7 +8,7 @@ namespace JoinRpg.PluginHost.Impl
 {
   internal static class PluginDataPreparer
   {
-    internal static CharacterInfo ToPluginModel(this Character character)
+    internal static CharacterInfo ToPluginModel([NotNull] this Character character)
     {
       var player = character.ApprovedClaim?.Player;
       return new CharacterInfo(
@@ -17,7 +18,7 @@ namespace JoinRpg.PluginHost.Impl
         character.GetParentGroupsToTop().Distinct()
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
           .Select(g => g.ToPluginModel()),
-        player?.DisplayName, player?.FullName, player?.Id);
+        player?.DisplayName, player?.FullName, player?.UserId);
     }
 
     private static CharacterGroupInfo ToPluginModel(this CharacterGroup g)

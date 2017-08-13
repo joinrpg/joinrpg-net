@@ -2,9 +2,8 @@
 
 namespace JoinRpg.Web
 {
-  public class BundleConfig
+  internal static class BundleConfig
   {
-    // For more information on bundling, visit http://go.microsoft.com/fwlink/?LinkId=301862
     public static void RegisterBundles(BundleCollection bundles)
     {
       bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
@@ -21,12 +20,15 @@ namespace JoinRpg.Web
       bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                 "~/Scripts/bootstrap.js",
                 "~/Scripts/respond.js",
-                "~/Scripts/bootstrap-datepicker.js"));
+                "~/Scripts/bootstrap-datepicker.js",
+                "~/Scripts/bootstrap-select.js"
+                ));
 
       bundles.Add(new StyleBundle("~/Content/css").Include(
-                "~/Content/bootstrap.css",
-                "~/Content/site.css",
-                "~/Content/bootstrap-datepicker.css"));
+        "~/Content/bootstrap.css",
+        "~/Content/site.css",
+        "~/Content/bootstrap-datepicker.css",
+        "~/Content/bootstrap-select.css"));
     }
   }
 }

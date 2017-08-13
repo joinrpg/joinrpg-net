@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Web.Models.Characters;
@@ -19,7 +21,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
     Plots
   }
 
-  public class CharacterGroupDetailsViewModel : CharacterGroupWithDescViewModel
+  public class CharacterGroupDetailsViewModel : CharacterGroupWithDescViewModel, ICreatedUpdatedTracked
   {
     public GroupNavigationPage Page { get; }
 
@@ -33,6 +35,10 @@ namespace JoinRpg.Web.Models.CharacterGroups
       IsAcceptingClaims = group.IsAcceptingClaims();
       ActiveClaimsCount = group.Claims.Count(c => c.IsActive);
       IsRootGroup = group.IsRoot;
+      CreatedAt = group.CreatedAt;
+      UpdatedAt = group.UpdatedAt;
+      CreatedBy = group.CreatedBy;
+      UpdatedBy = group.UpdatedBy;
     }
 
     public bool HasMasterAccess { get;  }
@@ -42,5 +48,9 @@ namespace JoinRpg.Web.Models.CharacterGroups
     public int ActiveClaimsCount { get; }
     public bool IsAcceptingClaims { get; }
     public bool IsRootGroup { get; }
+    public DateTime CreatedAt { get; }
+    public User CreatedBy { get; }
+    public DateTime UpdatedAt { get; }
+    public User UpdatedBy { get;  }
   }
 }

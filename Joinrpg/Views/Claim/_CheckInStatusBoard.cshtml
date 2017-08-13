@@ -1,0 +1,41 @@
+﻿@model JoinRpg.Domain.ClaimCheckInValidator
+
+@if (Model.CanCheckInNow)
+{
+<div class="alert alert-success">
+  Регистрация на полигоне пройдет максимально быстро — все поля заполнены и взнос сдан.
+</div>
+}
+else if (Model.CanCheckInInPrinciple)
+{
+<div class="alert alert-success">
+  Заявка готова к регистрации, все поля заполнены. Просим вас сдать взнос заранее, чтобы ускорить прохождение регистрации.
+</div>
+} else if (Model.IsApproved)
+{
+  <div class="alert alert-warning">
+    Заявка заполнена не полностью. <b>Регистрация на полигоне в ручном режиме и только после игроков с заполненными заявками.</b>
+    @if (Model.NotFilledFields.Any(f => f.Field.CanPlayerEdit))
+    {
+      <br/>
+      <text> Не заполнены следующие поля (заполняет игрок)</text>
+      <ul>
+        @foreach (var field in Model.NotFilledFields.Where(f => f.Field.CanPlayerEdit))
+        {
+          <li>@field.Field.FieldName</li>
+        }
+      </ul>
+    }
+    @if (Model.NotFilledFields.Any(f => !f.Field.CanPlayerEdit))
+    {
+      <br/>
+      <text> Не заполнены скрытые мастерские поля. Обратитесь к ответственному мастеру за дозаполнением заявки. </text>
+    }
+  </div>
+}
+else
+{
+  <div class="alert alert-danger">
+    Ваша заявка не принята мастерами, вы не можете пройти регистрацию на игре.
+  </div>
+}

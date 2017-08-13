@@ -1,0 +1,32 @@
+﻿@model JoinRpg.Web.Models.Reports.Report2DResultViewModel
+
+@{
+  ViewBag.Title = "Отчет " + Model.Name;
+
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p> C игроками / всего</p>
+<table class="table table-bordered">
+  <tr>
+    <th></th>
+    @foreach (var column in Model.Columns)
+    {
+      <th>@(column.Value ?? "нет значения")</th>
+    }
+  </tr>
+  @foreach (var row in Model.Rows)
+  {
+    <tr>
+      <th>@(row.Value  ?? "нет значения")</th>
+      @foreach (var column in Model.Columns)
+      {
+
+        var cellValue = Model.Values[new KeyValuePair<int, int>(row.Key, column.Key)];
+
+        <td style="white-space: nowrap">@cellValue.CountWithClaims / @cellValue.Count</td>
+      }
+    </tr>
+  }
+</table>

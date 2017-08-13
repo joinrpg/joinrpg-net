@@ -10,7 +10,9 @@ namespace JoinRpg.Data.Interfaces
   {
     Any, Active, InActive,
     Discussion,
-    OnHold, Approved
+    OnHold, Approved,
+    ReadyForCheckIn,
+    CheckedIn
   }
 
   public class ClaimCountByMaster
@@ -26,6 +28,7 @@ namespace JoinRpg.Data.Interfaces
     Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status);
     [ItemCanBeNull]
     Task<Claim> GetClaim(int projectId, int? claimId);
+    [ItemCanBeNull]
     Task<Claim> GetClaimWithDetails(int projectId, int claimId);
     Task<IReadOnlyCollection<Claim>> GetClaimsForGroups(int projectId, ClaimStatusSpec active, int[] characterGroupsIds);
     Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId);
@@ -35,5 +38,7 @@ namespace JoinRpg.Data.Interfaces
     
     [NotNull, ItemNotNull]
     Task<IReadOnlyCollection<ClaimCountByMaster>> GetClaimsCountByMasters(int projectId, ClaimStatusSpec claimStatusSpec);
+
+    Task<IReadOnlyCollection<ClaimWithPlayer>> GetClaimHeadersWithPlayer(int projectId, ClaimStatusSpec approved);
   }
 }

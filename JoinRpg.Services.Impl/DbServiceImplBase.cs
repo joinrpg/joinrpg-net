@@ -10,9 +10,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
-using JoinRpg.PluginHost.Interfaces;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Services.Impl
@@ -37,7 +35,15 @@ namespace JoinRpg.Services.Impl
 
     private readonly Lazy<IPlotRepository> _plotRepository;
     protected IPlotRepository PlotRepository => _plotRepository.Value;
+
+    private readonly Lazy<ICharacterRepository> _charactersRepository;
+    protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
     protected static int CurrentUserId => int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+
+    /// <summary>
+    /// Time of service creaton. Used to mark consistent time for all operations performed by service
+    /// </summary>
+    protected DateTime Now { get; }
 
     protected DbServiceImplBase(IUnitOfWork unitOfWork)
     {
@@ -47,6 +53,8 @@ namespace JoinRpg.Services.Impl
       _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
       _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
       _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
+      _charactersRepository = new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
+      Now = DateTime.UtcNow;
     }
 
     [NotNull]
@@ -141,13 +149,37 @@ namespace JoinRpg.Services.Impl
     protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)
     {
       var characters =
-        await ProjectRepository.LoadCharacters(projectId, characterIds);
+        await CharactersRepository.GetCharacters(projectId, characterIds);
 
       if (characters.Count != characterIds.Distinct().Count())
       {
         throw new DbEntityValidationException();
       }
       return characters.ToArray();
+    }
+
+    protected void MarkCreatedNow([NotNull] ICreatedUpdatedTrackedForEntity entity)
+    {
+      entity.UpdatedAt = entity.CreatedAt = Now;
+      entity.UpdatedById = entity.CreatedById = CurrentUserId;
+    }
+
+    protected void Create<T>([NotNull] T entity) where T : class, ICreatedUpdatedTrackedForEntity
+    {
+      MarkCreatedNow(entity);
+
+      UnitOfWork.GetDbSet<T>().Add(entity);
+    }
+
+    protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)
+    {
+      entity.UpdatedAt = Now;
+      entity.UpdatedById = CurrentUserId;
+    }
+
+    protected void MarkTreeModified([NotNull] Project project)
+    {
+      project.CharacterTreeModifiedAt = Now;
     }
   }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -130,6 +130,12 @@ namespace JoinRpg.Domain
       }
       throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
 
+    public static List<FieldWithValue> GetFields(this Claim character)
+    {
+      var projectFields = character.Project.GetFields().ToList();
+      projectFields.FillFrom(character.Character);
+      projectFields.FillFrom(character);
+      return projectFields;
     }
   }
 }

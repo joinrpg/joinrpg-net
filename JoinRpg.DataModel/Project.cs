@@ -57,6 +57,8 @@ namespace JoinRpg.DataModel
 
     public CharacterGroup RootGroup => CharacterGroups.Single(g => g.IsRoot);
     #endregion
+
+    public virtual ICollection<GameReport2DTemplate> GameReport2DTemplates { get; set; }
   }
 
   public class ProjectDetails
@@ -71,6 +73,9 @@ namespace JoinRpg.DataModel
     public int? AllrpgId { get; set; }
 
     public bool FinanceWarnOnOverPayment { get; set; } = true;
+    public bool EnableCheckInModule { get; set; } = false;
+    public bool CheckInProgress { get; set; } = false;
+    public bool AllowSecondRoles { get; set; } = false;
   }
 
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework

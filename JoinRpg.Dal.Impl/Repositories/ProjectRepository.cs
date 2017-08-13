@@ -12,7 +12,7 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Dal.Impl.Repositories
 {
   [UsedImplicitly]
-  public class ProjectRepository : GameRepositoryImplBase, IProjectRepository
+  internal class ProjectRepository : GameRepositoryImplBase, IProjectRepository
   {
     public ProjectRepository(MyDbContext ctx) : base(ctx) 
     {
@@ -33,12 +33,22 @@ namespace JoinRpg.Dal.Impl.Repositories
     public IEnumerable<Project> GetMyActiveProjects(int? userInfoId)
       => userInfoId == null ? Enumerable.Empty<Project>() :  ActiveProjects.Where(MyProjectPredicate(userInfoId));
 
+    public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
+      ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
+
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
       => AllProjects
         .Include(p => p.Details)
         .Include(p => p.ProjectAcls.Select(a => a.User))
+        .SingleOrDefaultAsync(p => p.ProjectId == project);
+
+    public Task<Project> GetProjectWithFieldsAsync(int project)
+      => AllProjects
+        .Include(p => p.Details)
+        .Include(p => p.ProjectAcls.Select(a => a.User))
+        .Include(p => p.ProjectFields.Select(f => f.DropdownValues))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<CharacterGroup> GetGroupAsync(int projectId, int characterGroupId)
@@ -49,7 +59,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           .SingleOrDefaultAsync(cg => cg.CharacterGroupId ==characterGroupId && cg.ProjectId == projectId);
     }
 
-    public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int characterGroupId)
+    public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
     {
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
@@ -60,7 +70,15 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(p => p.Details)
         .SingleOrDefaultAsync(p => p.ProjectId == projectId);
 
-      return project.CharacterGroups.SingleOrDefault(cg => cg.CharacterGroupId == characterGroupId);
+      if (characterGroupId != null)
+      {
+        return project.CharacterGroups.SingleOrDefault(
+          cg => cg.CharacterGroupId == characterGroupId);
+      }
+      else
+      {
+        return project.RootGroup;
+      }
     }
 
     public async Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId)
@@ -78,41 +96,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         return project => false;
       }
       return project => project.ProjectAcls.Any(projectAcl => projectAcl.UserId == userInfoId);
-    }
-
-
-    public async Task<Character> GetCharacterAsync(int projectId, int characterId)
-    {
-      await LoadProjectFields(projectId);
-      return
-        await Ctx.Set<Character>()
-          .Include(c => c.Project)
-          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-    public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
-    {
-      await LoadProjectGroups(projectId);
-      await LoadProjectFields(projectId);
-
-      return
-        await Ctx.Set<Character>().SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-    public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)
-    {
-      await LoadProjectCharactersAndGroups(projectId);
-      await LoadProjectClaims(projectId);
-      await LoadProjectFields(projectId);
-
-      return
-        await Ctx.Set<Character>()
-          .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
-    }
-
-
-    public async Task<IReadOnlyCollection<Character>> LoadCharacters(int projectId, IReadOnlyCollection<int> characterIds)
-    {
-      return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
     }
 
     public async Task<IReadOnlyCollection<Character>> LoadCharactersWithGroups(int projectId, IReadOnlyCollection<int> characterIds)
@@ -176,12 +159,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       return (await Ctx.Set<Project>().SingleOrDefaultAsync(p => p.ProjectId == projectId)).Characters; 
     }
 
-    public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId)
-    {
-      var project = await GetProjectAsync(projectId);
-      return await LoadGroupWithTreeAsync(projectId, project.RootGroup.CharacterGroupId);
-    }
-
     public async Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId)
     {
       var project1 = await Ctx.ProjectsSet
@@ -202,7 +179,10 @@ namespace JoinRpg.Dal.Impl.Repositories
       }
       if (characterId != null)
       {
-        return await GetCharacterAsync(projectId, (int) characterId);
+        await LoadProjectFields(projectId);
+        return await Ctx.Set<Character>()
+          .Include(c => c.Project)
+          .SingleOrDefaultAsync(e => e.CharacterId == (int) characterId && e.ProjectId == projectId);
       }
       throw new InvalidOperationException();
     }

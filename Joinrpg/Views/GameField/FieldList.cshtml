@@ -6,11 +6,10 @@
 {
   <tr>
     <td>
-      <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>
-      @Html.DisplayFor(modelItem => item.MandatoryStatus)
+      <b class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Name)</b>@Html.DisplayFor(modelItem => item.MandatoryStatus)
       <br/>
-      @Html.DisplayNameFor(model => model.FieldViewType)
       @Html.DisplayFor(modelItem => item.FieldViewType)
+      <br />
       @Html.DisplayNameFor(model => model.FieldBoundTo)
       @Html.DisplayFor(model => item.FieldBoundTo)
     </td>
@@ -105,12 +104,23 @@
 
       @if (item.CanEditFields)
       {
-        <br/>
         if (item.IsActive)
         {
-          @Html.ActionLink("Изменить", "Edit", new {item.ProjectFieldId, item.ProjectId})
-          <text>|
-            @Html.ActionLink("Удалить", "Delete", new {item.ProjectFieldId, item.ProjectId})</text>
+          <span style="white-space: nowrap">
+            <a href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
+               title="Изменить">
+              <span class="glyphicon glyphicon-pencil"></span>
+            </a><a href="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
+                   title="Удалить">
+              <span class="glyphicon glyphicon-trash"></span>
+
+            </a><a href="#"
+                   data-toggle="modal" data-target="#fastMoveModal"
+                   data-element="@item.ProjectFieldId" title="Переместить">
+              <span class="glyphicon glyphicon-move"></span>
+
+            </a>
+          </span>
         }
         else
         {
@@ -146,6 +156,48 @@
     {
       @ShowFieldRow(item)
     }
-    
+
   </table>
+
+
+  <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        @using (Html.BeginForm("MoveFast", "GameField"))
+        {
+          <input type="hidden" name="ProjectId" id="projectId" value="@firstItem.ProjectId" />
+          <input type="hidden" name="ProjectFieldId" id="entityId" value="0" />
+          @Html.AntiForgeryToken()
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Переместить</h4>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label class="col-md-2">Поставить после поля:</label>
+                <div class="col-md-10">
+                  <select name="afterFieldId" id="afterFieldId" class="form-control">
+                    <option value="-1" selected="selected">Поставить в начало</option>
+                    @foreach (var field in Model)
+                    {
+                      <option value="@field.ProjectFieldId">@field.Name</option>
+                    }
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Переместить</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+
+          </div>
+        }
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
 }
+

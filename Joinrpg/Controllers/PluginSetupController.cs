@@ -48,7 +48,6 @@ namespace JoinRpg.Web.Controllers
       ViewBag.Title = pluginInstance.OperationName;
       return View("ShowMarkdown",
         PluginFactory.ShowStaticPage(pluginInstance, project).ToHtmlString());
-      ;
     }
 
     [MasterAuthorize()]

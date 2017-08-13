@@ -52,11 +52,18 @@ $("#unpublishElementModal").on("show.bs.modal", function (event) {
     modal.find("#publishPlotElementId").val(plotElementId);
 });
 
+$(".modaldialogforid").on("show.bs.modal", function (event) {
+  var button = $(event.relatedTarget);
+  var entityId = button.data("element");
+  var modal = $(this);
+  modal.find("#entityId").val(entityId);
+});
+
 var hash = window.location.hash.substr(1);
 if (hash) {
     $("#" + hash).collapse('show');
 }
 
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-})
+$(function() {
+  $('[data-toggle="tooltip"]').tooltip();
+});

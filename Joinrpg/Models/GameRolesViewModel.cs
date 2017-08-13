@@ -14,8 +14,6 @@ namespace JoinRpg.Web.Models
     public bool HasMasterAccess { get; set; }
     public IEnumerable<CharacterGroupListItemViewModel> Data { get; set; }
 
-    public int CharacterGroupId { get; set; }
-
     public CharacterGroupDetailsViewModel Details { get; set; }
   }
 }

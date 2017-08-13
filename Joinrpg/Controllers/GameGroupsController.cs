@@ -24,15 +24,9 @@ namespace JoinRpg.Web.Controllers
     private readonly IUserRepository _userRepository;
 
     [HttpGet]
-    // GET: GameGroups
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId);
-      }
-      
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int) characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
       if (field == null) return HttpNotFound();
       
@@ -41,7 +35,6 @@ namespace JoinRpg.Web.Controllers
         {
           ProjectId = field.Project.ProjectId,
           ProjectName = field.Project.ProjectName,
-          CharacterGroupId = field.CharacterGroupId,
           ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
           HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
           Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault),
@@ -50,43 +43,26 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, MasterAuthorize]
-    // GET: GameGroups
-    public async Task<ActionResult> Report(int projectId, int? characterGroupId, int? maxDeep)
+    public async Task<ActionResult> Report(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId, "Report");
-      }
-
-      ViewBag.MaxDeep = maxDeep ?? 1;
-
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
       if (field == null) return HttpNotFound();
 
       return View(
-        new GameRolesViewModel
+        new GameRolesReportViewModel
         {
           ProjectId = field.Project.ProjectId,
-          ProjectName = field.Project.ProjectName,
-          CharacterGroupId = field.CharacterGroupId,
-          ShowEditControls = field.HasEditRolesAccess(CurrentUserId),
-          HasMasterAccess = field.HasMasterAccess(CurrentUserId),
-          Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserId),
-          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report)
+          Data = CharacterGroupReportViewModel.GetGroups(field),
+          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Report),
+          CheckinModuleEnabled = field.Project.Details.EnableCheckInModule,
         });
     }
 
     [HttpGet]
-    // GET: GameGroups
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
-      if (characterGroupId == null)
-      {
-        return await RedirectToProject(projectId, "Hot");
-      }
-
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, (int)characterGroupId);
+      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null) return HttpNotFound();
       return  View(GetHotCharacters(field));
     }
@@ -109,7 +85,7 @@ namespace JoinRpg.Web.Controllers
     {
       return CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault)
         .SelectMany(
-          g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy));
+          g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
     [HttpGet, Compress]
@@ -206,8 +182,8 @@ namespace JoinRpg.Web.Controllers
         ch.CharacterName,
         Description = ch.Description?.ToHtmlString(),
         PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
-        PlayerId = ch.HidePlayer ? null : ch.Player?.Id, //TODO Remove
-        PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {UserId =  ch.Player?.Id }),
+        PlayerId = ch.HidePlayer ? null : ch.Player?.UserId, //TODO Remove
+        PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {ch.Player?.UserId }),
         ch.ActiveClaimsCount,
         ClaimLink =
           ch.IsAvailable
@@ -254,7 +230,11 @@ namespace JoinRpg.Web.Controllers
         CharacterGroupId = group.CharacterGroupId,
         IsRoot = group.IsRoot,
         ResponsibleMasterId = group.ResponsibleMasterUserId ?? -1,
-      }, group));
+        CreatedAt = group.CreatedAt,
+        UpdatedAt = group.UpdatedAt,
+        CreatedBy = group.CreatedBy,
+        UpdatedBy = group.UpdatedBy,
+    }, group));
     }
 
     private static IEnumerable<MasterListItemViewModel> GetMasters(IClaimSource group, bool includeSelf)
@@ -344,11 +324,12 @@ namespace JoinRpg.Web.Controllers
 
       if (field == null) return HttpNotFound();
 
+      var project = field.Project;
       try
       {
         await ProjectService.DeleteCharacterGroup(projectId, characterGroupId);
 
-        return RedirectToIndex(field.Project);
+        return RedirectToIndex(project);
       }
       catch
       {
@@ -394,8 +375,7 @@ namespace JoinRpg.Web.Controllers
       {
         var responsibleMasterId = viewModel.ResponsibleMasterId == -1 ? (int?) null : viewModel.ResponsibleMasterId;
         await ProjectService.AddCharacterGroup(
-          viewModel.ProjectId, 
-          CurrentUserId,
+          viewModel.ProjectId,
           viewModel.Name, viewModel.IsPublic,
           viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);

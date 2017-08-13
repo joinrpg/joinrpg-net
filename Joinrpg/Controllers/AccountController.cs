@@ -4,7 +4,6 @@ using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Allrpg;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
@@ -16,21 +15,16 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class AccountController : Common.ControllerBase
   {
-    private readonly ApplicationSignInManager _signInManager;
-
-    private readonly IAllrpgService _allrpgService;
     private readonly IEmailService _emailService;
 
-    public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager,
-      IAllrpgService allrpgService, IEmailService emailService) : base(userManager)
+    public AccountController(ApplicationUserManager userManager,
+      ApplicationSignInManager signInManager, IEmailService emailService) : base(userManager)
     {
-      _signInManager = signInManager;
-      _allrpgService = allrpgService;
+      SignInManager = signInManager;
       _emailService = emailService;
     }
 
-    private ApplicationSignInManager SignInManager
-      => _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+    private ApplicationSignInManager SignInManager { get; }
 
     //
     // GET: /Account/Login
@@ -58,7 +52,7 @@ namespace JoinRpg.Web.Controllers
 
       if (user != null)
       {
-        if (!await UserManager.IsEmailConfirmedAsync(user.Id))
+        if (!await UserManager.IsEmailConfirmedAsync(user.UserId))
         {
           await SendConfirmationEmail(user);
           return View("EmailUnconfirmed");
@@ -70,47 +64,6 @@ namespace JoinRpg.Web.Controllers
       var result =
         await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
 
-      if (result == SignInStatus.Failure)
-      {
-        var legacyLoginResult = await _allrpgService.TryToLoginWithOldPassword(model.Email, model.Password);
-        switch (legacyLoginResult)            
-        {
-          case LegacyLoginResult.NoSuchUserOrPassword:
-          case LegacyLoginResult.ImportDisabled:
-            ModelState.AddModelError("", "Не найден логин или пароль");
-            return View(model);
-          case LegacyLoginResult.Success:
-            //Change password to imported
-            var changePasswordResult = await UserManager.SetPasswordWithoutValidationAsync(user.Id, model.Password);
-            //Login again
-            result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: true, shouldLockout: false);
-            break;
-          case LegacyLoginResult.NetworkError:
-          case LegacyLoginResult.ParseError:
-          case LegacyLoginResult.WrongKey:
-            ModelState.AddModelError("", $"Не удалось установить связь с сервером allrpg.info: {legacyLoginResult}.");
-            return View(model);
-          case LegacyLoginResult.RegisterNewUser:
-            user = new User { UserName = model.Email, Email = model.Email };
-            var registerResult = await UserManager.CreateAsync(user, model.Password);
-            if (registerResult.Succeeded)
-            {
-              string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-              if (await UserManager.ConfirmEmailAsync(user.UserId, code) == IdentityResult.Success)
-              {
-                result = SignInStatus.Success;
-              }
-            }
-            break;
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
-      }
-
-      if (result == SignInStatus.Success)
-      {
-        await _allrpgService.DownloadAllrpgProfile(user.UserId);
-      }
       switch (result)
       {
         case SignInStatus.Success:
@@ -168,8 +121,8 @@ namespace JoinRpg.Web.Controllers
 
     private async Task SendConfirmationEmail(User user)
     {
-      string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-      var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.Id, code = code},
+      string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.UserId);
+      var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.UserId, code},
         protocol: Request.Url.Scheme);
 
       await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recipient = user});
@@ -219,10 +172,9 @@ namespace JoinRpg.Web.Controllers
           return View("ForgotPasswordConfirmation");
         }
 
-        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
         // Send an email with this link
-        string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-        var callbackUrl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code},
+        string code = await UserManager.GeneratePasswordResetTokenAsync(user.UserId);
+        var callbackUrl = Url.Action("ResetPassword", "Account", new {userId = user.UserId, code = code},
           protocol: Request.Url.Scheme);
 
         await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recipient = user});
@@ -267,7 +219,7 @@ namespace JoinRpg.Web.Controllers
         ModelState.AddModelError("", "Email не найден");
         return View();
       }
-      var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
+      var result = await UserManager.ResetPasswordAsync(user.UserId, model.Code, model.Password);
       if (result.Succeeded)
       {
         return RedirectToAction("ResetPasswordConfirmation", "Account");
@@ -362,7 +314,7 @@ namespace JoinRpg.Web.Controllers
         var result = await UserManager.CreateAsync(user);
         if (result.Succeeded)
         {
-          result = await UserManager.AddLoginAsync(user.Id, info.Login);
+          result = await UserManager.AddLoginAsync(user.UserId, info.Login);
           if (result.Succeeded)
           {
             await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -416,12 +368,7 @@ namespace JoinRpg.Web.Controllers
 
     internal class ChallengeResult : HttpUnauthorizedResult
     {
-      public ChallengeResult(string provider, string redirectUri)
-        : this(provider, redirectUri, null)
-      {
-      }
-
-      public ChallengeResult(string provider, string redirectUri, string userId)
+      public ChallengeResult(string provider, string redirectUri, string userId = null)
       {
         LoginProvider = provider;
         RedirectUri = redirectUri;

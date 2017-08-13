@@ -63,9 +63,23 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static PaymentType GetCashPaymentType(this ProjectAcl acl)
+    [CanBeNull]
+    public static PaymentType GetCashPaymentType([NotNull] this ProjectAcl acl)
     {
+      if (acl == null) throw new ArgumentNullException(nameof(acl));
       return acl.Project.PaymentTypes.SingleOrDefault(pt => pt.UserId == acl.UserId && pt.IsCash);
+    }
+
+    public static bool CanAcceptCash([NotNull] this Project project, [NotNull] User user)
+    {
+      if (project == null) throw new ArgumentNullException(nameof(project));
+      if (user == null) throw new ArgumentNullException(nameof(user));
+      return project.ProjectAcls.Single(acl => acl.UserId == user.UserId).CanAcceptCash();
+    }
+
+    public static bool CanAcceptCash([NotNull] this ProjectAcl projectAcl)
+    {
+      return projectAcl.GetCashPaymentType()?.IsActive ?? false;
     }
   }
 }

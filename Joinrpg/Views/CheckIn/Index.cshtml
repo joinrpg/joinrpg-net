@@ -1,0 +1,28 @@
+﻿@model JoinRpg.Web.Models.CheckIn.CheckInIndexViewModel
+
+@{
+  ViewBag.Title = "Регистрация";
+}
+
+<h2>Регистрация</h2>
+
+@using (Html.BeginForm())
+{
+  @Html.HiddenFor(model => model.ProjectId)
+  @Html.AntiForgeryToken()
+
+  @Html.SearchableDropdownFor(model => model.ClaimId, Model.Claims.Select(
+  claim =>
+  new ImprovedSelectListItem()
+  {
+    Value = claim.ClaimId.ToString(),
+    Text = claim.CharacterName,
+    ExtraSearch = claim.OtherNicks,
+    Subtext = "<br />" + claim.NickName + " (" + claim.Fullname + " )"
+  }))
+  
+  <input type="submit" class="btn btn-success" value="Зарегистрировать"/>
+}
+
+<hr/>
+@Html.ActionLink("Статистика по регистрации", "Stat", new {Model.ProjectId})

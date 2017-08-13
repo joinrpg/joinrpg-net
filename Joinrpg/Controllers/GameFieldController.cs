@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Index(int projectId)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
+      var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
       return project == null ? (ActionResult) HttpNotFound() : View(new GameFieldListViewModel(project, CurrentUserId));
     }
 
@@ -75,11 +75,15 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await FieldSetupService.AddField(project.ProjectId, CurrentUserId, (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
+        await FieldSetupService.AddField(project.ProjectId,
+          (ProjectFieldType) viewModel.FieldViewType, viewModel.Name,
           viewModel.DescriptionEditable,
           viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo, (MandatoryStatus) viewModel.MandatoryStatus,
-          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, viewModel.ShowForUnApprovedClaim);
+          viewModel.IsPublic, (FieldBoundTo) viewModel.FieldBoundTo,
+          (MandatoryStatus) viewModel.MandatoryStatus,
+          viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc,
+          viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
+          viewModel.ShowForUnApprovedClaim);
 
         return ReturnToIndex(project);
       }
@@ -120,7 +124,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.UpdateFieldParams(CurrentUserId, project.ProjectId, field.ProjectFieldId,
+          FieldSetupService.UpdateFieldParams(project.ProjectId, field.ProjectFieldId,
             viewModel.Name, viewModel.DescriptionEditable, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
             viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
@@ -155,11 +159,12 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
+      var project = field.Project;
       try
       {
         await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
-        return ReturnToIndex(field.Project);
+        return ReturnToIndex(project);
       }
       catch (Exception exception)
       {
@@ -189,7 +194,7 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-            viewModel.Description);
+            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -221,8 +226,8 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId,
-            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId);
+          FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
+            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription, viewModel.ProgrammaticValue);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -254,7 +259,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, CurrentUserId, viewModel.ProjectFieldId);
+          FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId, viewModel.ProjectFieldId);
 
         return ReturnToField(value.ProjectField);
       }
@@ -298,7 +303,7 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FieldSetupService.MoveFieldValue(projectid, parentObjectId, listItemId, direction);
+        await FieldSetupService.MoveFieldVariant(projectid, parentObjectId, listItemId, direction);
 
 
         return ReturnToField(value);
@@ -329,6 +334,33 @@ namespace JoinRpg.Web.Controllers
       catch
       {
         return ReturnToField(value);
+      }
+    }
+
+    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
+    {
+      var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
+      if (value == null)
+      {
+        return HttpNotFound();
+      }
+
+      if (afterFieldId == -1)
+      {
+        afterFieldId = null;
+      }
+
+      try
+      {
+        await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+
+
+        return ReturnToIndex(value.Project);
+      }
+      catch
+      {
+        return ReturnToIndex(value.Project);
       }
     }
   }

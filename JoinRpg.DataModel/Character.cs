@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
@@ -8,7 +10,7 @@ namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
 
-  public class Character : IClaimSource, IFieldContainter
+  public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -22,7 +24,6 @@ namespace JoinRpg.DataModel
 
     public IntList ParentGroupsImpl { get; set; } = new IntList();
 
-    [NotNull]
     public virtual Project Project { get; set; }
 
     IEnumerable<CharacterGroup> IWorldObject.ParentGroups => Groups;
@@ -50,8 +51,11 @@ namespace JoinRpg.DataModel
 
     public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
-    [CanBeNull]
-    public Claim ApprovedClaim => Claims.SingleOrDefault(c => c.IsApproved);
+    [CanBeNull, InverseProperty(null)]
+    public virtual  Claim ApprovedClaim { get; set; }
+
+    [ForeignKey(nameof(ApprovedClaim)), InverseProperty(null)]
+    public int? ApprovedClaimId { get; set; }
 
     public virtual ICollection<UserSubscription> Subscriptions { get; set; }
     public bool IsRoot => false; //Character is not "root group"
@@ -63,7 +67,6 @@ namespace JoinRpg.DataModel
 
     public User ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
 
-    //TODO: Implement plot element order. Save here data like "{12,13,158,46}" where numbers is PlotElementIds
     public string PlotElementOrderData { get; set; }
 
     public virtual ICollection<PlotElement> DirectlyRelatedPlotElements { get; set; }
@@ -71,6 +74,29 @@ namespace JoinRpg.DataModel
     public bool HidePlayerForCharacter { get; set; }
 
     public bool IsHot { get; set; }
+
+    [Required]
+    public DateTime CreatedAt { get; set; }
+
+    [ForeignKey(nameof(CreatedById))]
+    public virtual User CreatedBy { get; set; }
+
+    public int CreatedById { get; set; }
+
+    [Required]
+    public DateTime UpdatedAt { get; set; }
+
+    [ForeignKey(nameof(UpdatedById))]
+    public virtual User UpdatedBy { get; set; }
+
+    public int UpdatedById { get; set; }
+
+    /// <summary>
+    /// Sets to true if this character is actually playing NOW.
+    /// </summary>
+    public bool InGame { get; set; } = false;
+
+    public bool AutoCreated { get; set; } = false;
   }
 
   

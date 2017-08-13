@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -30,15 +29,14 @@ namespace JoinRpg.Services.Impl
     {
       var group = await LoadProjectSubEntityAsync<CharacterGroup>(projectId, characterGroupId);
       group.RequestMasterAccess(CurrentUserId);
-      var utcNow = DateTime.UtcNow;
       var forumThread = new ForumThread()
 
       {
         CharacterGroupId = characterGroupId,
         ProjectId = projectId,
         Header = Required(header),
-        CreatedAt = utcNow,
-        ModifiedAt = utcNow,
+        CreatedAt = Now,
+        ModifiedAt = Now,
         AuthorUserId = CurrentUserId,
         IsVisibleToPlayer = !hideFromUser,
         CommentDiscussion = new CommentDiscussion() { ProjectId = projectId}
@@ -55,7 +53,7 @@ namespace JoinRpg.Services.Impl
           CommentId = -1,
           Text =  new MarkdownString(commentText)
         },
-        CreatedAt = utcNow,
+        CreatedAt = Now,
       });
 
       group.ForumThreads.Add(forumThread);

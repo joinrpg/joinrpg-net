@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
@@ -8,6 +9,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl
 {
+  [UsedImplicitly]
   public class MyDbContext : DbContext, IUnitOfWork
   {
     public MyDbContext() : base("DefaultConnection")
@@ -24,6 +26,8 @@ namespace JoinRpg.Dal.Impl
 
     public DbSet<Claim> ClaimSet => Set<Claim>();
 
+    public DbSet<GameReport2DTemplate> GameReport2DTemplates { get; set; }
+
     DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
     Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
@@ -34,11 +38,7 @@ namespace JoinRpg.Dal.Impl
     public IClaimsRepository GetClaimsRepository() => new ClaimsRepositoryImpl(this);
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
-
-    public static MyDbContext Create()
-    {
-      return new MyDbContext();
-    }
+    public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
@@ -61,9 +61,12 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<Project>().HasMany(p => p.Characters).WithRequired(c => c.Project).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<Claim>().HasOptional(c => c.Group).WithMany().WillCascadeOnDelete(false);
-      modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().WillCascadeOnDelete(false);
-      modelBuilder.Entity<Claim>().HasRequired(c => c.Player). WithMany(p => p.Claims).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasOptional(c => c.Character).WithMany().HasForeignKey(c => c.CharacterId).WillCascadeOnDelete(false);
+      modelBuilder.Entity<Claim>().HasRequired(c => c.Player).WithMany(p => p.Claims).WillCascadeOnDelete(false);
       modelBuilder.Entity<Claim>().HasRequired(c => c.Project).WithMany(p => p.Claims).WillCascadeOnDelete(false);
+
+      modelBuilder.Entity<Character>().HasOptional(c => c.ApprovedClaim).WithMany()
+        .HasForeignKey(c => c.ApprovedClaimId).WillCascadeOnDelete(false);
 
       modelBuilder.Entity<CommentDiscussion>().HasMany(c => c.Comments).WithRequired(c => c.Discussion);
 

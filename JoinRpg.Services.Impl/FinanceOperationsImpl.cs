@@ -23,66 +23,12 @@ namespace JoinRpg.Services.Impl
   int feeChange, int money, int paymentTypeId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      var now = DateTime.UtcNow;
       var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
-      paymentType.EnsureActive();
-
-      if (operationDate > now.AddDays(1)) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
-      {
-        throw new CannotPerformOperationInFuture();
-      }
-
-      if (feeChange != 0 || money < 0)
-      {
-        claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-      }
-      var state = FinanceOperationState.Approved;
-
-      if (paymentType.UserId != CurrentUserId)
-      {
-        if (claim.PlayerUserId == CurrentUserId)
-        {
-          //Player mark that he pay fee. Put this to moderation
-          state = FinanceOperationState.Proposed;
-        }
-        else
-        {
-          claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-        }
-      }
-
-      var comment = claim.AddCommentImpl(CurrentUserId, null, contents, isVisibleToPlayer:true, extraAction: null);
-
-      var financeOperation = new FinanceOperation()
-      {
-        Created = now,
-        FeeChange = feeChange,
-        MoneyAmount = money,
-        Changed = now,
-        Claim = claim,
-        Comment = comment,
-        PaymentType = paymentType,
-        State = state,
-        ProjectId = projectId,
-        OperationDate = operationDate
-      };
-
-      comment.Finance = financeOperation;
-
-      claim.FinanceOperations.Add(financeOperation);
-
-      claim.UpdateClaimFeeIfRequired(operationDate);
+      var email = await AcceptFeeImpl(contents, operationDate, feeChange, money, paymentType, claim);
 
       await UnitOfWork.SaveChangesAsync();
-      var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, contents,
-        s => s.MoneyOperation,
-        commentExtraAction: null,
-        initiator: await UserRepository.GetById(CurrentUserId),
-        mastersOnly: false,
-        extraRecipients: new[] {paymentType.User});
-      email.FeeChange = feeChange;
-      email.Money = money;
+      
 
       await EmailService.Email(email);
 
@@ -212,7 +158,7 @@ namespace JoinRpg.Services.Impl
 
       claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      claim.AddCommentImpl(CurrentUserId, null, feeValue.ToString(), isVisibleToPlayer: true,
+      AddCommentImpl(claim, null, feeValue.ToString(), isVisibleToPlayer: true,
         extraAction: CommentExtraAction.FeeChanged);
 
       claim.CurrentFee = feeValue;

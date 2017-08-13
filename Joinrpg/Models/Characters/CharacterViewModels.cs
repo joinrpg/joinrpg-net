@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Models.Characters
   {
   }
 
-  public class EditCharacterViewModel : CharacterViewModelBase
+  public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTracked
   {
     public int CharacterId { get; set; }
 
@@ -68,9 +68,18 @@ namespace JoinRpg.Web.Models.Characters
       IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
 
       IsAcceptingClaims = IsAcceptingClaims && IsAcceptingClaimsEnabled;
+      CreatedAt = field.CreatedAt;
+      UpdatedAt = field.UpdatedAt;
+      CreatedBy = field.CreatedBy;
+      UpdatedBy = field.UpdatedBy;
 
       return this;
     }
+
+    public DateTime CreatedAt { get; private set; }
+    public User CreatedBy { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+    public User UpdatedBy { get; private set; }
   }
 
   public enum CharacterNavigationPage

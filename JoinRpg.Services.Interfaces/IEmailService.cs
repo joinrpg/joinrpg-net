@@ -24,6 +24,8 @@ namespace JoinRpg.Services.Interfaces
     Task Email(ChangeResponsibleMasterEmail createClaimEmail);
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
+    Task Email(CheckedInEmal createClaimEmail);
+    Task Email(SecondRoleEmail createClaimEmail);
     Task Email(ClaimFieldsChangedEmail createClaimEmail);
     Task Email(FieldsChangedEmail filedsEmail);
   }
@@ -63,6 +65,12 @@ namespace JoinRpg.Services.Interfaces
   public class ApproveByMasterEmail : ClaimEmailModel
   {
   }
+
+  public class CheckedInEmal : ClaimEmailModel
+  {  
+  }
+
+  public class SecondRoleEmail : ClaimEmailModel { }
 
   public class DeclineByMasterEmail : ClaimEmailModel
   {

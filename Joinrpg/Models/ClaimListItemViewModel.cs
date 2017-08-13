@@ -32,24 +32,6 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public enum ClaimStatusView
-  {
-    [Display(Name = "Подана"), UsedImplicitly]
-    AddedByUser,
-    [Display(Name = "Предложена"), UsedImplicitly]
-    AddedByMaster,
-    [Display(Name = "Принята"), UsedImplicitly]
-    Approved,
-    [Display(Name = "Отозвана"), UsedImplicitly]
-    DeclinedByUser,
-    [Display(Name = "Отклонена"), UsedImplicitly]
-    DeclinedByMaster,
-    [Display(Name = "Обсуждается"), UsedImplicitly]
-    Discussed,
-    [Display(Name = "В листе ожидания"), UsedImplicitly]
-    OnHold,
-  }
-
   public class ClaimListViewModel : IOperationsAwareView
   {
     public IEnumerable<ClaimListItemViewModel> Items { get;  }
@@ -120,7 +102,7 @@ namespace JoinRpg.Web.Models
     public ICollection<ProblemViewModel> Problems { get; set; }
 
     [NotNull, ReadOnly(true)]
-    public CustomFieldsViewModel Fields { get; }
+    public IReadOnlyCollection<FieldWithValue> Fields { get; }
 
     [Display(Name= "Уплачено")]
     public int FeePaid { get; }
@@ -146,7 +128,8 @@ namespace JoinRpg.Web.Models
 
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;
-      Fields = new CustomFieldsViewModel(currentUserId, claim);
+      Fields = claim.Project.GetFields();
+      Fields.FillIfEnabled(claim, claim.Character);
       FeePaid = claim.ClaimBalance();
       FeeDue = claim.ClaimFeeDue();
     }

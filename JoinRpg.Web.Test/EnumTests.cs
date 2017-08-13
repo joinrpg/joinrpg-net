@@ -11,10 +11,10 @@ namespace JoinRpg.Web.Test
     [TestMethod]
     public void ProblemEnum()
     {
-//      EnumerationTestHelper.CheckEnums<ClaimProblemType, ProblemTypeViewModel>();
+      //EnumerationTestHelper.CheckEnums<ClaimProblemType, ProblemTypeViewModel>();
       EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
       EnumerationTestHelper.CheckEnums<ProjectFieldViewType, DataModel.ProjectFieldType>();
-      //EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
+      EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
     }
   }
 }

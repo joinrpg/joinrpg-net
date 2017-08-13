@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
         if (claim != null)
         {
 
-          await ClaimService.AddComment(discussion.ProjectId, claim.ClaimId, CurrentUserId, viewModel.ParentCommentId,
+          await ClaimService.AddComment(discussion.ProjectId, claim.ClaimId, viewModel.ParentCommentId,
             !viewModel.HideFromUser, viewModel.CommentText, viewModel.FinanceAction);
         }
         else

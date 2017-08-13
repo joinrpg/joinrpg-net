@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Interfaces
   {
     Task<Project> AddProject(string projectName, User creator);
 
-    Task AddCharacterGroup(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
+    Task AddCharacterGroup(int projectId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, string description, bool haveDirectSlotsForSave, int directSlotsForSave, int? responsibleMasterId);
 
     Task AddCharacter(int projectId, int currentUserId, string name, bool isPublic, IReadOnlyCollection<int> parentCharacterGroupIds, bool isAcceptingClaims, string description, bool hidePlayerForCharacter, bool isHot);
 
@@ -42,5 +42,6 @@ namespace JoinRpg.Services.Interfaces
 
     Task MoveCharacter(int currentUserId, int projectId, int characterId, int parentCharacterGroupId, short direction);
     Task CloseProject(int projectId, int currentUserId, bool publishPlot);
+    Task SetCheckInOptions(int projectId, bool checkInProgress, bool enableCheckInModule, bool modelAllowSecondRoles);
   }
 }

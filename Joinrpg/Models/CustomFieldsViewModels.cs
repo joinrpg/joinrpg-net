@@ -20,6 +20,7 @@ namespace JoinRpg.Web.Models
       DescriptionPlainText = value.Description.ToPlainText();
       Label = value.Label;
       DescriptionHtml = value.Description.ToHtmlString();
+      MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
       SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
     }
 
@@ -31,6 +32,7 @@ namespace JoinRpg.Web.Models
 
     public string Label { get; }
     public IHtmlString DescriptionHtml { get; }
+    public IHtmlString MasterDescriptionHtml { get; }
   }
   //Actually most of this logic should be moved to Domain
   public class FieldValueViewModel

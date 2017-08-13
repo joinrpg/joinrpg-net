@@ -1,0 +1,41 @@
+﻿@model JoinRpg.Web.Models.CheckIn.SecondRoleViewModel
+
+@{
+  ViewBag.Title = "Выпуск второй ролью";
+}
+
+<h2>Выпуск второй ролью</h2>
+@Html.Partial("CharacterNavigation", Model.Navigation)
+@Html.DisplayFor(model => model.PlayerDetails)
+<dl>
+  <dt>@Html.LabelFor(model => model.Master)</dt>
+  <dd>@Html.DisplayFor(model => model.Master)</dd>
+</dl>
+@using (Html.BeginForm())
+{
+  @Html.HiddenFor(model => model.ProjectId)
+  @Html.HiddenFor(model=>model.ClaimId)
+  @Html.AntiForgeryToken()
+
+  <div class="form-horizontal">
+    
+    <div class="form-group">
+      @Html.LabelFor(model => model.CharacterId, htmlAttributes: new { @class = "control-label col-md-2" })
+      <div class="col-md-10">
+        
+        @Html.SearchableDropdownFor(model => model.CharacterId, Model.Characters.Select(
+          character =>
+            new ImprovedSelectListItem()
+            {
+              Value = character.Id.ToString(),
+              Text = character.Name,
+              Subtext = "<br /> Мастер: " + character.Master
+            }))
+        @Html.ValidationMessageFor(model => model.CharacterId, "", new {@class = "text-danger"})
+      </div>
+    </div>
+    <div class="form-group">
+      <input type="submit" value="Выпустить второй ролью" class="btn btn-default col-md-2"/>
+    </div>
+  </div>
+}

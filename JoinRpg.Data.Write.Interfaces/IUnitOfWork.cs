@@ -19,5 +19,6 @@ namespace JoinRpg.Data.Write.Interfaces
     IClaimsRepository GetClaimsRepository();
     IPlotRepository GetPlotRepository ();
     IForumRepository GetForumRepository();
+    ICharacterRepository GetCharactersRepository();
   }
 }

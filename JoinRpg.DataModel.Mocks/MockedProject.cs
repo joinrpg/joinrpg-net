@@ -189,5 +189,13 @@ namespace JoinRpg.DataModel.Mocks
       Project.Claims.Add(claim);
       return claim;
     }
+
+    public Claim CreateApprovedClaim(Character character, User player)
+    {
+      var claim = CreateClaim(character, player);
+      claim.ClaimStatus = Claim.Status.Approved;
+      character.ApprovedClaim = claim;
+      return claim;
+    }
   }
 }
