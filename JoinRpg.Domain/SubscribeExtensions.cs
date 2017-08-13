@@ -43,6 +43,7 @@ namespace JoinRpg.Domain
         .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
 
+    //TODO: KK think how to merge them together to reduce copypaste.
     public static IEnumerable<User> GetSubscriptions(
       this Claim claim, 
       Func<UserSubscription, bool> predicate,
@@ -57,7 +58,9 @@ namespace JoinRpg.Domain
           .Select(u => u.User) //Select users
           .Union(claim.ResponsibleMasterUser) //Responsible master is always subscribed on everything
           .Union(claim.Player) //...and player himself also
+          .Union(claim.Character?.ResponsibleMasterUser)
           .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
+          .Where(u => u != null)
           .VerifySubscriptions(mastersOnly, claim)
           .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
     }
