@@ -166,13 +166,13 @@ namespace JoinRpg.Services.Email
       IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
         .OtherChangedAttributes
         .Select(changedAttribute =>
-          new MarkdownString($@"**{changedAttribute.Key}**: {MarkDownHelper.HighlightDiff_placeholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString)}"));
+          new MarkdownString($@"**{changedAttribute.Key}**: {MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString)}"));
 
       IEnumerable<MarkdownString> fieldString = mailWithFields
         .UpdatedFields
         .Where(f => accessRightsPredicate(f))
         .Select(updatedField => 
-          new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiff_placeholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}"));
+          new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}"));
 
       return string.Join("\n\n", otherAttributesStrings.Union(fieldString).Select(x => x.ToHtmlString()));
     }

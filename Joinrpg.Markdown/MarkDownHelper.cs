@@ -89,12 +89,12 @@ namespace Joinrpg.Markdown
       return new MarkdownString(mdContents);
     }
 
-    public static MarkdownString HighlightDiff_placeholder(string newString, string oldString)
+    public static MarkdownString HighlightDiffPlaceholder(string newString, string oldString)
     {
       //TODO: look for diff algorithms
       return new MarkdownString(newString);
     }
-    public static MarkdownString HighlightDiff_placeholder(MarkdownString newString, MarkdownString oldString)
+    public static MarkdownString HighlightDiffPlaceholder(MarkdownString newString, MarkdownString oldString)
     {
       //TODO: look for diff algorithms
       return newString;
