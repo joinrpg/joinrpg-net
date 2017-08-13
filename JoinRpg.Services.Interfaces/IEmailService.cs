@@ -206,7 +206,7 @@ namespace JoinRpg.Services.Interfaces
     /// </summary>
     IFieldContainter FieldsContainer { get; }
     /// <summary>
-    /// Other attributes that have changed. Those atribute don't need access verification
+    /// Other attributes that have changed. Those attributes don't need access verification
     /// </summary>
     IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
   }
