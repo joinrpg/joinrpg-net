@@ -164,6 +164,7 @@ namespace JoinRpg.Web.Models
     /// Used for printing, when the user who prints has master access,
     /// whereas the print result should contain only user-visible fields.
     /// </param>
+    /// <param name="wherePrintEnabled">when true - print only fields where IncludeInPrint = true</param>
     public CustomFieldsViewModel(
       int? currentUserId,
       Character character,
