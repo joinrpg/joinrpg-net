@@ -99,6 +99,8 @@ namespace JoinRpg.Domain.Test
       var mock = new MockedProject();
       var claim = mock.CreateClaim(mock.Character, mock.Player);
       claim.ClaimStatus = Claim.Status.Approved;
+      mock.Character.ApprovedClaim = claim;
+
       FieldSaveHelper.SaveCharacterFields(
         mock.Player.UserId,
         claim,
