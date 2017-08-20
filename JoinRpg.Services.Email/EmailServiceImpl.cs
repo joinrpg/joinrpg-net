@@ -288,7 +288,11 @@ namespace JoinRpg.Services.Email
         ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
         : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim.Name} {(forMessageBody ? $", игрок {model.Claim.Player.DisplayName}" : "")}";
 
-  if (recipients.Any())
+
+      string linkString = model.IsCharacterMail
+        ? _uriService.Get(model.Character)
+        : _uriService.Get(model.Claim);
+      if (recipients.Any())
       {
         await SendEmail(recipients, $"{model.ProjectName}: {target(false)}",
           $@"Добрый день, {MailGunExts.MailGunRecipientName},
@@ -296,11 +300,11 @@ namespace JoinRpg.Services.Email
 
 {MailGunExts.GetUserDependentValue(changedFieldsKey)}
 
+Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
+
 {model.Initiator.DisplayName}
 
 ", model.Initiator.ToRecipient());
-        //TODO: KK add a link to the page
-        //TODO: KK Чтобы ответить на комментарий, перейдите на страницу заявки: { _uriService.Get(model.Claim.CommentDiscussion)}
       }
     }
 

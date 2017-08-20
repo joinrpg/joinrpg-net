@@ -10,7 +10,7 @@ namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
 
-  public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity
+  public class Character : IClaimSource, IFieldContainter, ICreatedUpdatedTrackedForEntity, ILinkable
   {
     public int CharacterId { get; set; }
     public int ProjectId { get; set; }
@@ -97,6 +97,11 @@ namespace JoinRpg.DataModel
     public bool InGame { get; set; } = false;
 
     public bool AutoCreated { get; set; } = false;
+
+    LinkType ILinkable.LinkType => LinkType.ResultCharacter;
+
+    string ILinkable.Identification => CharacterId.ToString();
+    int? ILinkable.ProjectId => ProjectId;
   }
 
   

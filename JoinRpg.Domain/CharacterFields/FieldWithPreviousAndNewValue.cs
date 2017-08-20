@@ -22,13 +22,6 @@ namespace JoinRpg.Domain.CharacterFields
       PreviousValue = previousValue;
     }
 
-    public FieldWithPreviousAndNewValue(
-      FieldWithValue fieldWithValue,
-      string previousValue) :
-        this(fieldWithValue.Field, fieldWithValue.Value, previousValue)
-    {
-    }
-
     public override string ToString() => $"{Field.FieldName}={Value},PreviousValue={PreviousValue}";
   }
 }

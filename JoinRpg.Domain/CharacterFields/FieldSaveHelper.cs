@@ -73,7 +73,7 @@ namespace JoinRpg.Domain.CharacterFields
       {
         if (field.Value == newValue) return false;
 
-        UpdatedFields.Add(new FieldWithPreviousAndNewValue(field, field.Value));
+        UpdatedFields.Add(new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
         field.Value = newValue;
         field.MarkUsed();
         
