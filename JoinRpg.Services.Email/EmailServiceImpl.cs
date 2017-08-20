@@ -171,17 +171,22 @@ namespace JoinRpg.Services.Email
         .UpdatedFields
         .Where(f => accessRightsPredicate(f))
         .Select(updatedField => 
-          new MarkdownString(string.Format("**{0}**: {1}",
-            updatedField.Field.FieldName,
-            MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString,updatedField.PreviousDisplayString).Contents)));
+          new MarkdownString(
+            $@"__**{updatedField.Field.FieldName}:**__
+{MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
       //Add info about other changed atttributes (no access rights validation)
       IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
         .OtherChangedAttributes
-        .Select(changedAttribute => new MarkdownString(string.Format("**{0}**: {1}",
-          changedAttribute.Key,
-          MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString,changedAttribute.Value.PreviousDisplayString).Contents)));
-      return string.Join("\n\n", otherAttributesStrings.Union(fieldString).Select(x => x.ToHtmlString()));
+        .Select(changedAttribute => new MarkdownString(
+          $@"__**{changedAttribute.Key}:**__
+{MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
+
+      return string.Join(
+        "\n\n", 
+        otherAttributesStrings
+          .Union(fieldString)
+          .Select(x => x.ToHtmlString()));
     }
 
     private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
