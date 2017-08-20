@@ -156,7 +156,7 @@ namespace JoinRpg.Services.Impl
 
       character.ParentCharacterGroupIds = await ValidateCharacterGroupList(projectId,
         Required(parentCharacterGroupIds), ensureNotSpecial: true);
-      FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields, FieldDefaultValueGenerator);
+      var changedFields = FieldSaveHelper.SaveCharacterFields(currentUserId, character, characterFields, FieldDefaultValueGenerator);
 
       MarkChanged(character);
       MarkTreeModified(character.Project); //TODO: Can be smarter
@@ -165,12 +165,16 @@ namespace JoinRpg.Services.Impl
       changedAttributes = changedAttributes
         .Where(attr => attr.Value.DisplayString != attr.Value.PreviousDisplayString)
         .ToDictionary(x => x.Key, x => x.Value);
-      if (changedAttributes.Any())
+
+      if (changedFields.Any() || changedAttributes.Any())
       {
-        //Currently no attributes case is checked in email service as well, but that's not too reliable in future.
         var user = await UserRepository.GetById(currentUserId);
-        email = EmailHelpers.CreateFieldsEmail(character, s => s.FieldChange, user,
-          new FieldWithPreviousAndNewValue[0], changedAttributes);
+        email = EmailHelpers.CreateFieldsEmail(
+          character,
+          s => s.FieldChange,
+          user,
+          changedFields,
+          changedAttributes);
       }
       await UnitOfWork.SaveChangesAsync();
 

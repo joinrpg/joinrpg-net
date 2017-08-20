@@ -152,7 +152,10 @@ namespace JoinRpg.Services.Email
     }
     #endregion
 
-    private string GetFieldsForUser(
+    /// <summary>
+    /// Gets info about changed fields and other attributes for particular user (if available).
+    /// </summary>
+    private string GetChangedFieldsInfoForUser(
       [NotNull]EmailModelBase model,
       [NotNull]User user)
     {
@@ -161,19 +164,23 @@ namespace JoinRpg.Services.Email
       {
         return "";
       }
+      //Add project fields that user has right to view
       Predicate<FieldWithValue> accessRightsPredicate =
         CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
-      IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
-        .OtherChangedAttributes
-        .Select(changedAttribute =>
-          new MarkdownString($@"**{changedAttribute.Key}**: {MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString)}"));
-
       IEnumerable<MarkdownString> fieldString = mailWithFields
         .UpdatedFields
         .Where(f => accessRightsPredicate(f))
         .Select(updatedField => 
-          new MarkdownString($@"**{updatedField.Field.FieldName}**: {MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString)}"));
+          new MarkdownString(string.Format("**{0}**: {1}",
+            updatedField.Field.FieldName,
+            MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString,updatedField.PreviousDisplayString).Contents)));
 
+      //Add info about other changed atttributes (no access rights validation)
+      IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
+        .OtherChangedAttributes
+        .Select(changedAttribute => new MarkdownString(string.Format("**{0}**: {1}",
+          changedAttribute.Key,
+          MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString,changedAttribute.Value.PreviousDisplayString).Contents)));
       return string.Join("\n\n", otherAttributesStrings.Union(fieldString).Select(x => x.ToHtmlString()));
     }
 
@@ -189,7 +196,7 @@ namespace JoinRpg.Services.Email
         .GetRecipients()
         .Select(r => new MailRecipient(
           r,
-          new Dictionary<string, string> {{changedFieldsKey, GetFieldsForUser(model, r)}}))
+          new Dictionary<string, string> {{changedFieldsKey, GetChangedFieldsInfoForUser(model, r)}}))
         .ToList();
 
       await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
@@ -267,7 +274,7 @@ namespace JoinRpg.Services.Email
         .GetRecipients()
         .Select(r => new MailRecipient(
           r,
-          new Dictionary<string, string> {{changedFieldsKey, GetFieldsForUser(model, r)}}))
+          new Dictionary<string, string> {{changedFieldsKey, GetChangedFieldsInfoForUser(model, r)}}))
         .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[changedFieldsKey]))
         //don't email if no changes are visible to user rights
         .ToList();

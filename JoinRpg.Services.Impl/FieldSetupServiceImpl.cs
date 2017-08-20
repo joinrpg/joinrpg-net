@@ -52,7 +52,7 @@ namespace JoinRpg.Services.Impl
       field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
       field.FieldName = Required(name);
-      field.Description.Contents = fieldHint;
+      field.Description = new MarkdownString(fieldHint);
       field.CanPlayerEdit = canPlayerEdit;
       field.CanPlayerView = canPlayerView;
       field.IsPublic = isPublic;
