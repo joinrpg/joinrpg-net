@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using Newtonsoft.Json;
 
@@ -11,8 +12,8 @@ namespace JoinRpg.Domain
 {
   public static class CustomFieldsExtensions
   {
-    [NotNull,ItemNotNull,MustUseReturnValue]
-    public static IReadOnlyList<FieldWithValue> GetFields([NotNull] this Project project)
+    [NotNull, ItemNotNull, MustUseReturnValue]
+    public static IReadOnlyList<FieldWithValue> GetFieldsNotFilled([NotNull] this Project project)
     {
       if (project == null) throw new ArgumentNullException(nameof(project));
       return
@@ -21,9 +22,9 @@ namespace JoinRpg.Domain
     }
 
     /// <summary>
-    /// That method is faster than GetFields()
+    /// That method is faster than GetFieldsNotFilled()
     /// </summary>
-    public static IEnumerable<FieldWithValue> GetFieldsWithoutOrder([NotNull] this Project project)
+    public static IEnumerable<FieldWithValue> GetFieldsNotFilledWithoutOrder([NotNull] this Project project)
     {
       if (project == null) throw new ArgumentNullException(nameof(project));
       return project.ProjectFields.Select(pf => new FieldWithValue(pf, null));
@@ -43,7 +44,8 @@ namespace JoinRpg.Domain
 
     private static Dictionary<int, string> DeserializeFieldValues([CanBeNull] this IFieldContainter containter)
     {
-      return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter?.JsonData ?? "") ?? new Dictionary<int, string>();
+      return JsonConvert.DeserializeObject<Dictionary<int, string>>(containter?.JsonData ?? "") ??
+             new Dictionary<int, string>();
     }
 
     public static void MarkUsed([NotNull] this FieldWithValue field)
@@ -64,7 +66,8 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] IFieldContainter container)
+    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
+      [CanBeNull] IFieldContainter container)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       if (container == null)
@@ -83,7 +86,8 @@ namespace JoinRpg.Domain
     }
 
     public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
-      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim, [CanBeNull] Character character)
+      [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim,
+      [CanBeNull] Character character)
     {
       if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
       characterFieldValues.FillFrom(claim);
@@ -91,20 +95,43 @@ namespace JoinRpg.Domain
       return characterFieldValues;
     }
 
-    public static List<FieldWithValue> GetFields(this Character character)
+    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Character character)
     {
-      var projectFields = character.Project.GetFields().ToList();
-      projectFields.FillFrom(character.ApprovedClaim);
-      projectFields.FillFrom(character);
-      return projectFields;
+      if (character == null) throw new ArgumentNullException(nameof(character));
+      return character.Project
+        .GetFieldsNotFilled()
+        .ToList()
+        .FillIfEnabled(character.ApprovedClaim, character);
     }
 
-    public static List<FieldWithValue> GetFields(this Claim character)
+    public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Claim claim)
     {
-      var projectFields = character.Project.GetFields().ToList();
-      projectFields.FillFrom(character.Character);
-      projectFields.FillFrom(character);
-      return projectFields;
+      if (claim == null) throw new ArgumentNullException(nameof(claim));
+      return claim.Project
+        .GetFieldsNotFilled()
+        .ToList()
+        .FillIfEnabled(claim, claim.Character);
+    }
+
+    [MustUseReturnValue]
+    public static Predicate<FieldWithValue> GetShowForUserPredicate(
+      [NotNull] IFieldContainter entityWithFields,
+      int userId)
+    {
+      if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
+
+      var claim = entityWithFields as Claim;
+      var character = entityWithFields as Character;
+
+      if (claim != null)
+      {
+        return f => f.HasViewAccess(new AccessArguments(claim, userId));
+      }
+      if (character != null)
+      {
+        return f => f.HasViewAccess(new AccessArguments(character, userId));
+      }
+      throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
     }
   }
 }

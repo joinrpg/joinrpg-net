@@ -11,13 +11,14 @@ namespace JoinRpg.Services.Email
   internal static class MailGunExts
   {
     private const string MailGunName = "name";
-    public const string MailGunRecepientName = "%recipient." + MailGunName + "%";
+    public static readonly string MailGunRecipientName = GetUserDependentValue(MailGunName);
+    public static string GetUserDependentValue(string valueKey) => "%recipient." + valueKey + "%";
 
-    public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<User> users)
+    public static IMessageBuilder AddUsers(this IMessageBuilder builder, IEnumerable<MailRecipient> recipients)
     {
-      foreach (var user in users.WhereNotNull().Distinct())
+      foreach (var recipient in recipients.WhereNotNull().Distinct())
       {
-        builder.AddToRecipient(user.ToRecipient());
+        builder.AddToRecipient(recipient.User.ToRecipient());
       }
       return builder;
     }
@@ -26,12 +27,20 @@ namespace JoinRpg.Services.Email
     public static Recipient ToRecipient(this User user) 
       => new Recipient { DisplayName = user.DisplayName, Email = user.Email };
 
-    public static JObject ToRecepientVariables(this IEnumerable<User> recepients)
+    public static JObject ToRecipientVariables(this IReadOnlyCollection<MailRecipient> recipients)
     {
       var recipientVars = new JObject();
-      foreach (var r in recepients)
+      foreach (var r in recipients)
       {
-        recipientVars.Add(r.Email, new JObject {{MailGunName, r.DisplayName}});
+        var jobj = new JObject();
+        jobj.Add(MailGunName, r.User.DisplayName);
+
+        foreach (var nameAndValue in r.RecipientSpecificValues)
+        {
+          jobj.Add(nameAndValue.Key, nameAndValue.Value);
+        }
+
+        recipientVars.Add(r.User.Email, jobj);
       }
       return recipientVars;
     }

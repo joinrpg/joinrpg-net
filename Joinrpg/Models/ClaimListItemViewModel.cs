@@ -128,8 +128,7 @@ namespace JoinRpg.Web.Models
 
       ProjectId = claim.ProjectId;
       ProjectName = claim.Project.ProjectName;
-      Fields = claim.Project.GetFields();
-      Fields.FillIfEnabled(claim, claim.Character);
+      Fields = claim.GetFields();
       FeePaid = claim.ClaimBalance();
       FeeDue = claim.ClaimFeeDue();
     }

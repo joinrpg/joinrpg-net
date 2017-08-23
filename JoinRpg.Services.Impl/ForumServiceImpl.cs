@@ -72,7 +72,7 @@ namespace JoinRpg.Services.Impl
           ForumThread = forumThread,
           ProjectName = forumThread.Project.ProjectName,
           Initiator = await UserRepository.GetById(CurrentUserId),
-          Recepients = players.Union(masters).ToList(),
+          Recipients = players.Union(masters).ToList(),
           Text = new MarkdownString(commentText),
         };
 
@@ -136,17 +136,17 @@ namespace JoinRpg.Services.Impl
       };
       forumThread.CommentDiscussion.Comments.Add(comment);
 
-      var extraRecepients =
+      var extraRecipients =
         new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
         Union(extraSubscriptions ?? Enumerable.Empty<User>());
       var subscriptions =
-        forumThread.GetSubscriptions(extraRecepients, visibleToPlayerUpdated).ToList();
+        forumThread.GetSubscriptions(extraRecipients, visibleToPlayerUpdated).ToList();
       return new ForumEmail ()
       {
         ForumThread = forumThread,
         ProjectName = forumThread.Project.ProjectName,
         Initiator = await UserRepository.GetById(CurrentUserId),
-        Recepients = subscriptions.ToList(),
+        Recipients = subscriptions.ToList(),
         Text = new MarkdownString(commentText),
       };
     }

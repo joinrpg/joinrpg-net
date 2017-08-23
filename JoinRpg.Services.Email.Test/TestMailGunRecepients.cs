@@ -13,9 +13,9 @@ namespace JoinRpg.Services.Email.Test
     public void TestRecepientVariables()
     {
       var mock = new MockedProject();
-      var users = new[] { mock.Player };
-      var actual = users.ToRecepientVariables();
-      var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
+      var users = new[] { new MailRecipient(mock.Player) };
+      var actual = users.ToRecipientVariables();
+      var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.User.Email}\":{{\"name\":\"{r.User.DisplayName}\"}}")) + "}");
       Assert.AreEqual(expected.ToString(), actual.ToString());
     }
   }

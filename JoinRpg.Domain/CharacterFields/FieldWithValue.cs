@@ -2,6 +2,7 @@
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
+using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 
 // ReSharper disable once CheckNamespace
@@ -29,27 +30,24 @@ namespace JoinRpg.Domain
         _value = value;
         if (Field.HasValueList())
         {
-          SelectedIds = string.IsNullOrWhiteSpace(Value)
-            ? new int[] { }
-            : Value.ToIntList();
+          SelectedIds = Value.ToIntList();
         }
       }
     }
 
     [NotNull]
-    public string DisplayString
+    public string DisplayString => GetDisplayValue(Value, SelectedIds);
+
+    protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
     {
-      get
+      if (!Field.HasValueList())
       {
-        if (!Field.HasValueList())
-        {
-          return Value ?? "";
-        }
-        return
-          Field.DropdownValues.Where(dv => SelectedIds.Contains(dv.ProjectFieldDropdownValueId))
-            .Select(dv => dv.Label)
-            .JoinStrings(", ");
+        return value ?? "";
       }
+      return
+        Field.DropdownValues.Where(dv => selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
+          .Select(dv => dv.Label)
+          .JoinStrings(", ");
     }
 
     public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
@@ -73,14 +71,27 @@ namespace JoinRpg.Domain
       return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
     }
 
-    public bool HasEditAccess(bool masterAccess, bool characterAccess, bool claimAccess, IClaimSource target)
+    public bool HasViewAccess(AccessArguments accessArguments)
     {
-      return (masterAccess
+      return Field.IsPublic
+        || accessArguments.MasterAccess
+        ||
+        (accessArguments.PlayerAccessToCharacter && Field.CanPlayerView &&
+         Field.FieldBoundTo == FieldBoundTo.Character)
+        ||
+        (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
+         Field.FieldBoundTo == FieldBoundTo.Claim);
+    }
+
+    public bool HasEditAccess(AccessArguments accessArguments, IClaimSource target)
+    {
+      return (accessArguments.MasterAccess
              ||
-             (characterAccess && Field.CanPlayerEdit &&
+             (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
               Field.FieldBoundTo == FieldBoundTo.Character)
              ||
-             (claimAccess && Field.CanPlayerEdit && (Field.ShowOnUnApprovedClaims || characterAccess)));
+             (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
+             (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter)));
     }
 
     public override string ToString() => $"{Field.FieldName}={Value}";

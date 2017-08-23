@@ -107,9 +107,9 @@ namespace JoinRpg.Services.Impl
 
       var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, contents,
         s => s.MoneyOperation,
-        isVisibleToPlayer: true, commentExtraAction: null,
+        commentExtraAction: null,
         initiator: await UserRepository.GetById(CurrentUserId),
-        extraRecepients: new[] {paymentType.User});
+        extraRecipients: new[] {paymentType.User});
       email.FeeChange = feeChange;
       email.Money = money;
       return email;
