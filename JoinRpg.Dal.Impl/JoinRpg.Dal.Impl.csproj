@@ -390,6 +390,10 @@
     <Compile Include="Migrations\201707301708282_Report2D.Designer.cs">
       <DependentUpon>201707301708282_Report2D.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201708252144098_PriceFields.cs" />
+    <Compile Include="Migrations\201708252144098_PriceFields.Designer.cs">
+      <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -667,6 +671,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707301708282_Report2D.resx">
       <DependentUpon>201707301708282_Report2D.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201708252144098_PriceFields.resx">
+      <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

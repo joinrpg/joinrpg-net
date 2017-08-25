@@ -31,6 +31,11 @@ namespace JoinRpg.DataModel
 
     public MarkdownString MasterDescription { get; set; }
 
+    /// <summary>
+    /// Price associated with this value.
+    /// </summary>
+    public int Price { get; set; }
+
     public string ProgrammaticValue { get; set; }
 
     [CanBeNull]

@@ -42,6 +42,18 @@ namespace JoinRpg.DataModel
 
     public bool ShowOnUnApprovedClaims { get; set; }
 
+    /// <summary>
+    /// Price associated with current field.
+    /// Will be used in payment calculations.
+    /// Value usage differs on FieldType. Value will be:
+    /// - Number: multiplied with entered number
+    /// - Dropdown: used if no item selected
+    /// - MultiSelectused if no items selected
+    /// - CheckBox: used if checkbox was checked
+    /// - String, Text, Header: ignored
+    /// </summary>
+    public int Price { get; set; }
+
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
     public virtual ICollection<ProjectFieldDropdownValue> DropdownValues { get; set; } =
@@ -112,7 +124,7 @@ namespace JoinRpg.DataModel
       }
     }
   }
-
+  
   public enum ProjectFieldType
   {
     String,
