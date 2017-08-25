@@ -101,7 +101,7 @@
             <div class="col-md-9">
                 @Html.MagicSelectBindGroups(model => model.ShowForGroups)
                 @Html.ValidationMessageFor(model => model.ShowForGroups, "", new {@class = "text-danger"})
-                @Html.DescriptionFor(model => model.ShowForGroups)
+              <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
             </div>
         </div>
         
@@ -129,6 +129,14 @@
                 @Html.ValidationMessageFor(model => model.IncludeInPrint, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.IncludeInPrint)
             </div>
+        </div>
+
+        <div class="form-group">
+          @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
+          <div class="col-md-9">
+            @Html.EditorFor(model => model.Price)
+            @Html.DescriptionFor(model => model.Price)
+          </div>
         </div>
 
         <div class="form-group">

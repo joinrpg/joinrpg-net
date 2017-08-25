@@ -43,6 +43,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Показывать даже при непринятой заявке")]
     public bool ShowForUnApprovedClaim { get; set; } = true;
 
+    [Display(Name = "Цена", Description = "Цена будет добавлена ко взносу")]
+    public int Price { get; set; } = 0;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
       if (IsPublic && !CanPlayerView)
@@ -148,11 +151,11 @@ namespace JoinRpg.Web.Models
 
   public enum ProjectFieldViewType
   {
-    [Display(Name="Строка", Order =1), UsedImplicitly]
+    [Display(Name= "Строка", Order = 1), UsedImplicitly]
     String,
     [Display(Name = "Текст", Order = 2), UsedImplicitly]
     Text,
-    [Display(Name = "Выбор", Order=3 ), UsedImplicitly]
+    [Display(Name = "Выбор", Order= 3), UsedImplicitly]
     Dropdown,
     [Display(Name = "Чекбокс", Order = 5), UsedImplicitly]
     Checkbox,
@@ -160,13 +163,13 @@ namespace JoinRpg.Web.Models
     MultiSelect,
     [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
     Header,
-    [Display(Name = "Число", Order = 6), UsedImplicitly]
+    [Display(Name = "Число", Order = 7), UsedImplicitly]
     Number
   }
 
   public enum FieldBoundToViewModel
   {
-    [Display(Name="персонажу"), UsedImplicitly]
+    [Display(Name = "персонажу"), UsedImplicitly]
     Character,
     [Display(Name = "заявке"), UsedImplicitly]
     Claim,
@@ -193,8 +196,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Описание"), UIHint("MarkdownString")]
     public string DescriptionEditable { get; set; }
 
-        [Display(Name = "Привязано к", 
-      Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
+    [Display(Name = "Привязано к", Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
     public FieldBoundToViewModel FieldBoundTo { get; set; }
 
     protected override IEnumerable<ValidationResult> ValidateCore()
@@ -233,6 +235,9 @@ namespace JoinRpg.Web.Models
 
     [Display(Name = "Описание для мастеров"), UIHint("MarkdownString")]
     public string MasterDescription { get; set; }
+
+    [Display(Name = "Цена", Description = "Цена будет добавлена ко взносу если это значение выбрано")]
+    public int Price { get; set; } = 0;
 
     [Display(Name = "Программный ID", 
       Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
