@@ -65,3 +65,19 @@ textarea {
 .world-object-hidden {
   background-color: #DFE4E6;
 }
+
+.price-table {
+    text-align: right;
+}
+
+.join[class~=alert] {
+    padding: 0.75em;
+    margin: 1em 0 1em 0;
+}
+
+.join[class~=alert] .glyphicon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.3em;
+    font-size: 2em;
+}

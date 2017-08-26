@@ -32,6 +32,12 @@
         <span class="label label-warning">Игрок может менять</span>
       }
     </td>
+    <td class="price-table">
+        @if (item.FieldViewType.SupportsPricing())
+        {
+            @item.Price
+        }
+    </td>
     <td>
       @item.DescriptionDisplay
     </td>
@@ -104,28 +110,22 @@
 
       @if (item.CanEditFields)
       {
-        if (item.IsActive)
-        {
-          <span style="white-space: nowrap">
-            <a href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
-               title="Изменить">
-              <span class="glyphicon glyphicon-pencil"></span>
-            </a><a href="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
-                   title="Удалить">
-              <span class="glyphicon glyphicon-trash"></span>
-
-            </a><a href="#"
-                   data-toggle="modal" data-target="#fastMoveModal"
-                   data-element="@item.ProjectFieldId" title="Переместить">
-              <span class="glyphicon glyphicon-move"></span>
-
-            </a>
-          </span>
-        }
-        else
-        {
-          @Html.ActionLink("Восстановить", "Edit", new {item.ProjectFieldId, item.ProjectId})
-        }
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            @if (item.IsActive)
+            {            
+                <a title="Изменить" href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
+                   class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
+                <a title="Удалить" href="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
+                   class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
+            }
+            else
+            {
+                <a title="Восстановить" href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
+                   class="btn btn-primary"><i class="glyphicon glyphicon-undo"></i></a>
+            }
+            <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
+               class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
+        </div>
         @Html.MoveControl(model => item, "Move")
       }
     </td>
@@ -139,15 +139,10 @@
 {
   <table class="table" style="margin-top: 1em">
     <tr>
-      <th>
-        <b>Поле</b>
-      </th>
-      <th>
-        <b>Видимость</b>
-      </th>
-      <th>
-        @Html.DisplayNameFor(model => model.DescriptionDisplay)
-      </th>
+      <th>Поле</th>
+      <th>Видимость</th>
+      <th class="price-table">@Html.DisplayNameFor(model => model.Price)</th>
+      <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
       <th></th>
       <th></th>
     </tr>
