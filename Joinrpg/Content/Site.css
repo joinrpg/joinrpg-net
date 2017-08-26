@@ -81,3 +81,39 @@ textarea {
     margin-right: 0.3em;
     font-size: 2em;
 }
+
+.join-user {
+    white-space: nowrap;
+}
+
+.join-user i {
+    margin-right: 0.3em;
+}
+
+.join-users-h {
+    list-style-type: none;    
+    display: block;
+    column-count: 3;
+}
+
+@media screen and (max-width: 1300px)
+{
+    .join-users-h
+    {
+        column-count: 2;
+    }
+}
+
+@media screen and (max-width: 800px)
+{
+    .join-users-h
+    {
+        column-count: 1;
+    }
+}
+
+.join-users-h li
+{
+    margin: 0.2em;
+    display: block;
+}
