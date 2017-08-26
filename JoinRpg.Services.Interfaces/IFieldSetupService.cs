@@ -12,7 +12,9 @@ namespace JoinRpg.Services.Interfaces
             List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims,
             int price);
 
-        Task DeleteField(int projectId, int projectFieldId);
+        Task<ProjectField> DeleteField(int projectId, int projectFieldId);
+
+        Task DeleteField(ProjectField field);
 
         Task AddField(int projectId, ProjectFieldType fieldType, string name, string fieldHint,
             bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo,
@@ -26,7 +28,9 @@ namespace JoinRpg.Services.Interfaces
             string description, int projectFieldId, string masterDescription, string programmaticValue,
             int price);
 
-        Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int projectFieldId);
+        Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId);
+
+        Task DeleteFieldValueVariant(ProjectFieldDropdownValue value);
 
         Task MoveField(int projectid, int projectcharacterfieldid, short direction);
 

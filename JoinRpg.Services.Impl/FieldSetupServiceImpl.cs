@@ -77,9 +77,19 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task DeleteField(int projectId, int projectFieldId)
+        public async Task<ProjectField> DeleteField(int projectId, int projectFieldId)
         {
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+            ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+            await DeleteField(field);
+            return field;
+        }
+
+        /// <summary>
+        /// Deletes field by its object. We assume here that field represents really existed field in really existed project
+        /// </summary>
+        /// <param name="field">Field to delete</param>
+        public async Task DeleteField(ProjectField field)
+        {
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
@@ -260,20 +270,28 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task DeleteFieldValueVariant(int projectId, int projectFieldDropdownValueId, int projectFieldId)
+        public async Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId)
         {
-            var field = await ProjectRepository.GetFieldValue(projectId, projectFieldId, projectFieldDropdownValueId);
+            var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
+            await DeleteFieldValueVariant(value);
+            return value;
+        }
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
-
-            DeleteFieldVariantValueImpl(field);
+        /// <summary>
+        /// Deletes field value by its object
+        /// </summary>
+        /// <param name="value">Object of field value to delete</param>
+        public async Task DeleteFieldValueVariant(ProjectFieldDropdownValue value)
+        {
+            value.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            DeleteFieldVariantValueImpl(value);
             await UnitOfWork.SaveChangesAsync();
         }
 
-        private void DeleteFieldVariantValueImpl(ProjectFieldDropdownValue field)
+        private void DeleteFieldVariantValueImpl(ProjectFieldDropdownValue value)
         {
-            var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
-            if (SmartDelete(field))
+            var characterGroup = value.CharacterGroup; // SmartDelete will nullify all depend properties
+            if (SmartDelete(value))
             {
                 SmartDelete(characterGroup);
             }

@@ -8,9 +8,9 @@
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-  @Html.HiddenFor(model => model.ProjectFieldDropdownValueId)
-  @Html.HiddenFor(model => model.ProjectFieldId)
-  @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.ProjectFieldDropdownValueId)
+    @Html.HiddenFor(model => model.ProjectFieldId)
+    @Html.HiddenFor(model => model.ProjectId)
     
     <div class="form-horizontal">
         <h4>@ViewBag.Title</h4>

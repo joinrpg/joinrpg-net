@@ -50,7 +50,7 @@
             <li>
               @if (value.CharacterGroupId != null)
               {
-                @Html.ActionLink(value.Label, "ByGroup", "CharacterList", new {item.ProjectId, value.CharacterGroupId}, null)
+                @Html.ActionLink(value.Label, "ByGroup", "CharacterList", new { item.ProjectId, value.CharacterGroupId }, null)
               }
               else
               {
@@ -60,75 +60,81 @@
           }
           @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
           {
-            if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-            {
+              if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+              {
               <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
-                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
-            }
-            else
-            {
+       new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+              }
+              else
+              {
               <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
-                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
-            }
+       new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+              }
           }
         </ul>
       }
       else if (item.FieldViewType != ProjectFieldViewType.Header)
       {
-        if (!item.IsActive)
-        {
-          switch (item.FieldBoundTo)
+          if (!item.IsActive)
           {
-            case FieldBoundToViewModel.Character:
+              switch (item.FieldBoundTo)
+              {
+                  case FieldBoundToViewModel.Character:
               @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-                new {item.ProjectFieldId, item.ProjectId}, null)
-              break;
-            case FieldBoundToViewModel.Claim:
+       new { item.ProjectFieldId, item.ProjectId }, null)
+                      break;
+                  case FieldBoundToViewModel.Claim:
               @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-                new {item.ProjectFieldId, item.ProjectId}, null)
-              break;
-            default:
-              throw new ArgumentOutOfRangeException();
-          }
-        }
-        else
-        {
-          if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-          {
-            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
-                 new {item.ProjectFieldId, item.ProjectId}, null)</i>
+       new { item.ProjectFieldId, item.ProjectId }, null)
+                      break;
+                  default:
+                      throw new ArgumentOutOfRangeException();
+              }
           }
           else
           {
+              if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+              {
+            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
+       new { item.ProjectFieldId, item.ProjectId }, null)</i>
+              }
+              else
+              {
             <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
-                 new {item.ProjectFieldId, item.ProjectId}, null)</i>
+       new { item.ProjectFieldId, item.ProjectId }, null)</i>
+              }
           }
-        }
       }
     </td>
     <td>
-
       @if (item.CanEditFields)
       {
         <div class="btn-group btn-group-sm" style="display: inline-block">
             @if (item.IsActive)
-            {            
-                <a title="Изменить" href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
+            {
+                <a title="Изменить" href="@Url.Action("Edit", new { item.ProjectFieldId, item.ProjectId })"
                    class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
-                <a title="Удалить" href="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
+                <a title="Удалить" href="@Url.Action("Delete", new { item.ProjectFieldId, item.ProjectId })"
                    class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
             }
             else
             {
-                <a title="Восстановить" href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
-                   class="btn btn-primary"><i class="glyphicon glyphicon-undo"></i></a>
+                <a title="Восстановить" href="@Url.Action("Edit", new { item.ProjectFieldId, item.ProjectId })"
+                   class="btn btn-primary"><i class="glyphicon glyphicon-heart"></i></a>
             }
-            <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
-               class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
         </div>
-        @Html.MoveControl(model => item, "Move")
       }
     </td>
+    <td>
+        @if (item.CanEditFields)
+        {
+            <div class="btn-group btn-group-sm" style="display: inline-block">
+                <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
+                   class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
+            </div>
+            @Html.MoveControl(model => item, "Move");
+        }
+</td>
   </tr>
 }
 
@@ -143,6 +149,7 @@
       <th>Видимость</th>
       <th class="price-table">@Html.DisplayNameFor(model => model.Price)</th>
       <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>

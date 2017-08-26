@@ -298,7 +298,7 @@ namespace JoinRpg.Web.Models
 
         public int? CharacterGroupId { get; }
 
-        public int ProjectFieldDropdownValueId { get; }
+        public int ValueId { get; }
 
         public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
         {
@@ -308,7 +308,7 @@ namespace JoinRpg.Web.Models
             Price = value.Price;
             ProjectId = value.ProjectId;
             ProjectFieldId = value.ProjectFieldId;
-            ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+            ValueId = value.ProjectFieldDropdownValueId;
             CharacterGroupId = value.CharacterGroup?.CharacterGroupId;
         }
 
@@ -316,7 +316,7 @@ namespace JoinRpg.Web.Models
 
         public bool First { get; set; }
         public bool Last { get; set; }
-        int IMovableListItem.ItemId => ProjectFieldDropdownValueId;
+        int IMovableListItem.ItemId => ValueId;
 
         #endregion
     }

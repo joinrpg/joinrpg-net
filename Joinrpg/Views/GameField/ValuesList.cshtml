@@ -1,10 +1,7 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.GameFieldDropdownValueListItemViewModel>
 @using JoinRpg.Web.App_Code
 
-<script type="text/javascript">
-</script>
-
-<table class="table">
+<table class="table" style="margin-top: 1em;">
     <tr>
         <th style="width: 20%;"> 
             @Html.DisplayNameFor(model => model.Label)
@@ -15,12 +12,13 @@
         <th style="width: 45%;">
             @Html.DisplayNameFor(model => model.Description)
         </th>
-        <th style="width: 20%;"></th>
+        <th style="width: 10%;"></th>
+        <th style="width: 10%;"></th>
     </tr>
 
 @foreach (var item in Model)
 {
-    <tr>
+    <tr id="value@(item.ValueId)" title="@item.Label">
         <td class="@(item.IsActive ? "" : "deleted")">
             @Html.DisplayFor(modelItem => item.Label)
         </td>
@@ -34,17 +32,19 @@
             <div class="btn-group btn-group-sm" style="display: inline-block;">
                 @if (item.IsActive)
                 {
-                    <a title="Изменить" href="@Url.Action("EditValue", new { item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId })"
+                    <a id="value@(item.ValueId)EditButton" title="Изменить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
                        class="btn btn-default"><i class="glyphicon glyphicon-pencil"></i></a>
-                    <a title="Удалить" href="@Url.Action("DeleteValue", new { item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId })"
+                    <a id="value@(item.ValueId)DeleteButton" title="Удалить" onclick="return Delete(@(item.ValueId), this.href)" href="@Url.Action("DeleteValueEx", new { item.ProjectId, item.ProjectFieldId, item.ValueId })"
                        class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
                 }
                 else
                 {
-                    <a title="Восстановить" href="@Url.Action("EditValue", new { item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId })"
-                       class="btn btn-default"><i class="glyphicon glyphicon-undo"></i></a>
+                    <a title="Восстановить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
+                       class="btn btn-default"><i class="glyphicon glyphicon-heart"></i></a>
                 }
             </div>
+        </td>
+        <td>
             @Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)
         </td>
     </tr>
