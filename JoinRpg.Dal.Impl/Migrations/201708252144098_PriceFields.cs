@@ -15,6 +15,6 @@
         {
             DropColumn("dbo.ProjectFields", "Price");
             DropColumn("dbo.ProjectFieldDropdownValues", "Price");
-        }
-  }
+        }    
+    }
 }

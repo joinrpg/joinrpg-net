@@ -83,7 +83,7 @@ namespace JoinRpg.Web.Controllers
           (MandatoryStatus) viewModel.MandatoryStatus,
           viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc,
           viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
-          viewModel.ShowForUnApprovedClaim);
+          viewModel.ShowForUnApprovedClaim, viewModel.Price);
 
         return ReturnToIndex(project);
       }
@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Controllers
             viewModel.Name, viewModel.DescriptionEditable, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
             viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
             viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
-            viewModel.ShowForUnApprovedClaim);
+            viewModel.ShowForUnApprovedClaim, viewModel.Price);
 
         return ReturnToIndex(project);
       }
@@ -194,7 +194,8 @@ namespace JoinRpg.Web.Controllers
       {
         await
           FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue);
+            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue,
+            viewModel.Price);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
@@ -225,9 +226,9 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await
-          FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
-            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription, viewModel.ProgrammaticValue);
+        await FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
+            viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription,
+            viewModel.ProgrammaticValue, viewModel.Price);
 
         return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
       }
