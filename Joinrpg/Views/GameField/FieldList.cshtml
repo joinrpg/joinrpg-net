@@ -143,23 +143,23 @@
 }
 @if (firstItem != null)
 {
-  <table class="table" style="margin-top: 1em">
-    <tr>
-      <th>Поле</th>
-      <th>Видимость</th>
-      <th class="price-table">@Html.DisplayNameFor(model => model.Price)</th>
-      <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-      @ShowFieldRow(item)
-    }
-
-  </table>
+<div class="table-responsive" style="margin-top: 1em">
+    <table class="table">
+        <tr>
+            <th>Поле</th>
+            <th>Видимость</th>
+            <th class="price-table">@Html.DisplayNameFor(model => model.Price)</th>
+            <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            @ShowFieldRow(item)
+        }
+    </table>
+</div>
 
 
   <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">

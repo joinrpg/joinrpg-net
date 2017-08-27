@@ -276,6 +276,16 @@ namespace JoinRpg.Web.Models
 
         public int ProjectId { get; set; }
         public int ProjectFieldId { get; set; }
+        public string FieldName { get; set; }
+
+        public GameFieldDropdownValueViewModelBase(ProjectField field)
+        {
+            FieldName = field.FieldName;
+            ProjectId = field.ProjectId;
+            ProjectFieldId = field.ProjectFieldId;
+        }
+
+        public GameFieldDropdownValueViewModelBase() { }
     }
 
     /// <summary>
@@ -287,7 +297,7 @@ namespace JoinRpg.Web.Models
         public string Label { get; set; }
 
         [Display(Name = "Описание")]
-        public IHtmlString Description { get; }
+        public string Description { get; }
 
         [Display(Name = "Цена")]
         public int Price { get; }
@@ -303,7 +313,7 @@ namespace JoinRpg.Web.Models
         public GameFieldDropdownValueListItemViewModel(ProjectFieldDropdownValue value)
         {
             Label = value.Label;
-            Description = value.Description.ToHtmlString();
+            Description = value.Description.ToPlainText().ToString();
             IsActive = value.IsActive;
             Price = value.Price;
             ProjectId = value.ProjectId;
@@ -330,14 +340,12 @@ namespace JoinRpg.Web.Models
 
         public int ProjectFieldDropdownValueId { get; set; }
 
-        public GameFieldDropdownValueEditViewModel(ProjectFieldDropdownValue value)
+        public GameFieldDropdownValueEditViewModel(ProjectField field, ProjectFieldDropdownValue value) : base(field)
         {
             Label = value.Label;
             Description = value.Description.Contents;
             IsActive = value.IsActive;
             Price = value.Price;
-            ProjectId = value.ProjectId;
-            ProjectFieldId = value.ProjectFieldId;
             ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
         }
 
@@ -349,10 +357,8 @@ namespace JoinRpg.Web.Models
     /// </summary>
     public class GameFieldDropdownValueCreateViewModel: GameFieldDropdownValueViewModelBase
     {
-        public GameFieldDropdownValueCreateViewModel(ProjectField field)
+        public GameFieldDropdownValueCreateViewModel(ProjectField field) : base(field)
         {
-            ProjectId = field.ProjectId;
-            ProjectFieldId = field.ProjectFieldId;
             Label = $"Вариант {field.DropdownValues.Count + 1}";
         }
 

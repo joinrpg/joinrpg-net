@@ -228,36 +228,37 @@ namespace JoinRpg.Web.Controllers
       return AsMaster(field, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueCreateViewModel(field));
     }
 
-    [HttpPost,ValidateAntiForgeryToken]
-    public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
-    {
-      var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
+        {
+            var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
 
-      var error = AsMaster(field, pa => pa.CanChangeFields);
-      if (error != null)
-      {
-        return error;
-      }
-      try
-      {
-        await
-          FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-            viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue,
-            viewModel.Price);
+            var error = AsMaster(field, pa => pa.CanChangeFields);
+            if (error != null)
+            {
+                return error;
+            }
+            try
+            {
+                await
+                  FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
+                    viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue,
+                    viewModel.Price);
 
-        return RedirectToAction("Edit", new {viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId});
-      }
-      catch
-      {
-        return View(viewModel);
-      }
-    }
+                return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
+            }
+            catch
+            {
+                return View(viewModel);
+            }
+        }
 
         [HttpGet]
         public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
         {
+            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(value));
+            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(field, value));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -337,8 +338,9 @@ namespace JoinRpg.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> DeleteValue(int projectId, int projectFieldId, int valueId)
         {
+            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(value));
+            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(field, value));
         }
 
         [HttpPost, ValidateAntiForgeryToken]

@@ -1,35 +1,22 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.GameFieldDropdownValueListItemViewModel>
 @using JoinRpg.Web.App_Code
 
-<table class="table" style="margin-top: 1em;">
+<div class="table-responsive" style="margin-top: 1em;"><table class="table">
     <tr>
-        <th style="width: 20%;"> 
-            @Html.DisplayNameFor(model => model.Label)
-        </th>
-        <th class="price-table" style="width: 15%;">
-            @Html.DisplayNameFor(model => model.Price)
-        </th>
-        <th style="width: 45%;">
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th style="width: 10%;"></th>
-        <th style="width: 10%;"></th>
+        <th style="width: 20%;">@Html.DisplayNameFor(model => model.Label)</th>
+        <th class="price-table" style="width: 15%;">@Html.DisplayNameFor(model => model.Price)</th>
+        <th style="">@Html.DisplayNameFor(model => model.Description)</th>
+        <th style="min-width: 6em; width: 6em;"></th>
+        <th style="min-width: 6em; width: 6em;"></th>
     </tr>
 
 @foreach (var item in Model)
 {
     <tr id="value@(item.ValueId)" title="@item.Label">
-        <td class="@(item.IsActive ? "" : "deleted")">
-            @Html.DisplayFor(modelItem => item.Label)
-        </td>
-        <td class="price-table">
-            @Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            <div class="btn-group btn-group-sm" style="display: inline-block;">
+        <td class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Label)</td>
+        <td class="price-table">@Html.DisplayFor(modelItem => item.Price)</td>
+        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+        <td><div class="btn-group btn-group-sm" style="display: inline-block;">
                 @if (item.IsActive)
                 {
                     <a id="value@(item.ValueId)EditButton" title="Изменить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
@@ -42,12 +29,8 @@
                     <a title="Восстановить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
                        class="btn btn-default"><i class="glyphicon glyphicon-heart"></i></a>
                 }
-            </div>
-        </td>
-        <td>
-            @Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)
-        </td>
+        </div></td>
+        <td>@Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)</td>
     </tr>
 }
-
-</table>
+</table></div>

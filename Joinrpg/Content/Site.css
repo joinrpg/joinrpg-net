@@ -82,6 +82,12 @@ textarea {
     font-size: 2em;
 }
 
+.join-ellipsis {
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
 .join-user {
     white-space: nowrap;
 }
