@@ -65,3 +65,61 @@ textarea {
 .world-object-hidden {
   background-color: #DFE4E6;
 }
+
+.price-table {
+    text-align: right;
+}
+
+.join[class~=alert] {
+    padding: 0.75em;
+    margin: 1em 0 1em 0;
+}
+
+.join[class~=alert] .glyphicon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.3em;
+    font-size: 2em;
+}
+
+.join-ellipsis {
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+.join-user {
+    white-space: nowrap;
+}
+
+.join-user i {
+    margin-right: 0.3em;
+}
+
+.join-users-h {
+    list-style-type: none;    
+    display: block;
+    column-count: 3;
+}
+
+@media screen and (max-width: 1300px)
+{
+    .join-users-h
+    {
+        column-count: 2;
+    }
+}
+
+@media screen and (max-width: 800px)
+{
+    .join-users-h
+    {
+        column-count: 1;
+    }
+}
+
+.join-users-h li
+{
+    margin: 0.2em;
+    display: block;
+}
