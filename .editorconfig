@@ -35,6 +35,9 @@ dotnet_sort_system_directives_first = true
 
 csharp_style_conditional_delegate_call = true:suggestion
 
+reshacsharp_wrap_arguments_style  = chop_if_long
+resharper_csharp_wrap_parameters_style = chop_if_long
+
 #disable C#7 features until "GO" from all contributors
 csharp_style_expression_bodied_constructors = false:error
 csharp_style_expression_bodied_accessors = false:error
