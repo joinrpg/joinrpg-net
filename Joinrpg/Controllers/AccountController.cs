@@ -224,6 +224,7 @@ namespace JoinRpg.Web.Controllers
       {
         return RedirectToAction("ResetPasswordConfirmation", "Account");
       }
+      ModelState.AddModelError("", "Что-то пошло не так, скорее всего ссылка истекла. Попробуйте запросить ее снова, если не удастся — напишите в техподдержку");
       AddErrors(result);
       return View();
     }
