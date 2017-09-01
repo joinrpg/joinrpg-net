@@ -54,6 +54,7 @@ namespace JoinRpg.Services.Impl
           Text =  new MarkdownString(commentText)
         },
         CreatedAt = Now,
+        LastEditTime = Now
       });
 
       group.ForumThreads.Add(forumThread);
