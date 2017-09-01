@@ -100,7 +100,7 @@ namespace JoinRpg.Services.Impl
 
       plotElement.Texts.Add(new PlotElementTexts()
       {
-        Content = new MarkdownString(content),
+        Content = new MarkdownString(Required(content.Trim())),
         TodoField = todoField,
         Version = 0,
         ModifiedDateTime = now,
