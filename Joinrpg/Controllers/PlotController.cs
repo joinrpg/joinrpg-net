@@ -110,23 +110,28 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
-    public async Task<ActionResult> Create(AddPlotFolderViewModel viewModel)
-    {
-      try
+      [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
+      public async Task<ActionResult> Create(AddPlotFolderViewModel viewModel)
       {
-        await _plotService.CreatePlotFolder(viewModel.ProjectId, viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
-        return RedirectToAction("Index", "Plot", new { viewModel.ProjectId});
-      }
-      catch (Exception exception)
-      {
-        ModelState.AddException(exception);
-        return View(viewModel);
+          if (!ModelState.IsValid)
+          {
+              return View(viewModel);
+          }
+
+          try
+          {
+              await _plotService.CreatePlotFolder(viewModel.ProjectId,
+                  viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
+              return RedirectToAction("Index", "Plot", new {viewModel.ProjectId});
+          }
+          catch (Exception exception)
+          {
+              ModelState.AddException(exception);
+              return View(viewModel);
+          }
       }
 
-    }
-
-    [HttpGet, MasterAuthorize(AllowPublish = true)]
+      [HttpGet, MasterAuthorize(AllowPublish = true)]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
