@@ -70,6 +70,14 @@ textarea {
     text-align: right;
 }
 
+.price-value {
+    white-space: nowrap;
+}
+
+.price-RUR:after {
+    content: ' ₽';
+}
+
 .join[class~=alert] {
     padding: 0.75em;
     margin: 1em 0 1em 0;

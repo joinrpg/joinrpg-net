@@ -32,6 +32,19 @@ namespace JoinRpg.Web.App_Code
             return MvcHtmlString.Create(string.Format(@"<div class=""help-block"">{0}</div>", description));
         }
 
+        /// <summary>
+        /// Renders specified number as a price
+        /// </summary>
+        public static MvcHtmlString RenderPrice(this HtmlHelper self, int price, string id = null)
+        {
+            if (!string.IsNullOrWhiteSpace(id))
+                id = id.Trim();
+            return MvcHtmlString.Create("<span "
+                + (string.IsNullOrWhiteSpace(id) ? string.Empty : "id=\"" + id + "\"")
+                + " class=\"price-value price-RUR\">" + price.ToString() + "</span>");
+            //TODO: Add currency localization
+        }
+
         public static MvcHtmlString HelpLink(string link, string message)
         {
             return new MvcHtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
