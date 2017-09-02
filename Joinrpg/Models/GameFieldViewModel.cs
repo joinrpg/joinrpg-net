@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Models
     public static class ProjectFieldViewTypeHelper
     {
         /// <summary>
-        /// Returns true if this project field supports price calculations
+        /// Returns true if field supports price calculations
         /// </summary>
         public static bool SupportsPricing(this ProjectFieldViewType self)
         {
@@ -44,6 +44,21 @@ namespace JoinRpg.Web.Models
                 case ProjectFieldViewType.MultiSelect:
                 case ProjectFieldViewType.Checkbox:
                 case ProjectFieldViewType.Number:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if field has predefined values
+        /// </summary>
+        public static bool HasValuesList(this ProjectFieldViewType self)
+        {
+            switch (self)
+            {
+                case ProjectFieldViewType.Dropdown:
+                case ProjectFieldViewType.MultiSelect:
                     return true;
                 default:
                     return false;
