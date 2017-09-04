@@ -68,85 +68,95 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
-  {
-    public int ProjectFieldId { get; set; }
-
-    [ReadOnly(true)]
-    public bool HasValueList { get; private set; }
-
-      [Display(Name = "Описание"), UIHint("MarkdownString")]
-      public string DescriptionEditable { get; set; }
-
-    public GameFieldEditViewModel(ProjectField field, int currentUserId)
+    public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
     {
-      CanPlayerView = field.CanPlayerView;
-      CanPlayerEdit = field.CanPlayerEdit;
-      DescriptionEditable = field.Description.Contents;
-      DescriptionDisplay = field.Description.ToHtmlString();
-      ProjectFieldId = field.ProjectFieldId;
-      IsPublic = field.IsPublic;
-      Name = field.FieldName;
-      ProjectId = field.ProjectId;
-      MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
-      ShowForGroups = field
-        .GroupsAvailableFor
-        .Select(c => c.CharacterGroupId)
-        .PrefixAsGroups()
-        .ToList();
-      IncludeInPrint = field.IncludeInPrint;
-      ValidForNpc = field.ValidForNpc;
-      ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
-      FillNotEditable(field, currentUserId);
+        public int ProjectFieldId { get; set; }
+
+        [ReadOnly(true)]
+        public bool HasValueList { get; private set; }
+
+        [Display(Name = "Описание"), UIHint("MarkdownString")]
+        public string DescriptionEditable { get; set; }
+
+        [ReadOnly(true)]
+        public bool WasEverUsed { get; set; }
+
+        public GameFieldEditViewModel(ProjectField field, int currentUserId)
+        {
+            CanPlayerView = field.CanPlayerView;
+            CanPlayerEdit = field.CanPlayerEdit;
+            DescriptionEditable = field.Description.Contents;
+            DescriptionDisplay = field.Description.ToHtmlString();
+            ProjectFieldId = field.ProjectFieldId;
+            IsPublic = field.IsPublic;
+            Name = field.FieldName;
+            ProjectId = field.ProjectId;
+            MandatoryStatus = (MandatoryStatusViewType) field.MandatoryStatus;
+            ShowForGroups = field
+                .GroupsAvailableFor
+                .Select(c => c.CharacterGroupId)
+                .PrefixAsGroups()
+                .ToList();
+            IncludeInPrint = field.IncludeInPrint;
+            ValidForNpc = field.ValidForNpc;
+            ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
+            FillNotEditable(field, currentUserId);
+        }
+
+        public void FillNotEditable(ProjectField field, int currentUserId)
+        {
+            DropdownValues = field.GetOrderedValues()
+                .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
+                .MarkFirstAndLast();
+            FieldViewType = (ProjectFieldViewType) field.FieldType;
+            FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
+            IsActive = field.IsActive;
+            HasValueList = field.HasValueList();
+            WasEverUsed = field.WasEverUsed;
+            CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
+        }
+
+        public GameFieldEditViewModel()
+        {
+        }
+
+        [ReadOnly(true)]
+        public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues
+        {
+            get;
+            private set;
+        }
+
+        [Display(Name = "Тип поля"), ReadOnly(true)]
+        public ProjectFieldViewType FieldViewType { get; private set; }
+
+        [Display(Name = "Привязано к"), ReadOnly(true)]
+        public FieldBoundToViewModel FieldBoundTo { get; private set; }
+
+        [ReadOnly(true)]
+        public bool IsActive { get; private set; }
+
+        public bool First { get; set; }
+        public bool Last { get; set; }
+        int IMovableListItem.ItemId => ProjectFieldId;
+        public bool CanEditFields { get; private set; }
+
+        [Display(Name = "Включать в распечатки")]
+        public bool IncludeInPrint { get; set; } = true;
+
+        protected override IEnumerable<ValidationResult> ValidateCore()
+        {
+            if (!CanPlayerView && IncludeInPrint)
+            {
+                yield return
+                    new ValidationResult(
+                        "Невозможно включить в распечатки поле, скрытое от игрока.");
+            }
+        }
     }
 
-    public void FillNotEditable(ProjectField field, int currentUserId)
-    {
-      DropdownValues = field.GetOrderedValues()
-        .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
-        .MarkFirstAndLast();
-      FieldViewType = (ProjectFieldViewType) field.FieldType;
-      FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
-      IsActive = field.IsActive;
-      HasValueList = field.HasValueList();
-      CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
-    }
 
-    public GameFieldEditViewModel()
-    { }
-
-    [ReadOnly(true)]
-    public IEnumerable<GameFieldDropdownValueListItemViewModel> DropdownValues { get; private set; }
-
-    [Display(Name = "Тип поля"), ReadOnly(true)]
-    public ProjectFieldViewType FieldViewType { get; private set; }
-
-    [Display(Name = "Привязано к"), ReadOnly(true)]
-    public FieldBoundToViewModel FieldBoundTo { get; private set; }
-
-    [ReadOnly(true)]
-    public bool IsActive { get; private set; }
-
-    public bool First { get; set; }
-    public bool Last { get; set; }
-    int IMovableListItem.ItemId => ProjectFieldId;
-    public bool CanEditFields { get; private set; }
-
-    [Display(Name = "Включать в распечатки")]
-    public bool IncludeInPrint { get; set; } = true;
-
-    protected override IEnumerable<ValidationResult> ValidateCore()
-    {
-      if (!CanPlayerView && IncludeInPrint)
-      {
-        yield return
-          new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
-      }
-    }
-  }
-
-
-  public enum ProjectFieldViewType
+    public enum ProjectFieldViewType
   {
     [Display(Name="Строка", Order =1), UsedImplicitly]
     String,

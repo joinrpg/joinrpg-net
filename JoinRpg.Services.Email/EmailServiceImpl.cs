@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
@@ -66,7 +65,7 @@ namespace JoinRpg.Services.Email
     {
       return SendEmail(
         new[] { new MailRecipient(recipient) },
-        subject, text, sender);
+        subject, sender, new MarkdownString(text));
     }
 
     /// <summary>
@@ -78,47 +77,57 @@ namespace JoinRpg.Services.Email
       string text,
       Recipient sender)
     {
-      await SendEmail(recipients.Select(r => new MailRecipient(r)).ToList(), subject, text, sender);
+      await SendEmail(recipients.Select(r => new MailRecipient(r)).ToList(), subject, sender, new MarkdownString(text));
     }
 
-    private async Task SendEmail(
-      ICollection<MailRecipient> recipients,
-      string subject,
-      string text,
-      Recipient sender)
-    {
-      if (!recipients.Any())
+      private async Task SendEmail(
+          ICollection<MailRecipient> recipients,
+          string subject,
+          Recipient sender,
+          MarkdownString markdownString)
       {
-        return;
+          if (!recipients.Any())
+          {
+              return;
+          }
+
+          var html = markdownString.ToHtmlString().ToHtmlString();
+          var text = markdownString.ToPlainText().ToString();
+
+          for (var i = 0; i * MaxRecipientsInChunk < recipients.Count; i++)
+          {
+              await SendEmailChunkImpl(
+                  recipients.Skip(i * MaxRecipientsInChunk).Take(MaxRecipientsInChunk).ToList(),
+                  subject, text, sender, html);
+          }
       }
 
-      var html = new MarkdownString(text).ToHtmlString().ToHtmlString();
-
-      for (var i = 0; i * MaxRecipientsInChunk < recipients.Count; i++)
+      private async Task SendEmailChunkImpl(IReadOnlyCollection<MailRecipient> recipients,
+          string subject,
+          string text,
+          Recipient sender,
+          string html)
       {
-        await SendEmailChunkImpl(recipients.Skip(i * MaxRecipientsInChunk).Take(MaxRecipientsInChunk).ToList(), subject,
-          text, sender, html);
+          var message = new MessageBuilder().AddUsers(recipients)
+              .SetSubject(subject)
+              .SetFromAddress(new Recipient()
+              {
+                  DisplayName = sender.DisplayName,
+                  Email = _joinRpgSender.Email
+              })
+              .SetReplyToAddress(sender)
+              .SetTextBody(text)
+              .SetHtmlBody(html)
+              .GetMessage();
+
+          message.RecipientVariables = recipients.ToRecipientVariables();
+          if (_emailEnabled)
+          {
+              await Send(message);
+          }
       }
-    }
 
-    private async Task SendEmailChunkImpl(IReadOnlyCollection<MailRecipient> recipients, string subject, string text, Recipient sender, string html)
-    {
-      var message = new MessageBuilder().AddUsers(recipients)
-        .SetSubject(subject)
-        .SetFromAddress(new Recipient() {DisplayName = sender.DisplayName, Email = _joinRpgSender.Email})
-        .SetReplyToAddress(sender)
-        .SetTextBody(text)
-        .SetHtmlBody(html)
-        .GetMessage();
-
-      message.RecipientVariables = recipients.ToRecipientVariables();
-      if (_emailEnabled)
-      {
-        await Send(message);
-      }
-    }
-
-    #region Account emails
+      #region Account emails
     public Task Email(RemindPasswordEmail email)
     {
       return SendEmail(email.Recipient, "Восстановление пароля на JoinRpg.Ru",
@@ -204,8 +213,7 @@ namespace JoinRpg.Services.Email
           new Dictionary<string, string> {{changedFieldsKey, GetChangedFieldsInfoForUser(model, r)}}))
         .ToList();
 
-      await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}",
-        $@"Добрый день, {MailGunExts.MailGunRecipientName},
+        string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
 {text}
 
@@ -215,7 +223,8 @@ namespace JoinRpg.Services.Email
 {model.Initiator.DisplayName}
 
 Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
-", model.Initiator.ToRecipient());
+";
+        await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}", model.Initiator.ToRecipient(), new MarkdownString(text1));
     }
 
     public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
@@ -294,8 +303,7 @@ namespace JoinRpg.Services.Email
         : _uriService.Get(model.Claim);
       if (recipients.Any())
       {
-        await SendEmail(recipients, $"{model.ProjectName}: {target(false)}",
-          $@"Добрый день, {MailGunExts.MailGunRecipientName},
+          string text = $@"Добрый день, {MailGunExts.MailGunRecipientName},
 Данные {target(true)} были изменены. Новые значения:
 
 {MailGunExts.GetUserDependentValue(changedFieldsKey)}
@@ -304,7 +312,8 @@ namespace JoinRpg.Services.Email
 
 {model.Initiator.DisplayName}
 
-", model.Initiator.ToRecipient());
+";
+          await SendEmail(recipients, $"{model.ProjectName}: {target(false)}", model.Initiator.ToRecipient(), new MarkdownString(text));
       }
     }
 

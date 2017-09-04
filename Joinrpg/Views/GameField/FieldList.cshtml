@@ -69,22 +69,25 @@
       }
       else if (item.FieldViewType != ProjectFieldViewType.Header)
       {
-        if (!item.IsActive)
-        {
-          switch (item.FieldBoundTo)
+          if (!item.IsActive)
           {
-            case FieldBoundToViewModel.Character:
-              @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-                new {item.ProjectFieldId, item.ProjectId}, null)
-              break;
-            case FieldBoundToViewModel.Claim:
-              @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-                new {item.ProjectFieldId, item.ProjectId}, null)
-              break;
-            default:
-              throw new ArgumentOutOfRangeException();
+              if (item.WasEverUsed)
+              {
+                  switch (item.FieldBoundTo)
+                  {
+                      case FieldBoundToViewModel.Character:
+                          @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
+                              new {item.ProjectFieldId, item.ProjectId}, null)
+                          break;
+                      case FieldBoundToViewModel.Claim:
+                          @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
+                              new {item.ProjectFieldId, item.ProjectId}, null)
+                          break;
+                      default:
+                          throw new ArgumentOutOfRangeException();
+                  }
+              }
           }
-        }
         else
         {
           if (item.FieldBoundTo == FieldBoundToViewModel.Character)

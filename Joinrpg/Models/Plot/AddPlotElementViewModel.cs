@@ -10,7 +10,7 @@ namespace JoinRpg.Web.Models.Plot
     [ReadOnly(true)]
     public int ProjectId { get; set; }
     public int PlotFolderId{ get; set; }
-    [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
+    [Display(Name = "Текст вводной"), UIHint("MarkdownString"), Required]
     public string Content { get; set; }
 
     [Display(Name = "TODO (что доделать для мастеров)"), DataType(DataType.MultilineText)]
