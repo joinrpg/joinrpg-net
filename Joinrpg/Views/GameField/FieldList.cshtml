@@ -13,8 +13,7 @@
       @Html.DisplayNameFor(model => model.FieldBoundTo)
       @Html.DisplayFor(model => item.FieldBoundTo)
     </td>
-    <td>
-      @if (item.IsPublic)
+    <td>@if (item.IsPublic)
       {
         <span class="label label-primary">Публичное</span>
       }
@@ -32,17 +31,9 @@
         <span class="label label-warning">Игрок может менять</span>
       }
     </td>
-    <td class="price-table">
-        @if (item.FieldViewType.SupportsPricing())
-        {
-            @item.Price
-        }
-    </td>
-    <td>
-      @item.DescriptionDisplay
-    </td>
-    <td>
-      @if (item.HasValueList)
+    <td class="price-table">@if (item.FieldViewType.PriceEditable()) { @item.Price }</td>
+    <td>@item.DescriptionDisplay</td>
+    <td>@if (item.HasValueList)
       {
         <ul>
           @foreach (var value in item.DropdownValues)
@@ -148,7 +139,7 @@
         <tr>
             <th>Поле</th>
             <th>Видимость</th>
-            <th class="price-table">@Html.DisplayNameFor(model => model.Price)</th>
+            <th class="price-table">@Html.RenderPriceElement("Цена,")</th>
             <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
             <th></th>
             <th></th>

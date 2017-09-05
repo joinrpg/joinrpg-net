@@ -37,33 +37,19 @@ namespace JoinRpg.Web.Models
         /// Returns true if field supports price calculations
         /// </summary>
         public static bool SupportsPricing(this ProjectFieldViewType self)
-        {
-            switch (self)
-            {
-                case ProjectFieldViewType.Dropdown:
-                case ProjectFieldViewType.MultiSelect:
-                case ProjectFieldViewType.Checkbox:
-                case ProjectFieldViewType.Number:
-                    return true;
-                default:
-                    return false;
-            }
-        }
+            => ((ProjectFieldType)self).SupportsPricing();
+
+        /// <summary>
+        /// Returns true if price could be entered for field, not for it's values
+        /// </summary>
+        public static bool PriceEditable(this ProjectFieldViewType self)
+            => ((ProjectFieldType)self).PriceEditable();
 
         /// <summary>
         /// Returns true if field has predefined values
         /// </summary>
         public static bool HasValuesList(this ProjectFieldViewType self)
-        {
-            switch (self)
-            {
-                case ProjectFieldViewType.Dropdown:
-                case ProjectFieldViewType.MultiSelect:
-                    return true;
-                default:
-                    return false;
-            }
-        }
+            => ((ProjectFieldType)self).HasValuesList();
     }
 
     public enum FieldBoundToViewModel
@@ -227,6 +213,17 @@ namespace JoinRpg.Web.Models
             {
                 yield return
                     new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
+            }
+            if (Price != 0 && !FieldViewType.PriceEditable())
+            {
+                yield return
+                    new ValidationResult(string.Format("Поле {0} не поддерживает ввод цены.", FieldViewType.ToString()));
+            }
+            if (!CanPlayerView && FieldViewType.SupportsPricing()
+                    && ((FieldViewType.HasValuesList() && DropdownValues.Any(v => v.Price != 0)) || Price != 0))
+            {
+                yield return
+                    new ValidationResult("Нельзя скрыть от игрока поле, влияющее на размер взноса.");
             }
         }
     }

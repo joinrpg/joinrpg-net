@@ -1,0 +1,16 @@
+﻿@model ClaimViewModel
+@using JoinRpg.Web.Models
+@using JoinRpg.Web.App_Code
+<hr />
+<div class="form-group">
+    <label class="control-label col-md-2">Подытог по полям</label>
+    <div class="col-md-10">
+        <div id="total_claim_fee_row" class="price-subtotal-row"><div>ВСЕГО выбрано по <i>заявке</i>:</div>@Html.RenderPriceElement(
+            Model.ClaimFee.FieldsFee[FieldBoundToViewModel.Claim], "feeClaimFieldsDisp")</div>
+        <div id="total_character_fee_row" class="price-subtotal-row"><div>ВСЕГО выбрано по <i>персонажу</i>:</div>@Html.RenderPriceElement(
+            Model.ClaimFee.FieldsFee[FieldBoundToViewModel.Character], "feeCharacterFieldsDisp")</div>
+        <div id="total_fields_fee_row" class="price-subtotal-row"><div>ВСЕГО выбрано:</div>@Html.RenderPriceElement(
+            Model.ClaimFee.FieldsTotalFee, "feeTotalFieldsDisp")</div>
+    </div>
+</div>
+<hr />

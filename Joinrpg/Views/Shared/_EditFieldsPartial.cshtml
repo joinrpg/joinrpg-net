@@ -5,6 +5,7 @@
 {
     if (field.CanEdit)
     {
+        //@Html.DisplayFor(model => field)
         @Html.EditorFor(model => field)
     }
     else if (field.CanView)

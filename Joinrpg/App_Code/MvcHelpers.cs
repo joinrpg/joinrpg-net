@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Web;
 using System.Web.Mvc;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -33,17 +34,55 @@ namespace JoinRpg.Web.App_Code
         }
 
         /// <summary>
-        /// Renders specified number as a price
+        /// Renders dictionary to attributes
         /// </summary>
-        public static MvcHtmlString RenderPrice(this HtmlHelper self, int price, string id = null)
+        public static IHtmlString RenderAttrs(this HtmlHelper self, Dictionary<string, string> attrs)
         {
+            string s = string.Empty;
+            foreach (var kv in attrs)
+                s += s + @" " + kv.Key + @"=""" + self.AttributeEncode(kv.Value) + @"""";
+            return self.Raw(s);
+        }
+
+        /// <summary>
+        /// Converts payment status to CSS display property value
+        /// </summary>
+        public static string PaymentStatusToDisplayStyle(this ClaimFeeViewModel self, ClaimPaymentStatus status)
+        {
+            return self.PaymentStatus == status ? "inline" : "none";
+        }
+
+        /// <summary>
+        /// Renders specified number as a price to html tag
+        /// </summary>
+        public static MvcHtmlString RenderPriceElement(this HtmlHelper self, int price, string id = null)
+        {
+            return self.RenderPriceElement(price.ToString(), id);
+        }
+
+        /// <summary>
+        /// Renders specified value as a price to html tag
+        /// </summary>
+        public static MvcHtmlString RenderPriceElement(this HtmlHelper self, string price, string id = null)
+        {
+            //TODO: Add currency localization
             if (!string.IsNullOrWhiteSpace(id))
                 id = id.Trim();
             return MvcHtmlString.Create("<span "
-                + (string.IsNullOrWhiteSpace(id) ? string.Empty : "id=\"" + id + "\"")
-                + " class=\"price-value price-RUR\">" + price.ToString() + "</span>");
-            //TODO: Add currency localization
+                + (string.IsNullOrWhiteSpace(id) ? string.Empty : @"id=" + id)
+                + @" class=""price-value price-RUR"">" + price + "</span>");
         }
+
+        public const string defaultPriceTemplate = @"{0} ₽";
+
+        /// <summary>
+        /// Renders price to a string
+        /// </summary>
+        public static string RenderPrice(this HtmlHelper self, int price, string template = defaultPriceTemplate)
+        {
+            //TODO: Add currency localization
+            return string.Format(template, price);
+        }        
 
         public static MvcHtmlString HelpLink(string link, string message)
         {

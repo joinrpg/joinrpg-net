@@ -19,19 +19,35 @@ namespace JoinRpg.Domain
         .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
     }
 
-    private static int ClaimTotalFee(this Claim claim, DateTime operationDate)
-    {
+        private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
+        {            
+            return claim.ClaimCurrentFee(operationDate, fieldsFee)
+                + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
+        }
 
-      return claim.ClaimCurrentFee(operationDate) + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
-    }
+        public static int ClaimTotalFee(this Claim claim, int? fieldsFee = null)
+            => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee);
 
-    private static int ClaimCurrentFee(this Claim claim, DateTime operationDate)
-      => claim.CurrentFee ?? claim.Project.CurrentFee(operationDate);
+        public static int ClaimCurrentFee(this Claim claim, int? fieldsFee)
+            => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee);
 
-    public static int ClaimTotalFee(this Claim claim) => claim.ClaimTotalFee(DateTime.UtcNow);
-    public static int ClaimCurrentFee(this Claim claim) => claim.ClaimCurrentFee(DateTime.UtcNow);
+        private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
+            => (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+                + claim.ClaimFieldsFee(fieldsFee);
 
-    public static int ClaimFeeDue(this Claim claim) => claim.ClaimTotalFee() - claim.ClaimBalance();
+        private static int ClaimFieldsFee(this Claim claim, int? fieldsFee)
+        {
+            // TODO: Implement values and prices loading and calculation
+            if (fieldsFee == null)
+                fieldsFee = claim.FieldsFee;
+            else
+                claim.FieldsFee = fieldsFee;
+            return fieldsFee ?? 0;
+        }
+
+
+        public static int ClaimFeeDue(this Claim claim)
+            => claim.ClaimTotalFee() - claim.ClaimBalance();
 
     public static int ClaimBalance(this Claim claim)
     {
@@ -47,10 +63,11 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static bool ClaimPaidInFull(this Claim claim) => claim.ClaimBalance() >= claim.ClaimTotalFee();
+        public static bool ClaimPaidInFull(this Claim claim)
+            => claim.ClaimBalance() >= claim.ClaimTotalFee();
 
-    private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate)
-      => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1));
+        private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate)
+            => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1), null);
 
     public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate)
     {

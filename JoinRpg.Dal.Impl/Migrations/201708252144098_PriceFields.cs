@@ -7,8 +7,8 @@
     {
         public override void Up()
         {
-            AddColumn("dbo.ProjectFields", "Price", c => c.Int(false, false, 0));
-            AddColumn("dbo.ProjectFieldDropdownValues", "Price", c => c.Int(false, false, 0));
+            AddColumn("dbo.ProjectFields", "Price", c => c.Int(nullable: false, defaultValue: 0));
+            AddColumn("dbo.ProjectFieldDropdownValues", "Price", c => c.Int(nullable: false, defaultValue: 0));
         }
 
         public override void Down()
