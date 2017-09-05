@@ -1,39 +1,11 @@
 ﻿@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
 @model JoinRpg.Web.Models.GameFieldCreateViewModel
+@Scripts.Render("~/Scripts/createfield.js");
 
 @{
     ViewBag.Title = "Добавление нового поля";
 }
-
-<script type="text/javascript">
-
-    var cbFieldType;
-    var flPrice;
-
-    function fieldTypeChanged()
-    {
-        // TODO: Generate this function using ProjectFieldViewType helper
-        switch (parseInt(cbFieldType.value))
-        {
-            case 2:
-            case 3:
-            case 4:
-            case 6:
-                flPrice.style.display = "block";
-                break;
-            default:
-                flPrice.style.display = "none";
-        }
-    }
-
-    $(function ()
-    {
-        cbFieldType = document.getElementById("FieldViewType");
-        cbFieldType.addEventListener("change", fieldTypeChanged);
-        flPrice = document.getElementById("priceBlock");
-    });
-</script>
 
 <h2>@ViewBag.Title</h2>
 
