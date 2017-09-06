@@ -31,7 +31,7 @@
         <span class="label label-warning">Игрок может менять</span>
       }
     </td>
-    <td class="price-table">@if (item.FieldViewType.PriceEditable()) { @item.Price }</td>
+    <td class="price-table">@(item.FieldViewType.PriceEditable() && item.Price != 0 ? item.Price.ToString() : "")</td>
     <td>@item.DescriptionDisplay</td>
     <td>@if (item.HasValueList)
       {

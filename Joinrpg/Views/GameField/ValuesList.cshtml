@@ -14,7 +14,7 @@
 {
     <tr id="value@(item.ValueId)" title="@item.Label">
         <td class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Label)</td>
-        <td class="price-table">@Html.DisplayFor(modelItem => item.Price)</td>
+        <td class="price-table">@(item.Price != 0 ? item.Price.ToString() : "")</td>
         <td>@Html.DisplayFor(modelItem => item.Description)</td>
         <td><div class="btn-group btn-group-sm" style="display: inline-block;">
                 @if (item.IsActive)
