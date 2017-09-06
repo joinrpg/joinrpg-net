@@ -150,7 +150,7 @@ namespace JoinRpg.Web.Models
             HasPrice = hasPrice;
 
             if (HasPrice)
-                RecalcFee();
+                Fee = RecalcFee();
 
             ProjectFieldId = ch.Field.ProjectFieldId;
 
@@ -164,24 +164,24 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Recalculates fee has to be paid by the player
         /// </summary>
-        private void RecalcFee()
+        private int RecalcFee()
         {
             switch (FieldViewType)
             {
                 case ProjectFieldViewType.Checkbox:
-                    Fee = HasValue ? Price : 0;
-                    break;
+                    return HasValue ? Price : 0;
 
                 case ProjectFieldViewType.Number:
-                    Fee = HasValue ? int.Parse(Value) * Price : 0;
-                    break;
+                    return HasValue ? int.Parse(Value) * Price : 0;
 
                 case ProjectFieldViewType.Dropdown:
                 case ProjectFieldViewType.MultiSelect:
-                    Fee = ValueList.Count > 0
+                    return ValueList.Count > 0
                         ? ValueList.Sum(v => v.Price)
                         : Price;
-                    break;
+
+                default:
+                    return 0;
             }
         }
 

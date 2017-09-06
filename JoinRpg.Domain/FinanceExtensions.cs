@@ -35,13 +35,47 @@ namespace JoinRpg.Domain
             => (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
                 + claim.ClaimFieldsFee(fieldsFee);
 
+        /// <summary>
+        /// Calculates total fields fee if it was not done before
+        /// </summary>
+        private static int CalcClaimFieldsFee(this Claim claim)
+        {
+            var values = claim.Project.GetFieldsNotFilled()
+                .ToList()
+                .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null);
+
+            return values.Sum(f =>
+            {
+                int price = f.Field.Price;
+                switch (f.Field.FieldType)
+                {
+                    case ProjectFieldType.Checkbox:
+                        return string.IsNullOrWhiteSpace(f.Value) ? 0 : price;
+
+                    case ProjectFieldType.Number:
+                        int value;
+                        return int.TryParse(f.Value, out value) ? value * price : 0;
+
+                    case ProjectFieldType.Dropdown:
+                    case ProjectFieldType.MultiSelect:
+                        return f.GetDropdownValues().Sum(v => v.Price);
+
+                    default:
+                        return 0;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Returns total claim fields fee
+        /// </summary>
         private static int ClaimFieldsFee(this Claim claim, int? fieldsFee)
         {
-            // TODO: Implement values and prices loading and calculation
             if (fieldsFee == null)
-                fieldsFee = claim.FieldsFee;
-            else
-                claim.FieldsFee = fieldsFee;
+                fieldsFee = claim.FieldsFee ?? claim.CalcClaimFieldsFee();
+            // cache
+            claim.FieldsFee = fieldsFee;
+
             return fieldsFee ?? 0;
         }
 
