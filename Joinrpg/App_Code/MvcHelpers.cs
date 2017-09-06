@@ -65,11 +65,11 @@ namespace JoinRpg.Web.App_Code
         /// </summary>
         public static MvcHtmlString RenderPriceElement(this HtmlHelper self, string price, string id = null)
         {
-            //TODO: Add currency localization
+            //TODO[Localize]
             if (!string.IsNullOrWhiteSpace(id))
                 id = id.Trim();
             return MvcHtmlString.Create("<span "
-                + (string.IsNullOrWhiteSpace(id) ? string.Empty : @"id=" + id)
+                + (string.IsNullOrWhiteSpace(id) ? "" : @"id=" + id)
                 + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
@@ -80,7 +80,7 @@ namespace JoinRpg.Web.App_Code
         /// </summary>
         public static string RenderPrice(this HtmlHelper self, int price, string template = defaultPriceTemplate)
         {
-            //TODO: Add currency localization
+            //TODO[Localize]
             return string.Format(template, price);
         }        
 
