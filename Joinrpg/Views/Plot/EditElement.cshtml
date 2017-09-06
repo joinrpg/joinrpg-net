@@ -1,9 +1,22 @@
-﻿@using JoinRpg.Web.App_Code
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models.Plot
 @model EditPlotElementViewModel
 
 @{
-    ViewBag.Title = "Редактирование вводной";
+    string objectName;
+    switch (Model.ElementType)
+    {
+        case PlotElementTypeView.RegularPlot:
+            objectName = "вводной";
+            break;
+        case PlotElementTypeView.Handout:
+            objectName = "раздатки";
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
+    }
+    ViewBag.Title = "Редактирование " + objectName;
 }
 
 <h2>Редактирование вводной</h2>

@@ -42,8 +42,11 @@ else
         @if (Model.HasMasterAccess)
         {
             @NavigationItem(GroupNavigationPage.ClaimsActive, "Заявки", "ListForGroup", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
-            @NavigationItem(GroupNavigationPage.ClaimsDiscussing, "Обсуждаемые", "DiscussingForGroup", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
-            @NavigationItem(GroupNavigationPage.ClaimsDirect, "Заявки в группу", "ListForGroupDirect", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+            if (!Model.IsSpecial)
+            {
+                @NavigationItem(GroupNavigationPage.ClaimsDiscussing, "Обсуждаемые", "DiscussingForGroup", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+                @NavigationItem(GroupNavigationPage.ClaimsDirect, "Заявки в группу", "ListForGroupDirect", "ClaimList", new {Model.ProjectId, Model.CharacterGroupId})
+            }
             @NavigationItem(GroupNavigationPage.Characters, "Персонажи", "ByGroup", "CharacterList", new {Model.ProjectId, Model.CharacterGroupId})
             @NavigationItem(GroupNavigationPage.Report, "Сводный отчет", "Report", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId})
             if (!Model.IsRootGroup)

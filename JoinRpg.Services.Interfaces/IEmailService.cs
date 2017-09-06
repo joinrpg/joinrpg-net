@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.CharacterFields;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -21,9 +24,9 @@ namespace JoinRpg.Services.Interfaces
     Task Email(ChangeResponsibleMasterEmail createClaimEmail);
     Task Email(OnHoldByMasterEmail createClaimEmail);
     Task Email(ForumEmail model);
-    Task Email(FieldsChangedEmail createClaimEmail);
     Task Email(CheckedInEmal createClaimEmail);
     Task Email(SecondRoleEmail createClaimEmail);
+    Task Email(FieldsChangedEmail filedsEmail);
   }
 
   public static class EmailTokens
@@ -34,14 +37,14 @@ namespace JoinRpg.Services.Interfaces
   public class RemindPasswordEmail 
   {
     public string CallbackUrl { get; set; }
-    public User Recepient { get; set; }
+    public User Recipient { get; set; }
   }
 
   public class ConfirmEmail
   {
     public string CallbackUrl
     { get; set; }
-    public User Recepient
+    public User Recipient
     { get; set; }
   }
 
@@ -49,8 +52,13 @@ namespace JoinRpg.Services.Interfaces
   {
   }
 
-  public class NewClaimEmail : ClaimEmailModel
+  public class NewClaimEmail : ClaimEmailModel, IEmailWithUpdatedFieldsInfo
   {
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
+    public IFieldContainter FieldsContainer => Claim;
+
+    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; } =
+      new Dictionary<string, PreviousAndNewValue>();
   }
 
   public class ApproveByMasterEmail : ClaimEmailModel
@@ -72,7 +80,65 @@ namespace JoinRpg.Services.Interfaces
     
   }
 
-  public class FieldsChangedEmail : ClaimEmailModel { }
+  public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
+  {
+    public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } = new List<FieldWithPreviousAndNewValue>();
+    public IFieldContainter FieldsContainer => (IFieldContainter)Claim ?? Character;
+
+    [CanBeNull]
+    public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; set; } =
+      new Dictionary<string, PreviousAndNewValue>();
+
+    public Character Character { get; set; }
+    [CanBeNull]
+    public Claim Claim { get; set; }
+    //Is character is null, Claim is not null and vioce versa. (restricted by constructors).
+    public bool IsCharacterMail => Character != null;
+
+    public FieldsChangedEmail(
+      Claim claim,
+      User initiator,
+      ICollection<User> recipients,
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
+      : this(null, claim, initiator, recipients, updatedFields, null)
+    {
+    }
+
+    public FieldsChangedEmail(
+      Character character,
+      User initiator,
+      ICollection<User> recipients,
+      IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+      Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
+      : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
+    {
+    }
+
+    private FieldsChangedEmail(
+      Character character,
+      Claim claim,
+      User initiator,
+      ICollection<User> recipients,
+      [NotNull] IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+      [CanBeNull] Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
+    {
+      if (updatedFields == null) throw new ArgumentNullException(nameof(updatedFields));
+      if (character != null && claim != null)
+        throw new ArgumentException($"Both {nameof(character)} and {nameof(claim)} were provided");
+      if (character == null && claim == null)
+        throw new ArgumentException($"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+      otherChangedAttributes = otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();
+
+      Character = character;
+      Claim = claim;
+      ProjectName = character?.Project.ProjectName ?? claim?.Project.ProjectName;
+      Initiator = initiator;
+      Text = new MarkdownString();
+      Recipients = recipients;
+      UpdatedFields = updatedFields;
+      OtherChangedAttributes = otherChangedAttributes;
+    }
+  }
 
   public class RestoreByMasterEmail : ClaimEmailModel {}
 
@@ -109,7 +175,6 @@ namespace JoinRpg.Services.Interfaces
     public ParcipantType InitiatorType { get; set; }
     public Claim Claim { get; set; }
     public CommentExtraAction? CommentExtraAction { get; set; }
-    public IReadOnlyCollection<FieldWithValue> UpdatedFields { get; set; } = new List<FieldWithValue>();
   }
 
   public class EmailModelBase
@@ -117,7 +182,7 @@ namespace JoinRpg.Services.Interfaces
     public string ProjectName { get; set; }
     public User Initiator { get; set; }
     public MarkdownString Text { get; set; }
-    public ICollection<User> Recepients { get; set; }
+    public ICollection<User> Recipients { get; set; }
   }
 
   public enum ParcipantType 
@@ -125,5 +190,24 @@ namespace JoinRpg.Services.Interfaces
     Nobody,
     Master,
     Player
+  }
+
+  /// <summary>
+  /// This interface to be implemented by emails that should include the list of updated felds in them.
+  /// </summary>
+  public interface IEmailWithUpdatedFieldsInfo
+  {
+    /// <summary>
+    /// Project fields that changed
+    /// </summary>
+    IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
+    /// <summary>
+    /// Entity the updated fields belong to
+    /// </summary>
+    IFieldContainter FieldsContainer { get; }
+    /// <summary>
+    /// Other attributes that have changed. Those attributes don't need access verification
+    /// </summary>
+    IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
   }
 }

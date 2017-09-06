@@ -125,7 +125,7 @@ namespace JoinRpg.Web.Controllers
       var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.UserId, code},
         protocol: Request.Url.Scheme);
 
-      await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recepient = user});
+      await _emailService.Email(new ConfirmEmail() {CallbackUrl = callbackUrl, Recipient = user});
     }
 
     //
@@ -177,7 +177,7 @@ namespace JoinRpg.Web.Controllers
         var callbackUrl = Url.Action("ResetPassword", "Account", new {userId = user.UserId, code = code},
           protocol: Request.Url.Scheme);
 
-        await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recepient = user});
+        await _emailService.Email(new RemindPasswordEmail() {CallbackUrl = callbackUrl, Recipient = user});
 
         return RedirectToAction("ForgotPasswordConfirmation", "Account");
       }
@@ -224,6 +224,7 @@ namespace JoinRpg.Web.Controllers
       {
         return RedirectToAction("ResetPasswordConfirmation", "Account");
       }
+      ModelState.AddModelError("", "Что-то пошло не так, скорее всего ссылка истекла. Попробуйте запросить ее снова, если не удастся — напишите в техподдержку");
       AddErrors(result);
       return View();
     }

@@ -2,6 +2,8 @@
 using WebActivatorEx;
 using JoinRpg.Web;
 using Swashbuckle.Application;
+using System.IO;
+using System;
 
 [assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
@@ -67,10 +69,10 @@ namespace JoinRpg.Web
                         //    .Name("apiKey")
                         //    .In("header");
                       //  //
-                      //c.OAuth2("oauth2")
-                      //  .Description("OAuth2 Implicit Grant")
-                      //  .Flow("implicit")
-                      //  .TokenUrl("/x-api/token")
+                        c.OAuth2("oauth2")
+                            .Description("OAuth2 Implicit Grant")
+                            .Flow("implicit")
+                            .TokenUrl("/x-api/token");
                         //    .AuthorizationUrl("http://petstore.swagger.wordnik.com/api/oauth/dialog")
                         //    //.TokenUrl("https://tempuri.org/token")
                         //    .Scopes(scopes =>
@@ -102,7 +104,11 @@ namespace JoinRpg.Web
                         // those comments into the generated docs and UI. You can enable this by providing the path to one or
                         // more Xml comment files.
                         //
-                        //c.IncludeXmlComments(GetXmlCommentsPath());
+                        var dir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin"));
+                        foreach (var fi in dir.EnumerateFiles("*.xml"))
+                        {
+                            c.IncludeXmlComments(fi.FullName);
+                        }
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.

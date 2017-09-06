@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         
-        var recepients =
+        var recipients =
           filteredClaims
             .Select(c => c.Player)
             .UnionIf(project.ProjectAcls.Select(acl => acl.User), viewModel.AlsoMailToMasters)
@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Controllers
           Initiator = await GetCurrentUserAsync(),
           ProjectName = project.ProjectName,
           Text = new MarkdownString(viewModel.Body),
-          Recepients = recepients.ToList(),
+          Recipients = recipients.ToList(),
           Subject = viewModel.Subject
         });
         return View("Success");

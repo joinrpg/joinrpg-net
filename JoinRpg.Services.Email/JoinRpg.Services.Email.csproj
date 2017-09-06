@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="EmailServiceImpl.cs" />
     <Compile Include="MailGunExts.cs" />
+    <Compile Include="MailRecipient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -6,39 +6,35 @@
 
 <h2>@ViewBag.Title</h2>
 
+<hr />
+
+<div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div>
+
+@if (Model.IsActive)
+{
+  <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Проект <strong>активен</strong></div>
+  if (Model.IsAcceptingClaims)
+  {
+    <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Прием заявок <strong>открыт</strong></div>
+  }
+  else
+  {
+    <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i>Прием заявок <strong>закрыт</strong></div>
+  }
+}
+else
+{
+  <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i>Проект <strong>закрыт</strong></div>
+}
+
+<hr/>
+
 @Model.ProjectAnnounce
 
 <hr/>
 
-<div>
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.IsAcceptingClaims)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.IsAcceptingClaims)
-        </dd>
-    </dl>
-    <hr/>
-    <h4>Мастера</h4>
-    <ul>
+<div class="panel panel-default"><div class="panel-heading">Мастера</div>
+    <ul class="panel-body join-users-h">
         @foreach (var master in Model.Masters)
         {
             <li>@Html.DisplayFor(model => master)</li>

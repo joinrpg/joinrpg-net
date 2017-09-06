@@ -74,7 +74,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
 
     private List<FieldWithValue> GetFields(CharacterView character, Project project)
     {
-      var projectFields = project.GetFields().ToList();
+      var projectFields = project.GetFieldsNotFilled().ToList();
       projectFields.FillFrom(character.ApprovedClaim);
       projectFields.FillFrom(character);
       return projectFields;

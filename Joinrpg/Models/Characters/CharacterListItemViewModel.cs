@@ -92,7 +92,7 @@ namespace JoinRpg.Web.Models.Characters
       Name = character.CharacterName;
       CharacterId = character.CharacterId;
       ProjectId = character.ProjectId;
-      Fields = character.Project.GetFieldsWithoutOrder().ToList();
+      Fields = character.Project.GetFieldsNotFilledWithoutOrder().ToList();
       Fields.FillFrom(character);
       Fields.FillFrom(character.ApprovedClaim);
       Problems = problems.Select(p => new ProblemViewModel(p)).ToList();
