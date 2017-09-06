@@ -24,7 +24,7 @@ namespace JoinRpg.Domain
         /// <summary>
         /// Returns true if price could be entered for field, not for it's values
         /// </summary>
-        public static bool PriceEditable(this ProjectFieldType self)
+        public static bool SupportsPricingOnField(this ProjectFieldType self)
         {
             switch (self)
             {

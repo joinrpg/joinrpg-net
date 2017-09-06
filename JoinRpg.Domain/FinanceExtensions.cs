@@ -5,22 +5,22 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
 {
-  public static class FinanceExtensions
-  {
-    public static int CurrentFee([NotNull] this Project project)
+    public static class FinanceExtensions
     {
-      if (project == null) throw new ArgumentNullException(nameof(project));
-      return project.CurrentFee(DateTime.UtcNow);
-    }
+        public static int CurrentFee([NotNull] this Project project)
+        {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+            return project.CurrentFee(DateTime.UtcNow);
+        }
 
-    private static int CurrentFee(this Project project, DateTime operationDate)
-    {
-      return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
-        .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
-    }
+        private static int CurrentFee(this Project project, DateTime operationDate)
+        {
+            return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
+              .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
+        }
 
         private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-        {            
+        {
             return claim.ClaimCurrentFee(operationDate, fieldsFee)
                 + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
         }
@@ -35,8 +35,52 @@ namespace JoinRpg.Domain
             => (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
                 + claim.ClaimFieldsFee(fieldsFee);
 
+
         /// <summary>
-        /// Calculates total fields fee if it was not done before
+        /// Returns claim payment status from total fee and money balance
+        /// </summary>
+        public static ClaimPaymentStatus GetClaimPaymentStatus(int totalFee, int balance)
+        {
+            if (totalFee < balance)
+                return ClaimPaymentStatus.Overpaid;
+            else if (totalFee == balance)
+                return ClaimPaymentStatus.Paid;
+            else if (balance > 0)
+                return ClaimPaymentStatus.MoreToPay;
+            else
+                return ClaimPaymentStatus.NotPaid;
+        }
+
+        /// <summary>
+        /// Returns claim payment status from claim' data
+        /// </summary>
+        public static ClaimPaymentStatus PaymentStatus(this Claim claim)
+            => GetClaimPaymentStatus(claim.ClaimTotalFee(), claim.ClaimBalance());
+
+        /// <summary>
+        /// Returns current fee of a field with value
+        /// </summary>
+        public static int GetCurrentFee(this FieldWithValue self)
+        {
+            switch (self.Field.FieldType)
+            {
+                case ProjectFieldType.Checkbox:
+                    return self.HasEditableValue ? self.Field.Price : 0;
+
+                case ProjectFieldType.Number:
+                    return self.ToInt() * self.Field.Price;
+
+                case ProjectFieldType.Dropdown:
+                case ProjectFieldType.MultiSelect:
+                    return self.GetDropdownValues().Sum(v => v.Price);
+
+                default:
+                    return 0;
+            }
+        }
+
+        /// <summary>
+        /// Calculates total fields fee
         /// </summary>
         private static int CalcClaimFieldsFee(this Claim claim)
         {
@@ -44,30 +88,11 @@ namespace JoinRpg.Domain
                 .ToList()
                 .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null);
 
-            return values.Sum(f =>
-            {
-                int price = f.Field.Price;
-                switch (f.Field.FieldType)
-                {
-                    case ProjectFieldType.Checkbox:
-                        return string.IsNullOrWhiteSpace(f.Value) ? 0 : price;
-
-                    case ProjectFieldType.Number:
-                        int value;
-                        return int.TryParse(f.Value, out value) ? value * price : 0;
-
-                    case ProjectFieldType.Dropdown:
-                    case ProjectFieldType.MultiSelect:
-                        return f.GetDropdownValues().Sum(v => v.Price);
-
-                    default:
-                        return 0;
-                }
-            });
+            return values.Sum(f => f.GetCurrentFee());
         }
 
         /// <summary>
-        /// Returns total claim fields fee
+        /// Returns actual total claim fields fee
         /// </summary>
         private static int ClaimFieldsFee(this Claim claim, int? fieldsFee)
         {

@@ -29,7 +29,6 @@ namespace JoinRpg.Dal.Impl.Repositories
       await LoadProjectFields(projectId);
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
-      await LoadProjectFields(projectId);
 
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx

@@ -291,16 +291,6 @@ namespace JoinRpg.Web.Models
   }
 
 
-    /// <summary>
-    /// Describes current payment status
-    /// </summary>
-    public enum ClaimPaymentStatus
-    {
-        Paid,
-        Overpaid,
-        MoreToPay,
-        NotPaid
-    }
 
 
     public class ClaimFeeViewModel
@@ -318,14 +308,7 @@ namespace JoinRpg.Web.Models
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
 
             // Determining payment status
-            if (CurrentTotalFee < CurrentBalance)
-                PaymentStatus = ClaimPaymentStatus.Overpaid;
-            else if (CurrentTotalFee == CurrentBalance)
-                PaymentStatus = ClaimPaymentStatus.Paid;
-            else if (CurrentBalance > 0)
-                PaymentStatus = ClaimPaymentStatus.MoreToPay;
-            else
-                PaymentStatus = ClaimPaymentStatus.NotPaid;
+            PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
         }
 
         /// <summary>
@@ -334,7 +317,7 @@ namespace JoinRpg.Web.Models
         public int CurrentFee { get; }
 
         /// <summary>
-        /// Fields fee, separated by bound and visibility
+        /// Fields fee, separated by bound
         /// </summary>
         public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
 

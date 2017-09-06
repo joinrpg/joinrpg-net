@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Models
 {
   public class FieldPossibleValueViewModel
   {
-    public FieldPossibleValueViewModel(ProjectFieldDropdownValue value, Func<bool> hasPrice, bool selected = false)
+    public FieldPossibleValueViewModel(ProjectFieldDropdownValue value, bool hasPrice, bool selected = false)
     {
       ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
       DescriptionPlainText = value.Description.ToPlainText();
@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models
       MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
       SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
             Price = value.Price;
-            this.hasPrice = hasPrice;
+            HasPrice = hasPrice;
             Selected = selected;
     }
 
@@ -42,12 +42,10 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public int Price { get; }
 
-        private Func<bool> hasPrice = () => false;
-
         /// <summary>
         /// True if owner has a price
         /// </summary>
-        public bool HasPrice => hasPrice();
+        public bool HasPrice { get; }
 
         public bool Selected { get; }
   }
@@ -128,29 +126,18 @@ namespace JoinRpg.Web.Models
         && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
-            // Used during values loading to detect has at least one value price information or not
-            bool hasPrice = false;
+            // Detecting if field (or its values) has a price or not
+            HasPrice = FieldViewType.SupportsPricing() &&
+                ((FieldViewType.SupportsPricingOnField() && ch.Field.Price != 0)
+                 || (!FieldViewType.SupportsPricingOnField() && ch.GetPossibleValues().Any(v => v.Price != 0)));
 
             //if not "HasValues" types, will be empty
-            ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v, GetHasPrice, true)).ToList();
-            PossibleValueList = ch.GetPossibleValues().Select(v =>
-            {
-                // Looking if at least one value has a price
-                hasPrice = hasPrice || v.Price != 0;
-                return new FieldPossibleValueViewModel(v, GetHasPrice,
-                    ValueList.Any(sv => sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId));
-            }).ToArray();
-
-            // Detecting if field has a price or not
-            if (FieldViewType.SupportsPricing())
-            {
-                Price = FieldViewType.PriceEditable() ? ch.Field.Price : 0;
-                hasPrice = hasPrice || Price != 0;
-            }
-            HasPrice = hasPrice;
+            ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
+            PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, 
+                ValueList.Any(sv => sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId))).ToArray();
 
             if (HasPrice)
-                Fee = RecalcFee();
+                Fee = ch.GetCurrentFee();
 
             ProjectFieldId = ch.Field.ProjectFieldId;
 
@@ -160,30 +147,6 @@ namespace JoinRpg.Web.Models
       ProjectId = ch.Field.ProjectId;
 
     }
-
-        /// <summary>
-        /// Recalculates fee has to be paid by the player
-        /// </summary>
-        private int RecalcFee()
-        {
-            switch (FieldViewType)
-            {
-                case ProjectFieldViewType.Checkbox:
-                    return HasValue ? Price : 0;
-
-                case ProjectFieldViewType.Number:
-                    return HasValue ? int.Parse(Value) * Price : 0;
-
-                case ProjectFieldViewType.Dropdown:
-                case ProjectFieldViewType.MultiSelect:
-                    return ValueList.Count > 0
-                        ? ValueList.Sum(v => v.Price)
-                        : Price;
-
-                default:
-                    return 0;
-            }
-        }
 
         public MandatoryStatusViewType MandatoryStatus { get; }
 

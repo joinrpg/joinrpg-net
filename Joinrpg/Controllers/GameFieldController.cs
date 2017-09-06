@@ -25,18 +25,18 @@ namespace JoinRpg.Web.Controllers
         }
 
         private ActionResult ReturnToIndex(Project project)
-          => RedirectToAction("Index", new { project.ProjectId });
+            => RedirectToAction("Index", new { project.ProjectId });
+
+        private ActionResult ReturnToField(int projectId, int fieldId)
+            => RedirectToAction("Edit", new { projectId, projectFieldId = fieldId });
 
         private ActionResult ReturnToField(ProjectField value)
-          => RedirectToAction("Edit", new { value.ProjectId, projectFieldId = value.ProjectFieldId });
+            => ReturnToField(value.ProjectId, value.ProjectFieldId);
 
 
         [HttpGet, MasterAuthorize()]
         public async Task<ActionResult> Index(int projectId)
         {
-            if (projectId < 0)
-                return Redirect("/");
-
             var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
             return project == null
                 ? (ActionResult) HttpNotFound()
@@ -102,8 +102,6 @@ namespace JoinRpg.Web.Controllers
         [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Edit(int projectId, int projectFieldId)
         {
-            if (projectId < 0)
-                return Redirect("/");
             if (projectFieldId < 0)
                 return await RedirectToProject(projectId);
 
@@ -191,8 +189,10 @@ namespace JoinRpg.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> Delete(int projectId, int projectFieldId)
         {
-          var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-          return AsMaster(field, pa => pa.CanChangeFields) ?? View(field);
+            HttpStatusCodeResult ar = await DeleteEx(projectId, projectFieldId) as HttpStatusCodeResult;
+            if (ar != null && ar.StatusCode >= 300)
+                return ar;
+            return ReturnToField(projectId, projectFieldId);
         }
 
     [HttpPost]

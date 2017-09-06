@@ -47,9 +47,8 @@ namespace JoinRpg.DataModel
     /// Will be used in payment calculations.
     /// Value usage differs on FieldType. Value will be:
     /// - Number: multiplied with entered number
-    /// - Dropdown: used if no item selected
-    /// - MultiSelect: used if no items selected
     /// - CheckBox: used if checkbox was checked
+    /// - Dropdown, Multiselect: ignored, see values for prices
     /// - String, Text, Header: ignored
     /// </summary>
     public int Price { get; set; }

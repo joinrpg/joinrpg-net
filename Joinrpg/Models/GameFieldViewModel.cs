@@ -42,8 +42,8 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns true if price could be entered for field, not for it's values
         /// </summary>
-        public static bool PriceEditable(this ProjectFieldViewType self)
-            => ((ProjectFieldType)self).PriceEditable();
+        public static bool SupportsPricingOnField(this ProjectFieldViewType self)
+            => ((ProjectFieldType)self).SupportsPricingOnField();
 
         /// <summary>
         /// Returns true if field has predefined values
@@ -214,7 +214,7 @@ namespace JoinRpg.Web.Models
                 yield return
                     new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
             }
-            if (Price != 0 && !FieldViewType.PriceEditable())
+            if (Price != 0 && !FieldViewType.SupportsPricingOnField())
             {
                 yield return
                     new ValidationResult(string.Format("Поле {0} не поддерживает ввод цены.", FieldViewType.ToString()));

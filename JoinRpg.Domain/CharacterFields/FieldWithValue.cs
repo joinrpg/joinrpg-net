@@ -96,6 +96,18 @@ namespace JoinRpg.Domain
 
     public override string ToString() => $"{Field.FieldName}={Value}";
 
+        /// <summary>
+        /// Returns value as integer with respect to field type.
+        /// If current value could not be converted, returns default(int)
+        /// </summary>
+        public int ToInt()
+        {
+            int result;
+            if (!int.TryParse(Value, out result))
+                result = default(int);
+            return result;
+        }
+
     public const string CheckboxValueOn = "on";
   }
 }

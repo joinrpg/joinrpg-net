@@ -90,7 +90,7 @@ namespace JoinRpg.DataModel
     public Status ClaimStatus { get; set; }
 
 
-        #region Payments
+        #region Finance
 
         /// <summary>
         /// Fee to pay by player, manually set by master.
@@ -110,13 +110,11 @@ namespace JoinRpg.DataModel
         public IEnumerable<FinanceOperation> ApprovedFinanceOperations
               => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
 
-
         /// <summary>
-        /// КОСТЫЛЬ для хранения цены полей
+        /// Used for caching previously calculated total fields fee
         /// </summary>
         [NotMapped]
         public int? FieldsFee { get; set; }
-
 
         #endregion
 
