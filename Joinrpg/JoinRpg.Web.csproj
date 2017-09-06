@@ -650,7 +650,6 @@
     <Content Include="Views\GameField\CreateValue.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\User.cshtml" />
     <Content Include="Views\GameField\EditValue.cshtml" />
-    <Content Include="Views\GameField\DeleteValue.cshtml" />
     <Content Include="Views\Shared\AvailClaimTargetsPartial.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\ProjectDropDown.cshtml" />
     <Content Include="Views\Character\Edit.cshtml" />
