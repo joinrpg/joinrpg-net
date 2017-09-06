@@ -68,11 +68,13 @@ function feeChanged(target, fee)
     {
         // Subtotal for claim fields
         case "Claim":
-            feeClaimFieldsDisp.ch(oldFee, fee);
+            if (feeClaimFieldsDisp)
+                feeClaimFieldsDisp.ch(oldFee, fee);
             break;
         // Subtotal for character fields
         case "Character":
-            feeCharacterFieldsDisp.ch(oldFee, fee);
+            if (feeCharacterFieldsDisp)
+                feeCharacterFieldsDisp.ch(oldFee, fee);
             break;
         default:
             // TODO: remove shit shit
@@ -82,56 +84,62 @@ function feeChanged(target, fee)
 
     // Complete subtotal
     feeTotalFieldsDisp.ch(oldFee, fee);
-    // Claim total
-    feeTotalDisp.ch(oldFee, fee);
-    var feeTotal = feeTotalDisp.get();
-    // Claim current
-    if (feeCurrentDisp)
-        feeCurrentDisp.ch(oldFee, fee);
-    // More to pay
-    feeOverpaidDisp.set(feeBalance - feeTotal);
-    // Overpaid
-    feeMoreToPayDisp.set(feeTotal - feeBalance);
 
-    // Payment status
-    if (feeTotal < feeBalance)
-        paymentStatus = 1;
-    else if (feeTotal == feeBalance)
-        paymentStatus = 0;
-    else if (feeBalance > 0)
-        paymentStatus = 2;
-    else
-        paymentStatus = 3;
-
-    switch (paymentStatus)
+    // Claim total    
+    if (feeTotalDisp)
     {
-        case 0: // paid
-            feeStatusPaid.style.display = "inline";
-            feeStatusOverpaid.style.display = "none";
-            feeStatusMoreToPay.style.display = "none";
-            break;
-        case 1: // overpaid
-            feeStatusPaid.style.display = "none";
-            feeStatusOverpaid.style.display = "inline";
-            feeStatusMoreToPay.style.display = "none";
-            break;
-        case 2: // more to pay
-            feeStatusPaid.style.display = "none";
-            feeStatusOverpaid.style.display = "none";
-            feeStatusMoreToPay.style.display = "inline";
-            if (feePaymentDlgValue)
-                feePaymentDlgValue.value = feeMoreToPayDisp.get();
-            break;
-        case 3: // not paid
-            feeStatusPaid.style.display = "none";
-            feeStatusOverpaid.style.display = "none";
-            feeStatusMoreToPay.style.display = "none";
-            if (feePaymentDlgValue)
-                feePaymentDlgValue.value = feeMoreToPayDisp.get();
-            break;
-        default:
-            alert("Unknown payment status " + paymentStatus);
-            break;
+        // If there is no feeTotalDisp, we are in character editing mode
+
+        feeTotalDisp.ch(oldFee, fee);
+        var feeTotal = feeTotalDisp.get();
+        // Claim current
+        if (feeCurrentDisp)
+            feeCurrentDisp.ch(oldFee, fee);
+        // More to pay
+        feeOverpaidDisp.set(feeBalance - feeTotal);
+        // Overpaid
+        feeMoreToPayDisp.set(feeTotal - feeBalance);
+
+        // Payment status
+        if (feeTotal < feeBalance)
+            paymentStatus = 1;
+        else if (feeTotal == feeBalance)
+            paymentStatus = 0;
+        else if (feeBalance > 0)
+            paymentStatus = 2;
+        else
+            paymentStatus = 3;
+
+        switch (paymentStatus)
+        {
+            case 0: // paid
+                feeStatusPaid.style.display = "inline";
+                feeStatusOverpaid.style.display = "none";
+                feeStatusMoreToPay.style.display = "none";
+                break;
+            case 1: // overpaid
+                feeStatusPaid.style.display = "none";
+                feeStatusOverpaid.style.display = "inline";
+                feeStatusMoreToPay.style.display = "none";
+                break;
+            case 2: // more to pay
+                feeStatusPaid.style.display = "none";
+                feeStatusOverpaid.style.display = "none";
+                feeStatusMoreToPay.style.display = "inline";
+                if (feePaymentDlgValue)
+                    feePaymentDlgValue.value = feeMoreToPayDisp.get();
+                break;
+            case 3: // not paid
+                feeStatusPaid.style.display = "none";
+                feeStatusOverpaid.style.display = "none";
+                feeStatusMoreToPay.style.display = "none";
+                if (feePaymentDlgValue)
+                    feePaymentDlgValue.value = feeMoreToPayDisp.get();
+                break;
+            default:
+                alert("Unknown payment status " + paymentStatus);
+                break;
+        }
     }
 
     return oldFee;

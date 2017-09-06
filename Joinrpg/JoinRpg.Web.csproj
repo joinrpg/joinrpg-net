@@ -743,6 +743,7 @@
     <Content Include="Views\Shared\EditorTemplates\_SelectOptionPartial.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\_SelectOptionDefPartial.cshtml" />
     <Content Include="Views\Claim\_ClaimFieldsSubtotal.cshtml" />
+    <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
