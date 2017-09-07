@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.DataModel
+namespace JoinRpg.Domain
 {
     /// <summary>
     /// Describes current payment status

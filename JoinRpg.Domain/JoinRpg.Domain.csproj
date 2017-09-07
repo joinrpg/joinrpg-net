@@ -58,6 +58,7 @@
     <Compile Include="CharacterProblemFilters\BrokenCharactersFilter.cs" />
     <Compile Include="CharacterFields\FieldSaveHelper.cs" />
     <Compile Include="ClaimCheckInValidator.cs" />
+    <Compile Include="ClaimPaymentStatus.cs" />
     <Compile Include="PlotExtensions.cs" />
     <Compile Include="ProblemExtensions.cs" />
     <Compile Include="ClaimProblemFilters\BrokenClaimsAndCharacters.cs" />
@@ -75,7 +76,6 @@
     <Compile Include="FieldExtensions.cs" />
     <Compile Include="FinanceExtensions.cs" />
     <Compile Include="ProjectEntityExtensions.cs" />
-    <Compile Include="ProjectFieldTypeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubscribeExtensions.cs" />
     <Compile Include="TagExtensions.cs" />

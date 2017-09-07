@@ -150,7 +150,7 @@
 
             case ProjectFieldViewType.MultiSelect:
                 <select onchange="multiChanged(event)" @Html.RenderAttrs(attrs)>
-                    @if (/*isEmpty || */ Model.MandatoryStatus != MandatoryStatusViewType.Required)
+                    @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
                     {
                         Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
                     }

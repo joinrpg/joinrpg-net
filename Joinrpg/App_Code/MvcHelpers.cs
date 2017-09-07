@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
 using System.Web.Mvc;
-using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -74,15 +74,15 @@ namespace JoinRpg.Web.App_Code
                 + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
-        public const string defaultPriceTemplate = @"{0} ₽";
+        public readonly static string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
 
         /// <summary>
         /// Renders price to a string
         /// </summary>
-        public static string RenderPrice(this HtmlHelper self, int price, string template = defaultPriceTemplate)
+        public static string RenderPrice(this HtmlHelper self, int price, string template = null)
         {
             //TODO[Localize]
-            return string.Format(template, price);
+            return string.Format(template ?? defaultPriceTemplate, price);
         }        
 
         public static MvcHtmlString HelpLink(string link, string message)

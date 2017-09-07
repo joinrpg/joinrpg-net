@@ -50,9 +50,6 @@ function checkFeeElements(target)
             target.bound = target.getAttribute("bound");
         }
 
-        // TODO: remove this shit
-        if (!target.feeDisp) alert("No fee disp: " + id + "_disp");
-
         return true;
     }
     return false;
@@ -77,8 +74,6 @@ function feeChanged(target, fee)
                 feeCharacterFieldsDisp.ch(oldFee, fee);
             break;
         default:
-            // TODO: remove shit shit
-            alert("Unknown field bound: " + target.bound);
             break;
     }
 
@@ -137,7 +132,6 @@ function feeChanged(target, fee)
                     feePaymentDlgValue.value = feeMoreToPayDisp.get();
                 break;
             default:
-                alert("Unknown payment status " + paymentStatus);
                 break;
         }
 

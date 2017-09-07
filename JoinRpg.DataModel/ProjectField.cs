@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -121,21 +121,21 @@ namespace JoinRpg.DataModel
       {
         yield return  new ValidationResult("Header can't be mandatory");
       }
+
+            if (!FieldType.SupportsPricing() && Price != 0)
+            {
+                yield return new ValidationResult(string.Format("Pricing is not supported for {0} fields", FieldType.ToString()));
+            }
+
+            if (FieldType.SupportsPricing() && !FieldType.SupportsPricingOnField() && Price != 0)
+            {
+                yield return new ValidationResult(string.Format("Fields with multiple values support pricing only in values"));
+            }
+      
     }
   }
   
-  public enum ProjectFieldType
-  {
-    String,
-    Text,
-    Dropdown,
-    Checkbox,
-    MultiSelect,
-    Header,
-    Number
-  }
-
-    public enum FieldBoundTo
+  public enum FieldBoundTo
   {
     Character,
     Claim

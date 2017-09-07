@@ -1,7 +1,16 @@
-﻿using JoinRpg.DataModel;
-
-namespace JoinRpg.Domain
+namespace JoinRpg.DataModel
 {
+    public enum ProjectFieldType
+    {
+        String,
+        Text,
+        Dropdown,
+        Checkbox,
+        MultiSelect,
+        Header,
+        Number
+    }
+
     public static class ProjectFieldTypeHelper
     {
         /// <summary>
