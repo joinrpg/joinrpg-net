@@ -145,6 +145,9 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание"), UIHint("MarkdownString")]
         public string DescriptionEditable { get; set; }
 
+        [ReadOnly(true)]
+        public bool WasEverUsed { get; set; }
+
         public GameFieldEditViewModel(ProjectField field, int currentUserId)
         {
             CanPlayerView = field.CanPlayerView;
@@ -178,6 +181,7 @@ namespace JoinRpg.Web.Models
             FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
             IsActive = field.IsActive;
             HasValueList = field.HasValueList();
+            WasEverUsed = field.WasEverUsed;
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
         }
 

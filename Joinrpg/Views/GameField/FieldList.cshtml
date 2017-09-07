@@ -31,71 +31,67 @@
         <span class="label label-warning">Игрок может менять</span>
       }
     </td>
-    <td class="price-table">@(item.FieldViewType.PriceEditable() && item.Price != 0 ? item.Price.ToString() : "")</td>
+    <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
     <td>@item.DescriptionDisplay</td>
     <td>@if (item.HasValueList)
-      {
+    {
         <ul>
-          @foreach (var value in item.DropdownValues)
-          {
-            <li>
-              @if (value.CharacterGroupId != null)
-              {
-                @Html.ActionLink(value.Label, "ByGroup", "CharacterList", new { item.ProjectId, value.CharacterGroupId }, null)
-              }
-              else
-              {
-                @value.Label
-              }
-            </li>
-          }
-          @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
-          {
-              if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-              {
-              <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
-       new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
-              }
-              else
-              {
-              <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
-       new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
-              }
-          }
+            @foreach (var value in item.DropdownValues)
+            {
+                <li>@(value.CharacterGroupId != null
+                    ? Html.ActionLink(value.Label, "ByGroup", "CharacterList", new { item.ProjectId, value.CharacterGroupId }, null)
+                    : Html.Raw(value.Label))</li>
+            }
+            @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
+            {
+                if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+                {
+                    <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
+                        new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+                }
+                else
+                {
+                    <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
+                        new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+                }
+            }
         </ul>
-      }
-      else if (item.FieldViewType != ProjectFieldViewType.Header)
-      {
-          if (!item.IsActive)
-          {
-              switch (item.FieldBoundTo)
-              {
-                  case FieldBoundToViewModel.Character:
-              @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-       new { item.ProjectFieldId, item.ProjectId }, null)
-                      break;
-                  case FieldBoundToViewModel.Claim:
-              @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-       new { item.ProjectFieldId, item.ProjectId }, null)
-                      break;
-                  default:
-                      throw new ArgumentOutOfRangeException();
-              }
-          }
-          else
-          {
-              if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-              {
-            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
-       new { item.ProjectFieldId, item.ProjectId }, null)</i>
-              }
-              else
-              {
-            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
-       new { item.ProjectFieldId, item.ProjectId }, null)</i>
-              }
-          }
-      }
+    }
+    else if (item.FieldViewType != ProjectFieldViewType.Header)
+    {
+        if (!item.IsActive)
+        {
+            if (item.WasEverUsed)
+            {
+                switch (item.FieldBoundTo)
+                {
+                    case FieldBoundToViewModel.Character:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
+                                 new { item.ProjectFieldId, item.ProjectId }, null)
+                        break;
+                    case FieldBoundToViewModel.Claim:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
+                                 new { item.ProjectFieldId, item.ProjectId }, null)
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+        else
+        {
+            <i>@if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+            {
+                @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
+                    new { item.ProjectFieldId, item.ProjectId }, null)
+            }
+            else
+            {
+                @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
+                    new { item.ProjectFieldId, item.ProjectId }, null)
+            }</i>
+        }
+    }
     </td>
     <td>
       @if (item.CanEditFields)
