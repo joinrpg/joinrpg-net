@@ -140,6 +140,11 @@ function feeChanged(target, fee)
                 alert("Unknown payment status " + paymentStatus);
                 break;
         }
+
+        if (feeCurrentDisp)
+        {
+            feeCurrentDisp.ch(oldFee, fee);
+        }
     }
 
     return oldFee;
