@@ -130,7 +130,7 @@
             </div>
         </div>
 
-        @if (Model.FieldViewType.PriceEditable())
+        @if (Model.FieldViewType.SupportsPricingOnField())
         {
             <div class="form-group">
                 @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
