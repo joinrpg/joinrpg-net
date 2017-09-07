@@ -9,6 +9,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
+  [MasterAuthorize()]
   public class AclController : ControllerGameBase
   { 
     private IClaimsRepository ClaimRepository { get; }
