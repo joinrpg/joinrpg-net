@@ -31,10 +31,22 @@ namespace JoinRpg.Domain
         public static int ClaimCurrentFee(this Claim claim, int? fieldsFee)
             => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee);
 
+        /// <summary>
+        /// Returns actual fee for a claim
+        /// </summary>
         private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-            => (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+        { 
+            return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
                 + claim.ClaimFieldsFee(fieldsFee);
-
+            /******************************************************************
+             * If you want to add additional fee to a claim's fee,
+             * append your value to the expression above.
+             * Example:
+             *     return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+             *         + claim.ClaimFieldsFee(fieldsFee)
+             *         + claim.AccommodationFee();
+             *****************************************************************/
+        }
 
         /// <summary>
         /// Returns claim payment status from total fee and money balance
