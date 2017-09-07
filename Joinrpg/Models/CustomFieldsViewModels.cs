@@ -137,7 +137,11 @@ namespace JoinRpg.Web.Models
                 ValueList.Any(sv => sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId))).ToArray();
 
             if (HasPrice)
+            {
+                if (FieldViewType.SupportsPricingOnField())
+                    Price = ch.Field.Price;
                 Fee = ch.GetCurrentFee();
+            }
 
             ProjectFieldId = ch.Field.ProjectFieldId;
 
