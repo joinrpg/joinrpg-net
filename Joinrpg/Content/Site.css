@@ -115,6 +115,10 @@ input[type=number] {
     clear: both;
 }
 
+.multi-line {
+  width: 700px;
+}
+
 .joinrpg-todo {
   color: #ff8c00;
 }
