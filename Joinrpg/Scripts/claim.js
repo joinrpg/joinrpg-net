@@ -61,22 +61,6 @@ function feeChanged(target, fee)
     var oldFee = target.feeDisp.get();
     target.feeDisp.set(fee);
 
-    switch (target.bound)
-    {
-        // Subtotal for claim fields
-        case "Claim":
-            if (feeClaimFieldsDisp)
-                feeClaimFieldsDisp.ch(oldFee, fee);
-            break;
-        // Subtotal for character fields
-        case "Character":
-            if (feeCharacterFieldsDisp)
-                feeCharacterFieldsDisp.ch(oldFee, fee);
-            break;
-        default:
-            break;
-    }
-
     // Complete subtotal
     feeTotalFieldsDisp.ch(oldFee, fee);
 
