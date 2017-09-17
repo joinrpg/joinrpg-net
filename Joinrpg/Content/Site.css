@@ -133,8 +133,22 @@ input[type=number] {
   content: '▼ ';
 }
 
+.deleting {
+    background-color: silver;
+    color: gray;
+}
+
+.table .btn-group {
+    display: inline-block;
+}
+
+.table .deleting .btn-group {
+    display: none;
+}
+
 .deleted {
   text-decoration: line-through;
+  color: gray;
 }
 
 .world-object-hidden {

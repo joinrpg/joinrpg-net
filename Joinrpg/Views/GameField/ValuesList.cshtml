@@ -16,7 +16,7 @@
         <td class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Label)</td>
         <td class="price-table">@(item.Price != 0 ? item.Price.ToString() : "")</td>
         <td>@Html.DisplayFor(modelItem => item.Description)</td>
-        <td><div class="btn-group btn-group-sm" style="display: inline-block;">
+        <td><div class="btn-group btn-group-sm">
                 @if (item.IsActive)
                 {
                     <a id="value@(item.ValueId)EditButton" title="Изменить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"

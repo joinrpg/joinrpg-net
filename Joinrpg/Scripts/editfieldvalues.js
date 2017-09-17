@@ -1,8 +1,12 @@
 ﻿function Delete(id, href)
 {
     var row = document.getElementById("value" + id);
-    $("#valueToDeleteTitle").text(row.getAttribute("title"));
-    $("#bnStartDelete").click(function () { DoDelete(id, href); });
+    $("#valueToDeleteTitle").text(row.getAttribute("title"));    
+    $("#bnStartDelete").click(function ()
+    {
+        $("#bnStartDelete").off("click");
+        DoDelete(id, href);
+    });
     $("#dlgDeleteValue").modal("show");
     return false;
 }
@@ -10,70 +14,47 @@
 function DoDelete(id, href)
 {
     $("#dlgDeleteValue").modal("hide");
-    var dlg = document.getElementById("dlgDeleteProgressText");
-    dlg.setAttribute("class", "modal-body alert alert-info");
-    dlg.innerHTML = "Удаление...";
-    $("#dlgDeleteProgress").modal("show");
 
     var valueId = "value" + id;
     var row = document.getElementById(valueId);
+    row.className += " deleting";
 
-    var xr = new XMLHttpRequest();
-
-    // called when action finished
-    function load()
-    {
-        if (xr.status >= 300)
+    var xr = $.ajax(href, { method: "DELETE" })
+        .done(function (data, status, xr)
         {
-            error();
-            return;
-        }
-
-        dlg.setAttribute("class", dlg.getAttribute("class").replace("-info", "-success"));
-        $("#dlgDeleteProgress").modal({ keyboard: true });
-        if (xr.status == 250)
-        {
-            dlg.innerHTML = "Значение помечено как неактивное";
-            var btn = document.getElementById(valueId + "DeleteButton");
-            btn.remove();
-            btn = document.getElementById(valueId + "EditButton");
-            btn.setAttribute("title", "Восстановить");
-            btn.firstElementChild.setAttribute("class", btn.firstElementChild.getAttribute("class").replace("-pencil", "-heart"));
-        }
-        else if (xr.status == 200)
-        {
-            dlg.innerHTML = "Успешно удалено";
-        }
-        else
-        {
-            dlg.setAttribute("class", dlg.getAttribute("class").replace("-info", "-warning"));
-            dlg.innerHTML = "Сервер ответил неизвестным кодом";
-        }
-        setTimeout(function ()
-        {
-            $("#dlgDeleteProgress").modal("hide");
-            if (xr.status != 250)
+            if (xr.status == 200)
+            {
+                // 200 means that this value have to be removed
+                row.remove();
+            }
+            else if (xr.status == 250)
+            {
+                // 250 means that this value have to be hidden
+                row.className = row.className.replace("deleting", "deleted");
+                var btn = document.getElementById(valueId + "DeleteButton");
+                btn.remove();
+                btn = document.getElementById(valueId + "EditButton");
+                btn.setAttribute("title", "Восстановить");
+                btn.firstElementChild.className = btn.firstElementChild.className.replace("-pencil", "-heart");
+            }
+            else
+            {
+                // Unknown success code -- have to reload page
                 location.reload();
-        }, 1000);
-    }
-
-    // called if any error occured
-    function error()
-    {
-        dlg.setAttribute("class", dlg.getAttribute("class").replace("-info", "-danger"));
-        dlg.innerHTML = "Не удалось удалить";
-        $("#dlgDeleteProgress").modal({ keyboard: true });
-        setTimeout(function ()
+            }
+        })
+        .fail(function (xr, status, error)
         {
-            $("#dlgDeleteProgress").modal("hide");
-            location.reload();
-        }, 5000);
-    }
-
-    xr.addEventListener("load", load);
-    xr.addEventListener("error", error);
-    xr.addEventListener("abort", error);
-
-    xr.open("DELETE", href, true);
-    xr.send();
+            // Operation failed
+            var dlg = document.getElementById("dlgDeleteProgressText");
+            dlg.className = "modal-body alert alert-danger";
+            dlg.innerHTML = "Не удалось удалить";            
+            $("#dlgDeleteProgress").modal({ keyboard: true });
+            $("#dlgDeleteProgress").modal("show");
+            setTimeout(function ()
+            {
+                $("#dlgDeleteProgress").modal("hide");
+                location.reload();
+            }, 3000);
+        });
 }

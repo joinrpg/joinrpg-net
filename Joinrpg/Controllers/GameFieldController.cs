@@ -302,17 +302,6 @@ namespace JoinRpg.Web.Controllers
         [HttpDelete]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {
-            /*
-            switch (valueId)
-            {
-                case 1:
-                    return new HttpStatusCodeResult(200);
-                case 2:
-                    return new HttpStatusCodeResult(250);
-                default:
-                    return new HttpStatusCodeResult(500);
-            }
-            */
             try
             {
                 var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
