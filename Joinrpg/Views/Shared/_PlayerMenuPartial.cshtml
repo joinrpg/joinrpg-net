@@ -80,11 +80,24 @@
                     </li>
                 }
 
-                @if (Model.IsActive && Model.IsAdmin)
+                @if (Model.IsAdmin)
                 {
-                <li>
-                    @Html.ActionLink("Закрыть проект", "Close", "Game", new { Model.ProjectId}, null)
-                </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Функции администратора<span class="caret"></span></a>
+
+                        <ul class="dropdown-menu">
+                            @if (Model.IsActive)
+                            {
+                                <li>
+                                    @Html.ActionLink("Закрыть проект", "Close", "Game", new {Model.ProjectId}, null)
+                                </li>
+                            }
+                            <li>
+                                @Html.ActionLink("Поставить себе доступ", "ForceSet", "Acl", new { Model.ProjectId }, null)
+                            </li>
+                        </ul>
+                    </li>
+
                 }
             </ul>
             @if (!Model.IsActive)

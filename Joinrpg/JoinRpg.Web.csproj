@@ -730,6 +730,7 @@
     <Content Include="Views\CheckIn\Setup.cshtml" />
     <Content Include="Views\CheckIn\Stat.cshtml" />
     <Content Include="Views\Reports\Report2D.cshtml" />
+    <Content Include="Views\Acl\ForceSet.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
