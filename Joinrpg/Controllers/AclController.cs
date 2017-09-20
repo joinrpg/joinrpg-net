@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Controllers
       return View(project.ProjectAcls.Select(acl =>
       {  
         return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId).ToList(), currentUser);
+          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive).ToList(), currentUser);
       }));
     }
 
