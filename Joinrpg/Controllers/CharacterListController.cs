@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -113,12 +113,12 @@ namespace JoinRpg.Web.Controllers
         "Поле (проставлено): " + field.FieldName);
     }
 
-    [HttpGet]
-    public Task<ActionResult> Vacant(int projectid, string export)
-      => MasterCharacterList(projectid, character => character.ApprovedClaim == null, export, "Свободные персонажи");
+        [HttpGet]
+        public Task<ActionResult> Vacant(int projectid, string export)
+          => MasterCharacterList(projectid, character => character.ApprovedClaim == null && character.IsActive, export, "Свободные персонажи");
 
-    [HttpGet]
-    public Task<ActionResult> WithPlayers(int projectid, string export)
-      => MasterCharacterList(projectid, character => character.ApprovedClaim != null, export, "Занятые персонажи");
+        [HttpGet]
+        public Task<ActionResult> WithPlayers(int projectid, string export)
+          => MasterCharacterList(projectid, character => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
   }
 }

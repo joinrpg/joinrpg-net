@@ -1,8 +1,6 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models;
@@ -12,9 +10,6 @@ namespace JoinRpg.Web.Controllers
 {
     public class UserController : Common.ControllerBase
     {
-      [ProvidesContext]
-      private IProjectRepository ProjectRepository { get; }
-
       [HttpGet]
       public async Task<ActionResult> Details(int userId)
       {
@@ -43,12 +38,6 @@ namespace JoinRpg.Web.Controllers
             showUserColumn: false);
         }
 
-        if (currentUser == user && user.Auth?.IsAdmin == true)
-        {
-          userProfileViewModel.CanGrantAccessProjects =
-            userProfileViewModel.CanGrantAccessProjects.Union(await ProjectRepository.GetActiveProjectsWithClaimCount()).ToList();
-        }
-
         return View(userProfileViewModel);
       }
 
@@ -71,10 +60,9 @@ namespace JoinRpg.Web.Controllers
         return PartialView(userProfileViewModel);
       }
 
-      public UserController(ApplicationUserManager userManager, IProjectRepository projectRepository)
+      public UserController(ApplicationUserManager userManager)
         : base(userManager)
       {
-        ProjectRepository = projectRepository;
       }
 
       [HttpGet,Authorize]

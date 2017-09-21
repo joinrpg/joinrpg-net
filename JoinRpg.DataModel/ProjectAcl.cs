@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -34,14 +34,14 @@ namespace JoinRpg.DataModel
 
     public bool CanManagePlots { get; set; }
 
-    public static ProjectAcl CreateRootAcl(int userId)
+    public static ProjectAcl CreateRootAcl(int userId, bool isOwner = false)
     {
       return new ProjectAcl
       {
         CanChangeFields = true,
         CanChangeProjectProperties = true,
         UserId = userId,
-        IsOwner = true,
+        IsOwner = isOwner,
         CanGrantRights =  true,
         CanManageClaims = true,
         CanEditRoles =  true,
