@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -293,7 +293,7 @@ namespace JoinRpg.Web.Controllers
           viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(), viewModel.Description, viewModel.HaveDirectSlotsForSave(),
           viewModel.DirectSlotsForSave(), responsibleMasterId);
 
-        return RedirectToIndex(group.Project);
+          return RedirectToIndex(group.ProjectId, group.CharacterGroupId, "Details");
       }
       catch (Exception e)
       {

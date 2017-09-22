@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using JoinRpg.Domain;
 
 namespace JoinRpg.DataModel.Mocks
@@ -141,7 +141,7 @@ namespace JoinRpg.DataModel.Mocks
         IsAcceptingClaims = true,
         ProjectAcls = new List<ProjectAcl>
         {
-          ProjectAcl.CreateRootAcl(Master.UserId)
+          ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
         },
         ProjectFields = new List<ProjectField>()
         {

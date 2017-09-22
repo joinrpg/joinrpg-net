@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
@@ -496,35 +496,35 @@ namespace JoinRpg.Services.Impl
     }
 
 
-    public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
-    {
-      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      if (claim == null)
-      {
-        throw new DbEntityValidationException();
-      }
-      claim.RequestPlayerAccess(CurrentUserId);
-      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
+        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+        {
+            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+            if (claim == null)
+            {
+                throw new DbEntityValidationException();
+            }
+            claim.RequestPlayerAccess(CurrentUserId);
+            claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
-      claim.PlayerDeclinedDate = Now;
-      MarkCharacterChangedIfApproved(claim);
-      claim.ClaimStatus = Claim.Status.DeclinedByUser;
+            claim.PlayerDeclinedDate = Now;
+            MarkCharacterChangedIfApproved(claim);
+            claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
-      if (claim.Character == null)
-      {
-        throw new InvalidOperationException("Unexpected");
-      }
+            if (claim.Character != null && claim.Character.ApprovedClaimId == claimId)
+            {
+                claim.Character.ApprovedClaimId = null;
+            }
 
-      claim.Character.ApprovedClaimId = null;
 
-      var email =
-        await
-          AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
-            s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
 
-      await UnitOfWork.SaveChangesAsync();
-      await EmailService.Email(email);
-    }
+            var email =
+              await
+                AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
+                  s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
+
+            await UnitOfWork.SaveChangesAsync();
+            await EmailService.Email(email);
+        }
 
     private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,

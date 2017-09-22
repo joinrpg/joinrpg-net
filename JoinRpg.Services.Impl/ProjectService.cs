@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -17,7 +18,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   internal class ProjectService : DbServiceImplBase, IProjectService
   {
-    private IEmailService EmailService;
+    private IEmailService EmailService { get; }
     private IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
     public ProjectService(IUnitOfWork unitOfWork, IEmailService emailService, IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
@@ -52,7 +53,7 @@ namespace JoinRpg.Services.Impl
         },
         ProjectAcls = new List<ProjectAcl>()
         {
-          ProjectAcl.CreateRootAcl(creator.UserId)
+          ProjectAcl.CreateRootAcl(creator.UserId, isOwner: true)
         },
         Details = new ProjectDetails()
       };
@@ -234,7 +235,21 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    private static void RequestProjectAdminAccess(Project project, User user)
+      [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+      public async Task GrantAccessAsAdmin(int projectId)
+      {
+          var project = await ProjectRepository.GetProjectAsync(projectId);
+
+          var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId);
+          if (acl == null)
+          {
+              project.ProjectAcls.Add(ProjectAcl.CreateRootAcl(CurrentUserId));
+          }
+
+          await UnitOfWork.SaveChangesAsync();
+      }
+
+      private static void RequestProjectAdminAccess(Project project, User user)
     {
       if (project == null)
       {

@@ -1,19 +1,21 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Filter;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  [MasterAuthorize()]
+  [MasterAuthorize(AllowAdmin = true)]
   public class AclController : ControllerGameBase
   { 
     private IClaimsRepository ClaimRepository { get; }
-    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights, AllowAdmin = true) ]
+    [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights) ]
     public async Task<ActionResult> Add(AclViewModel viewModel)
     {
       try
@@ -49,7 +51,7 @@ namespace JoinRpg.Web.Controllers
       return View(project.ProjectAcls.Select(acl =>
       {  
         return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId).ToList(), currentUser);
+          groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive).ToList(), currentUser);
       }));
     }
 
@@ -115,5 +117,20 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
     }
-  }
+
+      [AdminAuthorize]
+      [HttpGet]
+      public ActionResult ForceSet(int projectid)
+      {
+          return View();
+      }
+
+      [AdminAuthorize]
+      [HttpPost]
+      public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] FormCollection unused)
+      {
+          await ProjectService.GrantAccessAsAdmin(projectId);
+          return RedirectToAction("Details", "Game", new {projectId});
+      }
+    }
 }
