@@ -26,14 +26,13 @@
         </div>
 
         <div class="form-group">
-
             @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
                 @Html.DisplayFor(model => model.FieldViewType)
             </div>
         </div>
-        <div class="form-group">
 
+        <div class="form-group">
             @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-9">
                 @Html.DisplayFor(model => model.FieldBoundTo)
@@ -49,84 +48,68 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
+            <label class="control-label col-md-3">Видимость</label>
             <div class="col-md-9">
-                <div class="checkbox">
+                <div>
                     @Html.EditorFor(model => model.IsPublic)
+                    @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label" })
                     @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
                 </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9"><div class="checkbox">
+                <div>
                     @Html.EditorFor(model => model.CanPlayerView)
+                    @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label" })
                     @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
                 </div>
+                <div>
+                    @Html.EditorFor(model => model.ShowForUnApprovedClaim)
+                    @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label" })
+                    @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
+                </div>
+                <div>
+                    @Html.EditorFor(model => model.IncludeInPrint)
+                    @Html.LabelFor(model => model.IncludeInPrint, htmlAttributes: new { @class = "control-label" })
+                    @Html.ValidationMessageFor(model => model.IncludeInPrint, "", new { @class = "text-danger" })                    
+                </div>
+                @if (Model.FieldBoundTo == FieldBoundToViewModel.Character)
+                {
+                <div>
+                    @Html.EditorFor(model => model.ValidForNpc)
+                    @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new { @class = "control-label" })
+                    @Html.ValidationMessageFor(model => model.ValidForNpc, "", new { @class = "text-danger" })
+                </div>
+                }
+                else
+                {
+                    @Html.HiddenFor(model => model.ValidForNpc)
+                }
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
+            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                <div class="checkbox">
+                @Html.MagicSelectBindGroups(model => model.ShowForGroups)
+                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
+                <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3">Изменение</label>            
+            <div class="col-md-9">
+                <div>
                     @Html.EditorFor(model => model.CanPlayerEdit)
+                    @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label" })
                     @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
                 </div>
             </div>
         </div>
         
         <div class="form-group">
-            @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.ShowForUnApprovedClaim)
-                    @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
             @Html.LabelFor(model => model.DescriptionEditable, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-9">
                 @Html.EditorFor(model => model.DescriptionEditable, new {htmlAttributes = new {@class = "form-control"}})
                 @Html.ValidationMessageFor(model => model.DescriptionEditable, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.MagicSelectBindGroups(model => model.ShowForGroups)
-                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new {@class = "text-danger"})
-                <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
-            </div>
-        </div>
-        
-        @if (Model.FieldBoundTo == FieldBoundToViewModel.Character)
-        {
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new {@class = "control-label col-md-3"})
-                <div class="col-md-9">
-                    @Html.EditorFor(model => model.ValidForNpc)
-                    @Html.ValidationMessageFor(model => model.ValidForNpc, "", new {@class = "text-danger"})
-                    @Html.DescriptionFor(model => model.ValidForNpc)
-                </div>
-            </div>
-        }
-        else
-        {
-          @Html.HiddenFor(model => model.ValidForNpc)
-        }
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.IncludeInPrint, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.IncludeInPrint)
-                @Html.ValidationMessageFor(model => model.IncludeInPrint, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.IncludeInPrint)
             </div>
         </div>
 

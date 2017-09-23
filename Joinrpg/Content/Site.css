@@ -45,6 +45,12 @@ input[type=number] {
     text-align: right;
 }
 
+select.short,
+input.short,
+textarea.short {
+    max-width: 250px;
+}
+
 @media screen and (min-width: 992px) {
     .form-horizontal label.control-label {
         padding-top: 0;

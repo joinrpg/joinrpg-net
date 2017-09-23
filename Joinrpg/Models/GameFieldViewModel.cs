@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -102,7 +102,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Показывать только для групп", Description = "Если оставить пустым, будет показываться всегда")]
         public ICollection<string> ShowForGroups { get; set; } = new List<string>();
 
-        [Display(Name = "Доступно NPC", Description = "Доступно для персонажей-NPC")]
+        [Display(Name = "Доступно для персонажей-NPC")]
         public bool ValidForNpc { get; set; }
 
         [Display(Name = "Показывать даже при непринятой заявке")]
