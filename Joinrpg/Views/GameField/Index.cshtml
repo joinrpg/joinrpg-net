@@ -6,12 +6,18 @@
 }
 
 <div>
-  <span class="h2">   @ViewBag.Title</span>
-@if (Model.CanEditFields)
-{
-  <a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Добавить новое поле</a>
-}
-  <a href="@Url.Action("DeletedList", new {Model.ProjectId})">К удаленным полям</a>
+    <h2>@ViewBag.Title</h2>
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#">Активные</a></li>
+        <li><a title="Только поля, использованные хотя бы один раз" href="@Url.Action("DeletedList", new {Model.ProjectId})">Удаленные</a></li>
+    </ul>
+    <div style="padding-top: 1em;">
+        @if (Model.CanEditFields)
+        {
+            <a href="@Url.Action("Create", new {Model.ProjectId})"
+               class="btn btn-success"><i class="glyphicon glyphicon-plus"></i>Добавить новое поле</a>
+        }
+    </div>
 </div>
 
 @Html.Partial("FieldList", Model.Items.Where(i => i.IsActive))

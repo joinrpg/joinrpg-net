@@ -1,39 +1,23 @@
-﻿@model JoinRpg.Web.Models.ClaimFeeViewModel
-<span>
-    @{
-        var modification = Model.CurrentTotalFee - Model.CurrentFee;
-    <text>@(Model.CurrentTotalFee)&nbsp;&#8381;</text>
-
-  if (modification != 0)
-  {
-
-            <text>(@(Model.CurrentFee)&nbsp;&#8381;@(modification.ToString("+#;-#;+0"))&nbsp;&#8381;)</text>
-
-        }
-    }
-
-    @if (Model.CurrentTotalFee < Model.CurrentBalance)
+﻿@using JoinRpg.Web.App_Code;
+@using JoinRpg.Domain;
+@model JoinRpg.Web.Models.ClaimFeeViewModel
+@{var modification = Model.CurrentTotalFee - Model.CurrentFee; }
+<script type="text/javascript">
+    var feeMod = @modification;
+    var feeBalance = @Model.CurrentBalance;
+    var paymentStatus = @((int)Model.PaymentStatus);
+</script>
+<span>@Html.RenderPriceElement(Model.CurrentTotalFee, "feeTotalDisp")
+    @if (modification != 0)
     {
-    <span> — <b>переплата</b> @(Model.CurrentBalance - @Model.CurrentTotalFee)&nbsp;&#8381;</span>
+        @Html.RenderPriceElement(Model.CurrentFee, "feeCurrentDisp") @Html.RenderPriceElement(modification.ToString(" + #; - #; + 0"), "feeModDisp")
     }
-    else if (Model.CurrentTotalFee == Model.CurrentBalance)
-    {
-    <span> — оплачен целиком</span>
-    }
-    else if (Model.CurrentBalance > 0)
-    {
-        <span> — оплачен <b>частично</b> @Model.CurrentBalance&nbsp;&#8381;, осталось @(Model.CurrentTotalFee - Model.CurrentBalance)&nbsp;&#8381;</span>
-    }
+    <span id="feeStatusOverpaid" style="display: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.Overpaid);"> — <b>переплата</b> @Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</span>
+    <span id="feeStatusPaid" style="display: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.Paid);"> — оплачен целиком</span>
+    <span id="feeStatusMoreToPay" style="display: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.MoreToPay);"> — оплачен <b>частично</b> @Html.RenderPriceElement(Model.CurrentBalance, "feeBalanceDisp"), осталось @Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</span>
     @if (Model.IsFeeAdmin)
     {
-        <button 
-                type="button" 
-                class="btn btn-default btn-xs" 
-                data-toggle="modal" 
-                data-target="#changeFeeModal" 
-                >
-        Изменить вручную...
-    </button>
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#changeFeeModal">Изменить вручную...</button>
     }
 </span>
     
@@ -55,11 +39,7 @@
                             <div class="col-md-5 control-label">Новый размер взноса:</div>
 
                             <div class="col-md-3">
-                                <input type="text"
-                                       class="form-control"
-                                       name="feeValue"
-                                       list="feeVariants"
-                                       value="@Model.CurrentFee" />
+                                <input type="text" class="form-control" name="feeValue" list="feeVariants" value="@Model.CurrentFee" />
                             </div>
 
                             <datalist id="feeVariants">

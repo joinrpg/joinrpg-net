@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -41,6 +41,17 @@ namespace JoinRpg.DataModel
     public bool IncludeInPrint { get; set; }
 
     public bool ShowOnUnApprovedClaims { get; set; }
+
+    /// <summary>
+    /// Price associated with current field.
+    /// Will be used in payment calculations.
+    /// Value usage differs on FieldType. Value will be:
+    /// - Number: multiplied with entered number
+    /// - CheckBox: used if checkbox was checked
+    /// - Dropdown, Multiselect: ignored, see values for prices
+    /// - String, Text, Header: ignored
+    /// </summary>
+    public int Price { get; set; }
 
     bool IDeletableSubEntity.CanBePermanentlyDeleted => !WasEverUsed;
 
@@ -110,20 +121,20 @@ namespace JoinRpg.DataModel
       {
         yield return  new ValidationResult("Header can't be mandatory");
       }
+
+            if (!FieldType.SupportsPricing() && Price != 0)
+            {
+                yield return new ValidationResult(string.Format("Pricing is not supported for {0} fields", FieldType.ToString()));
+            }
+
+            if (FieldType.SupportsPricing() && !FieldType.SupportsPricingOnField() && Price != 0)
+            {
+                yield return new ValidationResult(string.Format("Fields with multiple values support pricing only in values"));
+            }
+      
     }
   }
-
-  public enum ProjectFieldType
-  {
-    String,
-    Text,
-    Dropdown,
-    Checkbox,
-    MultiSelect,
-    Header,
-    Number
-  }
-
+  
   public enum FieldBoundTo
   {
     Character,

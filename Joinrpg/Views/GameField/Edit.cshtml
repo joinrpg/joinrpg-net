@@ -3,16 +3,15 @@
 @model GameFieldEditViewModel
 
 @{
-    ViewBag.Title = "Редактирование поля персонажа/заявки " + Model.Name;
+    ViewBag.Title = "Редактирование поля персонажа / заявки";
 }
 
 <h2>@ViewBag.Title</h2>
 
-
 @using (Html.BeginForm())
 {
   @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-    @Html.AntiForgeryToken()
+  @Html.AntiForgeryToken()
   @Html.HiddenFor(model => model.ProjectId)
   @Html.HiddenFor(model => model.ProjectFieldId)
     
@@ -101,7 +100,7 @@
             <div class="col-md-9">
                 @Html.MagicSelectBindGroups(model => model.ShowForGroups)
                 @Html.ValidationMessageFor(model => model.ShowForGroups, "", new {@class = "text-danger"})
-                @Html.DescriptionFor(model => model.ShowForGroups)
+                <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
             </div>
         </div>
         
@@ -131,10 +130,21 @@
             </div>
         </div>
 
+        @if (Model.FieldViewType.SupportsPricingOnField())
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
+                <div class="col-md-9">
+                    @Html.EditorFor(model => model.Price)
+                    @Html.DescriptionFor(model => model.Price)
+                </div>
+            </div>
+        }
+
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/> 
-                | @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId })
+                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/>
+                @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new { @class = "btn btn-default" })
             </div>
         </div>
     </div>
@@ -142,18 +152,48 @@
 
 @if (Model.HasValueList)
 {
-  <hr/>
-  <p>
-    <a href="@Url.Action("CreateValue", new {Model.ProjectId, Model.ProjectFieldId})" class="btn btn-default">
-      <span class="glyphicon glyphicon-plus"></span>Добавить значение
-    </a>
-    <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal">
-      <span class="glyphicon glyphicon-plus"></span>Добавить несколько значений
-    </button>
-  </p>
-  Html.RenderPartial("ValuesList", Model.DropdownValues, null);
+    @Scripts.Render("~/Scripts/editfieldvalues.js");
+    <hr />
+    <div>
+        <a href="@Url.Action("CreateValue", new {Model.ProjectId, Model.ProjectFieldId})"
+            class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>Добавить значение</a>
+        <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal">Добавить несколько значений</button>
+    </div>
+    Html.RenderPartial("ValuesList", Model.DropdownValues, null);
 }
 
+<!-- Deletion dialog -->
+<div id="dlgDeleteValue" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Удалить значение?</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="join alert alert-warning"><i class="glyphicon glyphicon-question-sign"></i>Удалить значение «<span id="valueToDeleteTitle"></span>»?</div>
+                <div class="join alert alert-info">Если значение использовалось хотя бы один раз, его можно будет восстановить</div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="bnStartDelete" type="button" class="btn btn-danger">Удалить</button>
+                <button id="bnCancelDelete" type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deletion progress dialog -->
+<div id="dlgDeleteProgress" class="modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div id="dlgDeleteProgressText" class="modal-body alert alert-info" style="margin: 0;">Удаляем...</div>            
+        </div>
+    </div>
+</div>
+
+<!-- Mass addition dialog -->
 <div class="modal fade" id="massAddValueModal" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">

@@ -1,24 +1,23 @@
 ﻿@model JoinRpg.Web.Models.MoveControlParametersViewModel
-<span style="white-space: nowrap">
+<div class="btn-group btn-group-sm">
     @if (!Model.Item.First)
     {
-        <a href="@Url.Action(Model.ActionName, Model.ControllerName, new
+        <a title="Переместить выше" class="btn btn-default" href="@Url.Action(Model.ActionName, Model.ControllerName, new
                  {
                      Model.ProjectId,
                      Model.ListItemId,
                      Model.ParentObjectId,
                      Direction = -1
-                 }, null)"><span title="переместить выше" class="glyphicon glyphicon-arrow-up"></span></a>
+                 }, null)"><i class="glyphicon glyphicon-arrow-up"></i></a>
     }
     @if (!Model.Item.Last)
     {
-        <a href="@Url.Action(Model.ActionName, Model.ControllerName, new
+        <a title="Переместить ниже" class="btn btn-default" href="@Url.Action(Model.ActionName, Model.ControllerName, new
                  {
                      Model.ProjectId,
                      Model.ListItemId,
                      Model.ParentObjectId,
                      Direction = 1
-                 }, null)"><span title="переместить ниже" class="glyphicon glyphicon-arrow-down"></span></a>
+                 }, null)"><i class="glyphicon glyphicon-arrow-down"></i></a>
     }
-</span>
-
+</div>

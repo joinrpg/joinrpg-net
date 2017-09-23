@@ -26,9 +26,9 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     private async Task<IReadOnlyCollection<Claim>> GetClaimsImpl(int projectId, ClaimStatusSpec status, Expression<Func<Claim, bool>> predicate)
     {
+      await LoadProjectFields(projectId);
       await LoadProjectCharactersAndGroups(projectId);
       await LoadMasters(projectId);
-      await LoadProjectFields(projectId);
 
       Debug.WriteLine($"{nameof(LoadProjectClaimsAndComments)} started");
       return await Ctx
@@ -47,6 +47,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<IEnumerable<Claim>> GetClaimsByIds(int projectid, IReadOnlyCollection<int> claimindexes)
     {
+      await LoadProjectFields(projectid);
       return
         await Ctx.ClaimSet.Include(c => c.Project.ProjectAcls.Select(pa => pa.User))
           .Include(c => c.Player)

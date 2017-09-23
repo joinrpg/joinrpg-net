@@ -1,40 +1,36 @@
 ﻿@model IEnumerable<JoinRpg.Web.Models.GameFieldDropdownValueListItemViewModel>
 @using JoinRpg.Web.App_Code
 
-<table class="table">
+<div class="table-responsive" style="margin-top: 1em;"><table class="table">
     <tr>
-        <th> 
-            @Html.DisplayNameFor(model => model.Label)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th></th>
+        <th style="width: 20%;">@Html.DisplayNameFor(model => model.Label)</th>
+        <th class="price-table" style="width: 15%;">@Html.RenderPriceElement("Цена,")</th>
+        <th style="">@Html.DisplayNameFor(model => model.Description)</th>
+        <th style="min-width: 6em; width: 6em;"></th>
+        <th style="min-width: 6em; width: 6em;"></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td class="@(item.IsActive ? "" : "deleted")">
-
-            @Html.DisplayFor(modelItem => item.Label)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @if (item.IsActive)
-            {
-                @Html.ActionLink("изменить", "EditValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
-                <br/>
-                @Html.ActionLink("удалить", "DeleteValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
-            }
-            else
-            {
-                @Html.ActionLink("восстановить", "EditValue", new {item.ProjectFieldDropdownValueId, item.ProjectId, item.ProjectFieldId})
-            }
-            @Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)
-        </td>
+@foreach (var item in Model)
+{
+    <tr id="value@(item.ValueId)" title="@item.Label">
+        <td class="@(item.IsActive ? "" : "deleted")">@Html.DisplayFor(modelItem => item.Label)</td>
+        <td class="price-table">@(item.Price != 0 ? item.Price.ToString() : "")</td>
+        <td>@Html.DisplayFor(modelItem => item.Description)</td>
+        <td><div class="btn-group btn-group-sm">
+                @if (item.IsActive)
+                {
+                    <a id="value@(item.ValueId)EditButton" title="Изменить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
+                       class="btn btn-default"><i class="glyphicon glyphicon-pencil"></i></a>
+                    <a id="value@(item.ValueId)DeleteButton" title="Удалить" onclick="return Delete(@(item.ValueId), this.href)" href="@Url.Action("DeleteValueEx", new { item.ProjectId, item.ProjectFieldId, item.ValueId })"
+                       class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
+                }
+                else
+                {
+                    <a title="Восстановить" href="@Url.Action("EditValue", new { item.ValueId, item.ProjectId, item.ProjectFieldId })"
+                       class="btn btn-default"><i class="glyphicon glyphicon-heart"></i></a>
+                }
+        </div></td>
+        <td>@Html.MoveControl(model => item, "MoveValue", "GameField", item.ProjectFieldId)</td>
     </tr>
 }
-
-</table>
+</table></div>
