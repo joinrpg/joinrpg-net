@@ -398,6 +398,10 @@
     <Compile Include="Migrations\201709241409452_AccomodationStart.Designer.cs">
       <DependentUpon>201709241409452_AccomodationStart.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201709241513584_AccomodationFieldRename.cs" />
+    <Compile Include="Migrations\201709241513584_AccomodationFieldRename.Designer.cs">
+      <DependentUpon>201709241513584_AccomodationFieldRename.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -681,6 +685,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201709241409452_AccomodationStart.resx">
       <DependentUpon>201709241409452_AccomodationStart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709241513584_AccomodationFieldRename.resx">
+      <DependentUpon>201709241513584_AccomodationFieldRename.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

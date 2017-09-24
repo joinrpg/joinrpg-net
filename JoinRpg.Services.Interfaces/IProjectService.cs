@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task DeleteCharacterGroup(int projectId, int characterGroupId);
 
-    Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot);
+    Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot, bool enableAccomodation);
 
     Task GrantAccess(int projectId, int currentUserId, int userId, bool canGrantRights, bool canChangeFields,
       bool canChangeProjectProperties, bool canApproveClaims, bool canEditRoles, bool canManageMoney,

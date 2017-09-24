@@ -70,7 +70,8 @@ namespace JoinRpg.Web.Controllers
         IsAcceptingClaims = project.IsAcceptingClaims,
         PublishPlot = project.Details.PublishPlot,
         StrictlyOneCharacter = !project.Details.EnableManyCharacters,
-        Active = project.Active
+        Active = project.Active,
+        EnableAccomodation = project.Details.EnableAccomodation,
       });
     }
 
@@ -84,7 +85,8 @@ namespace JoinRpg.Web.Controllers
           ProjectService.EditProject(viewModel.ProjectId, CurrentUserId, viewModel.ProjectName,
             viewModel.ClaimApplyRules,
             viewModel.ProjectAnnounce, viewModel.IsAcceptingClaims, !viewModel.StrictlyOneCharacter,
-            viewModel.PublishPlot);
+            viewModel.PublishPlot,
+            viewModel.EnableAccomodation);
 
         return RedirectTo(project);
       }
