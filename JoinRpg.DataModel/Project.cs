@@ -76,7 +76,8 @@ namespace JoinRpg.DataModel
     public bool EnableCheckInModule { get; set; } = false;
     public bool CheckInProgress { get; set; } = false;
     public bool AllowSecondRoles { get; set; } = false;
-  }
+    public bool AccomodationEnabled { get; set; } = false;
+   }
 
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework
   public class ProjectFeeSetting : IValidatableObject

@@ -146,6 +146,9 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
       modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
 
+      modelBuilder.Entity<ProjectAccomodationType>();
+      modelBuilder.Entity<ProjectAccomodation>();
+
       base.OnModelCreating(modelBuilder);
     }
   }
