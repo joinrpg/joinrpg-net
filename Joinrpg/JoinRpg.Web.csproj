@@ -205,6 +205,7 @@
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="Controllers\AccomodationTypeController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
@@ -212,6 +213,8 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Models\Accomodation\AccomodationListViewModel.cs" />
+    <Compile Include="Models\Accomodation\AccomomodationTypeViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
@@ -484,8 +487,6 @@
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery.validate.js" />
     <Content Include="Scripts\jquery.validate.min.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.ar.min.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.az.min.js" />
     <Content Include="Scripts\locales\bootstrap-datepicker.bg.min.js" />
@@ -737,11 +738,14 @@
     <Content Include="Views\Claim\_ClaimFieldsSubtotal.cshtml" />
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
+    <Content Include="Views\AccomodationType\Index.cshtml" />
+    <Content Include="Views\AccomodationType\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Views\Allrpg\" />
     <Folder Include="Areas\Admin\Views\Shared\" />
+    <Folder Include="Views\Accomodation\" />
     <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>

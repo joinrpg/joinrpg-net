@@ -162,6 +162,9 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "User", url: "user/{UserId}/{action}",
         defaults: new {controller = "User", action = "Details"});
 
+      routes.MapRoute(name: "AccomodationType", url: "accomodationtype/{ProjectId}/{action}",
+        defaults: new { controller = "accomodationtype", action = "Index" });
+
       routes.MapRoute(
         name: "Default",
         url: "{controller}/{action}/{id}",

@@ -40,6 +40,8 @@ namespace JoinRpg.Dal.Impl
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
     public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
+    public IAccomodationRepository GetAccomodationRepository() => new AccomodationRepositoryImpl(this);
+
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});

@@ -10,6 +10,7 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; set; }
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
+    public bool EnableAccomodation { get; set; }
     public int? RootGroupId { get; internal set; }
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
     public bool IsAdmin { get; set; }

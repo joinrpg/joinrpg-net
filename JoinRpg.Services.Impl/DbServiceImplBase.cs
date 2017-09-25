@@ -23,6 +23,9 @@ namespace JoinRpg.Services.Impl
 
     private readonly Lazy<IUserRepository> _userRepository;
 
+    protected IAccomodationRepository AccomodationRepository => _accomodationRepository.Value;
+    private readonly Lazy<IAccomodationRepository> _accomodationRepository;
+
     protected IProjectRepository ProjectRepository => _projectRepository.Value;
 
     private readonly Lazy<IProjectRepository> _projectRepository;
@@ -54,6 +57,7 @@ namespace JoinRpg.Services.Impl
       _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
       _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
       _charactersRepository = new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
+      _accomodationRepository = new Lazy<IAccomodationRepository>(unitOfWork.GetAccomodationRepository);
       Now = DateTime.UtcNow;
     }
 
