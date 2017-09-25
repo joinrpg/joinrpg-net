@@ -394,13 +394,9 @@
     <Compile Include="Migrations\201708252144098_PriceFields.Designer.cs">
       <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201709241409452_AccomodationStart.cs" />
-    <Compile Include="Migrations\201709241409452_AccomodationStart.Designer.cs">
-      <DependentUpon>201709241409452_AccomodationStart.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201709241513584_AccomodationFieldRename.cs" />
-    <Compile Include="Migrations\201709241513584_AccomodationFieldRename.Designer.cs">
-      <DependentUpon>201709241513584_AccomodationFieldRename.cs</DependentUpon>
+    <Compile Include="Migrations\201709251938167_AccomodationStart2.cs" />
+    <Compile Include="Migrations\201709251938167_AccomodationStart2.Designer.cs">
+      <DependentUpon>201709251938167_AccomodationStart2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -684,11 +680,8 @@
     <EmbeddedResource Include="Migrations\201708252144098_PriceFields.resx">
       <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709241409452_AccomodationStart.resx">
-      <DependentUpon>201709241409452_AccomodationStart.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201709241513584_AccomodationFieldRename.resx">
-      <DependentUpon>201709241513584_AccomodationFieldRename.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201709251938167_AccomodationStart2.resx">
+      <DependentUpon>201709251938167_AccomodationStart2.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

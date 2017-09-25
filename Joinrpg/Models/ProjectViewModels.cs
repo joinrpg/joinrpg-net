@@ -52,7 +52,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Опубликовать сюжет всем", Description = "Cюжет игры будет раскрыт всем для всеобщего просмотра и послужит обмену опытом среди мастеров.")]
     public bool PublishPlot{ get; set; }
 
-    [Display(Name="Есть жилой фонд")]
+    [Display(Name= "Включить систему проживания")]
     public bool EnableAccomodation { get; set; }
 
 

@@ -16,79 +16,72 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  public class AccomodationTypeController : Common.ControllerGameBase
-  {
-    // GET: AccomodationType
-
-
-    private readonly IAccomodationService _accomodationService;
-    public AccomodationTypeController(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,
-                                        IProjectService projectService, IExportDataService exportDataService,
-                                           IAccomodationService accomodationService) : base(userManager, projectRepository, projectService, exportDataService)
+    [MasterAuthorize(Permission.CanChangeProjectProperties)]
+    public class AccomodationTypeController : Common.ControllerGameBase
     {
-      _accomodationService = accomodationService;
-    }
-
-    [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<ActionResult> Index(int projectId)
-    {
-      var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-      var accomodations = _accomodationService.GetAccomodationForProject(project).Select(x =>
-          new AccomomodationTypeViewModel()
-          {
-            Name = x.Name,
-            Cost = x.Cost,
-            ProjectId = x.ProjectId,
-            Id = x.Id,
-          }
-        ).ToList();
-      if (project == null) return HttpNotFound();
-      if (!project.Details.EnableAccomodation) return RedirectToAction("Edit", "Game");
-      var res = new AccomodationListViewModel
-      {
-        ProjectId = projectId,
-        ProjectName = project.ProjectName,
-        AccomomodationTypes = accomodations/*new Collection<AccomomodationTypeViewModel>()
+        private readonly IAccomodationService _accomodationService;
+        public AccomodationTypeController(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,
+                                            IProjectService projectService, IExportDataService exportDataService,
+                                               IAccomodationService accomodationService) : base(userManager, projectRepository, projectService, exportDataService)
         {
-          new AccomomodationTypeViewModel() {Name = "Первая категория"},
-          new AccomomodationTypeViewModel() {Name = "Вторая категория"}
-        }*/
-      };
-      return View(res);
+            _accomodationService = accomodationService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> Index(int projectId)
+        {
+
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            var accomodations = (await _accomodationService.GetAccomodationForProject(projectId)).Select(x =>
+                new AccomomodationTypeViewModel()
+                {
+                    Name = x.Name,
+                    Cost = x.Cost,
+                    ProjectId = x.ProjectId,
+                    Id = x.Id,
+                }
+              ).ToList();
+            if (project == null) return HttpNotFound();
+            if (!project.Details.EnableAccomodation) return RedirectToAction("Edit", "Game");
+            var res = new AccomodationListViewModel
+            {
+                ProjectId = projectId,
+                ProjectName = project.ProjectName,
+                AccomomodationTypes = accomodations
+            };
+            return View(res);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Edit(AccomomodationTypeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            await _accomodationService.RegisterNewAccomodationTypeAsync(model.GetProjectAccomodationMock());
+            return RedirectToAction("Index", routeValues: new { ProjectId = model.ProjectId });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> Edit(int projectId, int accomodationId)
+        {
+            var model = await _accomodationService.GetAccomodationByIdAsync(accomodationId);
+            if (model == null || model.ProjectId != projectId)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
+            return View("Edit", new AccomomodationTypeViewModel(model));
+        }
+
+
+        [HttpDelete]
+        public async Task<ActionResult> Delete(int accomodationId)
+        {
+            await _accomodationService.RemoveAccomodationType(accomodationId);
+            return RedirectToAction("Index", new { ProjectId = 1 });
+        }
     }
-
-    [HttpPost, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    [ValidateAntiForgeryToken]
-    public async Task<ActionResult> Edit(AccomomodationTypeViewModel model)
-    {
-      if (!ModelState.IsValid)
-      {
-        return View(model);
-      }
-      await _accomodationService.RegisterNewAccomodationTypeAsync(model.GetProjectAccomodationMock());
-      return RedirectToAction("Index", routeValues: new { ProjectId = model.ProjectId });
-    }
-
-    [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]    
-    public async Task<ActionResult> Edit(int projectId, int accomodationId)
-    {
-      var model = await  _accomodationService.GetAccomodationByIdAsync(accomodationId);
-      if (model == null || model.ProjectId != projectId)
-      {
-        return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-      }
-
-      return View("Edit", new AccomomodationTypeViewModel(model));
-    }
-
-
-    [HttpDelete, MasterAuthorize(Permission.CanChangeProjectProperties)]
-    public async Task<ActionResult> Delete(int accomodationId)
-    {
-      await _accomodationService.RemoveAccomodationType(accomodationId);
-      return RedirectToAction("Index", new { ProjectId = 1 });
-    }
-
-
-  }
 }

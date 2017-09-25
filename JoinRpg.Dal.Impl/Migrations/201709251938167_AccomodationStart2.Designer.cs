@@ -7,13 +7,13 @@ namespace JoinRpg.Dal.Impl.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AccomodationStart : IMigrationMetadata
+    public sealed partial class AccomodationStart2 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AccomodationStart));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AccomodationStart2));
         
         string IMigrationMetadata.Id
         {
-            get { return "201709241409452_AccomodationStart"; }
+            get { return "201709251938167_AccomodationStart2"; }
         }
         
         string IMigrationMetadata.Source

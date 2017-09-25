@@ -2,29 +2,29 @@
 @model JoinRpg.Web.Models.EditProjectViewModel
 
 @{
-  ViewBag.Title = "Игра «" + Model.OriginalName + "»";
+    ViewBag.Title = "Игра «" + Model.OriginalName + "»";
 }
 
 <h2>@ViewBag.Title</h2>
 
 <div class="btn-group">
-  <a class="btn btn-default" href="@Url.Action("Index", "PluginSetup", new {Model.ProjectId})"> Настройки плагинов</a>
-  <a class="btn btn-default" href="@Url.Action("Setup", "CheckIn", new {Model.ProjectId})"> Настройки регистрации</a>
+    <a class="btn btn-default" href="@Url.Action("Index", "PluginSetup", new {Model.ProjectId})"> Настройки плагинов</a>
+    <a class="btn btn-default" href="@Url.Action("Setup", "CheckIn", new {Model.ProjectId})"> Настройки регистрации</a>
 </div>
-<hr/>
+<hr />
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(model => model.ProjectId)
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ProjectName, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.ProjectName, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ProjectName, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.ProjectName, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.ProjectName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProjectName, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -37,58 +37,58 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ClaimApplyRules, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.ClaimApplyRules, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ClaimApplyRules, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.ClaimApplyRules, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.ClaimApplyRules, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ClaimApplyRules, "", new { @class = "text-danger" })
             </div>
         </div>
 
         @if (Model.Active)
         {
             <div class="form-group">
-                @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-1">
                     @Html.EditorFor(model => model.IsAcceptingClaims)
-                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new {@class = "text-danger"})
+                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
                 </div>
             </div>
 
-          <div class="form-group">
-            @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-              @Html.EditorFor(model => model.StrictlyOneCharacter)
-              @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
-              @Html.DescriptionFor(model => model.StrictlyOneCharacter)
+            <div class="form-group">
+                @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.StrictlyOneCharacter)
+                    @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
+                    @Html.DescriptionFor(model => model.StrictlyOneCharacter)
+                </div>
             </div>
-          </div>
 
-          <div class="form-group">
-            @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-              @Html.EditorFor(model => model.EnableAccomodation)
-              @Html.ValidationMessageFor(model => model.EnableAccomodation, "", new { @class = "text-danger" })
+            <div class="form-group">
+                @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.EnableAccomodation)
+                    @Html.ValidationMessageFor(model => model.EnableAccomodation, "", new { @class = "text-danger" })
+                </div>
             </div>
-          </div>
 
         }
 
 
         @if (!Model.Active)
         {
-        <div class="form-group">
-            @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.PublishPlot)
-                @Html.ValidationMessageFor(model => model.PublishPlot, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.PublishPlot)
+            <div class="form-group">
+                @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.PublishPlot)
+                    @Html.ValidationMessageFor(model => model.PublishPlot, "", new { @class = "text-danger" })
+                    @Html.DescriptionFor(model => model.PublishPlot)
+                </div>
             </div>
-        </div>
         }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-success"/>
+                <input type="submit" value="Сохранить" class="btn btn-success" />
                 @if (Model.Active)
                 {
                     <a class="btn btn-danger" href="@Url.Action("Close", "Game", new {Model.ProjectId}, null)">
@@ -100,7 +100,3 @@
         </div>
     </div>
 }
-
-<div>
-    
-</div>
