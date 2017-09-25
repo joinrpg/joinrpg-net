@@ -11,6 +11,7 @@
 /// <reference path="jquery.details.min.js" />
 /// <reference path="jquery.popconfirm.js" />
 /// <reference path="jquery.validate.min.js" />
+/// <reference path="jquery.validate.unobtrusive.min.js" />
 /// <reference path="jquery-2.1.4.js" />
 /// <reference path="jquery-2.1.4.min.js" />
 /// <reference path="jquery-3.1.1.min.js" />
