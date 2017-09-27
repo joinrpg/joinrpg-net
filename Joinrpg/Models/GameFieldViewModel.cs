@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -218,11 +218,6 @@ namespace JoinRpg.Web.Models
                 yield return
                     new ValidationResult("Невозможно включить в распечатки поле, скрытое от игрока.");
             }
-            if (Price != 0 && !FieldViewType.SupportsPricingOnField())
-            {
-                yield return
-                    new ValidationResult(string.Format("Поле {0} не поддерживает ввод цены.", FieldViewType.ToString()));
-            }
             if (!CanPlayerView && FieldViewType.SupportsPricing()
                     && ((FieldViewType.HasValuesList() && DropdownValues.Any(v => v.Price != 0)) || Price != 0))
             {
@@ -250,6 +245,11 @@ namespace JoinRpg.Web.Models
                 yield return
                   new ValidationResult("Невозможно разрешить NPC поля, связанные с заявкой.",
                     new List<string> { nameof(DataModel.FieldBoundTo), nameof(ValidForNpc) });
+            }
+            if (Price != 0 && !FieldViewType.SupportsPricingOnField())
+            {
+                yield return
+                    new ValidationResult(string.Format("Поле {0} не поддерживает ввод цены.", FieldViewType.ToString()));
             }
         }
     }

@@ -80,7 +80,7 @@
 
         @if (Model.Fields.Fields.Any(f => f.HasPrice))
         {
-            Html.RenderPartial("_ClaimFieldsSubtotal", Model);
+            Html.RenderPartial("_ClaimFieldsSubtotal", null);
         }
 
         <div class="form-group">

@@ -24,8 +24,11 @@ namespace JoinRpg.Web.Controllers
             FieldSetupService = fieldSetupService;
         }
 
+        private ActionResult ReturnToIndex(int projectId)
+            => RedirectToAction("Index", new { projectId });
+
         private ActionResult ReturnToIndex(Project project)
-            => RedirectToAction("Index", new { project.ProjectId });
+            => ReturnToIndex(project.ProjectId);
 
         private ActionResult ReturnToField(int projectId, int fieldId)
             => RedirectToAction("Edit", new { projectId, projectFieldId = fieldId });
@@ -192,7 +195,7 @@ namespace JoinRpg.Web.Controllers
             HttpStatusCodeResult ar = await DeleteEx(projectId, projectFieldId) as HttpStatusCodeResult;
             if (ar != null && ar.StatusCode >= 300)
                 return ar;
-            return ReturnToField(projectId, projectFieldId);
+            return ReturnToIndex(projectId);
         }
 
     [HttpPost]
