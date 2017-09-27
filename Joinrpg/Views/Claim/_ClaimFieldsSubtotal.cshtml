@@ -6,7 +6,7 @@
     <label class="control-label col-md-2">Подытог по полям</label>
     <div class="col-md-10">
         <div id="total_fields_fee_row" class="price-subtotal-row"><div>ВСЕГО выбрано:</div>@Html.RenderPriceElement(
-            Model.ClaimFee.FieldsTotalFee, "feeTotalFieldsDisp")</div>
+            Model != null ? Model.ClaimFee.FieldsTotalFee : 0, "feeTotalFieldsDisp")</div>
     </div>
 </div>
 <hr />
