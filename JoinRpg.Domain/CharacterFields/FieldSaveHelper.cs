@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -212,7 +212,10 @@ namespace JoinRpg.Domain.CharacterFields
              f.Field.IsAvailableForTarget(character)))
       {
         var newValue = strategy.GenerateDefaultValue(field);
-        strategy.AssignFieldValue(field, newValue);
+
+        var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
+
+        strategy.AssignFieldValue(field, normalizedValue);
       }
 
       strategy.Save(fields);
