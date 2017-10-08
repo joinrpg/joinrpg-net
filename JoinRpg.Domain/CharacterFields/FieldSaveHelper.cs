@@ -224,9 +224,15 @@ namespace JoinRpg.Domain.CharacterFields
 
     private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)
     {
-      return field.Field.FieldType == ProjectFieldType.Checkbox
-        ? (toAssign.StartsWith(FieldWithValue.CheckboxValueOn) ? FieldWithValue.CheckboxValueOn : "")
-        : toAssign;
+      switch (field.Field.FieldType)
+      {
+        case ProjectFieldType.Checkbox:
+          return toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
+            ? FieldWithValue.CheckboxValueOn
+            : "";
+        default:
+          return string.IsNullOrEmpty(toAssign) ? null : toAssign;
+    }
     }
   }
 }
