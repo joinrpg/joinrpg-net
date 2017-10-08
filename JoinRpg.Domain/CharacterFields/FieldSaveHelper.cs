@@ -32,7 +32,8 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() => UpdatedFields;
+      public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
+        UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
 
       public abstract void Save(Dictionary<int, FieldWithValue> fields);
 
@@ -73,7 +74,16 @@ namespace JoinRpg.Domain.CharacterFields
       {
         if (field.Value == newValue) return false;
 
-        UpdatedFields.Add(new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
+        var existingField = UpdatedFields.FirstOrDefault(uf => uf.Field == field.Field);
+        if (existingField != null)
+        {
+          existingField.Value = newValue;
+        }
+        else
+        {
+          UpdatedFields.Add(new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
+        }
+ 
         field.Value = newValue;
         field.MarkUsed();
         
