@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -32,7 +32,8 @@ namespace JoinRpg.Domain.CharacterFields
         }
       }
 
-      public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() => UpdatedFields;
+      public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
+        UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
 
       public abstract void Save(Dictionary<int, FieldWithValue> fields);
 
@@ -73,7 +74,16 @@ namespace JoinRpg.Domain.CharacterFields
       {
         if (field.Value == newValue) return false;
 
-        UpdatedFields.Add(new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
+        var existingField = UpdatedFields.FirstOrDefault(uf => uf.Field == field.Field);
+        if (existingField != null)
+        {
+          existingField.Value = newValue;
+        }
+        else
+        {
+          UpdatedFields.Add(new FieldWithPreviousAndNewValue(field.Field, newValue, field.Value));
+        }
+ 
         field.Value = newValue;
         field.MarkUsed();
         
@@ -212,7 +222,10 @@ namespace JoinRpg.Domain.CharacterFields
              f.Field.IsAvailableForTarget(character)))
       {
         var newValue = strategy.GenerateDefaultValue(field);
-        strategy.AssignFieldValue(field, newValue);
+
+        var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
+
+        strategy.AssignFieldValue(field, normalizedValue);
       }
 
       strategy.Save(fields);
@@ -221,9 +234,15 @@ namespace JoinRpg.Domain.CharacterFields
 
     private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)
     {
-      return field.Field.FieldType == ProjectFieldType.Checkbox
-        ? (toAssign.StartsWith(FieldWithValue.CheckboxValueOn) ? FieldWithValue.CheckboxValueOn : "")
-        : toAssign;
+      switch (field.Field.FieldType)
+      {
+        case ProjectFieldType.Checkbox:
+          return toAssign?.StartsWith(FieldWithValue.CheckboxValueOn) == true
+            ? FieldWithValue.CheckboxValueOn
+            : "";
+        default:
+          return string.IsNullOrEmpty(toAssign) ? null : toAssign;
+    }
     }
   }
 }
