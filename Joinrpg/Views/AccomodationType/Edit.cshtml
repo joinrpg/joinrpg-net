@@ -1,4 +1,6 @@
-﻿@model JoinRpg.Web.Models.Accomodation.AccomomodationTypeViewModel
+﻿@using System.Collections.ObjectModel
+@using JoinRpg.Web.Models.Accomodation
+@model JoinRpg.Web.Models.Accomodation.AccomomodationTypeViewModel
 @{
     ViewBag.IsInEditMode = false;
     ViewBag.ActionName = "Добавить";
@@ -38,10 +40,19 @@
         </div>
 
         <div class="form-group">
+            <div class="col-md-5">
+                <h4>@Html.DisplayNameFor(m => m.Capacity)</h4>
+            </div>
+            <div class="col-md-7">
+                <h2>@Model.Capacity</h2>
+            </div>
+        </div>
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-8">
                 @if (ViewBag.IsInEditMode)
                 {
-                    @Html.RouteLink("Отмена", new { projectId = Model.ProjectId, Id = Model.Id, action = "Index", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
+                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, Id = Model.Id, action = "Index", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
                 }
 
                 <button type="submit" class="btn btn-primary pull-right">@ViewBag.ActionName</button>
@@ -50,3 +61,13 @@
         </div>
     </div>
 }
+@if (ViewBag.IsInEditMode)
+{
+    <hr />
+    @Html.Partial("AccomodationIndex", Model.Accomodations ?? new Collection<ProjectAccomodationVewModel>(), new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
+
+    <hr />
+    @Html.Partial("ProjectAccomodationEdit", new ProjectAccomodationVewModel() { Id = 0, ProjectId = Model.ProjectId, AccomodationTypeId = Model.Id }, new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
+}
+
+

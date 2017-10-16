@@ -215,6 +215,7 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Accomodation\AccomodationListViewModel.cs" />
     <Compile Include="Models\Accomodation\AccomomodationTypeViewModel.cs" />
+    <Compile Include="Models\Accomodation\ProjectAccomodationVewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
@@ -742,6 +743,8 @@
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\AccomodationType\Index.cshtml" />
     <Content Include="Views\AccomodationType\Edit.cshtml" />
+    <Content Include="Views\AccomodationType\AccomodationIndex.cshtml" />
+    <Content Include="Views\AccomodationType\ProjectAccomodationEdit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

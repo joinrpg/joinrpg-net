@@ -34,6 +34,32 @@ namespace JoinRpg.Services.Impl
             return result;
         }
 
+
+        public async Task<ProjectAccomodation> RegisterNewProjectAccomodationAsync(ProjectAccomodation newProjectAccomodation)
+        {
+            if (newProjectAccomodation.ProjectId == 0) throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+            ProjectAccomodation result = null;
+            if (newProjectAccomodation.Id != 0)
+            {
+                result = await UnitOfWork.GetDbSet<ProjectAccomodation>().FindAsync(newProjectAccomodation.Id);
+                if (result?.ProjectId != newProjectAccomodation.ProjectId || result?.AccomodationTypeId != newProjectAccomodation.AccomodationTypeId)
+                {
+                    return null;
+                }
+                result.Name = newProjectAccomodation.Name;
+                result.Capacity = newProjectAccomodation.Capacity;
+                result.IsPlayerSelectable = newProjectAccomodation.IsPlayerSelectable;
+                result.IsAutofilledAccomodation = newProjectAccomodation.IsAutofilledAccomodation;
+                result.IsInfinite = newProjectAccomodation.IsInfinite;
+            }
+            else
+            {
+                result = UnitOfWork.GetDbSet<ProjectAccomodation>().Add(newProjectAccomodation);
+            }
+            await UnitOfWork.SaveChangesAsync();
+            return result;
+        }
+
         public async Task<IReadOnlyCollection<ProjectAccomodationType>> GetAccomodationForProject(int projectId)
         {
             return await AccomodationRepository.GetAccomodationForProject(projectId);
@@ -41,9 +67,15 @@ namespace JoinRpg.Services.Impl
 
         public async Task<ProjectAccomodationType> GetAccomodationByIdAsync(int accId)
         {
-            return await UnitOfWork.GetDbSet<ProjectAccomodationType>()
+            return await UnitOfWork.GetDbSet<ProjectAccomodationType>().Include("ProjectAccomodations")
               .FirstOrDefaultAsync(x => x.Id == accId);
         }
+        public async Task<ProjectAccomodation> GetProjectAccomodationByIdAsync(int accId)
+        {
+            return await UnitOfWork.GetDbSet<ProjectAccomodation>()
+                .FirstOrDefaultAsync(x => x.Id == accId);
+        }
+
         public async Task RemoveAccomodationType(int accomodationTypeId)
         {
             var entity = UnitOfWork.GetDbSet<ProjectAccomodationType>().Find(accomodationTypeId);
@@ -53,6 +85,19 @@ namespace JoinRpg.Services.Impl
                 throw new JoinRpgEntityNotFoundException(accomodationTypeId, "ProjectAccomodationType");
             }
             UnitOfWork.GetDbSet<ProjectAccomodationType>().Remove(entity);
+            await UnitOfWork.SaveChangesAsync();
+
+        }
+
+        public async Task RemoveProjectAccomodation(int projectAccomodationId)
+        {
+            var entity = UnitOfWork.GetDbSet<ProjectAccomodation>().Find(projectAccomodationId);
+
+            if (entity == null)
+            {
+                throw new JoinRpgEntityNotFoundException(projectAccomodationId, "ProjectAccomodation");
+            }
+            UnitOfWork.GetDbSet<ProjectAccomodation>().Remove(entity);
             await UnitOfWork.SaveChangesAsync();
 
         }

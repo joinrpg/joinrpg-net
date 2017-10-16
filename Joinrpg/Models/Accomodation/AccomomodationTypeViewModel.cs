@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
@@ -19,9 +22,12 @@ namespace JoinRpg.Web.Models.Accomodation
         public int Id { get; set; }
         public int ProjectId { get; set; }
         public Project Project { get; set; }
-        public int Capacity => 0;
-        public int UsedSpace => 0;
+        [DisplayName("Объем номерного фонда")]
+        public int Capacity { get; set; }
+        [DisplayName("Проживает")]
+        public int UsedSpace { get; set; }
 
+        public  ICollection<ProjectAccomodationVewModel> Accomodations { get; set; }
         public AccomomodationTypeViewModel([NotNull]ProjectAccomodationType entity)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
@@ -33,13 +39,15 @@ namespace JoinRpg.Web.Models.Accomodation
             Id = entity.Id;
             Cost = entity.Cost;
             Name = entity.Name;
+            Accomodations = ProjectAccomodationVewModel.NewListCollection(entity.ProjectAccomodations);
+            Capacity = Accomodations.Aggregate(0, (acc, x) => acc + x.Capacity);
         }
 
         public AccomomodationTypeViewModel()
         {
         }
 
-        public ProjectAccomodationType GetProjectAccomodationMock()
+        public ProjectAccomodationType GetProjectAccomodationTypeMock()
         {
             return new ProjectAccomodationType()
             {

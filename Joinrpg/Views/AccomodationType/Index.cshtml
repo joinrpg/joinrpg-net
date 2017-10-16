@@ -20,12 +20,12 @@
         <tr>
             <td>@atype.Name</td>
             <td>@atype.Cost</td>
-            <td>@atype.Capacity/@atype.UsedSpace</td>
+            <td>@atype.UsedSpace/@atype.Capacity</td>
             <td>
-                <button type="button" class="btn btn-default">Список помещений</button>
                 @Html.RouteLink("Изменить", new { accomodationId = atype.Id, projectId = atype.ProjectId, action = "Edit", Controller = "AccomodationType" }, new { @class = "btn btn-default" })
-                @using (Html.BeginForm("Delete", "AccomodationType", new { accomodationId = atype.Id, projectId = atype.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
+                @using (Html.BeginForm("Delete", "AccomodationType", new { accomodationTypeId = atype.Id, projectId = atype.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
                 {
+                    @Html.AntiForgeryToken()
                     @Html.HttpMethodOverride(HttpVerbs.Delete)
                     <button type="submit" class="btn btn-danger"><span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить</button>
                 }

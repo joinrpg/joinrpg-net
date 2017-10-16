@@ -39,6 +39,7 @@ namespace JoinRpg.Web.Controllers
                     Cost = x.Cost,
                     ProjectId = x.ProjectId,
                     Id = x.Id,
+                    Capacity = x.ProjectAccomodations.Aggregate(0, (acc, c) => acc + c.Capacity)
                 }
               ).ToList();
             if (project == null) return HttpNotFound();
@@ -60,9 +61,23 @@ namespace JoinRpg.Web.Controllers
             {
                 return View(model);
             }
-            await _accomodationService.RegisterNewAccomodationTypeAsync(model.GetProjectAccomodationMock());
+            await _accomodationService.RegisterNewAccomodationTypeAsync(model.GetProjectAccomodationTypeMock());
             return RedirectToAction("Index", routeValues: new { ProjectId = model.ProjectId });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditProjectAccomodation(ProjectAccomodationVewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction("Edit", routeValues: new { ProjectId = model.ProjectId, AccomodationId = model.AccomodationTypeId });
+            }
+            await _accomodationService.RegisterNewProjectAccomodationAsync(model.GetProjectAccomodationMock());
+            return RedirectToAction("Edit", routeValues: new { ProjectId = model.ProjectId, AccomodationId = model.AccomodationTypeId });
+        }
+
+
 
         [HttpGet]
         public async Task<ActionResult> Edit(int projectId, int accomodationId)
@@ -77,11 +92,34 @@ namespace JoinRpg.Web.Controllers
         }
 
 
-        [HttpDelete]
-        public async Task<ActionResult> Delete(int accomodationId)
+        [HttpGet]
+        public async Task<ActionResult> ProjectAccomodationEdit(int projectId, int accomodationTypeId, int projectAccomodationId)
         {
-            await _accomodationService.RemoveAccomodationType(accomodationId);
-            return RedirectToAction("Index", new { ProjectId = 1 });
+            var model = await _accomodationService.GetProjectAccomodationByIdAsync(projectAccomodationId);
+            if (model == null || model.ProjectId != projectId || model.AccomodationTypeId != accomodationTypeId)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+            ViewBag.AccomodationName = $"«{model.Project.ProjectName}\\{model.ProjectAccomodationType.Name}»";
+            return View("ProjectAccomodationEdit", new ProjectAccomodationVewModel(model));
+        }
+
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Delete(int accomodationTypeId, int projectId)
+        {
+            await _accomodationService.RemoveAccomodationType(accomodationTypeId);
+            return RedirectToAction("Index", new { ProjectId = projectId });
+        }
+
+
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        [Route("accomodationtype/{ProjectId:int}/ProjectAccomodationDelete")]
+        public async Task<ActionResult> ProjectAccomodationDelete(int projectId, int accomodationTypeId, int projectAccomodationId)
+        {
+            await _accomodationService.RemoveProjectAccomodation(projectAccomodationId);
+            return RedirectToAction("Edit", routeValues: new { ProjectId = projectId, AccomodationId = accomodationTypeId });
         }
     }
 }
