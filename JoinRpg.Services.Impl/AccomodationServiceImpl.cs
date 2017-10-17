@@ -44,7 +44,9 @@ namespace JoinRpg.Services.Impl
                 result = await UnitOfWork.GetDbSet<ProjectAccomodation>().FindAsync(newProjectAccomodation.Id);
                 if (result?.ProjectId != newProjectAccomodation.ProjectId || result?.AccomodationTypeId != newProjectAccomodation.AccomodationTypeId)
                 {
-                    return null;
+                    throw new ProjectAccomodationNotFound(newProjectAccomodation.ProjectId,
+                        newProjectAccomodation.AccomodationTypeId,
+                        newProjectAccomodation.Id);
                 }
                 result.Name = newProjectAccomodation.Name;
                 result.Capacity = newProjectAccomodation.Capacity;
@@ -67,7 +69,7 @@ namespace JoinRpg.Services.Impl
 
         public async Task<ProjectAccomodationType> GetAccomodationByIdAsync(int accId)
         {
-            return await UnitOfWork.GetDbSet<ProjectAccomodationType>().Include("ProjectAccomodations")
+            return await UnitOfWork.GetDbSet<ProjectAccomodationType>().Include(x=>x.ProjectAccomodations)
               .FirstOrDefaultAsync(x => x.Id == accId);
         }
         public async Task<ProjectAccomodation> GetProjectAccomodationByIdAsync(int accId)

@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Controllers
                     Cost = x.Cost,
                     ProjectId = x.ProjectId,
                     Id = x.Id,
-                    Capacity = x.ProjectAccomodations.Aggregate(0, (acc, c) => acc + c.Capacity)
+                    Capacity = x.ProjectAccomodations.Sum(c => c.Capacity)
                 }
               ).ToList();
             if (project == null) return HttpNotFound();
@@ -67,11 +67,11 @@ namespace JoinRpg.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditProjectAccomodation(ProjectAccomodationVewModel model)
+        public async Task<ActionResult> ProjectAccomodationEdit(ProjectAccomodationVewModel model)
         {
             if (!ModelState.IsValid)
             {
-                return RedirectToAction("Edit", routeValues: new { ProjectId = model.ProjectId, AccomodationId = model.AccomodationTypeId });
+                return View(model);
             }
             await _accomodationService.RegisterNewProjectAccomodationAsync(model.GetProjectAccomodationMock());
             return RedirectToAction("Edit", routeValues: new { ProjectId = model.ProjectId, AccomodationId = model.AccomodationTypeId });

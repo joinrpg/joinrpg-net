@@ -11,7 +11,7 @@
         ViewBag.IsInEditMode = true;
     }
 }
-@using (Html.BeginForm("EditProjectAccomodation", "AccomodationType", new { projectId = Model.ProjectId, Id = Model.Id, AccomodationTypeId = Model.AccomodationTypeId }, FormMethod.Post))
+@using (Html.BeginForm("ProjectAccomodationEdit", "AccomodationType", new { projectId = Model.ProjectId, Id = Model.Id, AccomodationTypeId = Model.AccomodationTypeId }, FormMethod.Post))
 {
 
     @Html.AntiForgeryToken()
