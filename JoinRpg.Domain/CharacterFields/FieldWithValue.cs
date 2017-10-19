@@ -40,6 +40,10 @@ namespace JoinRpg.Domain
 
         protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
         {
+            if (Field.FieldType == ProjectFieldType.Checkbox)
+            {
+                return Value?.StartsWith(FieldWithValue.CheckboxValueOn) == true ? "☑️" : "☐";
+            }
             if (!Field.HasValueList())
             {
                 return value ?? "";
