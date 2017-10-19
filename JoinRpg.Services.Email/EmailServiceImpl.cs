@@ -250,7 +250,16 @@ namespace JoinRpg.Services.Email
 {model.Initiator.DisplayName}
 
 ";
-                await SendEmail(recipients, $"{model.ProjectName}: {target(false)}", model.Initiator.ToRecipient(), new MarkdownString(text));
+                //All emails related to claim should have the same title, even if the change was made to a character
+                Claim claim = model.IsCharacterMail ? model.Character.ApprovedClaim : model.Claim;
+
+                await SendEmail(
+                    recipients,
+                    claim != null
+                        ? GetClaimEmailTitle(model.ProjectName, claim.Name, claim.Player.DisplayName)
+                        : $"{model.ProjectName}: {target(false)}",
+                    model.Initiator.ToRecipient(),
+                    new MarkdownString(text));
             }
         }
 
@@ -373,7 +382,16 @@ namespace JoinRpg.Services.Email
 
 Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
 ";
-            await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}", model.Initiator.ToRecipient(), new MarkdownString(text1));
+            await SendEmail(
+                recipients,
+                GetClaimEmailTitle(model.ProjectName, model.Claim.Name, model.GetPlayerName()),
+                model.Initiator.ToRecipient(),
+                new MarkdownString(text1));
+        }
+
+        private static string GetClaimEmailTitle(string projectName, string claimName, string playerName)
+        {
+            return $"{projectName}: {claimName}, игрок {playerName}";
         }
     }
 
