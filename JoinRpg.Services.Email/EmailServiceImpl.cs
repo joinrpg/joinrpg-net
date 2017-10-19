@@ -17,6 +17,7 @@ namespace JoinRpg.Services.Email
     [UsedImplicitly]
     public class EmailServiceImpl : IEmailService
     {
+        #region general stuff
         private const string JoinRpgTeam = "Команда JoinRpg.Ru";
 
         private const string changedFieldsKey = "changedFields";
@@ -126,7 +127,9 @@ namespace JoinRpg.Services.Email
                 await Send(message);
             }
         }
+        #endregion
 
+        #region IEmailService implementation
         #region Account emails
         public Task Email(RemindPasswordEmail email)
         {
@@ -160,72 +163,6 @@ namespace JoinRpg.Services.Email
 {JoinRpgTeam}", _joinRpgSender);
         }
         #endregion
-
-        /// <summary>
-        /// Gets info about changed fields and other attributes for particular user (if available).
-        /// </summary>
-        private string GetChangedFieldsInfoForUser(
-          [NotNull]EmailModelBase model,
-          [NotNull]User user)
-        {
-            IEmailWithUpdatedFieldsInfo mailWithFields = model as IEmailWithUpdatedFieldsInfo;
-            if (mailWithFields == null)
-            {
-                return "";
-            }
-            //Add project fields that user has right to view
-            Predicate<FieldWithValue> accessRightsPredicate =
-              CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
-            IEnumerable<MarkdownString> fieldString = mailWithFields
-              .UpdatedFields
-              .Where(f => accessRightsPredicate(f))
-              .Select(updatedField =>
-                new MarkdownString(
-                  $@"__**{updatedField.Field.FieldName}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
-
-            //Add info about other changed atttributes (no access rights validation)
-            IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
-              .OtherChangedAttributes
-              .Select(changedAttribute => new MarkdownString(
-                $@"__**{changedAttribute.Key}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
-
-            return string.Join(
-              "\n\n",
-              otherAttributesStrings
-                .Union(fieldString)
-                .Select(x => x.ToHtmlString()));
-        }
-
-        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
-        {
-            var projectEmailEnabled = model.GetEmailEnabled();
-            if (!projectEmailEnabled)
-            {
-                return;
-            }
-
-            IList<MailRecipient> recipients = model
-              .GetRecipients()
-              .Select(r => new MailRecipient(
-                r,
-                new Dictionary<string, string> { { changedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
-              .ToList();
-
-            string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
-Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
-{text}
-
-{MailGunExts.GetUserDependentValue(changedFieldsKey)}
-{model.Text.Contents}
-
-{model.Initiator.DisplayName}
-
-Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
-";
-            await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}", model.Initiator.ToRecipient(), new MarkdownString(text1));
-        }
 
         public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
 
@@ -371,7 +308,73 @@ namespace JoinRpg.Services.Email
 {model.Initiator.DisplayName}
 ", model.Initiator.ToRecipient());
         }
+        #endregion
 
+        /// <summary>
+        /// Gets info about changed fields and other attributes for particular user (if available).
+        /// </summary>
+        private string GetChangedFieldsInfoForUser(
+          [NotNull]EmailModelBase model,
+          [NotNull]User user)
+        {
+            IEmailWithUpdatedFieldsInfo mailWithFields = model as IEmailWithUpdatedFieldsInfo;
+            if (mailWithFields == null)
+            {
+                return "";
+            }
+            //Add project fields that user has right to view
+            Predicate<FieldWithValue> accessRightsPredicate =
+              CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
+            IEnumerable<MarkdownString> fieldString = mailWithFields
+              .UpdatedFields
+              .Where(f => accessRightsPredicate(f))
+              .Select(updatedField =>
+                new MarkdownString(
+                  $@"__**{updatedField.Field.FieldName}:**__
+{MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
+
+            //Add info about other changed atttributes (no access rights validation)
+            IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
+              .OtherChangedAttributes
+              .Select(changedAttribute => new MarkdownString(
+                $@"__**{changedAttribute.Key}:**__
+{MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
+
+            return string.Join(
+              "\n\n",
+              otherAttributesStrings
+                .Union(fieldString)
+                .Select(x => x.ToHtmlString()));
+        }
+
+        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
+        {
+            var projectEmailEnabled = model.GetEmailEnabled();
+            if (!projectEmailEnabled)
+            {
+                return;
+            }
+
+            IList<MailRecipient> recipients = model
+              .GetRecipients()
+              .Select(r => new MailRecipient(
+                r,
+                new Dictionary<string, string> { { changedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
+              .ToList();
+
+            string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
+Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
+{text}
+
+{MailGunExts.GetUserDependentValue(changedFieldsKey)}
+{model.Text.Contents}
+
+{model.Initiator.DisplayName}
+
+Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
+";
+            await SendEmail(recipients, $"{model.ProjectName}: {model.Claim.Name}, игрок {model.GetPlayerName()}", model.Initiator.ToRecipient(), new MarkdownString(text1));
+        }
     }
 
     internal static class Exts
