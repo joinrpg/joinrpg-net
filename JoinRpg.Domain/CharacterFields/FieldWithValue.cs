@@ -42,7 +42,7 @@ namespace JoinRpg.Domain
         {
             if (Field.FieldType == ProjectFieldType.Checkbox)
             {
-                return Value?.StartsWith(FieldWithValue.CheckboxValueOn) == true ? "☑️" : "☐";
+                return Value?.StartsWith(CheckboxValueOn) == true ? "☑️" : "☐";
             }
             if (!Field.HasValueList())
             {
