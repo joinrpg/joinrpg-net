@@ -15,8 +15,8 @@ namespace JoinRpg.Domain
 
         private static int CurrentFee(this Project project, DateTime operationDate)
         {
-            return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
-              .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
+            return project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
+              .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault()?.Fee ?? 0;
         }
 
         private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
