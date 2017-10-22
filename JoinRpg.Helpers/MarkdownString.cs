@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
   [ComplexType]
-  public class MarkdownString
+  public class MarkdownString : IEquatable<MarkdownString>
   {
     public MarkdownString([CanBeNull] string contents)
     {
@@ -21,9 +22,9 @@ namespace JoinRpg.DataModel
 
     public override string ToString() => $"Markdown({Contents})";
 
-    protected bool Equals(MarkdownString other)
+    public bool Equals(MarkdownString other)
     {
-      return string.Equals(Contents, other.Contents);
+      return other != null && string.Equals(Contents, other.Contents);
     }
 
     public override bool Equals(object obj)
@@ -32,13 +33,14 @@ namespace JoinRpg.DataModel
         return false;
       if (ReferenceEquals(this, obj))
         return true;
-      return obj.GetType() == this.GetType() && Equals((MarkdownString)obj);
+        return Equals(obj as MarkdownString);
     }
 
     public override int GetHashCode()
     {
       // It's not good to use mutable members in GetHashCode.
       // However I didn't manage to make it readonly becasue EF wanted a setter.
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
       return Contents?.GetHashCode() ?? 0;
     }
 

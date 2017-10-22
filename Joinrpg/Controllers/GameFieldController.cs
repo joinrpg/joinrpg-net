@@ -84,14 +84,21 @@ namespace JoinRpg.Web.Controllers
             try
             {
                 await FieldSetupService.AddField(project.ProjectId,
-                  (ProjectFieldType)viewModel.FieldViewType, viewModel.Name,
-                  viewModel.DescriptionEditable,
-                  viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-                  viewModel.IsPublic, (FieldBoundTo)viewModel.FieldBoundTo,
-                  (MandatoryStatus)viewModel.MandatoryStatus,
-                  viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc,
-                  viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
-                  viewModel.ShowForUnApprovedClaim, viewModel.Price);
+                    (ProjectFieldType) viewModel.FieldViewType,
+                    viewModel.Name,
+                    viewModel.DescriptionEditable,
+                    viewModel.CanPlayerEdit,
+                    viewModel.CanPlayerView,
+                    viewModel.IsPublic,
+                    (FieldBoundTo) viewModel.FieldBoundTo,
+                    (MandatoryStatus) viewModel.MandatoryStatus,
+                    viewModel.ShowForGroups.GetUnprefixedGroups(),
+                    viewModel.ValidForNpc,
+                    viewModel.FieldBoundTo == FieldBoundToViewModel.Character &&
+                    viewModel.CanPlayerView,
+                    viewModel.ShowForUnApprovedClaim,
+                    viewModel.Price,
+                    viewModel.MasterDescriptionEditable);
 
                 return ReturnToIndex(project);
             }
@@ -134,12 +141,21 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-        await
-          FieldSetupService.UpdateFieldParams(project.ProjectId, field.ProjectFieldId,
-            viewModel.Name, viewModel.DescriptionEditable, viewModel.CanPlayerEdit, viewModel.CanPlayerView,
-            viewModel.IsPublic, (MandatoryStatus) viewModel.MandatoryStatus,
-            viewModel.ShowForGroups.GetUnprefixedGroups(), viewModel.ValidForNpc, viewModel.IncludeInPrint, 
-            viewModel.ShowForUnApprovedClaim, viewModel.Price);
+          await
+              FieldSetupService.UpdateFieldParams(project.ProjectId,
+                  field.ProjectFieldId,
+                  viewModel.Name,
+                  viewModel.DescriptionEditable,
+                  viewModel.CanPlayerEdit,
+                  viewModel.CanPlayerView,
+                  viewModel.IsPublic,
+                  (MandatoryStatus) viewModel.MandatoryStatus,
+                  viewModel.ShowForGroups.GetUnprefixedGroups(),
+                  viewModel.ValidForNpc,
+                  viewModel.IncludeInPrint,
+                  viewModel.ShowForUnApprovedClaim,
+                  viewModel.Price,
+                  viewModel.MasterDescriptionEditable);
 
         return ReturnToIndex(project);
       }
@@ -176,7 +192,6 @@ namespace JoinRpg.Web.Controllers
                 if (AsMaster(field, pa => pa.CanChangeFields) != null)
                     return new HttpUnauthorizedResult();
 
-                var project = field.Project;
                 await FieldSetupService.DeleteField(field);
                 return field.IsActive
                     ? new HttpStatusCodeResult(200)
