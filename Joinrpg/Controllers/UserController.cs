@@ -2,9 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models;
-using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -41,25 +39,6 @@ namespace JoinRpg.Web.Controllers
         return View(userProfileViewModel);
       }
 
-
-      [Authorize]
-      // GET: User preferred name. I.e. to display in page header.
-      public ActionResult PreferredName()
-      {
-        var userId = CurrentUserId;
-        var user =   UserManager.FindById(userId);
-
-        var userProfileViewModel = new UserProfileViewModel()
-        {
-          DisplayName = user.DisplayName,
-          ThisUserProjects = user.ProjectAcls,
-          UserId = user.UserId,
-          Hash = user.Email.GravatarHash()
-        };
-
-        return PartialView(userProfileViewModel);
-      }
-
       public UserController(ApplicationUserManager userManager)
         : base(userManager)
       {
@@ -69,12 +48,6 @@ namespace JoinRpg.Web.Controllers
       public ActionResult Me()
       {
         return RedirectToAction("Details", new {UserId = CurrentUserId});
-      }
-
-      public ActionResult GetAvatar(int userId)
-      {
-        var hash = UserManager.FindById(userId).Email.GravatarHash();
-        return Content($"https://www.gravatar.com/avatar/{hash}?d=identicon&s=64");
       }
     }
 }
