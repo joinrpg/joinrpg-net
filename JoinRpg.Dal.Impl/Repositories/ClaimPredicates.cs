@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -19,7 +19,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                       c.ClaimStatus != Claim.Status.OnHold;
         case ClaimStatusSpec.InActive:
           return c => c.ClaimStatus == Claim.Status.DeclinedByMaster ||
-                      c.ClaimStatus == Claim.Status.DeclinedByUser &&
+                      c.ClaimStatus == Claim.Status.DeclinedByUser ||
                       c.ClaimStatus == Claim.Status.OnHold;
         case ClaimStatusSpec.Discussion:
           return c => c.ClaimStatus == Claim.Status.AddedByMaster ||
