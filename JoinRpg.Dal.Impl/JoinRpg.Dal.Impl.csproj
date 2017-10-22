@@ -394,6 +394,10 @@
     <Compile Include="Migrations\201708252144098_PriceFields.Designer.cs">
       <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710221937007_FieldMasterDescription.cs" />
+    <Compile Include="Migrations\201710221937007_FieldMasterDescription.Designer.cs">
+      <DependentUpon>201710221937007_FieldMasterDescription.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -674,6 +678,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201708252144098_PriceFields.resx">
       <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710221937007_FieldMasterDescription.resx">
+      <DependentUpon>201710221937007_FieldMasterDescription.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -32,7 +32,7 @@
       }
     </td>
     <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
-    <td>@item.DescriptionDisplay</td>
+    <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>
     <td>@if (item.HasValueList)
     {
         <ul>

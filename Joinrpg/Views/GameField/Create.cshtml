@@ -99,6 +99,14 @@
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.MasterDescriptionEditable, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.MasterDescriptionEditable, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.MasterDescriptionEditable, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
             @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-9">
                 @Html.MagicSelectBindGroups(model => model.ShowForGroups)
