@@ -321,7 +321,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot)
+    public async Task EditProject(int projectId, int currentUserId, string projectName, string claimApplyRules, string projectAnnounce, bool isAcceptingClaims, bool multipleCharacters, bool publishPlot, bool enableAccomodation)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId); 
       project.RequestMasterAccess(currentUserId, acl => acl.CanChangeProjectProperties);
@@ -329,6 +329,7 @@ namespace JoinRpg.Services.Impl
       project.Details.ClaimApplyRules = new MarkdownString(claimApplyRules);
       project.Details.ProjectAnnounce = new MarkdownString(projectAnnounce);
       project.Details.EnableManyCharacters = multipleCharacters;
+      project.Details.EnableAccomodation = enableAccomodation;
       project.Details.PublishPlot = publishPlot && !project.Active;
       project.ProjectName = Required(projectName);
       project.IsAcceptingClaims = isAcceptingClaims && project.Active;

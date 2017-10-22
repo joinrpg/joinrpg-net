@@ -40,6 +40,8 @@ namespace JoinRpg.Dal.Impl
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
     public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
+    public IAccomodationRepository GetAccomodationRepository() => new AccomodationRepositoryImpl(this);
+
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
       modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});
@@ -145,6 +147,9 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
       modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
+
+      modelBuilder.Entity<ProjectAccomodationType>();
+      modelBuilder.Entity<ProjectAccomodation>();
 
       base.OnModelCreating(modelBuilder);
     }

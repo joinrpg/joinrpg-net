@@ -1,0 +1,38 @@
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.Accomodation.AccomodationListViewModel
+
+
+@{
+    ViewBag.Title = "Размещение на игре «" + Model.ProjectName + "»: Типы проживания";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table table-striped">
+    <thead>
+    <th>Тип размещения</th>
+    <th>Стоимость</th>
+    <th>Занято/Всего</th>
+    <th>Действия</th>
+    </thead>
+    @foreach (var atype in Model.AccomomodationTypes)
+    {
+        <tr>
+            <td>@atype.Name</td>
+            <td>@atype.Cost</td>
+            <td>@atype.UsedSpace/@atype.Capacity</td>
+            <td>
+                @Html.RouteLink("Изменить", new { accomodationId = atype.Id, projectId = atype.ProjectId, action = "Edit", Controller = "AccomodationType" }, new { @class = "btn btn-default" })
+                @using (Html.BeginForm("Delete", "AccomodationType", new { accomodationTypeId = atype.Id, projectId = atype.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HttpMethodOverride(HttpVerbs.Delete)
+                    <button type="submit" class="btn btn-danger"><span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить</button>
+                }
+            </td>
+        </tr>
+    }
+
+</table>
+<hr />
+@Html.Partial("Edit", new JoinRpg.Web.Models.Accomodation.AccomomodationTypeViewModel() { ProjectId = Model.ProjectId })
