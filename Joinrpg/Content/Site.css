@@ -212,6 +212,14 @@ input[type=number].price {
     float: right;
 }
 
+tr.unapprovedPayment {
+    color: silver;
+}
+
+tr.unapprovedPayment td:last-child {
+    color: black;
+}
+
 .join[class~=alert] {
     padding: 0.75em;
     margin: 1em 0 1em 0;
