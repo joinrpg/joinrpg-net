@@ -1,6 +1,5 @@
 ﻿@using JoinRpg.Web.App_Code;
 @using JoinRpg.Web.Models;
-@using JoinRpg.Domain;
 @using JoinRpg.DataModel;
 @using System.Web.Mvc;
 @model ClaimFeeViewModel
@@ -20,52 +19,73 @@
     var feeBalance = @(Model.CurrentBalance);
     var feeBase = @(Model.BaseFee);
 </script>
-<div id="feeInfo">
-<table id="feeDetails" class="table table-condensed">
-    <thead>
-        <tr><th>Операция</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
-    </thead>
-    <tbody>
-        @RenderRow("rowBaseFee", Model.HasBaseFee || Model.IsFeeAdmin, "Взнос" + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
-            Html.RenderPriceElement(Model.BaseFee), null, Html.Raw("<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#changeFeeModal\">Изменить вручную&hellip;</button>"))
-        @RenderRow("rowClaimFee", Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0, "Опции заявки",
-            Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim], "feeClaimFieldsDisp"), null)
-        @RenderRow("rowCharacterFee", Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0, "Опции персонажа",
-            Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character], "feeCharacterFieldsDisp"), null)
-        @foreach (var fo in Model.FinanceOperations)
-        {
-            @RenderPaymentRow(fo)
-        }
-    </tbody>
-    <tfoot>
-        <tr>
-            <th>Итого</th>
-            <th class="price-table">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp")</th>
-            <th class="price-table">@Html.RenderPriceElement(Model.CurrentBalance, "feeBalance")</th>
-            <th></th>
-        </tr>
-        <tr id="rowPaymentStatus">
-            <th>
-                <span id="feeStatusOverpaid" style="isplay: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.Overpaid);">Переплата</span>
-                <span id="feeStatusMoreToPay" style="isplay: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.MoreToPay);">Осталось оплатить</span>
-                <span id="feeStatusPaid" style="isplay: @Model.PaymentStatusToDisplayStyle(ClaimPaymentStatus.Paid);">Оплачено полностью</span>
-            </th>
-            <th class="price-table">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
-            <th class="price-table">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
-            <th></th>
-        </tr>
-        @if (Model.Balance[FinanceOperationState.Proposed] > 0)
-        {
-            <tr><th>@FinanceOperationState.Proposed.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Proposed])</th><th></th></tr>
-        }
-        @if (Model.Balance[FinanceOperationState.Declined] > 0)
-        {
-            <tr><th>@FinanceOperationState.Declined.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Declined])</th><th></th></tr>
-        }
-    </tfoot>
-</table>
+<div id="feeInfo" class="collapse in">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
+    <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
+    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
+    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
+    <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
+    <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Подробный вид&hellip;</button>
 </div>
-    
+<div id="feeDetails" class="collapse">
+    <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
+    <table class="table table-condensed">
+        <thead>
+            <tr><th>Операция</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
+        </thead>
+        <tbody>
+            @RenderRow("rowBaseFee",
+                Model.HasBaseFee || Model.IsFeeAdmin,
+                "Взнос" + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
+                Html.RenderPriceElement(Model.BaseFee),
+                null,
+                Html.Raw("<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#changeFeeModal\">Изменить вручную&hellip;</button>"))
+            @RenderRow("rowClaimFee",
+                Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
+                "Опции заявки",
+                Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim],
+                "feeClaimFieldsDisp"),
+                null)
+            @RenderRow("rowCharacterFee",
+                Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
+                "Опции персонажа",
+                Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character],
+                "feeCharacterFieldsDisp"),
+                null)
+            @foreach (var fo in Model.FinanceOperations)
+            {
+                @RenderPaymentRow(fo)
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Итого</th>
+                <th class="price-table">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp")</th>
+                <th class="price-table">@Html.RenderPriceElement(Model.CurrentBalance, "feeBalance")</th>
+                <th></th>
+            </tr>
+            <tr id="rowPaymentStatus">
+                <th>
+                    <span id="feeStatus0" style="display: none;">Оплачено полностью</span>
+                    <span id="feeStatus1" style="display: none;">Переплата</span>
+                    <span id="feeStatus2" style="display: none;">Осталось оплатить</span>
+                    <span id="feeStatus3" style="display: none;">Осталось оплатить</span>
+                </th>
+                <th class="price-table text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
+                <th class="price-table text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
+                <th></th>
+            </tr>
+            @if (Model.Balance[FinanceOperationState.Proposed] > 0)
+            {
+                <tr><th>@FinanceOperationState.Proposed.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Proposed])</th><th></th></tr>
+            }
+            @if (Model.Balance[FinanceOperationState.Declined] > 0)
+            {
+                <tr><th>@FinanceOperationState.Declined.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Declined])</th><th></th></tr>
+            }
+        </tfoot>
+    </table>
+</div>
+
 <div class="modal fade" id="changeFeeModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -78,15 +98,21 @@
                 </div>
 
                 <div class="modal-body">
-                    <p>Размер взноса для этой заявки будет назначен вручную. В таком случае взнос не будет больше зависеть от времени сдачи и будет зафиксирован.</p>
+                    <div class="join alert alert-info"><i class="glyphicon glyphicon-info-sign"></i>
+                        Размер взноса для этой заявки будет назначен вручную.
+                        После этого взнос не будет больше зависеть от времени сдачи и&nbsp;будет зафиксирован.</div>
+                    @if (Model.HasFieldsWithFee)
+                    {
+                        <div class="join alert alert-warning"><i class="glyphicon glyphicon-exclamation-sign"></i>
+                            Эта настройка меняет только базовое значение взноса. Итоговая сумма взноса складывается
+                            из установленного вручную взноса и суммы модификаторов от полей.</div>
+                    }                    
                     <div class="form-horizontal">
                         <div class="form-group">
-                            <div class="col-md-5 control-label">Новый размер взноса:</div>
-
+                            <div class="col-md-6 control-label"><label for="feeSpecialValue">Новый размер взноса:</label></div>
                             <div class="col-md-3">
-                                <input type="text" class="form-control" name="feeValue" list="feeVariants" value="@Model.BaseFee" />
+                                <input type="text" class="form-control" id="feeSpecialValue" name="feeValue" list="feeVariants" value="@Model.BaseFee" />
                             </div>
-
                             <datalist id="feeVariants">
                                 @foreach (var feeVariant in Model.FeeVariants)
                                 {

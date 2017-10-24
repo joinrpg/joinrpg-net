@@ -185,6 +185,11 @@ namespace JoinRpg.Web.Models
         public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new Dictionary<FieldBoundToViewModel, int>();
 
         /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; protected set; }
+
+        /// <summary>
         /// Initializes dictionaries
         /// </summary>
         private void InitTotals()
@@ -314,6 +319,7 @@ namespace JoinRpg.Web.Models
             {
                 FieldsFee[result.FieldBound] += result.Fee;
                 FieldWithFeeCount[result.FieldBound]++;
+                HasFieldsWithFee = true;
             }
             return result;
         }

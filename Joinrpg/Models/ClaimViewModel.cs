@@ -307,6 +307,7 @@ namespace JoinRpg.Web.Models
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
             FieldsFee = model.Fields.FieldsFee;
+            HasFieldsWithFee = model.Fields.HasFieldsWithFee;
             CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
 
@@ -361,17 +362,31 @@ namespace JoinRpg.Web.Models
         public Dictionary<FieldBoundToViewModel, int> FieldsWithFeeCount { get; }
 
         /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; }
+
+        /// <summary>
         /// Sum of basic fee, total fields fee and finance operations
         /// </summary>
         public int CurrentTotalFee { get; }
 
+        /// <summary>
+        /// Sums of all finance operations by type
+        /// </summary>
         public readonly Dictionary<FinanceOperationState, int> Balance = new Dictionary<FinanceOperationState, int>();
 
+        /// <summary>
+        /// Sum of approved finance operations
+        /// </summary>
         public int CurrentBalance
             => Balance[FinanceOperationState.Approved];
 
         public ClaimPaymentStatus PaymentStatus { get; }
 
+        /// <summary>
+        /// List of associated payment operations
+        /// </summary>
         public IEnumerable<FinanceOperation> FinanceOperations { get; }
 
         public bool IsFeeAdmin { get; }

@@ -164,35 +164,6 @@ namespace JoinRpg.Domain
         public static int ClaimProposedBalance(this Claim claim)
             => claim.FinanceOperations.Sum(fo => fo.State == FinanceOperationState.Proposed ? fo.MoneyAmount : 0);
 
-        public static string ToTitleString(this FinanceOperationState self)
-        {
-            switch (self)
-            {
-                case FinanceOperationState.Approved:
-                    return "Подтверждено";
-                case FinanceOperationState.Proposed:
-                    return "Ожидает подтверждения";
-                case FinanceOperationState.Declined:
-                    return "Отклонено";
-                default:
-                    return "";
-            }
-        }
-
-        public static string ToRowClass(this FinanceOperationState self)
-        {
-            switch (self)
-            {
-                case FinanceOperationState.Proposed:
-                    return "unapprovedPayment";
-                case FinanceOperationState.Declined:
-                    return "unapprovedPayment danger";
-                default:
-                    return "";
-            }
-        }
-
-
         public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
       if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&

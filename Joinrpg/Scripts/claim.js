@@ -2,15 +2,16 @@
 var feeCharacterFieldsDisp = null;
 var feeTotalFieldsDisp = null;
 var feeTotalDisp = null;
+var feeTotalDisp2 = null;
 var feeCurrentDisp = null;
 var feeModDisp = null;
 var feeBalanceDisp = null;
 var feeMoreToPayDisp = null;
+var feeMoreToPayDisp2 = null;
 var feeOverpaidDisp = null;
+var feeOverpaidDisp2 = null;
 var feePaymentDlgValue = null;
-var feeStatusOverpaid = null;
-var feeStatusPaid = null;
-var feeStatusMoreToPay = null;
+var rowPaymentStatus = null;
 
 function setupFeeDisplay(obj)
 {
@@ -58,44 +59,37 @@ function checkFeeElements(target)
 // Checks current payment status and updates view according to it
 function processPaymentStatus(paymentStatus)
 {
-    $("#rowPaymentStatus").removeClass("warning");
-    $("#rowPaymentStatus").removeClass("danger");
-    $("#rowPaymentStatus").removeClass("success");
+    $(rowPaymentStatus).removeClass("warning");
+    $(rowPaymentStatus).removeClass("danger");
+    $(rowPaymentStatus).removeClass("success");
+    for (var i = 0; i < 4; i++)
+    {
+        $("#feeInfo" + i).toggle(i == paymentStatus);
+        $("#feeStatus" + i).toggle(i == paymentStatus);
+    }
     switch (paymentStatus)
     {
         case 0: // paid
-            $(feeStatusPaid).show();
-            $(feeStatusOverpaid).hide();
-            $(feeStatusMoreToPay).hide();
-            $("#rowPaymentStatus").addClass("success");
+            $(rowPaymentStatus).addClass("success");
             $(feeMoreToPayDisp).hide();
             $(feeOverpaidDisp).hide();
             break;
         case 1: // overpaid
-            $(feeStatusPaid).hide();
-            $(feeStatusOverpaid).show();
-            $(feeStatusMoreToPay).hide();
             $(feeMoreToPayDisp).hide();
             $(feeOverpaidDisp).show();
-            $("#rowPaymentStatus").addClass("success");
+            $(rowPaymentStatus).addClass("success");
             break;
         case 2: // more to pay
-            $(feeStatusPaid).hide();
-            $(feeStatusOverpaid).hide();
-            $(feeStatusMoreToPay).show();
             $(feeMoreToPayDisp).show();
             $(feeOverpaidDisp).hide();
-            $("#rowPaymentStatus").addClass("warning");
+            $(rowPaymentStatus).addClass("warning");
             if (feePaymentDlgValue)
                 feePaymentDlgValue.value = feeMoreToPayDisp.get();
             break;
         case 3: // not paid
-            $(feeStatusPaid).hide();
-            $(feeStatusOverpaid).hide();
-            $(feeStatusMoreToPay).show();
             $(feeMoreToPayDisp).show();
             $(feeOverpaidDisp).hide();
-            $("#rowPaymentStatus").addClass("danger");
+            $(rowPaymentStatus).addClass("danger");
             if (feePaymentDlgValue)
                 feePaymentDlgValue.value = feeMoreToPayDisp.get();
             break;
@@ -134,14 +128,14 @@ function feeChanged(target, fee)
         // Updating total amout to pay
         feeTotalDisp.ch(oldFee, fee);
         var feeTotal = feeTotalDisp.get();
+        feeTotalDisp2.set(feeTotal);
 
-        // Claim current
-        //if (feeCurrentDisp)
-        //    feeCurrentDisp.ch(oldFee, fee);
         // More to pay
         feeOverpaidDisp.set(feeBalance - feeTotal);
+        feeOverpaidDisp2.set(feeBalance - feeTotal);
         // Overpaid
         feeMoreToPayDisp.set(feeTotal - feeBalance);
+        feeMoreToPayDisp2.set(feeTotal - feeBalance);
 
         // Payment status
         if (feeTotal < feeBalance)
@@ -154,11 +148,6 @@ function feeChanged(target, fee)
             paymentStatus = 3;
 
         processPaymentStatus(paymentStatus);
-
-        //if (feeCurrentDisp)
-        //{
-        //    feeCurrentDisp.ch(oldFee, fee);
-        //}
     }
 
     return oldFee;
@@ -232,20 +221,28 @@ function checkChanged(event)
 }
 
 
+function toggleFeeBlock()
+{
+    $("#feeInfo").collapse("toggle");
+    $("#feeDetails").collapse("toggle");
+}
+
+
 $(function ()
 {
     feeClaimFieldsDisp = setupFeeDisplayById("feeClaimFieldsDisp");
     feeCharacterFieldsDisp = setupFeeDisplayById("feeCharacterFieldsDisp");
     feeTotalFieldsDisp = setupFeeDisplayById("feeTotalFieldsDisp");
     feeTotalDisp = setupFeeDisplayById("feeTotalDisp");
+    feeTotalDisp2 = setupFeeDisplayById("feeTotalDisp2");
     feeCurrentDisp = setupFeeDisplayById("feeCurrentDisp");
     feeModDisp = setupFeeDisplayById("feeModDisp");
     feeBalanceDisp = setupFeeDisplayById("feeBalanceDisp");
     feeMoreToPayDisp = setupFeeDisplayById("feeMoreToPayDisp");
+    feeMoreToPayDisp2 = setupFeeDisplayById("feeMoreToPayDisp2");
     feeOverpaidDisp = setupFeeDisplayById("feeOverpaidDisp");
-    feeStatusMoreToPay = document.getElementById("feeStatusMoreToPay");
-    feeStatusOverpaid = document.getElementById("feeStatusOverpaid");
-    feeStatusPaid = document.getElementById("feeStatusPaid");
+    feeOverpaidDisp2 = setupFeeDisplayById("feeOverpaidDisp2");
+    rowPaymentStatus = document.getElementById("rowPaymentStatus");
 
     feePaymentDlgValue = document.getElementById("Money");
     
