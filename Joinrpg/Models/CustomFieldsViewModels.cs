@@ -198,12 +198,25 @@ namespace JoinRpg.Web.Models
         public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new Dictionary<FieldBoundToViewModel, int>();
 
         /// <summary>
+        /// Total number of fields with fee
+        /// </summary>
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new Dictionary<FieldBoundToViewModel, int>();
+
+        /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; protected set; }
+
+        /// <summary>
         /// Initializes dictionaries
         /// </summary>
         private void InitTotals()
         {
             foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
+            {
                 FieldsFee[key] = 0;
+                FieldWithFeeCount[key] = 0;
+            }
         }
 
         /// <summary>
@@ -321,7 +334,11 @@ namespace JoinRpg.Web.Models
             FieldValueViewModel result = new FieldValueViewModel(this, fv, renderer);
             // Here is the point to calculate total fee
             if (result.HasPrice)
+            {
                 FieldsFee[result.FieldBound] += result.Fee;
+                FieldWithFeeCount[result.FieldBound]++;
+                HasFieldsWithFee = true;
+            }
             return result;
         }
 

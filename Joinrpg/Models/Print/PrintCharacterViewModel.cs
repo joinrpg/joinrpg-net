@@ -25,7 +25,7 @@ namespace JoinRpg.Web.Models.Print
     public PrintCharacterViewModelSlim(Character character)
     {
       CharacterName = character.CharacterName;
-      FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee();
+      FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.ProjectFee();
       ProjectName = character.Project.ProjectName;
 
       Groups =

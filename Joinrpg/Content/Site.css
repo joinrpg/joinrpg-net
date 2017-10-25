@@ -155,14 +155,6 @@ input[type=number] {
   background-color: #DFE4E6;
 }
 
-#feeMoreToPayDisp {
-    color: red;
-}
-
-#feeOverpaidDisp {
-    color: green;
-}
-
 .price-table {
     text-align: right;
 }
@@ -189,11 +181,6 @@ input[type=number].price {
     font-weight: normal;
 }
 
-#total_claim_fee,
-#total_character_fee,
-#total_fields_fee {
-}
-
 .price-subtotal-row {
     clear: both;
 }
@@ -212,15 +199,28 @@ input[type=number].price {
     float: right;
 }
 
+tr.unapprovedPayment {
+    color: silver;
+}
+
+tr.unapprovedPayment td:last-child {
+    color: black;
+}
+
 .join[class~=alert] {
-    padding: 0.75em;
+    padding: 1.15em 0.75em 0.75em 3.5em;
     margin: 1em 0 1em 0;
+    min-height: 3.75em;
 }
 
 .join[class~=alert] .glyphicon {
-    display: inline-block;
+    display: block;
+    float: left;
     vertical-align: middle;
-    margin-right: 0.3em;
+    margin: -0.35em 0 0 -2.75em;
+}
+
+.join[class~=alert] .glyphicon::before {
     font-size: 2em;
 }
 
