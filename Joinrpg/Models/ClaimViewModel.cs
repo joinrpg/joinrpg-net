@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -133,7 +134,7 @@ namespace JoinRpg.Web.Models
       Navigation =
         CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId,
           CharacterNavigationPage.Claim);
-      ClaimFee = new ClaimFeeViewModel(claim, currentUser.UserId);
+      ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
       Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
       PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
         (AccessReason) claim.Player.GetProfileAccess(currentUser));
@@ -290,25 +291,115 @@ namespace JoinRpg.Web.Models
   }
 
 
-  public class ClaimFeeViewModel
-  {
-    public ClaimFeeViewModel(Claim claim, int currentUserId)
-    {
-      CurrentTotalFee = claim.ClaimTotalFee();
-      CurrentBalance = claim.ClaimBalance();
-      CurrentFee = claim.ClaimCurrentFee();
-      IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
-      ClaimId = claim.ClaimId;
-      ProjectId = claim.ProjectId;
-      FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
-    }
 
-    public int CurrentFee { get; }
-    public int CurrentTotalFee { get; }
-    public int CurrentBalance { get; }
-    public bool IsFeeAdmin { get; }
-    public int ClaimId { get; }
-    public int ProjectId { get; }
-    public IEnumerable<int> FeeVariants { get; }
-  }
+
+    public class ClaimFeeViewModel
+    {
+        public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
+        {
+            // Reading project fee info applicable for today            
+            BaseFeeInfo = claim.CurrentFee != null ? claim.Project.ProjectFeeInfo() : null;
+            // Reading base fee of a claim
+            BaseFee = claim.BaseFee();
+            // Checks for base fee availability
+            HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
+
+            FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
+            FieldsTotalFee = model.Fields.FieldsTotalFee;
+            FieldsFee = model.Fields.FieldsFee;
+            HasFieldsWithFee = model.Fields.HasFieldsWithFee;
+            CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
+            CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
+
+            foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
+                Balance[s] = 0;
+            foreach (var fo in claim.FinanceOperations)
+                Balance[fo.State] += fo.MoneyAmount;
+            
+            IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+            ClaimId = claim.ClaimId;
+            ProjectId = claim.ProjectId;
+            FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
+            FinanceOperations = claim.FinanceOperations;
+
+            // Determining payment status
+            PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
+        }
+
+        /// <summary>
+        /// Claim fee taken from project settings or defined manually
+        /// </summary>
+        public int BaseFee { get; }
+
+        /// <summary>
+        /// Claim
+        /// </summary>
+        public ProjectFeeSetting BaseFeeInfo { get; }
+
+        /// <summary>
+        /// true if there is any base fee for this claim
+        /// </summary>
+        public bool HasBaseFee { get; }
+
+        /// <summary>
+        /// Sum of fields fees
+        /// </summary>
+        public int FieldsTotalFee { get; }
+
+        /// <summary>
+        /// BaseFee + FieldsTotalFee
+        /// </summary>
+        public int CurrentFee { get; }
+
+        /// <summary>
+        /// Fields fee, separated by bound
+        /// </summary>
+        public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
+
+        /// <summary>
+        /// Returns count of fields with assigned fee
+        /// </summary>
+        public Dictionary<FieldBoundToViewModel, int> FieldsWithFeeCount { get; }
+
+        /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; }
+
+        /// <summary>
+        /// Sum of basic fee, total fields fee and finance operations
+        /// </summary>
+        public int CurrentTotalFee { get; }
+
+        /// <summary>
+        /// Sums of all finance operations by type
+        /// </summary>
+        public readonly Dictionary<FinanceOperationState, int> Balance = new Dictionary<FinanceOperationState, int>();
+
+        /// <summary>
+        /// Sum of approved finance operations
+        /// </summary>
+        public int CurrentBalance
+            => Balance[FinanceOperationState.Approved];
+
+        public ClaimPaymentStatus PaymentStatus { get; }
+
+        /// <summary>
+        /// List of associated payment operations
+        /// </summary>
+        public IEnumerable<FinanceOperation> FinanceOperations { get; }
+
+        public bool IsFeeAdmin { get; }
+        public int ClaimId { get; }
+        public int ProjectId { get; }
+        public IEnumerable<int> FeeVariants { get; }
+
+        public int GetFieldsFee(bool visible)
+        {
+            int result = 0;
+            foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
+                result += FieldsFee[key];
+            return result;
+        }
+    }
 }

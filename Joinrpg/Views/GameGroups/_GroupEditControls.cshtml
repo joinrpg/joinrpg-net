@@ -6,7 +6,7 @@
     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
         <li>
             @Html.ActionLink(
-                DisplayCount.OfX(Model.TotalActiveClaims, "заявка", "заявки", "заявок") + " всего",
+                "список заявок",
                 "ListForGroup",
                 "ClaimList",
                 new {Model.ProjectId, Model.CharacterGroupId},

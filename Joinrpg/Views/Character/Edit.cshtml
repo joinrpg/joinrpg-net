@@ -1,5 +1,6 @@
 ﻿@using JoinRpg.Web.App_Code
 @model JoinRpg.Web.Models.Characters.EditCharacterViewModel
+@Scripts.Render("~/Scripts/claim.js")
 
 @Html.Partial("CharacterNavigation", Model.Navigation, new ViewDataDictionary())
 @Html.Partial("CreateUpdated", Model)
@@ -86,6 +87,11 @@
         </div>
 
         @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+        @if (Model.Fields.Fields.Any(f => f.HasPrice))
+        {
+            Html.RenderPartial("_CharacterFieldsSubtotal", Model.Fields);
+        }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

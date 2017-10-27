@@ -68,6 +68,7 @@
     <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />
+    <Compile Include="ProjectFieldType.cs" />
     <Compile Include="ProjectItemTag.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />

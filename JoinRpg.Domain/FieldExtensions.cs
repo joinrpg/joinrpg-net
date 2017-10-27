@@ -8,10 +8,8 @@ namespace JoinRpg.Domain
 {
   public static class FieldExtensions
   {
-    public static bool HasValueList(this ProjectField field)
-    {
-      return field.FieldType == ProjectFieldType.Dropdown || field.FieldType == ProjectFieldType.MultiSelect;
-    }
+        public static bool HasValueList(this ProjectField field)
+                => field.FieldType.HasValuesList();
 
     public static bool SupportsMarkdown([NotNull] this ProjectField field)
     {

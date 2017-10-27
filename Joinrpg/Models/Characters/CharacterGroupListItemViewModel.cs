@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,8 +28,6 @@ namespace JoinRpg.Web.Models.Characters
     public IEnumerable<CharacterViewModel> PublicCharacters => ActiveCharacters.Where(c =>  c.IsPublic);
 
     public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
-
-    public int TotalActiveClaims { get; set; }
 
     public IHtmlString Description { get; set; }
 

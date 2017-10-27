@@ -1,4 +1,5 @@
 ﻿@model ClaimViewModel
+@Scripts.Render("~/Scripts/claim.js")
 
 
 @helper OtherClaimsForThisCharacterLink()
@@ -14,6 +15,7 @@
 
 @using JoinRpg.Web.Models
 @using JoinRpg.Helpers.Web
+@using JoinRpg.Web.App_Code
 
 <div>
     @Html.Partial("CharacterNavigation", Model.Navigation)
@@ -173,7 +175,7 @@
                 </button>
                 }
             }
-            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null && Model.ProjectActive)
+            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ProjectActive)
             {
             <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
                     aria-expanded="false">
@@ -449,9 +451,14 @@
             <div class="form-horizontal">
                 @using (Html.BeginForm())
                 {
-                @Html.AntiForgeryToken()
+                    @Html.AntiForgeryToken()
 
                     @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+                    if (Model.Fields.Fields.Any(f => f.HasPrice))
+                    {
+                        Html.RenderPartial("_ClaimFieldsSubtotal", Model.ClaimFee.FieldsTotalFee);
+                    }
 
                     if (Model.Fields.Fields.Any(f => f.CanEdit))
                     {

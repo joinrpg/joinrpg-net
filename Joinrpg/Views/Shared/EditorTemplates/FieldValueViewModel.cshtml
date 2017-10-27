@@ -1,17 +1,13 @@
 ﻿@using System.ComponentModel
+@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
 
 @helper ShowOptions()
 {
-    var selectedValues = Model.ValueList;
     foreach (var val in Model.PossibleValueList)
     {
-        <option value="@val.ProjectFieldDropdownValueId"
-                @(selectedValues.Any(selectedVal => val.ProjectFieldDropdownValueId == selectedVal.ProjectFieldDropdownValueId) ? "selected='selected'" : "")
-                title="@val.DescriptionPlainText">
-            @val.Label
-        </option>
+        Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
     }
 }
 @helper ValidationMessage()
@@ -53,67 +49,112 @@
             }
             if (Model.FieldBound == FieldBoundToViewModel.Character)
             {
-                <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока.">П</span>
+                <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока">П</span>
             }
         }
     </label>
-    <div class="col-md-10">
-        @{
-          MvcHtmlString requiredMsg;
-          switch (Model.MandatoryStatus)
-          {
-              case MandatoryStatusViewType.Optional:
-                  requiredMsg = new MvcHtmlString("");
-                  break;
-              case MandatoryStatusViewType.Recommended:
-                  //TODO improve
-                  requiredMsg = new MvcHtmlString("");
-                  break;
-              case MandatoryStatusViewType.Required:
-                  requiredMsg = new MvcHtmlString("data-val=true data-val-required=\"Необходимо заполнить поле.\"");
-                  break;
-              default:
-                  throw new ArgumentOutOfRangeException();
-          }
-          var isEmpty = string.IsNullOrWhiteSpace(Model.Value);
+    <div class="col-md-8">@{
+            bool isEmpty = string.IsNullOrWhiteSpace(Model.Value);
+            Dictionary<string, string> attrs = new Dictionary<string, string>()
+            {
+                { "id", Model.FieldClientId },
+                { "name", Model.FieldClientId },
+                { "bound", Model.FieldBound.ToString() },
+                { "class", "form-control" }
+            };
+
+            if (Model.HasPrice)
+            {
+                attrs["price"] = Model.Price.ToString();
+                if (Model.FieldViewType == ProjectFieldViewType.Number)
+                {
+                    attrs["class"] += " price";
+                    attrs["min"] = "0";
+                }
+            }
+
+            switch (Model.FieldViewType)
+            {
+                case ProjectFieldViewType.Text:
+                    attrs["rows"] = "4";
+                    attrs["cols"] = "100";
+                    break;
+                case ProjectFieldViewType.MultiSelect:
+                    attrs["multiple"] = "true";
+                    break;
+                case ProjectFieldViewType.Checkbox:
+                    attrs.Remove("class");
+                    if (Model.IsCheckboxSet())
+                    {
+                        attrs["checked"] = "true";
+                    }
+                    break;
+            }
+
+            switch (Model.MandatoryStatus)
+            {
+                case MandatoryStatusViewType.Optional:
+                    break;
+                case MandatoryStatusViewType.Recommended:
+                    //TODO improve
+                    break;
+                case MandatoryStatusViewType.Required:
+                    attrs["data-val"] = "true";
+                    attrs["data-val-required"] = "Необходимо заполнить поле";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         @switch (Model.FieldViewType)
         {
             case ProjectFieldViewType.Text:
-                <textarea class="form-control" cols="100" id="@Model.FieldClientId" name="@Model.FieldClientId" @requiredMsg rows="4">@(Model == null ? "" : Model.Value)</textarea>
+                <textarea @Html.RenderAttrs(attrs)>@(Model == null ? "" : Model.Value)</textarea>
                 break;
             case ProjectFieldViewType.Dropdown:
-                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" @requiredMsg>
-                    @{
-                        if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
-                        {
-                            <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
-                        }
-                        @ShowOptions()
+                <select onchange="selectChanged(event)" @Html.RenderAttrs(attrs)>
+                    @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
+                    {
+                        Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
                     }
+                    @ShowOptions()
                 </select>
                 break;
             case ProjectFieldViewType.String:
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="text" class="form-control" @requiredMsg>
+                <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
                 break;
+
             case ProjectFieldViewType.Number:
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" value="@Model.Value" type="number" class="form-control" @requiredMsg>
+                <div class="form-control-complex">
+                <div class="form-control-left"><input type="number" onchange="numberChanged(event)" @Html.RenderAttrs(attrs) value="@Model.Value" /></div>
+                @if (Model.HasPrice)
+                {
+                    <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                }
+                </div>
                 break;
+
             case ProjectFieldViewType.Checkbox:
-                var ch = Model.IsCheckboxSet() ? "checked" : "";
-                <input id="@Model.FieldClientId" name="@Model.FieldClientId" type="checkbox" @ch>
-                <input name="@Model.FieldClientId" type="hidden" value="false"/>
+                <div class="form-control-complex">
+                    <label for="@Model.FieldClientId" class="form-control-left">
+                    <input type="checkbox" onchange="checkChanged(event)" @Html.RenderAttrs(attrs) />
+                    <input name="@Model.FieldClientId" type="hidden" value="false" />
+                    @Model.Description</label>
+                @if (Model.HasPrice)
+                {
+                    <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                }
+                </div>
                 break;
+
             case ProjectFieldViewType.MultiSelect:
-                <select name="@Model.FieldClientId" id="@Model.FieldClientId" class="form-control" multiple="multiple" @requiredMsg>
-                    @{
-                        if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
-                        {
-                            <option value="" @(isEmpty ? "selected='selected'" : "")>(не установлено)</option>
-                        }
-                        @ShowOptions()
+                <select onchange="multiChanged(event)" @Html.RenderAttrs(attrs)>
+                    @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
+                    {
+                        Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
                     }
+                    @ShowOptions()
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;
@@ -131,9 +172,23 @@
         }
         @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
         {
-            <div class="help-block">@Model.Description </div>
+            switch (Model.FieldViewType)
+            {
+                case ProjectFieldViewType.Checkbox:
+                    break;
+                default:
+                    <div class="help-block">@Model.Description</div>
+                    break;
+            }
         }
         @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
+    </div>
+
+    <div class="col-md-2 price-table">
+        @if (Model.HasPrice)
+        {
+            @Html.RenderPriceElement(Model.Fee, Model.FieldClientId + "_disp");
+        }
     </div>
 
 </div>

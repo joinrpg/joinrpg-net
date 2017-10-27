@@ -13,8 +13,7 @@
       @Html.DisplayNameFor(model => model.FieldBoundTo)
       @Html.DisplayFor(model => item.FieldBoundTo)
     </td>
-    <td>
-      @if (item.IsPublic)
+    <td>@if (item.IsPublic)
       {
         <span class="label label-primary">Публичное</span>
       }
@@ -32,106 +31,97 @@
         <span class="label label-warning">Игрок может менять</span>
       }
     </td>
-    <td>
-      @item.DescriptionDisplay
-    </td>
-    <td>
-      @if (item.HasValueList)
-      {
+    <td class="price-table">@(item.FieldViewType.SupportsPricingOnField() && item.Price != 0 ? item.Price.ToString() : "")</td>
+    <td>@item.DescriptionDisplay @item.MasterDescriptionDisplay</td>
+    <td>@if (item.HasValueList)
+    {
         <ul>
-          @foreach (var value in item.DropdownValues)
-          {
-            <li>
-              @if (value.CharacterGroupId != null)
-              {
-                @Html.ActionLink(value.Label, "ByGroup", "CharacterList", new {item.ProjectId, value.CharacterGroupId}, null)
-              }
-              else
-              {
-                @value.Label
-              }
-            </li>
-          }
-          @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
-          {
-            if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+            @foreach (var value in item.DropdownValues)
             {
-              <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
-                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
+                <li>@(value.CharacterGroupId != null
+                    ? Html.ActionLink(value.Label, "ByGroup", "CharacterList", new { item.ProjectId, value.CharacterGroupId }, null)
+                    : Html.Raw(value.Label))</li>
+            }
+            @if (item.MandatoryStatus != MandatoryStatusViewType.Optional && item.IsActive)
+            {
+                if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+                {
+                    <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "CharacterList",
+                        new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+                }
+                else
+                {
+                    <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
+                        new { item.ProjectFieldId, item.ProjectId }, null)</i>)</li>
+                }
+            }
+        </ul>
+    }
+    else if (item.FieldViewType != ProjectFieldViewType.Header)
+    {
+        if (!item.IsActive)
+        {
+            if (item.WasEverUsed)
+            {
+                switch (item.FieldBoundTo)
+                {
+                    case FieldBoundToViewModel.Character:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
+                                 new { item.ProjectFieldId, item.ProjectId }, null)
+                        break;
+                    case FieldBoundToViewModel.Claim:
+                        @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
+                                 new { item.ProjectFieldId, item.ProjectId }, null)
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+        else
+        {
+            <i>@if (item.FieldBoundTo == FieldBoundToViewModel.Character)
+            {
+                @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
+                    new { item.ProjectFieldId, item.ProjectId }, null)
             }
             else
             {
-              <li>(<i>@Html.ActionLink("Значение не проставлено", "ByUnAssignedField", "ClaimList",
-                        new {item.ProjectFieldId, item.ProjectId}, null)</i>)</li>
-            }
-          }
-        </ul>
-      }
-      else if (item.FieldViewType != ProjectFieldViewType.Header)
-      {
-          if (!item.IsActive)
-          {
-              if (item.WasEverUsed)
-              {
-                  switch (item.FieldBoundTo)
-                  {
-                      case FieldBoundToViewModel.Character:
-                          @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "CharacterList",
-                              new {item.ProjectFieldId, item.ProjectId}, null)
-                          break;
-                      case FieldBoundToViewModel.Claim:
-                          @Html.ActionLink("Отчет (проставленные)", "ByAssignedField", "ClaimList",
-                              new {item.ProjectFieldId, item.ProjectId}, null)
-                          break;
-                      default:
-                          throw new ArgumentOutOfRangeException();
-                  }
-              }
-          }
-        else
-        {
-          if (item.FieldBoundTo == FieldBoundToViewModel.Character)
-          {
-            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "CharacterList",
-                 new {item.ProjectFieldId, item.ProjectId}, null)</i>
-          }
-          else
-          {
-            <i>@Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
-                 new {item.ProjectFieldId, item.ProjectId}, null)</i>
-          }
+                @Html.ActionLink("Отчет по непроставленным", "ByUnAssignedField", "ClaimList",
+                    new { item.ProjectFieldId, item.ProjectId }, null)
+            }</i>
         }
+    }
+    </td>
+    <td>
+      @if (item.CanEditFields)
+      {
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            @if (item.IsActive)
+            {
+                <a title="Изменить" href="@Url.Action("Edit", new { item.ProjectFieldId, item.ProjectId })"
+                   class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
+                <a title="Удалить" href="@Url.Action("Delete", new { item.ProjectFieldId, item.ProjectId })"
+                   class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
+            }
+            else
+            {
+                <a title="Восстановить" href="@Url.Action("Edit", new { item.ProjectFieldId, item.ProjectId })"
+                   class="btn btn-primary"><i class="glyphicon glyphicon-heart"></i></a>
+            }
+        </div>
       }
     </td>
     <td>
-
-      @if (item.CanEditFields)
-      {
-        if (item.IsActive)
+        @if (item.CanEditFields)
         {
-          <span style="white-space: nowrap">
-            <a href="@Url.Action("Edit", new {item.ProjectFieldId, item.ProjectId})"
-               title="Изменить">
-              <span class="glyphicon glyphicon-pencil"></span>
-            </a><a href="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
-                   title="Удалить">
-              <span class="glyphicon glyphicon-trash"></span>
-
-            </a><a href="#"
-                   data-toggle="modal" data-target="#fastMoveModal"
-                   data-element="@item.ProjectFieldId" title="Переместить">
-              <span class="glyphicon glyphicon-move"></span>
-
-            </a>
-          </span>
+            <div class="btn-group btn-group-sm" style="display: inline-block">
+                <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
+                   class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
+            </div>
+            @Html.MoveControl(model => item, "Move");
         }
-        else
-        {
-          @Html.ActionLink("Восстановить", "Edit", new {item.ProjectFieldId, item.ProjectId})
-        }
-        @Html.MoveControl(model => item, "Move")
-      }
-    </td>
+</td>
   </tr>
 }
 
@@ -140,27 +130,23 @@
 }
 @if (firstItem != null)
 {
-  <table class="table" style="margin-top: 1em">
-    <tr>
-      <th>
-        <b>Поле</b>
-      </th>
-      <th>
-        <b>Видимость</b>
-      </th>
-      <th>
-        @Html.DisplayNameFor(model => model.DescriptionDisplay)
-      </th>
-      <th></th>
-      <th></th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-      @ShowFieldRow(item)
-    }
-
-  </table>
+<div class="table-responsive" style="margin-top: 1em">
+    <table class="table">
+        <tr>
+            <th>Поле</th>
+            <th>Видимость</th>
+            <th class="price-table">@Html.RenderPriceElement("Цена,")</th>
+            <th>@Html.DisplayNameFor(model => model.DescriptionDisplay)</th>
+            <th></th>
+            <th style="min-width: 6em; width: 6em;"></th>
+            <th style="min-width: 9em; width: 9em;"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            @ShowFieldRow(item)
+        }
+    </table>
+</div>
 
 
   <div class="modal fade modaldialogforid" id="fastMoveModal" tabindex="-1" role="dialog">

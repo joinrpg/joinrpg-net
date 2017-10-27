@@ -27,6 +27,11 @@
     <div class="form-horizontal">
       @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>
+
+    if (Model.Fields.Fields.Any(f => f.HasPrice))
+    {
+        Html.RenderPartial("_CharacterFieldsSubtotal", Model.Fields);
+    }
   }
   @Html.Partial("_PlotForCharacterPartial", Model.Plot)
 </div>

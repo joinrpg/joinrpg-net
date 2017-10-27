@@ -1,5 +1,6 @@
-﻿  using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
@@ -48,23 +49,31 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
-    public bool IsActive => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser && ClaimStatus != Status.OnHold;
-
-    public bool IsPending => ClaimStatus != Status.DeclinedByMaster && ClaimStatus != Status.DeclinedByUser;
-    public bool IsInDiscussion => ClaimStatus == Status.AddedByMaster || ClaimStatus == Status.AddedByUser || ClaimStatus == Status.Discussed;
-    public bool IsApproved => ClaimStatus == Status.Approved || ClaimStatus == Status.CheckedIn;
+    public bool IsActive =>
+            ClaimStatus != Status.DeclinedByMaster
+            && ClaimStatus != Status.DeclinedByUser
+            && ClaimStatus != Status.OnHold;
+    public bool IsPending =>
+            ClaimStatus != Status.DeclinedByMaster
+            && ClaimStatus != Status.DeclinedByUser;
+    public bool IsInDiscussion =>
+            ClaimStatus == Status.AddedByMaster
+            || ClaimStatus == Status.AddedByUser
+            || ClaimStatus == Status.Discussed;
+    public bool IsApproved =>
+            ClaimStatus == Status.Approved
+            || ClaimStatus == Status.CheckedIn;
 
     //TODO[Localize]
     public string Name => Character?.CharacterName ?? Group?.CharacterGroupName ?? "заявка";
 
     public DateTime LastUpdateDateTime { get; set; }
 
-    public int? CurrentFee { get; set; }
-    public int CommentDiscussionId { get; set; }
+
+        public int CommentDiscussionId { get; set; }
     [NotNull]
     public virtual CommentDiscussion CommentDiscussion{ get; set; }
-
-    public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
+       
 
     public enum Status
     {
@@ -80,20 +89,45 @@ namespace JoinRpg.DataModel
 
     public Status ClaimStatus { get; set; }
 
-    #region ILinkable impl
 
-    LinkType ILinkable.LinkType => LinkType.Claim;
+        #region Finance
+
+        /// <summary>
+        /// Fee to pay by player, manually set by master.
+        /// If null (default), actual fee will be automatically selected
+        /// from the project's list of payments.
+        /// </summary>
+        public int? CurrentFee { get; set; }
+
+        /// <summary>
+        /// List of finance operations performed by player.
+        /// </summary>
+        public virtual ICollection<FinanceOperation> FinanceOperations { get; set; }
+
+        /// <summary>
+        /// Returns list of approved finance operations.
+        /// </summary>
+        public IEnumerable<FinanceOperation> ApprovedFinanceOperations
+              => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
+
+        /// <summary>
+        /// Used for caching previously calculated total fields fee
+        /// </summary>
+        [NotMapped]
+        public int? FieldsFee { get; set; }
+
+        #endregion
+
+
+
+        #region ILinkable impl
+
+        LinkType ILinkable.LinkType => LinkType.Claim;
 
     string ILinkable.Identification => ClaimId.ToString();
     int? ILinkable.ProjectId => ProjectId;
 
     #endregion
 
-    #region helper properties
-
-    public IEnumerable<FinanceOperation> ApprovedFinanceOperations
-      => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
-
-    #endregion
   }
 }

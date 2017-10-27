@@ -1,0 +1,13 @@
+﻿@using JoinRpg.Web.Models
+@using JoinRpg.Web.App_Code
+@model CustomFieldsViewModel
+<hr />
+<div class="form-group">
+    <label class="control-label col-md-2">Подытог по полям</label>
+    <div class="col-md-10">
+        <div id="total_fields_fee_row" class="price-subtotal-row">
+            <div>ВСЕГО выбрано:</div>
+            @Html.RenderPriceElement(Model.FieldsTotalFee, "feeTotalFieldsDisp")</div>
+    </div>
+</div>
+<hr style="clear: both;" />

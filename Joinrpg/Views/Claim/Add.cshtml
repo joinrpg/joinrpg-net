@@ -1,5 +1,6 @@
 ﻿@using JoinRpg.Web.App_Code
 @model JoinRpg.Web.Models.AddClaimViewModel
+@Scripts.Render("~/Scripts/claim.js")
 
 @{
     ViewBag.Title = "Новая заявка на игру «" + @Model.ProjectName + "»";
@@ -76,6 +77,11 @@
         @{ ViewBag.HideCharacterClaimFieldsIcon = true; }
 
         @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+        @if (Model.Fields.Fields.Any(f => f.HasPrice))
+        {
+            Html.RenderPartial("_ClaimFieldsSubtotal", 0);
+        }
 
         <div class="form-group">
             @Html.LabelFor(model => model.ClaimText, htmlAttributes: new {@class = "control-label col-md-2"})
