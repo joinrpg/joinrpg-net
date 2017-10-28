@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -77,6 +77,7 @@ namespace JoinRpg.Web.Models
     public CharacterNavigationViewModel Navigation { get; }
 
     [Display(Name = "Взнос")]
+    [NotNull]
     public ClaimFeeViewModel ClaimFee { get; set; }
 
     [ReadOnly(true)]
@@ -298,7 +299,6 @@ namespace JoinRpg.Web.Models
         public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
         {
             FieldsTotalFee = model.Fields.FieldsTotalFee;
-            FieldsFee = model.Fields.FieldsFee;
             CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
             CurrentBalance = claim.ClaimBalance();
@@ -306,6 +306,9 @@ namespace JoinRpg.Web.Models
             ClaimId = claim.ClaimId;
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
+
+            ShowFee = CurrentBalance > 0 || CurrentFee > 0 || CurrentTotalFee > 0 ||
+                      model.Fields.Fields.Any(f => f.HasPrice);
 
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
@@ -317,14 +320,14 @@ namespace JoinRpg.Web.Models
         public int CurrentFee { get; }
 
         /// <summary>
-        /// Fields fee, separated by bound
-        /// </summary>
-        public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
-
-        /// <summary>
         /// Sum of fields fee
         /// </summary>
         public int FieldsTotalFee { get; }
+
+        /// <summary>
+        /// If fee exists in project
+        /// </summary>
+        public bool ShowFee { get; }
         
         /// <summary>
         /// Sum of basic fee, total fields fee and finance operations
@@ -339,13 +342,5 @@ namespace JoinRpg.Web.Models
         public int ClaimId { get; }
         public int ProjectId { get; }
         public IEnumerable<int> FeeVariants { get; }
-
-        public int GetFieldsFee(bool visible)
-        {
-            int result = 0;
-            foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
-                result += FieldsFee[key];
-            return result;
-        }
     }
 }
