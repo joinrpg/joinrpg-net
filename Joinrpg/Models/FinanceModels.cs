@@ -13,7 +13,47 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
-  public class FinanceViewModelBase : AddCommentViewModel
+
+    public static class FinanceOperationStateViewExtension
+    {
+
+        /// <summary>
+        /// Returns title of operation state
+        /// </summary>
+        public static string ToTitleString(this FinanceOperationState self)
+        {
+            switch (self)
+            {
+                case FinanceOperationState.Approved:
+                    return "Подтверждено";
+                case FinanceOperationState.Proposed:
+                    return "Ожидает подтверждения";
+                case FinanceOperationState.Declined:
+                    return "Отклонено";
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// Returns row class for detailed payments view
+        /// </summary>
+        public static string ToRowClass(this FinanceOperationState self)
+        {
+            switch (self)
+            {
+                case FinanceOperationState.Proposed:
+                    return "unapprovedPayment";
+                case FinanceOperationState.Declined:
+                    return "unapprovedPayment danger";
+                default:
+                    return "";
+            }
+        }
+    }
+
+
+    public class FinanceViewModelBase : AddCommentViewModel
   {
     [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
     public DateTime OperationDate

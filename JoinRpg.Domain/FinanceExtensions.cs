@@ -7,36 +7,66 @@ namespace JoinRpg.Domain
 {
     public static class FinanceExtensions
     {
-        public static int CurrentFee([NotNull] this Project project)
+
+        /// <summary>
+        /// Returns project fee for today
+        /// </summary>
+        public static int ProjectFee([NotNull] this Project project)
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
-            return project.CurrentFee(DateTime.UtcNow);
+            return project.ProjectFee(DateTime.UtcNow);
         }
 
-        private static int CurrentFee(this Project project, DateTime operationDate)
-        {
-            return project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
-              .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault()?.Fee ?? 0;
-        }
+        /// <summary>
+        /// Returns project fee for a specified date
+        /// </summary>
+        private static int ProjectFee(this Project project, DateTime operationDate)
+            => project.ProjectFeeInfo(operationDate)?.Fee ?? 0;
 
+        /// <summary>
+        /// Returns fee info object for a specified date
+        /// </summary>
+        private static ProjectFeeSetting ProjectFeeInfo(this Project project, DateTime operationDate)
+            => project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
+                .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault();
+
+        /// <summary>
+        /// Returns fee info object for today
+        /// </summary>
+        public static ProjectFeeSetting ProjectFeeInfo(this Project project)
+            => project.ProjectFeeInfo(DateTime.UtcNow);
+
+        /// <summary>
+        /// Returns total sum of claim fee and all finance operations
+        /// </summary>
         private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-        {
-            return claim.ClaimCurrentFee(operationDate, fieldsFee)
+            => claim.ClaimCurrentFee(operationDate, fieldsFee)
                 + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
-        }
 
+        /// <summary>
+        /// Returns total sum of claim fee and all finance operations using current date
+        /// </summary>
         public static int ClaimTotalFee(this Claim claim, int? fieldsFee = null)
             => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee);
 
+        /// <summary>
+        /// Returns base fee (taken from project settings or claim's property CurrentFee)
+        /// </summary>
+        public static int BaseFee(this Claim claim, DateTime? operationDate = null)
+            => claim.CurrentFee ?? claim.Project.ProjectFee(operationDate ?? DateTime.UtcNow);
+
+        /// <summary>
+        /// Returns actual fee for a claim (as a sum of claim fee and fields fee) using current date
+        /// </summary>
         public static int ClaimCurrentFee(this Claim claim, int? fieldsFee)
             => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee);
 
         /// <summary>
-        /// Returns actual fee for a claim
+        /// Returns actual fee for a claim (as a sum of claim fee and fields fee)
         /// </summary>
         private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
         { 
-            return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+            return claim.BaseFee(operationDate)
                 + claim.ClaimFieldsFee(fieldsFee);
             /******************************************************************
              * If you want to add additional fee to a claim's fee,
@@ -116,16 +146,25 @@ namespace JoinRpg.Domain
             return fieldsFee ?? 0;
         }
 
-
+        /// <summary>
+        /// Returns how many money left to pay
+        /// </summary>
         public static int ClaimFeeDue(this Claim claim)
             => claim.ClaimTotalFee() - claim.ClaimBalance();
 
-    public static int ClaimBalance(this Claim claim)
-    {
-      return claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
-    }
+        /// <summary>
+        /// Returns sum of all approved finance operations
+        /// </summary>
+        public static int ClaimBalance(this Claim claim)
+            => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
-    public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
+        /// <summary>
+        /// Returns sum of all unapproved finance operations
+        /// </summary>
+        public static int ClaimProposedBalance(this Claim claim)
+            => claim.FinanceOperations.Sum(fo => fo.State == FinanceOperationState.Proposed ? fo.MoneyAmount : 0);
+
+        public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
     {
       if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
           finance.PaymentType?.UserId != currentUserId)
@@ -147,7 +186,7 @@ namespace JoinRpg.Domain
           && claim.ClaimPaidInFull(operationDate) //and current fee is payed in full
         )
       {
-        claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
+        claim.CurrentFee = claim.Project.ProjectFee(operationDate); //fix fee for claim
       }
     }
 

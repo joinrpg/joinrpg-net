@@ -659,7 +659,6 @@
     <Content Include="Views\Home\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
     <Content Include="Views\Finances\Setup.cshtml" />
-    <Content Include="Views\User\PreferredName.cshtml" />
     <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
     <Content Include="Views\Comments\_CommentPartial.cshtml" />
@@ -737,6 +736,7 @@
     <Content Include="Views\Claim\_ClaimFieldsSubtotal.cshtml" />
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

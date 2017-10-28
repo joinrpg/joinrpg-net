@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic; 
+using System.Collections.Generic; 
 using System.Linq;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -96,7 +96,6 @@ namespace JoinRpg.Web.Models.Characters
         if (prevCopy != null)
         {
           vm.ChildGroups = prevCopy.ChildGroups;
-          vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
           return vm;
         }
         
