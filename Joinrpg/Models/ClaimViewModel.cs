@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -307,10 +308,11 @@ namespace JoinRpg.Web.Models
 
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
-            FieldsFee = model.Fields.FieldsFee;
+
             HasFieldsWithFee = model.Fields.HasFieldsWithFee;
             CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
+            FieldsFee = model.Fields.FieldsFee;
 
             foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
                 Balance[s] = 0;
@@ -355,15 +357,17 @@ namespace JoinRpg.Web.Models
         public int CurrentFee { get; }
 
         /// <summary>
-        /// Sum of fields fee
+        /// Fields fee, separated by bound
         /// </summary>
-        public int FieldsTotalFee { get; }
+        public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
+
 
         /// <summary>
         /// If fee exists in project
         /// </summary>
         public bool ShowFee { get; }
-        
+
+        /// <summary>
         /// Returns count of fields with assigned fee
         /// </summary>
         public Dictionary<FieldBoundToViewModel, int> FieldsWithFeeCount { get; }
@@ -386,8 +390,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Sum of approved finance operations
         /// </summary>
-        public int CurrentBalance
-            => Balance[FinanceOperationState.Approved];
+        public int CurrentBalance => Balance[FinanceOperationState.Approved];
 
         public ClaimPaymentStatus PaymentStatus { get; }
 
