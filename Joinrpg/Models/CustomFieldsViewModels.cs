@@ -84,6 +84,11 @@ namespace JoinRpg.Web.Models
         public bool HasPrice { get; }
 
         /// <summary>
+        /// true if price information should be visible
+        /// </summary>
+        public bool ShowPrice { get; }
+
+        /// <summary>
         /// Actual fee has to be paid by the player
         /// </summary>
         public int Fee { get; }
@@ -159,6 +164,8 @@ namespace JoinRpg.Web.Models
               Fee = ch.GetCurrentFee();
           }
 
+          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToCharacter;
+
           ProjectFieldId = ch.Field.ProjectFieldId;
 
           FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
@@ -206,6 +213,12 @@ namespace JoinRpg.Web.Models
         /// Returns true if there is at least one field with fee
         /// </summary>
         public bool HasFieldsWithFee { get; protected set; }
+
+        /// <summary>
+        /// Returns true if fields subtotal row should be shown
+        /// </summary>
+        public bool ShowFieldsSubtotal
+            => HasFieldsWithFee && AccessArguments.AnyAccessToCharacter;
 
         /// <summary>
         /// Initializes dictionaries

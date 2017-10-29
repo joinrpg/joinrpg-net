@@ -28,7 +28,7 @@
       @Html.Partial("_EditFieldsPartial", Model.Fields)
     </div>
 
-    if (Model.Fields.Fields.Any(f => f.HasPrice) && Model.Fields.AccessArguments.AnyAccessToCharacter)
+    if (Model.Fields.ShowFieldsSubtotal)
     {
         @Html.Partial("_CharacterFieldsSubtotal", Model.Fields);
     }
