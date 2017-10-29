@@ -306,7 +306,7 @@ namespace JoinRpg.Web.Models
         public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
         {
             // Reading project fee info applicable for today            
-            BaseFeeInfo = claim.CurrentFee != null ? claim.Project.ProjectFeeInfo() : null;
+            BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
             // Reading base fee of a claim
             BaseFee = claim.BaseFee();
             // Checks for base fee availability

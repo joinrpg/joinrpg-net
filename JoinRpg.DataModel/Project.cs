@@ -78,27 +78,4 @@ namespace JoinRpg.DataModel
     public bool AllowSecondRoles { get; set; } = false;
   }
 
-  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework
-  public class ProjectFeeSetting : IValidatableObject
-  {
-    public int ProjectFeeSettingId { get; set; }
-    public int ProjectId { get; set; }
-    public virtual Project Project { get; set; }
-    public int Fee { get; set; }
-    public DateTime StartDate { get; set; }
-
-    #region Implementation of IValidatableObject
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-    {
-      if (Fee < 0)
-      {
-        yield return
-          new ValidationResult("Fee should be positive.",
-            new List<string> { nameof(Fee) });
-      }
-    }
-
-    #endregion
-  }
 }

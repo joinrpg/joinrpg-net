@@ -116,7 +116,7 @@ namespace JoinRpg.Services.Impl
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      if (startDate < DateTime.UtcNow.Date.AddDays(-1)) 
+      if (startDate.Date < ProjectFeeSetting.MinDate.Date)
       {
         throw new CannotPerformOperationInPast();
       }
@@ -128,7 +128,7 @@ namespace JoinRpg.Services.Impl
         ProjectId = projectId
       });
 
-      var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
+      var firstFee = project.ProjectFeeSettings.OrderBy(s => s, new ProjectFeeSettingComparer()).First();
       firstFee.StartDate = project.CreatedDate;
 
       await UnitOfWork.SaveChangesAsync();
