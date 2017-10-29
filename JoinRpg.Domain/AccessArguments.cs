@@ -33,9 +33,24 @@ namespace JoinRpg.Domain
             PlayerAccesToClaim = claim.HasPlayerAccesToClaim(userId);
         }
 
+        /// <summary>
+        /// true if a user is logged in, he is a master of this game, he has access to the character or claim
+        /// </summary>
         public bool MasterAccess { get; }
+
+        /// <summary>
+        /// true if a user is logged in and he is assigned with the character
+        /// </summary>
         public bool PlayerAccessToCharacter { get; }
+
+        /// <summary>
+        /// true if a user is logged in and he is the owner of the claim
+        /// </summary>
         public bool PlayerAccesToClaim { get; }
+
+        /// <summary>
+        /// true if there is master or player access to the character
+        /// </summary>
         public bool AnyAccessToCharacter => MasterAccess || PlayerAccessToCharacter;
 
         public override string ToString()

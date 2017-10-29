@@ -455,9 +455,9 @@
 
                     @Html.Partial("_EditFieldsPartial", Model.Fields)
 
-                    if (Model.Fields.Fields.Any(f => f.HasPrice))
+                    if (Model.Fields.HasFieldsWithFee)
                     {
-                        Html.RenderPartial("_ClaimFieldsSubtotal", Model.ClaimFee.FieldsTotalFee);
+                        @Html.Partial("_ClaimFieldsSubtotal", Model.ClaimFee.FieldsTotalFee);
                     }
 
                     if (Model.Fields.Fields.Any(f => f.CanEdit))

@@ -21,12 +21,12 @@
         {
             case ProjectFieldViewType.Dropdown:
             case ProjectFieldViewType.MultiSelect:
-                if (Model.HasPrice && string.IsNullOrWhiteSpace(Model.Value))
+                if (Model.ShowPrice && string.IsNullOrWhiteSpace(Model.Value))
                 {
                     <div class="form-control-complex">
                         <div class="form-control-1-4">( ничего не выбрано )</div>
                         <div class="form-control-2-4"></div>
-                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(Model.Price)</div>
+                        <div class="form-control-4-4 price-table"></div>
                     </div>
                 }
                 foreach (var value in Model.ValueList)
@@ -48,7 +48,7 @@
                             <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
                         }
                     </div>
-                    @if (value.HasPrice)
+                    @if (Model.ShowPrice)
                     {
                         <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
                     }                    
@@ -61,7 +61,7 @@
                         <span type="checkbox" class="glyphicon glyphicon-@(Model.IsCheckboxSet() ? "check" : "unchecked")" @(Model.HasPrice ? "price=" + Model.Price.ToString() : "")></span>
                         @Model.Description
                     </label>
-                    @if (Model.HasPrice)
+                    @if (Model.ShowPrice)
                     {
                         <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
                     }
@@ -70,7 +70,7 @@
             case ProjectFieldViewType.Number:
                 <div class="form-control-complex">
                     <div class="form-control-left">@Model.DisplayString</div>
-                    @if (Model.HasPrice)
+                    @if (Model.ShowPrice)
                     {
                         <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
                     }
@@ -97,7 +97,7 @@
         }
     </div>
     <div class="col-md-2 price-table">
-        @if (Model.HasPrice)
+        @if (Model.ShowPrice)
         {
             @Html.RenderPriceElement(Model.Fee, Model.FieldClientId + "_disp");
         }
