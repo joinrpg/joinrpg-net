@@ -40,6 +40,7 @@ textarea {
   max-width: 700px;
 }
 
+input[data-provide=datepicker],
 input[type=number] {
     max-width: 150px;    
     text-align: right;

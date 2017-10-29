@@ -1,10 +1,31 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain
 {
+
+    /// <summary>
+    /// Compares two instances of ProjectFeeSetting.
+    /// First compares dates, then Ids.
+    /// </summary>
+    public class ProjectFeeSettingComparer: IComparer<ProjectFeeSetting>
+    {
+        public int Compare(ProjectFeeSetting x, ProjectFeeSetting y)
+        {
+            int result = DateTime.Compare(x.StartDate.Date, y.StartDate.Date);
+            if (result == 0)
+            {
+                result = x.ProjectFeeSettingId - y.ProjectFeeSettingId;
+                result = result < -1 ? -1 : result > 1 ? 1 : result;
+            }
+            return result;
+        }
+    }
+
     public static class FinanceExtensions
     {
 
@@ -28,7 +49,7 @@ namespace JoinRpg.Domain
         /// </summary>
         private static ProjectFeeSetting ProjectFeeInfo(this Project project, DateTime operationDate)
             => project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
-                .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault();
+                .OrderByDescending(pfs => pfs, new ProjectFeeSettingComparer()).FirstOrDefault();
 
         /// <summary>
         /// Returns fee info object for today
@@ -208,5 +229,6 @@ namespace JoinRpg.Domain
     {
       return projectAcl.GetCashPaymentType()?.IsActive ?? false;
     }
-  }
+
+    }
 }

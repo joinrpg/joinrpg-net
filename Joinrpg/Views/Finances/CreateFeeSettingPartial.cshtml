@@ -1,29 +1,47 @@
 ﻿@model JoinRpg.Web.Models.CreateProjectFeeSettingViewModel
 
-    @Html.AntiForgeryToken()
-@Html.HiddenFor(model => model.ProjectId)
-    
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.Fee, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Fee, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Fee, "", new { @class = "text-danger" })
-            </div>
-        </div>
+<div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("CreateFeeSetting", "Finances", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <input id="StartDate"
-                       name="StartDate"
-                       data-provide="datepicker"
-                       class="datepicker form-control"
-                       data-date-begin-date="0d"
-                       data-date-format="dd.mm.yyyy"
-                       value="@DateTime.UtcNow.ToString("dd.MM.yyyy")" />
-                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
-            </div>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">Добавление нового взноса</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Укажите размер взноса и с какой даты он начинает действовать.</p>
+
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Fee, htmlAttributes: new { @class = "control-label col-md-5" })
+                            <div class="col-md-7">
+                                @Html.EditorFor(model => model.Fee, new { htmlAttributes = new { @class = "form-control", min = "0" } })
+                                @Html.ValidationMessageFor(model => model.Fee, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label col-md-5" })
+                            <div class="col-md-7">
+                                <input id="StartDate" name="StartDate" value="@Model.StartDate.ToString("dd.MM.yyyy")"
+                                       data-provide="datepicker" class="datepicker form-control"
+                                       data-date-start-date="@Model.StartDate.ToString("dd.MM.yyyy")" data-date-format="dd.mm.yyyy" />
+                                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
+                </div>
+            }
         </div>
     </div>
+</div>

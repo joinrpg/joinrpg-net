@@ -277,7 +277,7 @@ namespace JoinRpg.Web.Models
 
   public abstract class ProjectFeeSettingViewModelBase
   {
-    [Display(Name="Размер взноса")]
+    [Display(Name="Взнос")]
     public int Fee { get; set; }
     [Display(Name = "Действует с")]
     public DateTime StartDate { get; set; }
@@ -285,10 +285,22 @@ namespace JoinRpg.Web.Models
     public int ProjectId { get; set; }
   }
 
-  public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
-  {
-    
-  }
+    public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
+    {
+
+        public CreateProjectFeeSettingViewModel()
+        {
+            // Have to initialize start date here to use it in dialog.
+            // Tomorrow is used on the prod to make sure that wrong fee
+            // will not be used by the immediate subsequent payment confirmation.
+#if DEBUG
+            StartDate = DateTime.UtcNow;
+#else
+            StartDate = DateTime.UtcNow.AddDays(1);
+#endif
+        }
+
+    }
 
   public class ProjectFeeSettingListItemViewModel : ProjectFeeSettingViewModelBase
   {

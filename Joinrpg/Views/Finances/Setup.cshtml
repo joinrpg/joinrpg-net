@@ -251,35 +251,8 @@ else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
 
 </div>
 
-<div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("CreateFeeSetting", "Finances", FormMethod.Post))
-            {
-                var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId};
-
-
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
-            </div>
-                <div class="modal-body">
-                    <p>
-                        Выберите размер взноса и с какого числа он вступает в силу.
-                    </p>
-
-                    @Html.Partial("CreateFeeSettingPartial", localModel)
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
-                </div>
-            }
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div>
-
+@* addFeeSettingModal *@
+@Html.Partial("CreateFeeSettingPartial", new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId } )
 
 <div class="modal fade" id="addPaymentTypeModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
