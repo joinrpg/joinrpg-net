@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,10 +14,21 @@ namespace JoinRpg.Services.Impl
     public class FieldSetupServiceImpl: DbServiceImplBase, IFieldSetupService
     {
 
-        public async Task AddField(int projectId, ProjectFieldType fieldType, string name,
-            string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic,
-            FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups,
-            bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims, int price)
+        public async Task AddField(int projectId,
+            ProjectFieldType fieldType,
+            string name,
+            string fieldHint,
+            bool canPlayerEdit,
+            bool canPlayerView,
+            bool isPublic,
+            FieldBoundTo fieldBoundTo,
+            MandatoryStatus mandatoryStatus,
+            List<int> showForGroups,
+            bool validForNpc,
+            bool includeInPrint,
+            bool showForUnapprovedClaims,
+            int price,
+            string masterFieldHint)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
 
@@ -30,6 +41,7 @@ namespace JoinRpg.Services.Impl
 
                 FieldName = Required(name),
                 Description = new MarkdownString(fieldHint),
+                MasterDescription = new MarkdownString(masterFieldHint),
                 CanPlayerEdit = canPlayerEdit,
                 CanPlayerView = canPlayerView,
                 ValidForNpc = validForNpc,
@@ -38,7 +50,8 @@ namespace JoinRpg.Services.Impl
                 Project = project, //We require it for CreateOrUpdateSpecailGroup                
                 IsActive = true,
                 MandatoryStatus = mandatoryStatus,
-                AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups),
+                AvailableForCharacterGroupIds =
+                    await ValidateCharacterGroupList(projectId, showForGroups),
                 IncludeInPrint = includeInPrint,
                 ShowOnUnApprovedClaims = showForUnapprovedClaims,
                 Price = price,
@@ -50,10 +63,20 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateFieldParams(int projectId, int fieldId, string name,
-            string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic,
-            MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc,
-            bool includeInPrint, bool showForUnapprovedClaims, int price)
+        public async Task UpdateFieldParams(int projectId,
+            int fieldId,
+            string name,
+            string fieldHint,
+            bool canPlayerEdit,
+            bool canPlayerView,
+            bool isPublic,
+            MandatoryStatus mandatoryStatus,
+            List<int> showForGroups,
+            bool validForNpc,
+            bool includeInPrint,
+            bool showForUnapprovedClaims,
+            int price,
+            string masterFieldHint)
         {
             var field = await ProjectRepository.GetProjectField(projectId, fieldId);
 
@@ -61,13 +84,15 @@ namespace JoinRpg.Services.Impl
 
             field.FieldName = Required(name);
             field.Description = new MarkdownString(fieldHint);
+            field.MasterDescription = new MarkdownString(masterFieldHint);
             field.CanPlayerEdit = canPlayerEdit;
             field.CanPlayerView = canPlayerView;
             field.IsPublic = isPublic;
             field.IsActive = true;
             field.MandatoryStatus = mandatoryStatus;
             field.ValidForNpc = validForNpc;
-            field.AvailableForCharacterGroupIds = await ValidateCharacterGroupList(projectId, showForGroups);
+            field.AvailableForCharacterGroupIds =
+                await ValidateCharacterGroupList(projectId, showForGroups);
             field.IncludeInPrint = includeInPrint;
             field.ShowOnUnApprovedClaims = showForUnapprovedClaims;
             field.Price = price;

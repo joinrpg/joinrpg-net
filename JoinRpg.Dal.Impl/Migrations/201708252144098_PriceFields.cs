@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
@@ -10,11 +10,11 @@
             AddColumn("dbo.ProjectFields", "Price", c => c.Int(nullable: false, defaultValue: 0));
             AddColumn("dbo.ProjectFieldDropdownValues", "Price", c => c.Int(nullable: false, defaultValue: 0));
         }
-
+        
         public override void Down()
         {
-            DropColumn("dbo.ProjectFields", "Price");
             DropColumn("dbo.ProjectFieldDropdownValues", "Price");
-        }    
+            DropColumn("dbo.ProjectFields", "Price");
+        }
     }
 }

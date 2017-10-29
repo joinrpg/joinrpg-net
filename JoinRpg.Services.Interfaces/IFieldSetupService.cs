@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -7,19 +7,13 @@ namespace JoinRpg.Services.Interfaces
 {
     public interface IFieldSetupService
     {
-        Task UpdateFieldParams(int projectId, int fieldId, string name, string fieldHint,
-            bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus,
-            List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims,
-            int price);
+        Task UpdateFieldParams(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims, int price, string masterFieldHint);
 
         Task<ProjectField> DeleteField(int projectId, int projectFieldId);
 
         Task DeleteField(ProjectField field);
 
-        Task AddField(int projectId, ProjectFieldType fieldType, string name, string fieldHint,
-            bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo,
-            MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc,
-            bool includeInPrint, bool showForUnapprovedClaims, int price);
+        Task AddField(int projectId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims, int price, string masterFieldHint);
 
         Task CreateFieldValueVariant(int projectId, int projectCharacterFieldId, string label,
             string description, string masterDescription, string programmaticValue, int price);

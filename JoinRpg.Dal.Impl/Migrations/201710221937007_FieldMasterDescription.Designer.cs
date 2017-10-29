@@ -7,13 +7,13 @@ namespace JoinRpg.Dal.Impl.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class PriceFields : IMigrationMetadata
+    public sealed partial class FieldMasterDescription : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PriceFields));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(FieldMasterDescription));
         
         string IMigrationMetadata.Id
         {
-            get { return "201708252144098_PriceFields"; }
+            get { return "201710221937007_FieldMasterDescription"; }
         }
         
         string IMigrationMetadata.Source

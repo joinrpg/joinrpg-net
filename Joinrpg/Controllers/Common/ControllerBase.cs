@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
@@ -24,7 +25,12 @@ namespace JoinRpg.Web.Controllers.Common
     protected override void OnActionExecuting(ActionExecutingContext filterContext)
     {
       ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
-      base.OnActionExecuting(filterContext);
+        if (User.Identity.GetUserId() != null)
+        {
+            ViewBag.UserDisplayName = GetCurrentUser().DisplayName;
+            ViewBag.GravatarHash = GetCurrentUser().Email.GravatarHash().Trim();
+        }
+        base.OnActionExecuting(filterContext);
     }
 
     protected User GetCurrentUser()

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
@@ -83,76 +83,94 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public bool HasPrice { get; }
 
-        private bool GetHasPrice() { return HasPrice; }
-
         /// <summary>
         /// Actual fee has to be paid by the player
         /// </summary>
-        public int Fee { get; set; }
+        public int Fee { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
     [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
     [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
-    public FieldValueViewModel(
-      CustomFieldsViewModel model,
-      [NotNull] FieldWithValue ch,
-      ILinkRenderer renderer)
-    {
-      if (ch == null) throw new ArgumentNullException(nameof(ch));
 
-      Value = ch.Value;
+      public FieldValueViewModel(
+          CustomFieldsViewModel model,
+          [NotNull] FieldWithValue ch,
+          ILinkRenderer renderer)
+      {
+          if (ch == null) throw new ArgumentNullException(nameof(ch));
 
-      DisplayString = ch.Field.SupportsMarkdown()
-        ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
-        : ch.DisplayString.SanitizeHtml();
-      FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
-      FieldName = ch.Field.FieldName;
-      Description = ch.Field.Description.ToHtmlString();
+          Value = ch.Value;
 
-      IsPlayerVisible = ch.Field.CanPlayerView;
-      IsDeleted = !ch.Field.IsActive;
+          DisplayString = ch.Field.SupportsMarkdown()
+              ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
+              : ch.DisplayString.SanitizeHtml();
+          FieldViewType = (ProjectFieldViewType) ch.Field.FieldType;
+          FieldName = ch.Field.FieldName;
 
-      HasValue = ch.HasViewableValue;
+          HasMasterAccess = model.AccessArguments.MasterAccess;
 
-      var hasViewAccess = ch.HasViewableValue
-        && ch.HasViewAccess(model.AccessArguments);
+          if (HasMasterAccess)
+          {
+              Description = new HtmlString(
+                  $"{ch.Field.Description.ToHtmlString()}{ch.Field.MasterDescription.ToHtmlString()}");
+          }
+          else
+          {
+              Description = ch.Field.Description.ToHtmlString();
+          }
 
-      CanView = hasViewAccess && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+          IsPlayerVisible = ch.Field.CanPlayerView;
+          IsDeleted = !ch.Field.IsActive;
 
-      CanEdit = model.EditAllowed 
-        && ch.HasEditAccess(model.AccessArguments, model.Target)
-        && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+          HasValue = ch.HasViewableValue;
+
+          var hasViewAccess = ch.HasViewableValue
+                              && ch.HasViewAccess(model.AccessArguments);
+
+          CanView = hasViewAccess &&
+                    (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+
+          CanEdit = model.EditAllowed
+                    && ch.HasEditAccess(model.AccessArguments, model.Target)
+                    && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
-            // Detecting if field (or its values) has a price or not
-            HasPrice = FieldViewType.SupportsPricing() &&
-                ((FieldViewType.SupportsPricingOnField() && ch.Field.Price != 0)
-                 || (!FieldViewType.SupportsPricingOnField() && ch.GetPossibleValues().Any(v => v.Price != 0)));
+          // Detecting if field (or its values) has a price or not
+          HasPrice = FieldViewType.SupportsPricing() &&
+                     ((FieldViewType.SupportsPricingOnField() && ch.Field.Price != 0)
+                      || (!FieldViewType.SupportsPricingOnField() &&
+                          ch.GetPossibleValues().Any(v => v.Price != 0)));
 
-            //if not "HasValues" types, will be empty
-            ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
-            PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, 
-                ValueList.Any(sv => sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId))).ToArray();
+          //if not "HasValues" types, will be empty
+          ValueList = ch.GetDropdownValues()
+              .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
+          PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v,
+                  HasPrice,
+                  ValueList.Any(sv =>
+                      sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
+              .ToArray();
 
-            if (HasPrice)
-            {
-                if (FieldViewType.SupportsPricingOnField())
-                    Price = ch.Field.Price;
-                Fee = ch.GetCurrentFee();
-            }
+          if (HasPrice)
+          {
+              if (FieldViewType.SupportsPricingOnField())
+                  Price = ch.Field.Price;
+              Fee = ch.GetCurrentFee();
+          }
 
-            ProjectFieldId = ch.Field.ProjectFieldId;
+          ProjectFieldId = ch.Field.ProjectFieldId;
 
-      FieldBound =  (FieldBoundToViewModel) ch.Field.FieldBoundTo;
-      MandatoryStatus = IsDeleted ? MandatoryStatusViewType.Optional : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
+          FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
+          MandatoryStatus = IsDeleted
+              ? MandatoryStatusViewType.Optional
+              : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
 
-      ProjectId = ch.Field.ProjectId;
+          ProjectId = ch.Field.ProjectId;
 
-    }
+      }
 
-        public MandatoryStatusViewType MandatoryStatus { get; }
+      public MandatoryStatusViewType MandatoryStatus { get; }
 
     public FieldBoundToViewModel FieldBound { get; }
     public int ProjectId { get; }
