@@ -1,4 +1,8 @@
-﻿var feeClaimFieldsDisp = null;
+﻿var paymentStatus = null;
+var feeTotal = 0;
+var feeBalance = 0;
+var feeBase = 0;
+var feeClaimFieldsDisp = null;
 var feeCharacterFieldsDisp = null;
 var feeTotalFieldsDisp = null;
 var feeTotalDisp = null;
@@ -59,6 +63,9 @@ function checkFeeElements(target)
 // Checks current payment status and updates view according to it
 function processPaymentStatus(paymentStatus)
 {
+    if (!rowPaymentStatus)
+        return;
+
     $(rowPaymentStatus).removeClass("warning");
     $(rowPaymentStatus).removeClass("danger");
     $(rowPaymentStatus).removeClass("success");
@@ -73,16 +80,24 @@ function processPaymentStatus(paymentStatus)
             $(rowPaymentStatus).addClass("success");
             $(feeMoreToPayDisp).hide();
             $(feeOverpaidDisp).hide();
+            if (feeTotal == 0)
+            {
+                $("#feeInfo0").hide();
+                $("#feeStatus0").hide();
+                $(rowPaymentStatus).hide();
+            }
             break;
         case 1: // overpaid
             $(feeMoreToPayDisp).hide();
             $(feeOverpaidDisp).show();
             $(rowPaymentStatus).addClass("success");
+            $(rowPaymentStatus).show();
             break;
         case 2: // more to pay
             $(feeMoreToPayDisp).show();
             $(feeOverpaidDisp).hide();
             $(rowPaymentStatus).addClass("warning");
+            $(rowPaymentStatus).show();
             if (feePaymentDlgValue)
                 feePaymentDlgValue.value = feeMoreToPayDisp.get();
             break;
@@ -90,6 +105,7 @@ function processPaymentStatus(paymentStatus)
             $(feeMoreToPayDisp).show();
             $(feeOverpaidDisp).hide();
             $(rowPaymentStatus).addClass("danger");
+            $(rowPaymentStatus).show();
             if (feePaymentDlgValue)
                 feePaymentDlgValue.value = feeMoreToPayDisp.get();
             break;
@@ -127,7 +143,7 @@ function feeChanged(target, fee)
 
         // Updating total amout to pay
         feeTotalDisp.ch(oldFee, fee);
-        var feeTotal = feeTotalDisp.get();
+        feeTotal = feeTotalDisp.get();
         feeTotalDisp2.set(feeTotal);
 
         // More to pay
@@ -245,6 +261,7 @@ $(function ()
     rowPaymentStatus = document.getElementById("rowPaymentStatus");
 
     feePaymentDlgValue = document.getElementById("Money");
-    
-    processPaymentStatus(paymentStatus);
+
+    if (paymentStatus != null)
+        processPaymentStatus(paymentStatus);
 });
