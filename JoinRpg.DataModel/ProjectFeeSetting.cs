@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,14 +14,10 @@ namespace JoinRpg.DataModel
         public DateTime StartDate { get; set; }
 
         // Used to initialize start date here to use it in dialog.
-        // Tomorrow is used on the prod to make sure that wrong fee
-        // will not be applied by the immediate subsequent payment confirmation.
+        // Tomorrow is used to make sure that wrong fee will not be applied
+        // by the immediate subsequent payment confirmation.
         public static DateTime MinDate
-#if DEBUG
-            => DateTime.UtcNow;
-#else
             => DateTime.UtcNow.AddDays(1);
-#endif
 
         #region Implementation of IValidatableObject
 
