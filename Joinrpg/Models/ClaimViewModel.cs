@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -87,7 +87,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns true if project is active and there are any payment method available
         /// </summary>
-        public bool CanAcceptPayment
+        public bool IsPaymentsEnabled
             => (PaymentTypes?.Any() ?? false) && ProjectActive;
 
     [ReadOnly(true)]
