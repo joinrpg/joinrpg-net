@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
@@ -27,7 +28,7 @@ namespace JoinRpg.Web.Controllers.Common
       ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
         if (User.Identity.GetUserId() != null)
         {
-            ViewBag.UserDisplayName = GetCurrentUser().DisplayName;
+            ViewBag.UserDisplayName = GetCurrentUser().GetDisplayName();
             ViewBag.GravatarHash = GetCurrentUser().Email.GravatarHash().Trim();
         }
         base.OnActionExecuting(filterContext);

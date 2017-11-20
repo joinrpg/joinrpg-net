@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
           Player = new PlayerInfo()
           {
             PlayerId = claim.Player.UserId,
-            NickName = claim.Player.DisplayName,
+            NickName = claim.Player.GetDisplayName(),
             FullName = claim.Player.FullName,
             OtherNicks = claim.Player.Extra?.Nicknames ?? ""
           },

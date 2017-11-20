@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.CheckIn
 {
@@ -30,7 +31,7 @@ namespace JoinRpg.Web.Models.CheckIn
       ClaimId = claim.ClaimId;
       CharacterName = claim.CharacterName;
       Fullname = claim.Player.FullName;
-      NickName = claim.Player.DisplayName;
+      NickName = claim.Player.GetDisplayName();
       OtherNicks = claim.Player.Extra?.Nicknames ?? "";
     }
 

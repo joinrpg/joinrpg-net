@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Models.Print
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
       ResponsibleMaster = character.GetResponsibleMaster();
-      PlayerDisplayName = character.ApprovedClaim?.Player.DisplayName;
+      PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
       PlayerFullName = character.ApprovedClaim?.Player.FullName;
     }
   }

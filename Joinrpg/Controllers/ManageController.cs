@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -214,7 +215,7 @@ namespace JoinRpg.Web.Controllers
         UserId = user.UserId,
         FatherName = user.FatherName,
         BornName = user.BornName,
-        PrefferedName = user.DisplayName,
+        PrefferedName = user.GetDisplayName(),
         //Gender = user.Extra.Gender,
         //BirthDate = user.Extra.BirthDate,
         PhoneNumber = user.Extra?.PhoneNumber,

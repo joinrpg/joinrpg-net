@@ -61,7 +61,7 @@
             {
                 case CharacterBusyStatusView.HasPlayer:
                 <a href="@Url.Action("Edit", "Claim", new {Model.ProjectId, ClaimId = item.ApprovedClaimId}, null)">
-                    @Html.DisplayFor(modelItem => item.Player.DisplayName)
+                    @Html.DisplayFor(modelItem => item.Player.GetDisplayName())
                 </a>
                     break;
                 case CharacterBusyStatusView.Discussed:

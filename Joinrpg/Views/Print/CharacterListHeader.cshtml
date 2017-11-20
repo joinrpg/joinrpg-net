@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models.Plot
+﻿@using JoinRpg.Domain
+@using JoinRpg.Web.Models.Plot
 @using JoinRpg.Helpers
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 <div style="border: solid 5px">
@@ -17,7 +18,7 @@
                 }
                 else
                 {
-                @Model.ResponsibleMaster.DisplayName
+                @Model.ResponsibleMaster.GetDisplayName()
                 }
             </td>
 

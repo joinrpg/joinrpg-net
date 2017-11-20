@@ -1,4 +1,5 @@
 ﻿@using JetBrains.Annotations
+@using JoinRpg.Domain
 @using JoinRpg.Web.Models.Characters
 @model CharacterNavigationViewModel
 
@@ -64,7 +65,7 @@ else
                 <ul class="dropdown-menu">
                     @foreach (var claim in Model.DiscussedClaims)
                     {
-                        @NavigationItem(CharacterNavigationPage.None, claim.Player.DisplayName, "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                        @NavigationItem(CharacterNavigationPage.None, claim.Player.GetDisplayName(), "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
                     }
                 </ul>
             </li>
@@ -80,7 +81,7 @@ else
                 <ul class="dropdown-menu">
                     @foreach (var claim in Model.RejectedClaims)
                     {
-                        @NavigationItem(CharacterNavigationPage.None, claim.Player.DisplayName, "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                        @NavigationItem(CharacterNavigationPage.None, claim.Player.GetDisplayName(), "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
                     }
                 </ul>
             </li>

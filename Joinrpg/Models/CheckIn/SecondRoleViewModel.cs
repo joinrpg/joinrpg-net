@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
@@ -21,7 +21,7 @@ namespace JoinRpg.Web.Models.CheckIn
           {
             Id = c.CharacterId.ToString(),
             Name = c.CharacterName,
-            Master = c.GetResponsibleMaster()?.DisplayName ?? "нет",
+            Master = c.GetResponsibleMaster()?.GetDisplayName() ?? "нет",
           });
     }
 
