@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,7 +76,7 @@ namespace JoinRpg.Web.Helpers
       var player = character.ApprovedClaim?.Player;
       var playerString = player == null
         ? "нет игрока"
-        : $"{player.DisplayName}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
+        : $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
       return $"<span>{characterLink}&nbsp;({playerString})</span>";
     }
 

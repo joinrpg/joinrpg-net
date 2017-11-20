@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Controllers
         var accessReason = (AccessReason) user.GetProfileAccess(currentUser);
         var userProfileViewModel = new UserProfileViewModel()
         {
-          DisplayName = user.DisplayName,
+          DisplayName = user.GetDisplayName(),
           ThisUserProjects = user.ProjectAcls,
           UserId = user.UserId,
           Details = new  UserProfileDetailsViewModel(user, accessReason),

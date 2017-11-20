@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Controllers
 <b>ФИО</b>: {v.PlayerFullName ?? "нет"}<br>
 <hr>
 <b>Персонаж</b>: {v.CharacterName ?? "нет"}<br>
-<b>Мастер</b>: {v.ResponsibleMaster?.DisplayName ?? "нет"}<br>
+<b>Мастер</b>: {v.ResponsibleMaster?.GetDisplayName() ?? "нет"}<br>
 <hr>
 <i>{v.Groups.Select(g => g.Name).JoinStrings(" • ")}</i><br>
 ", CardSize.A7));

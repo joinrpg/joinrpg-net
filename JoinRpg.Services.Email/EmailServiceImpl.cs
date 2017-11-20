@@ -207,7 +207,7 @@ namespace JoinRpg.Services.Email
 
 {model.Text.Contents}
 
-{model.Initiator.DisplayName}
+{model.Initiator.GetDisplayName()}
 
 Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
 ", model.Initiator.ToRecipient());
@@ -232,7 +232,7 @@ namespace JoinRpg.Services.Email
 
             Func<bool, string> target = (forMessageBody) => model.IsCharacterMail
               ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
-              : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim.Name} {(forMessageBody ? $", игрок {model.Claim.Player.DisplayName}" : "")}";
+              : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim.Name} {(forMessageBody ? $", игрок {model.Claim.Player.GetDisplayName()}" : "")}";
 
 
             string linkString = model.IsCharacterMail
@@ -247,7 +247,7 @@ namespace JoinRpg.Services.Email
 
 Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
 
-{model.Initiator.DisplayName}
+{model.Initiator.GetDisplayName()}
 
 ";
                 //All emails related to claim should have the same title, even if the change was made to a character
@@ -256,7 +256,7 @@ namespace JoinRpg.Services.Email
                 await SendEmail(
                     recipients,
                     claim != null
-                        ? GetClaimEmailTitle(model.ProjectName, claim.Name, claim.Player.DisplayName)
+                        ? GetClaimEmailTitle(model.ProjectName, claim.Name, claim.Player.GetDisplayName())
                         : $"{model.ProjectName}: {target(false)}",
                     model.Initiator.ToRecipient(),
                     new MarkdownString(text));
@@ -314,7 +314,7 @@ namespace JoinRpg.Services.Email
             await SendEmail(recipients, $"{model.ProjectName}: {model.Subject}",
               $@"{body}
 
-{model.Initiator.DisplayName}
+{model.Initiator.GetDisplayName()}
 ", model.Initiator.ToRecipient());
         }
         #endregion
@@ -372,13 +372,13 @@ namespace JoinRpg.Services.Email
               .ToList();
 
             string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
-Заявка {model.Claim.Name} игрока {model.Claim.Player.DisplayName} {actionName} {model.GetInitiatorString()}
+Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
 {MailGunExts.GetUserDependentValue(changedFieldsKey)}
 {model.Text.Contents}
 
-{model.Initiator.DisplayName}
+{model.Initiator.GetDisplayName()}
 
 Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
 ";
@@ -405,7 +405,7 @@ namespace JoinRpg.Services.Email
                 case ParcipantType.Nobody:
                 return "";
                 case ParcipantType.Master:
-                return $"мастером {model.Initiator.DisplayName}";
+                return $"мастером {model.Initiator.GetDisplayName()}";
                 case ParcipantType.Player:
                 return "игроком";
                 default:
@@ -415,7 +415,7 @@ namespace JoinRpg.Services.Email
 
         public static string GetPlayerName(this ClaimEmailModel model)
         {
-            return model.Claim.Player.DisplayName;
+            return model.Claim.Player.GetDisplayName();
         }
 
         public static bool GetEmailEnabled(this EmailModelBase model)

@@ -61,6 +61,7 @@
     <Compile Include="CustomFieldsExtensionsTest.cs" />
     <Compile Include="FieldSaveHelperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UserExtensionsTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj">

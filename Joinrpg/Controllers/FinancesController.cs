@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
@@ -248,7 +249,7 @@ namespace JoinRpg.Web.Controllers
             fg =>
               new MoneySummaryByMasterListItemViewModel(fg.Sum(fo => fo.MoneyAmount), fg.Key))
           .Where(fr => fr.Total != 0)
-          .OrderBy(fr => fr.Master.DisplayName);
+          .OrderBy(fr => fr.Master.GetDisplayName());
 
       return
         await

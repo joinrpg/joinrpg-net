@@ -557,7 +557,7 @@ namespace JoinRpg.Services.Impl
       var newMaster = await UserRepository.GetById(responsibleMasterId);
 
       var email = await
-        AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser?.DisplayName ?? "N/A"} → {newMaster.DisplayName}", claim,
+        AddCommentWithEmail<ChangeResponsibleMasterEmail>($"{claim.ResponsibleMasterUser?.GetDisplayName() ?? "N/A"} → {newMaster.GetDisplayName()}", claim,
           isVisibleToPlayer: true, predicate: s => s.ClaimStatusChange, parentComment: null,
           extraAction: CommentExtraAction.ChangeResponsible, extraSubscriptions: new [] {newMaster});
       

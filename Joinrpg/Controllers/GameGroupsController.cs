@@ -181,7 +181,7 @@ namespace JoinRpg.Web.Controllers
         ch.IsFirstCopy,
         ch.CharacterName,
         Description = ch.Description?.ToHtmlString(),
-        PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.DisplayName,
+        PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.GetDisplayName(),
         PlayerId = ch.HidePlayer ? null : ch.Player?.UserId, //TODO Remove
         PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {ch.Player?.UserId }),
         ch.ActiveClaimsCount,
@@ -250,7 +250,7 @@ namespace JoinRpg.Web.Controllers
     private static string GetDefaultResponsible(IClaimSource group, bool includeSelf)
     {
       var result = group.GetResponsibleMasters(includeSelf)
-          .Select(u => u.DisplayName)
+          .Select(u => u.GetDisplayName())
           .JoinStrings(", ");
       return string.IsNullOrWhiteSpace(result) ? "Никто" : result;
     }
