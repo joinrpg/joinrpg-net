@@ -14,10 +14,12 @@
     <tr class="@fo.State.ToRowClass()"><td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td><td></td><td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td><td>@(fo.Approved ? "" : fo.State.ToTitleString())</td></tr>
 }
 
+@* All variables below are declared in claim.js *@
 <script type="text/javascript">
-    var paymentStatus = @((int)Model.PaymentStatus);
-    var feeBalance = @(Model.CurrentBalance);
-    var feeBase = @(Model.BaseFee);
+    paymentStatus = @((int) Model.PaymentStatus);
+    feeTotal = @(Model.CurrentTotalFee);
+    feeBalance = @(Model.CurrentBalance);
+    feeBase = @(Model.BaseFee);
 </script>
 <div id="feeInfo" class="collapse in">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
     <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
@@ -72,7 +74,7 @@
                 </th>
                 <th class="price-table text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
                 <th class="price-table text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
-                <th></th>
+                <th>&nbsp;</th>
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)
             {

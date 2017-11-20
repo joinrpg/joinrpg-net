@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -83,6 +83,12 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public IEnumerable<PaymentType> PaymentTypes { get; }
+
+        /// <summary>
+        /// Returns true if project is active and there are any payment method available
+        /// </summary>
+        public bool IsPaymentsEnabled
+            => (PaymentTypes?.Any() ?? false) && ProjectActive;
 
     [ReadOnly(true)]
     public IEnumerable<ProblemViewModel> Problems { get; }
@@ -325,8 +331,6 @@ namespace JoinRpg.Web.Models
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
             FinanceOperations = claim.FinanceOperations;
 
-            ShowFee = CurrentBalance > 0 || CurrentFee > 0 || CurrentTotalFee > 0 || HasFieldsWithFee;
-
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
         }
@@ -361,11 +365,15 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
 
-
         /// <summary>
-        /// If fee exists in project
+        /// true if fee row should be visible in claim editor.
+        /// One of the following conditions has to be met:
+        /// CurrentBalance > 0 (player sends some money),
+        /// or there is any base fee (assigned manually or automatically),
+        /// or there is at least one field with fee
         /// </summary>
-        public bool ShowFee { get; }
+        public bool ShowFee
+            => CurrentBalance > 0 || HasBaseFee || HasFieldsWithFee;
 
         /// <summary>
         /// Returns count of fields with assigned fee
