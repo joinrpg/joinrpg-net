@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -7,6 +7,5 @@ namespace JoinRpg.DataModel
   {
     [NotNull]
     Project Project { get; }
-    int ProjectId { get; }
   }
 }

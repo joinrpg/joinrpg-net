@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,13 +9,17 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global (virtual methods used by LINQ)
-  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity
+  public class CharacterGroup : IClaimSource, IDeletableSubEntity, IValidatableObject, IEquatable<CharacterGroup>, ICreatedUpdatedTrackedForEntity, ILinkable
   {
 
 
     public int CharacterGroupId { get; set; }
 
-    public int ProjectId { get; set; }
+      public LinkType LinkType => LinkType.ResultCharacterGroup;
+      public string Identification => CharacterGroupId.ToString();
+      int? ILinkable.ProjectId => ProjectId;
+
+      public int ProjectId { get; set; }
     int IOrderableEntity.Id => CharacterGroupId;
 
     public virtual Project Project { get; set; }

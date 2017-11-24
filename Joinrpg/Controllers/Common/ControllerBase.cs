@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
-using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers.Common
@@ -63,12 +62,7 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    protected ActionResult RedirectToAction(RouteTarget routeTarget)
-    {
-      return Redirect(routeTarget.GetUri(Url).ToString());
-    }
-
-    protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
+      protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
     {
       //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
       var post = Request.Unvalidated.Form.ToDictionary();

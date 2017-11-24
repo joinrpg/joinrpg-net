@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace JoinRpg.DataModel
 {
-  public interface IWorldObject : IProjectEntity
+  public interface IWorldObject : IProjectEntity, ILinkable
   {
     IEnumerable<CharacterGroup> ParentGroups { get;  }
     string Name { get; }

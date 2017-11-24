@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.CommonTypes;
@@ -64,14 +65,13 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
     public bool InWorkOnly { get; }
 
-    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project,
-      int? currentUserId, bool inWorkOnly = false)
+    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, IUriService uriService, bool inWorkOnly = false)
       : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
     {
       InWorkOnly = inWorkOnly;
       Folders =
         folders
-          .Select(f => new PlotFolderListFullItemViewModel(f, currentUserId))
+          .Select(f => new PlotFolderListFullItemViewModel(f, currentUserId, uriService))
           .OrderBy(pf => pf.Status)
           .ThenBy(pf => pf.PlotFolderMasterTitle);
     }
@@ -83,7 +83,7 @@ namespace JoinRpg.Web.Models.Plot
     public IEnumerable<PlotElementViewModel> Elements { get; }
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 
-    public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId) : base(folder, currentUserId)
+    public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId, IUriService uriService) : base(folder, currentUserId)
     {
       Summary = folder.MasterSummary.ToHtmlString();
 
@@ -94,7 +94,7 @@ namespace JoinRpg.Web.Models.Plot
 
         Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
           .Select(
-            p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion()))
+            p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion(), uriService))
           .MarkFirstAndLast();
       }
       else

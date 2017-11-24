@@ -611,7 +611,7 @@
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\TargetedSearchResultViewModel.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
