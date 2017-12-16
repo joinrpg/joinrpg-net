@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
@@ -649,6 +649,12 @@ namespace JoinRpg.Services.Impl
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }
+    }
+
+    public async Task ConsealComment(CommentDiscussion discussion, int commentId)
+    {
+       discussion.Comments.FirstOrDefault(comment => comment.CommentId == commentId).IsVisibleToPlayer= !discussion.Comments.FirstOrDefault(comment => comment.CommentId == commentId).IsVisibleToPlayer;
+       await UnitOfWork.SaveChangesAsync();
     }
   }
 }

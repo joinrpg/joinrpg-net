@@ -29,6 +29,8 @@ namespace JoinRpg.Services.Interfaces
     Task UnsubscribeClaimToUser(int projectId, int claimId);
     Task CheckInClaim(int projectId, int claimId, int money);
     Task<int> MoveToSecondRole(int projectId, int claimId, int characterId);
+
+    Task ConsealComment(DataModel.CommentDiscussion discussion, int commentId);
   }
 
   //TODO[Localize]
