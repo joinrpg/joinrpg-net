@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +22,7 @@ namespace JoinRpg.Web.Controllers
   {
     private readonly IPlotService _plotService;
     private readonly IPlotRepository _plotRepository;
+        private IUriService UriService { get; }
 
     [MasterAuthorize(AllowPublish = true)]
     public async Task<ActionResult> Index(int projectId)
@@ -79,7 +80,8 @@ namespace JoinRpg.Web.Controllers
                new PlotFolderFullListViewModel(
                  folders, 
                  project, 
-                 CurrentUserIdOrDefault));
+                 CurrentUserIdOrDefault,
+                 UriService));
     }
 
     [MasterAuthorize(AllowPublish = true)]
@@ -88,18 +90,26 @@ namespace JoinRpg.Web.Controllers
       var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
       var project = await GetProjectFromList(projectId, folders);
       return View("FlatList",
-               new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, true));
+               new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
     }
 
-    public PlotController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IPlotService plotService, IPlotRepository plotRepository,
-      IExportDataService exportDataService) : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      _plotService = plotService;
-      _plotRepository = plotRepository;
-    }
+      public PlotController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IPlotService plotService,
+          IPlotRepository plotRepository,
+          IExportDataService exportDataService,
+          IUriService uriService) : base(userManager,
+          projectRepository,
+          projectService,
+          exportDataService)
+      {
+          _plotService = plotService;
+          _plotRepository = plotRepository;
+          UriService = uriService;
+      }
 
-    [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
+      [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Create(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
@@ -139,7 +149,7 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-      return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault));
+      return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, UriService));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanManagePlots)]
@@ -155,7 +165,7 @@ namespace JoinRpg.Web.Controllers
       {
         ModelState.AddException(exception);
         var folder = await _plotRepository.GetPlotFolderAsync(viewModel.ProjectId, viewModel.PlotFolderId);
-        viewModel.Fill(folder, CurrentUserId);
+        viewModel.Fill(folder, CurrentUserId, UriService);
         return View(viewModel);
       }
     }
@@ -279,7 +289,7 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-      return View(new EditPlotFolderViewModel(folder, CurrentUserId));
+      return View(new EditPlotFolderViewModel(folder, CurrentUserId, UriService));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
@@ -324,7 +334,8 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
       var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
-        folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots));
+        folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
+          UriService);
       return View(viewModel);
     }
 
@@ -397,7 +408,8 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
       return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
-        CurrentUserId, version));
+        CurrentUserId,
+          UriService, version));
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -25,6 +25,7 @@ namespace JoinRpg.Web.Controllers
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
+        private IUriService UriService { get; }
 
     [HttpGet]
     [Authorize]
@@ -44,22 +45,29 @@ namespace JoinRpg.Web.Controllers
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
-    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository, IFinanceService financeService,
-      IExportDataService exportDataService, IPluginFactory pluginFactory,
-      ICharacterRepository characterRepository)
-      : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      _claimService = claimService;
-      _plotRepository = plotRepository;
-      _claimsRepository = claimsRepository;
-      FinanceService = financeService;
-      PluginFactory = pluginFactory;
-      CharacterRepository = characterRepository;
-    }
+      public ClaimController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IClaimService claimService,
+          IPlotRepository plotRepository,
+          IClaimsRepository claimsRepository,
+          IFinanceService financeService,
+          IExportDataService exportDataService,
+          IPluginFactory pluginFactory,
+          ICharacterRepository characterRepository,
+          IUriService uriService)
+          : base(userManager, projectRepository, projectService, exportDataService)
+      {
+          _claimService = claimService;
+          _plotRepository = plotRepository;
+          _claimsRepository = claimsRepository;
+          FinanceService = financeService;
+          PluginFactory = pluginFactory;
+          CharacterRepository = characterRepository;
+          UriService = uriService;
+      }
 
-    [HttpPost]
+      [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
@@ -114,7 +122,7 @@ namespace JoinRpg.Web.Controllers
       var plots = claim.IsApproved && claim.Character != null
         ? await _plotRepository.GetPlotsForCharacter(claim.Character)
         : new PlotElement[] { };
-      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots);
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
@@ -436,7 +444,8 @@ namespace JoinRpg.Web.Controllers
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
-        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
+          UriService);
 
       await _claimService.SubscribeClaimToUser(projectid, claimid);
       var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -459,7 +468,8 @@ namespace JoinRpg.Web.Controllers
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
-        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
+          UriService);
 
 
       await _claimService.UnsubscribeClaimToUser(projectid, claimid);

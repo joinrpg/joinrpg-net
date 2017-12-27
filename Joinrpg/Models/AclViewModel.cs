@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
 
@@ -58,7 +59,7 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Редактор сюжетов", Description = "может добавлять и удалять сюжеты и вводные, назначать группы и персонажей, которым они видны, публиковать вводные")]
     public bool CanManagePlots { get; set; }
 
-    public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, User currentUser)
+    public static AclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, User currentUser, IUriService uriService)
     {
       return new AclViewModel
       {
@@ -76,7 +77,7 @@ namespace JoinRpg.Web.Models
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = count,
         UserDetails = new UserProfileDetailsViewModel(acl.User, (AccessReason) acl.User.GetProfileAccess(currentUser)),
-        ResponsibleFor = groups.Select(group => group.AsObjectLink()),
+        ResponsibleFor = groups.AsObjectLinks(uriService),
       };
     }
   }
@@ -91,7 +92,7 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public IEnumerable<MasterListItemViewModel> Masters { get; private set; }
-    public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups)
+    public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, IUriService uriService)
     {
       return new DeleteAclViewModel
       {
@@ -101,7 +102,7 @@ namespace JoinRpg.Web.Models
         ProjectName = acl.Project.ProjectName,
         ClaimsCount = count,
         UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
-        ResponsibleFor = groups.Select(group => group.AsObjectLink()),
+        ResponsibleFor = groups.AsObjectLinks(uriService),
         Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name)
     };
     }

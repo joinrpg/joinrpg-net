@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -104,86 +105,92 @@ namespace JoinRpg.Web.Models
 
     public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
-    public ClaimViewModel(User currentUser, Claim claim,
-      IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
-      IReadOnlyCollection<PlotElement> plotElements)
-    {
-      ClaimId = claim.ClaimId;
-      CommentDiscussionId = claim.CommentDiscussionId;
-      RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
-      HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-      CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
-      IsMyClaim = claim.PlayerUserId == currentUser.UserId;
-      Player = claim.Player;
-      ProjectId = claim.ProjectId;
-      Status = (ClaimStatusView) claim.ClaimStatus;
-      CharacterGroupId = claim.CharacterGroupId;
-      GroupName = claim.Group?.CharacterGroupName;
-      CharacterId = claim.CharacterId;
-      CharacterActive = claim.Character?.IsActive;
-      OtherClaimsForThisCharacterCount = claim.IsApproved
-        ? 0
-        : claim.OtherClaimsForThisCharacter().Count();
-      HasOtherApprovedClaim = !claim.IsApproved &&
-                              claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-      Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
-      OtherClaimsFromThisPlayerCount =
-        OtherClaimsFromThisPlayerCount =
-          claim.IsApproved || claim.Project.Details.EnableManyCharacters
-            ? 0
-            : claim.OtherPendingClaimsForThisPlayer().Count();
-      Description = claim.Character?.Description.ToHtmlString();
-      Masters =
-        claim.Project.GetMasterListViewModel()
-          .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
-      ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
-      ResponsibleMaster = claim.ResponsibleMasterUser;
-      Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
-      Navigation =
-        CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId,
-          CharacterNavigationPage.Claim);
-      ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
-      Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-      PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
-        (AccessReason) claim.Player.GetProfileAccess(currentUser));
-      PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
-      ProjectActive = claim.Project.Active;
-      CheckInStarted = claim.Project.Details.CheckInProgress;
-      CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-      Validator = new ClaimCheckInValidator(claim);
-
-      if (claim.PlayerUserId == currentUser.UserId ||
-          claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+      public ClaimViewModel(User currentUser,
+          Claim claim,
+          IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
+          IReadOnlyCollection<PlotElement> plotElements,
+          IUriService uriService)
       {
-        //Finance admins can create any payment. User also can create any payment, but it will be moderated
-        PaymentTypes = claim.Project.ActivePaymentTypes;
-      }
-      else
-      {
-        //All other master can create only payment from user to himself.
-        PaymentTypes =
-          claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
-      }
+          ClaimId = claim.ClaimId;
+          CommentDiscussionId = claim.CommentDiscussionId;
+          RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
+          HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
+          CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+          IsMyClaim = claim.PlayerUserId == currentUser.UserId;
+          Player = claim.Player;
+          ProjectId = claim.ProjectId;
+          Status = (ClaimStatusView) claim.ClaimStatus;
+          CharacterGroupId = claim.CharacterGroupId;
+          GroupName = claim.Group?.CharacterGroupName;
+          CharacterId = claim.CharacterId;
+          CharacterActive = claim.Character?.IsActive;
+          OtherClaimsForThisCharacterCount = claim.IsApproved
+              ? 0
+              : claim.OtherClaimsForThisCharacter().Count();
+          HasOtherApprovedClaim = !claim.IsApproved &&
+                                  claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
+          Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
+          OtherClaimsFromThisPlayerCount =
+              OtherClaimsFromThisPlayerCount =
+                  claim.IsApproved || claim.Project.Details.EnableManyCharacters
+                      ? 0
+                      : claim.OtherPendingClaimsForThisPlayer().Count();
+          Description = claim.Character?.Description.ToHtmlString();
+          Masters =
+              claim.Project.GetMasterListViewModel()
+                  .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
+          ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
+          ResponsibleMaster = claim.ResponsibleMasterUser;
+          Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
+          Navigation =
+              CharacterNavigationViewModel.FromClaim(claim,
+                  currentUser.UserId,
+                  CharacterNavigationPage.Claim);
+          ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
+          Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
+          PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
+              (AccessReason) claim.Player.GetProfileAccess(currentUser));
+          PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
+          ProjectActive = claim.Project.Active;
+          CheckInStarted = claim.Project.Details.CheckInProgress;
+          CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
+          Validator = new ClaimCheckInValidator(claim);
+
+          if (claim.PlayerUserId == currentUser.UserId ||
+              claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+          {
+              //Finance admins can create any payment. User also can create any payment, but it will be moderated
+              PaymentTypes = claim.Project.ActivePaymentTypes;
+          }
+          else
+          {
+              //All other master can create only payment from user to himself.
+              PaymentTypes =
+                  claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
+          }
 
 
-      if (claim.Character != null)
-      {
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-          claim.HasMasterAccess(currentUser.UserId));
+          if (claim.Character != null)
+          {
+              ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
+                  claim.HasMasterAccess(currentUser.UserId));
+          }
+
+          if (claim.IsApproved && claim.Character != null)
+          {
+              var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
+              Plot = PlotDisplayViewModel.Published(readOnlyList,
+                  currentUser.UserId,
+                  claim.Character,
+                  uriService);
+          }
+          else
+          {
+              Plot = PlotDisplayViewModel.Empty();
+          }
       }
 
-      if (claim.IsApproved && claim.Character != null)
-      {
-        var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-        Plot = PlotDisplayViewModel.Published(readOnlyList, currentUser.UserId, claim.Character);
-      }
-      else
-      {
-        Plot = PlotDisplayViewModel.Empty();
-      }
-    }
-
-    public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
+      public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
       IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
     {
       string claimStatusChangeGroup = "";
