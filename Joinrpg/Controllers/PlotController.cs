@@ -367,7 +367,8 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken, HttpPost]
+        //TODO: Make this POST
+    [MasterAuthorize(Permission.CanEditRoles)]
 
     public async Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
     {
