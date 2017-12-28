@@ -45,7 +45,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
                             @if (comment.HasMasterAccess && comment.ChildComments.Count()==0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
                             {
-                            <a href="@Url.Action("ConsealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId })" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
+                            <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
                             }
 
                         </div>

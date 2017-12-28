@@ -651,10 +651,16 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task ConsealComment(CommentDiscussion discussion, int commentId)
+    public async Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId)
     {
-       discussion.Comments.FirstOrDefault(comment => comment.CommentId == commentId).IsVisibleToPlayer= !discussion.Comments.FirstOrDefault(comment => comment.CommentId == commentId).IsVisibleToPlayer;
-       await UnitOfWork.SaveChangesAsync();
+        var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
+        var ChildComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
+        var comment = discussion.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
+        if (comment.HasMasterAccess(currentUserId) && ChildComments.Count() == 0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+        {
+          comment.IsVisibleToPlayer = false;
+          await UnitOfWork.SaveChangesAsync();
+        }
     }
   }
 }

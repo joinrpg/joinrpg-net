@@ -230,11 +230,9 @@ namespace JoinRpg.Web.Controllers
       return View(viewModel);
     }
 
-    public async Task<ActionResult> ConsealComment(int projectid, int commentid, int commentDiscussionId)
+    public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
     {
-       CommentDiscussion discussion;
-       discussion = await ForumRepository.GetDiscussionByComment(projectid, (int)commentid);
-       await ClaimService.ConsealComment(discussion, commentid);
+       await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
        return await RedirectToDiscussion(projectid,commentid,commentDiscussionId);
     }
   }

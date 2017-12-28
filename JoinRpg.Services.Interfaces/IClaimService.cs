@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Interfaces
     Task CheckInClaim(int projectId, int claimId, int money);
     Task<int> MoveToSecondRole(int projectId, int claimId, int characterId);
 
-    Task ConsealComment(DataModel.CommentDiscussion discussion, int commentId);
+    Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
   }
 
   //TODO[Localize]
