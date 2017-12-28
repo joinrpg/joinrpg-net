@@ -162,4 +162,12 @@ namespace JoinRpg.Domain
     {
     }
   }
+
+  public class JoinRpgConcealCommentException : JoinRpgBaseException
+  {
+     public JoinRpgConcealCommentException(string message = "Current user doesn't have permission to conceal this comment") : base(message)
+     {
+     }
+  }
+
 }
