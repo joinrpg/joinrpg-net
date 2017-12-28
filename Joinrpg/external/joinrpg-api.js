@@ -5,7 +5,7 @@
 }
 
 JoinRpgRoles.prototype.loadRoles = function (projectId, locationId) {
-	var url = this._Settings.baseUrl  || 'http://joinrpg.ru/';	
+	var url = this._Settings.baseUrl  || 'https://joinrpg.ru/';	
 	url = url[url.length - 1] != '/' ? url + '/' : url;
   $.ajax({
            url: url + projectId + '/roles/' + locationId + '/indexjson',
