@@ -1,24 +1,22 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Web.Models
 {
   public class SearchResultViewModel
   {
-    public string SearchString { get; private set; }
-    public IOrderedEnumerable<IGrouping<int?, TargetedSearchResultViewModel>> ResultsByProject { get; private set; }
-    public IReadOnlyDictionary<int, ProjectListItemViewModel> ProjectDetails { get; private set; }
+    public string SearchString { get; }
+    public IOrderedEnumerable<IGrouping<int?, TargetedSearchResultViewModel>> ResultsByProject { get; }
+    public IReadOnlyDictionary<int, ProjectListItemViewModel> ProjectDetails { get; }
 
-    public SearchResultViewModel(
-      string searchString,
-      IEnumerable<ISearchResult> results,
-      IReadOnlyDictionary<int, ProjectListItemViewModel> projectDetails)
+    public SearchResultViewModel(string searchString, IEnumerable<ISearchResult> results, IReadOnlyDictionary<int, ProjectListItemViewModel> projectDetails, IUriService uriService)
     {
       SearchString = searchString;
 
       var targetedResults = results.Select(r =>
-        new TargetedSearchResultViewModel(r, searchString));
+        new TargetedSearchResultViewModel(r, searchString, uriService));
 
       ResultsByProject = ProjectListItemViewModel
         .OrderByDisplayPriority(

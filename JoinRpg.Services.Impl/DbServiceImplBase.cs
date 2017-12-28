@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
@@ -62,7 +62,7 @@ namespace JoinRpg.Services.Impl
       where T : class, IProjectEntity
     {
       var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
-      if (field != null && field.ProjectId == projectId)
+      if (field != null && field.Project.ProjectId == projectId)
       {
         return field;
       }

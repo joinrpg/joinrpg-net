@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Models
 
     public AddClaimViewModel Fill(IClaimSource obj, User user)
     {
-      ProjectId = obj.ProjectId;
+      ProjectId = obj.Project.ProjectId;
       ProjectName = obj.Project.ProjectName;
       HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsPending);
       HasApprovedClaim = !(obj.Project.Details?.EnableManyCharacters ?? false) && obj.Project.Claims.OfUserApproved(user.UserId).Any();

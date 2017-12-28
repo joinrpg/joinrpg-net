@@ -24,8 +24,7 @@
             <div class="panel-body">
                 @foreach(var result in resultsForProject)
                 { 
-                    @*TODO: Can't find template for interface, so damned hard-coded template name*@
-                    @Html.DisplayFor(m => result, "ISearchResult")
+                    @Html.DisplayFor(m => result)
                 }
             </div>
         </div>

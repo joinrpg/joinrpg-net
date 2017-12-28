@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -106,7 +106,7 @@ namespace JoinRpg.Web.Models
     public ForumThreadListItemViewModel(IForumThreadListItem thread, int currentUserId)
     {
       var masterAccess = thread.HasMasterAccess(currentUserId);
-      ProjectId = thread.ProjectId;
+      ProjectId = thread.Project.ProjectId;
       Header = thread.Header;
       Topicstarter = thread.Topicstarter;
 
