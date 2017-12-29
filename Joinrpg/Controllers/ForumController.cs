@@ -229,5 +229,11 @@ namespace JoinRpg.Web.Controllers
       var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(CurrentUserIdOrDefault)), CurrentUserId);
       return View(viewModel);
     }
+
+    public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
+    {
+       await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
+       return await RedirectToDiscussion(projectid,commentid,commentDiscussionId);
+    }
   }
 }

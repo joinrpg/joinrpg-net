@@ -40,7 +40,14 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             {
                                 <span class="label label-default" title="Новый комментарий" id="unread">New</span>
                             }
+
                             <a href="@Url.Action("RedirectToDiscussion", "Forum", new {comment.ProjectId, comment.CommentId})">#</a>
+
+                            @if (comment.HasMasterAccess && comment.ChildComments.Count()==0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+                            {
+                            <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
+                            }
+
                         </div>
                         @if (comment.Finance != null)
                         {

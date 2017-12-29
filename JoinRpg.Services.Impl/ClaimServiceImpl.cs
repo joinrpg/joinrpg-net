@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
@@ -649,6 +649,22 @@ namespace JoinRpg.Services.Impl
       {
         claim.ClaimStatus = Claim.Status.Discussed;
       }
+    }
+
+    public async Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId)
+    {
+        var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
+        var ChildComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
+        var comment = discussion.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
+            if (comment.HasMasterAccess(currentUserId) && ChildComments.Count() == 0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+            {
+                comment.IsVisibleToPlayer = false;
+                await UnitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                throw new JoinRpgConcealCommentException();
+            }
     }
   }
 }
