@@ -24,10 +24,10 @@ namespace JoinRpg.Web.Controllers
             }
 
             var projectDetails =
-                (await _projectRepository.GetAllProjectsWithClaimCount())
+                (await _projectRepository.GetAllProjectsWithClaimCount(CurrentUserIdOrDefault))
                 .ToDictionary(
                     p => p.ProjectId,
-                    p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault));
+                    p => new ProjectListItemViewModel(p));
 
             return View(
                 new SearchResultViewModel(

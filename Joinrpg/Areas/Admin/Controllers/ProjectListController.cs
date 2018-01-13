@@ -14,11 +14,11 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
 
         public async Task<ActionResult> Index()
         {
-            var allProjects =  await _projectRepository.GetActiveProjectsWithClaimCount();
+            var allProjects =  await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserIdOrDefault);
 
             var projects =
                 allProjects
-                    .Select(p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault))
+                    .Select(p => new ProjectListItemViewModel(p))
                     .OrderByDescending(p => p.ClaimCount)
                     .ToList();
 

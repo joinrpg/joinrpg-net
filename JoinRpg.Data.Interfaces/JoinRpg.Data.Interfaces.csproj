@@ -60,6 +60,7 @@
     <Compile Include="IPlotRepository.cs" />
     <Compile Include="IProjectRepository.cs" />
     <Compile Include="IUserRepository.cs" />
+    <Compile Include="ProjectWithClaimCount.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
