@@ -38,7 +38,11 @@ namespace JoinRpg.Services.Impl
 
         private readonly Lazy<ICharacterRepository> _charactersRepository;
         protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
-        protected int CurrentUserId { get; private set; }
+
+        private int? _impersonatedUserId;
+
+        protected int CurrentUserId => _impersonatedUserId ??
+                                       int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
 
         /// <summary>
         /// Time of service creaton. Used to mark consistent time for all operations performed by service
@@ -57,17 +61,16 @@ namespace JoinRpg.Services.Impl
                 new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
 
             Now = DateTime.UtcNow;
-            ResetImpersonation();
         }
 
         protected void StartImpersonate(int userId)
         {
-            CurrentUserId = userId;
+            _impersonatedUserId = userId;
         }
 
         protected void ResetImpersonation()
         {
-            CurrentUserId = int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+            _impersonatedUserId = null;
         }
 
         [NotNull]
