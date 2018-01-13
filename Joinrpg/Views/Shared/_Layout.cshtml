@@ -41,16 +41,16 @@
             <ul class="nav navbar-nav">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <li>@Html.ActionLink("Мои заявки", "My", "ClaimList")</li>
+                    <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new {area = ""}, null)</li>
                 }
-                @Html.Action("MyProjectDropdown", "Menu")
+                @Html.Action("MyProjectDropdown", "Menu", new {area = ""})
                 @if (ViewBag.IsProduction != true)
                 {
-                    <li class="alert-danger hidden-sm">@Html.ActionLink("Тестовая версия", "About", "Home")</li>
+                    <li class="alert-danger hidden-sm">@Html.ActionLink("Тестовая версия", "About", "Home", new { area = "" }, null)</li>
                 }
                 else
                 {
-                    <li class="hidden-sm">@Html.ActionLink("О сайте", "About", "Home")</li>
+                    <li class="hidden-sm">@Html.ActionLink("О сайте", "About", "Home", new { area = "" }, null)</li>
                 }
                 <li class="navbar-text" style="max-width: 10em">
                     @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())

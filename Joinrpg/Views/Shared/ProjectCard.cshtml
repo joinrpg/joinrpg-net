@@ -3,19 +3,19 @@
     <div class="thumbnail">
         <div class="caption">
             <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@Model.ProjectName">
-                <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null)">@Model.ProjectName</a>
+                <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)">@Model.ProjectName</a>
             </h4>
             <p>
                 @if (Model.IsMaster)
                 {
-                    <a href="@Url.Action("Details", "Game", new {Model.ProjectId}, null)"
+                    <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)"
                        class="btn btn-info btn-sm"
                        role="button"
                        title="У меня есть права мастера на этой игре">Мой проект</a>
                 }
                 @if (Model.MyClaims.Any())
                 {
-                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId}, null)"
+                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
                        class="btn btn-success btn-sm"
                        role="button"
                        title="Моя заявка">
@@ -23,7 +23,7 @@
                     </a>
                 }
 
-                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId}, null)"
+                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId, area = ""}, null)"
                    class="btn btn-primary btn-sm"
                    role="button"
                    title="Сетка ролей">
@@ -32,7 +32,7 @@
 
                 @if (!Model.IsMaster && Model.PublishPlot)
                 {
-                <a href="@Url.Action("Index", "Plot", new {Model.ProjectId}, null)"
+                <a href="@Url.Action("Index", "Plot", new {Model.ProjectId, area = ""}, null)"
                    class="btn btn-info btn-sm"
                    role="button">
                      Материалы
@@ -41,7 +41,7 @@
 
                 @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims && Model.IsRootGroupAccepting)
                 {
-                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.ProjectRootGroupId}, null)"
+                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.ProjectRootGroupId, area = ""}, null)"
                        class="btn btn-info btn-sm"
                        role="button">
                         Заявиться
