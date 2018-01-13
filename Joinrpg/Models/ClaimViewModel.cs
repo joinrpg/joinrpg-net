@@ -260,8 +260,8 @@ namespace JoinRpg.Web.Models
     }
 
     public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
-      string ClaimStatusChangeGroup, string CommentsGroup, string FieldChangeGroup,
-      string MoneyOperationGroup)
+      string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
+      string moneyOperationGroup)
     {
       string res;
       if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
@@ -279,19 +279,19 @@ namespace JoinRpg.Web.Models
 
         if (subscrTooltip.ClaimStatusChange)
         {
-          res += "<li>Изменение статуса (группа \"" + ClaimStatusChangeGroup + "\")</li>";
+          res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
         }
         if (subscrTooltip.Comments)
         {
-          res += "<li>Комментарии (группа \"" + CommentsGroup + "\")</li>";
+          res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
         }
         if (subscrTooltip.FieldChange)
         {
-          res += "<li>Изменение полей заявки (группа \"" + FieldChangeGroup + "\")</li>";
+          res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
         }
         if (subscrTooltip.MoneyOperation)
         {
-          res += "<li>Финансовые операции (группа \"" + MoneyOperationGroup + "\")</li>";
+          res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
         }
 
         res += "</ul>";
@@ -313,7 +313,7 @@ namespace JoinRpg.Web.Models
         public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
         {
             // Reading project fee info applicable for today            
-            BaseFeeInfo = claim.CurrentFee != null ? claim.Project.ProjectFeeInfo() : null;
+            BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
             // Reading base fee of a claim
             BaseFee = claim.BaseFee();
             // Checks for base fee availability
@@ -333,6 +333,11 @@ namespace JoinRpg.Web.Models
                 Balance[fo.State] += fo.MoneyAmount;
             
             IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+            PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
+            PreferentialFeeUser = claim.PreferentialFeeUser;
+            PreferentialFeeConditions =
+                claim.Project.Details.PreferentialFeeConditions.ToHtmlString();
+
             ClaimId = claim.ClaimId;
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
@@ -415,6 +420,11 @@ namespace JoinRpg.Web.Models
         public IEnumerable<FinanceOperation> FinanceOperations { get; }
 
         public bool IsFeeAdmin { get; }
+
+        public bool PreferentialFeeEnabled { get; }
+        public bool PreferentialFeeUser { get; }
+        public IHtmlString PreferentialFeeConditions { get; }
+
         public int ClaimId { get; }
         public int ProjectId { get; }
         public IEnumerable<int> FeeVariants { get; }

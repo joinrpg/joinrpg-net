@@ -184,5 +184,13 @@ namespace JoinRpg.Services.Impl
 
           await UnitOfWork.SaveChangesAsync();
       }
+
+      public async Task MarkPreferential(MarkPreferentialRequest request)
+      {
+          var claim = await LoadAndVerifyClaimForRequest(request, acl => acl.CanManageMoney);
+
+          claim.PreferentialFeeUser = request.Preferential;
+          await UnitOfWork.SaveChangesAsync();
+      }
   }
 }

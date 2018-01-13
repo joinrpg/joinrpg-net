@@ -493,5 +493,31 @@ namespace JoinRpg.Web.Controllers
 
       return null;
     }
+
+      [MasterAuthorize(), ValidateAntiForgeryToken]
+      public async Task<ActionResult> MarkPreferential(int claimid, int projectid, bool preferential)
+      {
+          try
+          {
+              if (!ModelState.IsValid)
+              {
+                  return await Edit(projectid, claimid);
+              }
+
+              await
+                  FinanceService.MarkPreferential(new MarkPreferentialRequest
+                  {
+                      ProjectId = projectid,
+                      ClaimId = claimid,
+                      Preferential = preferential
+                  });
+
+              return RedirectToAction("Edit", "Claim", new { claimid, projectid });
+          }
+          catch
+          {
+              return await Edit(projectid, claimid);
+          }
+        }
   }
 }

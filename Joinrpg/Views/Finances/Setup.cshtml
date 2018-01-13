@@ -13,13 +13,13 @@
 @if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
 {
     <div class="alert alert-danger">
-        Необходимо настроить размеры взносов, прежде чем принимать оплату.
+        Необходимо настроить размеры взносов, прежде чем принимать их.
     </div>
 }
-else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
+else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 {
     <div class="alert alert-danger">
-        Необходимо настроить хотя бы один способ приема взносов, прежде чем принимать оплату.
+        Необходимо настроить хотя бы один метод оплаты, прежде чем принимать взносы.
     </div>
 }
 
