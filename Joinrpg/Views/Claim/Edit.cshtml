@@ -455,11 +455,6 @@
 
                     @Html.Partial("_EditFieldsPartial", Model.Fields)
 
-                    if (Model.Fields.HasFieldsWithFee)
-                    {
-                        @Html.Partial("_ClaimFieldsSubtotal", Model.ClaimFee.FieldsTotalFee);
-                    }
-
                     if (Model.Fields.Fields.Any(f => f.CanEdit))
                     {
                     <div class="form-group">
