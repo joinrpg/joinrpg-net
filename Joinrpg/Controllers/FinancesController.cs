@@ -196,7 +196,13 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.CreateFeeSetting(viewModel.ProjectId, viewModel.Fee, viewModel.StartDate);
+          await FinanceService.CreateFeeSetting(new CreateFeeSettingRequest()
+          {
+              ProjectId = viewModel.ProjectId,
+              Fee = viewModel.Fee,
+              PreferentialFee = viewModel.PreferentialFee,
+              StartDate = viewModel.StartDate,
+          });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch
@@ -272,7 +278,9 @@ namespace JoinRpg.Web.Controllers
         await FinanceService.SaveGlobalSettings(new SetFinanceSettingsRequest
         {
             ProjectId = viewModel.ProjectId,
-            WarnOnOverPayment = viewModel.WarnOnOverPayment
+            WarnOnOverPayment = viewModel.WarnOnOverPayment,
+            PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
+            PreferentialFeeConditions = viewModel.PreferentialFeeConditions
         });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }

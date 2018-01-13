@@ -11,6 +11,14 @@ namespace JoinRpg.Services.Interfaces
         public string PreferentialFeeConditions { get; set; }
     }
 
+    public class CreateFeeSettingRequest
+    {
+        public int ProjectId { get; set; }
+        public int Fee { get; set; }
+        public int? PreferentialFee { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+
     public interface IFinanceService
   {
     Task FeeAcceptedOperation(int projectId, int claimId, string contents, DateTime operationDate,
@@ -20,7 +28,7 @@ namespace JoinRpg.Services.Interfaces
     Task TogglePaymentActivness(int projectid, int paymentTypeId);
     Task CreateCustomPaymentType(int projectId, string name, int targetMasterId);
     Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault);
-    Task CreateFeeSetting(int projectId, int fee, DateTime startDate);
+    Task CreateFeeSetting(CreateFeeSettingRequest request);
     Task DeleteFeeSetting(int projectid, int projectFeeSettingId);
     Task ChangeFee(int projectId, int claimId, int feeValue);
     Task SaveGlobalSettings(SetFinanceSettingsRequest request);

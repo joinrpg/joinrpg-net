@@ -111,30 +111,36 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateFeeSetting(int projectId, int fee, DateTime startDate)
-    {
-      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-
-      if (startDate < DateTime.UtcNow.Date.AddDays(-1)) 
+      public async Task CreateFeeSetting(CreateFeeSettingRequest request)
       {
-        throw new CannotPerformOperationInPast();
+          var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
+          project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+
+          if (request.StartDate < DateTime.UtcNow.Date.AddDays(-1))
+          {
+              throw new CannotPerformOperationInPast();
+          }
+
+          if (!project.Details.PreferentialFeeEnabled && request.PreferentialFee != null)
+          {
+              throw new PreferentialFeeNotEnabled();
+          }
+
+          project.ProjectFeeSettings.Add(new ProjectFeeSetting()
+          {
+              Fee = request.Fee,
+              StartDate = request.StartDate,
+              ProjectId = request.ProjectId,
+              PreferentialFee = request.PreferentialFee,
+          });
+
+          var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
+          firstFee.StartDate = project.CreatedDate;
+
+          await UnitOfWork.SaveChangesAsync();
       }
 
-      project.ProjectFeeSettings.Add(new ProjectFeeSetting()
-      {
-        Fee = fee,
-        StartDate = startDate,
-        ProjectId = projectId
-      });
-
-      var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
-      firstFee.StartDate = project.CreatedDate;
-
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
+      public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
@@ -166,13 +172,17 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
-    {
-      var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+      public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
+      {
+          var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
+          project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
-      await UnitOfWork.SaveChangesAsync();
-    }
+          project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
+          project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
+          project.Details.PreferentialFeeConditions =
+              new MarkdownString(request.PreferentialFeeConditions);
+
+          await UnitOfWork.SaveChangesAsync();
+      }
   }
 }
