@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 
 // ReSharper disable once CheckNamespace
@@ -13,10 +13,14 @@ namespace JoinRpg.Domain
         private string _value;
 
         private IReadOnlyList<int> SelectedIds { get; set; }
+
+        private Lazy<IReadOnlyList<ProjectFieldDropdownValue>> OrderedValueCache { get; }
+
         public FieldWithValue(ProjectField field, [CanBeNull] string value)
         {
             Field = field;
             Value = value;
+            OrderedValueCache = new Lazy<IReadOnlyList<ProjectFieldDropdownValue>>(() => Field.GetOrderedValues());
         }
 
         public ProjectField Field { get; }
@@ -44,29 +48,36 @@ namespace JoinRpg.Domain
             {
                 return Value?.StartsWith(CheckboxValueOn) == true ? "☑️" : "☐";
             }
-            if (!Field.HasValueList())
+
+            if (Field.HasValueList())
             {
-                return value ?? "";
+                return
+                    Field.DropdownValues.Where(dv =>
+                            selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
+                        .Select(dv => dv.Label)
+                        .JoinStrings(", ");
             }
-            return
-              Field.DropdownValues.Where(dv => selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
-                .Select(dv => dv.Label)
-                .JoinStrings(", ");
+
+            return value ?? "";
         }
 
         public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
 
         public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
 
-        public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
+        public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(
+            AccessArguments modelAccessArguments)
         {
-            return Field.GetOrderedValues().Where(v => v.IsActive || SelectedIds.Contains(v.ProjectFieldDropdownValueId));
+            return OrderedValueCache.Value.Where(v =>
+                SelectedIds.Contains(v.ProjectFieldDropdownValueId) || 
+                (v.IsActive && (v.PlayerSelectable || modelAccessArguments.MasterAccess))
+                );
         }
 
         [ItemNotNull, NotNull]
         public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues()
         {
-            return Field.GetOrderedValues().Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
+            return OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
         }
 
         [NotNull, ItemNotNull]
@@ -87,7 +98,7 @@ namespace JoinRpg.Domain
                Field.FieldBoundTo == FieldBoundTo.Claim);
         }
 
-        public bool HasEditAccess(AccessArguments accessArguments, IClaimSource target)
+        public bool HasEditAccess(AccessArguments accessArguments)
         {
             return (accessArguments.MasterAccess
                    ||
@@ -106,12 +117,19 @@ namespace JoinRpg.Domain
         /// </summary>
         public int ToInt()
         {
-            int result;
-            if (!int.TryParse(Value, out result))
+            if (!int.TryParse(Value, out var result))
                 result = default(int);
             return result;
         }
 
         public const string CheckboxValueOn = "on";
+
+        public bool SupportsPricing()
+        {
+            return Field.FieldType.SupportsPricing() &&
+                   ((Field.FieldType.SupportsPricingOnField() && Field.Price != 0)
+                    || (!Field.FieldType.SupportsPricingOnField() &&
+                        Field.DropdownValues.Any(v => v.Price != 0)));
+        }
     }
 }

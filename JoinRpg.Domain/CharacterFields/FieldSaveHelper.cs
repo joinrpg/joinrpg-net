@@ -60,7 +60,7 @@ namespace JoinRpg.Domain.CharacterFields
           ? new AccessArguments(Character, CurrentUserId)
           : new AccessArguments(Claim, CurrentUserId);
 
-        var editAccess = field.HasEditAccess(accessArguments, Character ?? Claim.GetTarget());
+        var editAccess = field.HasEditAccess(accessArguments);
         if (!editAccess)
         {
           throw new NoAccessToProjectException(Project, CurrentUserId);

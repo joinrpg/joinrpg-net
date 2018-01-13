@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-    public class ProjectFieldDropdownValue: IDeletableSubEntity, IProjectEntity
+    public class ProjectFieldDropdownValue: IDeletableSubEntity, IProjectEntity, IValidatableObject
     {
         public int ProjectFieldDropdownValueId { get; set; }
         public int ProjectFieldId { get; set; }
@@ -24,6 +25,8 @@ namespace JoinRpg.DataModel
 
         public bool WasEverUsed { get; set; }
 
+        public bool PlayerSelectable { get; set; }
+
         [Required]
         public string Label { get; set; }
 
@@ -40,5 +43,13 @@ namespace JoinRpg.DataModel
 
         [CanBeNull]
         public virtual CharacterGroup CharacterGroup { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (PlayerSelectable && !ProjectField.CanPlayerEdit)
+            {
+                yield return new ValidationResult("Can't enable selection for variant, because field is not player-editable");
+            }
+        }
     }
 }

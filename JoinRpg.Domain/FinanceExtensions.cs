@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -126,7 +126,7 @@ namespace JoinRpg.Domain
         /// </summary>
         private static int CalcClaimFieldsFee(this Claim claim)
         {
-            var values = claim.Project.GetFieldsNotFilled()
+            var values = claim.Project.GetFieldsNotFilledWithoutOrder()
                 .ToList()
                 .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null);
 
