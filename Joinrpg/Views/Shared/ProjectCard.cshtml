@@ -39,7 +39,7 @@
                 </a>
                 }
 
-                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims && Model.IsRootGroupAccepting)
+                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims)
                 {
                     <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.ProjectRootGroupId, area = ""}, null)"
                        class="btn btn-info btn-sm"

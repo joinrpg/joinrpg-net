@@ -114,8 +114,6 @@ namespace JoinRpg.Web.Models
 
         public int ProjectRootGroupId { get; }
 
-        public bool IsRootGroupAccepting { get; }
-
         public bool PublishPlot { get; }
 
         public ProjectListItemViewModel(Project p, int? user)
@@ -129,8 +127,7 @@ namespace JoinRpg.Web.Models
             ClaimCount = p.Claims.Count(c => c.IsActive);
             IsAcceptingClaims = p.IsAcceptingClaims;
             ProjectRootGroupId = p.RootGroup.CharacterGroupId;
-            IsRootGroupAccepting = p.RootGroup.IsAvailable;
-            PublishPlot = p.Details?.PublishPlot ?? false;
+            PublishPlot = p.Details.PublishPlot;
         }
 
         public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
