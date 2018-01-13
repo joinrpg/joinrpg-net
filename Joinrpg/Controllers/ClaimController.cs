@@ -38,9 +38,15 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectid, int? characterGroupId)
     {
-      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+        if (characterGroupId == null)
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectid);
+            return RedirectToAction("AddForGroup",
+                new {project.ProjectId, project.RootGroup.CharacterGroupId});
+        }
+      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
       if (field == null) return HttpNotFound();
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }

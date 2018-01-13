@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
@@ -18,14 +19,45 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
     }
 
-    public async Task<IEnumerable<Project>> GetActiveProjectsWithClaimCount()
-      => await ActiveProjects.Include(p=> p.Claims).ToListAsync();
+      private Expression<Func<Project, ProjectWithClaimCount>> GetProjectWithClaimCountBuilder(
+          int? userId)
+      {
+          var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+          var myClaim = userId == null ? claim => false : ClaimPredicates.GetMyClaim(userId.Value);
+            return project => new ProjectWithClaimCount()
+          {
+              ProjectId = project.ProjectId,
+              Active = project.Active,
+              PublishPlot = project.Details.PublishPlot,
+              ProjectName = project.ProjectName,
+              IsAcceptingClaims = project.IsAcceptingClaims,
+              ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
+              HasMyClaims = project.Claims.Any(claim => myClaim.Invoke(claim)),
+              HasMasterAccess = project.ProjectAcls.Any(acl => acl.UserId == userId)
+          };
+      }
 
-    public async Task<IEnumerable<Project>> GetArchivedProjectsWithClaimCount()
-     => await AllProjects.Include(p => p.Claims).Where(p => !p.Active).ToListAsync();
+    public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
+        GetActiveProjectsWithClaimCount(int? userId) => await GetProjectWithClaimCounts(project => project.Active, userId);
 
-    public async Task<IEnumerable<Project>> GetAllProjectsWithClaimCount() 
-      => await AllProjects.Include(p=> p.Claims).ToListAsync();
+      private async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetProjectWithClaimCounts(
+          Expression<Func<Project, bool>> condition,
+          int? userId)
+      {
+          var builder = GetProjectWithClaimCountBuilder(userId);
+          return await AllProjects
+              .AsExpandable()
+              .Where(condition)
+              .Select(builder).ToListAsync();
+      }
+
+      public async Task<IReadOnlyCollection<ProjectWithClaimCount>>
+          GetArchivedProjectsWithClaimCount(int? userId)
+          => await GetProjectWithClaimCounts(project => !project.Active, userId);
+
+      public async Task<IReadOnlyCollection<ProjectWithClaimCount>> GetAllProjectsWithClaimCount(
+          int? userId)
+          => await GetProjectWithClaimCounts(project => true, userId);
 
     private IQueryable<Project> ActiveProjects => AllProjects.Where(project => project.Active);
     private IQueryable<Project> AllProjects => Ctx.ProjectsSet.Include(p => p.ProjectAcls); 

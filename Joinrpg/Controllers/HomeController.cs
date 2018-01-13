@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -22,17 +22,17 @@ namespace JoinRpg.Web.Controllers
     private async Task<HomeViewModel> LoadModel(bool showInactive = false, int maxProjects = int.MaxValue)
     {
       var allProjects = showInactive
-        ? await _projectRepository.GetArchivedProjectsWithClaimCount()
-        : await _projectRepository.GetActiveProjectsWithClaimCount();
+        ? await _projectRepository.GetArchivedProjectsWithClaimCount(CurrentUserIdOrDefault)
+        : await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserIdOrDefault);
 
       var projects =
         allProjects
-        .Select(p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault))
-        .Where(p => (showInactive && p.ClaimCount > 0) || p.IsMaster || p.MyClaims.Any(c => c.IsActive) || p.IsAcceptingClaims)
+        .Select(p => new ProjectListItemViewModel(p))
+        .Where(p => (showInactive && p.ClaimCount > 0) || p.IsMaster || p.HasMyClaims || p.IsAcceptingClaims)
         .ToList();
 
       var alwaysShowProjects = ProjectListItemViewModel.OrderByDisplayPriority(
-        projects.Where(p => p.IsMaster || p.MyClaims.Any()), p => p).ToList();
+        projects.Where(p => p.IsMaster || p.HasMyClaims), p => p).ToList();
 
       var projectListItemViewModels = alwaysShowProjects.UnionUntilTotalCount(projects.OrderByDescending(p => p.ClaimCount), maxProjects);
 
