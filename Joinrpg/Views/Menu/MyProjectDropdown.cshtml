@@ -3,7 +3,7 @@
 
 @helper ShowProjectItem(ProjectLinkViewModel project)
 {
-    <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId}, null)</li>
+    <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new {project.ProjectId, area = ""}, null)</li>
 }
 
 @if (Model.Count() > 1)
