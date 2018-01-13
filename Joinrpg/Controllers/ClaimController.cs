@@ -173,7 +173,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+          _claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }

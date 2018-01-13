@@ -16,57 +16,75 @@
 {
     @Html.AntiForgeryToken()
     
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ProjectId)
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.ProjectId)
 
+    <div class="form-group">
+        @Html.LabelFor(model => model.ProjectName, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.ProjectName, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ProjectName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ProjectAnnounce, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.ProjectAnnounce, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ProjectAnnounce, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ClaimApplyRules, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.ClaimApplyRules, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ClaimApplyRules, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    @if (Model.Active)
+    {
         <div class="form-group">
-            @Html.LabelFor(model => model.ProjectName, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.ProjectName, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.ProjectName, "", new {@class = "text-danger"})
+            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-1">
+                @Html.EditorFor(model => model.IsAcceptingClaims)
+                @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ProjectAnnounce, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ProjectAnnounce, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.ProjectAnnounce, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.StrictlyOneCharacter)
+                @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.StrictlyOneCharacter)
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ClaimApplyRules, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.AutoAcceptClaims, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.ClaimApplyRules, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.ClaimApplyRules, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.AutoAcceptClaims)
+                @Html.ValidationMessageFor(model => model.AutoAcceptClaims, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.AutoAcceptClaims)
             </div>
         </div>
 
-        @if (Model.Active)
-        {
-            <div class="form-group">
-                @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
-                <div class="col-md-1">
-                    @Html.EditorFor(model => model.IsAcceptingClaims)
-                    @Html.ValidationMessageFor(model => model.IsAcceptingClaims, "", new {@class = "text-danger"})
-                </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.GenerateCharacterNamesFromPlayer, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.GenerateCharacterNamesFromPlayer)
+                @Html.ValidationMessageFor(model => model.GenerateCharacterNamesFromPlayer, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.GenerateCharacterNamesFromPlayer)
             </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.StrictlyOneCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.StrictlyOneCharacter)
-                    @Html.ValidationMessageFor(model => model.StrictlyOneCharacter, "", new { @class = "text-danger" })
-                    @Html.DescriptionFor(model => model.StrictlyOneCharacter)
-                </div>
-            </div>
-        }
+        </div>
+    }
 
 
-        @if (!Model.Active)
-        {
+    @if (!Model.Active)
+    {
         <div class="form-group">
             @Html.LabelFor(model => model.PublishPlot, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
@@ -75,21 +93,21 @@
                 @Html.DescriptionFor(model => model.PublishPlot)
             </div>
         </div>
-        }
+    }
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Сохранить" class="btn btn-success"/>
-                @if (Model.Active)
-                {
-                    <a class="btn btn-danger" href="@Url.Action("Close", "Game", new {Model.ProjectId}, null)">
-                        <span title="удалить" class="glyphicon glyphicon-trash"></span>
-                        Закрыть проект
-                    </a>
-                }
-            </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Сохранить" class="btn btn-success" />
+            @if (Model.Active)
+            {
+                <a class="btn btn-danger" href="@Url.Action("Close", "Game", new {Model.ProjectId}, null)">
+                    <span title="удалить" class="glyphicon glyphicon-trash"></span>
+                    Закрыть проект
+                </a>
+            }
         </div>
     </div>
+</div>
 }
 
 <div>

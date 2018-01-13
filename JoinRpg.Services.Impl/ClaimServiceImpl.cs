@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Diagnostics;
@@ -204,6 +204,17 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
 
       await EmailService.Email(claimEmail);
+
+        if (claim.Project.Details.AutoAcceptClaims)
+        {
+            var userId = claim.ResponsibleMasterUserId ?? claim.Project.ProjectAcls.First().UserId;
+            StartImpersonate(userId);
+            //TODO[Localize]
+            await ApproveByMaster(projectId,
+                claim.ClaimId,
+                "Автоматическое одобрение");
+            ResetImpersonation();
+        }
     }
 
     private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
@@ -274,87 +285,108 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task AppoveByMaster(int projectId, int claimId, string commentText)
+    public async Task ApproveByMaster(int projectId, int claimId, string commentText)
     {
-      var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+          var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
-      if (claim.ClaimStatus == Claim.Status.CheckedIn)
-      {
-        throw new ClaimWrongStatusException(claim);
-      }
-      claim.MasterAcceptedDate = Now;
-      claim.ChangeStatusWithCheck(Claim.Status.Approved);
+          if (claim.ClaimStatus == Claim.Status.CheckedIn)
+          {
+              throw new ClaimWrongStatusException(claim);
+          }
 
-      claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? CurrentUserId;
-      AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
+          claim.MasterAcceptedDate = Now;
+          claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
-      if (!claim.Project.Details.EnableManyCharacters)
-      {
-        foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
-        {
-          otherClaim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
-          otherClaim.MasterDeclinedDate = Now;
-          otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
+          claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? CurrentUserId;
+          AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
+
+          if (!claim.Project.Details.EnableManyCharacters)
+          {
+              foreach (var otherClaim in claim.OtherPendingClaimsForThisPlayer())
+              {
+                  otherClaim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
+                  otherClaim.MasterDeclinedDate = Now;
+                  otherClaim.ClaimStatus = Claim.Status.DeclinedByMaster;
+                  await
+                      EmailService.Email(
+                          await
+                              AddCommentWithEmail<DeclineByMasterEmail>(
+                                  "Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
+                                  otherClaim, true, s => s.ClaimStatusChange, null,
+                                  CommentExtraAction.DeclineByMaster));
+              }
+          }
+
+          if (claim.Group != null)
+          {
+              //TODO: Добавить здесь возможность ввести имя персонажа или брать его из заявки
+              ConvertToIndividual(claim);
+          }
+
+          MarkCharacterChangedIfApproved(claim);
+          Debug.Assert(claim.Character != null, "claim.Character != null");
+          claim.Character.ApprovedClaimId = claim.ClaimId;
+
+          //We need to resave fields here, because it may cause some field values to move from Claim to Characters
+          //which also could trigger changing of special groups
+          // ReSharper disable once MustUseReturnValue we don't need send email here
+          FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
+              FieldDefaultValueGenerator);
+
+          await UnitOfWork.SaveChangesAsync();
+
           await
-            EmailService.Email(
-              await
-                AddCommentWithEmail<DeclineByMasterEmail>("Заявка автоматически отклонена, т.к. другая заявка того же игрока была принята в тот же проект",
-                  otherClaim, true, s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster));
-        }
+              EmailService.Email(
+                  EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText,
+                      s => s.ClaimStatusChange,
+                      CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
       }
 
-      if (claim.Group != null)
+      private void ConvertToIndividual(Claim claim)
       {
-        //TODO: Добавить здесь возможность ввести имя персонажа или брать его из заявки
-        ConvertToIndividual(claim);
+          if (claim.Group == null)
+          {
+              throw new InvalidOperationException();
+          }
+
+          if (claim.Group.AvaiableDirectSlots > 0)
+          {
+              claim.Group.AvaiableDirectSlots -= 1;
+          }
+
+          var character = new Character()
+          {
+              CharacterName = GetAutoGeneratedCharacterName(claim),
+              Project = claim.Project,
+              ProjectId = claim.ProjectId,
+              IsAcceptingClaims = true,
+              IsPublic = claim.Group.IsPublic,
+              IsActive = true,
+              ParentCharacterGroupIds = new[] {claim.Group.CharacterGroupId},
+              CharacterId = -1,
+              AutoCreated = true,
+          };
+          MarkCreatedNow(character);
+          claim.CharacterGroupId = null;
+          claim.Character = character;
+          claim.CharacterId = character.CharacterId;
       }
 
-      MarkCharacterChangedIfApproved(claim);
-      Debug.Assert(claim.Character != null, "claim.Character != null");
-      claim.Character.ApprovedClaimId = claim.ClaimId;
-
-      //We need to resave fields here, because it may cause some field values to move from Claim to Characters
-      //which also could trigger changing of special groups
-      // ReSharper disable once MustUseReturnValue we don't need send email here
-      FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
-        FieldDefaultValueGenerator);
-
-      await UnitOfWork.SaveChangesAsync();
-
-      await
-        EmailService.Email(
-          EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText, s => s.ClaimStatusChange,
-              CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
-    }
-
-    private void ConvertToIndividual(Claim claim)
-    {
-      Debug.Assert(claim.Group != null, "claim.Group != null");
-      if (claim.Group.AvaiableDirectSlots > 0)
+      private static string GetAutoGeneratedCharacterName(Claim claim)
       {
-        claim.Group.AvaiableDirectSlots -= 1;
+          if (claim.Group == null)
+          {
+              throw  new InvalidOperationException();
+          }
+
+          //TODO[Localize]
+          return claim.Project.Details.GenerateCharacterNamesFromPlayer
+              ? claim.Player.GetDisplayName()
+              : $"Новый персонаж в группе {claim.Group.CharacterGroupName}";
       }
-      var character = new Character()
-      {
-        //TODO LOcalize
-        CharacterName = $"Новый персонаж в группе {claim.Group.CharacterGroupName}",
-        Project = claim.Project,
-        ProjectId = claim.ProjectId,
-        IsAcceptingClaims = true,
-        IsPublic = claim.Group.IsPublic,
-        IsActive = true,
-        ParentCharacterGroupIds = new[] { claim.Group.CharacterGroupId},
-        CharacterId = -1,
-        AutoCreated = true
-      };
-      MarkCreatedNow(character);
-      claim.CharacterGroupId = null;
-      claim.Character = character;
-      claim.CharacterId = character.CharacterId;
-    }
 
 
-    public async Task DeclineByMaster(int projectId, int claimId, string commentText)
+      public async Task DeclineByMaster(int projectId, int claimId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
