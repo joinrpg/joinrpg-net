@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
-    Task AppoveByMaster(int projectId, int claimId, string commentText);
+    Task ApproveByMaster(int projectId, int claimId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, string commentText);
     Task DeclineByPlayer(int projectId, int claimId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);

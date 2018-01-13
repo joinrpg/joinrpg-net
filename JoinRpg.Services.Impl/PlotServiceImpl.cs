@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
@@ -183,7 +183,7 @@ namespace JoinRpg.Services.Impl
       plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
     }
 
-    private static void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
+    private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
     {
       if (plotElement.LastVersion().Content.Contents == contents &&
           plotElement.LastVersion().TodoField == todoField) return;

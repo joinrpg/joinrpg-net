@@ -402,6 +402,10 @@
     <Compile Include="Migrations\201801111633386_NonPlayerSelectableVariants.Designer.cs">
       <DependentUpon>201801111633386_NonPlayerSelectableVariants.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801131215238_ExtraProjectSettings.cs" />
+    <Compile Include="Migrations\201801131215238_ExtraProjectSettings.Designer.cs">
+      <DependentUpon>201801131215238_ExtraProjectSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -688,6 +692,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801111633386_NonPlayerSelectableVariants.resx">
       <DependentUpon>201801111633386_NonPlayerSelectableVariants.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801131215238_ExtraProjectSettings.resx">
+      <DependentUpon>201801131215238_ExtraProjectSettings.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

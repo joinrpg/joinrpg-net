@@ -15,171 +15,195 @@ using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Services.Impl
 {
-  //TODO: Split on specific and not specific to domain helpers
-  public class DbServiceImplBase
-  {
-    protected readonly IUnitOfWork UnitOfWork;
-    protected IUserRepository UserRepository => _userRepository.Value;
-
-    private readonly Lazy<IUserRepository> _userRepository;
-
-    protected IProjectRepository ProjectRepository => _projectRepository.Value;
-
-    private readonly Lazy<IProjectRepository> _projectRepository;
-
-    protected IClaimsRepository ClaimsRepository => _claimRepository.Value;
-    private readonly Lazy<IClaimsRepository> _claimRepository;
-
-    protected IForumRepository ForumRepository => _forumRepository.Value;
-    private readonly Lazy<IForumRepository> _forumRepository;
-
-    private readonly Lazy<IPlotRepository> _plotRepository;
-    protected IPlotRepository PlotRepository => _plotRepository.Value;
-
-    private readonly Lazy<ICharacterRepository> _charactersRepository;
-    protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
-    protected static int CurrentUserId => int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
-
-    /// <summary>
-    /// Time of service creaton. Used to mark consistent time for all operations performed by service
-    /// </summary>
-    protected DateTime Now { get; }
-
-    protected DbServiceImplBase(IUnitOfWork unitOfWork)
+    //TODO: Split on specific and not specific to domain helpers
+    public class DbServiceImplBase
     {
-      UnitOfWork = unitOfWork;
-      _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
-      _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
-      _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
-      _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
-      _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
-      _charactersRepository = new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
-      Now = DateTime.UtcNow;
+        protected readonly IUnitOfWork UnitOfWork;
+        protected IUserRepository UserRepository => _userRepository.Value;
+
+        private readonly Lazy<IUserRepository> _userRepository;
+
+        protected IProjectRepository ProjectRepository => _projectRepository.Value;
+
+        private readonly Lazy<IProjectRepository> _projectRepository;
+
+        protected IClaimsRepository ClaimsRepository => _claimRepository.Value;
+        private readonly Lazy<IClaimsRepository> _claimRepository;
+
+        protected IForumRepository ForumRepository => _forumRepository.Value;
+        private readonly Lazy<IForumRepository> _forumRepository;
+
+        private readonly Lazy<IPlotRepository> _plotRepository;
+        protected IPlotRepository PlotRepository => _plotRepository.Value;
+
+        private readonly Lazy<ICharacterRepository> _charactersRepository;
+        protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
+        protected int CurrentUserId { get; private set; }
+
+        /// <summary>
+        /// Time of service creaton. Used to mark consistent time for all operations performed by service
+        /// </summary>
+        protected DateTime Now { get; }
+
+        protected DbServiceImplBase(IUnitOfWork unitOfWork)
+        {
+            UnitOfWork = unitOfWork;
+            _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
+            _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
+            _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
+            _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
+            _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
+            _charactersRepository =
+                new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
+
+            Now = DateTime.UtcNow;
+            ResetImpersonation();
+        }
+
+        protected void StartImpersonate(int userId)
+        {
+            CurrentUserId = userId;
+        }
+
+        protected void ResetImpersonation()
+        {
+            CurrentUserId = int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+        }
+
+        [NotNull]
+        protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
+            where T : class, IProjectEntity
+        {
+            var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
+            if (field != null && field.Project.ProjectId == projectId)
+            {
+                return field;
+            }
+
+            throw new DbEntityValidationException();
+        }
+
+        protected static string Required(string stringValue)
+        {
+            if (string.IsNullOrWhiteSpace(stringValue))
+            {
+                throw new DbEntityValidationException();
+            }
+
+            return stringValue.Trim();
+        }
+
+        protected static ICollection<T> Required<T>(ICollection<T> items)
+        {
+            if (items.Count == 0)
+            {
+                throw new DbEntityValidationException();
+            }
+
+            return items;
+        }
+
+        protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
+        {
+            if (items.Count == 0)
+            {
+                throw new DbEntityValidationException();
+            }
+
+            return items;
+        }
+
+        protected static IReadOnlyCollection<T> Required<T>(
+            Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
+        {
+            var name = itemsLambda.AsPropertyName();
+            var items = itemsLambda.Compile()();
+            if (items.Count == 0)
+            {
+                throw new FieldRequiredException(name);
+            }
+
+            return items;
+        }
+
+        protected bool SmartDelete<T>(T field) where T : class, IDeletableSubEntity
+        {
+            if (field == null)
+            {
+                return false;
+            }
+
+            if (field.CanBePermanentlyDeleted)
+            {
+                UnitOfWork.GetDbSet<T>().Remove(field);
+                return true;
+            }
+            else
+            {
+                field.IsActive = false;
+                return false;
+            }
+        }
+
+        [ItemNotNull]
+        protected async Task<int[]> ValidateCharacterGroupList(int projectId,
+            IReadOnlyCollection<int> groupIds,
+            bool ensureNotSpecial = false)
+        {
+            var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
+
+            if (characterGroups.Count != groupIds.Distinct().Count())
+            {
+                var missing = string.Join(", ",
+                    groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+                throw new Exception($"Groups {missing} doesn't belong to project");
+            }
+
+            if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
+            {
+                throw new DbEntityValidationException();
+            }
+
+            return groupIds.ToArray();
+        }
+
+        protected async Task<ICollection<Character>> ValidateCharactersList(int projectId,
+            IReadOnlyCollection<int> characterIds)
+        {
+            var characters =
+                await CharactersRepository.GetCharacters(projectId, characterIds);
+
+            if (characters.Count != characterIds.Distinct().Count())
+            {
+                throw new DbEntityValidationException();
+            }
+
+            return characters.ToArray();
+        }
+
+        protected void MarkCreatedNow([NotNull] ICreatedUpdatedTrackedForEntity entity)
+        {
+            entity.UpdatedAt = entity.CreatedAt = Now;
+            entity.UpdatedById = entity.CreatedById = CurrentUserId;
+        }
+
+        protected void Create<T>([NotNull] T entity)
+            where T : class, ICreatedUpdatedTrackedForEntity
+        {
+            MarkCreatedNow(entity);
+
+            UnitOfWork.GetDbSet<T>().Add(entity);
+        }
+
+        protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)
+        {
+            entity.UpdatedAt = Now;
+            entity.UpdatedById = CurrentUserId;
+        }
+
+        protected void MarkTreeModified([NotNull] Project project)
+        {
+            project.CharacterTreeModifiedAt = Now;
+        }
     }
-
-    [NotNull]
-    protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
-      where T : class, IProjectEntity
-    {
-      var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
-      if (field != null && field.Project.ProjectId == projectId)
-      {
-        return field;
-      }
-      throw new DbEntityValidationException();
-    }
-
-    protected static string Required(string stringValue)
-    {
-      if (string.IsNullOrWhiteSpace(stringValue))
-      {
-        throw new DbEntityValidationException();
-      }
-
-      return stringValue.Trim();
-    }
-
-    protected static ICollection<T> Required<T>(ICollection<T> items)
-    {
-      if (items.Count == 0)
-      {
-        throw new DbEntityValidationException();
-      }
-
-      return items;
-    }
-
-    protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
-    {
-      if (items.Count == 0)
-      {
-        throw new DbEntityValidationException();
-      }
-
-      return items;
-    }
-
-    protected static IReadOnlyCollection<T> Required<T>(Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
-    {
-      var name = itemsLambda.AsPropertyName();
-      var items = itemsLambda.Compile()();
-      if (items.Count == 0)
-      {
-        throw new FieldRequiredException(name);
-      }
-
-      return items;
-    }
-
-    protected bool SmartDelete<T>(T field) where T : class, IDeletableSubEntity
-    {
-      if (field == null)
-      {
-        return false;
-      }
-      if (field.CanBePermanentlyDeleted)
-      {
-        UnitOfWork.GetDbSet<T>().Remove(field);
-        return true;
-      }
-      else
-      {
-        field.IsActive = false;
-        return false;
-      }
-    }
-
-    [ItemNotNull]
-    protected async Task<int[]> ValidateCharacterGroupList(int projectId, IReadOnlyCollection<int> groupIds, bool ensureNotSpecial = false)
-    {
-      var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
-
-      if (characterGroups.Count != groupIds.Distinct().Count())
-      {
-        var missing = string.Join(", ", groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-        throw new Exception($"Groups {missing} doesn't belong to project");
-      }
-      if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
-      {
-        throw new DbEntityValidationException();
-      }
-      return groupIds.ToArray();
-    }
-
-    protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)
-    {
-      var characters =
-        await CharactersRepository.GetCharacters(projectId, characterIds);
-
-      if (characters.Count != characterIds.Distinct().Count())
-      {
-        throw new DbEntityValidationException();
-      }
-      return characters.ToArray();
-    }
-
-    protected void MarkCreatedNow([NotNull] ICreatedUpdatedTrackedForEntity entity)
-    {
-      entity.UpdatedAt = entity.CreatedAt = Now;
-      entity.UpdatedById = entity.CreatedById = CurrentUserId;
-    }
-
-    protected void Create<T>([NotNull] T entity) where T : class, ICreatedUpdatedTrackedForEntity
-    {
-      MarkCreatedNow(entity);
-
-      UnitOfWork.GetDbSet<T>().Add(entity);
-    }
-
-    protected void MarkChanged([NotNull] ICreatedUpdatedTrackedForEntity entity)
-    {
-      entity.UpdatedAt = Now;
-      entity.UpdatedById = CurrentUserId;
-    }
-
-    protected void MarkTreeModified([NotNull] Project project)
-    {
-      project.CharacterTreeModifiedAt = Now;
-    }
-  }
 }
