@@ -76,6 +76,7 @@
                 <div class="checkbox">
                     @Html.EditorFor(model => model.CanPlayerEdit)
                     @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
+                    @Html.DescriptionFor(model => model.CanPlayerEdit)
                 </div>
             </div>
         </div>

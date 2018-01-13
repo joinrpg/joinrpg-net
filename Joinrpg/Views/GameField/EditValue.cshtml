@@ -46,6 +46,24 @@
         </div>
     </div>
 
+   
+    if (Model.CanPlayerEditField)
+    {
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PlayerSelectable, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.PlayerSelectable)
+                @Html.ValidationMessageFor(model => model.PlayerSelectable, "", new {@class = "text-danger"})
+                @Html.DescriptionFor(model => model.PlayerSelectable)
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.PlayerSelectable)
+    }
+
     <div class="form-group">
         @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">

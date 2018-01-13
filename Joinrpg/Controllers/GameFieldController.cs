@@ -259,9 +259,16 @@ namespace JoinRpg.Web.Controllers
             try
             {
                 await
-                  FieldSetupService.CreateFieldValueVariant(field.ProjectId, field.ProjectFieldId, viewModel.Label,
-                    viewModel.Description, viewModel.MasterDescription, viewModel.ProgrammaticValue,
-                    viewModel.Price);
+                    FieldSetupService.CreateFieldValueVariant(
+                        new CreateFieldValueVariantRequest(
+                            field.ProjectId,
+                            viewModel.Label,
+                            viewModel.Description,
+                            viewModel.ProjectFieldId,
+                            viewModel.MasterDescription,
+                            viewModel.ProgrammaticValue,
+                            viewModel.Price,
+                            viewModel.PlayerSelectable));
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
             }
@@ -291,9 +298,16 @@ namespace JoinRpg.Web.Controllers
             }
             try
             {
-                await FieldSetupService.UpdateFieldValueVariant(value.ProjectId, value.ProjectFieldDropdownValueId,
-                    viewModel.Label, viewModel.Description, viewModel.ProjectFieldId, viewModel.MasterDescription,
-                    viewModel.ProgrammaticValue, viewModel.Price);
+                await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
+                    value.ProjectId,
+                    value.ProjectFieldDropdownValueId,
+                    viewModel.Label,
+                    viewModel.Description,
+                    viewModel.ProjectFieldId,
+                    viewModel.MasterDescription,
+                    viewModel.ProgrammaticValue,
+                    viewModel.Price,
+                    viewModel.PlayerSelectable));
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
             }
@@ -308,7 +322,7 @@ namespace JoinRpg.Web.Controllers
         /// Removes custom field value by HTTP DELETE request
         /// </summary>
         /// <param name="projectId">Id of a project where field is located in</param>
-        /// <param name="fieldId">Id of a field to delete value from</param>
+        /// <param name="projectFieldId">Id of a field to delete value from</param>
         /// <param name="valueId">Id of a value to delete</param>
         /// <returns>
         /// 200 -- if a value was successfully deleted
@@ -330,7 +344,7 @@ namespace JoinRpg.Web.Controllers
                 if (AsMaster(value, pa => pa.CanChangeFields) != null)
                     return new HttpUnauthorizedResult();
 
-                await FieldSetupService.DeleteFieldValueVariant(value);
+                await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive
                     ? new HttpStatusCodeResult(200)
                     : new HttpStatusCodeResult(250);
@@ -339,35 +353,6 @@ namespace JoinRpg.Web.Controllers
             {
                 // TODO: Implement exception logging here
                 return new HttpStatusCodeResult(500);
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> DeleteValue(int projectId, int projectFieldId, int valueId)
-        {
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-            var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(field, value));
-        }
-
-        [HttpPost, ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteValue(GameFieldDropdownValueEditViewModel viewModel)
-        {
-            var value = await ProjectRepository.GetFieldValue(viewModel.ProjectId, viewModel.ProjectFieldId, viewModel.ProjectFieldDropdownValueId);
-
-            var error = AsMaster(value, pa => pa.CanChangeFields);
-            if (error != null)
-            {
-                return error;
-            }
-            try
-            {
-                await FieldSetupService.DeleteFieldValueVariant(value);
-                return ReturnToField(value.ProjectField);
-            }
-            catch
-            {
-                return View(viewModel);
             }
         }
 

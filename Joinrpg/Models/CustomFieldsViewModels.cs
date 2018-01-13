@@ -6,7 +6,6 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
@@ -138,20 +137,17 @@ namespace JoinRpg.Web.Models
                     (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
           CanEdit = model.EditAllowed
-                    && ch.HasEditAccess(model.AccessArguments, model.Target)
+                    && ch.HasEditAccess(model.AccessArguments)
                     && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
           // Detecting if field (or its values) has a price or not
-          HasPrice = FieldViewType.SupportsPricing() &&
-                     ((FieldViewType.SupportsPricingOnField() && ch.Field.Price != 0)
-                      || (!FieldViewType.SupportsPricingOnField() &&
-                          ch.GetPossibleValues().Any(v => v.Price != 0)));
+          HasPrice = ch.SupportsPricing();
 
           //if not "HasValues" types, will be empty
           ValueList = ch.GetDropdownValues()
               .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
-          PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v,
+          PossibleValueList = ch.GetPossibleValues(model.AccessArguments).Select(v => new FieldPossibleValueViewModel(v,
                   HasPrice,
                   ValueList.Any(sv =>
                       sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
@@ -192,7 +188,6 @@ namespace JoinRpg.Web.Models
 
     public class CustomFieldsViewModel
     {
-        private int? CurrentUserId { get; }
         public AccessArguments AccessArguments { get; }
         public bool EditAllowed { get; }
         public IClaimSource Target { get; }
@@ -212,7 +207,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns true if there is at least one field with fee
         /// </summary>
-        public bool HasFieldsWithFee { get; protected set; }
+        public bool HasFieldsWithFee { get; private set; }
 
         /// <summary>
         /// Returns true if fields subtotal row should be shown
@@ -235,8 +230,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Returns sum of fees of all fields
         /// </summary>
-        public int FieldsTotalFee
-            => FieldsFee.Sum(kv => kv.Value);
+        public int FieldsTotalFee => FieldsFee.Sum(kv => kv.Value);
 
         /// <summary>
         /// Common constructor
@@ -251,8 +245,6 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public CustomFieldsViewModel(int? currentUserId, IClaimSource target) : this()
         {
-            CurrentUserId = currentUserId;
-
             AccessArguments = new AccessArguments(
               target.HasMasterAccess(currentUserId),
               playerAccessToCharacter: false,
@@ -266,7 +258,7 @@ namespace JoinRpg.Web.Models
 
             Fields =
               target.Project.GetFieldsNotFilled()
-                .Select(ch => CreateFieldValueView(this, ch, renderer))
+                .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToList();
         }
 
@@ -278,6 +270,7 @@ namespace JoinRpg.Web.Models
         /// - print character
         /// </summary>
         /// <param name="currentUserId">ID of the currect user logged in</param>
+        /// <param name="character">Character to print</param>
         /// <param name="disableEdit">disable editing (incl. cases where it's done to speeds up the app)</param>
         /// <param name="onlyPlayerVisible">
         /// Used for printing, when the user who prints has master access,
@@ -292,7 +285,6 @@ namespace JoinRpg.Web.Models
           bool wherePrintEnabled = false) : this()
         {
             EditAllowed = !disableEdit && character.Project.Active;
-            CurrentUserId = currentUserId;
             if (onlyPlayerVisible)
             {
                 AccessArguments = new AccessArguments(
@@ -313,7 +305,7 @@ namespace JoinRpg.Web.Models
                 .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
                 .ToList()
                 .FillIfEnabled(character.ApprovedClaim, character)
-                .Select(ch => CreateFieldValueView(this, ch, joinrpgMarkdownLinkRenderer))
+                .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
                 .ToArray();
         }
 
@@ -322,8 +314,6 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public CustomFieldsViewModel(int? currentUserId, Claim claim) : this()
         {
-            CurrentUserId = currentUserId;
-
             AccessArguments = new AccessArguments(claim, currentUserId);
 
             Target = claim.GetTarget();
@@ -335,14 +325,14 @@ namespace JoinRpg.Web.Models
               claim.Project.GetFieldsNotFilled()
                 .ToList()
                 .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null)
-                .Select(ch => CreateFieldValueView(this, ch, renderer))
+                .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToArray();
         }
 
         /// <summary>
         /// Creates field value view object
         /// </summary>
-        protected FieldValueViewModel CreateFieldValueView(CustomFieldsViewModel vm, FieldWithValue fv, ILinkRenderer renderer)
+        private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer)
         {
             FieldValueViewModel result = new FieldValueViewModel(this, fv, renderer);
             // Here is the point to calculate total fee
