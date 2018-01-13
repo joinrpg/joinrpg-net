@@ -42,7 +42,7 @@ namespace JoinRpg.Services.Impl
 
       var targetMaster = project.ProjectAcls.Single(a => a.UserId == targetUserId);
 
-      if (targetMaster.GetCashPaymentType() != null)
+        if (project.GetCashPaymentType(targetUserId) != null)
       {
         throw new JoinRpgInvalidUserException();
       }

@@ -52,9 +52,14 @@ namespace JoinRpg.Services.Impl
       FinanceOperationEmail financeEmail = null;
       if (money > 0)
       {
-        var paymentType = claim.Project.ProjectAcls.Single(acl => acl.UserId == CurrentUserId)
-          .GetCashPaymentType();
-        financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
+        var paymentType = claim.Project.GetCashPaymentType(CurrentUserId);
+
+          if (paymentType == null)
+          {
+              throw new JoinRpgInvalidUserException();
+          }
+
+          financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
       } else if (money < 0)
       {
         throw new InvalidOperationException();
