@@ -1,9 +1,17 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces
 {
-  public interface IFinanceService
+    public class SetFinanceSettingsRequest
+    {
+        public int ProjectId { get; set; }
+        public bool WarnOnOverPayment { get; set; }
+        public bool PreferentialFeeEnabled { get; set; }
+        public string PreferentialFeeConditions { get; set; }
+    }
+
+    public interface IFinanceService
   {
     Task FeeAcceptedOperation(int projectId, int claimId, string contents, DateTime operationDate,
       int feeChange, int money, int paymentTypeId);
@@ -15,6 +23,6 @@ namespace JoinRpg.Services.Interfaces
     Task CreateFeeSetting(int projectId, int fee, DateTime startDate);
     Task DeleteFeeSetting(int projectid, int projectFeeSettingId);
     Task ChangeFee(int projectId, int claimId, int feeValue);
-    Task SaveGlobalSettings(int projectId, bool warnOnOverPayment);
+    Task SaveGlobalSettings(SetFinanceSettingsRequest request);
   }
 }

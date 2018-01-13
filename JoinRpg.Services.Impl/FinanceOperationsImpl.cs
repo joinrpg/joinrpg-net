@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -166,12 +166,12 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SaveGlobalSettings(int projectId, bool warnOnOverPayment)
+    public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
     {
-      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
+      var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      project.Details.FinanceWarnOnOverPayment = warnOnOverPayment;
+      project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
       await UnitOfWork.SaveChangesAsync();
     }
   }

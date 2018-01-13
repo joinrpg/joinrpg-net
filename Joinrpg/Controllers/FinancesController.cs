@@ -269,7 +269,11 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.SaveGlobalSettings(viewModel.ProjectId, viewModel.WarnOnOverPayment);
+        await FinanceService.SaveGlobalSettings(new SetFinanceSettingsRequest
+        {
+            ProjectId = viewModel.ProjectId,
+            WarnOnOverPayment = viewModel.WarnOnOverPayment
+        });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch
