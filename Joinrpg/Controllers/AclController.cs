@@ -47,6 +47,7 @@ namespace JoinRpg.Web.Controllers
           UriService = uriService;
       }
 
+      [MasterAuthorize(AllowAdmin =  false)]
       [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
