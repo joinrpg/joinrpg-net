@@ -22,18 +22,20 @@ namespace JoinRpg.Web.Controllers.Common
       UserManager = userManager;
     }
 
-    protected override void OnActionExecuting(ActionExecutingContext filterContext)
-    {
-      ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
-        if (User.Identity.GetUserId() != null)
-        {
-            ViewBag.UserDisplayName = GetCurrentUser().GetDisplayName();
-            ViewBag.GravatarHash = GetCurrentUser().Email.GravatarHash().Trim();
-        }
-        base.OnActionExecuting(filterContext);
-    }
+      protected override void OnActionExecuting(ActionExecutingContext filterContext)
+      {
+          ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
+          if (CurrentUserIdOrDefault != null)
+          {
+              var currentUser = GetCurrentUser();
+              ViewBag.UserDisplayName = currentUser.GetDisplayName();
+              ViewBag.GravatarHash = currentUser.Email.GravatarHash().Trim();
+          }
 
-    protected User GetCurrentUser()
+          base.OnActionExecuting(filterContext);
+      }
+
+      protected User GetCurrentUser()
     {
       return UserManager.FindById(CurrentUserId);
     }
@@ -58,8 +60,15 @@ namespace JoinRpg.Web.Controllers.Common
     {
       get
       {
-        var userIdString = User.Identity.GetUserId();
-        return userIdString == null ? (int?) null : int.Parse(userIdString);
+          var userIdString = User.Identity.GetUserId();
+          if (userIdString == null)
+          {
+              return null;
+          }
+          else
+          {
+              return int.TryParse(userIdString, out var i) ? (int?) i : null;
+          }
       }
     }
 
