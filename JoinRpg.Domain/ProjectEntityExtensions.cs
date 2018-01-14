@@ -21,39 +21,37 @@ namespace JoinRpg.Domain
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 
-    public static void RequestMasterAccess([NotNull] this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> accessType)
-    {
-      if (field == null)
+      public static void RequestMasterAccess([NotNull] this IProjectEntity field,
+          int? currentUserId,
+          [CanBeNull] Expression<Func<ProjectAcl, bool>> accessType = null)
       {
-        throw new ArgumentNullException(nameof(field));
-      }
-      if (field.Project == null)
-      {
-        throw new ArgumentNullException(nameof(field.Project));
-      }
-      if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
-      {
-        throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
-      }
-    }
+          if (field == null)
+          {
+              throw new ArgumentNullException(nameof(field));
+          }
 
-    public static void RequestMasterAccess(this IProjectEntity field, int currentUserId)
-    {
-      if (field == null)
-      {
-        throw new ArgumentNullException(nameof(field));
-      }
-      if (field.Project == null)
-      {
-        throw new ArgumentNullException(nameof(field.Project));
-      }
-      if (!field.HasMasterAccess(currentUserId))
-      {
-        throw new NoAccessToProjectException(field.Project, currentUserId);
-      }
-    }
+          if (field.Project == null)
+          {
+              throw new ArgumentNullException(nameof(field.Project));
+          }
 
-    [NotNull]
+          if (accessType == null)
+          {
+              if (!field.HasMasterAccess(currentUserId))
+              {
+                  throw new NoAccessToProjectException(field.Project, currentUserId);
+              }
+          }
+          else
+          {
+              if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
+              {
+                  throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
+              }
+          }
+      }
+
+      [NotNull]
     public static T EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
     {
       if (!entity.IsActive)

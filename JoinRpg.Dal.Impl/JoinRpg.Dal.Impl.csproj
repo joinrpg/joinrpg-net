@@ -410,6 +410,10 @@
     <Compile Include="Migrations\201801131453553_PreferentialFee.Designer.cs">
       <DependentUpon>201801131453553_PreferentialFee.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801141102325_RequestPreferentialFee.cs" />
+    <Compile Include="Migrations\201801141102325_RequestPreferentialFee.Designer.cs">
+      <DependentUpon>201801141102325_RequestPreferentialFee.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -702,6 +706,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801131453553_PreferentialFee.resx">
       <DependentUpon>201801131453553_PreferentialFee.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801141102325_RequestPreferentialFee.resx">
+      <DependentUpon>201801141102325_RequestPreferentialFee.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

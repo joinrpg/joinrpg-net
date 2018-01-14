@@ -1,4 +1,4 @@
-﻿  using System;
+  using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -85,21 +85,22 @@ namespace JoinRpg.DataModel
     public MarkdownString Text { get; set; } = new MarkdownString();
   }
 
-  public enum CommentExtraAction  
-  {
-    ApproveFinance,
-    RejectFinance,
-    ApproveByMaster,
-    DeclineByMaster,
-    RestoreByMaster,
-    MoveByMaster,
-    DeclineByPlayer,
-    ChangeResponsible,
-    NewClaim,
-    OnHoldByMaster,
-    FeeChanged,
-    CheckedIn,
-    SecondRole,
-    OutOfGame
-  }
+    public enum CommentExtraAction
+    {
+        ApproveFinance,
+        RejectFinance,
+        ApproveByMaster,
+        DeclineByMaster,
+        RestoreByMaster,
+        MoveByMaster,
+        DeclineByPlayer,
+        ChangeResponsible,
+        NewClaim,
+        OnHoldByMaster,
+        FeeChanged,
+        CheckedIn,
+        SecondRole,
+        OutOfGame,
+        RequestPreferential,
+    }
 }

@@ -742,6 +742,7 @@
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
+    <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

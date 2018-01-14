@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
@@ -28,6 +28,8 @@ namespace JoinRpg.DataModel
         public DateTime OperationDate { get; set; }
 
         public FinanceOperationState State { get; set; }
+
+        public bool MarkMeAsPreferential { get; set; }
 
 
         int IOrderableEntity.Id => ProjectId;

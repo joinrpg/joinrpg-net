@@ -96,16 +96,6 @@ namespace JoinRpg.Services.Impl
             return stringValue.Trim();
         }
 
-        protected static ICollection<T> Required<T>(ICollection<T> items)
-        {
-            if (items.Count == 0)
-            {
-                throw new DbEntityValidationException();
-            }
-
-            return items;
-        }
-
         protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
         {
             if (items.Count == 0)

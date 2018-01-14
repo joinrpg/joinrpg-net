@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Models.Characters
           DeepLevel = deepLevel,
           Name = characterGroup.CharacterGroupName,
           AvaiableDirectSlots = characterGroup.HaveDirectSlots ? characterGroup.AvaiableDirectSlots : 0,
-          ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
+          ActiveClaimsCount = characterGroup.Claims.Count(c => c.ClaimStatus.IsActive()),
           IsPublic = characterGroup.IsPublic,
         };
 
@@ -65,10 +65,10 @@ namespace JoinRpg.Web.Models.Characters
 
         vm.TotalDiscussedClaims =
           flatCharacters.Where(c => c.ApprovedClaim == null)
-            .Sum(c => c.Claims.Count(claim => claim.IsActive)) +
+            .Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) +
           
             flatChilds.Sum(c => c.Claims.Count());
-        vm.TotalActiveClaims = flatCharacters.Sum(c => c.Claims.Count(claim => claim.IsActive)) + flatChilds.Sum(c => c.Claims.Count());
+        vm.TotalActiveClaims = flatCharacters.Sum(c => c.Claims.Count(claim => claim.ClaimStatus.IsActive())) + flatChilds.Sum(c => c.Claims.Count());
         vm.TotalAcceptedClaims = flatCharacters.Count(c => c.ApprovedClaim != null);
         vm.TotalCheckedInClaims = flatCharacters.Count(c => c.ApprovedClaim?.CheckInDate != null);
         vm.Unlimited = vm.AvaiableDirectSlots == -1 || flatChilds.Any(c => c.AvaiableDirectSlots == -1);

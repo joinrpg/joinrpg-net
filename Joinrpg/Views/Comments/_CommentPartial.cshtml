@@ -38,12 +38,12 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
                             @if (!comment.IsRead)
                             {
-                                <span class="label label-default" title="Новый комментарий" id="unread">New</span>
+                                <span class="label label-default" title="Новый комментарий">New</span>
                             }
 
                             <a href="@Url.Action("RedirectToDiscussion", "Forum", new {comment.ProjectId, comment.CommentId})">#</a>
 
-                            @if (comment.HasMasterAccess && comment.ChildComments.Count()==0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+                            @if (comment.HasMasterAccess && !comment.ChildComments.Any() && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
                             {
                             <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
                             }
@@ -85,7 +85,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                                 {
                                     <a data-toggle="collapse"
                                        href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">
-                                        Подтвердить / отклонить оплату
+                                        Подтвердить / отклонить
                                     </a>
                                 }
                                 else

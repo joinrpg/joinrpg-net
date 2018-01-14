@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+using System;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -33,7 +32,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
       IsSpecial = group.IsSpecial;
       AvaiableDirectSlots = group.HaveDirectSlots ? group.AvaiableDirectSlots : 0;
       IsAcceptingClaims = group.IsAcceptingClaims();
-      ActiveClaimsCount = group.Claims.Count(c => c.IsActive);
+      ActiveClaimsCount = group.Claims.Count(c => c.ClaimStatus.IsActive());
       IsRootGroup = group.IsRoot;
       CreatedAt = group.CreatedAt;
       UpdatedAt = group.UpdatedAt;

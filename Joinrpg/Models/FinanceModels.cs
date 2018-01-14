@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
@@ -54,14 +55,20 @@ namespace JoinRpg.Web.Models
 
 
     public class FinanceViewModelBase : AddCommentViewModel
-  {
-    [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
-    public DateTime OperationDate
-    { get; set; }
+    {
+        [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
+        public DateTime OperationDate { get; set; }
 
-    [ReadOnly(true)]
-    public bool ClaimApproved { get; set; }
-  }
+        [ReadOnly(true)]
+        public bool ClaimApproved { get; set; }
+
+        public int ClaimId { get; set; }
+    }
+
+    public class MarkMeAsPreferentialViewModel : FinanceViewModelBase
+    {
+        public IHtmlString PreferentialFeeConditions { get; set; }
+    }
 
   public class FeeAcceptanceViewModel : FinanceViewModelBase
   {
@@ -80,8 +87,6 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasUnApprovedPayments { get; set; }
-
-    public int ClaimId { get; set; }
   }
 
   public class FinOperationListViewModel : IOperationsAwareView
