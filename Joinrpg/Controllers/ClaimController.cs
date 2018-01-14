@@ -400,7 +400,7 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId);
         }
 
 
@@ -416,11 +416,11 @@ namespace JoinRpg.Web.Controllers
                   PaymentTypeId = viewModel.PaymentTypeId
               });
         
-        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
       }
     }
 
@@ -553,7 +553,7 @@ namespace JoinRpg.Web.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+                    return await Edit(viewModel.ProjectId, viewModel.ClaimId);
                 }
 
 
@@ -566,11 +566,11 @@ namespace JoinRpg.Web.Controllers
                         OperationDate = viewModel.OperationDate,
                     });
 
-                return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+                return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
             }
             catch
             {
-                return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+                return await Edit(viewModel.ProjectId, viewModel.ClaimId);
             }
             
         }

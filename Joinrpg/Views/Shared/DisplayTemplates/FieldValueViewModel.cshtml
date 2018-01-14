@@ -2,15 +2,32 @@
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
+
+@helper ShowDescription()
+{
+    var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
+    if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+    {
+        <div class="help-block @hideClassName">
+            @Model.Description
+        </div>
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+    {
+        <div class="help-block world-object-hidden">
+            @Model.MasterDescription
+        </div>
+    }
+}
+
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 
   @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
       <h4 class="@hideClassName">@Model.FieldName</h4>
-    <div class="help-block @hideClassName">
-      @Model.Description
-    </div>
-    return;
+      @ShowDescription()
+      return;
   }
 
 <div class="form-group @hideClassName">
@@ -42,12 +59,14 @@
                         @value.Label
                     }
                     </div>
-                    <div class="form-control-2-4">@value.DescriptionHtml
-                        @if (Model.HasMasterAccess)
-                        {
-                            <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
-                        }
-                    </div>
+                        <div class="form-control-2-4">
+                            @value.DescriptionHtml
+
+                            @if (Model.HasMasterAccess)
+                            {
+                                <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
+                            }
+                        </div>
                     @if (Model.ShowPrice)
                     {
                         <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
@@ -84,16 +103,9 @@
             default:
                 throw new InvalidEnumArgumentException();
         }
-        @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+        @if (Model.FieldViewType != ProjectFieldViewType.Checkbox)
         {
-            switch (Model.FieldViewType)
-            {
-                case ProjectFieldViewType.Checkbox:
-                    break;
-                default:
-                    <div class="help-block">@Model.Description</div>
-                    break;
-            }
+            @ShowDescription()
         }
     </div>
     <div class="col-md-2 price-table">

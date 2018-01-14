@@ -4,29 +4,45 @@
 @model FieldValueViewModel
 
 @helper ShowOptions()
-{
-    foreach (var val in Model.PossibleValueList)
     {
-        Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
-    }
+        foreach (var val in Model.PossibleValueList)
+        {
+            Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
+        }
 }
 @helper ValidationMessage()
-{
-    if (Model.MandatoryStatus != MandatoryStatusViewType.Optional)
     {
-        <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
-    }
+        if (Model.MandatoryStatus != MandatoryStatusViewType.Optional)
+        {
+            <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
+        }
+}
+
+@helper ShowDescription()
+    {
+        var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
+        if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+        {
+            <div class="help-block @hideClassName">
+                @Model.Description
+            </div>
+        }
+
+        if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+        {
+            <div class="help-block world-object-hidden">
+                @Model.MasterDescription
+            </div>
+        }
 }
 
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 
 @if (Model.FieldViewType == ProjectFieldViewType.Header)
 {
-  <h4 class="@hideClassName">@Model.FieldName</h4>
-  <div class="help-block @hideClassName">
-    @Model.Description
-  </div>
-  return;
+    <h4 class="@hideClassName">@Model.FieldName</h4>
+    @ShowDescription()
+    return;
 }
 
 <div class="form-group @hideClassName">
@@ -43,17 +59,18 @@
         @Html.DisplayFor(model => model.MandatoryStatus)
         @if (ViewBag.HideCharacterClaimFieldsIcon != true)
         {<text>&nbsp;</text>
-            if (Model.FieldBound == FieldBoundToViewModel.Claim)
-            {
-                <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-            }
-            if (Model.FieldBound == FieldBoundToViewModel.Character)
-            {
-                <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока">П</span>
-            }
+        if (Model.FieldBound == FieldBoundToViewModel.Claim)
+        {
+            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
         }
+        if (Model.FieldBound == FieldBoundToViewModel.Character)
+        {
+            <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока">П</span>
+        }
+    }
     </label>
-    <div class="col-md-8">@{
+    <div class="col-md-8">
+        @{
             bool isEmpty = string.IsNullOrWhiteSpace(Model.Value);
             Dictionary<string, string> attrs = new Dictionary<string, string>()
             {
@@ -127,24 +144,25 @@
 
             case ProjectFieldViewType.Number:
                 <div class="form-control-complex">
-                <div class="form-control-left"><input type="number" onchange="numberChanged(event)" @Html.RenderAttrs(attrs) value="@Model.Value" /></div>
-                @if (Model.HasPrice)
-                {
-                    <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
-                }
+                    <div class="form-control-left"><input type="number" onchange="numberChanged(event)" @Html.RenderAttrs(attrs) value="@Model.Value" /></div>
+                    @if (Model.HasPrice)
+                    {
+                        <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                    }
                 </div>
                 break;
 
             case ProjectFieldViewType.Checkbox:
                 <div class="form-control-complex">
                     <label for="@Model.FieldClientId" class="form-control-left">
-                    <input type="checkbox" onchange="checkChanged(event)" @Html.RenderAttrs(attrs) />
-                    <input name="@Model.FieldClientId" type="hidden" value="false" />
-                    @Model.Description</label>
-                @if (Model.HasPrice)
-                {
-                    <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
-                }
+                        <input type="checkbox" onchange="checkChanged(event)" @Html.RenderAttrs(attrs) />
+                        <input name="@Model.FieldClientId" type="hidden" value="false" />
+                        @Model.Description
+                    </label>
+                    @if (Model.HasPrice)
+                    {
+                        <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                    }
                 </div>
                 break;
 
@@ -164,24 +182,17 @@
         @ValidationMessage()
         @if (Model.HasMasterAccess)
         {
-          @Html.Raw(
-            string.Join(" • ",
-              Model.ValueList
-                .Where(v => v.SpecialGroupId != null)
-                .Select(value => Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null))))
+            @Html.Raw(
+                        string.Join(" • ",
+                          Model.ValueList
+                            .Where(v => v.SpecialGroupId != null)
+                            .Select(value => Html.ActionLink(value.Label, "Details", "GameGroups", new { Model.ProjectId, CharacterGroupId = value.SpecialGroupId }, null))))
         }
-        @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+        @if (Model.FieldViewType != ProjectFieldViewType.Checkbox)
         {
-            switch (Model.FieldViewType)
-            {
-                case ProjectFieldViewType.Checkbox:
-                    break;
-                default:
-                    <div class="help-block">@Model.Description</div>
-                    break;
-            }
+            @ShowDescription()
         }
-        @Html.ValidationMessageFor(model => model.Value, "", new {@class = "text-danger"})
+        @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>
 
     <div class="col-md-2 price-table">

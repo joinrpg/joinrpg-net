@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
@@ -370,6 +371,15 @@ namespace JoinRpg.Services.Email
                 r,
                 new Dictionary<string, string> { { changedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
               .ToList();
+
+            var commentExtraActionView = (CommonUI.Models.CommentExtraAction?)model.CommentExtraAction;
+
+            var extraText = commentExtraActionView?.GetDisplayName();
+
+            if (extraText != null)
+            {
+                text = extraText + "\n\n" + text;
+            }
 
             string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
 Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
@@ -72,6 +73,8 @@ namespace JoinRpg.Web.Models
 
     public IHtmlString Description { get; }
 
+      public IHtmlString MasterDescription { get; }
+
         /// <summary>
         /// Field's price as specified in field's definition
         /// </summary>
@@ -114,16 +117,9 @@ namespace JoinRpg.Web.Models
           FieldName = ch.Field.FieldName;
 
           HasMasterAccess = model.AccessArguments.MasterAccess;
+          Description = ch.Field.Description.ToHtmlString();
 
-          if (HasMasterAccess)
-          {
-              Description = new HtmlString(
-                  $"{ch.Field.Description.ToHtmlString()}{ch.Field.MasterDescription.ToHtmlString()}");
-          }
-          else
-          {
-              Description = ch.Field.Description.ToHtmlString();
-          }
+          MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : MvcHtmlString.Empty;
 
           IsPlayerVisible = ch.Field.CanPlayerView;
           IsDeleted = !ch.Field.IsActive;
@@ -160,7 +156,7 @@ namespace JoinRpg.Web.Models
               Fee = ch.GetCurrentFee();
           }
 
-          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToCharacter;
+          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
 
           ProjectFieldId = ch.Field.ProjectFieldId;
 
