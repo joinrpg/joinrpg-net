@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
@@ -52,6 +52,11 @@ namespace JoinRpg.Domain
         /// true if there is master or player access to the character
         /// </summary>
         public bool AnyAccessToCharacter => MasterAccess || PlayerAccessToCharacter;
+
+        /// <summary>
+        /// true, if there is master or player access to the claim
+        /// </summary>
+        public bool AnyAccessToClaim => PlayerAccesToClaim || PlayerAccesToClaim;
 
         public override string ToString()
         {

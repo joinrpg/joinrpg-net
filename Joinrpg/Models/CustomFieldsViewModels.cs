@@ -156,7 +156,7 @@ namespace JoinRpg.Web.Models
               Fee = ch.GetCurrentFee();
           }
 
-          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToCharacter;
+          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
 
           ProjectFieldId = ch.Field.ProjectFieldId;
 
