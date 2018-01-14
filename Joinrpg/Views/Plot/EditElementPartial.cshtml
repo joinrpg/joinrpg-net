@@ -28,14 +28,17 @@
                 @Model.ShortContent
             </a>
         </span>
-        <span>
-            <b>Изменено: </b>
-            @Html.DisplayFor(model => model.ModifiedDateTime) 
-            @if (Model.Author != null)
-            {
-                @Html.DisplayFor(model => model.Author)
-            }
-        </span>
+        @if (Model.HasMasterAccess)
+        {
+            <span>
+                <b>Изменено: </b>
+                @Html.DisplayFor(model => model.ModifiedDateTime)
+                @if (Model.Author != null)
+                {
+                    @Html.DisplayFor(model => model.Author)
+                }
+            </span>
+        }
         <div>
             <b>Для</b>
             @if (Model.TargetsForDisplay.Any())
