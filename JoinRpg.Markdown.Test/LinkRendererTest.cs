@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Markdown.Test
 {
-  [TestClass]
+  
   public class LinkRendererTest
   {
     private class LinkRendererMock : ILinkRenderer
@@ -16,43 +16,37 @@ namespace JoinRpg.Markdown.Test
 
       public string Render(string match, int index, string extra)
       {
-        Assert.AreEqual("%" + Test, match);
-        Assert.IsTrue(index > 0);
+          ShouldBeTestExtensions.ShouldBe(match, "%" + Test);
+          index.ShouldBeGreaterThan(0);
         return $"<b>{index}</b>{extra}";
       }
     }
 
 
-    private void NoMatch(string contents)
-    {
-      var result = new MarkdownString(contents).ToPlainText(_mock);
-      Assert.AreEqual(contents, result.ToHtmlString());
-    }
+      private void NoMatch(string contents)
+          => new MarkdownString(contents).ToPlainText(_mock).ToHtmlString().ShouldBe(contents);
 
-    private void Match(string expected, string original)
-    {
-      var result = new MarkdownString(original).ToHtmlString(_mock);
-      Assert.AreEqual(expected, result.ToString());
-    }
+      private void Match(string expected, string original)
+          => new MarkdownString(original).ToHtmlString(_mock).ToString().ShouldBe(expected);
 
-    private readonly LinkRendererMock _mock = new LinkRendererMock();
+      private readonly LinkRendererMock _mock = new LinkRendererMock();
     
-    [TestMethod]
+    [Fact]
     public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%test12");
     
-    [TestMethod]
+    [Fact]
     public void TestNoMatchWithoutIndex() => NoMatch("%test");
 
-    [TestMethod]
+    [Fact]
     public void TestNoMatchInMiddle() => NoMatch("test%test12");
 
-    [TestMethod]
+    [Fact]
     public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "%test121(extra)");
 
-    [TestMethod]
+    [Fact]
     public void TestNoMatchZero() => NoMatch("%test0(extra)");
 
-    [TestMethod]
+    [Fact]
     public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s %test12");
   }
 }

@@ -1,43 +1,36 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using JoinRpg.Helpers.Validation;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Xunit;
 
 namespace JoinRpg.Helpers.Test
 {
-  [TestClass]
-  public class DateInPastAttributeTest
-  {
-    private class ClassToValidateInPast
-    {
-      [DateShouldBeInPast, UsedImplicitly]
-      public DateTime? Time { get; } = DateTime.MaxValue;
-    }
 
-    private class ClassToValidateEmpty
+    public class DateInPastAttributeTest
     {
-      [CannotBeEmpty, UsedImplicitly]
-      public IEnumerable<int> List { get; } = new List<int>();
-    }
+        private class ClassToValidateInPast
+        {
+            [DateShouldBeInPast, UsedImplicitly] public DateTime? Time { get; } = DateTime.MaxValue;
+        }
 
-    [TestMethod, ExpectedException(typeof(ValidationException))]
-    public void TestShouldBeInPastFailure()
-    {
-      Validate(new ClassToValidateInPast());
-    }
+        private class ClassToValidateEmpty
+        {
+            [CannotBeEmpty, UsedImplicitly] public IEnumerable<int> List { get; } = new List<int>();
+        }
 
-    private static void Validate(object classToValidate)
-    {
-      var validationContext = new ValidationContext(classToValidate, null, null);
-      Validator.ValidateObject(classToValidate, validationContext, true);
-    }
+        [Fact]
+        public void TestShouldBeInPastFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateInPast()));
 
-    [TestMethod, ExpectedException(typeof(ValidationException))]
-    public void TestCantBeEmptyFailure()
-    {
-      Validate(new ClassToValidateEmpty());
+        private static void Validate(object classToValidate)
+        {
+            var validationContext = new ValidationContext(classToValidate, null, null);
+            Validator.ValidateObject(classToValidate, validationContext, true);
+        }
+
+        [Fact]
+        public void TestCantBeEmptyFailure() => Should.Throw<ValidationException>(() => Validate(new ClassToValidateEmpty()));
     }
-  }
 }

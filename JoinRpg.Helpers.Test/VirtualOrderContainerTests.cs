@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CollectionAssert = JoinRpg.TestHelpers.CollectionAssert;
+using System;
+using System.Collections.Generic;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Helpers.Test
 {
-  [TestClass]
-  public class VirtualOrderContainerTests
+    public class VirtualOrderContainerTests
   {
     private class Foo : IOrderableEntity
     {
@@ -23,89 +22,89 @@ namespace JoinRpg.Helpers.Test
     private readonly Foo _f2 = new Foo(2);
     private readonly Foo _f3 = new Foo(3);
 
-    [TestMethod]
+    [Fact]
     public void TestUnorderedOrderedById()
     {
       var voc = new VirtualOrderContainer<Foo>("", new [] {_f2, _f1});
-      Assert.AreEqual(_f1, voc.OrderedItems[0]);
-      Assert.AreEqual(_f2, voc.OrderedItems[1]);
+        voc.OrderedItems[0].ShouldBe(_f1);
+        voc.OrderedItems[1].ShouldBe(_f2);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestOrderKept()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f2, _f1 });
       var voc2 = new VirtualOrderContainer<Foo>(voc.GetStoredOrder(), new[] {_f1, _f2});
-      CollectionAssert.AreEqual(voc.OrderedItems, voc2.OrderedItems);
+        voc2.OrderedItems.ShouldBe((IEnumerable<Foo>) voc.OrderedItems);
     }
 
-    [TestMethod, ExpectedException(typeof(InvalidOperationException))]
+    [Fact]
     public void TestMoveDownBeyondEdges()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
-      voc.Move(_f2, 1);
+        Should.Throw<InvalidOperationException>(() => voc.Move(_f2, 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveUp()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
       voc.MoveUp(_f2);
-      CollectionAssert.AreEqual(new [] {_f2, _f1}, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new [] {_f2, _f1});
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveDown()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
       voc.MoveDown(_f1);
-      CollectionAssert.AreEqual(new[] { _f2, _f1 }, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new[] { _f2, _f1 });
     }
 
-    [TestMethod, ExpectedException(typeof(InvalidOperationException))]
+    [Fact]
     public void TestMoveUpBeyondEdges()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
-      voc.Move(_f1, -1);
+        Should.Throw<InvalidOperationException>(() => voc.Move(_f1, -1));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveAfter()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
       voc.MoveAfter(_f3, _f1);
-      CollectionAssert.AreEqual(new[] { _f1, _f3, _f2 }, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new[] { _f1, _f3, _f2 });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveToStart()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
       voc.MoveAfter(_f3, null);
-      CollectionAssert.AreEqual(new[] { _f3, _f1, _f2 }, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new[] { _f3, _f1, _f2 });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveAfter2()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
       voc.MoveAfter(_f1, _f2);
-      CollectionAssert.AreEqual(new[] { _f2, _f1, _f3 }, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new[] { _f2, _f1, _f3 });
     }
 
-    [TestMethod]
+    [Fact]
     public void TestMoveToEnd()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
       voc.MoveAfter(_f1, _f3);
-      CollectionAssert.AreEqual(new[] { _f2, _f3, _f1 }, voc.OrderedItems);
+        voc.OrderedItems.ShouldBe((IEnumerable<Foo>) new[] { _f2, _f3, _f1 });
     }
 
-    [TestMethod, ExpectedException(typeof(ArgumentException))]
+    [Fact]
     public void TestMoveAfterNotExsts()
     {
       var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2});
-      voc.MoveAfter(_f2, _f3);
+        Should.Throw<ArgumentException>(() => voc.MoveAfter(_f2, _f3));
     }
   }
 }

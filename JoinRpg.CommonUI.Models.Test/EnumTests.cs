@@ -1,12 +1,11 @@
-﻿using JoinRpg.TestHelpers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using JoinRpg.TestHelpers;
+using Xunit;
 
 namespace JoinRpg.CommonUI.Models.Test
 {
-  [TestClass]
   public class EnumTests
   {
-    [TestMethod]
+    [Fact]
     public void ProblemEnum()
     {
       
