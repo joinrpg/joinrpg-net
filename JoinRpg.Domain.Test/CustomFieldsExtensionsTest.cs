@@ -1,19 +1,19 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Domain.Test
 {
-  [TestClass]
+  
   public class CustomFieldsExtensionsTest
   {
     private MockedProject projectMock;
     private ProjectField[] allFieldsExceptMasterOnly;
     private ProjectField[] allFields;
-    [TestInitialize]
-    public void Initialize()
+
+      public CustomFieldsExtensionsTest()
     {
       projectMock = new MockedProject();
       allFieldsExceptMasterOnly = new[] 
@@ -30,7 +30,7 @@ namespace JoinRpg.Domain.Test
         .ToArray();
     }
 
-    [TestMethod]
+    [Fact]
     public void CharacterFieldVisibilityByPlayerTest()
     {
       VerifyCharacter( //Assert that
@@ -38,7 +38,7 @@ namespace JoinRpg.Domain.Test
         projectMock.PublicField);
     }
 
-    [TestMethod]
+    [Fact]
     public void CharacterFieldVisibilityByMasterTest()
     {
       VerifyCharacter( //Assert that
@@ -46,7 +46,7 @@ namespace JoinRpg.Domain.Test
         allFields);
     }
 
-    [TestMethod]
+    [Fact]
     public void ApprovedClaimFieldVisibilitysTest()
     {
       VerifyClaim( //Ensure that
@@ -55,7 +55,7 @@ namespace JoinRpg.Domain.Test
         allFieldsExceptMasterOnly);
     }
 
-    [TestMethod]
+    [Fact]
     public void NotApprovedClaimFieldVisibilitysTest()
     {
       //Ensure that
@@ -65,7 +65,7 @@ namespace JoinRpg.Domain.Test
         projectMock.PublicField);
     }
 
-   [TestMethod]
+   [Fact]
     public void ApprovedClaimFieldVisibilitysByMasterTest()
     {
       VerifyClaim( //Ensure that
@@ -74,7 +74,7 @@ namespace JoinRpg.Domain.Test
         allFields);
     }
 
-    [TestMethod]
+    [Fact]
     public void ApprovedClaimFieldVisibilitysByAnotherPlayerTest()
     {
       var anotherPlayer = new User()
@@ -90,7 +90,7 @@ namespace JoinRpg.Domain.Test
         projectMock.PublicField);
     }
 
-    [TestMethod]
+    [Fact]
     public void NotApprovedClaimFieldVisibilitysByMasterTest()
     {
       VerifyClaim( //Ensure that
@@ -119,15 +119,14 @@ namespace JoinRpg.Domain.Test
 
     private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectField[] expectedFields)
     {
-      Assert.AreEqual(actualFields.Count, expectedFields.Length,
-        $"Expected {expectedFields.Length} fields visible but were {actualFields.Count}");
+        expectedFields.Length.ShouldBe(actualFields.Count, $"Expected {expectedFields.Length} fields visible but were {actualFields.Count}");
 
-      foreach (var expectedField in expectedFields)
-      {
-        Assert.IsTrue(
-          actualFields.Any(f => f.Field.ProjectFieldId == expectedField.ProjectFieldId),
-          $"The field {expectedField.FieldName} was expected to be visible but was not.");
-      }
+        foreach (var expectedField in expectedFields)
+        {
+            actualFields.Any(f => f.Field.ProjectFieldId == expectedField.ProjectFieldId)
+                .ShouldBeTrue(
+                    $"The field {expectedField.FieldName} was expected to be visible but was not.");
+        }
     }
   }
 }
