@@ -52,9 +52,14 @@ namespace JoinRpg.Services.Impl
       FinanceOperationEmail financeEmail = null;
       if (money > 0)
       {
-        var paymentType = claim.Project.ProjectAcls.Single(acl => acl.UserId == CurrentUserId)
-          .GetCashPaymentType();
-        financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
+        var paymentType = claim.Project.GetCashPaymentType(CurrentUserId);
+
+          if (paymentType == null)
+          {
+              throw new JoinRpgInvalidUserException();
+          }
+
+          financeEmail = await AcceptFeeImpl(".", Now, 0, money, paymentType, claim);
       } else if (money < 0)
       {
         throw new InvalidOperationException();
@@ -271,18 +276,19 @@ namespace JoinRpg.Services.Impl
 
       finance.RequestModerationAccess(CurrentUserId);
       finance.Changed = Now;
-      switch (financeAction)
-      {
-        case FinanceOperationAction.Approve:
-          finance.State = FinanceOperationState.Approved;          
-          claim.UpdateClaimFeeIfRequired(finance.OperationDate);
-          return CommentExtraAction.ApproveFinance;
-        case FinanceOperationAction.Decline:
-          finance.State = FinanceOperationState.Declined;
-          return CommentExtraAction.RejectFinance;
-        default:
-          throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
-      }
+        switch (financeAction)
+        {
+            case FinanceOperationAction.Approve:
+                finance.State = FinanceOperationState.Approved;
+                claim.UpdateClaimFeeIfRequired(finance.OperationDate);
+                return CommentExtraAction.ApproveFinance;
+            case FinanceOperationAction.Decline:
+                finance.State = FinanceOperationState.Declined;
+                return CommentExtraAction.RejectFinance;
+            case FinanceOperationAction.None:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(financeAction), financeAction, null);
+        }
     }
 
     public async Task ApproveByMaster(int projectId, int claimId, string commentText)

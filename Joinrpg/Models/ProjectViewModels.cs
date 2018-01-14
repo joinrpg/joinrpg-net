@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 using Joinrpg.Markdown;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
@@ -22,9 +23,6 @@ namespace JoinRpg.Web.Models
 
         [DisplayName("Название проекта"), Required]
         public string ProjectName { get; set; }
-
-        [DisplayName("Анонс проекта")]
-        public IHtmlString ProjectAnnounce { get; set; }
 
         [Display(Name = "Заявки открыты?")]
         public bool IsAcceptingClaims { get; set; }
@@ -93,9 +91,12 @@ namespace JoinRpg.Web.Models
         public DateTime CreatedDate { get; }
         public IEnumerable<User> Masters { get; }
 
+        [DisplayName("Анонс проекта")]
+        public IHtmlString ProjectAnnounce { get; }
+
         public ProjectDetailsViewModel(Project project)
         {
-            ProjectAnnounce = project.Details?.ProjectAnnounce.ToHtmlString();
+            ProjectAnnounce = project.Details.ProjectAnnounce.ToHtmlString();
             ProjectId = project.ProjectId;
             ProjectName = project.ProjectName;
             IsActive = project.Active;
@@ -109,26 +110,23 @@ namespace JoinRpg.Web.Models
     {
         public bool IsMaster { get; }
         public bool IsActive { get; }
-        public IEnumerable<Claim> MyClaims { get; }
         public int ClaimCount { get; }
-
-        public int ProjectRootGroupId { get; }
 
         public bool PublishPlot { get; }
 
-        public ProjectListItemViewModel(Project p, int? user)
+        public ProjectListItemViewModel(ProjectWithClaimCount p)
         {
             ProjectId = p.ProjectId;
-            IsMaster = p.HasMasterAccess(user);
+            IsMaster = p.HasMasterAccess;
             IsActive = p.Active;
-            ProjectAnnounce = p.Details?.ProjectAnnounce.ToHtmlString();
             ProjectName = p.ProjectName;
-            MyClaims = p.Claims.Where(c => c.PlayerUserId == user);
-            ClaimCount = p.Claims.Count(c => c.IsActive);
+            HasMyClaims = p.HasMyClaims;
+            ClaimCount = p.ActiveClaimsCount;
             IsAcceptingClaims = p.IsAcceptingClaims;
-            ProjectRootGroupId = p.RootGroup.CharacterGroupId;
-            PublishPlot = p.Details.PublishPlot;
+            PublishPlot = p.PublishPlot;
         }
+
+        public bool HasMyClaims { get; }
 
         public static IOrderedEnumerable<T> OrderByDisplayPriority<T>(
             IEnumerable<T> collectionToSort,

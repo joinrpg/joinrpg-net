@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Services.Interfaces;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
@@ -74,7 +74,17 @@ namespace JoinRpg.Web.Models
     public bool IsVisible { get; }
   }
 
-  public class AddCommentViewModel : IValidatableObject
+    public enum FinanceOperationActionView
+    {
+        [Display(Name = "Ничего не делать"), UsedImplicitly]
+        None,
+        [Display(Name = "Подтвердить операцию"), UsedImplicitly]
+        Approve,
+        [Display(Name = "Отменить операцию"), UsedImplicitly]
+        Decline,
+    }
+
+    public class AddCommentViewModel : IValidatableObject
   {
     public int ProjectId { get; set; }
     public int CommentDiscussionId { get; set; }
@@ -96,7 +106,7 @@ namespace JoinRpg.Web.Models
     public string ActionName { get; set; }
 
     [Display(Name = "С финансовой операцией...")]
-    public FinanceOperationAction FinanceAction { get; set; }
+    public FinanceOperationActionView FinanceAction { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

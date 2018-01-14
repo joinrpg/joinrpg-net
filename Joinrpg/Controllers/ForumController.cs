@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -123,8 +123,12 @@ namespace JoinRpg.Web.Controllers
         if (claim != null)
         {
 
-          await ClaimService.AddComment(discussion.ProjectId, claim.ClaimId, viewModel.ParentCommentId,
-            !viewModel.HideFromUser, viewModel.CommentText, viewModel.FinanceAction);
+            await ClaimService.AddComment(discussion.ProjectId,
+                claim.ClaimId,
+                viewModel.ParentCommentId,
+                !viewModel.HideFromUser,
+                viewModel.CommentText,
+                (FinanceOperationAction) viewModel.FinanceAction);
         }
         else
         {

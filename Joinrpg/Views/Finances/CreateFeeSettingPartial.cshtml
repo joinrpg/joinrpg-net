@@ -1,29 +1,45 @@
-﻿@model JoinRpg.Web.Models.CreateProjectFeeSettingViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.CreateProjectFeeSettingViewModel
 
     @Html.AntiForgeryToken()
 @Html.HiddenFor(model => model.ProjectId)
     
-    <div class="form-horizontal">
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.Fee, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Fee, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Fee, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <input id="StartDate"
-                       name="StartDate"
-                       data-provide="datepicker"
-                       class="datepicker form-control"
-                       data-date-begin-date="0d"
-                       data-date-format="dd.mm.yyyy"
-                       value="@DateTime.UtcNow.ToString("dd.MM.yyyy")" />
-                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
-            </div>
+<div class="form-horizontal">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(model => model.Fee, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.Fee, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Fee, "", new { @class = "text-danger" })
+            @Html.DescriptionFor(model => model.Fee)
         </div>
     </div>
+
+    @if (Model.PreferentialFeeEnabled)
+    {
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.PreferentialFee, htmlAttributes: new {@class = "control-label col-md-3"})
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.PreferentialFee, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.PreferentialFee, "", new {@class = "text-danger"})
+                @Html.DescriptionFor(model => model.PreferentialFee)
+            </div>
+        </div>
+    }
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-6">
+            <input id="StartDate"
+                   name="StartDate"
+                   data-provide="datepicker"
+                   class="datepicker form-control"
+                   data-date-begin-date="0d"
+                   data-date-format="dd.mm.yyyy"
+                   value="@DateTime.UtcNow.ToString("dd.MM.yyyy")" />
+            @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+            @Html.DescriptionFor(model => model.StartDate)
+        </div>
+    </div>
+</div>

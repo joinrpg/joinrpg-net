@@ -13,7 +13,7 @@
                        role="button"
                        title="У меня есть права мастера на этой игре">Мой проект</a>
                 }
-                @if (Model.MyClaims.Any())
+                @if (Model.HasMyClaims)
                 {
                     <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
                        class="btn btn-success btn-sm"
@@ -39,9 +39,9 @@
                 </a>
                 }
 
-                @if (!Model.IsMaster && !Model.MyClaims.Any() && Model.IsAcceptingClaims)
+                @if (!Model.IsMaster && !Model.HasMyClaims && Model.IsAcceptingClaims)
                 {
-                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.ProjectRootGroupId, area = ""}, null)"
+                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
                        class="btn btn-info btn-sm"
                        role="button">
                         Заявиться

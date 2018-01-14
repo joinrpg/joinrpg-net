@@ -38,9 +38,15 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectid, int? characterGroupId)
     {
-      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+        if (characterGroupId == null)
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectid);
+            return RedirectToAction("AddForGroup",
+                new {project.ProjectId, project.RootGroup.CharacterGroupId});
+        }
+      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
       if (field == null) return HttpNotFound();
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
@@ -493,5 +499,31 @@ namespace JoinRpg.Web.Controllers
 
       return null;
     }
+
+      [MasterAuthorize(), ValidateAntiForgeryToken]
+      public async Task<ActionResult> MarkPreferential(int claimid, int projectid, bool preferential)
+      {
+          try
+          {
+              if (!ModelState.IsValid)
+              {
+                  return await Edit(projectid, claimid);
+              }
+
+              await
+                  FinanceService.MarkPreferential(new MarkPreferentialRequest
+                  {
+                      ProjectId = projectid,
+                      ClaimId = claimid,
+                      Preferential = preferential
+                  });
+
+              return RedirectToAction("Edit", "Claim", new { claimid, projectid });
+          }
+          catch
+          {
+              return await Edit(projectid, claimid);
+          }
+        }
   }
 }
