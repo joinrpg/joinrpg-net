@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces
@@ -33,15 +32,11 @@ namespace JoinRpg.Services.Interfaces
     Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
   }
 
-  //TODO[Localize]
-  public enum FinanceOperationAction
-  {
-    [Display(Name = "Ничего не делать")]
-    None,
-    [Display(Name = "Подтвердить операцию")]
-    Approve,
-    [Display(Name = "Отменить операцию")]
-    Decline
-  }
+    public enum FinanceOperationAction
+    {
+        None,
+        Approve,
+        Decline,
+    }
 
 }

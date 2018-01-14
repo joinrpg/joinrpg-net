@@ -1,17 +1,36 @@
 ﻿@using JoinRpg.Web.App_Code;
 @using JoinRpg.Web.Models;
 @using JoinRpg.DataModel;
-@using System.Web.Mvc;
 @model ClaimFeeViewModel
 
 @helper RenderRow(string id, bool visible, string title, IHtmlString fee, IHtmlString payment, IHtmlString ex = null)
-{
-    <tr @((id != null ? " id=\"" + id + "\"" : @"") + (!visible ? " style=\"display: none;\"" : @""))><td>@title</td><td class="price-table">@(fee ?? MvcHtmlString.Empty)</td><td class="price-table">@(payment ?? MvcHtmlString.Empty)</td><td>@(ex ?? MvcHtmlString.Empty)</td></tr>
+    {
+        <tr @((id != null ? " id=\"" + id + "\"" : @"") + (!visible ? " style=\"display: none;\"" : @""))><td>@title</td><td class="price-table">@(fee ?? MvcHtmlString.Empty)</td><td class="price-table">@(payment ?? MvcHtmlString.Empty)</td><td>@(ex ?? MvcHtmlString.Empty)</td></tr>
 }
 
 @helper RenderPaymentRow(FinanceOperation fo)
+    {
+        <tr class="@fo.State.ToRowClass()"><td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td><td></td><td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td><td>@(fo.Approved ? "" : fo.State.ToTitleString())</td></tr>
+}
+
+@functions
 {
-    <tr class="@fo.State.ToRowClass()"><td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td><td></td><td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td><td>@(fo.Approved ? "" : fo.State.ToTitleString())</td></tr>
+
+    MvcHtmlString AdminFunctions()
+    {
+        var functions = "";
+        if (Model.IsFeeAdmin)
+        {
+            functions += "<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#changeFeeModal\">Изменить вручную&hellip;</button>";
+            if (Model.PreferentialFeeEnabled)
+            {
+                var label = Model.PreferentialFeeUser ? "Снять пометку льготника" : "Сделать льготником";
+                functions += "<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#markAsPreferential\">" + label + "&hellip;</button>";
+            }
+        }
+        return MvcHtmlString.Create(functions);
+    }
+
 }
 
 @* All variables below are declared in claim.js *@
@@ -21,12 +40,13 @@
     feeBalance = @(Model.CurrentBalance);
     feeBase = @(Model.BaseFee);
 </script>
-<div id="feeInfo" class="collapse in">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
-    <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
-    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
-    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
-    <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
-    <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Подробный вид&hellip;</button>
+<div id="feeInfo" class="collapse in">
+    @Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
+<strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
+<span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
+<span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
+<strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
+<button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Подробный вид&hellip;</button>
 </div>
 <div id="feeDetails" class="collapse">
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
@@ -36,23 +56,26 @@
         </thead>
         <tbody>
             @RenderRow("rowBaseFee",
-                Model.HasBaseFee || Model.IsFeeAdmin,
-                "Взнос" + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
-                Html.RenderPriceElement(Model.BaseFee),
-                null,
-                Model.IsFeeAdmin ? Html.Raw("<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#changeFeeModal\">Изменить вручную&hellip;</button>") : null)
+                     Model.HasBaseFee || Model.IsFeeAdmin,
+                     "Взнос"
+                         + (Model.PreferentialFeeUser ? " (льготник)" : "")
+                        + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
+                     Html.RenderPriceElement(Model.BaseFee),
+                     null,
+                     AdminFunctions()
+                     )
             @RenderRow("rowClaimFee",
-                Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
-                "Опции заявки",
-                Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim],
-                "feeClaimFieldsDisp"),
-                null)
+                     Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
+                     "Опции заявки",
+                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim],
+                     "feeClaimFieldsDisp"),
+                     null)
             @RenderRow("rowCharacterFee",
-                Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
-                "Опции персонажа",
-                Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character],
-                "feeCharacterFieldsDisp"),
-                null)
+                     Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
+                     "Опции персонажа",
+                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character],
+                     "feeCharacterFieldsDisp"),
+                     null)
             @foreach (var fo in Model.FinanceOperations)
             {
                 @RenderPaymentRow(fo)
@@ -100,15 +123,19 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="join alert alert-info"><i class="glyphicon glyphicon-info-sign"></i>
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
                         Размер взноса для этой заявки будет назначен вручную.
-                        После этого взнос не будет больше зависеть от времени сдачи и&nbsp;будет зафиксирован.</div>
+                        После этого взнос не будет больше зависеть от времени сдачи и&nbsp;будет зафиксирован.
+                    </div>
                     @if (Model.HasFieldsWithFee)
                     {
-                        <div class="join alert alert-warning"><i class="glyphicon glyphicon-exclamation-sign"></i>
+                        <div class="join alert alert-warning">
+                            <i class="glyphicon glyphicon-exclamation-sign"></i>
                             Эта настройка меняет только базовое значение взноса. Итоговая сумма взноса складывается
-                            из установленного вручную взноса и суммы модификаторов от полей.</div>
-                    }                    
+                            из установленного вручную взноса и суммы модификаторов от полей.
+                        </div>
+                    }
                     <div class="form-horizontal">
                         <div class="form-group">
                             <div class="col-md-6 control-label"><label for="feeSpecialValue">Новый размер взноса:</label></div>
@@ -128,6 +155,40 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
                     <button type="submit" class="btn btn-info">Изменить</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="markAsPreferential" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("MarkPreferential", "Claim", new { Model.ClaimId, Model.ProjectId }, FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="preferential" value="@(Model.PreferentialFeeUser ? "false" : "true")"/>
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Льготный взнос</h4>
+                </div>
+
+                <div class="modal-body">
+                    <h4>Условия льготного взноса</h4>
+                    @Model.PreferentialFeeConditions
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    @if (Model.PreferentialFeeUser)
+                    {
+                        <button type="submit" class="btn btn-danger">Снять пометку льготника</button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-success">Пометить льготником</button>
+                    }
+
                 </div>
             }
         </div>

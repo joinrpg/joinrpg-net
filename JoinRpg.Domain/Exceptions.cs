@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -66,8 +66,15 @@ namespace JoinRpg.Domain
     }
   }
 
+    public class PreferentialFeeNotEnabled : JoinRpgBaseException
+    {
+        public PreferentialFeeNotEnabled() : base("Preferential fee not enabled")
+        {
+        }
+    }
 
-  public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
+
+    public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
   {
     public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
     {

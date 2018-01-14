@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -114,5 +115,18 @@ namespace JoinRpg.Services.Impl
       email.Money = money;
       return email;
     }
+
+      protected async Task<Claim> LoadAndVerifyClaimForRequest(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType)
+      {
+          var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
+
+          if (claim == null)
+          {
+              throw new JoinRpgEntityNotFoundException(request.ClaimId, "claim");
+          }
+
+          claim.RequestMasterAccess(CurrentUserId, accessType);
+          return claim;
+      }
   }
 }

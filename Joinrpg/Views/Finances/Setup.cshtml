@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
 @model FinanceSetupViewModel
 
 @{
@@ -12,13 +13,13 @@
 @if (Model.PaymentTypes.Any() && !Model.FeeSettings.Any())
 {
     <div class="alert alert-danger">
-        Необходимо настроить размеры взносов, прежде чем принимать оплату.
+        Необходимо настроить размеры взносов, прежде чем принимать их.
     </div>
 }
-else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
+else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 {
     <div class="alert alert-danger">
-        Необходимо настроить хотя бы один способ приема взносов, прежде чем принимать оплату.
+        Необходимо настроить хотя бы один метод оплаты, прежде чем принимать взносы.
     </div>
 }
 
@@ -53,6 +54,12 @@ else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
                             <th>
                                 @Html.DisplayNameFor(model => firstFee.Fee)
                             </th>
+                            @if (Model.GlobalSettings.PreferentialFeeEnabled)
+                            {
+                                <th>
+                                    @Html.DisplayNameFor(model => firstFee.PreferentialFee)
+                                </th>
+                            }
                             <th>
                                 @Html.DisplayNameFor(model => firstFee.StartDate)
                             </th>
@@ -65,6 +72,12 @@ else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
                                 <td>
                                     @Html.DisplayFor(modelItem => item.Fee)
                                 </td>
+                                @if (Model.GlobalSettings.PreferentialFeeEnabled)
+                                {
+                                    <td>
+                                        @(item.PreferentialFee ?? item.Fee)
+                                    </td>
+                                }
                                 <td>
                                     @item.StartDate.ToShortDateString()
                                 </td>
@@ -208,13 +221,32 @@ else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
                    @Html.AntiForgeryToken()
                    @Html.HiddenFor(item => model.ProjectId)
 
-                <div class="form-group">
-                    @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new { @class = "control-label col-md-2" })
-                    <div class="col-md-1">
-                        @Html.EditorFor(item => model.WarnOnOverPayment)
-                        @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new { @class = "text-danger" })
-                    </div>
-                </div>
+                   <div class="form-group">
+                       @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new { @class = "control-label col-md-2" })
+                       <div class="col-md-10">
+                           @Html.EditorFor(item => model.WarnOnOverPayment)
+                           @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new { @class = "text-danger" })
+                           @Html.DescriptionFor(item => model.WarnOnOverPayment)
+                       </div>
+                   </div>
+
+                   <div class="form-group">
+                       @Html.LabelFor(item => model.PreferentialFeeEnabled, htmlAttributes: new { @class = "control-label col-md-2" })
+                       <div class="col-md-10">
+                           @Html.EditorFor(item => model.PreferentialFeeEnabled)
+                           @Html.ValidationMessageFor(item => model.PreferentialFeeEnabled, "", new { @class = "text-danger" })
+                           @Html.DescriptionFor(item => model.PreferentialFeeEnabled)
+                       </div>
+                   </div>
+
+                   <div class="form-group">
+                       @Html.LabelFor(item => model.PreferentialFeeConditions, htmlAttributes: new { @class = "control-label col-md-2" })
+                       <div class="col-md-10">
+                           @Html.EditorFor(item => model.PreferentialFeeConditions)
+                           @Html.ValidationMessageFor(item => model.PreferentialFeeConditions, "", new { @class = "text-danger" })
+                           @Html.DescriptionFor(item => model.PreferentialFeeConditions)
+                       </div>
+                   </div>
 
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
@@ -256,7 +288,7 @@ else if (!Model.PaymentTypes.Any() && Model.FeeSettings.Any())
         <div class="modal-content">
             @using (Html.BeginForm("CreateFeeSetting", "Finances", FormMethod.Post))
             {
-                var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId};
+                var localModel = new CreateProjectFeeSettingViewModel() {ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled};
 
 
             <div class="modal-header">

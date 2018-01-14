@@ -21,7 +21,7 @@ namespace JoinRpg.Domain
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 
-    public static void RequestMasterAccess([NotNull] this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> lambda)
+    public static void RequestMasterAccess([NotNull] this IProjectEntity field, int? currentUserId, Expression<Func<ProjectAcl, bool>> accessType)
     {
       if (field == null)
       {
@@ -31,9 +31,9 @@ namespace JoinRpg.Domain
       {
         throw new ArgumentNullException(nameof(field.Project));
       }
-      if (!field.HasMasterAccess(currentUserId, acl => lambda.Compile()(acl)))
+      if (!field.HasMasterAccess(currentUserId, acl => accessType.Compile()(acl)))
       {
-        throw new NoAccessToProjectException(field.Project, currentUserId, lambda);
+        throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
       }
     }
 

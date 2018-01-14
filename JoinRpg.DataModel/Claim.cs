@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -109,6 +109,8 @@ namespace JoinRpg.DataModel
         /// </summary>
         public IEnumerable<FinanceOperation> ApprovedFinanceOperations
               => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
+
+        public bool PreferentialFeeUser { get; set; }
 
         /// <summary>
         /// Used for caching previously calculated total fields fee
