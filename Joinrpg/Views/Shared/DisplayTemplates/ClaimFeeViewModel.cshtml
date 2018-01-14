@@ -5,12 +5,24 @@
 
 @helper RenderRow(string id, bool visible, string title, IHtmlString fee, IHtmlString payment, IHtmlString ex = null)
     {
-        <tr @((id != null ? " id=\"" + id + "\"" : @"") + (!visible ? " style=\"display: none;\"" : @""))><td>@title</td><td class="price-table">@(fee ?? MvcHtmlString.Empty)</td><td class="price-table">@(payment ?? MvcHtmlString.Empty)</td><td>@(ex ?? MvcHtmlString.Empty)</td></tr>
+    var style = visible ? "" : "display: none;";
+    <tr @((id != null ? " id=\"" + id + "\"" : @"")) style="@style">
+        <td>@title</td><td class="price-table">@(fee ?? MvcHtmlString.Empty)</td><td class="price-table">@(payment ?? MvcHtmlString.Empty)</td><td>@(ex ?? MvcHtmlString.Empty)</td>
+    </tr>
 }
 
 @helper RenderPaymentRow(FinanceOperation fo)
     {
-        <tr class="@fo.State.ToRowClass()"><td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td><td></td><td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td><td>@(fo.Approved ? "" : fo.State.ToTitleString())</td></tr>
+    if (fo.PaymentType == null)
+    {
+        return;
+    }
+    <tr class="@fo.State.ToRowClass()">
+        <td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td>
+        <td></td>
+        <td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td>
+        <td>@( fo.Approved ? "" : fo.State.ToTitleString())</td>
+    </tr>
 }
 
 @functions

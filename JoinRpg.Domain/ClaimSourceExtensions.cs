@@ -1,4 +1,4 @@
-﻿ using System;
+ using System;
  using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -74,7 +74,7 @@ namespace JoinRpg.Domain
 
     public static bool HasActiveClaims(this IClaimSource target)
     {
-      return target.Claims.Any(claim => claim.IsActive);
+      return target.Claims.Any(claim => claim.ClaimStatus.IsActive());
     }
 
     [CanBeNull]
@@ -94,12 +94,8 @@ namespace JoinRpg.Domain
 
     public static bool IsNpc([CanBeNull] this IClaimSource target)
     {
-      var character = target as Character;
-      if (character == null)
-      {
-        return false;
-      }
-      return !character.IsAcceptingClaims && character.ApprovedClaim == null;
+        return target is Character character &&
+               (!character.IsAcceptingClaims && character.ApprovedClaim == null);
     }
 
     public static bool IsAcceptingClaims(this CharacterGroup characterGroup)

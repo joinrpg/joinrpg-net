@@ -1,9 +1,7 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -25,11 +23,10 @@ namespace JoinRpg.Services.Impl.Search
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
     {
-      bool matchByIdIsPerfect;
-      int? idToFind = SearchKeywordsResolver.TryGetId(
+        int? idToFind = SearchKeywordsResolver.TryGetId(
         searchString,
         keysForPerfectMath,
-        out matchByIdIsPerfect);
+        out var matchByIdIsPerfect);
 
       if (idToFind == null)
       {
@@ -53,7 +50,7 @@ namespace JoinRpg.Services.Impl.Search
             Identification = claim.ClaimId.ToString(),
             ProjectId = claim.ProjectId,
             IsPublic = false,
-            IsActive = claim.IsActive,
+            IsActive = claim.ClaimStatus.IsActive(),
             IsPerfectMatch = claim.ClaimId == idToFind && matchByIdIsPerfect
           })
         .ToList();

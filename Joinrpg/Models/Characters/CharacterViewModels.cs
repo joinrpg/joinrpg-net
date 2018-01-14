@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Models.Characters
         currentUserId);
       Fields = new CustomFieldsViewModel(currentUserId, field);
 
-      ActiveClaimsCount = field.Claims.Count(claim => claim.IsActive);
+      ActiveClaimsCount = field.Claims.Count(claim => claim.ClaimStatus.IsActive());
       IsActive = field.IsActive;
       IsAcceptingClaimsEnabled = field.ApprovedClaim == null;
 
@@ -145,7 +145,7 @@ namespace JoinRpg.Web.Models.Characters
 
     private void LoadClaims(Character field)
     {
-      RejectedClaims = LoadClaimsWithCondition(field, claim => !claim.IsActive);
+      RejectedClaims = LoadClaimsWithCondition(field, claim => !claim.ClaimStatus.IsActive());
       DiscussedClaims = LoadClaimsWithCondition(field, claim => claim.IsInDiscussion);
     }
 

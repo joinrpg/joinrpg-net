@@ -404,10 +404,17 @@ namespace JoinRpg.Web.Controllers
         }
 
 
-        await
-          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, 
-            viewModel.CommentText, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
-            viewModel.PaymentTypeId);
+          await
+              FinanceService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
+              {
+                  ProjectId = claim.ProjectId,
+                  ClaimId = claim.ClaimId,
+                  Contents = viewModel.CommentText,
+                  FeeChange = viewModel.FeeChange,
+                  Money = viewModel.Money,
+                  OperationDate = viewModel.OperationDate,
+                  PaymentTypeId = viewModel.PaymentTypeId
+              });
         
         return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
       }
@@ -500,8 +507,10 @@ namespace JoinRpg.Web.Controllers
       return null;
     }
 
-      [MasterAuthorize(), ValidateAntiForgeryToken]
-      public async Task<ActionResult> MarkPreferential(int claimid, int projectid, bool preferential)
+      [MasterAuthorize(Permission.CanManageMoney), ValidateAntiForgeryToken]
+      public async Task<ActionResult> MarkPreferential(int claimid,
+          int projectid,
+          bool preferential)
       {
           try
           {
@@ -518,12 +527,52 @@ namespace JoinRpg.Web.Controllers
                       Preferential = preferential
                   });
 
-              return RedirectToAction("Edit", "Claim", new { claimid, projectid });
+              return RedirectToAction("Edit", "Claim", new {claimid, projectid});
           }
           catch
           {
               return await Edit(projectid, claimid);
           }
+      }
+
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RequestPreferentialFee(
+            MarkMeAsPreferentialViewModel viewModel)
+        {
+            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            if (claim == null)
+            {
+                return HttpNotFound();
+            }
+            var error = WithClaim(claim);
+            if (error != null)
+            {
+                return error;
+            }
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+                }
+
+
+                await
+                    FinanceService.RequestPreferentialFee(new MarkMeAsPreferentialFeeOperationRequest()
+                    {
+                        ProjectId = claim.ProjectId,
+                        ClaimId = claim.ClaimId,
+                        Contents = viewModel.CommentText,
+                        OperationDate = viewModel.OperationDate,
+                    });
+
+                return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+            }
+            catch
+            {
+                return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+            }
+            
         }
-  }
+    }
 }

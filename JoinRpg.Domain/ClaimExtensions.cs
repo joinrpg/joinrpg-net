@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -28,7 +28,7 @@ namespace JoinRpg.Domain
     public static IEnumerable<Claim> OtherClaimsForThisCharacter([NotNull] this Claim claim)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
-      return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.IsActive) ?? new List<Claim>();
+      return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive()) ?? new List<Claim>();
     }
 
     [NotNull]
@@ -147,7 +147,7 @@ namespace JoinRpg.Domain
 
     public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId)
     {
-      return enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsActive);
+      return enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
     }
 
     public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId)

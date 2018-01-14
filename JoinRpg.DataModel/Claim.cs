@@ -49,11 +49,7 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
-    public bool IsActive =>
-            ClaimStatus != Status.DeclinedByMaster
-            && ClaimStatus != Status.DeclinedByUser
-            && ClaimStatus != Status.OnHold;
-    public bool IsPending =>
+      public bool IsPending =>
             ClaimStatus != Status.DeclinedByMaster
             && ClaimStatus != Status.DeclinedByUser;
     public bool IsInDiscussion =>

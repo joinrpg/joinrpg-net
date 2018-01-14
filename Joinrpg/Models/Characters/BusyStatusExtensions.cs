@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 
@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Models.Characters
       {
         return CharacterBusyStatusView.HasPlayer;
       }
-      if (character.Claims.Any(c => c.IsActive))
+      if (character.Claims.Any(c => c.ClaimStatus.IsActive()))
       {
         return CharacterBusyStatusView.Discussed;
       }

@@ -194,6 +194,7 @@ namespace JoinRpg.Services.Impl
           IsVisibleToPlayer = true,
           ProjectId = projectId,
           LastEditTime = Now,
+            ExtraAction = CommentExtraAction.NewClaim
         });
       }
 
@@ -280,6 +281,10 @@ namespace JoinRpg.Services.Impl
         {
             case FinanceOperationAction.Approve:
                 finance.State = FinanceOperationState.Approved;
+                if (finance.MarkMeAsPreferential)
+                {
+                    claim.PreferentialFeeUser = true;
+                }
                 claim.UpdateClaimFeeIfRequired(finance.OperationDate);
                 return CommentExtraAction.ApproveFinance;
             case FinanceOperationAction.Decline:
@@ -689,21 +694,31 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId)
-    {
-        var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
-        var ChildComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
-        var comment = discussion.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
-            if (comment.HasMasterAccess(currentUserId) && ChildComments.Count() == 0 && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
-            {
-                comment.IsVisibleToPlayer = false;
-                await UnitOfWork.SaveChangesAsync();
-            }
-            else
-            {
-                throw new JoinRpgConcealCommentException();
-            }
-    }
+      public async Task ConcealComment(int projectId,
+          int commentId,
+          int commentDiscussionId,
+          int currentUserId)
+      {
+          var discussion = await ForumRepository.GetDiscussionByComment(projectId, commentId);
+          var childComments = discussion.Comments.Where(c => c.ParentCommentId == commentId);
+          var comment = discussion.Comments.FirstOrDefault(coment => coment.CommentId == commentId);
+
+          if (comment == null)
+          {
+              throw new JoinRpgEntityNotFoundException(commentId, nameof(Comment));
+          }
+
+          if (comment.HasMasterAccess(currentUserId) && !childComments.Any() &&
+              comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+          {
+              comment.IsVisibleToPlayer = false;
+              await UnitOfWork.SaveChangesAsync();
+          }
+          else
+          {
+              throw new JoinRpgConcealCommentException();
+          }
+      }
   }
 }
 

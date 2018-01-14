@@ -46,7 +46,7 @@
     {
     <tr>
         <td>
-            <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)#unread">
+            <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
                 @item.Name
                 @if (item.UnreadCommentsCount > 0)
                 {

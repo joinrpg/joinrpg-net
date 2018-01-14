@@ -27,15 +27,28 @@ namespace JoinRpg.Services.Interfaces
         public bool Preferential { get; set; }
     }
 
+    public class FeeAcceptedOperationRequest : IClaimOperationRequest
+    {
+        public int ProjectId { get; set; }
+        public int ClaimId { get; set; }
+        public string Contents { get; set; }
+        public DateTime OperationDate { get; set; }
+        public int FeeChange { get; set; }
+        public int Money { get; set; }
+        public int PaymentTypeId { get; set; }
+    }
+
+    public class MarkMeAsPreferentialFeeOperationRequest : IClaimOperationRequest
+    {
+        public int ProjectId { get; set; }
+        public int ClaimId { get; set; }
+        public string Contents { get; set; }
+        public DateTime OperationDate { get; set; }
+    }
+
     public interface IFinanceService
     {
-        Task FeeAcceptedOperation(int projectId,
-            int claimId,
-            string contents,
-            DateTime operationDate,
-            int feeChange,
-            int money,
-            int paymentTypeId);
+        Task FeeAcceptedOperation(FeeAcceptedOperationRequest request);
 
         Task CreateCashPaymentType(int projectid, int targetUserId);
         Task TogglePaymentActivness(int projectid, int paymentTypeId);
@@ -46,5 +59,6 @@ namespace JoinRpg.Services.Interfaces
         Task ChangeFee(int projectId, int claimId, int feeValue);
         Task SaveGlobalSettings(SetFinanceSettingsRequest request);
         Task MarkPreferential(MarkPreferentialRequest request);
+        Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request);
     }
 }
