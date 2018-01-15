@@ -218,7 +218,7 @@ namespace JoinRpg.Services.Impl
             //TODO[Localize]
             await ApproveByMaster(projectId,
                 claim.ClaimId,
-                "Автоматическое одобрение");
+                "Ваша заявка была принята автоматически");
             ResetImpersonation();
         }
     }
