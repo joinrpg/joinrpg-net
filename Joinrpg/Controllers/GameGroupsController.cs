@@ -243,7 +243,7 @@ namespace JoinRpg.Web.Controllers
         .Union(new MasterListItemViewModel()
         {
           Id = "-1",
-          Name = "По умолчанию: " + GetDefaultResponsible(group, includeSelf)
+          Name = "По умолчанию" // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
         }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
     }
 

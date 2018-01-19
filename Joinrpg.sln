@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Web", "Joinrpg\JoinRpg.Web.csproj", "{24952B80-7D38-44DE-B431-BDC9C1E71D63}"
 EndProject
@@ -235,5 +235,8 @@ Global
 		{18686E89-984C-45C8-8D2B-DA9CDFD64E89} = {33A49F7A-878E-4D82-8ECF-59922E247DC6}
 		{D21BDCDE-6A40-4AFC-8D72-E7441E638E17} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{75C5529A-A892-4692-9B5F-8D01290BF1B3} = {33A49F7A-878E-4D82-8ECF-59922E247DC6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
 	EndGlobalSection
 EndGlobal
