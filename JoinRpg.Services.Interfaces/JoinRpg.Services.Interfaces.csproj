@@ -49,7 +49,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IAccomodationService.cs" />
+    <Compile Include="IAccommodationService.cs" />
     <Compile Include="EditProjectRequest.cs" />
     <Compile Include="IClaimOperationRequest.cs" />
     <Compile Include="IClaimService.cs" />

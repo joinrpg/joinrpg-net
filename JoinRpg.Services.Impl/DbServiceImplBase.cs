@@ -23,8 +23,8 @@ namespace JoinRpg.Services.Impl
 
         private readonly Lazy<IUserRepository> _userRepository;
 
-        protected IAccomodationRepository AccomodationRepository => _accomodationRepository.Value;
-        private readonly Lazy<IAccomodationRepository> _accomodationRepository;
+        protected IAccommodationRepository AccomodationRepository => _accomodationRepository.Value;
+        private readonly Lazy<IAccommodationRepository> _accomodationRepository;
 
         protected IProjectRepository ProjectRepository => _projectRepository.Value;
 

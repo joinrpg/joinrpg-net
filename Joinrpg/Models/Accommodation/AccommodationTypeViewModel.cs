@@ -1,16 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Web.Models.Accomodation
+namespace JoinRpg.Web.Models.Accommodation
 {
     //todo I18n
-    public class AccomomodationTypeViewModel
+    public class AccommodationTypeViewModel
     {
         [DisplayName("Название")]
         [Required]
@@ -27,8 +26,8 @@ namespace JoinRpg.Web.Models.Accomodation
         [DisplayName("Проживает")]
         public int UsedSpace { get; set; }
 
-        public  ICollection<ProjectAccomodationVewModel> Accomodations { get; set; }
-        public AccomomodationTypeViewModel([NotNull]ProjectAccomodationType entity)
+        public  ICollection<ProjectAccommodationVewModel> Accommodations { get; set; }
+        public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
@@ -39,17 +38,17 @@ namespace JoinRpg.Web.Models.Accomodation
             Id = entity.Id;
             Cost = entity.Cost;
             Name = entity.Name;
-            Accomodations = ProjectAccomodationVewModel.NewListCollection(entity.ProjectAccomodations);
-            Capacity = Accomodations.Aggregate(0, (acc, x) => acc + x.Capacity);
+            Accommodations = ProjectAccommodationVewModel.NewListCollection(entity.ProjectAccommodations);
+            Capacity = Accommodations.Sum(x=>x.Capacity);
         }
 
-        public AccomomodationTypeViewModel()
+        public AccommodationTypeViewModel()
         {
         }
 
-        public ProjectAccomodationType GetProjectAccomodationTypeMock()
+        public ProjectAccommodationType GetProjectAccommodationTypeMock()
         {
-            return new ProjectAccomodationType()
+            return new ProjectAccommodationType()
             {
                 ProjectId = ProjectId,
                 Id = Id,

@@ -1,17 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
-namespace JoinRpg.Web.Models.Accomodation
+namespace JoinRpg.Web.Models.Accommodation
 {
-    public class AccomodationListViewModel
+    public class AccommodationListViewModel
     {
         public int ProjectId { get; set; }
         [DisplayName("Проект")]
         public string ProjectName { get; set; }
         [DisplayName("Типы проживания")]
-        public ICollection<AccomomodationTypeViewModel> AccomomodationTypes { get; set; }
+        public ICollection<AccommodationTypeViewModel> AccommodationTypes { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿@using System.Collections.ObjectModel
 @using JoinRpg.Web.Models.Accomodation
-@model JoinRpg.Web.Models.Accomodation.AccomomodationTypeViewModel
+@model JoinRpg.Web.Models.Accomodation.AccommodationTypeViewModel
 @{
     ViewBag.IsInEditMode = false;
     ViewBag.ActionName = "Добавить";
@@ -12,7 +12,7 @@
         ViewBag.IsInEditMode = true;
     }
 }
-@using (Html.BeginForm("Edit", "AccomodationType", new { projectId = Model.ProjectId, Id = Model.Id }, FormMethod.Post))
+@using (Html.BeginForm("Edit", "AccommodationType", new { projectId = Model.ProjectId, Model.Id }, FormMethod.Post))
 {
     @Html.AntiForgeryToken()
 
@@ -52,7 +52,7 @@
             <div class="col-md-offset-2 col-md-8">
                 @if (ViewBag.IsInEditMode)
                 {
-                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, Id = Model.Id, action = "Index", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
+                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, Model.Id, action = "Index", Controller = "AccommodationType" }, new { @class = "btn btn-default pull-right" })
                 }
 
                 <button type="submit" class="btn btn-primary pull-right">@ViewBag.ActionName</button>
@@ -64,10 +64,10 @@
 @if (ViewBag.IsInEditMode)
 {
     <hr />
-    @Html.Partial("AccomodationIndex", Model.Accomodations ?? new Collection<ProjectAccomodationVewModel>(), new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
+    @Html.Partial("AccommodationIndex", Model.Accommodations ?? new Collection<ProjectAccomodationVewModel>(), new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
 
     <hr />
-    @Html.Partial("ProjectAccomodationEdit", new ProjectAccomodationVewModel() { Id = 0, ProjectId = Model.ProjectId, AccomodationTypeId = Model.Id }, new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
+    @Html.Partial("ProjectAccommodationEdit", new ProjectAccomodationVewModel() { Id = 0, ProjectId = Model.ProjectId, AccomodationTypeId = Model.Id }, new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
 }
 
 

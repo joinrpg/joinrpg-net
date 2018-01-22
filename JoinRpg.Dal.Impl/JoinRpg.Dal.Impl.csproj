@@ -422,7 +422,7 @@
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
-    <Compile Include="Repositories\AccomodationRepositoryImpl.cs" />
+    <Compile Include="Repositories\AccommodationRepositoryImpl.cs" />
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
     <Compile Include="Repositories\ClaimPredicates.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />

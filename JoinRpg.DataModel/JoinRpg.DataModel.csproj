@@ -69,8 +69,8 @@
     <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />
-    <Compile Include="ProjectAccomodation.cs" />
-    <Compile Include="ProjectAccomodationType.cs" />
+    <Compile Include="ProjectAccommodation.cs" />
+    <Compile Include="ProjectAccommodationType.cs" />
     <Compile Include="ProjectFieldType.cs" />
     <Compile Include="ProjectItemTag.cs" />
     <Compile Include="Project.cs" />

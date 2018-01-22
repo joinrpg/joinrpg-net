@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -40,7 +40,7 @@ namespace JoinRpg.Dal.Impl
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
     public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
 
-    public IAccomodationRepository GetAccomodationRepository() => new AccomodationRepositoryImpl(this);
+    public IAccommodationRepository GetAccomodationRepository() => new AccommodationRepositoryImpl(this);
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
@@ -148,8 +148,8 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
       modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
 
-      modelBuilder.Entity<ProjectAccomodationType>();
-      modelBuilder.Entity<ProjectAccomodation>();
+      modelBuilder.Entity<ProjectAccommodationType>();
+      modelBuilder.Entity<ProjectAccommodation>();
 
       base.OnModelCreating(modelBuilder);
     }

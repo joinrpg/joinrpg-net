@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -9,12 +9,12 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using WebGrease.Css.Extensions;
 
-namespace JoinRpg.Web.Models.Accomodation
+namespace JoinRpg.Web.Models.Accommodation
 {
-    public class ProjectAccomodationVewModel
+    public class ProjectAccommodationVewModel
     {
         public int Id { get; set; }
-        public int AccomodationTypeId { get; set; }
+        public int AccommodationTypeId { get; set; }
         public int ProjectId { get; set; }
         [Required]
         [DisplayName("Название (номер)")]
@@ -31,13 +31,13 @@ namespace JoinRpg.Web.Models.Accomodation
         [DisplayName("Не подтверждено проживание")]
         public int NonConfirmedCount { get; set; }
         [DisplayName("Автозаполнение")]
-        public bool IsAutofilledAccomodation { get; set; } = false;
+        public bool IsAutoFilledAccommodation { get; set; } = false;
         public virtual ICollection<ClaimViewModel> Inhabitants { get; set; }
 
 
 
 
-        public ProjectAccomodationVewModel([NotNull]ProjectAccomodation entity)
+        public ProjectAccommodationVewModel([NotNull]ProjectAccommodation entity)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
@@ -46,48 +46,48 @@ namespace JoinRpg.Web.Models.Accomodation
             Id = entity.Id;
             Name = entity.Name;
             ProjectId = entity.ProjectId;
-            AccomodationTypeId = entity.AccomodationTypeId;
+            AccommodationTypeId = entity.AccommodationTypeId;
             Capacity = entity.Capacity;
             IsPlayerSelectable = entity.IsPlayerSelectable;
-            IsAutofilledAccomodation = entity.IsAutofilledAccomodation;
+            IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             IsInfinite = entity.IsInfinite;
         }
 
-        public ProjectAccomodationVewModel()
+        public ProjectAccommodationVewModel()
         {
         }
 
-        public ProjectAccomodation GetProjectAccomodationMock()
+        public ProjectAccommodation GetProjectAccommodationMock()
         {
-            return new ProjectAccomodation()
+            return new ProjectAccommodation()
             {
                 Id = Id,
                 ProjectId = ProjectId,
                 Name = Name,
-                AccomodationTypeId = AccomodationTypeId,
+                AccommodationTypeId = AccommodationTypeId,
                 Capacity = Capacity,
                 IsInfinite = IsInfinite,
                 IsPlayerSelectable = IsPlayerSelectable,
-                IsAutofilledAccomodation = IsAutofilledAccomodation
+                IsAutoFilledAccommodation = IsAutoFilledAccommodation
             };
         }
 
-        internal static ICollection<ProjectAccomodationVewModel> NewListCollection([NotNull] ICollection<ProjectAccomodation> projectAccomodations)
+        internal static ICollection<ProjectAccommodationVewModel> NewListCollection([NotNull] ICollection<ProjectAccommodation> projectAccomodations)
         {
             //todo add claim calculation logic 
-            return  projectAccomodations.Select(accomodation => new ProjectAccomodationVewModel()
+            return  projectAccomodations.Select(accommodation => new ProjectAccommodationVewModel()
             {
-                AccomodationTypeId = accomodation.AccomodationTypeId,
-                ProjectId = accomodation.ProjectId,
-                Capacity = accomodation.Capacity,
+                AccommodationTypeId = accommodation.AccommodationTypeId,
+                ProjectId = accommodation.ProjectId,
+                Capacity = accommodation.Capacity,
                 ConfirmedCount = 0,
                 NonConfirmedCount = 0,
-                Id = accomodation.Id,
+                Id = accommodation.Id,
                 Inhabitants = new List<ClaimViewModel>(),
-                IsAutofilledAccomodation = accomodation.IsAutofilledAccomodation,
-                IsInfinite = accomodation.IsInfinite,
-                IsPlayerSelectable = accomodation.IsPlayerSelectable,
-                Name = accomodation.Name
+                IsAutoFilledAccommodation = accommodation.IsAutoFilledAccommodation,
+                IsInfinite = accommodation.IsInfinite,
+                IsPlayerSelectable = accommodation.IsPlayerSelectable,
+                Name = accommodation.Name
             }).ToSafeReadOnlyCollection();
             
         }

@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JoinRpg.DataModel
 {
-    public class ProjectAccomodationType
+    public class ProjectAccommodationType
     {
         [Key]
         public int Id { get; set; }
@@ -17,6 +17,6 @@ namespace JoinRpg.DataModel
         [Required]
         public int Cost { get; set; }
 
-        public virtual ICollection<ProjectAccomodation> ProjectAccomodations { get; set; }
+        public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
     }
 }
