@@ -27,6 +27,8 @@ namespace JoinRpg.DataModel
 
     public MarkdownString Description { get; set; }
 
+    public MarkdownString MasterDescription { get; set; }
+
     public virtual Project Project { get; set; }
 
     public int ProjectId { get; set; }

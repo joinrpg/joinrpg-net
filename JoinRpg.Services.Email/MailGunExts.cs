@@ -1,10 +1,11 @@
-﻿using JoinRpg.DataModel;
+using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Services.Email
 {
@@ -25,7 +26,7 @@ namespace JoinRpg.Services.Email
 
     
     public static Recipient ToRecipient(this User user) 
-      => new Recipient { DisplayName = user.DisplayName, Email = user.Email };
+      => new Recipient { DisplayName = user.GetDisplayName(), Email = user.Email };
 
     public static JObject ToRecipientVariables(this IReadOnlyCollection<MailRecipient> recipients)
     {
@@ -33,7 +34,7 @@ namespace JoinRpg.Services.Email
       foreach (var r in recipients)
       {
         var jobj = new JObject();
-        jobj.Add(MailGunName, r.User.DisplayName);
+        jobj.Add(MailGunName, r.User.GetDisplayName());
 
         foreach (var nameAndValue in r.RecipientSpecificValues)
         {

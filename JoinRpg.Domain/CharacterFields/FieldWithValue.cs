@@ -1,100 +1,115 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JetBrains.Annotations;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 
 // ReSharper disable once CheckNamespace
 namespace JoinRpg.Domain
 {
-  public class FieldWithValue 
-  {
-    private string _value;
-
-    private IReadOnlyList<int> SelectedIds { get; set; }
-    public FieldWithValue(ProjectField field, [CanBeNull] string value)
+    public class FieldWithValue
     {
-      Field = field;
-      Value = value;
-    }
+        private string _value;
 
-    public ProjectField Field { get; }
+        private IReadOnlyList<int> SelectedIds { get; set; }
 
-    [CanBeNull]
-    public string Value
-    {
-      get { return _value; }
-      set
-      {
-        _value = value;
-        if (Field.HasValueList())
+        private Lazy<IReadOnlyList<ProjectFieldDropdownValue>> OrderedValueCache { get; }
+
+        public FieldWithValue(ProjectField field, [CanBeNull] string value)
         {
-          SelectedIds = Value.ToIntList();
+            Field = field;
+            Value = value;
+            OrderedValueCache = new Lazy<IReadOnlyList<ProjectFieldDropdownValue>>(() => Field.GetOrderedValues());
         }
-      }
-    }
 
-    [NotNull]
-    public string DisplayString => GetDisplayValue(Value, SelectedIds);
+        public ProjectField Field { get; }
 
-    protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
-    {
-      if (!Field.HasValueList())
-      {
-        return value ?? "";
-      }
-      return
-        Field.DropdownValues.Where(dv => selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
-          .Select(dv => dv.Label)
-          .JoinStrings(", ");
-    }
+        [CanBeNull]
+        public string Value
+        {
+            get { return _value; }
+            set
+            {
+                _value = value;
+                if (Field.HasValueList())
+                {
+                    SelectedIds = Value.ToIntList();
+                }
+            }
+        }
 
-    public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
+        [NotNull]
+        public string DisplayString => GetDisplayValue(Value, SelectedIds);
 
-    public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
+        protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
+        {
+            if (Field.FieldType == ProjectFieldType.Checkbox)
+            {
+                return Value?.StartsWith(CheckboxValueOn) == true ? "☑️" : "☐";
+            }
 
-    public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues()
-    {
-      return Field.GetOrderedValues().Where(v => v.IsActive || SelectedIds.Contains(v.ProjectFieldDropdownValueId));
-    }
+            if (Field.HasValueList())
+            {
+                return
+                    Field.DropdownValues.Where(dv =>
+                            selectedIDs.Contains(dv.ProjectFieldDropdownValueId))
+                        .Select(dv => dv.Label)
+                        .JoinStrings(", ");
+            }
 
-    [ItemNotNull, NotNull]
-    public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues()
-    {
-      return Field.GetOrderedValues().Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
-    }
+            return value ?? "";
+        }
 
-    [NotNull, ItemNotNull]
-    public IEnumerable<CharacterGroup> GetSpecialGroupsToApply()
-    {
-      return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
-    }
+        public bool HasEditableValue => !string.IsNullOrWhiteSpace(Value);
 
-    public bool HasViewAccess(AccessArguments accessArguments)
-    {
-      return Field.IsPublic
-        || accessArguments.MasterAccess
-        ||
-        (accessArguments.PlayerAccessToCharacter && Field.CanPlayerView &&
-         Field.FieldBoundTo == FieldBoundTo.Character)
-        ||
-        (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
-         Field.FieldBoundTo == FieldBoundTo.Claim);
-    }
+        public bool HasViewableValue => !string.IsNullOrWhiteSpace(Value) || !Field.CanHaveValue();
 
-    public bool HasEditAccess(AccessArguments accessArguments, IClaimSource target)
-    {
-      return (accessArguments.MasterAccess
-             ||
-             (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
-              Field.FieldBoundTo == FieldBoundTo.Character)
-             ||
-             (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
-             (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter)));
-    }
+        public IEnumerable<ProjectFieldDropdownValue> GetPossibleValues(
+            AccessArguments modelAccessArguments)
+        {
+            return OrderedValueCache.Value.Where(v =>
+                SelectedIds.Contains(v.ProjectFieldDropdownValueId) || 
+                (v.IsActive && (v.PlayerSelectable || modelAccessArguments.MasterAccess))
+                );
+        }
 
-    public override string ToString() => $"{Field.FieldName}={Value}";
+        [ItemNotNull, NotNull]
+        public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues()
+        {
+            return OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
+        }
+
+        [NotNull, ItemNotNull]
+        public IEnumerable<CharacterGroup> GetSpecialGroupsToApply()
+        {
+            return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
+        }
+
+        public bool HasViewAccess(AccessArguments accessArguments)
+        {
+            return Field.IsPublic
+              || accessArguments.MasterAccess
+              ||
+              (accessArguments.PlayerAccessToCharacter && Field.CanPlayerView &&
+               Field.FieldBoundTo == FieldBoundTo.Character)
+              ||
+              (accessArguments.PlayerAccesToClaim && Field.CanPlayerView &&
+               Field.FieldBoundTo == FieldBoundTo.Claim);
+        }
+
+        public bool HasEditAccess(AccessArguments accessArguments)
+        {
+            return (accessArguments.MasterAccess
+                   ||
+                   (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
+                    Field.FieldBoundTo == FieldBoundTo.Character)
+                   ||
+                   (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
+                   (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter)));
+        }
+
+        public override string ToString() => $"{Field.FieldName}={Value}";
 
         /// <summary>
         /// Returns value as integer with respect to field type.
@@ -102,12 +117,19 @@ namespace JoinRpg.Domain
         /// </summary>
         public int ToInt()
         {
-            int result;
-            if (!int.TryParse(Value, out result))
+            if (!int.TryParse(Value, out var result))
                 result = default(int);
             return result;
         }
 
-    public const string CheckboxValueOn = "on";
-  }
+        public const string CheckboxValueOn = "on";
+
+        public bool SupportsPricing()
+        {
+            return Field.FieldType.SupportsPricing() &&
+                   ((Field.FieldType.SupportsPricingOnField() && Field.Price != 0)
+                    || (!Field.FieldType.SupportsPricingOnField() &&
+                        Field.DropdownValues.Any(v => v.Price != 0)));
+        }
+    }
 }

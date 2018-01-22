@@ -1,59 +1,60 @@
-﻿using JoinRpg.DataModel;
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Web.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Web.Test
 {
-  [TestClass]
+  
   public class CustomFieldsViewModelTest
   {
     private MockedProject Mock { get; } = new MockedProject();
 
-    [TestMethod]
+    [Fact]
     public void HideMasterOnlyFieldOnAddClaimTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
-      Assert.IsFalse(vm.FieldById(Mock.MasterOnlyField.ProjectFieldId)?.CanView ?? false);
+      (vm.FieldById(Mock.MasterOnlyField.ProjectFieldId)?.CanView ?? false).ShouldBeFalse();
     }
 
-    [TestMethod]
+    [Fact]
     public void HideUnApprovedFieldOnAddClaimTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
-      Assert.IsFalse(vm.FieldById(Mock.HideForUnApprovedClaim.ProjectFieldId)?.CanView ?? false);
+      (vm.FieldById(Mock.HideForUnApprovedClaim.ProjectFieldId)?.CanView ?? false).ShouldBeFalse();
     }
 
-    [TestMethod]
+    [Fact]
     public void ShowPublicFieldToAnon()
     {
       var vm = new CustomFieldsViewModel(null, Mock.Character);
       var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
-      Assert.IsTrue(publicField?.CanView ?? true);
-      Assert.IsNotNull(publicField?.Value);
+      (publicField?.CanView ?? true).ShouldBeTrue();
+      publicField?.Value.ShouldNotBeNull();
     }
 
-    [TestMethod]
+    [Fact]
     public void ShowPublicFieldToAnonEvenIfEditDisabled()
     {
       var vm = new CustomFieldsViewModel(null, Mock.Character, disableEdit: true);
-      Assert.IsTrue(vm.FieldById(Mock.PublicField.ProjectFieldId)?.CanView ?? true);
+      (vm.FieldById(Mock.PublicField.ProjectFieldId)?.CanView ?? true).ShouldBeTrue();
     }
 
 
-    [TestMethod]  
+    [Fact]  
     public void AllowCharactersFieldOnAddClaimTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource) Mock.Character);
       var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.IsNull(characterField.Value);
 
-      Assert.IsTrue(characterField.CanEdit);
+        characterField.ShouldNotBeNull();
+      characterField.CanView.ShouldBeFalse();
+      characterField.Value.ShouldBeNull();
+
+      characterField.CanEdit.ShouldBeTrue();
     }
 
-    [TestMethod]
+    [Fact]
     public void AllowShadowCharacterFieldsTest()
     {
       var mock = new MockedProject();
@@ -64,14 +65,13 @@ namespace JoinRpg.Web.Test
 
       var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.AreEqual("test", characterField.Value);
-
-      Assert.IsTrue(characterField.CanEdit);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeFalse();
+        characterField.Value.ShouldBe("test");
+            characterField.CanEdit.ShouldBeTrue();
     }
 
-    [TestMethod]
+    [Fact]
     public void DoNotDiscloseOriginalFieldValuesTest()
     {
       var mock = new MockedProject();
@@ -81,26 +81,26 @@ namespace JoinRpg.Web.Test
 
       var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.IsNull(characterField.Value);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeFalse();
+        characterField.Value.ShouldBeNull();
 
-      Assert.IsTrue(characterField.CanEdit);
-    }
+        characterField.CanEdit.ShouldBeTrue();
+        }
 
-    [TestMethod]
+    [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
       var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.IsNull(characterField.Value);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeFalse();
+        characterField.Value.ShouldBeNull();
 
-      Assert.IsTrue(characterField.CanEdit);
-    }
+        characterField.CanEdit.ShouldBeTrue();
+        }
 
-    [TestMethod]
+    [Fact]
     public void ProperlyHideConditionalHeader()
     {
       var mock = new MockedProject();
@@ -109,14 +109,14 @@ namespace JoinRpg.Web.Test
       var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
       var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
 
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.IsNull(characterField.Value);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeFalse();
+        characterField.Value.ShouldBeNull();
 
-      Assert.IsFalse(characterField.CanEdit);
-    }
+        characterField.CanEdit.ShouldBeFalse();
+        }
 
-    [TestMethod]
+    [Fact]
     public void ProperlyShowConditionalHeaderTest()
     {
       var mock = new MockedProject();
@@ -125,24 +125,25 @@ namespace JoinRpg.Web.Test
       var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
       var characterField = vm.FieldById(mock.ConditionalHeader.ProjectFieldId);
 
-      Assert.IsNotNull(characterField);
-      Assert.IsTrue(characterField.CanView);
-      Assert.IsNull(characterField.Value);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeTrue();
+        characterField.Value.ShouldBeNull();
 
-      Assert.IsTrue(characterField.CanEdit);
+        characterField.CanEdit.ShouldBeTrue();
     }
 
 
-    [TestMethod]
+    [Fact]
     public void AllowCharactersFieldOnAddClaimForGroupTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
       var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
-      Assert.IsNotNull(characterField);
-      Assert.IsFalse(characterField.CanView);
-      Assert.IsNull(characterField.Value);
+        characterField.ShouldNotBeNull();
+        characterField.CanView.ShouldBeFalse();
 
-      Assert.IsTrue(characterField.CanEdit);
-    }
+        characterField.Value.ShouldBeNull();
+
+        characterField.CanEdit.ShouldBeTrue();
+        }
   }
 }

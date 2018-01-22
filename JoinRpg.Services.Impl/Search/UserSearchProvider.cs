@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces.Search;
 
 namespace JoinRpg.Services.Impl.Search
@@ -54,7 +55,7 @@ namespace JoinRpg.Services.Impl.Search
         return new SearchResultImpl
                 {
                   LinkType = LinkType.ResultUser,
-                  Name = user.DisplayName,
+                  Name = user.GetDisplayName(),
                   Description = description,
                   Identification = user.UserId.ToString(),
                   ProjectId = null, //Users not associated with any project

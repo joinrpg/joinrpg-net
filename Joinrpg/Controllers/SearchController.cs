@@ -1,45 +1,51 @@
-﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-  public class SearchController : Common.ControllerBase
-  {
-    private readonly ISearchService _searchService;
-    private readonly IProjectRepository _projectRepository;
-
-    public async Task<ActionResult> Index(SuperSearchViewModel viewModel)
+    public class SearchController : Common.ControllerBase
     {
-      var searchResults = await _searchService.SearchAsync(CurrentUserIdOrDefault, viewModel.SearchRequest);
+        private readonly ISearchService _searchService;
+        private readonly IProjectRepository _projectRepository;
+        private IUriService UriService { get; }
 
-      Dictionary<int, ProjectListItemViewModel> projectDetails =
-        (await _projectRepository.GetAllProjectsWithClaimCount())
-        .ToDictionary(
-          p => p.ProjectId,
-          p => new ProjectListItemViewModel(p, CurrentUserIdOrDefault));
+        public async Task<ActionResult> Index(SuperSearchViewModel viewModel)
+        {
+            var searchResults =
+                await _searchService.SearchAsync(CurrentUserIdOrDefault, viewModel.SearchRequest);
 
-      return searchResults.Count == 1
-        ? RedirectToAction(searchResults.Single().GetRouteTarget())
-        : View(
-          new SearchResultViewModel(
-            viewModel.SearchRequest,
-            searchResults,
-            projectDetails));
+            if (searchResults.Count == 1)
+            {
+                return Redirect(UriService.Get(searchResults.Single()));
+            }
+
+            var projectDetails =
+                (await _projectRepository.GetAllProjectsWithClaimCount(CurrentUserIdOrDefault))
+                .ToDictionary(
+                    p => p.ProjectId,
+                    p => new ProjectListItemViewModel(p));
+
+            return View(
+                new SearchResultViewModel(
+                    viewModel.SearchRequest,
+                    searchResults,
+                    projectDetails,
+                    UriService));
+        }
+
+        public SearchController(
+            ApplicationUserManager userManager,
+            ISearchService searchService,
+            IProjectRepository projectRepository,
+            IUriService uriService) : base(userManager)
+        {
+            _searchService = searchService;
+            _projectRepository = projectRepository;
+            UriService = uriService;
+        }
     }
-
-    public SearchController(
-      ApplicationUserManager userManager,
-      ISearchService searchService,
-      IProjectRepository projectRepository) : base(userManager)
-    {
-      _searchService = searchService;
-      _projectRepository = projectRepository;
-    }
-  }
 }

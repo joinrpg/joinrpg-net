@@ -1,8 +1,10 @@
-﻿namespace JoinRpg.TestHelpers
+using Shouldly;
+using System;
+using System.Globalization;
+using System.Linq;
+
+namespace JoinRpg.TestHelpers
 {
-  using System;
-  using System.Globalization;
-  using System.Linq;
 
   public static class EnumerationTestHelper
   {
@@ -17,25 +19,14 @@
     {
       var firstMax = GetEnumMaxValue<TFirst>();
       var secondMax = GetEnumMaxValue<TSecond>();
-      if (firstMax != secondMax)
-      {
-        throw new Exception(
-          $"Enums ({typeof (TFirst).FullName}) are different. First enum is {firstMax} length, but second is {secondMax})");
-      }
+        firstMax.ShouldBe(secondMax);
+
       foreach (var first in Enum.GetValues(typeof (TFirst)).Cast<TFirst>())
       {
         var otherEnum = EnumFromInt<TSecond>(first.ToInt32(CultureInfo.InvariantCulture));
         var firstString = first.ToString(CultureInfo.InvariantCulture);
         var otherString = otherEnum.ToString(CultureInfo.InvariantCulture);
-        if (firstString != otherString)
-        {
-          throw new Exception(
-            string.Format(
-              "Enums ({2}) are different. First enum has value {0}, but Second has corresponding {1}",
-              firstString,
-              otherString,
-              typeof (TFirst).FullName));
-        }
+          firstString.ShouldBe(otherString);
       }
     }
 

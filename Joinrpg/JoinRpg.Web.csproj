@@ -206,6 +206,8 @@
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="Controllers\AccomodationTypeController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
@@ -396,6 +398,9 @@
     <Content Include="Scripts\bootstrap-select.js" />
     <Content Include="Scripts\bootstrap-select.js.map" />
     <Content Include="Content\bootstrap-select.css.map" />
+    <Content Include="Areas\Admin\Views\ProjectList\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\Admin\Views\AdminHome\Index.cshtml" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-datepicker.min.js" />
@@ -615,7 +620,7 @@
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\ISearchResult.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\TargetedSearchResultViewModel.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
@@ -660,10 +665,9 @@
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
     <Content Include="Views\Claim\_ClaimFinancePartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
-    <Content Include="Views\Home\ProjectCard.cshtml" />
+    <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
     <Content Include="Views\Finances\Setup.cshtml" />
-    <Content Include="Views\User\PreferredName.cshtml" />
     <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
     <Content Include="Views\Comments\_CommentPartial.cshtml" />
@@ -741,6 +745,8 @@
     <Content Include="Views\Claim\_ClaimFieldsSubtotal.cshtml" />
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
+    <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
     <Content Include="Views\AccomodationType\Index.cshtml" />
     <Content Include="Views\AccomodationType\Edit.cshtml" />
     <Content Include="Views\AccomodationType\AccomodationIndex.cshtml" />
@@ -748,9 +754,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Areas\Admin\Views\Allrpg\" />
-    <Folder Include="Areas\Admin\Views\Shared\" />
-    <Folder Include="Views\Accomodation\" />
     <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>
@@ -877,16 +880,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
         <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>60304</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:60304/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+          <SaveServerSettingsInUserFile>True</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>

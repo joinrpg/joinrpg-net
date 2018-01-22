@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -18,19 +18,19 @@ namespace JoinRpg.Services.Impl.Search
       [InstantHandle] Predicate<IWorldObject> perfectMatchPredicte)
     {
       return results.Where(cg => cg.IsVisible(currentUserId))
-        .Select(@result =>
+        .Select(result =>
           new SearchResultImpl
           {
             LinkType = linkType,
-            Name = @result.Name,
-            Description = wasFoundByIdPredicate(@result) 
-              ? new MarkdownString(GetFoundByIdDescription(@result.Id))
-              : @result.Description,
-            Identification = @result.Id.ToString(),
-            ProjectId = @result.ProjectId,
-            IsPublic = @result.IsPublic,
-            IsActive = @result.IsActive,
-            IsPerfectMatch = perfectMatchPredicte(@result)
+            Name = result.Name,
+            Description = wasFoundByIdPredicate(result) 
+              ? new MarkdownString(GetFoundByIdDescription(result.Id))
+              : result.Description,
+            Identification = result.Id.ToString(),
+            ProjectId = result.ProjectId,
+            IsPublic = result.IsPublic,
+            IsActive = result.IsActive,
+            IsPerfectMatch = perfectMatchPredicte(result)
           })
         .ToList();
     }
@@ -38,7 +38,6 @@ namespace JoinRpg.Services.Impl.Search
     /// <summary>
     /// Checks for master access is it's a match by Id
     /// </summary>
-    /// <returns></returns>
     protected static bool CheckMasterAccessIfMatchById(
       IProjectEntity entity,
       int? currentUserId,

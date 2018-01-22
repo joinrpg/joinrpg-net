@@ -1,12 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Helpers;
+using JoinRpg.Helpers.Web;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Controllers.Common
@@ -21,13 +22,20 @@ namespace JoinRpg.Web.Controllers.Common
       UserManager = userManager;
     }
 
-    protected override void OnActionExecuting(ActionExecutingContext filterContext)
-    {
-      ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
-      base.OnActionExecuting(filterContext);
-    }
+      protected override void OnActionExecuting(ActionExecutingContext filterContext)
+      {
+          ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
+          if (CurrentUserIdOrDefault != null)
+          {
+              var currentUser = GetCurrentUser();
+              ViewBag.UserDisplayName = currentUser.GetDisplayName();
+              ViewBag.GravatarHash = currentUser.Email.GravatarHash().Trim();
+          }
 
-    protected User GetCurrentUser()
+          base.OnActionExecuting(filterContext);
+      }
+
+      protected User GetCurrentUser()
     {
       return UserManager.FindById(CurrentUserId);
     }
@@ -52,17 +60,19 @@ namespace JoinRpg.Web.Controllers.Common
     {
       get
       {
-        var userIdString = User.Identity.GetUserId();
-        return userIdString == null ? (int?) null : int.Parse(userIdString);
+          var userIdString = User.Identity.GetUserId();
+          if (userIdString == null)
+          {
+              return null;
+          }
+          else
+          {
+              return int.TryParse(userIdString, out var i) ? (int?) i : null;
+          }
       }
     }
 
-    protected ActionResult RedirectToAction(RouteTarget routeTarget)
-    {
-      return Redirect(routeTarget.GetUri(Url).ToString());
-    }
-
-    protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
+      protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
     {
       //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
       var post = Request.Unvalidated.Form.ToDictionary();

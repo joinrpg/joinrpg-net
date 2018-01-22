@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -123,8 +123,12 @@ namespace JoinRpg.Web.Controllers
         if (claim != null)
         {
 
-          await ClaimService.AddComment(discussion.ProjectId, claim.ClaimId, viewModel.ParentCommentId,
-            !viewModel.HideFromUser, viewModel.CommentText, viewModel.FinanceAction);
+            await ClaimService.AddComment(discussion.ProjectId,
+                claim.ClaimId,
+                viewModel.ParentCommentId,
+                !viewModel.HideFromUser,
+                viewModel.CommentText,
+                (FinanceOperationAction) viewModel.FinanceAction);
         }
         else
         {
@@ -228,6 +232,12 @@ namespace JoinRpg.Web.Controllers
       var threads = await ForumRepository.GetThreads(projectid, isMaster, new [] {characterGroupId});
       var viewModel = new ForumThreadListForGroupViewModel(group, threads.Where(t => t.HasAnyAccess(CurrentUserIdOrDefault)), CurrentUserId);
       return View(viewModel);
+    }
+
+    public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
+    {
+       await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
+       return await RedirectToDiscussion(projectid,commentid,commentDiscussionId);
     }
   }
 }

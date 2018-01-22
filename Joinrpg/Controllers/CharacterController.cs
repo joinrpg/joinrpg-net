@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,18 +19,23 @@ namespace JoinRpg.Web.Controllers
   {
     private IPlotRepository PlotRepository { get; }
     private ICharacterRepository CharacterRepository { get; }
+        private IUriService UriService { get; }
 
-    public CharacterController(ApplicationUserManager userManager,
-      IProjectRepository projectRepository,
-      IProjectService projectService, IPlotRepository plotRepository,
-      IExportDataService exportDataService, ICharacterRepository characterRepository)
-      : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      PlotRepository = plotRepository;
-      CharacterRepository = characterRepository;
-    }
+      public CharacterController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IPlotRepository plotRepository,
+          IExportDataService exportDataService,
+          ICharacterRepository characterRepository,
+          IUriService uriService)
+          : base(userManager, projectRepository, projectService, exportDataService)
+      {
+          PlotRepository = plotRepository;
+          CharacterRepository = characterRepository;
+          UriService = uriService;
+      }
 
-    [HttpGet]
+      [HttpGet]
     public async Task<ActionResult> Details(int projectid, int characterid)
     {
       var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
@@ -43,7 +48,7 @@ namespace JoinRpg.Web.Controllers
         ? await ShowPlotsForCharacter(character)
         : Enumerable.Empty<PlotElement>();
       return View("Details",
-        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots.ToList()));
+        new CharacterDetailsViewModel(CurrentUserIdOrDefault, character, plots.ToList(), UriService));
     }
 
     private async Task<IReadOnlyList<PlotElement>> ShowPlotsForCharacter(Character character)

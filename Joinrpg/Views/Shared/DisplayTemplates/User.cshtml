@@ -1,7 +1,8 @@
-﻿@model JoinRpg.DataModel.User
+﻿@using JoinRpg.Domain
+@model JoinRpg.DataModel.User
 @if (Model == null)
 {
     <span>нет</span>
     return;
 }
-<a class="join-user" href="@Url.Action("Details", "User", new {Model.UserId})"><i class="glyphicon glyphicon-user"></i>@Model.DisplayName.Trim()</a>
+<a class="join-user" href="@Url.Action("Details", "User", new {Model.UserId})"><i class="glyphicon glyphicon-user"></i>@Model.GetDisplayName().Trim()</a>

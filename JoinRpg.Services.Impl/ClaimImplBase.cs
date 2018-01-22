@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
@@ -21,7 +22,7 @@ namespace JoinRpg.Services.Impl
     }
 
     protected Comment AddCommentImpl(Claim claim, Comment parentComment, string commentText,
-      bool isVisibleToPlayer, CommentExtraAction? extraAction)
+      bool isVisibleToPlayer, CommentExtraAction? extraAction = null)
     {
       if (!isVisibleToPlayer)
       {
@@ -58,11 +59,7 @@ namespace JoinRpg.Services.Impl
     {
       paymentType.EnsureActive();
 
-      if (operationDate > Now.AddDays(1)
-      ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
-      {
-        throw new CannotPerformOperationInFuture();
-      }
+      CheckOperationDate(operationDate);
 
       if (feeChange != 0 || money < 0)
       {
@@ -83,7 +80,7 @@ namespace JoinRpg.Services.Impl
         }
       }
 
-      var comment = AddCommentImpl(claim, null, contents, isVisibleToPlayer: true, extraAction: null);
+      var comment = AddCommentImpl(claim, null, contents, isVisibleToPlayer: true);
 
       var financeOperation = new FinanceOperation()
       {
@@ -114,5 +111,37 @@ namespace JoinRpg.Services.Impl
       email.Money = money;
       return email;
     }
+
+      // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Global
+      protected void CheckOperationDate(DateTime operationDate)
+      {
+          if (operationDate > Now.AddDays(1)
+          ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
+          {
+              throw new CannotPerformOperationInFuture();
+          }
+      }
+
+      protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType = null)
+      {
+          var claim = await LoadClaim(request);
+
+          claim.RequestMasterAccess(CurrentUserId, accessType);
+          return claim;
+      }
+
+      protected async Task<Claim> LoadClaim(IClaimOperationRequest request)
+      {
+          var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
+
+          if (claim == null)
+          {
+              throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
+          }
+
+          claim.RequestAccess(CurrentUserId);
+
+          return claim;
+      }
   }
 }

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
 using System.Web.Mvc;
+using JetBrains.Annotations;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -20,16 +23,40 @@ namespace JoinRpg.Web.App_Code
             return metadata.Description;
         }
 
-        public static MvcHtmlString DescriptionFor<TModel, TValue>(this HtmlHelper<TModel> self,
+        private static string TryGetDescription<TModel, TValue>(this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
             var description = self.GetDescription(expression);
 
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                return description;
+            }
+
+            //Try to get enum description
+
+            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
+            if (metadata.ModelType == typeof(Enum))
+            {
+                var e = (Enum) metadata.Model;
+                var dispAttr = e.GetAttribute<DisplayAttribute>();
+
+                return dispAttr == null ? null : dispAttr.Description;
+            }
+
+            return null;
+        }
+
+        public static MvcHtmlString DescriptionFor<TModel, TValue>(
+            this HtmlHelper<TModel> self,
+            [InstantHandle]
+            Expression<Func<TModel, TValue>> expression)
+        {
+            var description = self.TryGetDescription(expression);
             if (string.IsNullOrWhiteSpace(description))
             {
                 return MvcHtmlString.Empty;
             }
-
             // ReSharper disable once UseStringInterpolation we are inside Razor
             return MvcHtmlString.Create(string.Format(@"<div class=""help-block"">{0}</div>", description));
         }

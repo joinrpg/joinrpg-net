@@ -1,13 +1,13 @@
-﻿using Joinrpg.Markdown;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Markdown.Test
 {
-  [TestClass]
-  public class ListTest
+
+    public class ListTest
   {
-    [TestMethod]
+    [Fact]
     public void TestListFromSix()
       => TestMarkdown(
 @"
@@ -15,17 +15,14 @@ namespace JoinRpg.Markdown.Test
 7. something",
 "<ol start=\"6\">\n<li>something</li>\n<li>something</li>\n</ol>");
 
-    [TestMethod]
+    [Fact]
     public void TestBr()
       => TestMarkdown(
 @"test
 break",
 "<p>test<br>\nbreak</p>");
 
-    private void TestMarkdown(string markdown, string expectedHtml)
-    {
-      var actualHtml = new MarkdownString(markdown).ToHtmlString().ToHtmlString();
-      Assert.AreEqual(expectedHtml, actualHtml);
-    }
+      private void TestMarkdown(string markdown, string expectedHtml) =>
+          new MarkdownString(markdown).ToHtmlString().ToHtmlString().ShouldBe(expectedHtml);
   }
 }

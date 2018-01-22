@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -107,7 +107,7 @@ namespace JoinRpg.Web.Models.Exporters
     {
       return ComplexColumn(
           func,
-          u => u.DisplayName,
+          u => u.GetDisplayName(),
           u => u.SurName,
           u => u.FatherName,
           u => u.BornName,
@@ -124,7 +124,7 @@ namespace JoinRpg.Web.Models.Exporters
     [MustUseReturnValue]
     protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string name = null)
     {
-      return ComplexElementMemberColumn(func, u => u.DisplayName, name);
+      return ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
     }
 
     [MustUseReturnValue]

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -49,11 +49,7 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
-    public bool IsActive =>
-            ClaimStatus != Status.DeclinedByMaster
-            && ClaimStatus != Status.DeclinedByUser
-            && ClaimStatus != Status.OnHold;
-    public bool IsPending =>
+      public bool IsPending =>
             ClaimStatus != Status.DeclinedByMaster
             && ClaimStatus != Status.DeclinedByUser;
     public bool IsInDiscussion =>
@@ -109,6 +105,8 @@ namespace JoinRpg.DataModel
         /// </summary>
         public IEnumerable<FinanceOperation> ApprovedFinanceOperations
               => FinanceOperations.Where(fo => fo.State == FinanceOperationState.Approved);
+
+        public bool PreferentialFeeUser { get; set; }
 
         /// <summary>
         /// Used for caching previously calculated total fields fee

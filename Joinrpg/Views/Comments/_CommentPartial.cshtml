@@ -14,7 +14,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
         <table>
             <tr>
                 <td class="hidden-xs" style="vertical-align: text-top">
-                        <img style="border: 1px solid black; margin-right: 5px" width="64" height="64" src="@Html.Action("GetAvatar", "User", new {comment.Author.UserId})"/>
+                    @Html.Partial("DisplayTemplates/UserAvatar", comment.Author)
                 </td>
                 <td>
                     <div class="@hideClassName" style="margin-bottom: 1em;">
@@ -38,9 +38,16 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
                             @if (!comment.IsRead)
                             {
-                                <span class="label label-default" title="Новый комментарий" id="unread">New</span>
+                                <span class="label label-default" title="Новый комментарий">New</span>
                             }
+
                             <a href="@Url.Action("RedirectToDiscussion", "Forum", new {comment.ProjectId, comment.CommentId})">#</a>
+
+                            @if (comment.HasMasterAccess && !comment.ChildComments.Any() && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
+                            {
+                            <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
+                            }
+
                         </div>
                         @if (comment.Finance != null)
                         {
@@ -78,7 +85,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                                 {
                                     <a data-toggle="collapse"
                                        href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">
-                                        Подтвердить / отклонить оплату
+                                        Подтвердить / отклонить
                                     </a>
                                 }
                                 else

@@ -41,16 +41,16 @@
             <ul class="nav navbar-nav">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <li>@Html.ActionLink("Мои заявки", "My", "ClaimList")</li>
+                    <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new {area = ""}, null)</li>
                 }
-                @Html.Action("MyProjectDropdown", "Menu")
+                @Html.Action("MyProjectDropdown", "Menu", new {area = ""})
                 @if (ViewBag.IsProduction != true)
                 {
-                    <li class="alert-danger hidden-sm">@Html.ActionLink("Тестовая версия", "About", "Home")</li>
+                    <li class="alert-danger hidden-sm">@Html.ActionLink("Тестовая версия", "About", "Home", new { area = "" }, null)</li>
                 }
                 else
                 {
-                    <li class="hidden-sm">@Html.ActionLink("О сайте", "About", "Home")</li>
+                    <li class="hidden-sm">@Html.ActionLink("О сайте", "About", "Home", new { area = "" }, null)</li>
                 }
                 <li class="navbar-text" style="max-width: 10em">
                     @Html.Partial("SuperSearchPartial", new SuperSearchViewModel())
@@ -72,9 +72,9 @@
         <hr />
         <footer>
             &copy; <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья. Поддержка: <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> <a href="mailto:support@joinrpg.ru">support@joinrpg.ru</a>
-          / <a href="https://vk.com/joinrpg"><img src="~/Content/Images/vk_icon.png"/></a>.
-          @MvcHtmlHelpers.HelpLink("", "Помощь")
-            <div>@ViewBag.TraceMessage</div>
+            / <a href="https://vk.com/joinrpg"><img src="~/Content/Images/vk_icon.png" /></a>.
+            @MvcHtmlHelpers.HelpLink("", "Помощь")
+            Версия проекта: @ViewContext.Controller.GetType().Assembly.GetName().Version
         </footer>
     </div>
 

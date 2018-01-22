@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -30,6 +30,9 @@ namespace JoinRpg.Web.Models
 
     public static bool CanChangeTo(this ClaimStatusView fromStatus, ClaimStatusView targetStatus)
       => ((Claim.Status)fromStatus).CanChangeTo((Claim.Status)targetStatus);
+
+      public static bool IsActive(this ClaimStatusView status) =>
+          ((Claim.Status) status).IsActive();
 
   }
 }

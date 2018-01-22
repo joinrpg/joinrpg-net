@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
@@ -195,7 +196,13 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.CreateFeeSetting(viewModel.ProjectId, viewModel.Fee, viewModel.StartDate);
+          await FinanceService.CreateFeeSetting(new CreateFeeSettingRequest()
+          {
+              ProjectId = viewModel.ProjectId,
+              Fee = viewModel.Fee,
+              PreferentialFee = viewModel.PreferentialFee,
+              StartDate = viewModel.StartDate,
+          });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch
@@ -248,7 +255,7 @@ namespace JoinRpg.Web.Controllers
             fg =>
               new MoneySummaryByMasterListItemViewModel(fg.Sum(fo => fo.MoneyAmount), fg.Key))
           .Where(fr => fr.Total != 0)
-          .OrderBy(fr => fr.Master.DisplayName);
+          .OrderBy(fr => fr.Master.GetDisplayName());
 
       return
         await
@@ -268,7 +275,13 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await FinanceService.SaveGlobalSettings(viewModel.ProjectId, viewModel.WarnOnOverPayment);
+        await FinanceService.SaveGlobalSettings(new SetFinanceSettingsRequest
+        {
+            ProjectId = viewModel.ProjectId,
+            WarnOnOverPayment = viewModel.WarnOnOverPayment,
+            PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
+            PreferentialFeeConditions = viewModel.PreferentialFeeConditions
+        });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
       catch

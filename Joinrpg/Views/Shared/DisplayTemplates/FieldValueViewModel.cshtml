@@ -2,15 +2,32 @@
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
+
+@helper ShowDescription()
+{
+    var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
+    if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+    {
+        <div class="help-block @hideClassName">
+            @Model.Description
+        </div>
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+    {
+        <div class="help-block world-object-hidden">
+            @Model.MasterDescription
+        </div>
+    }
+}
+
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 
   @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
       <h4 class="@hideClassName">@Model.FieldName</h4>
-    <div class="help-block @hideClassName">
-      @Model.Description
-    </div>
-    return;
+      @ShowDescription()
+      return;
   }
 
 <div class="form-group @hideClassName">
@@ -21,12 +38,12 @@
         {
             case ProjectFieldViewType.Dropdown:
             case ProjectFieldViewType.MultiSelect:
-                if (Model.HasPrice && string.IsNullOrWhiteSpace(Model.Value))
+                if (Model.ShowPrice && string.IsNullOrWhiteSpace(Model.Value))
                 {
                     <div class="form-control-complex">
                         <div class="form-control-1-4">( ничего не выбрано )</div>
                         <div class="form-control-2-4"></div>
-                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(Model.Price)</div>
+                        <div class="form-control-4-4 price-table"></div>
                     </div>
                 }
                 foreach (var value in Model.ValueList)
@@ -42,13 +59,15 @@
                         @value.Label
                     }
                     </div>
-                    <div class="form-control-2-4">@value.DescriptionHtml
-                        @if (Model.HasMasterAccess)
-                        {
-                            <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
-                        }
-                    </div>
-                    @if (value.HasPrice)
+                        <div class="form-control-2-4">
+                            @value.DescriptionHtml
+
+                            @if (Model.HasMasterAccess)
+                            {
+                                <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
+                            }
+                        </div>
+                    @if (Model.ShowPrice)
                     {
                         <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
                     }                    
@@ -61,7 +80,7 @@
                         <span type="checkbox" class="glyphicon glyphicon-@(Model.IsCheckboxSet() ? "check" : "unchecked")" @(Model.HasPrice ? "price=" + Model.Price.ToString() : "")></span>
                         @Model.Description
                     </label>
-                    @if (Model.HasPrice)
+                    @if (Model.ShowPrice)
                     {
                         <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
                     }
@@ -70,7 +89,7 @@
             case ProjectFieldViewType.Number:
                 <div class="form-control-complex">
                     <div class="form-control-left">@Model.DisplayString</div>
-                    @if (Model.HasPrice)
+                    @if (Model.ShowPrice)
                     {
                         <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
                     }
@@ -84,20 +103,13 @@
             default:
                 throw new InvalidEnumArgumentException();
         }
-        @if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+        @if (Model.FieldViewType != ProjectFieldViewType.Checkbox)
         {
-            switch (Model.FieldViewType)
-            {
-                case ProjectFieldViewType.Checkbox:
-                    break;
-                default:
-                    <div class="help-block">@Model.Description</div>
-                    break;
-            }
+            @ShowDescription()
         }
     </div>
     <div class="col-md-2 price-table">
-        @if (Model.HasPrice)
+        @if (Model.ShowPrice)
         {
             @Html.RenderPriceElement(Model.Fee, Model.FieldClientId + "_disp");
         }

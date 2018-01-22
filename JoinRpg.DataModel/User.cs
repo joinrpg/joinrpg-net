@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -16,7 +16,7 @@ namespace JoinRpg.DataModel
     public override string ToString()
     {
       return
-        $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, DisplayName: {DisplayName}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
+        $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
     }
 
     public string BornName { get; set; }
@@ -34,10 +34,6 @@ namespace JoinRpg.DataModel
     public virtual ICollection<ProjectAcl> ProjectAcls { get; set; } = new HashSet<ProjectAcl>();
 
     public virtual ICollection<Claim> Claims { get; set; }
-
-    [NotNull]
-    public string DisplayName
-      => new string[] {PrefferedName, FullName, Email}.SkipWhile(string.IsNullOrWhiteSpace).First();
 
     public string FullName => new[] {BornName, FatherName, SurName}.JoinIfNotNullOrWhitespace(" ");
 

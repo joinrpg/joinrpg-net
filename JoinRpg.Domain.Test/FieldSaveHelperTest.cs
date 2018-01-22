@@ -1,217 +1,241 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
 using JoinRpg.Domain.CharacterFields;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Xunit;
 
 namespace JoinRpg.Domain.Test
 {
-  [TestClass]
-  public class FieldSaveHelperTest
-  {
-    private MockedProject _original;
-    private IFieldDefaultValueGenerator generator;
-
-    [TestInitialize]
-    public void SetUp()
+    public class FieldSaveHelperTest
     {
-      _original = new MockedProject();
-      generator = new MockedFieldDefaultValueGenerator();
-    }
+        private MockedProject _original;
+        private IFieldDefaultValueGenerator _generator;
 
-    [TestMethod]
-    public void SaveOnAddTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-      // ReSharper disable once MustUseReturnValue
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId, 
-        claim,
-        new Dictionary<int, string>()
+        [Fact]
+        public void SaveOnAddTest()
         {
-          {mock.CharacterField.ProjectFieldId, "test"}
-        },
-        generator);
-      Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData, "Adding claim should not modify any character fields");
-      CollectionAssert.AreEqual(
-        _original.Character.Groups.Select(g => g.CharacterGroupId).ToList(), 
-        mock.Character.Groups.Select(g => g.CharacterGroupId).ToList(),
-        "Adding claim should not modify any character groups");
-      Assert.AreEqual($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Character, mock.Player);
+            // ReSharper disable once MustUseReturnValue
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.CharacterField.ProjectFieldId, "test"}
+                },
+                _generator);
+            mock.Character.JsonData
+                .ShouldBe(_original.Character.JsonData,
+                    "Adding claim should not modify any character fields");
 
-    [TestMethod]
-    [ExpectedException(typeof(NoAccessToProjectException))]
-    public void TryToChangeMasterOnlyFieldOnAdd()
-    {
-      var mock = new MockedProject();
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        mock.CreateClaim(mock.Character, mock.Player),
-        new Dictionary<int, string>()
+            mock.Character.Groups.Select(g => g.CharacterGroupId).ShouldBe(
+                mock.Character.Groups.Select(g => g.CharacterGroupId),
+                "Adding claim should not modify any character groups");
+
+            claim.JsonData.ShouldBe($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+        }
+
+        [Fact]
+        public void TryToChangeMasterOnlyFieldOnAdd()
         {
-          {mock.MasterOnlyField.ProjectFieldId, "test"}
-        },
-        generator);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
 
-    [TestMethod]
-    public void ApprovedClaimHiddenChangeTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+            Should.Throw<NoAccessToProjectException>(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    mock.CreateClaim(mock.Character, mock.Player),
+                    new Dictionary<int, string>()
+                    {
+                        {mock.MasterOnlyField.ProjectFieldId, "test"}
+                    },
+                    _generator));
+        }
+
+        [Fact]
+        public void ApprovedClaimHiddenChangeTest()
         {
-          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-          {mock.CharacterField.ProjectFieldId, null }
-        },
-        generator);
-      Assert.AreEqual(
-  $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
-  mock.Character.JsonData);
-      Assert.AreEqual("{}", claim.JsonData);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
+                    {mock.CharacterField.ProjectFieldId, null}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+            ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
+        }
 
-    [TestMethod]
-    public void MasterHiddenChangeTest()
-    {
-      var mock = new MockedProject();
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Master.UserId,
-        mock.Character,
-        new Dictionary<int, string>()
+        [Fact]
+        public void MasterHiddenChangeTest()
         {
-          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-          {mock.CharacterField.ProjectFieldId, null }
-        },
-        generator);
-      Assert.AreEqual($"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}", mock.Character.JsonData);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Master.UserId,
+                mock.Character,
+                new Dictionary<int, string>()
+                {
+                    {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
+                    {mock.CharacterField.ProjectFieldId, null}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+        }
 
-    [TestMethod]
-    public void ApprovedClaimChangeTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-      claim.ClaimStatus = Claim.Status.Approved;
-      mock.Character.ApprovedClaim = claim;
-
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+        [Fact]
+        public void ApprovedClaimChangeTest()
         {
-          {mock.CharacterField.ProjectFieldId, "test"}
-        },
-        generator);
-      Assert.AreEqual(
-        $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}",
-        mock.Character.JsonData);
-      Assert.AreEqual("{}", claim.JsonData);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Character, mock.Player);
+            claim.ClaimStatus = Claim.Status.Approved;
+            mock.Character.ApprovedClaim = claim;
 
-    [TestMethod]
-    public void ConditionalFieldChangeTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-     
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.CharacterField.ProjectFieldId, "test"}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+            ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
+        }
+
+        [Fact]
+        public void ConditionalFieldChangeTest()
         {
-          {mock.ConditionalField.ProjectFieldId, "test"}
-        },
-        generator);
-      Assert.AreEqual($"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
-      Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData,
-        "Adding claim should not modify any character fields");
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Character, mock.Player);
+
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.ConditionalField.ProjectFieldId, "test"}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(claim.JsonData,
+                $"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}");
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                _original.Character.JsonData,
+                "Adding claim should not modify any character fields");
+        }
 
 
-    [TestMethod]
-    public void ConditionalFieldChangeTestForGroup()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Group, mock.Player);
-
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+        [Fact]
+        public void ConditionalFieldChangeTestForGroup()
         {
-          {mock.ConditionalField.ProjectFieldId, "test"}
-        },
-        generator);
-      Assert.AreEqual($"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
-      Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData,
-        "Adding claim should not modify any character fields");
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Group, mock.Player);
+
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.ConditionalField.ProjectFieldId, "test"}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(claim.JsonData,
+                $"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}");
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                _original.Character.JsonData,
+                "Adding claim should not modify any character fields");
+        }
 
 
-    [TestMethod]
-    [ExpectedException(typeof(NoAccessToProjectException))]
-    public void HiddenFieldChangeFailedTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Group, mock.Player);
-
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+        [Fact]
+        public void HiddenFieldChangeFailedTest()
         {
-          {mock.HideForUnApprovedClaim.ProjectFieldId, "test"}
-        },
-        generator);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Group, mock.Player);
 
-    [TestMethod]
-    public void DisableUnapprovedClaimToChangeCharacterTest()
-    {
-      var mock = new MockedProject();
-      var claim = mock.CreateClaim(mock.Character, mock.Player);
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        claim,
-        new Dictionary<int, string>()
+            Should.Throw<NoAccessToProjectException>(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    claim,
+                    new Dictionary<int, string>()
+                    {
+                        {mock.HideForUnApprovedClaim.ProjectFieldId, "test"}
+                    },
+                    _generator));
+        }
+
+        [Fact]
+        public void DisableUnapprovedClaimToChangeCharacterTest()
         {
-          {mock.CharacterField.ProjectFieldId, "test"}
-        },
-        generator);
-      Assert.AreEqual(_original.Character.JsonData, mock.Character.JsonData, "Adding claim should not modify any character fields");
-      CollectionAssert.AreEqual(
-        _original.Character.Groups.Select(g => g.CharacterGroupId).ToList(),
-        mock.Character.Groups.Select(g => g.CharacterGroupId).ToList(),
-        "Adding claim should not modify any character groups");
-      Assert.AreEqual($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}", claim.JsonData);
-    }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            var claim = mock.CreateClaim(mock.Character, mock.Player);
+            FieldSaveHelper.SaveCharacterFields(
+                mock.Player.UserId,
+                claim,
+                new Dictionary<int, string>()
+                {
+                    {mock.CharacterField.ProjectFieldId, "test"}
+                },
+                _generator);
+            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
+                _original.Character.JsonData,
+                "Adding claim should not modify any character fields");
+            mock.Character.Groups.Select(g => g.CharacterGroupId).ToList().ShouldBe(
+                (IEnumerable<int>) _original.Character.Groups.Select(g => g.CharacterGroupId)
+                    .ToList(),
+                "Adding claim should not modify any character groups");
+            ShouldBeTestExtensions.ShouldBe(claim.JsonData,
+                $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+        }
 
-    [TestMethod]
-    [ExpectedException(typeof(NoAccessToProjectException))]
-    public void TryToChangeAnotherUserCharacter()
-    {
-      var mock = new MockedProject();
-      FieldSaveHelper.SaveCharacterFields(
-        mock.Player.UserId,
-        mock.Character,
-        new Dictionary<int, string>()
+        [Fact]
+        public void TryToChangeAnotherUserCharacter()
         {
-          {mock.CharacterField.ProjectFieldId, "test"}
-        },
-        generator);
-    }
-  }
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
 
-  public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
-  {
-    public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
-    public string CreateDefaultValue(Character character, ProjectField field) => null;
-  }
+            Should.Throw<NoAccessToProjectException>(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    mock.Character,
+                    new Dictionary<int, string>()
+                    {
+                        {mock.CharacterField.ProjectFieldId, "test"}
+                    },
+                    _generator));
+        }
+    }
+
+    public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
+    {
+        public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
+        public string CreateDefaultValue(Character character, ProjectField field) => null;
+    }
 }

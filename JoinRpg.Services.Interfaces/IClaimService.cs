@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace JoinRpg.Services.Interfaces
@@ -10,7 +9,7 @@ namespace JoinRpg.Services.Interfaces
 
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
-    Task AppoveByMaster(int projectId, int claimId, string commentText);
+    Task ApproveByMaster(int projectId, int claimId, string commentText);
     Task DeclineByMaster(int projectId, int claimId, string commentText);
     Task DeclineByPlayer(int projectId, int claimId, string commentText);
     Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId);
@@ -29,17 +28,15 @@ namespace JoinRpg.Services.Interfaces
     Task UnsubscribeClaimToUser(int projectId, int claimId);
     Task CheckInClaim(int projectId, int claimId, int money);
     Task<int> MoveToSecondRole(int projectId, int claimId, int characterId);
+
+    Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
   }
 
-  //TODO[Localize]
-  public enum FinanceOperationAction
-  {
-    [Display(Name = "Ничего не делать")]
-    None,
-    [Display(Name = "Подтвердить операцию")]
-    Approve,
-    [Display(Name = "Отменить операцию")]
-    Decline
-  }
+    public enum FinanceOperationAction
+    {
+        None,
+        Approve,
+        Decline,
+    }
 
 }

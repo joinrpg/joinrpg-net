@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
@@ -41,7 +41,11 @@ namespace JoinRpg.Services.Impl
 
         private readonly Lazy<ICharacterRepository> _charactersRepository;
         protected ICharacterRepository CharactersRepository => _charactersRepository.Value;
-        protected static int CurrentUserId => int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+
+        private int? _impersonatedUserId;
+
+        protected int CurrentUserId => _impersonatedUserId ??
+                                       int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
 
         /// <summary>
         /// Time of service creaton. Used to mark consistent time for all operations performed by service
@@ -56,20 +60,32 @@ namespace JoinRpg.Services.Impl
             _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
             _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
             _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
-            _charactersRepository = new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
-            _accomodationRepository = new Lazy<IAccomodationRepository>(unitOfWork.GetAccomodationRepository);
+            _charactersRepository =
+                new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
+
             Now = DateTime.UtcNow;
+        }
+
+        protected void StartImpersonate(int userId)
+        {
+            _impersonatedUserId = userId;
+        }
+
+        protected void ResetImpersonation()
+        {
+            _impersonatedUserId = null;
         }
 
         [NotNull]
         protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
-          where T : class, IProjectEntity
+            where T : class, IProjectEntity
         {
             var field = await UnitOfWork.GetDbSet<T>().FindAsync(subentityId);
-            if (field != null && field.ProjectId == projectId)
+            if (field != null && field.Project.ProjectId == projectId)
             {
                 return field;
             }
+
             throw new DbEntityValidationException();
         }
 
@@ -83,16 +99,6 @@ namespace JoinRpg.Services.Impl
             return stringValue.Trim();
         }
 
-        protected static ICollection<T> Required<T>(ICollection<T> items)
-        {
-            if (items.Count == 0)
-            {
-                throw new DbEntityValidationException();
-            }
-
-            return items;
-        }
-
         protected static IReadOnlyCollection<T> Required<T>(IReadOnlyCollection<T> items)
         {
             if (items.Count == 0)
@@ -103,7 +109,8 @@ namespace JoinRpg.Services.Impl
             return items;
         }
 
-        protected static IReadOnlyCollection<T> Required<T>(Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
+        protected static IReadOnlyCollection<T> Required<T>(
+            Expression<Func<IReadOnlyCollection<T>>> itemsLambda)
         {
             var name = itemsLambda.AsPropertyName();
             var items = itemsLambda.Compile()();
@@ -121,6 +128,7 @@ namespace JoinRpg.Services.Impl
             {
                 return false;
             }
+
             if (field.CanBePermanentlyDeleted)
             {
                 UnitOfWork.GetDbSet<T>().Remove(field);
@@ -134,31 +142,38 @@ namespace JoinRpg.Services.Impl
         }
 
         [ItemNotNull]
-        protected async Task<int[]> ValidateCharacterGroupList(int projectId, IReadOnlyCollection<int> groupIds, bool ensureNotSpecial = false)
+        protected async Task<int[]> ValidateCharacterGroupList(int projectId,
+            IReadOnlyCollection<int> groupIds,
+            bool ensureNotSpecial = false)
         {
             var characterGroups = await ProjectRepository.LoadGroups(projectId, groupIds);
 
             if (characterGroups.Count != groupIds.Distinct().Count())
             {
-                var missing = string.Join(", ", groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+                var missing = string.Join(", ",
+                    groupIds.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
                 throw new Exception($"Groups {missing} doesn't belong to project");
             }
+
             if (ensureNotSpecial && characterGroups.Any(cg => cg.IsSpecial))
             {
                 throw new DbEntityValidationException();
             }
+
             return groupIds.ToArray();
         }
 
-        protected async Task<ICollection<Character>> ValidateCharactersList(int projectId, IReadOnlyCollection<int> characterIds)
+        protected async Task<ICollection<Character>> ValidateCharactersList(int projectId,
+            IReadOnlyCollection<int> characterIds)
         {
             var characters =
-              await CharactersRepository.GetCharacters(projectId, characterIds);
+                await CharactersRepository.GetCharacters(projectId, characterIds);
 
             if (characters.Count != characterIds.Distinct().Count())
             {
                 throw new DbEntityValidationException();
             }
+
             return characters.ToArray();
         }
 
@@ -168,7 +183,8 @@ namespace JoinRpg.Services.Impl
             entity.UpdatedById = entity.CreatedById = CurrentUserId;
         }
 
-        protected void Create<T>([NotNull] T entity) where T : class, ICreatedUpdatedTrackedForEntity
+        protected void Create<T>([NotNull] T entity)
+            where T : class, ICreatedUpdatedTrackedForEntity
         {
             MarkCreatedNow(entity);
 

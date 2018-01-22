@@ -394,6 +394,26 @@
     <Compile Include="Migrations\201708252144098_PriceFields.Designer.cs">
       <DependentUpon>201708252144098_PriceFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201710221937007_FieldMasterDescription.cs" />
+    <Compile Include="Migrations\201710221937007_FieldMasterDescription.Designer.cs">
+      <DependentUpon>201710221937007_FieldMasterDescription.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801111633386_NonPlayerSelectableVariants.cs" />
+    <Compile Include="Migrations\201801111633386_NonPlayerSelectableVariants.Designer.cs">
+      <DependentUpon>201801111633386_NonPlayerSelectableVariants.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801131215238_ExtraProjectSettings.cs" />
+    <Compile Include="Migrations\201801131215238_ExtraProjectSettings.Designer.cs">
+      <DependentUpon>201801131215238_ExtraProjectSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801131453553_PreferentialFee.cs" />
+    <Compile Include="Migrations\201801131453553_PreferentialFee.Designer.cs">
+      <DependentUpon>201801131453553_PreferentialFee.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201801141102325_RequestPreferentialFee.cs" />
+    <Compile Include="Migrations\201801141102325_RequestPreferentialFee.Designer.cs">
+      <DependentUpon>201801141102325_RequestPreferentialFee.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201709251938167_AccomodationStart2.cs" />
     <Compile Include="Migrations\201709251938167_AccomodationStart2.Designer.cs">
       <DependentUpon>201709251938167_AccomodationStart2.cs</DependentUpon>
@@ -682,6 +702,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201709251938167_AccomodationStart2.resx">
       <DependentUpon>201709251938167_AccomodationStart2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710221937007_FieldMasterDescription.resx">
+      <DependentUpon>201710221937007_FieldMasterDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801111633386_NonPlayerSelectableVariants.resx">
+      <DependentUpon>201801111633386_NonPlayerSelectableVariants.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801131215238_ExtraProjectSettings.resx">
+      <DependentUpon>201801131215238_ExtraProjectSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801131453553_PreferentialFee.resx">
+      <DependentUpon>201801131453553_PreferentialFee.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801141102325_RequestPreferentialFee.resx">
+      <DependentUpon>201801141102325_RequestPreferentialFee.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

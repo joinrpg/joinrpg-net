@@ -90,11 +90,16 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Видно игроку")]
         public bool CanPlayerView { get; set; }
 
-        [Display(Name = "Игрок может менять")]
+        [Display(
+            Name = "Игрок может менять",
+            Description = "Для полей типа выбор/мультивыбор можно запретить выставление каждого значения в отдельности в свойствах значения")]
         public bool CanPlayerEdit { get; set; }
 
         [Display(Name = "Описание")]
         public IHtmlString DescriptionDisplay { get; set; }
+
+        [Display(Name = "Описание (только для мастеров)")]
+        public IHtmlString MasterDescriptionDisplay { get; set; }
 
         [Display(Name = "Обязательное?")]
         public MandatoryStatusViewType MandatoryStatus { get; set; }
@@ -145,6 +150,9 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание"), UIHint("MarkdownString")]
         public string DescriptionEditable { get; set; }
 
+        [Display(Name = "Описание (только для мастеров)"), UIHint("MarkdownString")]
+        public string MasterDescriptionEditable { get; set; }
+
         [ReadOnly(true)]
         public bool WasEverUsed { get; set; }
 
@@ -153,7 +161,9 @@ namespace JoinRpg.Web.Models
             CanPlayerView = field.CanPlayerView;
             CanPlayerEdit = field.CanPlayerEdit;
             DescriptionEditable = field.Description.Contents;
+            MasterDescriptionEditable = field.MasterDescription.Contents;
             DescriptionDisplay = field.Description.ToHtmlString();
+            MasterDescriptionDisplay = field.MasterDescription.ToHtmlString();
             ProjectFieldId = field.ProjectFieldId;
             IsPublic = field.IsPublic;
             Name = field.FieldName;
@@ -235,6 +245,9 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание"), UIHint("MarkdownString")]
         public string DescriptionEditable { get; set; }
 
+        [Display(Name = "Описание (для мастеров)"), UIHint("MarkdownString")]
+        public string MasterDescriptionEditable { get; set; }
+
         [Display(Name = "Привязано к", Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
         public FieldBoundToViewModel FieldBoundTo { get; set; }
 
@@ -248,8 +261,8 @@ namespace JoinRpg.Web.Models
             }
             if (Price != 0 && !FieldViewType.SupportsPricingOnField())
             {
-                yield return
-                    new ValidationResult(string.Format("Поле {0} не поддерживает ввод цены.", FieldViewType.ToString()));
+                yield return new ValidationResult(
+                    $"Поле {FieldViewType} не поддерживает ввод цены.");
             }
         }
     }
@@ -283,8 +296,11 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание для мастеров"), UIHint("MarkdownString")]
         public string MasterDescription { get; set; }
 
-        [Display(Name = "Цена", Description = "Если это значение выбрано, то цена будет добавлена ко взносу")]
+        [Display(Name = "Цена", Description = "Если это поле заполнено, то цена будет добавлена ко взносу")]
         public int Price { get; set; } = 0;
+
+        [Display(Name = "Игрок может выбрать", Description = "Если снять эту галочку, то игрок не сможет выбрать этот вариант, только мастер")]
+        public bool PlayerSelectable { get; set; } = true;
 
         [Display(Name = "Программный ID",
             Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
@@ -292,13 +308,16 @@ namespace JoinRpg.Web.Models
 
         public int ProjectId { get; set; }
         public int ProjectFieldId { get; set; }
-        public string FieldName { get; set; }
+        public string FieldName { get; }
+        public bool CanPlayerEditField { get; }
+
 
         public GameFieldDropdownValueViewModelBase(ProjectField field)
         {
             FieldName = field.FieldName;
             ProjectId = field.ProjectId;
             ProjectFieldId = field.ProjectFieldId;
+            PlayerSelectable = CanPlayerEditField = field.CanPlayerEdit;
         }
 
         public GameFieldDropdownValueViewModelBase() { }
@@ -322,6 +341,8 @@ namespace JoinRpg.Web.Models
         public int ProjectFieldId { get; }
         public bool IsActive { get; }
 
+        public bool MasterRestricted { get; }
+
         public int? CharacterGroupId { get; }
 
         public int ValueId { get; }
@@ -336,6 +357,7 @@ namespace JoinRpg.Web.Models
             ProjectFieldId = value.ProjectFieldId;
             ValueId = value.ProjectFieldDropdownValueId;
             CharacterGroupId = value.CharacterGroup?.CharacterGroupId;
+            MasterRestricted = !value.PlayerSelectable && value.ProjectField.CanPlayerEdit;
         }
 
         #region Implementation of IMovableListItem
@@ -363,6 +385,7 @@ namespace JoinRpg.Web.Models
             IsActive = value.IsActive;
             Price = value.Price;
             ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+            PlayerSelectable = value.PlayerSelectable;
         }
 
         public GameFieldDropdownValueEditViewModel() { }//For binding

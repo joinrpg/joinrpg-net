@@ -1,4 +1,5 @@
-﻿@using JoinRpg.DataModel
+﻿@using System.Diagnostics
+@using JoinRpg.DataModel
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
@@ -60,9 +61,9 @@
             @switch (item.BusyStatus)
             {
                 case CharacterBusyStatusView.HasPlayer:
-                <a href="@Url.Action("Edit", "Claim", new {Model.ProjectId, ClaimId = item.ApprovedClaimId}, null)">
-                    @Html.DisplayFor(modelItem => item.Player.DisplayName)
-                </a>
+                    <text>
+                        @Html.DisplayFor(modelItem => item.Player) (@Html.ActionLink("заявка", "Edit", "Claim", new {Model.ProjectId, ClaimId = item.ApprovedClaimId}, null))
+                    </text>
                     break;
                 case CharacterBusyStatusView.Discussed:
                 case CharacterBusyStatusView.NoClaims:

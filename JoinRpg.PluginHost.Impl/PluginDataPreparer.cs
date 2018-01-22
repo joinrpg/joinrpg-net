@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -18,7 +18,7 @@ namespace JoinRpg.PluginHost.Impl
         character.GetParentGroupsToTop().Distinct()
           .Where(g => g.IsActive && !g.IsSpecial && !g.IsRoot)
           .Select(g => g.ToPluginModel()),
-        player?.DisplayName, player?.FullName, player?.UserId);
+        player?.GetDisplayName(), player?.FullName, player?.UserId);
     }
 
     private static CharacterGroupInfo ToPluginModel(this CharacterGroup g)

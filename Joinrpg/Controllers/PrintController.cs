@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
@@ -20,16 +20,18 @@ namespace JoinRpg.Web.Controllers
     private IPlotRepository PlotRepository { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
+      private IUriService UriService { get; }
 
-    public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+      public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IExportDataService exportDataService,
       IPlotRepository plotRepository,
-      IPluginFactory pluginFactory, ICharacterRepository characterRepository) : base(userManager,
+      IPluginFactory pluginFactory, ICharacterRepository characterRepository, IUriService uriService) : base(userManager,
       projectRepository, projectService, exportDataService)
     {
       PlotRepository = plotRepository;
       PluginFactory = pluginFactory;
       CharacterRepository = characterRepository;
+        UriService = uriService;
     }
 
 
@@ -39,7 +41,7 @@ namespace JoinRpg.Web.Controllers
       var error = WithCharacter(character);
       if (error != null) return error;
 
-      return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character)));
+      return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character), UriService));
     }
 
     [MasterAuthorize()]
@@ -51,7 +53,7 @@ namespace JoinRpg.Web.Controllers
 
       var viewModel =
         characters.Select(
-          c => new PrintCharacterViewModel(CurrentUserId, c, plotElements)).ToArray();
+          c => new PrintCharacterViewModel(CurrentUserId, c, plotElements, UriService)).ToArray();
 
       return View(viewModel);
     }
@@ -128,7 +130,7 @@ namespace JoinRpg.Web.Controllers
 <b>ФИО</b>: {v.PlayerFullName ?? "нет"}<br>
 <hr>
 <b>Персонаж</b>: {v.CharacterName ?? "нет"}<br>
-<b>Мастер</b>: {v.ResponsibleMaster?.DisplayName ?? "нет"}<br>
+<b>Мастер</b>: {v.ResponsibleMaster?.GetDisplayName() ?? "нет"}<br>
 <hr>
 <i>{v.Groups.Select(g => g.Name).JoinStrings(" • ")}</i><br>
 ", CardSize.A7));

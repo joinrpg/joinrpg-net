@@ -1,16 +1,21 @@
-﻿var feeClaimFieldsDisp = null;
+﻿var paymentStatus = null;
+var feeTotal = 0;
+var feeBalance = 0;
+var feeBase = 0;
+var feeClaimFieldsDisp = null;
 var feeCharacterFieldsDisp = null;
 var feeTotalFieldsDisp = null;
 var feeTotalDisp = null;
+var feeTotalDisp2 = null;
 var feeCurrentDisp = null;
 var feeModDisp = null;
 var feeBalanceDisp = null;
 var feeMoreToPayDisp = null;
+var feeMoreToPayDisp2 = null;
 var feeOverpaidDisp = null;
+var feeOverpaidDisp2 = null;
 var feePaymentDlgValue = null;
-var feeStatusOverpaid = null;
-var feeStatusPaid = null;
-var feeStatusMoreToPay = null;
+var rowPaymentStatus = null;
 
 function setupFeeDisplay(obj)
 {
@@ -55,13 +60,67 @@ function checkFeeElements(target)
     return false;
 }
 
+// Checks current payment status and updates view according to it
+function processPaymentStatus(paymentStatus)
+{
+    if (!rowPaymentStatus)
+        return;
+
+    $(rowPaymentStatus).removeClass("warning");
+    $(rowPaymentStatus).removeClass("danger");
+    $(rowPaymentStatus).removeClass("success");
+    for (var i = 0; i < 4; i++)
+    {
+        $("#feeInfo" + i).toggle(i == paymentStatus);
+        $("#feeStatus" + i).toggle(i == paymentStatus);
+    }
+    switch (paymentStatus)
+    {
+        case 0: // paid
+            $(rowPaymentStatus).addClass("success");
+            $(feeMoreToPayDisp).hide();
+            $(feeOverpaidDisp).hide();
+            if (feeTotal == 0)
+            {
+                $("#feeInfo0").hide();
+                $("#feeStatus0").hide();
+                $(rowPaymentStatus).hide();
+            }
+            break;
+        case 1: // overpaid
+            $(feeMoreToPayDisp).hide();
+            $(feeOverpaidDisp).show();
+            $(rowPaymentStatus).addClass("success");
+            $(rowPaymentStatus).show();
+            break;
+        case 2: // more to pay
+            $(feeMoreToPayDisp).show();
+            $(feeOverpaidDisp).hide();
+            $(rowPaymentStatus).addClass("warning");
+            $(rowPaymentStatus).show();
+            if (feePaymentDlgValue)
+                feePaymentDlgValue.value = feeMoreToPayDisp.get();
+            break;
+        case 3: // not paid
+            $(feeMoreToPayDisp).show();
+            $(feeOverpaidDisp).hide();
+            $(rowPaymentStatus).addClass("danger");
+            $(rowPaymentStatus).show();
+            if (feePaymentDlgValue)
+                feePaymentDlgValue.value = feeMoreToPayDisp.get();
+            break;
+        default:
+            break;
+    }
+}
+
 // Applies fee modification
 function feeChanged(target, fee)
 {
     var oldFee = target.feeDisp.get();
     target.feeDisp.set(fee);
 
-    // Complete subtotal
+    // Updating subtotal of fields
     feeTotalFieldsDisp.ch(oldFee, fee);
 
     // Claim total    
@@ -69,15 +128,30 @@ function feeChanged(target, fee)
     {
         // If there is no feeTotalDisp, we are in character editing mode
 
+        // Updating fields subtotals
+        switch (target.bound)
+        {
+            case "Claim":
+                feeClaimFieldsDisp.ch(oldFee, fee);
+                break;
+            case "Character":
+                feeCharacterFieldsDisp.ch(oldFee, fee);
+                break;
+            default:
+                break;
+        }
+
+        // Updating total amout to pay
         feeTotalDisp.ch(oldFee, fee);
-        var feeTotal = feeTotalDisp.get();
-        // Claim current
-        if (feeCurrentDisp)
-            feeCurrentDisp.ch(oldFee, fee);
+        feeTotal = feeTotalDisp.get();
+        feeTotalDisp2.set(feeTotal);
+
         // More to pay
         feeOverpaidDisp.set(feeBalance - feeTotal);
+        feeOverpaidDisp2.set(feeBalance - feeTotal);
         // Overpaid
         feeMoreToPayDisp.set(feeTotal - feeBalance);
+        feeMoreToPayDisp2.set(feeTotal - feeBalance);
 
         // Payment status
         if (feeTotal < feeBalance)
@@ -89,40 +163,7 @@ function feeChanged(target, fee)
         else
             paymentStatus = 3;
 
-        switch (paymentStatus)
-        {
-            case 0: // paid
-                feeStatusPaid.style.display = "inline";
-                feeStatusOverpaid.style.display = "none";
-                feeStatusMoreToPay.style.display = "none";
-                break;
-            case 1: // overpaid
-                feeStatusPaid.style.display = "none";
-                feeStatusOverpaid.style.display = "inline";
-                feeStatusMoreToPay.style.display = "none";
-                break;
-            case 2: // more to pay
-                feeStatusPaid.style.display = "none";
-                feeStatusOverpaid.style.display = "none";
-                feeStatusMoreToPay.style.display = "inline";
-                if (feePaymentDlgValue)
-                    feePaymentDlgValue.value = feeMoreToPayDisp.get();
-                break;
-            case 3: // not paid
-                feeStatusPaid.style.display = "none";
-                feeStatusOverpaid.style.display = "none";
-                feeStatusMoreToPay.style.display = "none";
-                if (feePaymentDlgValue)
-                    feePaymentDlgValue.value = feeMoreToPayDisp.get();
-                break;
-            default:
-                break;
-        }
-
-        if (feeCurrentDisp)
-        {
-            feeCurrentDisp.ch(oldFee, fee);
-        }
+        processPaymentStatus(paymentStatus);
     }
 
     return oldFee;
@@ -196,20 +237,31 @@ function checkChanged(event)
 }
 
 
+function toggleFeeBlock()
+{
+    $("#feeInfo").collapse("toggle");
+    $("#feeDetails").collapse("toggle");
+}
+
+
 $(function ()
 {
     feeClaimFieldsDisp = setupFeeDisplayById("feeClaimFieldsDisp");
     feeCharacterFieldsDisp = setupFeeDisplayById("feeCharacterFieldsDisp");
     feeTotalFieldsDisp = setupFeeDisplayById("feeTotalFieldsDisp");
     feeTotalDisp = setupFeeDisplayById("feeTotalDisp");
+    feeTotalDisp2 = setupFeeDisplayById("feeTotalDisp2");
     feeCurrentDisp = setupFeeDisplayById("feeCurrentDisp");
     feeModDisp = setupFeeDisplayById("feeModDisp");
     feeBalanceDisp = setupFeeDisplayById("feeBalanceDisp");
     feeMoreToPayDisp = setupFeeDisplayById("feeMoreToPayDisp");
+    feeMoreToPayDisp2 = setupFeeDisplayById("feeMoreToPayDisp2");
     feeOverpaidDisp = setupFeeDisplayById("feeOverpaidDisp");
-    feeStatusMoreToPay = document.getElementById("feeStatusMoreToPay");
-    feeStatusOverpaid = document.getElementById("feeStatusOverpaid");
-    feeStatusPaid = document.getElementById("feeStatusPaid");
+    feeOverpaidDisp2 = setupFeeDisplayById("feeOverpaidDisp2");
+    rowPaymentStatus = document.getElementById("rowPaymentStatus");
 
     feePaymentDlgValue = document.getElementById("Money");
+
+    if (paymentStatus != null)
+        processPaymentStatus(paymentStatus);
 });

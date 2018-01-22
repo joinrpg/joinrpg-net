@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -25,6 +25,7 @@ namespace JoinRpg.Web.Controllers
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
+        private IUriService UriService { get; }
 
     [HttpGet]
     [Authorize]
@@ -37,29 +38,42 @@ namespace JoinRpg.Web.Controllers
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectid, int? characterGroupId)
     {
-      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
+        if (characterGroupId == null)
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectid);
+            return RedirectToAction("AddForGroup",
+                new {project.ProjectId, project.RootGroup.CharacterGroupId});
+        }
+      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
       if (field == null) return HttpNotFound();
       return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
     }
 
-    public ClaimController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IClaimService claimService, IPlotRepository plotRepository,
-      IClaimsRepository claimsRepository, IFinanceService financeService,
-      IExportDataService exportDataService, IPluginFactory pluginFactory,
-      ICharacterRepository characterRepository)
-      : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      _claimService = claimService;
-      _plotRepository = plotRepository;
-      _claimsRepository = claimsRepository;
-      FinanceService = financeService;
-      PluginFactory = pluginFactory;
-      CharacterRepository = characterRepository;
-    }
+      public ClaimController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IClaimService claimService,
+          IPlotRepository plotRepository,
+          IClaimsRepository claimsRepository,
+          IFinanceService financeService,
+          IExportDataService exportDataService,
+          IPluginFactory pluginFactory,
+          ICharacterRepository characterRepository,
+          IUriService uriService)
+          : base(userManager, projectRepository, projectService, exportDataService)
+      {
+          _claimService = claimService;
+          _plotRepository = plotRepository;
+          _claimsRepository = claimsRepository;
+          FinanceService = financeService;
+          PluginFactory = pluginFactory;
+          CharacterRepository = characterRepository;
+          UriService = uriService;
+      }
 
-    [HttpPost]
+      [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
@@ -114,7 +128,7 @@ namespace JoinRpg.Web.Controllers
       var plots = claim.IsApproved && claim.Character != null
         ? await _plotRepository.GetPlotsForCharacter(claim.Character)
         : new PlotElement[] { };
-      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots);
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
@@ -165,7 +179,7 @@ namespace JoinRpg.Web.Controllers
       try
       {
         await
-          _claimService.AppoveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+          _claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -386,20 +400,27 @@ namespace JoinRpg.Web.Controllers
       {
         if (!ModelState.IsValid)
         {
-          return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId);
         }
 
 
-        await
-          FinanceService.FeeAcceptedOperation(claim.ProjectId, claim.ClaimId, 
-            viewModel.CommentText, viewModel.OperationDate, viewModel.FeeChange, viewModel.Money,
-            viewModel.PaymentTypeId);
+          await
+              FinanceService.FeeAcceptedOperation(new FeeAcceptedOperationRequest()
+              {
+                  ProjectId = claim.ProjectId,
+                  ClaimId = claim.ClaimId,
+                  Contents = viewModel.CommentText,
+                  FeeChange = viewModel.FeeChange,
+                  Money = viewModel.Money,
+                  OperationDate = viewModel.OperationDate,
+                  PaymentTypeId = viewModel.PaymentTypeId
+              });
         
-        return RedirectToAction("Edit", "Claim", new { ClaimId = viewModel.CommentDiscussionId, viewModel.ProjectId });
+        return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
       }
       catch
       {
-        return await Edit(viewModel.ProjectId, viewModel.CommentDiscussionId);
+        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
       }
     }
 
@@ -436,7 +457,8 @@ namespace JoinRpg.Web.Controllers
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
-        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
+          UriService);
 
       await _claimService.SubscribeClaimToUser(projectid, claimid);
       var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -459,7 +481,8 @@ namespace JoinRpg.Web.Controllers
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
-        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { });
+        Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
+          UriService);
 
 
       await _claimService.UnsubscribeClaimToUser(projectid, claimid);
@@ -483,5 +506,73 @@ namespace JoinRpg.Web.Controllers
 
       return null;
     }
-  }
+
+      [MasterAuthorize(Permission.CanManageMoney), ValidateAntiForgeryToken]
+      public async Task<ActionResult> MarkPreferential(int claimid,
+          int projectid,
+          bool preferential)
+      {
+          try
+          {
+              if (!ModelState.IsValid)
+              {
+                  return await Edit(projectid, claimid);
+              }
+
+              await
+                  FinanceService.MarkPreferential(new MarkPreferentialRequest
+                  {
+                      ProjectId = projectid,
+                      ClaimId = claimid,
+                      Preferential = preferential
+                  });
+
+              return RedirectToAction("Edit", "Claim", new {claimid, projectid});
+          }
+          catch
+          {
+              return await Edit(projectid, claimid);
+          }
+      }
+
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RequestPreferentialFee(
+            MarkMeAsPreferentialViewModel viewModel)
+        {
+            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            if (claim == null)
+            {
+                return HttpNotFound();
+            }
+            var error = WithClaim(claim);
+            if (error != null)
+            {
+                return error;
+            }
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+                }
+
+
+                await
+                    FinanceService.RequestPreferentialFee(new MarkMeAsPreferentialFeeOperationRequest()
+                    {
+                        ProjectId = claim.ProjectId,
+                        ClaimId = claim.ClaimId,
+                        Contents = viewModel.CommentText,
+                        OperationDate = viewModel.OperationDate,
+                    });
+
+                return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
+            }
+            catch
+            {
+                return await Edit(viewModel.ProjectId, viewModel.ClaimId);
+            }
+            
+        }
+    }
 }

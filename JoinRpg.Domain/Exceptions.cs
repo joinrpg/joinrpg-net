@@ -1,4 +1,4 @@
-п»їusing System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,166 +8,180 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
-    public abstract class JoinRpgBaseException : ApplicationException
+  public abstract  class JoinRpgBaseException : ApplicationException
+  {
+    protected JoinRpgBaseException(string message) : base(message)
     {
-        protected JoinRpgBaseException(string message) : base(message)
-        {
-        }
+    }
+  }
+
+  public class JoinRpgInvalidUserException : JoinRpgBaseException
+  {
+    public JoinRpgInvalidUserException(string message = "Cannot perform this operation for current user.") : base(message)
+    {
+    }
+  }
+
+  public class MustBeAdminException : JoinRpgInvalidUserException
+  {
+    public MustBeAdminException() : base("Cannot perform this operation for non-admin user.")
+    {
+    }
+  }
+
+  public abstract class JoinRpgProjectEntityException : JoinRpgBaseException
+  {
+    protected JoinRpgProjectEntityException(IProjectEntity entity, string message) : base(message)
+    {
+      Project = entity.Project;
     }
 
-    public class JoinRpgInvalidUserException : JoinRpgBaseException
+    [PublicAPI]
+    public Project Project { get; }
+  }
+
+  public class JoinRpgEntityNotFoundException : JoinRpgBaseException
+  {
+    public JoinRpgEntityNotFoundException(IEnumerable<int> ids, string typeName) : base($"Can't found entities of type {typeName} by ids {string.Join(", ", ids)}")
     {
-        public JoinRpgInvalidUserException(string message = "Cannot perform this operation for current user.") : base(message)
-        {
-        }
     }
 
-    public class MustBeAdminException : JoinRpgInvalidUserException
+    public JoinRpgEntityNotFoundException(int id, string typeName) : base($"Can't found entity of type {typeName} by id {id}")
     {
-        public MustBeAdminException() : base("Cannot perform this operation for non-admin user.")
-        {
-        }
     }
+  }
 
-    public abstract class JoinRpgProjectEntityException : JoinRpgBaseException
+
+  public class CannotPerformOperationInFuture : JoinRpgBaseException
+  {
+    public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
     {
-        protected JoinRpgProjectEntityException(IProjectEntity entity, string message) : base(message)
-        {
-            Project = entity.Project;
-        }
-
-        [PublicAPI]
-        public Project Project { get; }
     }
+  }
 
-    public class JoinRpgEntityNotFoundException : JoinRpgBaseException
+  public class CannotPerformOperationInPast : JoinRpgBaseException
+  {
+    public CannotPerformOperationInPast() : base("Cannot perform operation in past")
     {
-        public JoinRpgEntityNotFoundException(IEnumerable<int> ids, string typeName) : base($"Can't found entities of type {typeName} by ids {string.Join(", ", ids)}")
-        {
-        }
-
-        public JoinRpgEntityNotFoundException(int id, string typeName) : base($"Can't found entity of type {typeName} by id {id}")
-        {
-        }
     }
+  }
 
-
-    public class CannotPerformOperationInFuture : JoinRpgBaseException
+    public class PreferentialFeeNotEnabled : JoinRpgBaseException
     {
-        public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
-        {
-        }
-    }
-
-    public class CannotPerformOperationInPast : JoinRpgBaseException
-    {
-        public CannotPerformOperationInPast() : base("Cannot perform operation in past")
+        public PreferentialFeeNotEnabled() : base("Preferential fee not enabled")
         {
         }
     }
 
 
     public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
+  {
+    public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
     {
-        public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
-        {
-
-        }
+      
     }
+  }
 
     public class ProjectDeactivedException : JoinRpgBaseException
     {
         public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
         {
 
-        }
     }
+  }
 
-    public class ClaimWrongStatusException : JoinRpgProjectEntityException
+  public class ClaimWrongStatusException : JoinRpgProjectEntityException
+  {
+    public ClaimWrongStatusException(Claim entity, IEnumerable<Claim.Status> possible) 
+      : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
     {
-        public ClaimWrongStatusException(Claim entity, IEnumerable<Claim.Status> possible)
-          : base(entity, $"This operation can be performed only on claims with status {string.Join(", ", possible.Select(s => s.ToString()))}, but current status is {entity.ClaimStatus}")
-        {
-        }
-
-        public ClaimWrongStatusException(Claim entity)
-          : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
-        {
-        }
     }
 
-    public class ClaimAlreadyPresentException : JoinRpgBaseException
+    public ClaimWrongStatusException(Claim entity)
+      : base(entity, $"This operation can not be performed on claim with status = {entity.ClaimStatus}.")
     {
-        public ClaimAlreadyPresentException() : base("Claim already present for this character or group.") { }
     }
+  }
 
-    public class ClaimTargetIsNotAcceptingClaims : JoinRpgBaseException
+  public class ClaimAlreadyPresentException : JoinRpgBaseException
+  {
+    public ClaimAlreadyPresentException(): base("Claim already present for this character or group.") { }
+  }
+
+  public class ClaimTargetIsNotAcceptingClaims: JoinRpgBaseException
+  {
+    public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
+  }
+
+  public class MasterHasResponsibleException : JoinRpgProjectEntityException
+  {
+    public User Master { get; }
+    public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.")
     {
-        public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
+      Master = entity.User;
     }
+  }
 
-    public class MasterHasResponsibleException : JoinRpgProjectEntityException
+  public class NoAccessToProjectException : JoinRpgProjectEntityException
+  {
+    [PublicAPI]
+    public int? UserId { get; }
+
+    public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
+      : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}")
     {
-        public User Master { get; }
-        public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.")
-        {
-            Master = entity.User;
-        }
+      UserId = userId;
     }
 
-    public class NoAccessToProjectException : JoinRpgProjectEntityException
+    public NoAccessToProjectException(Project project, int? userId)
+      : base(project, $"No access to project {project.ProjectName} for user {userId}")
     {
-        [PublicAPI]
-        public int? UserId { get; }
-
-        public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
-          : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}")
-        {
-            UserId = userId;
-        }
-
-        public NoAccessToProjectException(Project project, int? userId)
-          : base(project, $"No access to project {project.ProjectName} for user {userId}")
-        {
-            UserId = userId;
-        }
-
-        public NoAccessToProjectException(IProjectEntity entity, int? userId)
-      : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}")
-        {
-            UserId = userId;
-        }
+      UserId = userId;
     }
 
-    public class EmailSendFailedException : JoinRpgBaseException
+    public NoAccessToProjectException(IProjectEntity entity, int? userId)
+  : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}")
     {
-        public EmailSendFailedException(string message) : base(message)
-        {
-        }
+      UserId = userId;
     }
+  }
 
-    public class FieldRequiredException : JoinRpgBaseException
+  public class EmailSendFailedException : JoinRpgBaseException
+  {
+    public EmailSendFailedException(string message) : base(message)
     {
-        public string FieldName { get; }
-
-        public FieldRequiredException(string fieldName) : base($"{fieldName}")
-        {
-            FieldName = fieldName;
-        }
     }
+  }
 
-    public class ValueAlreadySetException : JoinRpgBaseException
+  public class FieldRequiredException : JoinRpgBaseException
+  {
+    public string FieldName { get; }
+
+    public FieldRequiredException(string fieldName) : base($"{fieldName}")
     {
-        public ValueAlreadySetException(string message) : base(message)
-        {
-        }
+      FieldName = fieldName;
     }
+  }
 
+  public class ValueAlreadySetException : JoinRpgBaseException
+  {
+    public ValueAlreadySetException(string message) : base(message)
+    {
+    }
+  }
+
+  public class JoinRpgConcealCommentException : JoinRpgBaseException
+  {
+     public JoinRpgConcealCommentException(string message = "Current user doesn't have permission to conceal this comment") : base(message)
+     {
+     }
+  }
     public class ProjectAccomodationNotFound : JoinRpgBaseException
     {
-        public ProjectAccomodationNotFound(int projectId, int accomodationTypeId, int accomodationType) : base($"РњРµСЃС‚Рѕ РїСЂРѕР¶РёРІР°РЅРёРµ СЃ id={accomodationType} РЅРµ СЃРѕРѕС‚РІРµСЃС‚РІСѓСЋС‚ РїСЂРѕРµРєС‚Сѓ СЃ id={projectId} Рё С‚РёРїРѕРј РїСЂРѕР¶РёРІР°РЅРёСЏ СЃ id={accomodationTypeId} ")
+        public ProjectAccomodationNotFound(int projectId, int accomodationTypeId, int accomodationType) : base($"Место проживание с id={accomodationType} не соотвествуют проекту с id={projectId} и типом проживания с id={accomodationTypeId} ")
         {
         }
 
     }
+
 }

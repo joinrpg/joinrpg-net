@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -7,37 +7,63 @@ namespace JoinRpg.Domain
 {
     public static class FinanceExtensions
     {
-        public static int CurrentFee([NotNull] this Project project)
+        /// <summary>
+        /// Returns project fee for a specified date for claim
+        /// </summary>
+        private static int ProjectFeeForDate(this Claim claim, DateTime? operationDate)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
-            return project.CurrentFee(DateTime.UtcNow);
+            var projectFeeInfo = claim.Project.ProjectFeeInfo(operationDate ?? DateTime.UtcNow);
+            return (claim.PreferentialFeeUser
+                       ? projectFeeInfo?.PreferentialFee
+                       : projectFeeInfo?.Fee) ?? 0;
         }
 
-        private static int CurrentFee(this Project project, DateTime operationDate)
-        {
-            return project.ProjectFeeSettings.Where(pfs => pfs.StartDate < operationDate)
-              .OrderByDescending(pfs => pfs.StartDate).FirstOrDefault()?.Fee ?? 0;
-        }
+        /// <summary>
+        /// Returns fee info object for a specified date
+        /// </summary>
+        private static ProjectFeeSetting ProjectFeeInfo(this Project project,
+            DateTime operationDate)
+            => project.ProjectFeeSettings.Where(pfs => pfs.StartDate.Date <= operationDate.Date)
+                .OrderByDescending(pfs => pfs.StartDate.Date).FirstOrDefault();
 
+        /// <summary>
+        /// Returns fee info object for today
+        /// </summary>
+        public static ProjectFeeSetting ProjectFeeInfo(this Project project)
+            => project.ProjectFeeInfo(DateTime.UtcNow);
+
+        /// <summary>
+        /// Returns total sum of claim fee and all finance operations
+        /// </summary>
         private static int ClaimTotalFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-        {
-            return claim.ClaimCurrentFee(operationDate, fieldsFee)
-                + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
-        }
+            => claim.ClaimCurrentFee(operationDate, fieldsFee)
+               + claim.ApprovedFinanceOperations.Sum(fo => fo.FeeChange);
 
+        /// <summary>
+        /// Returns total sum of claim fee and all finance operations using current date
+        /// </summary>
         public static int ClaimTotalFee(this Claim claim, int? fieldsFee = null)
             => claim.ClaimTotalFee(DateTime.UtcNow, fieldsFee);
 
+        /// <summary>
+        /// Returns base fee (taken from project settings or claim's property CurrentFee)
+        /// </summary>
+        public static int BaseFee(this Claim claim, DateTime? operationDate = null)
+            => claim.CurrentFee ?? claim.ProjectFeeForDate(operationDate);
+
+        /// <summary>
+        /// Returns actual fee for a claim (as a sum of claim fee and fields fee) using current date
+        /// </summary>
         public static int ClaimCurrentFee(this Claim claim, int? fieldsFee)
             => claim.ClaimCurrentFee(DateTime.UtcNow, fieldsFee);
 
         /// <summary>
-        /// Returns actual fee for a claim
+        /// Returns actual fee for a claim (as a sum of claim fee and fields fee)
         /// </summary>
         private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
-        { 
-            return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
-                + claim.ClaimFieldsFee(fieldsFee);
+        {
+            return claim.BaseFee(operationDate)
+                   + claim.ClaimFieldsFee(fieldsFee);
             /******************************************************************
              * If you want to add additional fee to a claim's fee,
              * append your value to the expression above.
@@ -96,7 +122,7 @@ namespace JoinRpg.Domain
         /// </summary>
         private static int CalcClaimFieldsFee(this Claim claim)
         {
-            var values = claim.Project.GetFieldsNotFilled()
+            var values = claim.Project.GetFieldsNotFilledWithoutOrder()
                 .ToList()
                 .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null);
 
@@ -116,23 +142,33 @@ namespace JoinRpg.Domain
             return fieldsFee ?? 0;
         }
 
-
+        /// <summary>
+        /// Returns how many money left to pay
+        /// </summary>
         public static int ClaimFeeDue(this Claim claim)
             => claim.ClaimTotalFee() - claim.ClaimBalance();
 
-    public static int ClaimBalance(this Claim claim)
-    {
-      return claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
-    }
+        /// <summary>
+        /// Returns sum of all approved finance operations
+        /// </summary>
+        public static int ClaimBalance(this Claim claim)
+            => claim.ApprovedFinanceOperations.Sum(fo => fo.MoneyAmount);
 
-    public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
-    {
-      if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
-          finance.PaymentType?.UserId != currentUserId)
-      {
-        throw new NoAccessToProjectException(finance, currentUserId);
-      }
-    }
+        /// <summary>
+        /// Returns sum of all unapproved finance operations
+        /// </summary>
+        public static int ClaimProposedBalance(this Claim claim)
+            => claim.FinanceOperations.Sum(fo =>
+                fo.State == FinanceOperationState.Proposed ? fo.MoneyAmount : 0);
+
+        public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
+        {
+            if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+                finance.PaymentType?.UserId != currentUserId)
+            {
+                throw new NoAccessToProjectException(finance, currentUserId);
+            }
+        }
 
         public static bool ClaimPaidInFull(this Claim claim)
             => claim.ClaimBalance() >= claim.ClaimTotalFee();
@@ -140,34 +176,29 @@ namespace JoinRpg.Domain
         private static bool ClaimPaidInFull(this Claim claim, DateTime operationDate)
             => claim.ClaimBalance() >= claim.ClaimTotalFee(operationDate.AddDays(-1), null);
 
-    public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate)
-    {
-      if (claim.Project.ProjectFeeSettings.Any() //If project has fee 
-          && claim.CurrentFee == null //and fee not already fixed for claim
-          && claim.ClaimPaidInFull(operationDate) //and current fee is payed in full
-        )
-      {
-        claim.CurrentFee = claim.Project.CurrentFee(operationDate); //fix fee for claim
-      }
-    }
+        public static void UpdateClaimFeeIfRequired(this Claim claim, DateTime operationDate)
+        {
+            if (claim.Project.ProjectFeeSettings.Any() //If project has fee 
+                && claim.CurrentFee == null //and fee not already fixed for claim
+                && claim.ClaimPaidInFull(operationDate) //and current fee is payed in full
+            )
+            {
+                claim.CurrentFee = claim.ProjectFeeForDate(operationDate); //fix fee for claim
+            }
+        }
 
-    [CanBeNull]
-    public static PaymentType GetCashPaymentType([NotNull] this ProjectAcl acl)
-    {
-      if (acl == null) throw new ArgumentNullException(nameof(acl));
-      return acl.Project.PaymentTypes.SingleOrDefault(pt => pt.UserId == acl.UserId && pt.IsCash);
-    }
+        [CanBeNull]
+        public static PaymentType GetCashPaymentType([NotNull] this Project project, int userId)
+        {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+            return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.IsCash);
+        }
 
-    public static bool CanAcceptCash([NotNull] this Project project, [NotNull] User user)
-    {
-      if (project == null) throw new ArgumentNullException(nameof(project));
-      if (user == null) throw new ArgumentNullException(nameof(user));
-      return project.ProjectAcls.Single(acl => acl.UserId == user.UserId).CanAcceptCash();
+        public static bool CanAcceptCash([NotNull] this Project project, [NotNull] User user)
+        {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            return GetCashPaymentType(project, user.UserId)?.IsActive ?? false;
+        }
     }
-
-    public static bool CanAcceptCash([NotNull] this ProjectAcl projectAcl)
-    {
-      return projectAcl.GetCashPaymentType()?.IsActive ?? false;
-    }
-  }
 }

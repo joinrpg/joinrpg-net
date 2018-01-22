@@ -1,12 +1,13 @@
-﻿using JoinRpg.Services.Impl.Search;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using JoinRpg.Services.Impl.Search;
+using Shouldly;
+using Xunit;
 
 namespace JoinRpg.Services.Impl.Test
 {
-  [TestClass]
+  
   public class SearchKeywordsResolverTest
   {
-    private static readonly string[] keysForPerfectMath =
+    private static readonly string[] KeysForPerfectMath =
     {
       "%контакты",
       "контакты"
@@ -14,14 +15,13 @@ namespace JoinRpg.Services.Impl.Test
 
     private void Verify(string searchString, int? expectedId, bool exactMatchFlag)
     {
-      bool isPerfectMatch;
-      int? id = SearchKeywordsResolver.TryGetId(searchString, keysForPerfectMath, out isPerfectMatch);
+        int? id = SearchKeywordsResolver.TryGetId(searchString, KeysForPerfectMath, out var isPerfectMatch);
 
-      Assert.AreEqual(expectedId, id, $"ExpectedId was wrong for {searchString}");
-      Assert.AreEqual(exactMatchFlag, isPerfectMatch, $"isPerfectMathc was wrong for {searchString}");
+        id.ShouldBe(expectedId, $"ExpectedId was wrong for {searchString}");
+        isPerfectMatch.ShouldBe(exactMatchFlag, $"isPerfectMathc was wrong for {searchString}");
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifyEmptyString()
     {
       Verify(
@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Impl.Test
         exactMatchFlag: false);
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifyBareNumber()
     {
       Verify(
@@ -39,7 +39,7 @@ namespace JoinRpg.Services.Impl.Test
         exactMatchFlag: false);
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifyBareNumberWithSpaces()
     {
       Verify(
@@ -48,7 +48,7 @@ namespace JoinRpg.Services.Impl.Test
         exactMatchFlag: false);
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifyKeyword()
     {
       Verify(
@@ -57,7 +57,7 @@ namespace JoinRpg.Services.Impl.Test
         exactMatchFlag: true);
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifyKeywordWrongCase()
     {
       Verify(
@@ -66,7 +66,7 @@ namespace JoinRpg.Services.Impl.Test
         exactMatchFlag: true);
     }
 
-    [TestMethod]
+    [Fact]
     public void VerifySpaceDelimeter()
     {
       Verify(

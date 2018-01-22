@@ -1,15 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -77,10 +79,17 @@ namespace JoinRpg.Web.Models
     public CharacterNavigationViewModel Navigation { get; }
 
     [Display(Name = "Взнос")]
+    [NotNull]
     public ClaimFeeViewModel ClaimFee { get; set; }
 
     [ReadOnly(true)]
     public IEnumerable<PaymentType> PaymentTypes { get; }
+
+        /// <summary>
+        /// Returns true if project is active and there are any payment method available
+        /// </summary>
+        public bool IsPaymentsEnabled
+            => (PaymentTypes?.Any() ?? false) && ProjectActive;
 
     [ReadOnly(true)]
     public IEnumerable<ProblemViewModel> Problems { get; }
@@ -96,86 +105,92 @@ namespace JoinRpg.Web.Models
 
     public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
-    public ClaimViewModel(User currentUser, Claim claim,
-      IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
-      IReadOnlyCollection<PlotElement> plotElements)
-    {
-      ClaimId = claim.ClaimId;
-      CommentDiscussionId = claim.CommentDiscussionId;
-      RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
-      HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-      CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
-      IsMyClaim = claim.PlayerUserId == currentUser.UserId;
-      Player = claim.Player;
-      ProjectId = claim.ProjectId;
-      Status = (ClaimStatusView) claim.ClaimStatus;
-      CharacterGroupId = claim.CharacterGroupId;
-      GroupName = claim.Group?.CharacterGroupName;
-      CharacterId = claim.CharacterId;
-      CharacterActive = claim.Character?.IsActive;
-      OtherClaimsForThisCharacterCount = claim.IsApproved
-        ? 0
-        : claim.OtherClaimsForThisCharacter().Count();
-      HasOtherApprovedClaim = !claim.IsApproved &&
-                              claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-      Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
-      OtherClaimsFromThisPlayerCount =
-        OtherClaimsFromThisPlayerCount =
-          claim.IsApproved || claim.Project.Details.EnableManyCharacters
-            ? 0
-            : claim.OtherPendingClaimsForThisPlayer().Count();
-      Description = claim.Character?.Description.ToHtmlString();
-      Masters =
-        claim.Project.GetMasterListViewModel()
-          .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
-      ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
-      ResponsibleMaster = claim.ResponsibleMasterUser;
-      Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
-      Navigation =
-        CharacterNavigationViewModel.FromClaim(claim, currentUser.UserId,
-          CharacterNavigationPage.Claim);
-      ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
-      Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-      PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
-        (AccessReason) claim.Player.GetProfileAccess(currentUser));
-      PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
-      ProjectActive = claim.Project.Active;
-      CheckInStarted = claim.Project.Details.CheckInProgress;
-      CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-      Validator = new ClaimCheckInValidator(claim);
-
-      if (claim.PlayerUserId == currentUser.UserId ||
-          claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+      public ClaimViewModel(User currentUser,
+          Claim claim,
+          IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
+          IReadOnlyCollection<PlotElement> plotElements,
+          IUriService uriService)
       {
-        //Finance admins can create any payment. User also can create any payment, but it will be moderated
-        PaymentTypes = claim.Project.ActivePaymentTypes;
-      }
-      else
-      {
-        //All other master can create only payment from user to himself.
-        PaymentTypes =
-          claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
-      }
+          ClaimId = claim.ClaimId;
+          CommentDiscussionId = claim.CommentDiscussionId;
+          RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
+          HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
+          CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+          IsMyClaim = claim.PlayerUserId == currentUser.UserId;
+          Player = claim.Player;
+          ProjectId = claim.ProjectId;
+          Status = (ClaimStatusView) claim.ClaimStatus;
+          CharacterGroupId = claim.CharacterGroupId;
+          GroupName = claim.Group?.CharacterGroupName;
+          CharacterId = claim.CharacterId;
+          CharacterActive = claim.Character?.IsActive;
+          OtherClaimsForThisCharacterCount = claim.IsApproved
+              ? 0
+              : claim.OtherClaimsForThisCharacter().Count();
+          HasOtherApprovedClaim = !claim.IsApproved &&
+                                  claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
+          Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
+          OtherClaimsFromThisPlayerCount =
+              OtherClaimsFromThisPlayerCount =
+                  claim.IsApproved || claim.Project.Details.EnableManyCharacters
+                      ? 0
+                      : claim.OtherPendingClaimsForThisPlayer().Count();
+          Description = claim.Character?.Description.ToHtmlString();
+          Masters =
+              claim.Project.GetMasterListViewModel()
+                  .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
+          ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
+          ResponsibleMaster = claim.ResponsibleMasterUser;
+          Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
+          Navigation =
+              CharacterNavigationViewModel.FromClaim(claim,
+                  currentUser.UserId,
+                  CharacterNavigationPage.Claim);
+          ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
+          Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
+          PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
+              (AccessReason) claim.Player.GetProfileAccess(currentUser));
+          PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
+          ProjectActive = claim.Project.Active;
+          CheckInStarted = claim.Project.Details.CheckInProgress;
+          CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
+          Validator = new ClaimCheckInValidator(claim);
+
+          if (claim.PlayerUserId == currentUser.UserId ||
+              claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+          {
+              //Finance admins can create any payment. User also can create any payment, but it will be moderated
+              PaymentTypes = claim.Project.ActivePaymentTypes;
+          }
+          else
+          {
+              //All other master can create only payment from user to himself.
+              PaymentTypes =
+                  claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
+          }
 
 
-      if (claim.Character != null)
-      {
-        ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-          claim.HasMasterAccess(currentUser.UserId));
+          if (claim.Character != null)
+          {
+              ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
+                  claim.HasMasterAccess(currentUser.UserId));
+          }
+
+          if (claim.IsApproved && claim.Character != null)
+          {
+              var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
+              Plot = PlotDisplayViewModel.Published(readOnlyList,
+                  currentUser.UserId,
+                  claim.Character,
+                  uriService);
+          }
+          else
+          {
+              Plot = PlotDisplayViewModel.Empty();
+          }
       }
 
-      if (claim.IsApproved && claim.Character != null)
-      {
-        var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-        Plot = PlotDisplayViewModel.Published(readOnlyList, currentUser.UserId, claim.Character);
-      }
-      else
-      {
-        Plot = PlotDisplayViewModel.Empty();
-      }
-    }
-
-    public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
+      public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
       IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
     {
       string claimStatusChangeGroup = "";
@@ -245,8 +260,8 @@ namespace JoinRpg.Web.Models
     }
 
     public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
-      string ClaimStatusChangeGroup, string CommentsGroup, string FieldChangeGroup,
-      string MoneyOperationGroup)
+      string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
+      string moneyOperationGroup)
     {
       string res;
       if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
@@ -264,19 +279,19 @@ namespace JoinRpg.Web.Models
 
         if (subscrTooltip.ClaimStatusChange)
         {
-          res += "<li>Изменение статуса (группа \"" + ClaimStatusChangeGroup + "\")</li>";
+          res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
         }
         if (subscrTooltip.Comments)
         {
-          res += "<li>Комментарии (группа \"" + CommentsGroup + "\")</li>";
+          res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
         }
         if (subscrTooltip.FieldChange)
         {
-          res += "<li>Изменение полей заявки (группа \"" + FieldChangeGroup + "\")</li>";
+          res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
         }
         if (subscrTooltip.MoneyOperation)
         {
-          res += "<li>Финансовые операции (группа \"" + MoneyOperationGroup + "\")</li>";
+          res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
         }
 
         res += "</ul>";
@@ -297,22 +312,63 @@ namespace JoinRpg.Web.Models
     {
         public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
         {
+            // Reading project fee info applicable for today            
+            BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
+            // Reading base fee of a claim
+            BaseFee = claim.BaseFee();
+            // Checks for base fee availability
+            HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
+
+            FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
-            FieldsFee = model.Fields.FieldsFee;
+
+            HasFieldsWithFee = model.Fields.HasFieldsWithFee;
             CurrentTotalFee = claim.ClaimTotalFee(FieldsTotalFee);
             CurrentFee = claim.ClaimCurrentFee(FieldsTotalFee);
-            CurrentBalance = claim.ClaimBalance();
+            FieldsFee = model.Fields.FieldsFee;
+
+            foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
+                Balance[s] = 0;
+            foreach (var fo in claim.FinanceOperations)
+                Balance[fo.State] += fo.MoneyAmount;
+            
             IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+            PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
+            PreferentialFeeUser = claim.PreferentialFeeUser;
+            PreferentialFeeConditions =
+                claim.Project.Details.PreferentialFeeConditions.ToHtmlString();
+
             ClaimId = claim.ClaimId;
             ProjectId = claim.ProjectId;
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
+            FinanceOperations = claim.FinanceOperations;
 
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
         }
 
         /// <summary>
-        /// Basic fee
+        /// Claim fee taken from project settings or defined manually
+        /// </summary>
+        public int BaseFee { get; }
+
+        /// <summary>
+        /// Claim
+        /// </summary>
+        public ProjectFeeSetting BaseFeeInfo { get; }
+
+        /// <summary>
+        /// true if there is any base fee for this claim
+        /// </summary>
+        public bool HasBaseFee { get; }
+
+        /// <summary>
+        /// Sum of fields fees
+        /// </summary>
+        public int FieldsTotalFee { get; }
+
+        /// <summary>
+        /// BaseFee + FieldsTotalFee
         /// </summary>
         public int CurrentFee { get; }
 
@@ -322,30 +378,55 @@ namespace JoinRpg.Web.Models
         public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
 
         /// <summary>
-        /// Sum of fields fee
+        /// true if fee row should be visible in claim editor.
+        /// One of the following conditions has to be met:
+        /// CurrentBalance > 0 (player sends some money),
+        /// or there is any base fee (assigned manually or automatically),
+        /// or there is at least one field with fee
         /// </summary>
-        public int FieldsTotalFee { get; }
-        
+        public bool ShowFee
+            => CurrentBalance > 0 || HasBaseFee || HasFieldsWithFee;
+
+        /// <summary>
+        /// Returns count of fields with assigned fee
+        /// </summary>
+        public Dictionary<FieldBoundToViewModel, int> FieldsWithFeeCount { get; }
+
+        /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; }
+
         /// <summary>
         /// Sum of basic fee, total fields fee and finance operations
         /// </summary>
         public int CurrentTotalFee { get; }
-        
-        public int CurrentBalance { get; }
+
+        /// <summary>
+        /// Sums of all finance operations by type
+        /// </summary>
+        public readonly Dictionary<FinanceOperationState, int> Balance = new Dictionary<FinanceOperationState, int>();
+
+        /// <summary>
+        /// Sum of approved finance operations
+        /// </summary>
+        public int CurrentBalance => Balance[FinanceOperationState.Approved];
 
         public ClaimPaymentStatus PaymentStatus { get; }
 
+        /// <summary>
+        /// List of associated payment operations
+        /// </summary>
+        public IEnumerable<FinanceOperation> FinanceOperations { get; }
+
         public bool IsFeeAdmin { get; }
+
+        public bool PreferentialFeeEnabled { get; }
+        public bool PreferentialFeeUser { get; }
+        public IHtmlString PreferentialFeeConditions { get; }
+
         public int ClaimId { get; }
         public int ProjectId { get; }
         public IEnumerable<int> FeeVariants { get; }
-
-        public int GetFieldsFee(bool visible)
-        {
-            int result = 0;
-            foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
-                result += FieldsFee[key];
-            return result;
-        }
     }
 }

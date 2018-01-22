@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.CommonUI.Models
 {
@@ -14,7 +15,7 @@ namespace JoinRpg.CommonUI.Models
 
     public static string GetCashName(this User user)
     {
-      return "Наличными — " + user.DisplayName;
+      return "Наличными — " + user.GetDisplayName();
     }
 
   }

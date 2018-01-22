@@ -1,24 +1,28 @@
-﻿@using Microsoft.AspNet.Identity
+﻿g@using Microsoft.AspNet.Identity
 @if (Request.IsAuthenticated)
 {
-    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    using (Html.BeginForm("LogOff", "Account", new {area = ""}, FormMethod.Post, new {id = "logoutForm", @class = "navbar-right",}))
     {
-    @Html.AntiForgeryToken()
+        @Html.AntiForgeryToken()
 
-    <ul class="nav navbar-nav navbar-right">        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                @Html.Action("PreferredName", "User")
-            </a>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <img src="https://www.gravatar.com/avatar/@ViewBag.GravatarHash?d=identicon&s=24"/>&nbsp;@ViewBag.UserDisplayName
+                </a>
 
-            <ul class="dropdown-menu">
-                <li>@Html.ActionLink("Профиль", "Me", "User")</li>
-              <li>@Html.ActionLink("Аккаунт", "Index", "Manage")</li>
-              <li><a href="http://docs.joinrpg.ru">Помощь</a></li>
-                <li><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>
-            </ul>
-        </li>
-    </ul>
+                <ul class="dropdown-menu">
+                    <li>@Html.ActionLink("Профиль", "Me", "User", new {area = ""}, null)</li>
+                    <li>@Html.ActionLink("Аккаунт", "Index", "Manage", new {area = ""}, null)</li>
+                    <li><a href="http://docs.joinrpg.ru">Помощь</a></li>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li>@Html.ActionLink("Панель администратора", "Index", "AdminHome", new { area = "Admin" }, null)</li>
+                    }
+                    <li><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>
+                </ul>
+            </li>
+        </ul>
     }
 }
 else

@@ -17,6 +17,23 @@
     <div class="form-horizontal">
         @if (!Model.IsAvailable)
         {
+            if (!Model.IsProjectAccepting)
+            {
+                <div class="alert alert-warning">
+                    Заявки на проект закрыты. 
+                </div>
+                return;
+            }
+
+            if (Model.IsRoot)
+            {
+                <div class="alert alert-warning">
+                    Мастера проекта закрыли заявки «просто на игру».
+                    Вы должны выбрать определенную роль
+                    из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new {ProjectId = Model.ProjectId }, null), чтобы заявиться на проект.
+                </div>
+                return;
+            }
             <div class="alert alert-danger">Заявки не принимаются</div>
         }
         else if (Model.HasApprovedClaim)

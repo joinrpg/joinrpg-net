@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -19,22 +19,20 @@ namespace JoinRpg.Services.Impl
     {
     }
 
-    public async Task FeeAcceptedOperation(int projectId, int claimId, string contents, DateTime operationDate,
-  int feeChange, int money, int paymentTypeId)
+    public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
-      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
+        var claim = await LoadClaim(request);
+      var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == request.PaymentTypeId);
 
-      var email = await AcceptFeeImpl(contents, operationDate, feeChange, money, paymentType, claim);
+      var email = await AcceptFeeImpl(request.Contents, request.OperationDate, request.FeeChange, request.Money, paymentType, claim);
 
       await UnitOfWork.SaveChangesAsync();
       
-
       await EmailService.Email(email);
 
     }
 
-    public async Task CreateCashPaymentType(int projectid, int targetUserId)
+      public async Task CreateCashPaymentType(int projectid, int targetUserId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
@@ -42,7 +40,7 @@ namespace JoinRpg.Services.Impl
 
       var targetMaster = project.ProjectAcls.Single(a => a.UserId == targetUserId);
 
-      if (targetMaster.GetCashPaymentType() != null)
+        if (project.GetCashPaymentType(targetUserId) != null)
       {
         throw new JoinRpgInvalidUserException();
       }
@@ -111,30 +109,36 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task CreateFeeSetting(int projectId, int fee, DateTime startDate)
-    {
-      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-
-      if (startDate < DateTime.UtcNow.Date.AddDays(-1)) 
+      public async Task CreateFeeSetting(CreateFeeSettingRequest request)
       {
-        throw new CannotPerformOperationInPast();
+          var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
+          project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+
+          if (request.StartDate < DateTime.UtcNow.Date.AddDays(-1))
+          {
+              throw new CannotPerformOperationInPast();
+          }
+
+          if (!project.Details.PreferentialFeeEnabled && request.PreferentialFee != null)
+          {
+              throw new PreferentialFeeNotEnabled();
+          }
+
+          project.ProjectFeeSettings.Add(new ProjectFeeSetting()
+          {
+              Fee = request.Fee,
+              StartDate = request.StartDate,
+              ProjectId = request.ProjectId,
+              PreferentialFee = request.PreferentialFee,
+          });
+
+          var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
+          firstFee.StartDate = project.CreatedDate;
+
+          await UnitOfWork.SaveChangesAsync();
       }
 
-      project.ProjectFeeSettings.Add(new ProjectFeeSetting()
-      {
-        Fee = fee,
-        StartDate = startDate,
-        ProjectId = projectId
-      });
-
-      var firstFee = project.ProjectFeeSettings.OrderBy(s => s.StartDate).First();
-      firstFee.StartDate = project.CreatedDate;
-
-      await UnitOfWork.SaveChangesAsync();
-    }
-
-    public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
+      public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
       project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
@@ -166,13 +170,69 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task SaveGlobalSettings(int projectId, bool warnOnOverPayment)
-    {
-      var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+      public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
+      {
+          var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
+          project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-      project.Details.FinanceWarnOnOverPayment = warnOnOverPayment;
-      await UnitOfWork.SaveChangesAsync();
-    }
+          project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
+          project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
+          project.Details.PreferentialFeeConditions =
+              new MarkdownString(request.PreferentialFeeConditions);
+
+          await UnitOfWork.SaveChangesAsync();
+      }
+
+      public async Task MarkPreferential(MarkPreferentialRequest request)
+      {
+          var claim = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+
+          claim.PreferentialFeeUser = request.Preferential;
+          await UnitOfWork.SaveChangesAsync();
+      }
+
+      public async Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
+      {
+          var claim = await LoadClaim(request);
+
+          CheckOperationDate(request.OperationDate);
+
+          var comment = AddCommentImpl(claim,
+              null,
+              request.Contents,
+              isVisibleToPlayer: true,
+              extraAction: CommentExtraAction.RequestPreferential);
+
+          var financeOperation = new FinanceOperation()
+          {
+              Created = Now,
+              FeeChange = 0,
+              MoneyAmount = 0,
+              Changed = Now,
+              Claim = claim,
+              Comment = comment,
+              PaymentType = null,
+              State = FinanceOperationState.Proposed,
+              ProjectId = claim.ProjectId,
+              OperationDate = request.OperationDate,
+              MarkMeAsPreferential = true
+          };
+
+          comment.Finance = financeOperation;
+
+          claim.FinanceOperations.Add(financeOperation);
+
+          claim.UpdateClaimFeeIfRequired(request.OperationDate);
+
+          var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, request.Contents,
+              s => s.MoneyOperation,
+              commentExtraAction: CommentExtraAction.RequestPreferential,
+              initiator: await UserRepository.GetById(CurrentUserId));
+
+            await UnitOfWork.SaveChangesAsync();
+
+
+          await EmailService.Email(email);
+        }
   }
 }

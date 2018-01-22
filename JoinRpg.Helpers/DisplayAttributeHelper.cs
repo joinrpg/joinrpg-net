@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -8,10 +8,16 @@ namespace JoinRpg.Helpers
   public static class DisplayAttributeHelper
   {
     [NotNull]
-    public static string GetDisplayName(this Enum enumValue) =>
-      enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
+    public static string GetDisplayName([NotNull] this Enum enumValue)
+    {
+        if (enumValue == null)
+        {
+            throw new ArgumentNullException(nameof(enumValue));
+        }
+        return enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
+    }
 
-    [NotNull]
+      [NotNull]
     public static string GetDisplayName([NotNull] this PropertyInfo propertyInfo)
     {
       if (propertyInfo == null) throw new ArgumentNullException(nameof(propertyInfo));

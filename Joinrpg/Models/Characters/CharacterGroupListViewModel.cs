@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic; 
+using System.Collections.Generic; 
 using System.Linq;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models.Characters
             GenerateCharacters(characterGroup)
               .ToList(),
           Description = characterGroup.Description.ToHtmlString(),
-          ActiveClaimsCount = characterGroup.Claims.Count(c => c.IsActive),
+          ActiveClaimsCount = characterGroup.Claims.Count(c => c.ClaimStatus.IsActive()),
           Path = pathToTop.Select(cg => Results.First(item => item.CharacterGroupId == cg.CharacterGroupId)),
           IsPublic = characterGroup.IsPublic,
           IsSpecial = characterGroup.IsSpecial,
@@ -96,7 +96,6 @@ namespace JoinRpg.Web.Models.Characters
         if (prevCopy != null)
         {
           vm.ChildGroups = prevCopy.ChildGroups;
-          vm.TotalActiveClaims = prevCopy.TotalActiveClaims;
           return vm;
         }
         
@@ -127,7 +126,7 @@ namespace JoinRpg.Web.Models.Characters
           IsPublic =  arg.IsPublic,
           IsActive = arg.IsActive,
           HidePlayer = arg.HidePlayerForCharacter && !arg.Project.Details.PublishPlot,
-          ActiveClaimsCount = arg.Claims.Count(claim => claim.IsActive),
+          ActiveClaimsCount = arg.Claims.Count(claim => claim.ClaimStatus.IsActive()),
           Player = arg.ApprovedClaim?.Player,
           HasMasterAccess = HasMasterAccess,
           HasEditRolesAccess = HasEditRolesAccess,

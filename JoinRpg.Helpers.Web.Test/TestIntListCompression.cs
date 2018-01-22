@@ -1,19 +1,18 @@
-﻿using System.Diagnostics;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Helpers.Web.Test
 {
-  [TestClass]
+  
   public class TestIntListCompression
   {
-    [TestMethod]
+    [Fact]
     public void Test123() => TestList(new[] {1, 2, 3});
 
-    [TestMethod]
+    [Fact]
     public void Test1234567() => TestList(new[] {1, 2, 3, 4, 5, 6, 7});
 
-    [TestMethod]
+    [Fact]
     public void Test3Age()
       =>
         TestList(new[]
@@ -108,17 +107,11 @@ namespace JoinRpg.Helpers.Web.Test
           6777, 6782, 6796, 6831, 6836, 6848, 6870, 6915, 6919, 6953
         });
 
-    private static void TestList(int[] list)
-    {
-      var compressed = list.CompressIdList();
-      var result = compressed.UnCompressIdList().ToArray();
-      for (var i = 0; i < list.Length; i++)
+      private static void TestList(int[] list)
       {
-        Assert.AreEqual(list[i], result[i]);
+          var compressed = list.CompressIdList();
+          var result = compressed.UnCompressIdList().ToArray();
+          result.ShouldBe(list);
       }
-      Assert.AreEqual(list.Length, result.Length);
-      Debug.Print(compressed.Length.ToString());
-      Debug.Print(compressed);
-    }
   }
 }

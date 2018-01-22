@@ -1,4 +1,5 @@
 ﻿@model ClaimViewModel
+
 @Scripts.Render("~/Scripts/claim.js")
 
 
@@ -90,7 +91,7 @@
                     }
                 </dd>
             }
-            @if (Model.ClaimFee != null && (Model.PaymentTypes.Any()  || Model.ClaimFee.CurrentTotalFee > 0 || Model.ClaimFee.CurrentBalance > 0))
+            @if (Model.ClaimFee.ShowFee)
             {
                 <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
                 <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
@@ -167,7 +168,7 @@
                         В лист ожидания
                     </button>
                 }
-                if (Model.Status == ClaimStatusView.DeclinedByMaster || Model.Status == ClaimStatusView.DeclinedByUser || Model.Status == ClaimStatusView.OnHold)
+                if (!Model.Status.IsActive())
                 {
                 <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
                         aria-expanded="false">
@@ -175,12 +176,29 @@
                 </button>
                 }
             }
-            @if (Model.PaymentTypes != null && Model.PaymentTypes.Any() && Model.ClaimFee != null && Model.ProjectActive)
+            @if (Model.IsPaymentsEnabled && Model.Status.IsActive())
             {
-            <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
-                    aria-expanded="false">
-                <span class="glyphicon glyphicon-usd"></span> Отметить взнос
-            </button>
+                <div class="btn-group">
+
+                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#financeClaimActionPanel"
+                            aria-expanded="false">
+                        <span class="glyphicon glyphicon-usd"></span> Отметить взнос
+                    </button>
+
+
+
+
+                    @if (Model.ClaimFee.PreferentialFeeEnabled && !Model.ClaimFee.PreferentialFeeUser)
+                    {
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="caret"></span>
+                            <span class="sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="modal" data-target="#requestPreferentialFeeModal">Запросить льготу</a></li>
+                        </ul>
+                    }
+                </div>
             }
             @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.DeclinedByUser))
             {
@@ -425,6 +443,15 @@
     </div>
 </div>
 
+@Html.Partial("RequestPreferentialFeeModal",  new MarkMeAsPreferentialViewModel()
+{
+    ProjectId = Model.ProjectId,
+    ClaimId = Model.ClaimId,
+    OperationDate = DateTime.UtcNow,
+    CommentDiscussionId = Model.CommentDiscussionId,
+    PreferentialFeeConditions = Model.ClaimFee.PreferentialFeeConditions
+})
+
 <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
         <div class="panel-heading">Отозвать заявку</div>
         <div class="panel-body">
@@ -454,11 +481,6 @@
                     @Html.AntiForgeryToken()
 
                     @Html.Partial("_EditFieldsPartial", Model.Fields)
-
-                    if (Model.Fields.Fields.Any(f => f.HasPrice))
-                    {
-                        Html.RenderPartial("_ClaimFieldsSubtotal", Model.ClaimFee.FieldsTotalFee);
-                    }
 
                     if (Model.Fields.Fields.Any(f => f.CanEdit))
                     {

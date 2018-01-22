@@ -1,4 +1,4 @@
-﻿using System.Web.Mvc;
+using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace JoinRpg.Web
@@ -54,7 +54,10 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "GroupAddClaim", url: "{ProjectId}/roles/{CharacterGroupId}/apply",
         defaults: new {controller = "Claim", action = "AddForGroup"});
 
-      routes.MapRoute(name: "GroupListClaim", url: "{ProjectId}/roles/{CharacterGroupId}/claims",
+        routes.MapRoute(name: "GroupAddClaimInRoot", url: "{ProjectId}/apply",
+            defaults: new { controller = "Claim", action = "AddForGroup" });
+
+            routes.MapRoute(name: "GroupListClaim", url: "{ProjectId}/roles/{CharacterGroupId}/claims",
         defaults: new {controller = "ClaimList", action = "ListForGroup"});
 
       routes.MapRoute(name: "GroupListClaimDirect", url: "{ProjectId}/roles/{CharacterGroupId}/discussing",
@@ -168,7 +171,7 @@ namespace JoinRpg.Web
       routes.MapRoute(
         name: "Default",
         url: "{controller}/{action}/{id}",
-        defaults: new {controller = "Home", action = "Index", id = UrlParameter.Optional}
+        defaults: new {controller = "Home", action = "Index", id = UrlParameter.Optional, area = ""}
         );
 
     }

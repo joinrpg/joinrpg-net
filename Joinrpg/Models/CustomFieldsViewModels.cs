@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
@@ -73,6 +73,8 @@ namespace JoinRpg.Web.Models
 
     public IHtmlString Description { get; }
 
+      public IHtmlString MasterDescription { get; }
+
         /// <summary>
         /// Field's price as specified in field's definition
         /// </summary>
@@ -83,76 +85,91 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public bool HasPrice { get; }
 
-        private bool GetHasPrice() { return HasPrice; }
+        /// <summary>
+        /// true if price information should be visible
+        /// </summary>
+        public bool ShowPrice { get; }
 
         /// <summary>
         /// Actual fee has to be paid by the player
         /// </summary>
-        public int Fee { get; set; }
+        public int Fee { get; }
 
     public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
     [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
     [NotNull]
     public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
-    public FieldValueViewModel(
-      CustomFieldsViewModel model,
-      [NotNull] FieldWithValue ch,
-      ILinkRenderer renderer)
-    {
-      if (ch == null) throw new ArgumentNullException(nameof(ch));
 
-      Value = ch.Value;
+      public FieldValueViewModel(
+          CustomFieldsViewModel model,
+          [NotNull] FieldWithValue ch,
+          ILinkRenderer renderer)
+      {
+          if (ch == null) throw new ArgumentNullException(nameof(ch));
 
-      DisplayString = ch.Field.SupportsMarkdown()
-        ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
-        : ch.DisplayString.SanitizeHtml();
-      FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
-      FieldName = ch.Field.FieldName;
-      Description = ch.Field.Description.ToHtmlString();
+          Value = ch.Value;
 
-      IsPlayerVisible = ch.Field.CanPlayerView;
-      IsDeleted = !ch.Field.IsActive;
+          DisplayString = ch.Field.SupportsMarkdown()
+              ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
+              : ch.DisplayString.SanitizeHtml();
+          FieldViewType = (ProjectFieldViewType) ch.Field.FieldType;
+          FieldName = ch.Field.FieldName;
 
-      HasValue = ch.HasViewableValue;
+          HasMasterAccess = model.AccessArguments.MasterAccess;
+          Description = ch.Field.Description.ToHtmlString();
 
-      var hasViewAccess = ch.HasViewableValue
-        && ch.HasViewAccess(model.AccessArguments);
+          MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : MvcHtmlString.Empty;
 
-      CanView = hasViewAccess && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+          IsPlayerVisible = ch.Field.CanPlayerView;
+          IsDeleted = !ch.Field.IsActive;
 
-      CanEdit = model.EditAllowed 
-        && ch.HasEditAccess(model.AccessArguments, model.Target)
-        && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+          HasValue = ch.HasViewableValue;
+
+          var hasViewAccess = ch.HasViewableValue
+                              && ch.HasViewAccess(model.AccessArguments);
+
+          CanView = hasViewAccess &&
+                    (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+
+          CanEdit = model.EditAllowed
+                    && ch.HasEditAccess(model.AccessArguments)
+                    && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
-            // Detecting if field (or its values) has a price or not
-            HasPrice = FieldViewType.SupportsPricing() &&
-                ((FieldViewType.SupportsPricingOnField() && ch.Field.Price != 0)
-                 || (!FieldViewType.SupportsPricingOnField() && ch.GetPossibleValues().Any(v => v.Price != 0)));
+          // Detecting if field (or its values) has a price or not
+          HasPrice = ch.SupportsPricing();
 
-            //if not "HasValues" types, will be empty
-            ValueList = ch.GetDropdownValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
-            PossibleValueList = ch.GetPossibleValues().Select(v => new FieldPossibleValueViewModel(v, HasPrice, 
-                ValueList.Any(sv => sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId))).ToArray();
+          //if not "HasValues" types, will be empty
+          ValueList = ch.GetDropdownValues()
+              .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
+          PossibleValueList = ch.GetPossibleValues(model.AccessArguments).Select(v => new FieldPossibleValueViewModel(v,
+                  HasPrice,
+                  ValueList.Any(sv =>
+                      sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
+              .ToArray();
 
-            if (HasPrice)
-            {
-                if (FieldViewType.SupportsPricingOnField())
-                    Price = ch.Field.Price;
-                Fee = ch.GetCurrentFee();
-            }
+          if (HasPrice)
+          {
+              if (FieldViewType.SupportsPricingOnField())
+                  Price = ch.Field.Price;
+              Fee = ch.GetCurrentFee();
+          }
 
-            ProjectFieldId = ch.Field.ProjectFieldId;
+          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
 
-      FieldBound =  (FieldBoundToViewModel) ch.Field.FieldBoundTo;
-      MandatoryStatus = IsDeleted ? MandatoryStatusViewType.Optional : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
+          ProjectFieldId = ch.Field.ProjectFieldId;
 
-      ProjectId = ch.Field.ProjectId;
+          FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
+          MandatoryStatus = IsDeleted
+              ? MandatoryStatusViewType.Optional
+              : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
 
-    }
+          ProjectId = ch.Field.ProjectId;
 
-        public MandatoryStatusViewType MandatoryStatus { get; }
+      }
+
+      public MandatoryStatusViewType MandatoryStatus { get; }
 
     public FieldBoundToViewModel FieldBound { get; }
     public int ProjectId { get; }
@@ -167,7 +184,6 @@ namespace JoinRpg.Web.Models
 
     public class CustomFieldsViewModel
     {
-        private int? CurrentUserId { get; }
         public AccessArguments AccessArguments { get; }
         public bool EditAllowed { get; }
         public IClaimSource Target { get; }
@@ -180,19 +196,37 @@ namespace JoinRpg.Web.Models
         public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new Dictionary<FieldBoundToViewModel, int>();
 
         /// <summary>
+        /// Total number of fields with fee
+        /// </summary>
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new Dictionary<FieldBoundToViewModel, int>();
+
+        /// <summary>
+        /// Returns true if there is at least one field with fee
+        /// </summary>
+        public bool HasFieldsWithFee { get; private set; }
+
+        /// <summary>
+        /// Returns true if fields subtotal row should be shown
+        /// </summary>
+        public bool ShowFieldsSubtotal
+            => HasFieldsWithFee && AccessArguments.AnyAccessToCharacter;
+
+        /// <summary>
         /// Initializes dictionaries
         /// </summary>
         private void InitTotals()
         {
             foreach (FieldBoundToViewModel key in Enum.GetValues(typeof(FieldBoundToViewModel)))
+            {
                 FieldsFee[key] = 0;
+                FieldWithFeeCount[key] = 0;
+            }
         }
 
         /// <summary>
         /// Returns sum of fees of all fields
         /// </summary>
-        public int FieldsTotalFee
-            => FieldsFee.Sum(kv => kv.Value);
+        public int FieldsTotalFee => FieldsFee.Sum(kv => kv.Value);
 
         /// <summary>
         /// Common constructor
@@ -207,8 +241,6 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public CustomFieldsViewModel(int? currentUserId, IClaimSource target) : this()
         {
-            CurrentUserId = currentUserId;
-
             AccessArguments = new AccessArguments(
               target.HasMasterAccess(currentUserId),
               playerAccessToCharacter: false,
@@ -222,7 +254,7 @@ namespace JoinRpg.Web.Models
 
             Fields =
               target.Project.GetFieldsNotFilled()
-                .Select(ch => CreateFieldValueView(this, ch, renderer))
+                .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToList();
         }
 
@@ -234,6 +266,7 @@ namespace JoinRpg.Web.Models
         /// - print character
         /// </summary>
         /// <param name="currentUserId">ID of the currect user logged in</param>
+        /// <param name="character">Character to print</param>
         /// <param name="disableEdit">disable editing (incl. cases where it's done to speeds up the app)</param>
         /// <param name="onlyPlayerVisible">
         /// Used for printing, when the user who prints has master access,
@@ -248,7 +281,6 @@ namespace JoinRpg.Web.Models
           bool wherePrintEnabled = false) : this()
         {
             EditAllowed = !disableEdit && character.Project.Active;
-            CurrentUserId = currentUserId;
             if (onlyPlayerVisible)
             {
                 AccessArguments = new AccessArguments(
@@ -269,7 +301,7 @@ namespace JoinRpg.Web.Models
                 .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
                 .ToList()
                 .FillIfEnabled(character.ApprovedClaim, character)
-                .Select(ch => CreateFieldValueView(this, ch, joinrpgMarkdownLinkRenderer))
+                .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
                 .ToArray();
         }
 
@@ -278,8 +310,6 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public CustomFieldsViewModel(int? currentUserId, Claim claim) : this()
         {
-            CurrentUserId = currentUserId;
-
             AccessArguments = new AccessArguments(claim, currentUserId);
 
             Target = claim.GetTarget();
@@ -291,19 +321,23 @@ namespace JoinRpg.Web.Models
               claim.Project.GetFieldsNotFilled()
                 .ToList()
                 .FillIfEnabled(claim, claim.IsApproved ? claim.Character : null)
-                .Select(ch => CreateFieldValueView(this, ch, renderer))
+                .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToArray();
         }
 
         /// <summary>
         /// Creates field value view object
         /// </summary>
-        protected FieldValueViewModel CreateFieldValueView(CustomFieldsViewModel vm, FieldWithValue fv, ILinkRenderer renderer)
+        private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer)
         {
             FieldValueViewModel result = new FieldValueViewModel(this, fv, renderer);
             // Here is the point to calculate total fee
             if (result.HasPrice)
+            {
                 FieldsFee[result.FieldBound] += result.Fee;
+                FieldWithFeeCount[result.FieldBound]++;
+                HasFieldsWithFee = true;
+            }
             return result;
         }
 

@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
@@ -47,5 +48,21 @@ namespace JoinRpg.Domain
       CoMaster,
       Administrator
     }
+
+        [NotNull]
+      public static string GetDisplayName([NotNull] this User user)
+      {
+          if (user == null) throw new ArgumentNullException(nameof(user));
+
+          if (!string.IsNullOrWhiteSpace(user.PrefferedName))
+          {
+              return user.PrefferedName;
+          }
+          if (!string.IsNullOrWhiteSpace(user.FullName))
+          {
+              return user.FullName;
+          }
+          return user.Email.TakeWhile(ch => ch != '@').AsString();
+      }
   }
 }

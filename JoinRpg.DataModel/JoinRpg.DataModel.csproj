@@ -52,6 +52,7 @@
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
+    <Compile Include="ClaimExtensionsTemp.cs" />
     <Compile Include="Comment.cs" />
     <Compile Include="CommentDiscussion.cs" />
     <Compile Include="FinanceOperation.cs" />

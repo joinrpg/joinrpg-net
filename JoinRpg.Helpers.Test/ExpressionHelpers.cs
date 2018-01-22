@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Helpers.Test
 {
-  [TestClass]
+  
   public class ExpressionHelpers
   {
     // ReSharper disable once ClassNeverInstantiated.Local
@@ -14,12 +14,12 @@ namespace JoinRpg.Helpers.Test
       public int Prop { get; set; }
     }
 
-    [TestMethod]
+    [Fact]
     public void TestAsPropertyName()
     {
       Expression<Func<AnonClass,int>> lambda = foo => foo.Prop;
 
-      Assert.AreEqual("Prop", lambda.AsPropertyName());
+        lambda.AsPropertyName().ShouldBe("Prop");
     }
   }
 }

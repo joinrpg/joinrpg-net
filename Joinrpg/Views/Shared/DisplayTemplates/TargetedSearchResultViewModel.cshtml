@@ -1,0 +1,15 @@
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Models
+@model TargetedSearchResultViewModel
+
+<div>
+    <h4>
+        @Model.LinkType.GetDisplayName()
+        <a
+            style="@(Model.SearchResult.IsActive ? "" : "text-decoration: line-through");"
+            href="@Model.Url"> @Model.SearchResult.Name</a>
+    </h4>
+    <p style="margin-left: 2em;margin-bottom: 1.5em;">
+        @Model.GetFormattedDescription(maxLengthToShow: 200)
+    </p>
+</div>

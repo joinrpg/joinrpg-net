@@ -1,15 +1,15 @@
-﻿using JoinRpg.DataModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using JoinRpg.DataModel;
+using Shouldly; using Xunit;
 
 namespace JoinRpg.Domain.Test
 {
-  [TestClass]
+  
   public class ClaimSourceExtensionsTest
   {
-    [TestMethod]
+    [Fact]
     public void CharacterGroupIsNeverNpc()
     {
-      Assert.IsFalse(new CharacterGroup().IsNpc());
+      new CharacterGroup().IsNpc().ShouldBeFalse();
     }
   }
 }

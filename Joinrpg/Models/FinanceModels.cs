@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
@@ -13,15 +14,61 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
 {
-  public class FinanceViewModelBase : AddCommentViewModel
-  {
-    [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
-    public DateTime OperationDate
-    { get; set; }
 
-    [ReadOnly(true)]
-    public bool ClaimApproved { get; set; }
-  }
+    public static class FinanceOperationStateViewExtension
+    {
+
+        /// <summary>
+        /// Returns title of operation state
+        /// </summary>
+        public static string ToTitleString(this FinanceOperationState self)
+        {
+            switch (self)
+            {
+                case FinanceOperationState.Approved:
+                    return "Подтверждено";
+                case FinanceOperationState.Proposed:
+                    return "Ожидает подтверждения";
+                case FinanceOperationState.Declined:
+                    return "Отклонено";
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// Returns row class for detailed payments view
+        /// </summary>
+        public static string ToRowClass(this FinanceOperationState self)
+        {
+            switch (self)
+            {
+                case FinanceOperationState.Proposed:
+                    return "unapprovedPayment";
+                case FinanceOperationState.Declined:
+                    return "unapprovedPayment danger";
+                default:
+                    return "";
+            }
+        }
+    }
+
+
+    public class FinanceViewModelBase : AddCommentViewModel
+    {
+        [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
+        public DateTime OperationDate { get; set; }
+
+        [ReadOnly(true)]
+        public bool ClaimApproved { get; set; }
+
+        public int ClaimId { get; set; }
+    }
+
+    public class MarkMeAsPreferentialViewModel : FinanceViewModelBase
+    {
+        public IHtmlString PreferentialFeeConditions { get; set; }
+    }
 
   public class FeeAcceptanceViewModel : FinanceViewModelBase
   {
@@ -40,8 +87,6 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasUnApprovedPayments { get; set; }
-
-    public int ClaimId { get; set; }
   }
 
   public class FinOperationListViewModel : IOperationsAwareView
@@ -185,11 +230,13 @@ namespace JoinRpg.Web.Models
 
       CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
 
-      GlobalSettings = new FinanceGlobalSettingsViewModel
-      {
-        ProjectId = ProjectId,
-        WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment
-      };
+        GlobalSettings = new FinanceGlobalSettingsViewModel
+        {
+            ProjectId = ProjectId,
+            WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment,
+            PreferentialFeeEnabled = project.Details.PreferentialFeeEnabled,
+            PreferentialFeeConditions = project.Details.PreferentialFeeConditions.Contents,
+        };
     }
   }
 
@@ -235,42 +282,58 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public abstract class ProjectFeeSettingViewModelBase
-  {
-    [Display(Name="Размер взноса")]
-    public int Fee { get; set; }
-    [Display(Name = "Действует с")]
-    public DateTime StartDate { get; set; }
-
-    public int ProjectId { get; set; }
-  }
-
-  public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
-  {
-    
-  }
-
-  public class ProjectFeeSettingListItemViewModel : ProjectFeeSettingViewModelBase
-  {
-    public bool IsActual { get; }
-    public int ProjectFeeSettingId { get; }
-
-    public ProjectFeeSettingListItemViewModel(ProjectFeeSetting fs)
+    public abstract class ProjectFeeSettingViewModelBase
     {
-      Fee = fs.Fee;
-      StartDate = fs.StartDate;
-      IsActual = fs.StartDate > DateTime.UtcNow;
-      ProjectFeeSettingId = fs.ProjectFeeSettingId;
-      ProjectId = fs.ProjectId;
-    }
-  }
+        [Display(Name = "Размер взноса")]
+        public int Fee { get; set; }
 
-  public class FinanceGlobalSettingsViewModel
-  {
-    public int ProjectId { get; set; }
-    [Display(
-      Name="Предупреждать о переплате в заявках", 
-      Description = "Показывать предупреждение, если в заявке заплачено больше установленного взноса. Выключите, если вы собираете пожертвования и готовы принять любую сумму.")]
-    public bool WarnOnOverPayment { get; set; }
-  }
+        [Display(Name = "Размер льготного взноса")]
+        public int? PreferentialFee { get; set; }
+
+        [Display(Name = "Действует с")]
+        public DateTime StartDate { get; set; }
+
+        public int ProjectId { get; set; }
+    }
+
+    public class CreateProjectFeeSettingViewModel : ProjectFeeSettingViewModelBase
+    {
+        public bool PreferentialFeeEnabled { get; set; }
+    }
+
+    public class ProjectFeeSettingListItemViewModel : ProjectFeeSettingViewModelBase
+    {
+        public bool IsActual { get; }
+        public int ProjectFeeSettingId { get; }
+
+        public ProjectFeeSettingListItemViewModel(ProjectFeeSetting fs)
+        {
+            Fee = fs.Fee;
+            PreferentialFee = fs.PreferentialFee;
+            StartDate = fs.StartDate;
+            IsActual = fs.StartDate > DateTime.UtcNow;
+            ProjectFeeSettingId = fs.ProjectFeeSettingId;
+            ProjectId = fs.ProjectId;
+        }
+    }
+
+    public class FinanceGlobalSettingsViewModel
+    {
+        public int ProjectId { get; set; }
+
+        [Display(
+            Name = "Предупреждать о переплате в заявках",
+            Description =
+                "Показывать предупреждение, если в заявке заплачено больше установленного взноса. Выключите, если вы собираете пожертвования и готовы принять любую сумму.")]
+        public bool WarnOnOverPayment { get; set; }
+
+        [Display(Name = "Включить льготный взнос",
+            Description = "Включить возможность настройки пониженного взноса для некоторых категорий игроков. Мы рекомендуем предоставлять скидку студентам дневных отделений и школьникам.")]
+        public bool PreferentialFeeEnabled { get; set; }
+
+        [Display(Name = "Условия льготного взноса",
+             Description = " Будет показываться игрокам, претендующим на льготный взнос."),
+         UIHint("MarkdownString")]
+        public string PreferentialFeeConditions { get; set; }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -171,7 +171,7 @@ namespace JoinRpg.Web.Controllers.Common
     [Obsolete]
     protected Task<FileContentResult> Export<T>(IEnumerable<T> select, string fileName, ExportType exportType = ExportType.Csv)
     {
-      ExportDataService.BindDisplay<User>(user => user?.DisplayName);
+      ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
       var generator = ExportDataService.GetGenerator(exportType, select);
       return  ReturnExportResult(fileName, generator);
     }

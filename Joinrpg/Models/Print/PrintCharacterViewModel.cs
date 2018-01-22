@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
 
@@ -25,7 +26,7 @@ namespace JoinRpg.Web.Models.Print
     public PrintCharacterViewModelSlim(Character character)
     {
       CharacterName = character.CharacterName;
-      FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.CurrentFee();
+      FeeDue = character.ApprovedClaim?.ClaimFeeDue() ?? character.Project.ProjectFeeInfo()?.Fee ?? 0;
       ProjectName = character.Project.ProjectName;
 
       Groups =
@@ -35,7 +36,7 @@ namespace JoinRpg.Web.Models.Print
           .Select(g => new CharacterGroupWithDescViewModel(g))
           .ToArray();
       ResponsibleMaster = character.GetResponsibleMaster();
-      PlayerDisplayName = character.ApprovedClaim?.Player.DisplayName;
+      PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName();
       PlayerFullName = character.ApprovedClaim?.Player.FullName;
     }
   }
@@ -50,14 +51,14 @@ namespace JoinRpg.Web.Models.Print
     public bool RegistrationOnHold => FeeDue > 0 && Plots.HasUnready;
 
     public PrintCharacterViewModel 
-      (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots)
+      (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
       : base(character)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
       CharacterDescription = character.Description.ToHtmlString();
       
       var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
-      Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character);
+      Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService);
 
       Handouts =
         plotElements.Where(e => e.ElementType == PlotElementType.Handout && e.IsActive)
