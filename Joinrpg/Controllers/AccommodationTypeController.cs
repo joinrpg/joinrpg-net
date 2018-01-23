@@ -34,7 +34,12 @@ namespace JoinRpg.Web.Controllers
                     Cost = x.Cost,
                     ProjectId = x.ProjectId,
                     Id = x.Id,
-                    Capacity = x.ProjectAccommodations.Sum(c => c.Capacity)
+                    Capacity = x.Capacity,
+                    Description = x.Description,
+                    IsAutoFilledAccommodation = x.IsAutoFilledAccommodation,
+                    IsInfinite = x.IsInfinite,
+                    IsPlayerSelectable = x.IsPlayerSelectable,
+                    Accommodations = x.ProjectAccommodations.Select(projectAccomodaion => new ProjectAccommodationViewModel(projectAccomodaion)).ToList()
                 }
               ).ToList();
             if (project == null) return HttpNotFound();
@@ -57,19 +62,19 @@ namespace JoinRpg.Web.Controllers
                 return View(model);
             }
             await _accommodationService.RegisterNewAccommodationTypeAsync(model.GetProjectAccommodationTypeMock()).ConfigureAwait(false);
-            return RedirectToAction("Index", routeValues: new {model.ProjectId });
+            return RedirectToAction("Index", routeValues: new { model.ProjectId });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ProjectAccommodationEdit(ProjectAccommodationVewModel model)
+        public async Task<ActionResult> ProjectAccommodationEdit(ProjectAccommodationViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
             await _accommodationService.RegisterNewProjectAccommodationAsync(model.GetProjectAccommodationMock()).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new {model.ProjectId, AccomodationId = model.AccommodationTypeId });
+            return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.AccommodationTypeId });
         }
 
 
@@ -96,7 +101,7 @@ namespace JoinRpg.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
             ViewBag.AccomodationName = $"«{model.Project.ProjectName}\\{model.ProjectAccommodationType.Name}»";
-            return View("ProjectAccommodationEdit", new ProjectAccommodationVewModel(model));
+            return View("ProjectAccommodationEdit", new ProjectAccommodationViewModel(model));
         }
 
         [HttpDelete]
@@ -114,7 +119,7 @@ namespace JoinRpg.Web.Controllers
         public async Task<ActionResult> ProjectAccommodationDelete(int projectId, int accommodationTypeId, int projectAccommodationId)
         {
             await _accommodationService.RemoveProjectAccommodation(projectAccommodationId).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { ProjectId = projectId, AccomodationId = accommodationTypeId });
+            return RedirectToAction("Edit", routeValues: new { ProjectId = projectId, AccommodationId = accommodationTypeId });
         }
     }
 }

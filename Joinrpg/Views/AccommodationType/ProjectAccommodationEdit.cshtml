@@ -1,17 +1,17 @@
-﻿@using JoinRpg.Web.Models.Accomodation
-@model JoinRpg.Web.Models.Accomodation.ProjectAccomodationVewModel
+﻿
+@model JoinRpg.Web.Models.Accommodation.ProjectAccommodationViewModel
 @{
     ViewBag.IsInEditMode = false;
     ViewBag.ActionName = "Добавить";
     if (Model.Id != 0)
     {
-        ViewBag.Title = "Редактирование помещения для " + ViewBag.AccomodationName;
+        ViewBag.Title = "Редактирование помещения для " + ViewBag.AccommodationName;
         <h2>@ViewBag.Title</h2>
         ViewBag.ActionName = "Изменить";
         ViewBag.IsInEditMode = true;
     }
 }
-@using (Html.BeginForm("ProjectAccomodationEdit", "AccomodationType", new { projectId = Model.ProjectId, Id = Model.Id, AccomodationTypeId = Model.AccomodationTypeId }, FormMethod.Post))
+@using (Html.BeginForm("ProjectAccommodationEdit", "AccommodationType", new { projectId = Model.ProjectId, Id = Model.Id, AccommodationTypeId = Model.AccommodationTypeId }, FormMethod.Post))
 {
 
     @Html.AntiForgeryToken()
@@ -31,43 +31,12 @@
             </div>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Capacity, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Capacity, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Capacity, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.IsInfinite, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.CheckBoxFor(model => model.IsInfinite, new { htmlAttributes = new { @class = "form-control" } })
-
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.IsAutofilledAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.CheckBoxFor(model => model.IsAutofilledAccomodation, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Capacity, "", new { @class = "text-danger" })
-            </div>
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(model => model.IsPlayerSelectable, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.CheckBoxFor(model => model.IsPlayerSelectable, new { htmlAttributes = new { @class = "form-control" } })
-            </div>
-        </div>
-
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-8">
                 @if (ViewBag.IsInEditMode)
                 {
-                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, accomodationId = Model.AccomodationTypeId, action = "Edit", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
+                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, accommodationId = Model.AccommodationTypeId, action = "Edit", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
                 }
 
                 <button type="submit" class="btn btn-primary pull-right">@ViewBag.ActionName</button>

@@ -60,6 +60,7 @@ namespace JoinRpg.Services.Impl
             _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
             _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
             _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
+            _accomodationRepository = new Lazy<IAccommodationRepository>(UnitOfWork.GetAccomodationRepository);
             _charactersRepository =
                 new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
 

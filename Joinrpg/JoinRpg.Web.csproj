@@ -217,7 +217,7 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationTypeViewModel.cs" />
-    <Compile Include="Models\Accommodation\ProjectAccommodationVewModel.cs" />
+    <Compile Include="Models\Accommodation\ProjectAccommodationViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />

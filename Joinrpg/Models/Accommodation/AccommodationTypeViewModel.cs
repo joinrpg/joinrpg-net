@@ -14,6 +14,10 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Название")]
         [Required]
         public string Name { get; set; }
+
+        [DisplayName("Description")]
+        public string Description { get; set; }
+
         [DisplayName("Стоимость проживания")]
         [Range(0, Int32.MaxValue)]
         public int Cost { get; set; }
@@ -21,12 +25,23 @@ namespace JoinRpg.Web.Models.Accommodation
         public int Id { get; set; }
         public int ProjectId { get; set; }
         public Project Project { get; set; }
-        [DisplayName("Объем номерного фонда")]
+
+        [DisplayName("Количество мест в номере")]
         public int Capacity { get; set; }
+        [DisplayName("Бесконечное поселение")]
+        public bool IsInfinite { get; set; } = false;
+        [DisplayName("Игроки могут выбрать данный тип проживания")]
+        public bool IsPlayerSelectable { get; set; } = true;
+        [DisplayName("Автозаполнение")]
+        public bool IsAutoFilledAccommodation { get; set; } = false;
+
+        [DisplayName("Объем номерного фонда данного типа")]
+        public int TotalCapacity => Capacity * (Accommodations == null ? 0 : Accommodations.Count);
+
         [DisplayName("Проживает")]
         public int UsedSpace { get; set; }
 
-        public  ICollection<ProjectAccommodationVewModel> Accommodations { get; set; }
+        public ICollection<ProjectAccommodationViewModel> Accommodations { get; set; }
         public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
@@ -38,8 +53,13 @@ namespace JoinRpg.Web.Models.Accommodation
             Id = entity.Id;
             Cost = entity.Cost;
             Name = entity.Name;
-            Accommodations = ProjectAccommodationVewModel.NewListCollection(entity.ProjectAccommodations);
-            Capacity = Accommodations.Sum(x=>x.Capacity);
+            Capacity = entity.Capacity;
+            IsInfinite = entity.IsInfinite;
+            IsPlayerSelectable = entity.IsPlayerSelectable;
+            IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
+            Description = entity.Description;
+            Accommodations = ProjectAccommodationViewModel.NewListCollection(entity.ProjectAccommodations);
+
         }
 
         public AccommodationTypeViewModel()
@@ -53,7 +73,13 @@ namespace JoinRpg.Web.Models.Accommodation
                 ProjectId = ProjectId,
                 Id = Id,
                 Cost = Cost,
-                Name = Name
+                Name = Name,
+                Capacity = Capacity,
+                Description = Description,
+                IsInfinite = IsInfinite,
+                IsPlayerSelectable = IsPlayerSelectable,
+                IsAutoFilledAccommodation = IsAutoFilledAccommodation
+
             };
         }
     }

@@ -12,18 +12,26 @@
     <thead>
     <th>Тип размещения</th>
     <th>Стоимость</th>
-    <th>Занято/Всего</th>
+    <th>Мест</th>
+    <th>Всего мест</th>
+    <th>Бесконечное</th>
+    <th>Выбираемое</th>
+    <th>Автозаполнение</th>
     <th>Действия</th>
     </thead>
-    @foreach (var atype in Model.AccommodationTypes)
+    @foreach (var accommodationType in Model.AccommodationTypes)
     {
         <tr>
-            <td>@atype.Name</td>
-            <td>@atype.Cost</td>
-            <td>@atype.UsedSpace/@atype.Capacity</td>
+            <td>@accommodationType.Name</td>
+            <td>@accommodationType.Cost</td>
+            <td>@accommodationType.Capacity</td>
+            <td>@accommodationType.TotalCapacity</td>
+            <td>@accommodationType.IsInfinite</td>
+            <td>@accommodationType.IsPlayerSelectable</td>
+            <td>@accommodationType.IsAutoFilledAccommodation</td>
             <td>
-                @Html.RouteLink("Изменить", new { accommodationId = atype.Id, projectId = atype.ProjectId, action = "Edit", Controller = "AccommodationType" }, new { @class = "btn btn-default" })
-                @using (Html.BeginForm("Delete", "AccommodationType", new { accomodationTypeId = atype.Id, projectId = atype.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
+                @Html.RouteLink("Изменить", new { accommodationId = accommodationType.Id, ProjectId = accommodationType.ProjectId, action = "Edit", Controller = "AccommodationType" }, new { @class = "btn btn-default" })
+                @using (Html.BeginForm("Delete", "AccommodationType", new { accommodationTypeId = accommodationType.Id, projectId = accommodationType.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.HttpMethodOverride(HttpVerbs.Delete)
@@ -34,5 +42,5 @@
     }
 
 </table>
-<hr />
-@Html.Partial("Edit", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() { ProjectId = Model.ProjectId })
+<hr/>
+@Html.Partial("Edit", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() {ProjectId = Model.ProjectId})

@@ -25,6 +25,12 @@ namespace JoinRpg.Services.Impl
                 }
                 result.Name = newAccommodation.Name;
                 result.Cost = newAccommodation.Cost;
+                result.Capacity = newAccommodation.Capacity;
+                result.Description = newAccommodation.Description;
+                result.IsAutoFilledAccommodation = newAccommodation.IsAutoFilledAccommodation;
+                result.IsInfinite = newAccommodation.IsInfinite;
+                result.IsPlayerSelectable = newAccommodation.IsPlayerSelectable;
+
             }
             else
             {
@@ -49,10 +55,6 @@ namespace JoinRpg.Services.Impl
                         newProjectAccommodation.Id);
                 }
                 result.Name = newProjectAccommodation.Name;
-                result.Capacity = newProjectAccommodation.Capacity;
-                result.IsPlayerSelectable = newProjectAccommodation.IsPlayerSelectable;
-                result.IsAutoFilledAccommodation = newProjectAccommodation.IsAutoFilledAccommodation;
-                result.IsInfinite = newProjectAccommodation.IsInfinite;
             }
             else
             {

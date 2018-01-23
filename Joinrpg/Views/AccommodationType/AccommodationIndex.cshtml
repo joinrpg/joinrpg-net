@@ -1,50 +1,32 @@
 ﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models.Accomodation
-@model ICollection<JoinRpg.Web.Models.Accomodation.ProjectAccomodationVewModel>
+@using JoinRpg.Web.Models.Accommodation;
+@model ICollection<JoinRpg.Web.Models.Accommodation.ProjectAccommodationViewModel>
 <h2>Помещения для типа проживания @(ViewBag.TypeName ?? ViewData["TypeName"])</h2>
 <table class="table table-striped">
     <thead>
     <th>@Html.DisplayNameFor(m => m.First().Name)</th>
-    <th>@Html.DisplayNameFor(m => m.First().ConfirmedCount)</th>
-    <th>@Html.DisplayNameFor(m => m.First().NonConfirmedCount)</th>
-    <th>@Html.DisplayNameFor(m => m.First().Capacity)</th>
-    <th>@Html.DisplayNameFor(m => m.First().IsInfinite)</th>
-    <th>@Html.DisplayNameFor(m => m.First().IsAutofilledAccomodation)</th>
-    <th>@Html.DisplayNameFor(m => m.First().IsPlayerSelectable)</th>
     </thead>
-    @foreach (var accomodation in Model)
+    @foreach (var accommodation in Model)
     {
         <tr>
-            <td>@accomodation.Name</td>
-            <td>@accomodation.ConfirmedCount</td>
-            <td>@accomodation.NonConfirmedCount</td>
-            <td>@accomodation.Capacity</td>
-            <td>
-                <input type="checkbox" disabled="disabled" checked="@accomodation.IsInfinite" />
-            </td>
-            <td>
-                <input type="checkbox" disabled="disabled" checked="@accomodation.IsAutofilledAccomodation" />
-            </td>
-            <td>
-                <input type="checkbox" disabled="disabled" checked="@accomodation.IsPlayerSelectable" />
-            </td>
+            <td>@accommodation.Name</td>
             <td>
                 <div class="row">
-                    <button type="button" class="btn btn-default  col-xs-12">Проживающие (@accomodation.Inhabitants.Count)</button>
+                    <button type="button" class="btn btn-default  col-xs-12">Проживающие (@accommodation.Inhabitants.Count)</button>
                 </div>
                 <div class="row">
                     @Html.RouteLink("Изменить", new
                     {
-                        projectAccomodationId = accomodation.Id,
-                        projectId = accomodation.ProjectId,
-                        accomodationTypeId = accomodation.AccomodationTypeId,
-                        action = "ProjectAccomodationEdit",
-                        Controller = "AccomodationType"
+                        projectAccommodationId = accommodation.Id,
+                        projectId = accommodation.ProjectId,
+                        accomodationTypeId = accommodation.AccommodationTypeId,
+                        action = "ProjectAccommodationEdit",
+                        Controller = "AccommodationType"
                     }, new { @class = "btn btn-default  col-xs-12" })
                 </div>
-
+                
                 <div class="row">
-                    @using (Html.BeginForm("ProjectAccomodationDelete", "AccomodationType", new { projectId = accomodation.ProjectId, accomodationTypeId = accomodation.AccomodationTypeId, projectAccomodationId = accomodation.Id }, FormMethod.Post, new { @style = "display:block" }))
+                    @using (Html.BeginForm("ProjectAccommodationDelete", "AccommodationType", new { projectId = accommodation.ProjectId, accommodationTypeId = accommodation.AccommodationTypeId, projectAccommodationId = accommodation.Id }, FormMethod.Post, new { @style = "display:block" }))
                     {
                         @Html.AntiForgeryToken()
                         @Html.HttpMethodOverride(HttpVerbs.Delete)
