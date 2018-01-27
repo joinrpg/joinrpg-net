@@ -28,7 +28,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId);
 
-        Task<AccommodationRequest> CreateNewAccommodationRequest (int projectId, int claimId, int accommodationTypeId);
+        
 
         Task OccupyRoom(OccupyRequest request);
 

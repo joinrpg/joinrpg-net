@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
@@ -120,15 +121,47 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static Claim RequestAccess([CanBeNull] this Claim claim, int currentUserId)
-    {
-      if (claim == null) throw new ArgumentNullException(nameof(claim));
-      if (!claim.HasAnyAccess(currentUserId))
+      public static Claim RequestAccess([CanBeNull] this Claim claim, int currentUserId, Expression<Func<ProjectAcl, bool>> access, bool allowResponsible = false)
       {
-        throw new NoAccessToProjectException(claim, currentUserId);
+          if (claim == null) throw new ArgumentNullException(nameof(claim));
+          if (!claim.HasAnyAccess(currentUserId, access, allowResponsible))
+          {
+              throw new NoAccessToProjectException(claim, currentUserId);
+          }
+          return claim;
       }
-      return claim;
-    }
+
+      [NotNull]
+      public static Claim RequestMasterAccess([CanBeNull]
+          this Claim claim,
+          int currentUserId,
+          Expression<Func<ProjectAcl, bool>> access,
+          bool allowResponsible = false)
+      {
+          if (claim?.Project == null) throw new ArgumentNullException(nameof(claim));
+          if (!claim.HasMasterAccess(currentUserId, access, allowResponsible))
+          {
+              throw new NoAccessToProjectException(claim, currentUserId);
+          }
+
+          return claim;
+      }
+
+      private static bool HasAnyAccess(this Claim claim, int currentUserId, Expression<Func<ProjectAcl, bool>> access, bool allowResponsible = false)
+      {
+          return claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId, access, allowResponsible);
+        }
+
+      public static bool HasMasterAccess(this Claim claim, int currentUserId, Expression<Func<ProjectAcl, bool>> access, bool allowResponsible = false)
+      {
+          return (allowResponsible && claim.ResponsibleMasterUserId == currentUserId) ||
+                 ((IProjectEntity) claim).HasMasterAccess(currentUserId, access);
+      }
+
+        public static Claim RequestAccess([CanBeNull] this Claim claim, int currentUserId)
+        {
+            return claim.RequestAccess(currentUserId, acl => true, false);
+        }
 
     public static Claim RequestPlayerAccess([NotNull] this Claim claim, int currentUserId)
     {
@@ -161,13 +194,7 @@ namespace JoinRpg.Domain
       claim.ClaimStatus = targetStatus;
     }
 
-    public static bool CanManageClaim(this Claim claim, int currentUserId)
-    {
-      return claim.HasMasterAccess(currentUserId, acl => acl.CanManageClaims) ||
-             claim.ResponsibleMasterUserId == currentUserId;
-    }
-
-    [CanBeNull]
+      [CanBeNull]
     public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
     {
       if (claims == null) throw new ArgumentNullException(nameof(claims));

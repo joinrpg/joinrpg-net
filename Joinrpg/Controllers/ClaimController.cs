@@ -595,7 +595,7 @@ namespace JoinRpg.Web.Controllers
       public async Task<ActionResult> PostAccommodationRequest(
           AccommodationRequestViewModel viewModel)
       {
-          await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
+          await _claimService.SetAccommodationType(viewModel.ProjectId,
               viewModel.ClaimId,
               viewModel.AccommodationTypeId).ConfigureAwait(false);
           return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);

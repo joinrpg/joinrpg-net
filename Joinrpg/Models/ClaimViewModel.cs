@@ -121,7 +121,7 @@ namespace JoinRpg.Web.Models
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
           HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+          CanManageThisClaim = ClaimExtensions.HasMasterAccess(claim, currentUser.UserId, acl => acl.CanManageClaims, allowResponsible: true);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;

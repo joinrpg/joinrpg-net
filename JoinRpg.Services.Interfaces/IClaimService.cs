@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -29,7 +30,11 @@ namespace JoinRpg.Services.Interfaces
     Task CheckInClaim(int projectId, int claimId, int money);
     Task<int> MoveToSecondRole(int projectId, int claimId, int characterId);
 
-    Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
+      Task<AccommodationRequest> SetAccommodationType(int projectId, int claimId, int accommodationTypeId);
+
+        Task ConcealComment(int projectId, int commentId, int commentDiscussionId, int currentUserId);
+
+      
   }
 
     public enum FinanceOperationAction
