@@ -76,17 +76,20 @@
                      null,
                      AdminFunctions()
                      )
+            @RenderRow("rowAccommodationFee",
+                     Model.HasAccommodationFee,
+                     "Проживание",
+                     Html.RenderPriceElement(Model.AccommodationFee, "feeAccommodationDisp"),
+                     null)
             @RenderRow("rowClaimFee",
                      Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
                      "Опции заявки",
-                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim],
-                     "feeClaimFieldsDisp"),
+                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim], "feeClaimFieldsDisp"),
                      null)
             @RenderRow("rowCharacterFee",
                      Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
                      "Опции персонажа",
-                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character],
-                     "feeCharacterFieldsDisp"),
+                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character], "feeCharacterFieldsDisp"),
                      null)
             @foreach (var fo in Model.FinanceOperations)
             {
