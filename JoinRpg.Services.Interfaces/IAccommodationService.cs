@@ -30,7 +30,6 @@ namespace JoinRpg.Services.Interfaces
         Task OccupyRoom(OccupyRequest request);
 
         Task UnOccupyRoom(UnOccupyRequest request);
-
     }
 
     public class OccupyRequest

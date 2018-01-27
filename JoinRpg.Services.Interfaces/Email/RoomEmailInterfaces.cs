@@ -15,4 +15,9 @@ namespace JoinRpg.Services.Interfaces.Email
     public class UnOccupyRoomEmail : RoomEmailBase
     {
     }
+
+    public class LeaveRoomEmail : RoomEmailBase
+    {
+        public Claim Claim { get; set; }
+    }
 }

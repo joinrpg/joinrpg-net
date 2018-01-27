@@ -23,6 +23,7 @@ namespace JoinRpg.Services.Interfaces.Email
         Task Email(FieldsChangedEmail filedsEmail);
         Task Email(OccupyRoomEmail createClaimEmail);
         Task Email(UnOccupyRoomEmail email);
+        Task Email(LeaveRoomEmail email);
     }
 
     public static class EmailTokens

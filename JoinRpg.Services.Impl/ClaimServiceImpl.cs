@@ -405,26 +405,87 @@ namespace JoinRpg.Services.Impl
       claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
 
       claim.MasterDeclinedDate = Now;
+        claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
-      MarkCharacterChangedIfApproved(claim);
+       var roomEmail = await CommonClaimDecline(claim);
 
-      claim.ClaimStatus = Claim.Status.DeclinedByMaster;
-
-      if (claim.Character?.ApprovedClaim == claim)
-      {
-        claim.Character.ApprovedClaimId = null;
-      }
-
-      var email =
+        var email =
         await
           AddCommentWithEmail<DeclineByMasterEmail>(commentText, claim, true,
             s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
-    }
+        await EmailService.Email(roomEmail);
+        }
 
-    public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
+      private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
+      {
+          MarkCharacterChangedIfApproved(claim);
+
+
+          if (claim.Character?.ApprovedClaim == claim)
+          {
+              claim.Character.ApprovedClaimId = null;
+          }
+
+          LeaveRoomEmail email = null;
+
+            if (claim.AccommodationRequest != null)
+          {
+              if (claim.AccommodationRequest.Accommodation != null)
+              {
+                  
+                  email = new LeaveRoomEmail()
+                  {
+                      ChangedRequest = claim.AccommodationRequest,
+                      Initiator = await GetCurrentUser(),
+                      ProjectName = claim.Project.ProjectName,
+                      Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
+                      Room = claim.AccommodationRequest.Accommodation,
+                      Text = new MarkdownString()
+                  };
+              }
+
+              claim.AccommodationRequest.Subjects.Remove(claim);
+              if (!claim.AccommodationRequest.Subjects.Any())
+              {
+                  UnitOfWork.GetDbSet<AccommodationRequest>().Remove(claim.AccommodationRequest);
+              }
+          }
+
+              return email;
+      }
+
+      public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+      {
+          var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+          if (claim == null)
+          {
+              throw new DbEntityValidationException();
+          }
+          claim.RequestPlayerAccess(CurrentUserId);
+          claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
+
+          claim.PlayerDeclinedDate = Now;
+          claim.ClaimStatus = Claim.Status.DeclinedByUser;
+
+           var roomEmail = await CommonClaimDecline(claim);
+
+
+
+            var email =
+              await
+                  AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
+                      s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
+
+          await UnitOfWork.SaveChangesAsync();
+          await EmailService.Email(email);
+          await EmailService.Email(roomEmail);
+        }
+
+
+        public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
 
@@ -538,37 +599,6 @@ namespace JoinRpg.Services.Impl
       watermark.CommentId = maxCommentId;
       await UnitOfWork.SaveChangesAsync();
     }
-
-
-        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
-        {
-            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-            if (claim == null)
-            {
-                throw new DbEntityValidationException();
-            }
-            claim.RequestPlayerAccess(CurrentUserId);
-            claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
-
-            claim.PlayerDeclinedDate = Now;
-            MarkCharacterChangedIfApproved(claim);
-            claim.ClaimStatus = Claim.Status.DeclinedByUser;
-
-            if (claim.Character != null && claim.Character.ApprovedClaimId == claimId)
-            {
-                claim.Character.ApprovedClaimId = null;
-            }
-
-
-
-            var email =
-              await
-                AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
-                  s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
-
-            await UnitOfWork.SaveChangesAsync();
-            await EmailService.Email(email);
-        }
 
     private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,

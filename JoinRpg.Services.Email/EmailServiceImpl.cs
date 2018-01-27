@@ -284,6 +284,16 @@ namespace JoinRpg.Services.Email
             await SendRoomEmail(email, body);
         }
 
+        public async Task Email(LeaveRoomEmail email)
+        {
+            string body = $"{email.Claim.Player.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
+            if (email.Room.GetAllInhabitants().Any())
+            {
+                body += $"\n\nОстались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
+            }
+            await SendRoomEmail(email, body);
+        }
+
         public async Task Email(OccupyRoomEmail email)
         {
             var oldInhabitants = email.Room.GetAllInhabitants().Except(email.ChangedRequest.Subjects).ToList();
