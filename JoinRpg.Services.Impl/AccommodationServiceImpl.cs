@@ -128,6 +128,16 @@ namespace JoinRpg.Services.Impl
                 .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
         }
 
+        public Task OccupyRoom(OccupyRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task UnOccupyRoom(UnOccupyRequest request)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public async Task RemoveAccommodationType(int accomodationTypeId)
         {
             var entity = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(accomodationTypeId);

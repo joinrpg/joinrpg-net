@@ -27,5 +27,22 @@ namespace JoinRpg.Services.Interfaces
 
         Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId);
 
+        Task OccupyRoom(OccupyRequest request);
+
+        Task UnOccupyRoom(OccupyRequest request);
+
+    }
+
+    public class OccupyRequest
+    {
+        public int ProjectId { get; set; }
+        public int RoomId { get; set; }
+        public int AccommondationRequestId { get; set; }
+    }
+
+    public class UnOccupyRequest
+    {
+        public int ProjectId { get; set; }
+        public int AccommondationRequestId { get; set; }
     }
 }
