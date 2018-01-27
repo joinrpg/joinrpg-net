@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -109,7 +109,14 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Осталось")]
     public int FeeDue { get; }
 
-    public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
+      [Display(Name = "Тип поселения")]
+      public string AccomodationType { get; }
+
+
+      [Display(Name = "Комната")]
+      public string RoomName { get; }
+
+        public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
@@ -131,7 +138,10 @@ namespace JoinRpg.Web.Models
       Fields = claim.GetFields();
       FeePaid = claim.ClaimBalance();
       FeeDue = claim.ClaimFeeDue();
-    }
+
+        AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
+        RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+        }
 
     public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
     {
