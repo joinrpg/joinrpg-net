@@ -423,6 +423,7 @@
     <Compile Include="MyUserStore.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
     <Compile Include="Repositories\AccommodationRepositoryImpl.cs" />
+    <Compile Include="Repositories\AccommodationRequestRepositoryImpl.cs" />
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
     <Compile Include="Repositories\ClaimPredicates.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />

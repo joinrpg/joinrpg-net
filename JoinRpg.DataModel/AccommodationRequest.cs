@@ -27,7 +27,8 @@ namespace JoinRpg.DataModel
         {
             Unanswered,
             Accepted,
-            Declined
+            Declined,
+            Canceled
         }
     }
 }
