@@ -153,13 +153,13 @@ namespace JoinRpg.Web.Controllers
                 }
                 else
                 {
-                    return new ContentResult()
-                    {
-                        ContentType = "application/json",
-                        ContentEncoding = Encoding.UTF8,
-                        Content = JsonConvert.SerializeObject(
-                            _accommodationService.AddRooms(projectId, roomTypeId, name))
-                    };
+                    await _accommodationService.AddRooms(projectId, roomTypeId, name);
+                    return new HttpStatusCodeResult(HttpStatusCode.Created);
+                    //TODO: Fix problem with rooms IDs
+
+                    //return View("_AddedRoomsList",
+                    //    (await _accommodationService.AddRooms(projectId, roomTypeId, name))
+                    //        .Select(pa => new RoomViewModel(pa)));
                 }
             }
             catch

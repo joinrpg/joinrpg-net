@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models.Accommodation
             Name = entity.Name;
             ProjectId = entity.ProjectId;
             RoomTypeId = entity.AccommodationTypeId;
-            Capacity = entity.ProjectAccommodationType.Capacity;            
+            Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;            
         }
 
         public RoomViewModel(RoomTypeViewModel roomType)

@@ -7,16 +7,6 @@ var roomsRows = null;
 var rowPlaceholder = null;
 var dlgEditRoomName = null;
 
-function DeleteRoom(roomId)
-{
-    
-}
-
-function RenameRoom(roomId)
-{
-    alert("Not implemented");
-}
-
 function AddPeople(roomId)
 {
 
@@ -37,6 +27,17 @@ function AddRoom()
     dlgEditRoomName.edRoomName.focus();
 }
 
+function DeleteRoom(id)
+{
+    var row = roomsRows.GetRowById(id);
+    var name = row.getElementsByTagName("td").item(0).innerHTML;
+    if (confirm("Удалить комнату " + name + "?"))
+    {
+        $(row.bnDelete).prop("disabled", true);
+        DoDeleteRoom(id);
+    }
+}
+
 function RenameRoom(id)
 {
     var row = roomsRows.GetRowById(id);
@@ -55,12 +56,12 @@ function RenameRoom(id)
 
 function DoEditRoom(id, name)
 {
+    var row = null;
     if (id == null)
         id = "new";
-
-    if (id != null)
+    else
     {        
-        var row = roomsRows.GetRowById(id);
+        row = roomsRows.GetRowById(id);
         row.getElementsByTagName("td").item(0).innerHTML = name;
         $(row.bnRename).prop("disabled", true);
     }
@@ -71,12 +72,11 @@ function DoEditRoom(id, name)
         .done(function (data, status, xr)
         {
             if (id != "new")
-                $("#rename" + id).prop("disabled", false);
+                $(row.bnRename).prop("disabled", false);
 
             if (xr.status == 200)
             {
-                // have to parse JSON if is was new rooms
-
+                $(roomsRows).append(xr.responseText);
             }
             else if (xr.status == 500)
             {
@@ -91,7 +91,7 @@ function DoEditRoom(id, name)
         .fail(function (xr, status, error)
         {
             if (id != "new")
-                $("#rename" + id).prop("disabled", false);
+                $(row.bnRename).prop("disabled", false);
 
             ErrorEdit();
         });
@@ -99,12 +99,39 @@ function DoEditRoom(id, name)
 
 function DoDeleteRoom(id)
 {
-    var url = "/" + projectId + "/rooms/editroom?roomTypeId=" + roomTypeId + "&roomId=" + id;
+    var url = "/" + projectId + "/rooms/deleteroom?roomTypeId=" + roomTypeId + "&roomId=" + id;
+    var xr = $.ajax(url, { method: "DELETE" })
+        .done(function (data, status, xr)
+        {
+            if (xr.status == 200)
+            {
+                var row = roomsRows.GetRowById(id);
+                row.remove();
+            }
+            else if (xr.status == 500)
+            {
+                ErrorDelete();
+            }
+            else
+            {
+                // Unknown success code -- have to reload page
+                location.reload();
+            }
+        })
+        .fail(function (xr, status, error)
+        {
+            ErrorDelete();
+        });
 }
 
 function ErrorEdit()
 {
     alert("Произошла ошибка при добавлении или изменении комнат");
+}
+
+function ErrorDelete()
+{
+    alert("Произошла ошибка при попытке удаления комнаты")
 }
 
 function parseIntDef(value, def)
@@ -140,6 +167,8 @@ $(function ()
                 room.bnAddPeople = document.getElementById("add" + room.roomId);
                 room.bnKickPeople = document.getElementById("kick" + room.roomId);
                 room.bnRename = document.getElementById("rename" + room.roomId);
+                room.bnDelete = document.getElementById("delete" + room.roomId);
+                $(room.bnDelete).prop("disabled", room.occupancy > 0);
             }
         }
     }

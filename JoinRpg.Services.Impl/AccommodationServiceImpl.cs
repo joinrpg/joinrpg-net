@@ -142,7 +142,7 @@ namespace JoinRpg.Services.Impl
 
         }
 
-        public IEnumerable<ProjectAccommodation> AddRooms(int projectId, int roomTypeId, string rooms)
+        public async Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms)
         {
             ProjectAccommodationType roomType = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(roomTypeId);
             if (roomType == null)
@@ -157,7 +157,8 @@ namespace JoinRpg.Services.Impl
                 {
                     Name = name,
                     AccommodationTypeId = roomTypeId,
-                    ProjectId = projectId
+                    ProjectId = projectId,
+                    ProjectAccommodationType = roomType
                 };
 
             // Internal function
@@ -187,7 +188,10 @@ namespace JoinRpg.Services.Impl
                 }
             }
 
-            return UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(rooms));
+            IEnumerable<ProjectAccommodation> result =
+                UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(rooms));
+            await UnitOfWork.SaveChangesAsync();
+            return result;
         }
 
         private ProjectAccommodation GetRoom(int roomId, int? projectId = null, int? roomTypeId = null)

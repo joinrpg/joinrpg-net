@@ -758,6 +758,7 @@
     <Content Include="Views\AccommodationType\TypeEdit.cshtml" />
     <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
     <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
+    <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

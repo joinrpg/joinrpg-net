@@ -22,7 +22,7 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Adds rooms to specified room type of specified project
         /// </summary>
-        IEnumerable<ProjectAccommodation> AddRooms(int projectId, int roomTypeId, string rooms);
+        Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms);
 
         /// <summary>
         /// Changes room name
