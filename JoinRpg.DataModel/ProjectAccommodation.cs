@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JoinRpg.DataModel
 {
-    public class ProjectAccommodation
+    public class ProjectAccommodation : IProjectEntity
     {
         [Key]
         public int Id { get; set; }

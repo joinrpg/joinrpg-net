@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
 using Mailgun.Service;
@@ -21,7 +22,9 @@ namespace JoinRpg.Services.Email
         #region general stuff
         private const string JoinRpgTeam = "Команда JoinRpg.Ru";
 
-        private const string changedFieldsKey = "changedFields";
+        private const string ChangedFieldsKey = "changedFields";
+
+        private static string StandartGreeting() => $@"Добрый день, {MailGunExts.MailGunRecipientName},\n";
 
         private readonly string _apiDomain;
 
@@ -60,26 +63,34 @@ namespace JoinRpg.Services.Email
         }
 
         private Task SendEmail(
-          User recipient,
-          string subject,
-          string text,
-          Recipient sender)
-        {
-            return SendEmail(
-              new[] { new MailRecipient(recipient) },
-              subject, sender, new MarkdownString(text));
-        }
+            User recipient,
+            string subject,
+            string text,
+            Recipient sender)
+            =>
+                SendEmail(
+                    new[] {new MailRecipient(recipient)},
+                    subject,
+                    sender,
+                    new MarkdownString(text));
 
         /// <summary>
         /// Use this method when no additional parameters are needed for users
         /// </summary>
-        private async Task SendEmail(
-          ICollection<User> recipients,
-          string subject,
-          string text,
-          Recipient sender)
+        private async Task SendEmail(EmailModelBase model, string subject, string body)
         {
-            await SendEmail(recipients.Select(r => new MailRecipient(r)).ToList(), subject, sender, new MarkdownString(text));
+            var projectEmailEnabled = model.GetEmailEnabled();
+            if (!projectEmailEnabled)
+            {
+                return;
+            }
+
+            var recipients = model.GetRecipients();
+
+            await SendEmail(recipients.Select(r => new MailRecipient(r)).ToList(),
+                subject,
+                model.Initiator.ToRecipient(),
+                new MarkdownString(body));
         }
 
         private async Task SendEmail(
@@ -191,27 +202,19 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(ForumEmail model)
         {
-            var projectEmailEnabled = model.GetEmailEnabled();
-            if (!projectEmailEnabled)
-            {
-                return;
-            }
-            var recipients = model.GetRecipients();
-            if (!recipients.Any())
-            {
-                return;
-            }
-
-            await SendEmail(recipients, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
-              $@"Добрый день, {MailGunExts.MailGunRecipientName},
+            await SendEmail(model,
+                $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
+                StandartGreeting() + $@"
 На форуме появилось новое сообщение: 
 
 {model.Text.Contents}
 
 {model.Initiator.GetDisplayName()}
 
-Чтобы ответить на комментарий, перейдите на страницу обсуждения: {_uriService.Get(model.ForumThread.CommentDiscussion)}
-", model.Initiator.ToRecipient());
+Чтобы ответить на комментарий, перейдите на страницу обсуждения: {
+                        _uriService.Get(model.ForumThread.CommentDiscussion)
+                    }
+");
         }
 
         public async Task Email(FieldsChangedEmail model)
@@ -226,14 +229,14 @@ namespace JoinRpg.Services.Email
               .GetRecipients()
               .Select(r => new MailRecipient(
                 r,
-                new Dictionary<string, string> { { changedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
-              .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[changedFieldsKey]))
+                new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
+              .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[ChangedFieldsKey]))
               //don't email if no changes are visible to user rights
               .ToList();
 
-            Func<bool, string> target = (forMessageBody) => model.IsCharacterMail
-              ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
-              : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim.Name} {(forMessageBody ? $", игрок {model.Claim.Player.GetDisplayName()}" : "")}";
+            string Target(bool forMessageBody) => model.IsCharacterMail
+                ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
+                : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim?.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
             string linkString = model.IsCharacterMail
@@ -242,9 +245,9 @@ namespace JoinRpg.Services.Email
             if (recipients.Any())
             {
                 string text = $@"Добрый день, {MailGunExts.MailGunRecipientName},
-Данные {target(true)} были изменены. Новые значения:
+Данные {Target(true)} были изменены. Новые значения:
 
-{MailGunExts.GetUserDependentValue(changedFieldsKey)}
+{MailGunExts.GetUserDependentValue(ChangedFieldsKey)}
 
 Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
 
@@ -258,10 +261,60 @@ namespace JoinRpg.Services.Email
                     recipients,
                     claim != null
                         ? GetClaimEmailTitle(model.ProjectName, claim.Name, claim.Player.GetDisplayName())
-                        : $"{model.ProjectName}: {target(false)}",
+                        : $"{model.ProjectName}: {Target(false)}",
                     model.Initiator.ToRecipient(),
                     new MarkdownString(text));
             }
+        }
+
+        public async Task Email(UnOccupyRoomEmail email)
+        {
+            string body;
+            if (email.Room.GetAllInhabitants().Any())
+            {
+                body =$@"Покинули комнату:{email.ChangedRequest.Subjects.GetPlayerList()}
+
+Остались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
+            }
+            else
+            {
+                body =
+                    $"Все жители покинули комнату:{email.ChangedRequest.Subjects.GetPlayerList()}";
+            }
+            await SendRoomEmail(email, body);
+        }
+
+        public async Task Email(OccupyRoomEmail email)
+        {
+            var oldInhabitants = email.Room.GetAllInhabitants().Except(email.ChangedRequest.Subjects).ToList();
+            string body;
+            if (oldInhabitants.Any())
+            {
+                body = $@"Вселились в комнату:{email.ChangedRequest.Subjects.GetPlayerList()}
+
+Уже были в комнате:{oldInhabitants.GetPlayerList()}";
+            }
+            else
+            {
+                body = $"Вселились в комнату:{email.ChangedRequest.Subjects.GetPlayerList()}";
+            }
+
+            
+            await SendRoomEmail(email, body);
+        }
+
+        private async Task SendRoomEmail(RoomEmailBase email, string body)
+        {
+            await SendEmail(email,
+                $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
+                $@"{StandartGreeting()}
+Изменен состав жителей комнаты {email.Room.ProjectAccommodationType.Name} {email.Room.Name} 
+
+{body}
+
+{email.Initiator.GetDisplayName()}
+
+");
         }
 
         public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
@@ -294,16 +347,6 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(MassEmailModel model)
         {
-            if (!model.GetEmailEnabled())
-            {
-                return;
-            }
-            var recipients = model.GetRecipients();
-            if (!recipients.Any())
-            {
-                return;
-            }
-
             if (model.Text.Contents == null)
             {
                 throw new ArgumentNullException(nameof(model.Text.Contents));
@@ -312,11 +355,11 @@ namespace JoinRpg.Services.Email
             var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MailGunExts.MailGunRecipientName,
               RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-            await SendEmail(recipients, $"{model.ProjectName}: {model.Subject}",
+            await SendEmail(model, $"{model.ProjectName}: {model.Subject}",
               $@"{body}
 
 {model.Initiator.GetDisplayName()}
-", model.Initiator.ToRecipient());
+");
         }
         #endregion
 
@@ -327,8 +370,7 @@ namespace JoinRpg.Services.Email
           [NotNull]EmailModelBase model,
           [NotNull]User user)
         {
-            IEmailWithUpdatedFieldsInfo mailWithFields = model as IEmailWithUpdatedFieldsInfo;
-            if (mailWithFields == null)
+            if (!(model is IEmailWithUpdatedFieldsInfo mailWithFields))
             {
                 return "";
             }
@@ -369,7 +411,7 @@ namespace JoinRpg.Services.Email
               .GetRecipients()
               .Select(r => new MailRecipient(
                 r,
-                new Dictionary<string, string> { { changedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
+                new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
               .ToList();
 
             var commentExtraActionView = (CommonUI.Models.CommentExtraAction?)model.CommentExtraAction;
@@ -385,7 +427,7 @@ namespace JoinRpg.Services.Email
 Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
-{MailGunExts.GetUserDependentValue(changedFieldsKey)}
+{MailGunExts.GetUserDependentValue(ChangedFieldsKey)}
 {model.Text.Contents}
 
 {model.Initiator.GetDisplayName()}
@@ -436,6 +478,18 @@ namespace JoinRpg.Services.Email
         public static List<User> GetRecipients(this EmailModelBase model)
         {
             return model.Recipients.Where(u => u != null && u.UserId != model.Initiator.UserId).Distinct().ToList();
+        }
+
+        public static string GetPlayerList(this IEnumerable<Claim> claims)
+        {
+            var players = claims.Select(c => c.Player.GetDisplayName()).ToArray();
+
+            if (!players.Any())
+            {
+                players = new [] { "n/a"};
+            }
+
+            return players.JoinStrings(" \n- ");
         }
     }
 }

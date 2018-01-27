@@ -202,5 +202,10 @@ namespace JoinRpg.Services.Impl
         {
             project.CharacterTreeModifiedAt = Now;
         }
+
+        protected async Task<User> GetCurrentUser()
+        {
+            return await UserRepository.GetById(CurrentUserId);
+        }
     }
 }
