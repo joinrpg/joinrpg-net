@@ -749,10 +749,11 @@
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
     <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
-    <Content Include="Views\AccommodationType\Edit.cshtml" />
+    <Content Include="Views\AccommodationType\TypeDetails.cshtml" />
     <Content Include="Views\AccommodationType\AccommodationIndex.cshtml" />
     <Content Include="Views\AccommodationType\ProjectAccommodationEdit.cshtml" />
     <Content Include="Views\ClaimAccommodation\Index.cshtml" />
+    <Content Include="Views\AccommodationType\TypeEdit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -10,37 +10,48 @@
 
 <table class="table table-striped">
     <thead>
-    <th>Тип размещения</th>
-    <th>Стоимость</th>
-    <th>Мест</th>
-    <th>Всего мест</th>
-    <th>Бесконечное</th>
-    <th>Выбираемое</th>
-    <th>Автозаполнение</th>
-    <th>Действия</th>
+    <tr>
+        <th>Тип размещения</th>
+        <th>Стоимость</th>
+        <th>Мест</th>
+        <th>Всего мест</th>
+        <th>Бесконечное</th>
+        <th>Доступно игрокам</th>
+        <th>Автозаполнение</th>
+        @if (Model.CanManageRooms)
+        {
+            <th>Действия</th>
+        }
+    </tr>
     </thead>
     @foreach (var accommodationType in Model.AccommodationTypes)
     {
         <tr>
-            <td>@accommodationType.Name</td>
+            <td>@Html.ActionLink(accommodationType.Name, "TypeDetails", new { accommodationTypeId = accommodationType.Id, accommodationType.ProjectId}) </td>
             <td>@accommodationType.Cost</td>
             <td>@accommodationType.Capacity</td>
             <td>@accommodationType.TotalCapacity</td>
             <td>@accommodationType.IsInfinite</td>
             <td>@accommodationType.IsPlayerSelectable</td>
             <td>@accommodationType.IsAutoFilledAccommodation</td>
-            <td>
-                @Html.RouteLink("Изменить", new { accommodationId = accommodationType.Id, ProjectId = accommodationType.ProjectId, action = "Edit", Controller = "AccommodationType" }, new { @class = "btn btn-default" })
-                @using (Html.BeginForm("Delete", "AccommodationType", new { accommodationTypeId = accommodationType.Id, projectId = accommodationType.ProjectId }, FormMethod.Post, new { @style = "display:inline-block" }))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.HttpMethodOverride(HttpVerbs.Delete)
-                    <button type="submit" class="btn btn-danger"><span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить</button>
-                }
-            </td>
+            @if (Model.CanManageRooms)
+            {
+                <td>
+                    @using (Html.BeginForm("Delete", "AccommodationType", new {accommodationTypeId = accommodationType.Id, projectId = accommodationType.ProjectId}, FormMethod.Post, new {@style = "display:inline-block"}))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HttpMethodOverride(HttpVerbs.Delete)
+                        <button type="submit" class="btn btn-danger"><span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить</button>
+                    }
+                </td>
+            }
         </tr>
     }
 
 </table>
-<hr/>
-@Html.Partial("Edit", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() {ProjectId = Model.ProjectId})
+
+@if (Model.CanManageRooms)
+{
+    <hr/>
+    @Html.Partial("TypeDetails", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() {ProjectId = Model.ProjectId})
+}

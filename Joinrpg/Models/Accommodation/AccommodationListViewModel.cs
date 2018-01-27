@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Web;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -13,5 +10,8 @@ namespace JoinRpg.Web.Models.Accommodation
         public string ProjectName { get; set; }
         [DisplayName("Типы проживания")]
         public ICollection<AccommodationTypeViewModel> AccommodationTypes { get; set; }
+
+        public bool CanAssignRooms { get; set; }
+        public bool CanManageRooms { get; set; }
     }
 }

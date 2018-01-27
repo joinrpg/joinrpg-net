@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
@@ -55,7 +56,9 @@ namespace JoinRpg.Web.Controllers
             {
                 ProjectId = projectId,
                 ProjectName = project.ProjectName,
-                AccommodationTypes = accommodations
+                AccommodationTypes = accommodations,
+                CanManageRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanManageAccommodation),
+                CanAssignRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations),
             };
             return View(res);
         }
@@ -67,7 +70,7 @@ namespace JoinRpg.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return View("TypeDetails", model);
             }
             await _accommodationService.RegisterNewAccommodationTypeAsync(model.GetProjectAccommodationTypeMock()).ConfigureAwait(false);
             return RedirectToAction("Index", routeValues: new { model.ProjectId });
@@ -89,15 +92,15 @@ namespace JoinRpg.Web.Controllers
         [MasterAuthorize()]
 
         [HttpGet]
-        public async Task<ActionResult> Edit(int projectId, int accommodationId)
+        public async Task<ActionResult> TypeDetails(int projectId, int accommodationTypeId)
         {
-            var model = await _accommodationService.GetAccommodationByIdAsync(accommodationId).ConfigureAwait(false);
+            var model = await _accommodationService.GetAccommodationByIdAsync(accommodationTypeId).ConfigureAwait(false);
             if (model == null || model.ProjectId != projectId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
 
-            return View("Edit", new AccommodationTypeViewModel(model));
+            return View("TypeDetails", new AccommodationTypeViewModel(model, CurrentUserId));
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
