@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Models.Accommodation
         public int UsedSpace { get; set; }
 
         public ICollection<ProjectAccommodationViewModel> Accommodations { get; set; }
-        public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity)
+        public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity, int currentUserId)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
@@ -59,8 +59,17 @@ namespace JoinRpg.Web.Models.Accommodation
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             Description = entity.Description;
             Accommodations = ProjectAccommodationViewModel.NewListCollection(entity.ProjectAccommodations);
+            CanManageRooms =
+                entity.Project.HasMasterAccess(currentUserId, acl => acl.CanManageAccommodation);
+            CanAssignRooms =
+                entity.Project.HasMasterAccess(currentUserId,
+                    acl => acl.CanSetPlayersAccommodations);
 
         }
+
+        public bool CanAssignRooms { get; set; }
+
+        public bool CanManageRooms { get; set; }
 
         public AccommodationTypeViewModel()
         {
