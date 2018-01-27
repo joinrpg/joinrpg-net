@@ -12,6 +12,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 
 namespace JoinRpg.Services.Impl
 {

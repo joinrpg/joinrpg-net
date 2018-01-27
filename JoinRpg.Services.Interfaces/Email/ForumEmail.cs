@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces.Email
 {
     public class ForumEmail : EmailModelBase
     {

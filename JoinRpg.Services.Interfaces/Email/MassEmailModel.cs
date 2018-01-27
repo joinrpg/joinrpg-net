@@ -1,4 +1,4 @@
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces.Email
 {
     public class MassEmailModel : EmailModelBase
     {

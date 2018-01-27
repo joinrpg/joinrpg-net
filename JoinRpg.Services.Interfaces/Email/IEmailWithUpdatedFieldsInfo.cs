@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 
-namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces.Email
 {
     /// <summary>
     /// This interface to be implemented by emails that should include the list of updated felds in them.
