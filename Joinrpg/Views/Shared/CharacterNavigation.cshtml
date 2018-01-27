@@ -86,11 +86,6 @@ else
                 </ul>
             </li>
         }
-        @if (Model.ClaimId != null && Model.IsAccommodationEnabled)
-        {
-            @NavigationItem(CharacterNavigationPage.Accommodation, "Проживание", "Index", "ClaimAccommodation", new {Model.ProjectId, Model.ClaimId})
-        }
-
     </ul>
 
 </div>

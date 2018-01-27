@@ -105,11 +105,17 @@ namespace JoinRpg.Web.Models
 
     public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
-      public ClaimViewModel(User currentUser,
+
+    public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
+    public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
+
+    public ClaimViewModel(User currentUser,
           Claim claim,
           IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
-          IUriService uriService)
+          IUriService uriService,
+        IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
+        IEnumerable<AccommodationRequest> accommodationRequests = null)
       {
           ClaimId = claim.ClaimId;
           CommentDiscussionId = claim.CommentDiscussionId;
@@ -124,7 +130,9 @@ namespace JoinRpg.Web.Models
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;
           CharacterActive = claim.Character?.IsActive;
-          OtherClaimsForThisCharacterCount = claim.IsApproved
+          AvailableAccommodationTypes = availableAccommodationTypes;
+          AccommodationRequests = accommodationRequests;
+            OtherClaimsForThisCharacterCount = claim.IsApproved
               ? 0
               : claim.OtherClaimsForThisCharacter().Count();
           HasOtherApprovedClaim = !claim.IsApproved &&

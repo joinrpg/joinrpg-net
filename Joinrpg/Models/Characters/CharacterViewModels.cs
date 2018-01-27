@@ -87,8 +87,7 @@ namespace JoinRpg.Web.Models.Characters
     None,
     Character, Editing, Claim,
     RejectedClaim,
-    AddClaim,
-    Accommodation
+    AddClaim
   }
 
   /// <summary>
