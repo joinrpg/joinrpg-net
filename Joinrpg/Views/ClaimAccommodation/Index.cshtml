@@ -9,6 +9,13 @@
     }
     <hr />
     <h2>Возможные варианты проживания</h2>
+@foreach (var accommodationType in Model.AvailableAccommodationTypes)
+{
+    <button>
+        @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+        @accommodationType.Description
+    </button>
+}
     <table class="table table-striped">
         <thead>
         <th>Тип размещения</th>
