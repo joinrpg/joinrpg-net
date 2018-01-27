@@ -31,19 +31,15 @@ namespace JoinRpg.Dal.Impl.Migrations
                     {
                         Id = c.Int(nullable: false, identity: true),
                         ProjectId = c.Int(nullable: false),
-                        SubjectClaimId = c.Int(nullable: false),
                         AccommodationTypeId = c.Int(nullable: false),
-                        AccommodationId = c.Int(nullable: false),
+                        AccommodationId = c.Int(),
                         IsAccepted = c.Int(nullable: false),
-                        Description = c.String(),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.ProjectAccommodations", t => t.AccommodationId, cascadeDelete: false)
+                .ForeignKey("dbo.ProjectAccommodations", t => t.AccommodationId)
                 .ForeignKey("dbo.ProjectAccommodationTypes", t => t.AccommodationTypeId, cascadeDelete: true)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: false)
-                .ForeignKey("dbo.Claims", t => t.SubjectClaimId, cascadeDelete: true)
                 .Index(t => t.ProjectId)
-                .Index(t => t.SubjectClaimId)
                 .Index(t => t.AccommodationTypeId)
                 .Index(t => t.AccommodationId);
             
@@ -80,9 +76,12 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.FromClaimId)
                 .Index(t => t.ToClaimId);
             
+            AddColumn("dbo.Claims", "AccommodationRequest_Id", c => c.Int());
             AddColumn("dbo.ProjectAcls", "CanManageAccommodation", c => c.Boolean(nullable: false));
             AddColumn("dbo.ProjectAcls", "CanSetPlayersAccommodations", c => c.Boolean(nullable: false));
             AddColumn("dbo.ProjectDetails", "EnableAccommodation", c => c.Boolean(nullable: false));
+            CreateIndex("dbo.Claims", "AccommodationRequest_Id");
+            AddForeignKey("dbo.Claims", "AccommodationRequest_Id", "dbo.AccommodationRequests", "Id");
         }
         
         public override void Down()
@@ -91,7 +90,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             DropForeignKey("dbo.AccommodationInvites", "ProjectId", "dbo.Projects");
             DropForeignKey("dbo.AccommodationInvites", "FromClaimId", "dbo.Claims");
             DropForeignKey("dbo.ProjectAccommodationTypes", "ProjectId", "dbo.Projects");
-            DropForeignKey("dbo.AccommodationRequests", "SubjectClaimId", "dbo.Claims");
+            DropForeignKey("dbo.Claims", "AccommodationRequest_Id", "dbo.AccommodationRequests");
             DropForeignKey("dbo.AccommodationRequests", "ProjectId", "dbo.Projects");
             DropForeignKey("dbo.AccommodationRequests", "AccommodationTypeId", "dbo.ProjectAccommodationTypes");
             DropForeignKey("dbo.ProjectAccommodations", "AccommodationTypeId", "dbo.ProjectAccommodationTypes");
@@ -104,12 +103,13 @@ namespace JoinRpg.Dal.Impl.Migrations
             DropIndex("dbo.ProjectAccommodations", new[] { "AccommodationTypeId" });
             DropIndex("dbo.AccommodationRequests", new[] { "AccommodationId" });
             DropIndex("dbo.AccommodationRequests", new[] { "AccommodationTypeId" });
-            DropIndex("dbo.AccommodationRequests", new[] { "SubjectClaimId" });
             DropIndex("dbo.AccommodationRequests", new[] { "ProjectId" });
             DropIndex("dbo.ProjectAccommodationTypes", new[] { "ProjectId" });
+            DropIndex("dbo.Claims", new[] { "AccommodationRequest_Id" });
             DropColumn("dbo.ProjectDetails", "EnableAccommodation");
             DropColumn("dbo.ProjectAcls", "CanSetPlayersAccommodations");
             DropColumn("dbo.ProjectAcls", "CanManageAccommodation");
+            DropColumn("dbo.Claims", "AccommodationRequest_Id");
             DropTable("dbo.AccommodationInvites");
             DropTable("dbo.ProjectAccommodations");
             DropTable("dbo.AccommodationRequests");
