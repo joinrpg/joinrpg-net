@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -16,7 +14,7 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Adds new room or list of rooms
         /// </summary>
-        Task<IEnumerable<ProjectAccommodation>> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation);
+        Task RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation);
 
         Task RemoveAccommodationType(int accommodationTypeId);
 

@@ -46,7 +46,7 @@ namespace JoinRpg.Services.Impl
         }
 
 
-        public async Task<IEnumerable<ProjectAccommodation>> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation)
+        public async Task RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation)
         {
             if (newProjectAccommodation.ProjectId == 0)
                 throw new ActivationException("Inconsistent state. ProjectId can't be 0");
@@ -105,16 +105,9 @@ namespace JoinRpg.Services.Impl
                     }
                 }
 
-                // Inserting range of rooms instead one
-                results = UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(newProjectAccommodation));
-                //result = UnitOfWork.GetDbSet<ProjectAccommodation>().Add(newProjectAccommodation);
+                UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(newProjectAccommodation));
             }
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-            if (result != null)
-                return new ProjectAccommodation[] { result };
-            return results;
-            //return result;
         }
 
         public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)
