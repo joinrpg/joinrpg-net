@@ -22,6 +22,7 @@ namespace JoinRpg.Services.Impl
       container.RegisterType<IForumService, ForumServiceImpl>();
       container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
       container.RegisterType<IFieldDefaultValueGenerator, FieldDefaultValueGenerator>();
+      container.RegisterType<IAccommodationService, AccommodationServiceImpl>();
     }
   }
 }

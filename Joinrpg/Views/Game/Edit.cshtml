@@ -72,14 +72,22 @@
             </div>
         </div>
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.GenerateCharacterNamesFromPlayer, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.GenerateCharacterNamesFromPlayer)
-                @Html.ValidationMessageFor(model => model.GenerateCharacterNamesFromPlayer, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.GenerateCharacterNamesFromPlayer)
-            </div>
+      <div class="form-group">
+        @Html.LabelFor(model => model.GenerateCharacterNamesFromPlayer, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+          @Html.EditorFor(model => model.GenerateCharacterNamesFromPlayer)
+          @Html.ValidationMessageFor(model => model.GenerateCharacterNamesFromPlayer, "", new { @class = "text-danger" })
+          @Html.DescriptionFor(model => model.GenerateCharacterNamesFromPlayer)
         </div>
+      </div>
+
+      <div class="form-group">
+        @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+          @Html.EditorFor(model => model.EnableAccomodation)
+          @Html.ValidationMessageFor(model => model.EnableAccomodation, "", new { @class = "text-danger" })
+        </div>
+      </div>
     }
 
 

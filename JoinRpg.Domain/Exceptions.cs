@@ -82,10 +82,10 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class ProjectDeactivedException : JoinRpgBaseException
-  {
-    public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+    public class ProjectDeactivedException : JoinRpgBaseException
     {
+        public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+        {
 
     }
   }
@@ -176,5 +176,12 @@ namespace JoinRpg.Domain
      {
      }
   }
+    public class ProjectAccomodationNotFound : JoinRpgBaseException
+    {
+        public ProjectAccomodationNotFound(int projectId, int accomodationTypeId, int accomodationType) : base($"Место проживание с id={accomodationType} не соотвествуют проекту с id={projectId} и типом проживания с id={accomodationTypeId} ")
+        {
+        }
+
+    }
 
 }

@@ -116,19 +116,23 @@
                             <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы<span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Оплаченные отклоненные заявки", "PaidDeclined", "ClaimList", new { Model.ProjectId }, null)</li>
-                            <li role="separator" class="divider"></li>
-                            <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new {Model.ProjectId}, null)</li>
-                            <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new {Model.ProjectId}, null)</li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы/АХЧ<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                      <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
+                      <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new {Model.ProjectId}, null)</li>
+                      <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new {Model.ProjectId}, null)</li>
+                      <li>@Html.ActionLink("Оплаченные отклоненные заявки", "PaidDeclined", "ClaimList", new { Model.ProjectId }, null)</li>
+                      <li role="separator" class="divider"></li>
+                      <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new {Model.ProjectId}, null)</li>
+                      <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new {Model.ProjectId}, null)</li>
+                      @if (Model.EnableAccomodation)
+                      {
+                        <li>@Html.ActionLink("Жилой фонд", "Index", "AccommodationType", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)</li>
+                      }
+                    </ul>
+                  </li>
+                  <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Прочее <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li>@Html.ActionLink("Встроить ролевку на сайт", "Apis", "GameTools", new {Model.ProjectId}, null)</li>
