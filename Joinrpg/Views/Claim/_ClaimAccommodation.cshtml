@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models.Accommodation
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.Models.Accommodation
 @model ClaimAccommodationViewModel
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">Поданы заявки на проживание</div>
@@ -7,22 +8,45 @@
         {
             <h5>Заявки на проживание не подавались.</h5>
         }
+        @foreach (var accommodationRequests in Model.AccommodationRequests)
+        {
+            var className = "alert-warning";
+            if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted)
+            {
+                className = "alert-success";
+
+            }
+            <div class="@className">
+                @accommodationRequests.AccommodationType.Name (@accommodationRequests.AccommodationType.Capacity места, @accommodationRequests.AccommodationType.Cost рублей)
+            </div>
+        }
     </div>
 </div>
 <div class="panel panel-default" id="accommodationTypes">
     <div class="panel-heading">Возможные варианты проживания</div>
     <div class="panel-body">
- @foreach (var accommodationType in Model.AvailableAccommodationTypes)
+        @using (Html.BeginForm("PostAccommodationRequest", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
         {
-            <div class="radio" style="margin-bottom: 2em;">
-                <label>
+            @Html.AntiForgeryToken()
+            foreach (var accommodationType in Model.AvailableAccommodationTypes)
+            {
+                var className = "";
+                var checkedState ="";
+                if (Model.AccommodationRequests.Any(request => request.AccommodationType == accommodationType))
+                {
 
-                    <input type="radio" name="optionsRadios" id="accomodationType @accommodationType.Id" value="@accommodationType.Id">
-                    @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
-                    @accommodationType.Description
-                </label>
-            </div>
+                    className = "text-success";
+                    checkedState = "checked";
+                }
+                <div class="radio" style="margin-bottom: 2em;">
+                     <label class="@className">
+                         <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
+                         @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+                         @accommodationType.Description
+                     </label>
+                 </div>
+             }
+            <button class="btn btn-default" type="submit">Сохранить проживание</button>
         }
-        <button class="btn btn-default" type="button">Сохранить проживание</button>
     </div>
 </div>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -27,6 +28,8 @@ namespace JoinRpg.Services.Interfaces
 
         Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId);
 
+        Task<AccommodationRequest> CreateNewAccommodationRequest (int projectId, int claimId, int accommodationTypeId);
+
         Task OccupyRoom(OccupyRequest request);
 
         Task UnOccupyRoom(UnOccupyRequest request);
@@ -36,12 +39,12 @@ namespace JoinRpg.Services.Interfaces
     {
         public int ProjectId { get; set; }
         public int RoomId { get; set; }
-        public int AccommondationRequestId { get; set; }
+        public int AccommodationRequestId { get; set; }
     }
 
     public class UnOccupyRequest
     {
         public int ProjectId { get; set; }
-        public int AccommondationRequestId { get; set; }
+        public int AccommodationRequestId { get; set; }
     }
 }

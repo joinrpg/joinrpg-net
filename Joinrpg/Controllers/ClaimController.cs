@@ -14,6 +14,7 @@ using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Accommodation;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -24,6 +25,7 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimsRepository _claimsRepository;
     private readonly IAccommodationRequestRepository _accommodationRequestRepository;
     private readonly IAccommodationRepository _accommodationRepository;
+    private IAccommodationService AccommodationService { get; }
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
@@ -65,7 +67,8 @@ namespace JoinRpg.Web.Controllers
           ICharacterRepository characterRepository,
           IUriService uriService,
           IAccommodationRequestRepository accommodationRequestRepository,
-          IAccommodationRepository accommodationRepository)
+          IAccommodationRepository accommodationRepository,
+          IAccommodationService accommodationService)
           : base(userManager, projectRepository, projectService, exportDataService)
       {
           _claimService = claimService;
@@ -73,6 +76,7 @@ namespace JoinRpg.Web.Controllers
           _claimsRepository = claimsRepository;
           _accommodationRequestRepository = accommodationRequestRepository;
           _accommodationRepository = accommodationRepository;
+          AccommodationService = accommodationService;
           FinanceService = financeService;
           PluginFactory = pluginFactory;
           CharacterRepository = characterRepository;
@@ -575,7 +579,8 @@ namespace JoinRpg.Web.Controllers
                         ClaimId = claim.ClaimId,
                         Contents = viewModel.CommentText,
                         OperationDate = viewModel.OperationDate,
-                    });
+                    })
+                        .ConfigureAwait(false); ;
 
                 return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
             }
@@ -585,5 +590,16 @@ namespace JoinRpg.Web.Controllers
             }
             
         }
+
+      [ValidateAntiForgeryToken]
+      public async Task<ActionResult> PostAccommodationRequest(
+          AccommodationRequestViewModel viewModel)
+      {
+          await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
+              viewModel.ClaimId,
+              viewModel.AccommodationTypeId).ConfigureAwait(false);
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+      }
+
     }
 }
