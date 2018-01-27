@@ -26,6 +26,6 @@ namespace JoinRpg.DataModel
         private bool _HasAvailableAccommodations() => Capacity * ProjectAccommodations.Count - (Desirous?.Count ?? 0) > 0;
 
         public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
-        public virtual ICollection<Claim> Desirous { get; set; }
+        public virtual ICollection<AccommodationRequest> Desirous { get; set; }
     }
 }

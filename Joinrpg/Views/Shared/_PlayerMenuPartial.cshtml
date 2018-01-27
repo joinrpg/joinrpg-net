@@ -8,7 +8,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new { Model.ProjectId }, null)</span>
+            <span class="navbar-brand">@Html.ActionLink(@Model.ProjectName, "Details", "Game", new {Model.ProjectId}, null)</span>
         </div>
         <div class="navbar-collapse collapse" id="master-menu-collapse">
             <ul class="nav navbar-nav">
@@ -31,14 +31,14 @@
                 </li>
                 @if (Model.PlotPublished)
                 {
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сюжеты <span class="caret"></span></a>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сюжеты <span class="caret"></span></a>
 
-                    <ul class="dropdown-menu">
-                        <li>@Html.ActionLink("Все", "Index", "Plot", new { Model.ProjectId }, null)</li>
-                        <li>@Html.ActionLink("Одним списком", "FlatList", "Plot", new { Model.ProjectId }, null)</li>
-                     </ul>
-                </li>
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Все", "Index", "Plot", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Одним списком", "FlatList", "Plot", new {Model.ProjectId}, null)</li>
+                        </ul>
+                    </li>
                 }
                 @if (Model.Claims.Count == 1)
                 {
@@ -63,20 +63,25 @@
                 }
                 else if (Model.RootGroupId != null)
                 {
-                <li>
-                    @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new { Model.ProjectId, CharacterGroupId = Model.RootGroupId}, null)
-                </li>
+                    <li>
+                        @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId}, null)
+                    </li>
                 }
 
                 @if (User.Identity.IsAuthenticated)
                 {
-
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new {Model.ProjectId}, null)</li>
                         </ul>
+                    </li>
+                }
+                @if (Model.EnableAccommodation)
+                {
+                    <li>
+                        @Html.ActionLink("Проживание", "Index", "ClaimAccommodation", new {Model.ProjectId}, null)
                     </li>
                 }
 
@@ -93,20 +98,23 @@
                                 </li>
                             }
                             <li>
-                                @Html.ActionLink("Поставить себе доступ", "ForceSet", "Acl", new { Model.ProjectId }, null)
+                                @Html.ActionLink("Поставить себе доступ", "ForceSet", "Acl", new {Model.ProjectId}, null)
                             </li>
                         </ul>
                     </li>
-
                 }
             </ul>
             @if (!Model.IsActive)
             {
-            <p class="navbar-text"><b>Проект в архиве</b></p>
+                <p class="navbar-text">
+                    <b>Проект в архиве</b>
+                </p>
             }
             else if (!Model.IsAcceptingClaims)
             {
-            <p class="navbar-text"><b>Прием заявок закрыт</b></p>
+                <p class="navbar-text">
+                    <b>Прием заявок закрыт</b>
+                </p>
             }
         </div>
     </div>

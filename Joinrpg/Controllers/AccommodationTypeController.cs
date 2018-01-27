@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers
                 }
               ).ToList();
             if (project == null) return HttpNotFound();
-            if (!project.Details.EnableAccomodation) return RedirectToAction("Edit", "Game");
+            if (!project.Details.EnableAccommodation) return RedirectToAction("Edit", "Game");
             var res = new AccommodationListViewModel
             {
                 ProjectId = projectId,
