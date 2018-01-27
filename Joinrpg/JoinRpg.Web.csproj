@@ -218,6 +218,7 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationTypeViewModel.cs" />
+    <Compile Include="Models\Accommodation\AccommodationRequestViewModel.cs" />
     <Compile Include="Models\Accommodation\AccomodationReportExporter.cs" />
     <Compile Include="Models\Accommodation\AccomodationReportModels.cs" />
     <Compile Include="Models\Accommodation\ClaimAccommodationViewModel.cs" />
