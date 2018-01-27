@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Проект")]
         public string ProjectName { get; set; }
         [DisplayName("Типы проживания")]
-        public ICollection<AccommodationTypeViewModel> AccommodationTypes { get; set; }
+        public ICollection<RoomTypeViewModel> RoomsTypes { get; set; }
 
         public bool CanAssignRooms { get; set; }
         public bool CanManageRooms { get; set; }

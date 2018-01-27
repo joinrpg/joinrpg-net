@@ -9,7 +9,7 @@ using JoinRpg.Domain;
 namespace JoinRpg.Web.Models.Accommodation
 {
     //todo I18n
-    public class AccommodationTypeViewModel
+    public class RoomTypeViewModel
     {
         [DisplayName("Название")]
         [Required]
@@ -41,8 +41,8 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Проживает")]
         public int UsedSpace { get; set; }
 
-        public ICollection<ProjectAccommodationViewModel> Accommodations { get; set; }
-        public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity, int currentUserId)
+        public ICollection<RoomViewModel> Accommodations { get; set; }
+        public RoomTypeViewModel([NotNull]ProjectAccommodationType entity, int currentUserId)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Models.Accommodation
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             Description = entity.Description;
-            Accommodations = ProjectAccommodationViewModel.NewListCollection(entity.ProjectAccommodations);
+            Accommodations = RoomViewModel.NewListCollection(entity.ProjectAccommodations);
             CanManageRooms =
                 entity.Project.HasMasterAccess(currentUserId, acl => acl.CanManageAccommodation);
             CanAssignRooms =
@@ -71,7 +71,7 @@ namespace JoinRpg.Web.Models.Accommodation
 
         public bool CanManageRooms { get; set; }
 
-        public AccommodationTypeViewModel()
+        public RoomTypeViewModel()
         {
         }
 

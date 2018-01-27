@@ -1,5 +1,6 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.Accommodation.AccommodationListViewModel
+@using JoinRpg.Web.Models.Accommodation
+@model AccommodationListViewModel
 
 
 @{
@@ -24,20 +25,20 @@
         }
     </tr>
     </thead>
-    @foreach (var accommodationType in Model.AccommodationTypes)
+    @foreach (var roomType in Model.RoomsTypes)
     {
         <tr>
-            <td>@Html.ActionLink(accommodationType.Name, "TypeDetails", new { accommodationTypeId = accommodationType.Id, accommodationType.ProjectId}) </td>
-            <td>@accommodationType.Cost</td>
-            <td>@accommodationType.Capacity</td>
-            <td>@accommodationType.TotalCapacity</td>
-            <td>@accommodationType.IsInfinite</td>
-            <td>@accommodationType.IsPlayerSelectable</td>
-            <td>@accommodationType.IsAutoFilledAccommodation</td>
+            <td>@Html.ActionLink(roomType.Name, "RoomTypeDetails", new { roomTypeId = roomType.Id, projectId = roomType.ProjectId}) </td>
+            <td>@roomType.Cost</td>
+            <td>@roomType.Capacity</td>
+            <td>@roomType.TotalCapacity</td>
+            <td>@roomType.IsInfinite</td>
+            <td>@roomType.IsPlayerSelectable</td>
+            <td>@roomType.IsAutoFilledAccommodation</td>
             @if (Model.CanManageRooms)
             {
                 <td>
-                    @using (Html.BeginForm("Delete", "AccommodationType", new {accommodationTypeId = accommodationType.Id, projectId = accommodationType.ProjectId}, FormMethod.Post, new {@style = "display:inline-block"}))
+                    @using (Html.BeginForm("DeleteRoomType", "AccommodationType", new { roomTypeId = roomType.Id, projectId = roomType.ProjectId }, FormMethod.Post, new {@style = "display:inline-block"}))
                     {
                         @Html.AntiForgeryToken()
                         @Html.HttpMethodOverride(HttpVerbs.Delete)
@@ -53,5 +54,5 @@
 @if (Model.CanManageRooms)
 {
     <hr/>
-    @Html.Partial("TypeDetails", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() {ProjectId = Model.ProjectId})
+    @Html.Partial("TypeDetails", new RoomTypeViewModel() {ProjectId = Model.ProjectId})
 }

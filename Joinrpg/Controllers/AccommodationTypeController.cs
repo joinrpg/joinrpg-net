@@ -9,6 +9,8 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -36,7 +38,7 @@ namespace JoinRpg.Web.Controllers
 
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId).ConfigureAwait(false);
             var accommodations = (await _accommodationService.GetAccommodationForProject(projectId).ConfigureAwait(false)).Select(x =>
-                new AccommodationTypeViewModel()
+                new RoomTypeViewModel()
                 {
                     Name = x.Name,
                     Cost = x.Cost,
@@ -47,7 +49,7 @@ namespace JoinRpg.Web.Controllers
                     IsAutoFilledAccommodation = x.IsAutoFilledAccommodation,
                     IsInfinite = x.IsInfinite,
                     IsPlayerSelectable = x.IsPlayerSelectable,
-                    Accommodations = x.ProjectAccommodations.Select(projectAccomodaion => new ProjectAccommodationViewModel(projectAccomodaion)).ToList()
+                    Accommodations = x.ProjectAccommodations.Select(projectAccomodaion => new RoomViewModel(projectAccomodaion)).ToList()
                 }
               ).ToList();
             if (project == null) return HttpNotFound();
@@ -56,7 +58,7 @@ namespace JoinRpg.Web.Controllers
             {
                 ProjectId = projectId,
                 ProjectName = project.ProjectName,
-                AccommodationTypes = accommodations,
+                RoomsTypes = accommodations,
                 CanManageRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanManageAccommodation),
                 CanAssignRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations),
             };
@@ -65,8 +67,8 @@ namespace JoinRpg.Web.Controllers
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(AccommodationTypeViewModel model)
+        [ValidateAntiForgeryToken]        
+        public async Task<ActionResult> Edit(RoomTypeViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -76,36 +78,33 @@ namespace JoinRpg.Web.Controllers
             return RedirectToAction("Index", routeValues: new { model.ProjectId });
         }
 
+        [MasterAuthorize()]
+        [HttpGet]
+        public async Task<ActionResult> RoomTypeDetails(int projectId, int roomTypeId)
+        {
+            var model = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            if (model == null || model.ProjectId != projectId)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
+            return View("TypeDetails", new RoomTypeViewModel(model, CurrentUserId));
+        }
+
         [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ProjectAccommodationEdit(ProjectAccommodationViewModel model)
+        public async Task<ActionResult> ProjectAccommodationEdit(RoomViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
             await _accommodationService.RegisterNewProjectAccommodationAsync(model.GetProjectAccommodationMock()).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.AccommodationTypeId });
+            return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.RoomTypeId });
         }
 
-        [MasterAuthorize()]
-
-        [HttpGet]
-        public async Task<ActionResult> TypeDetails(int projectId, int accommodationTypeId)
-        {
-            var model = await _accommodationService.GetAccommodationByIdAsync(accommodationTypeId).ConfigureAwait(false);
-            if (model == null || model.ProjectId != projectId)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-            }
-
-            return View("TypeDetails", new AccommodationTypeViewModel(model, CurrentUserId));
-        }
-
-        [MasterAuthorize(Permission.CanManageAccommodation)]
-
-        [HttpGet]
+        [NonAction]
         public async Task<ActionResult> ProjectAccommodationEdit(int projectId, int accommodationTypeId, int projectAccommodationId)
         {
             var model = await _accommodationService.GetProjectAccommodationByIdAsync(projectAccommodationId).ConfigureAwait(false);
@@ -114,27 +113,59 @@ namespace JoinRpg.Web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
             ViewBag.AccomodationName = $"«{model.Project.ProjectName}\\{model.ProjectAccommodationType.Name}»";
-            return View("ProjectAccommodationEdit", new ProjectAccommodationViewModel(model));
+            return View("ProjectAccommodationEdit", new RoomViewModel(model));
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpDelete]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Delete(int accomodationTypeId, int projectId)
+        [HttpPost]
+        public async Task<ActionResult> DeleteRoomType(int accomodationTypeId, int projectId)
         {
             await _accommodationService.RemoveAccommodationType(accomodationTypeId).ConfigureAwait(false);
             return RedirectToAction("Index", new { ProjectId = projectId });
         }
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]        
+        [HttpDelete]
+        public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
+        {
+            try
+            {
+                await _accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpDelete]
-        [ValidateAntiForgeryToken]
-        [Route("{ProjectId:int}/rooms/ProjectAccommodationDelete")]
-        public async Task<ActionResult> ProjectAccommodationDelete(int projectId, int accommodationTypeId, int projectAccommodationId)
+        [HttpGet]
+        public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
         {
-            await _accommodationService.RemoveProjectAccommodation(projectAccommodationId).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { ProjectId = projectId, AccommodationId = accommodationTypeId });
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
+                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                }
+                else
+                {
+                    return new ContentResult()
+                    {
+                        ContentType = "application/json",
+                        ContentEncoding = Encoding.UTF8,
+                        Content = JsonConvert.SerializeObject(
+                            _accommodationService.AddRooms(projectId, roomTypeId, name))
+                    };
+                }
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

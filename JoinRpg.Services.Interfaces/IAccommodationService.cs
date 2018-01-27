@@ -19,7 +19,20 @@ namespace JoinRpg.Services.Interfaces
 
         Task RemoveAccommodationType(int accommodationTypeId);
 
-        Task RemoveProjectAccommodation(int projectAccommodationId);
+        /// <summary>
+        /// Adds rooms to specified room type of specified project
+        /// </summary>
+        IEnumerable<ProjectAccommodation> AddRooms(int projectId, int roomTypeId, string rooms);
+
+        /// <summary>
+        /// Changes room name
+        /// </summary>
+        Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null);
+
+        /// <summary>
+        /// Deletes specified room
+        /// </summary>
+        Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
 
         Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int project);
 

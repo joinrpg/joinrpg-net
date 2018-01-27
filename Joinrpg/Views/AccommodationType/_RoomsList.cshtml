@@ -1,0 +1,37 @@
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Accommodation;
+@model RoomTypeRoomsListViewModel
+
+@Scripts.Render("~/Scripts/rooms.js")
+<script type="text/javascript">
+    @* following variables are declared in rooms.js *@
+    projectId = @Model.ProjectId;
+    roomTypeId = @Model.RoomTypeId;
+    roomsCount = @(Model.Rooms != null ? Model.Rooms.Count : 0);
+    roomCapacity = @Model.RoomCapacity;
+</script>
+<h3>Помещения</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Комната</th>
+            <th>Места</th>
+            <th>Проживающие</th>
+            <th style="min-width: 6em; width: 6em;"></th>
+            <th style="min-width: 6em; width: 6em;"></th>
+        </tr>
+    </thead>
+    <tbody id="roomsRows">
+        @if (Model.Rooms != null && Model.Rooms.Count > 0)
+        {
+            foreach (RoomViewModel room in Model.Rooms)
+            {
+                @Html.Partial("_RoomDetails", room);
+            }
+        }
+        <tr id="rowPlaceholder">
+            <td colspan="5">(комнаты не добавлены)</td>
+        </tr>
+    </tbody>
+</table>
+<hr />

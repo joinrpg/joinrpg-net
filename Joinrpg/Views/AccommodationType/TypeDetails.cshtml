@@ -1,6 +1,6 @@
 ﻿@using System.Collections.ObjectModel
 @using JoinRpg.Web.Models.Accommodation
-@model AccommodationTypeViewModel
+@model RoomTypeViewModel
 @{
     ViewBag.IsInEditMode = false;
     ViewBag.ActionName = "Добавить";
@@ -19,12 +19,12 @@
 @if (ViewBag.IsInEditMode)
 {
     <hr />
-    @Html.Partial("AccommodationIndex", Model.Accommodations ?? new Collection<ProjectAccommodationViewModel>(), new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
+    @Html.Partial("_RoomsList", new RoomTypeRoomsListViewModel(Model), new ViewDataDictionary { { "TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»" } })
 
     if (Model.CanManageRooms)
      {
          <hr/>
-         @Html.Partial("ProjectAccommodationEdit", new ProjectAccommodationViewModel() {Id = 0, ProjectId = Model.ProjectId, AccommodationTypeId = Model.Id}, new ViewDataDictionary {{"TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»"}})
+         @Html.Partial("_RoomEdit", new RoomViewModel(Model), new ViewDataDictionary {{"TypeName", "«" + Model.Project.ProjectName + "\\" + Model.Name + "»"}})
      }
 }
 

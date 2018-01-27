@@ -1,0 +1,29 @@
+﻿@using JoinRpg.Web.Models;
+@using JoinRpg.Web.Models.Accommodation;
+@model RoomViewModel
+
+<tr id="room@(Model.Id)" roomId="@Model.Id" occupancy="@Model.Occupancy">
+    <td>@Model.Name</td>
+    <td>@Model.Occupancy / @Model.Capacity</td>
+    <td>
+        @if (Model.Inhabitants != null)
+        {
+            foreach (ClaimViewModel claim in Model.Inhabitants)
+            {
+                @Html.Partial("_RoomInhabitant", new RoomInhabitantViewModel(Model, claim))
+            }
+        }
+    </td>
+    <td>
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            <button id="add@(Model.Id)" onclick="AddPeople(@Model.Id)" type="button" class="btn glyphicon glyphicon-download-alt" title="Заселить"></button>
+            <button id="kick@(Model.Id)" onclick="KickPeople(@Model.Id)" type="button" class="btn glyphicon glyphicon-fullscreen" title="Освободить комнату"></button>
+        </div>
+    </td>
+    <td>
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            <button id="rename@(Model.Id)" onclick="RenameRoom(@Model.Id)" type="button" class="btn btn-primary glyphicon glyphicon-pencil"></button>
+            <button onclick="DeleteRoom(@Model.Id)" type="button" class="btn btn-warning glyphicon glyphicon-trash"></button>
+        </div>
+    </td>
+</tr>
