@@ -217,12 +217,13 @@
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
+    <Compile Include="Models\Accommodation\RoomTypeViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationTypeViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationRequestViewModel.cs" />
     <Compile Include="Models\Accommodation\AccomodationReportExporter.cs" />
     <Compile Include="Models\Accommodation\AccomodationReportModels.cs" />
     <Compile Include="Models\Accommodation\ClaimAccommodationViewModel.cs" />
-    <Compile Include="Models\Accommodation\ProjectAccommodationViewModel.cs" />
+    <Compile Include="Models\Accommodation\RoomViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
@@ -572,6 +573,7 @@
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\rooms.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -754,10 +756,16 @@
     <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
     <Content Include="Views\AccommodationType\TypeDetails.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomEdit.cshtml" />
+    <Content Include="Views\ClaimAccommodation\Index.cshtml" />
     <Content Include="Views\AccommodationType\AccommodationIndex.cshtml" />
     <Content Include="Views\AccommodationType\ProjectAccommodationEdit.cshtml" />
     <Content Include="Views\AccommodationType\TypeEdit.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
+    <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

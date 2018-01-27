@@ -22,7 +22,8 @@ namespace JoinRpg.DataModel
         public bool IsAutoFilledAccommodation { get; set; } = false;
         [NotMapped]
         public bool HasAvailableAccommodations => _HasAvailableAccommodations();
-        private bool _HasAvailableAccommodations() => Capacity * ProjectAccommodations.Count - (Desirous?.Count ?? 0) > 0;
+        private bool _HasAvailableAccommodations()
+            => Capacity * ProjectAccommodations.Count - (Desirous?.Count ?? 0) > 0;
 
         public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
         public virtual ICollection<AccommodationRequest> Desirous { get; set; }

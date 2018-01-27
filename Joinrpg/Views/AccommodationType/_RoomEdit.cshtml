@@ -1,0 +1,32 @@
+﻿<!-- Edit room name dialog -->
+<div id="dlgEditRoomName" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 id="pnRoomNameTitle" class="modal-title">Добавить комнаты</h4>
+            </div>
+            <div class="modal-body">
+                <input id="edRoomName" type="text" style="display: block; width: 100%;" /> 
+                <div id="addComment">
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        Можно использовать списки и диапазоны номеров. Пробелы игнорируются.
+                        <br />Пример: <span style="font-family: monospace;">1А, 2Б,5-8, 12</span>
+                    </div>
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        Обратите внимание, что при указании диапазона его границы должны быть
+                        только целыми числами, при этом левая граница диапазона должна быть
+                        строго меньше правой границы. Иначе диапазон не будет распознан.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="bnEditRoomOk" type="button" class="btn btn-success">ОК</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+
+    </div>
+</div>
