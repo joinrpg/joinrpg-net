@@ -11,11 +11,6 @@ namespace JoinRpg.Services.Interfaces
         /// </summary>
         Task<ProjectAccommodationType> RegisterNewAccommodationTypeAsync(ProjectAccommodationType newAccommodation);
 
-        /// <summary>
-        /// Adds new room or list of rooms
-        /// </summary>
-        Task RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation);
-
         Task RemoveAccommodationType(int accommodationTypeId);
 
         /// <summary>
