@@ -757,7 +757,6 @@
     <Content Include="Views\AccommodationType\TypeDetails.cshtml" />
     <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
     <Content Include="Views\AccommodationType\_RoomEdit.cshtml" />
-    <Content Include="Views\AccommodationType\ProjectAccommodationEdit.cshtml" />
     <Content Include="Views\AccommodationType\TypeEdit.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
     <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />

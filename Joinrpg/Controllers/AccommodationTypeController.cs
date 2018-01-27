@@ -9,8 +9,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
-using System.Text;
-using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -89,31 +87,6 @@ namespace JoinRpg.Web.Controllers
             }
 
             return View("TypeDetails", new RoomTypeViewModel(model, CurrentUserId));
-        }
-
-        [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ProjectAccommodationEdit(RoomViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-            await _accommodationService.RegisterNewProjectAccommodationAsync(model.GetProjectAccommodationMock()).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.RoomTypeId });
-        }
-
-        [NonAction]
-        public async Task<ActionResult> ProjectAccommodationEdit(int projectId, int accommodationTypeId, int projectAccommodationId)
-        {
-            var model = await _accommodationService.GetProjectAccommodationByIdAsync(projectAccommodationId).ConfigureAwait(false);
-            if (model == null || model.ProjectId != projectId || model.AccommodationTypeId != accommodationTypeId)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-            }
-            ViewBag.AccomodationName = $"«{model.Project.ProjectName}\\{model.ProjectAccommodationType.Name}»";
-            return View("ProjectAccommodationEdit", new RoomViewModel(model));
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
