@@ -29,6 +29,9 @@ namespace JoinRpg.DataModel
     public bool FieldChange { get; set; }
     public bool MoneyOperation { get; set; }
 
+      //TODO Fix to enable subscripbtion
+      public bool AccommodationChange => false;
+
       public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
       {
           if (new[] {CharacterGroupId, CharacterId, ClaimId}.Count(id => id != null) != 1)

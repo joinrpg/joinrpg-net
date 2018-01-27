@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JoinRpg.DataModel
 {
-    public class ProjectAccommodationType
+    public class ProjectAccommodationType : IProjectEntity
     {
         [Key]
         public int Id { get; set; }

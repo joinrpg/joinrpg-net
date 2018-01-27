@@ -224,15 +224,14 @@ namespace JoinRpg.Services.Impl
 
           claim.UpdateClaimFeeIfRequired(request.OperationDate);
 
-          var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, request.Contents,
-              s => s.MoneyOperation,
-              commentExtraAction: CommentExtraAction.RequestPreferential,
-              initiator: await UserRepository.GetById(CurrentUserId));
-
             await UnitOfWork.SaveChangesAsync();
 
+          var email = await CreateClaimEmail<FinanceOperationEmail>(claim, request.Contents,
+              s => s.MoneyOperation,
+              commentExtraAction: CommentExtraAction.RequestPreferential);
 
-          await EmailService.Email(email);
+
+            await EmailService.Email(email);
         }
   }
 }
