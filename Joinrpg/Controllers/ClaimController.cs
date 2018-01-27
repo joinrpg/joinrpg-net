@@ -22,6 +22,8 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimService _claimService;
     private readonly IPlotRepository _plotRepository;
     private readonly IClaimsRepository _claimsRepository;
+    private readonly IAccommodationRequestRepository _accommodationRequestRepository;
+    private readonly IAccommodationRepository _accommodationRepository;
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
@@ -61,12 +63,16 @@ namespace JoinRpg.Web.Controllers
           IExportDataService exportDataService,
           IPluginFactory pluginFactory,
           ICharacterRepository characterRepository,
-          IUriService uriService)
+          IUriService uriService,
+          IAccommodationRequestRepository accommodationRequestRepository,
+          IAccommodationRepository accommodationRepository)
           : base(userManager, projectRepository, projectService, exportDataService)
       {
           _claimService = claimService;
           _plotRepository = plotRepository;
           _claimsRepository = claimsRepository;
+          _accommodationRequestRepository = accommodationRequestRepository;
+          _accommodationRepository = accommodationRepository;
           FinanceService = financeService;
           PluginFactory = pluginFactory;
           CharacterRepository = characterRepository;
@@ -97,7 +103,7 @@ namespace JoinRpg.Web.Controllers
       catch (Exception exception)
       {
         ModelState.AddException(exception);
-        var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId);
+        var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
         //TODO: Отображать ошибки верно
         return View(viewModel.Fill(source, GetCurrentUser()));
       }
@@ -106,8 +112,8 @@ namespace JoinRpg.Web.Controllers
     [HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
-      var claim = await _claimsRepository.GetClaimWithDetails(projectId, claimId);
-      return await ShowClaim(claim);
+      var claim = await _claimsRepository.GetClaimWithDetails(projectId, claimId).ConfigureAwait(false);
+      return await ShowClaim(claim).ConfigureAwait(false);
     }
 
     private async Task<ActionResult> ShowClaim(Claim claim)
@@ -123,18 +129,23 @@ namespace JoinRpg.Web.Controllers
           p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
         : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
 
-      var currentUser = await GetCurrentUserAsync();
+      var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
 
       var plots = claim.IsApproved && claim.Character != null
-        ? await _plotRepository.GetPlotsForCharacter(claim.Character)
+        ? await _plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
         : new PlotElement[] { };
-      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService);
+
+      var availableAccommodation = await
+            _accommodationRepository.GetPlayerSelectableAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
+      var requestForAccommodation = await _accommodationRequestRepository
+            .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation, requestForAccommodation);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
         await
           _claimService.UpdateReadCommentWatermark(claim.ProjectId, claim.CommentDiscussion.CommentDiscussionId,
-            claim.CommentDiscussion.Comments.Max(c => c.CommentId));
+            claim.CommentDiscussion.Comments.Max(c => c.CommentId)).ConfigureAwait(false);
       }
 
       

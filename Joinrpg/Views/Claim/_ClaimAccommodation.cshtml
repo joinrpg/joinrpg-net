@@ -1,0 +1,28 @@
+﻿@using JoinRpg.Web.Models.Accommodation
+@model ClaimAccommodationViewModel
+<div class="panel panel-default" id="accommodationRequests">
+    <div class="panel-heading">Поданы заявки на проживание</div>
+    <div class="panel-body">
+        @if (!Model.AccommodationRequests.Any())
+        {
+            <h5>Заявки на проживание не подавались.</h5>
+        }
+    </div>
+</div>
+<div class="panel panel-default" id="accommodationTypes">
+    <div class="panel-heading">Возможные варианты проживания</div>
+    <div class="panel-body">
+ @foreach (var accommodationType in Model.AvailableAccommodationTypes)
+        {
+            <div class="radio" style="margin-bottom: 2em;">
+                <label>
+
+                    <input type="radio" name="optionsRadios" id="accomodationType @accommodationType.Id" value="@accommodationType.Id">
+                    @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+                    @accommodationType.Description
+                </label>
+            </div>
+        }
+        <button class="btn btn-default" type="button">Сохранить проживание</button>
+    </div>
+</div>
