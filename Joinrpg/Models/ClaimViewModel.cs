@@ -320,6 +320,8 @@ namespace JoinRpg.Web.Models
             HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
             AccommodationFee = claim.ClaimAccommodationFee();
+            RoomType = claim.AccommodationRequest?.AccommodationType?.Name ?? "";
+            RoomName = claim.AccommodationRequest?.Accommodation?.Name;
 
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
@@ -378,6 +380,16 @@ namespace JoinRpg.Web.Models
         /// Accommodation fee
         /// </summary>
         public int AccommodationFee { get; }
+
+        /// <summary>
+        /// Name of choosen room type
+        /// </summary>
+        public string RoomType { get; }
+
+        /// <summary>
+        /// Number or name of occupied room
+        /// </summary>
+        public string RoomName { get; }
 
         /// <summary>
         /// Fields fee, separated by bound

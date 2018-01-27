@@ -78,7 +78,7 @@
                      )
             @RenderRow("rowAccommodationFee",
                      Model.HasAccommodationFee,
-                     "Проживание",
+                     "Проживание (" + Model.RoomType + (Model.RoomName != null ? ", комната " + Model.RoomName : "") + ")",
                      Html.RenderPriceElement(Model.AccommodationFee, "feeAccommodationDisp"),
                      null)
             @RenderRow("rowClaimFee",
