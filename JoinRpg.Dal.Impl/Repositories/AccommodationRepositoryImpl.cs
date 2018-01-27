@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
@@ -22,8 +23,30 @@ namespace JoinRpg.Dal.Impl.Repositories
 
         public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetPlayerSelectableAccommodationForProject(int projectId)
         {
-            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId && a.IsPlayerSelectable == true)
+            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId && a.IsPlayerSelectable)
                 .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
+            GetClaimAccommodationReport(int project)
+        {
+
+            return await Ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
+                .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active)).Select(
+                    claim => new ClaimAccommodationInfoRow()
+                    {
+                        ClaimId = claim.ClaimId,
+                        AccomodationType = claim.AccommodationRequest != null
+                            ? claim.AccommodationRequest.AccommodationType.Name
+                            : null,
+                        RoomName =
+                            claim.AccommodationRequest != null &&
+                            claim.AccommodationRequest.Accommodation != null
+                                ? claim.AccommodationRequest.Accommodation.Name
+                                : null,
+                        User = claim.Player,
+                    }).ToListAsync();
+
         }
     }
 }

@@ -8,6 +8,14 @@
 
 <h2>@ViewBag.Title</h2>
 
+<div class="btn-group" style="padding: 1em">
+    <a href="@Url.Action("MainReport", "AccommodationPrint", new {Export = "xlsx", ProjectId = Model.ProjectId})" class="btn btn-default"
+       >
+        <span class="glyphicon glyphicon-download"></span>
+        Расселение (Excel)
+    </a>
+</div>
+
 <table class="table table-striped">
     <thead>
     <tr>

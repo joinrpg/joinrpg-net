@@ -9,5 +9,17 @@ namespace JoinRpg.Data.Interfaces
     {
         Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId);
         Task<IReadOnlyCollection<ProjectAccommodationType>> GetPlayerSelectableAccommodationForProject(int projectId);
+
+        Task<IReadOnlyCollection<ClaimAccommodationInfoRow>> GetClaimAccommodationReport(
+            int project);
+
+    }
+
+    public class ClaimAccommodationInfoRow
+    {
+        public int ClaimId { get; set; }
+        public string AccomodationType { get; set; }
+        public string RoomName { get; set; }
+       public User User { get; set; }
     }
 }

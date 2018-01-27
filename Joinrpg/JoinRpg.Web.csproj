@@ -205,6 +205,7 @@
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="Controllers\AccommodationPrintController.cs" />
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
@@ -218,6 +219,8 @@
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationTypeViewModel.cs" />
+    <Compile Include="Models\Accommodation\AccomodationReportExporter.cs" />
+    <Compile Include="Models\Accommodation\AccomodationReportModels.cs" />
     <Compile Include="Models\Accommodation\ClaimAccommodationViewModel.cs" />
     <Compile Include="Models\Accommodation\ProjectAccommodationViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
