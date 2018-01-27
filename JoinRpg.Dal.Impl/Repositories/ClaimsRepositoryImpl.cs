@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -114,6 +114,7 @@ namespace JoinRpg.Dal.Impl.Repositories
           Ctx.ClaimSet.Include(c => c.CommentDiscussion.Comments.Select(com => com.Finance))
             .Include(c => c.CommentDiscussion.Comments.Select(com => com.Author))
             .Include(c => c.CommentDiscussion.Comments.Select(com => com.CommentText))
+            .Include(c => c.AccommodationRequest)
             .SingleOrDefaultAsync(e => e.ClaimId == claimId && e.ProjectId == projectId);
     }
 

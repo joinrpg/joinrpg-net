@@ -41,10 +41,16 @@ namespace JoinRpg.Services.Impl
         }
 
 
-        public async Task<ProjectAccommodation> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation)
+        public async Task<IEnumerable<ProjectAccommodation>> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation)
         {
-            if (newProjectAccommodation.ProjectId == 0) throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+            if (newProjectAccommodation.ProjectId == 0)
+                throw new ActivationException("Inconsistent state. ProjectId can't be 0");
             ProjectAccommodation result = null;
+            IEnumerable<ProjectAccommodation> results = null;
+
+            //TODO: Implement rooms names checking
+            //TODO: Remove result variable
+
             if (newProjectAccommodation.Id != 0)
             {
                 result = await UnitOfWork.GetDbSet<ProjectAccommodation>().FindAsync(newProjectAccommodation.Id).ConfigureAwait(false);
@@ -57,11 +63,53 @@ namespace JoinRpg.Services.Impl
                 result.Name = newProjectAccommodation.Name;
             }
             else
-            {
-                result = UnitOfWork.GetDbSet<ProjectAccommodation>().Add(newProjectAccommodation);
+            {   
+                // Creates new room using name and parameters from given room info
+                ProjectAccommodation CreateRoom(ProjectAccommodation input, string name)
+                    => new ProjectAccommodation
+                    {
+                        Name = name,
+                        AccommodationTypeId = input.AccommodationTypeId,
+                        ProjectId = input.ProjectId,
+                        Id = 0
+                    };
+
+                // Iterates through rooms list and creates object for each room from a list
+                IEnumerable<ProjectAccommodation> CreateRooms(ProjectAccommodation input)
+                {
+                    foreach (string roomCandidate in input.Name.Split(','))
+                    {
+                        int rangePos = roomCandidate.IndexOf('-');
+                        if (rangePos > -1)
+                        {
+                            if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out int roomsRangeStart)
+                                && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out int roomsRangeEnd)
+                                && roomsRangeStart < roomsRangeEnd)
+                            {
+                                while (roomsRangeStart <= roomsRangeEnd)
+                                {
+                                    yield return CreateRoom(input, roomsRangeStart.ToString());
+                                    roomsRangeStart++;
+                                }
+                                // Range was defined correctly, we can continue to next item
+                                continue;
+                            }
+                        }
+
+                        yield return CreateRoom(input, roomCandidate.Trim());
+                    }
+                }
+
+                // Inserting range of rooms instead one
+                results = UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(newProjectAccommodation));
+                //result = UnitOfWork.GetDbSet<ProjectAccommodation>().Add(newProjectAccommodation);
             }
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-            return result;
+
+            if (result != null)
+                return new ProjectAccommodation[] { result };
+            return results;
+            //return result;
         }
 
         public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)

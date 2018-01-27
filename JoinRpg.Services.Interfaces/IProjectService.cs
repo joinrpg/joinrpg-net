@@ -42,31 +42,11 @@ namespace JoinRpg.Services.Interfaces
 
         Task DeleteCharacterGroup(int projectId, int characterGroupId);
 
-        Task GrantAccess(int projectId,
-            int currentUserId,
-            int userId,
-            bool canGrantRights,
-            bool canChangeFields,
-            bool canChangeProjectProperties,
-            bool canApproveClaims,
-            bool canEditRoles,
-            bool canManageMoney,
-            bool canSendMassMails,
-            bool canManagePlots);
+        Task GrantAccess(GrantAccessRequest grantAccessRequest);
 
         Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId);
 
-        Task ChangeAccess(int projectId,
-            int currentUserId,
-            int userId,
-            bool canGrantRights,
-            bool canChangeFields,
-            bool canChangeProjectProperties,
-            bool canApproveClaims,
-            bool canEditRoles,
-            bool canManageMoney,
-            bool canSendMassMails,
-            bool canManagePlots);
+        Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
 
         Task UpdateSubscribeForGroup(int projectId,
             int characterGroupId,

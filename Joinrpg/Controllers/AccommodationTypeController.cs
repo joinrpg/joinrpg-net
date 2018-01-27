@@ -11,13 +11,20 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Controllers
 {
-    [MasterAuthorize(Permission.CanChangeProjectProperties)]
+    [MasterAuthorize()]
     public class AccommodationTypeController : Common.ControllerGameBase
     {
         private readonly IAccommodationService _accommodationService;
-        public AccommodationTypeController(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,
-                                            IProjectService projectService, IExportDataService exportDataService,
-                                               IAccommodationService accommodationService) : base(userManager, projectRepository, projectService, exportDataService)
+
+        public AccommodationTypeController(ApplicationUserManager userManager,
+            [NotNull]
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IExportDataService exportDataService,
+            IAccommodationService accommodationService) : base(userManager,
+            projectRepository,
+            projectService,
+            exportDataService)
         {
             _accommodationService = accommodationService;
         }
@@ -53,6 +60,7 @@ namespace JoinRpg.Web.Controllers
             return View(res);
         }
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(AccommodationTypeViewModel model)
@@ -65,6 +73,7 @@ namespace JoinRpg.Web.Controllers
             return RedirectToAction("Index", routeValues: new { model.ProjectId });
         }
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ProjectAccommodationEdit(ProjectAccommodationViewModel model)
@@ -77,7 +86,7 @@ namespace JoinRpg.Web.Controllers
             return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.AccommodationTypeId });
         }
 
-
+        [MasterAuthorize()]
 
         [HttpGet]
         public async Task<ActionResult> Edit(int projectId, int accommodationId)
@@ -91,6 +100,7 @@ namespace JoinRpg.Web.Controllers
             return View("Edit", new AccommodationTypeViewModel(model));
         }
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]
 
         [HttpGet]
         public async Task<ActionResult> ProjectAccommodationEdit(int projectId, int accommodationTypeId, int projectAccommodationId)
@@ -104,6 +114,7 @@ namespace JoinRpg.Web.Controllers
             return View("ProjectAccommodationEdit", new ProjectAccommodationViewModel(model));
         }
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpDelete]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Delete(int accomodationTypeId, int projectId)
@@ -113,9 +124,10 @@ namespace JoinRpg.Web.Controllers
         }
 
 
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpDelete]
         [ValidateAntiForgeryToken]
-        [Route("accommodationType/{ProjectId:int}/ProjectAccommodationDelete")]
+        [Route("{ProjectId:int}/rooms/ProjectAccommodationDelete")]
         public async Task<ActionResult> ProjectAccommodationDelete(int projectId, int accommodationTypeId, int projectAccommodationId)
         {
             await _accommodationService.RemoveProjectAccommodation(projectAccommodationId).ConfigureAwait(false);

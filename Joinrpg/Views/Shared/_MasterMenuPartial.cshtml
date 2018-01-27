@@ -128,7 +128,7 @@
                       <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Управление", "Setup", "Finances", new {Model.ProjectId}, null)</li>
                       @if (Model.EnableAccommodation)
                       {
-                        <li>@Html.ActionLink("Жилой фонд", "Index", "AccommodationType", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)</li>
+                        <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new {Model.ProjectId}, null)</li>
                       }
                     </ul>
                   </li>

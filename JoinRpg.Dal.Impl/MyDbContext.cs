@@ -88,6 +88,9 @@ namespace JoinRpg.Dal.Impl
         .WithMany()
         .HasForeignKey(c => c.ResponsibleMasterUserId);
 
+            modelBuilder.Entity<AccommodationRequest>().
+               HasMany(c => c.Subjects).WithOptional(c => c.AccommodationRequest);
+
 
       modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany().WillCascadeOnDelete(false);
       modelBuilder.Entity<Comment>().HasRequired(comment => comment.CommentText).WithRequiredPrincipal();

@@ -2,6 +2,7 @@
 var feeTotal = 0;
 var feeBalance = 0;
 var feeBase = 0;
+var feeAccommodationDisp = null;
 var feeClaimFieldsDisp = null;
 var feeCharacterFieldsDisp = null;
 var feeTotalFieldsDisp = null;
@@ -246,6 +247,7 @@ function toggleFeeBlock()
 
 $(function ()
 {
+    feeAccommodationDisp = setupFeeDisplayById("feeAccommodationDisp");
     feeClaimFieldsDisp = setupFeeDisplayById("feeClaimFieldsDisp");
     feeCharacterFieldsDisp = setupFeeDisplayById("feeCharacterFieldsDisp");
     feeTotalFieldsDisp = setupFeeDisplayById("feeTotalFieldsDisp");

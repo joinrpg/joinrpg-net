@@ -63,14 +63,16 @@ namespace JoinRpg.Domain
         private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
         {
             return claim.BaseFee(operationDate)
-                   + claim.ClaimFieldsFee(fieldsFee);
+                   + claim.ClaimFieldsFee(fieldsFee)
+                   + claim.ClaimAccommodationFee();
             /******************************************************************
              * If you want to add additional fee to a claim's fee,
              * append your value to the expression above.
              * Example:
-             *     return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+             *     return claim.BaseFee(operationDate)
              *         + claim.ClaimFieldsFee(fieldsFee)
-             *         + claim.AccommodationFee();
+             *         + claim.ClaimAccommodationFee()
+             *         + claim.SomeOtherBigFee();
              *****************************************************************/
         }
 
@@ -141,6 +143,12 @@ namespace JoinRpg.Domain
 
             return fieldsFee ?? 0;
         }
+
+        /// <summary>
+        /// Returns accommodation fee
+        /// </summary>
+        public static int ClaimAccommodationFee(this Claim claim)
+            => claim.AccommodationRequest?.AccommodationType?.Cost ?? 0;
 
         /// <summary>
         /// Returns how many money left to pay
