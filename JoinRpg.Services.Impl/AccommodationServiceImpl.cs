@@ -177,7 +177,7 @@ namespace JoinRpg.Services.Impl
             var accommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
                 .Include(r => r.Subjects.Select(s => s.Player))
                 .Include(r => r.Project)
-                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.AccommondationRequestId)
+                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.AccommodationRequestId)
                 .FirstOrDefaultAsync();
 
             accommodationRequest.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
@@ -217,7 +217,7 @@ namespace JoinRpg.Services.Impl
             var accommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
                 .Include(r => r.Subjects.Select(s => s.Player))
                 .Include(r => r.Project)
-                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.AccommondationRequestId)
+                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.AccommodationRequestId)
                 .FirstOrDefaultAsync();
 
             var room = await UnitOfWork.GetDbSet<ProjectAccommodation>()
