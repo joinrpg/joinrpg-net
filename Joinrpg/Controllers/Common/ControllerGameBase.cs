@@ -89,7 +89,7 @@ namespace JoinRpg.Web.Controllers.Common
       menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
       menuModel.IsActive = project.Active;
       menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
-      menuModel.EnableAccomodation = project.Details.EnableAccomodation;
+      menuModel.EnableAccommodation = project.Details.EnableAccommodation;
       menuModel.IsAdmin = IsCurrentUserAdmin();
 
 

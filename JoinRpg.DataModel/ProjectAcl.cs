@@ -34,9 +34,9 @@ namespace JoinRpg.DataModel
 
         public bool CanManagePlots { get; set; }
 
-        public bool CanManageAccomodation { get; set; }
+        public bool CanManageAccommodation { get; set; }
 
-        public bool CanSetPlayersAccomodations { get; set; }
+        public bool CanSetPlayersAccommodations { get; set; }
 
         public static ProjectAcl CreateRootAcl(int userId, bool isOwner = false)
         {
@@ -52,8 +52,8 @@ namespace JoinRpg.DataModel
                 CanManageMoney = true,
                 CanSendMassMails = true,
                 CanManagePlots = true,
-                CanManageAccomodation = true,
-                CanSetPlayersAccomodations = true,
+                CanManageAccommodation = true,
+                CanSetPlayersAccommodations = true,
             };
         }
 

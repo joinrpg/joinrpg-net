@@ -150,7 +150,8 @@ namespace JoinRpg.Dal.Impl
 
       modelBuilder.Entity<ProjectAccommodationType>();
       modelBuilder.Entity<ProjectAccommodation>();
-
+      modelBuilder.Entity<AccommodationRequest>();
+      modelBuilder.Entity<AccommodationInvite>();
       base.OnModelCreating(modelBuilder);
     }
   }

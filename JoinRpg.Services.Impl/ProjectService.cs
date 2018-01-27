@@ -398,7 +398,7 @@ namespace JoinRpg.Services.Impl
 
             project.Details.GenerateCharacterNamesFromPlayer = request.GenerateCharacterNamesFromPlayer;
             project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
-            project.Details.EnableAccomodation = request.IsAccommodationEnabled;
+            project.Details.EnableAccommodation = request.IsAccommodationEnabled;
 
             await UnitOfWork.SaveChangesAsync();
         }

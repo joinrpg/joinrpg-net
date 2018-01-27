@@ -208,6 +208,7 @@
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
+    <Compile Include="Controllers\ClaimAccommodationController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
@@ -751,6 +752,7 @@
     <Content Include="Views\AccommodationType\Edit.cshtml" />
     <Content Include="Views\AccommodationType\AccommodationIndex.cshtml" />
     <Content Include="Views\AccommodationType\ProjectAccommodationEdit.cshtml" />
+    <Content Include="Views\ClaimAccommodation\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

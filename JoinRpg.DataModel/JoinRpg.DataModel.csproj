@@ -49,6 +49,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccommodationInvite.cs" />
+    <Compile Include="AccommodationRequest.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
