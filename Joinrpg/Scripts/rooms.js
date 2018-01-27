@@ -23,6 +23,7 @@ function AddRoom()
     dlgEditRoomName.roomName = "";
     dlgEditRoomName.pnRoomNameTitle.innerHTML = "Добавление комнат";
     dlgEditRoomName.edRoomName.value = "";
+    $(dlgEditRoomName.addComment).show();
     $(dlgEditRoomName).modal("show");
     dlgEditRoomName.edRoomName.focus();
 }
@@ -49,6 +50,7 @@ function RenameRoom(id)
         dlgEditRoomName.roomName = name;
         dlgEditRoomName.pnRoomNameTitle.innerHTML = "Изменение комнаты";
         dlgEditRoomName.edRoomName.value = name;
+        $(dlgEditRoomName.addComment).hide();
         $(dlgEditRoomName).modal("show");
         dlgEditRoomName.edRoomName.focus();
     }
@@ -178,6 +180,7 @@ $(function ()
     dlgEditRoomName.pnRoomNameTitle = document.getElementById("pnRoomNameTitle");
     dlgEditRoomName.edRoomName = document.getElementById("edRoomName");
     dlgEditRoomName.bnEditRoomOk = document.getElementById("bnEditRoomOk");
+    dlgEditRoomName.addComment = document.getElementById("addComment");
     $(dlgEditRoomName.edRoomName).keypress(function ()
     {
         var newValue = String(dlgEditRoomName.edRoomName.value).trim();        
