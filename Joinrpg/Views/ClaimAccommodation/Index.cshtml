@@ -9,35 +9,20 @@
     }
     <hr />
     <h2>Возможные варианты проживания</h2>
-@foreach (var accommodationType in Model.AvailableAccommodationTypes)
-{
-    <button>
-        @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
-        @accommodationType.Description
-    </button>
-}
-    <table class="table table-striped">
-        <thead>
-        <th>Тип размещения</th>
-        <th>Стоимость</th>
-        <th>Мест в номере</th>
-        <th>Всего мест</th>
-        <th>Действия</th>
-        </thead>
-        @foreach (var accommodationType in Model.AvailableAccommodationTypes)
-        {
-            <tr>
-                <td>@accommodationType.Name</td>
-                <td>@accommodationType.Cost</td>
-                <td>@accommodationType.Capacity</td>
-                <td>Not yet impl</td>
+  
+    @foreach (var accommodationType in Model.AvailableAccommodationTypes)
+    {
+        <div class="radio">
+            <label>
+                
+                <input type="radio" name="optionsRadios" id="accomodationType @accommodationType.Id" value="@accommodationType.Id">
+                @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br />
+                @accommodationType.Description
+            </label>
+        </div>
 
-                <td>
-                    @Html.RouteLink("Выбрать", new { accommodationId = accommodationType.Id, ProjectId = accommodationType.ProjectId, action = "Edit", Controller = "AccommodationType" }, new { @class = "btn btn-default" })
-                </td>
-            </tr>
-        }
-
-    </table>
+    }
+    <button class="btn btn-default" type="button">Сохранить проживание</button>
+  
 
 </div>
