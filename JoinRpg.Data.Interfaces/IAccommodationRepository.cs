@@ -8,5 +8,6 @@ namespace JoinRpg.Data.Interfaces
     public interface IAccommodationRepository
     {
         Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId);
+        Task<IReadOnlyCollection<ProjectAccommodationType>> GetPlayerSelectableAccommodationForProject(int projectId);
     }
 }

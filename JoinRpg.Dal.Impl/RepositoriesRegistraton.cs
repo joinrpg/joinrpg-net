@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using Microsoft.Practices.Unity;
@@ -15,6 +15,8 @@ namespace JoinRpg.Dal.Impl
       container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
       container.RegisterType<IForumRepository, ForumRepositoryImpl>();
       container.RegisterType<ICharacterRepository, CharacterRepositoryImpl>();
+      container.RegisterType<IAccommodationRepository, AccommodationRepositoryImpl>();
+      container.RegisterType<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>();
     }
   }
 }

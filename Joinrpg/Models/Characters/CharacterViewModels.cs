@@ -87,7 +87,8 @@ namespace JoinRpg.Web.Models.Characters
     None,
     Character, Editing, Claim,
     RejectedClaim,
-    AddClaim
+    AddClaim,
+    Accommodation
   }
 
   /// <summary>
@@ -100,7 +101,7 @@ namespace JoinRpg.Web.Models.Characters
     public bool CanEditRoles { get; private set; }
 
     public bool CanAddClaim { get; private set; }
-
+    public bool IsAccommodationEnabled { get; set; }
     public int? ClaimId { get; private set; }
     public int? CharacterId { get; private set; }
     public int ProjectId { get; private set; }
@@ -134,6 +135,7 @@ namespace JoinRpg.Web.Models.Characters
         CanEditRoles = character.HasEditRolesAccess(currentUserId),
         CharacterId = character.CharacterId,
         ProjectId = character.ProjectId,
+        IsAccommodationEnabled = character.Project.Details.EnableAccommodation,
         Page = page,
         Name = character.CharacterName,
         IsActive = character.IsActive
@@ -166,6 +168,7 @@ namespace JoinRpg.Web.Models.Characters
         HasMasterAccess = claim.HasMasterAccess(currentUserId),
         CharacterId = claim.Character?.CharacterId,
         ProjectId = claim.ProjectId,
+        IsAccommodationEnabled = claim.Project.Details.EnableAccommodation,
         Page = characterNavigationPage,
         Name = claim.GetTarget().Name,
         CanEditRoles = claim.HasEditRolesAccess(currentUserId),

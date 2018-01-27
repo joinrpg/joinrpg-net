@@ -78,12 +78,7 @@
                         </ul>
                     </li>
                 }
-                @if (Model.EnableAccommodation)
-                {
-                    <li>
-                        @Html.ActionLink("Проживание", "Index", "ClaimAccommodation", new {Model.ProjectId}, null)
-                    </li>
-                }
+
 
                 @if (Model.IsAdmin)
                 {
