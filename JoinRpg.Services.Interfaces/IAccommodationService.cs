@@ -29,7 +29,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task OccupyRoom(OccupyRequest request);
 
-        Task UnOccupyRoom(OccupyRequest request);
+        Task UnOccupyRoom(UnOccupyRequest request);
 
     }
 
