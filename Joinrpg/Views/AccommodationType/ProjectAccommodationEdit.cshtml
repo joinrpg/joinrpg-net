@@ -36,7 +36,7 @@
             <div class="col-md-offset-2 col-md-8">
                 @if (ViewBag.IsInEditMode)
                 {
-                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, accommodationId = Model.AccommodationTypeId, action = "Edit", Controller = "AccomodationType" }, new { @class = "btn btn-default pull-right" })
+                    @Html.RouteLink("Назад", new { projectId = Model.ProjectId, accommodationId = Model.AccommodationTypeId, action = "Edit", Controller = "AccommodationType" }, new { @class = "btn btn-default pull-right" })
                 }
 
                 <button type="submit" class="btn btn-primary pull-right">@ViewBag.ActionName</button>

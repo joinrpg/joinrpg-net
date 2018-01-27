@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Controllers
                 Active = project.Active,
                 AutoAcceptClaims = project.Details.AutoAcceptClaims,
                 GenerateCharacterNamesFromPlayer = project.Details.GenerateCharacterNamesFromPlayer,
-                EnableAccomodation = project.Details.EnableAccomodation
+                EnableAccomodation = project.Details.EnableAccommodation
             });
         }
 

@@ -16,6 +16,6 @@ namespace JoinRpg.DataModel
         public virtual Project Project { get; set; }
         [Required]
         public string Name { get; set; }
-        public virtual ICollection<Claim> Inhabitants { get; set; }
+        public virtual ICollection<AccommodationRequest> Inhabitants { get; set; }
     }
 }
