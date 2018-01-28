@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IAccommodationInviteRepository.cs" />
     <Compile Include="IAccommodationRepository.cs" />
     <Compile Include="IAccommodationRequestRepository.cs" />
     <Compile Include="ICharacterRepository.cs" />

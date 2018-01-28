@@ -21,16 +21,17 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetPlayerSelectableAccommodationForProject(int projectId)
+        public async Task<IReadOnlyCollection<ProjectAccommodationType>>
+            GetPlayerSelectableAccommodationForProject(int projectId)
         {
-            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId && a.IsPlayerSelectable)
+            return await Ctx.Set<ProjectAccommodationType>()
+                .Where(a => a.ProjectId == projectId && a.IsPlayerSelectable)
                 .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
             GetClaimAccommodationReport(int project)
         {
-
             return await Ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
                 .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active)).Select(
                     claim => new ClaimAccommodationInfoRow()
@@ -46,7 +47,6 @@ namespace JoinRpg.Dal.Impl.Repositories
                                 : null,
                         User = claim.Player,
                     }).ToListAsync();
-
         }
     }
 }

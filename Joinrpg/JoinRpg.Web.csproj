@@ -216,6 +216,7 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Models\AccommodationPotentialNeighbors.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationTypeViewModel.cs" />
     <Compile Include="Models\Accommodation\AccommodationRequestViewModel.cs" />
@@ -229,6 +230,7 @@
     <Compile Include="Models\Characters\CharacterGroupReportViewModel.cs" />
     <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
     <Compile Include="Models\GameRolesReportViewModel.cs" />
+    <Compile Include="Models\InviteRequestViewModel.cs" />
     <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />

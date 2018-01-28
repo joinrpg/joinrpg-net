@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
 @model ClaimAccommodationViewModel
 <div class="panel panel-default" id="accommodationRequests">
@@ -10,14 +11,75 @@
         }
         @foreach (var accommodationRequests in Model.AccommodationRequests)
         {
-            var className = "alert-warning";
+            var className = "alert alert-warning";
             if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted)
             {
-                className = "alert-success";
-
+                className = "alert alert-success";
             }
             <div class="@className">
                 @accommodationRequests.AccommodationType.Name (@accommodationRequests.AccommodationType.Capacity места, @accommodationRequests.AccommodationType.Cost рублей)
+
+                @if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted)
+                {
+                    using (Html.BeginForm("Invite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+                    {
+                        @Html.HiddenFor(model => model.ProjectId)
+                        @Html.HiddenFor(model=>model.ClaimId)
+                        @Html.Hidden("RequestId",accommodationRequests.Id)
+                        @Html.AntiForgeryToken()
+
+                        @Html.SearchableDropdown("ReceiverClaimId", Model.PotentialNeighbors
+                            .Where(neighbor => neighbor.Type != NeighborType.Current)
+                            .Select(
+                                neighbor =>
+                                    new ImprovedSelectListItem()
+                                    {
+                                        Value = neighbor.ClaimId.ToString(),
+                                        Text = neighbor.UserName,
+                                        ExtraSearch = neighbor.ClaimName,
+                                        Subtext = "<br />" + neighbor.UserName + " (" + neighbor.ClaimName + " ) <br /> " + (neighbor.Type == NeighborType.NoRequest ? "еще не выбрал тип проживания" : "у вас одинаковый тип проживания")
+                                    }))
+
+                        <button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
+                    }
+                    <hr/>
+                    if (Model.OutgoingInvite.Any())
+                    {
+                        <h5>Посланные приглашения</h5>
+                        <table>
+
+                            @{
+                                var trClassName = "";
+                            }
+                            @foreach (var accommodationInvite in Model.OutgoingInvite)
+                            {
+                                switch (@accommodationInvite.IsAccepted)
+                                {
+                                    case AccommodationRequest.InviteState.Unanswered:
+                                        trClassName = "alert-info";
+                                        break;
+                                    case AccommodationRequest.InviteState.Accepted:
+                                        trClassName = "alert-success";
+                                        break;
+                                    case AccommodationRequest.InviteState.Declined:
+                                        trClassName = "alert-danger";
+                                        break;
+                                    case AccommodationRequest.InviteState.Canceled:
+                                        trClassName = "alert-warning";
+                                        break;
+                                    default:
+                                        throw new ArgumentOutOfRangeException();
+                                }
+                                <tr class="@trClassName">
+                                    <td>@accommodationInvite.To.Player.PrefferedName</td>
+                                    <td>@accommodationInvite.To.Name</td>
+                                    <td>@accommodationInvite.ResolveDescription</td>
+                                    <td><i class="glyphicon glyphicon-ban-circle text-danger"></i></td>
+                                </tr>
+                            }
+                        </table>
+                    }
+                }
             </div>
         }
     </div>
@@ -31,21 +93,20 @@
             foreach (var accommodationType in Model.AvailableAccommodationTypes)
             {
                 var className = "";
-                var checkedState ="";
+                var checkedState = "";
                 if (Model.AccommodationRequests.Any(request => request.AccommodationType == accommodationType))
                 {
-
-                    className = "text-success";
+                    className = "alert alert-success text-success";
                     checkedState = "checked";
                 }
                 <div class="radio" style="margin-bottom: 2em;">
-                     <label class="@className">
-                         <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
-                         @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
-                         @accommodationType.Description
-                     </label>
-                 </div>
-             }
+                    <label class="@className">
+                        <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
+                        @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+                        @accommodationType.Description
+                    </label>
+                </div>
+            }
             <button class="btn btn-default" type="submit">Сохранить проживание</button>
         }
     </div>

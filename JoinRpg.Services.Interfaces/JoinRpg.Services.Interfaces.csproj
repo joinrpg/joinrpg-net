@@ -56,6 +56,7 @@
     <Compile Include="Email\RoomEmailInterfaces.cs" />
     <Compile Include="Email\ForumEmail.cs" />
     <Compile Include="GrantAccessRequest.cs" />
+    <Compile Include="IAccommodationInviteService.cs" />
     <Compile Include="IAccommodationService.cs" />
     <Compile Include="EditProjectRequest.cs" />
     <Compile Include="IClaimOperationRequest.cs" />

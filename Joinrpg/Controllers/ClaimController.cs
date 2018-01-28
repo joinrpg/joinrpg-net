@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -26,10 +27,12 @@ namespace JoinRpg.Web.Controllers
     private readonly IAccommodationRequestRepository _accommodationRequestRepository;
     private readonly IAccommodationRepository _accommodationRepository;
     private IAccommodationService AccommodationService { get; }
+    private IAccommodationInviteService AccommodationInviteService { get; }
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
-        private IUriService UriService { get; }
+    private IAccommodationInviteRepository AccommodationInviteRepository { get; }
+    private IUriService UriService { get; }
 
     [HttpGet]
     [Authorize]
@@ -68,7 +71,9 @@ namespace JoinRpg.Web.Controllers
           IUriService uriService,
           IAccommodationRequestRepository accommodationRequestRepository,
           IAccommodationRepository accommodationRepository,
-          IAccommodationService accommodationService)
+          IAccommodationService accommodationService,
+          IAccommodationInviteService accommodationInviteService,
+          IAccommodationInviteRepository accommodationInviteRepository)
           : base(userManager, projectRepository, projectService, exportDataService)
       {
           _claimService = claimService;
@@ -77,6 +82,8 @@ namespace JoinRpg.Web.Controllers
           _accommodationRequestRepository = accommodationRequestRepository;
           _accommodationRepository = accommodationRepository;
           AccommodationService = accommodationService;
+          AccommodationInviteService = accommodationInviteService;
+          AccommodationInviteRepository = accommodationInviteRepository;
           FinanceService = financeService;
           PluginFactory = pluginFactory;
           CharacterRepository = characterRepository;
@@ -139,11 +146,43 @@ namespace JoinRpg.Web.Controllers
         ? await _plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
         : new PlotElement[] { };
 
-      var availableAccommodation = await
+      IEnumerable<ProjectAccommodationType> availableAccommodation = null;
+      IEnumerable<AccommodationRequest> requestForAccommodation = null;
+      IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors = null;
+      IEnumerable<AccommodationInvite> incomingInvite = null;
+      IEnumerable<AccommodationInvite> outgoingInvite = null;
+
+
+      if (claim.Project.Details.EnableAccommodation)
+      { 
+        availableAccommodation = await
             _accommodationRepository.GetPlayerSelectableAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-      var requestForAccommodation = await _accommodationRequestRepository
+        requestForAccommodation = await _accommodationRequestRepository
             .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
-      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation, requestForAccommodation);
+        var acceptedRequest =  requestForAccommodation
+            .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
+            var acceptedRequestId = acceptedRequest?.AccommodationTypeId;
+          var acceptedRequestAccommodationTypeIdId = acceptedRequest?.AccommodationTypeId;
+
+        if (acceptedRequestId != null)
+        {
+          var sameRequest = (await
+              _accommodationRequestRepository.GetClaimsWithSameAccommodationTypeToInvite(
+                  acceptedRequestAccommodationTypeIdId.Value).ConfigureAwait(false)).Where(c=>c.ClaimId!=claim.ClaimId)
+              .Select(c => new AccommodationPotentialNeighbors(c, NeighborType.WithSameType)); ;
+          var noRequest = (await
+              _accommodationRequestRepository.GetClaimsWithOutAccommodationRequest(claim.ProjectId).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.NoRequest)); ;
+          var currentNeighbors = (await
+             _accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
+                  acceptedRequestId.Value).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
+            potentialNeighbors = sameRequest.Union(noRequest).Union(currentNeighbors);
+        }
+
+         incomingInvite = await AccommodationInviteRepository.GetIncomingInviteForClaim(claim).ConfigureAwait(false);
+         outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
+       }
+
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation, requestForAccommodation, potentialNeighbors,incomingInvite,outgoingInvite);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {
@@ -595,9 +634,42 @@ namespace JoinRpg.Web.Controllers
       public async Task<ActionResult> PostAccommodationRequest(
           AccommodationRequestViewModel viewModel)
       {
-          await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
+          var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false); ;
+          if (project == null)
+          {
+              return HttpNotFound();
+          }
+
+          if (!ModelState.IsValid)
+          {
+              return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+          }
+
+
+            await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
               viewModel.ClaimId,
               viewModel.AccommodationTypeId).ConfigureAwait(false);
+          return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+      }
+
+      [ValidateAntiForgeryToken]
+      public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
+      {
+          var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
+          if (project == null)
+          {
+              return HttpNotFound();
+          }
+
+          if (!ModelState.IsValid)
+          {
+              return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+          }
+
+          await AccommodationInviteService.CreateAccommodationInvite(viewModel.ProjectId,
+              viewModel.ClaimId,
+              viewModel.ReceiverClaimId,
+              viewModel.RequestId).ConfigureAwait(false);
           return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
       }
 

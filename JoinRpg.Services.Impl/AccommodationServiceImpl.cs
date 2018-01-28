@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -114,7 +112,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             if (result != null)
-                return new ProjectAccommodation[] { result };
+                return new[] { result };
             return results;
             //return result;
         }
@@ -165,6 +163,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             return accommodationRequest;
         }
+
 
         public async Task OccupyRoom(OccupyRequest request)
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using JetBrains.Annotations;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Impl.Search;
@@ -22,6 +22,7 @@ namespace JoinRpg.Services.Impl
       container.RegisterType<IForumService, ForumServiceImpl>();
       container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
       container.RegisterType<IFieldDefaultValueGenerator, FieldDefaultValueGenerator>();
+      container.RegisterType<IAccommodationInviteService, AccommodationInviteServiceImpl>();
       container.RegisterType<IAccommodationService, AccommodationServiceImpl>();
     }
   }

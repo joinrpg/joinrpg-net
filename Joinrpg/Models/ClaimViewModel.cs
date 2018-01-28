@@ -108,15 +108,23 @@ namespace JoinRpg.Web.Models
 
     public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
     public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
+    public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
+    public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
+    public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
 
-    public ClaimViewModel(User currentUser,
+
+
+        public ClaimViewModel(User currentUser,
           Claim claim,
           IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
-        IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
-        IEnumerable<AccommodationRequest> accommodationRequests = null)
-      {
+          IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
+          IEnumerable<AccommodationRequest> accommodationRequests = null,
+          IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors = null,
+          IEnumerable<AccommodationInvite> incomingInvite = null,
+          IEnumerable<AccommodationInvite> outgoingInvite = null)
+        {
           ClaimId = claim.ClaimId;
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
@@ -132,7 +140,10 @@ namespace JoinRpg.Web.Models
           CharacterActive = claim.Character?.IsActive;
           AvailableAccommodationTypes = availableAccommodationTypes;
           AccommodationRequests = accommodationRequests;
-            OtherClaimsForThisCharacterCount = claim.IsApproved
+          PotentialNeighbors = potentialNeighbors;
+          IncomingInvite = incomingInvite;
+          OutgoingInvite = outgoingInvite;
+          OtherClaimsForThisCharacterCount = claim.IsApproved
               ? 0
               : claim.OtherClaimsForThisCharacter().Count();
           HasOtherApprovedClaim = !claim.IsApproved &&
