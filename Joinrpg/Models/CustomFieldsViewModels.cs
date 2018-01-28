@@ -287,7 +287,7 @@ namespace JoinRpg.Web.Models
                   masterAccess: false,
                   //TODO: this printing code might do smth wrong. Why Any access if we need palyer visible only?
                   playerAccessToCharacter: character.HasAnyAccess(currentUserId),
-                  playerAccesToClaim: character.ApprovedClaim?.HasAnyAccess(currentUserId) ?? false);
+                  playerAccesToClaim: character.ApprovedClaim?.HasAccess(currentUserId, ExtraAccessReason.Player) ?? false);
             }
             else
             {

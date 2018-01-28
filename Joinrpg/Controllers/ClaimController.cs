@@ -513,7 +513,7 @@ namespace JoinRpg.Web.Controllers
       {
         return HttpNotFound();
       }
-      if (!claim.HasAnyAccess(CurrentUserId))
+      if (!claim.HasAccess(CurrentUserId, ExtraAccessReason.Player))
       {
         return NoAccesToProjectView(claim.Project);
       }

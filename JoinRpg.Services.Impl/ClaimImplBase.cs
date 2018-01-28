@@ -67,7 +67,7 @@ namespace JoinRpg.Services.Impl
 
       if (feeChange != 0 || money < 0)
       {
-        claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
       }
       var state = FinanceOperationState.Approved;
 
@@ -80,7 +80,7 @@ namespace JoinRpg.Services.Impl
         }
         else
         {
-          claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+          claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
         }
       }
 
@@ -125,27 +125,18 @@ namespace JoinRpg.Services.Impl
           }
       }
 
-      protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType = null)
-      {
-          var claim = await LoadClaim(request);
-
-          claim.RequestMasterAccess(CurrentUserId, accessType);
-          return claim;
-      }
-
-      protected async Task<Claim> LoadClaim(IClaimOperationRequest request)
+      protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType = null, ExtraAccessReason reason = ExtraAccessReason.None)
       {
           var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
 
-          if (claim == null)
-          {
-              throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
-          }
-
-          claim.RequestAccess(CurrentUserId);
-
-          return claim;
+          return  claim.RequestAccess(CurrentUserId, accessType, reason);
       }
+
+      protected Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None)
+      {
+          return LoadClaimAsMaster(request, acl => true, reason);
+      }
+
 
       protected async Task<TEmail> CreateClaimEmail<TEmail>(
           [NotNull] Claim claim,
