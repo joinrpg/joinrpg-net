@@ -2,6 +2,7 @@
 @using JoinRpg.Web.Models.Accommodation;
 @model RoomTypeRoomsListViewModel
 
+@Scripts.Render("~/Scripts/roomsMessages.js")
 @Scripts.Render("~/Scripts/rooms.js")
 <script type="text/javascript">
     @* following variables are declared in rooms.js *@
@@ -13,29 +14,41 @@
 <hr />
 <h3>Список комнат</h3>
 <div class="btn-group">
-    <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
-    <button type="button" onclick="KickAll()" class="btn btn-default"><i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
+    @if (Model.CanManageRooms)
+    {
+        <button type="button" onclick="AddRoom()" class="btn btn-default">
+            <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
+    }
+    @if (Model.CanAssignRooms)
+    {
+        <button type="button" onclick="PlaceAll()" class="btn btn-default">
+            <i class="glyphicon glyphicon-bed"></i> Заселить всех</button>
+        <button type="button" onclick="KickAll()" class="btn btn-default">
+            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
+    }
 </div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th style="min-width: 10em; width: 10em;">Комната</th>
-            <th style="min-width: 10em; width: 10em;">Места</th>
-            <th>Проживающие</th>
-            <th style="min-width: 6em; width: 6em;"></th>
-            <th style="min-width: 6em; width: 6em;"></th>
-        </tr>
-    </thead>
-    <tbody id="roomsRows">
-        @if (Model.Rooms != null && Model.Rooms.Count > 0)
-        {
+<div class="table-responsive" style="margin-top: 1em;">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="min-width: 10em; width: 10em;">Комната</th>
+                <th style="min-width: 10em; width: 10em;">Места</th>
+                <th>Проживающие</th>
+                <th style="min-width: 6em; width: 6em;"></th>
+                <th style="min-width: 6em; width: 6em;"></th>
+            </tr>
+        </thead>
+        <tbody id="roomsRows">
+            @if (Model.Rooms != null && Model.Rooms.Count > 0)
+            {
             foreach (RoomViewModel room in Model.Rooms)
             {
-                @Html.Partial("_RoomDetails", room);
+            @Html.Partial("_RoomDetails", room);
             }
-        }
-        <tr id="rowPlaceholder">
-            <td colspan="5">(комнаты не добавлены)</td>
-        </tr>
-    </tbody>
-</table>
+            }
+            <tr id="rowPlaceholder">
+                <td colspan="5">(комнаты не добавлены)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

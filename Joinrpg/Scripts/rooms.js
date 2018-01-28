@@ -12,11 +12,16 @@ function AddPeople(roomId)
 
 }
 
-function KickPeople(roomId)
+function PlaceAll()
+{
+    
+}
+
+function KickPeople(id)
 {
     var row = roomsRows.GetRowById(id);
     var name = roomsRows.GetName(row);
-    if (confirm("Выселить всех из комнаты " + name + "?"))
+    if (ConfirmKickAllFromRoom(name))
     {
         
     }
@@ -24,7 +29,7 @@ function KickPeople(roomId)
 
 function KickAll()
 {
-    if (confirm("Вы точно уверены, что хотите выселить ВСЕХ участников из ВСЕХ комнат?"))
+    if (ConfirmKickAllFromRoomType())
     {
         
     }
@@ -137,16 +142,6 @@ function DoDeleteRoom(id)
         {
             ErrorDelete();
         });
-}
-
-function ErrorEdit()
-{
-    alert("Произошла ошибка при добавлении или изменении комнат");
-}
-
-function ErrorDelete()
-{
-    alert("Произошла ошибка при попытке удаления комнаты")
 }
 
 function parseIntDef(value, def)
