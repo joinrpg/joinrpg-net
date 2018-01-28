@@ -29,7 +29,7 @@ else
   ViewBag.Title = Model.Name;
   string strikeStyleOfName = Model.IsActive ? "" : "text-decoration: line-through";
 }
-<div style="margin-bottom: 1em">
+<div>
     <ul class="nav nav-pills">
         <li class="disabled">
             <a href="#" style="cursor: default; @strikeStyleOfName"><span class="h3">@ViewBag.Title</span></a>

@@ -1,14 +1,14 @@
-using System.Linq;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
+using Microsoft.Ajax.Utilities;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -30,111 +30,203 @@ namespace JoinRpg.Web.Controllers
             _accommodationService = accommodationService;
         }
 
+        /// <summary>
+        /// Shows list of registered room types
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult> Index(int projectId)
         {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
 
-            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId).ConfigureAwait(false);
-            var accommodations = (await _accommodationService.GetAccommodationForProject(projectId).ConfigureAwait(false)).Select(x =>
-                new AccommodationTypeViewModel()
-                {
-                    Name = x.Name,
-                    Cost = x.Cost,
-                    ProjectId = x.ProjectId,
-                    Id = x.Id,
-                    Capacity = x.Capacity,
-                    Description = x.Description,
-                    IsAutoFilledAccommodation = x.IsAutoFilledAccommodation,
-                    IsInfinite = x.IsInfinite,
-                    IsPlayerSelectable = x.IsPlayerSelectable,
-                    Accommodations = x.ProjectAccommodations.Select(projectAccomodaion => new ProjectAccommodationViewModel(projectAccomodaion)).ToList()
-                }
-              ).ToList();
-            if (project == null) return HttpNotFound();
-            if (!project.Details.EnableAccommodation) return RedirectToAction("Edit", "Game");
-            var res = new AccommodationListViewModel
-            {
-                ProjectId = projectId,
-                ProjectName = project.ProjectName,
-                AccommodationTypes = accommodations,
-                CanManageRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanManageAccommodation),
-                CanAssignRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations),
-            };
-            return View(res);
+            return View(new AccommodationListViewModel(project,
+                await _accommodationService.GetRoomTypes(projectId),
+                CurrentUserId));
         }
 
+        /// <summary>
+        /// Shows "Add room type" form
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(AccommodationTypeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View("TypeDetails", model);
-            }
-            await _accommodationService.RegisterNewAccommodationTypeAsync(model.GetProjectAccommodationTypeMock()).ConfigureAwait(false);
-            return RedirectToAction("Index", routeValues: new { model.ProjectId });
-        }
-
-        [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ProjectAccommodationEdit(ProjectAccommodationViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-            await _accommodationService.RegisterNewProjectAccommodationAsync(model.GetProjectAccommodationMock()).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { model.ProjectId, AccommodationId = model.AccommodationTypeId });
-        }
-
-        [MasterAuthorize()]
-
         [HttpGet]
-        public async Task<ActionResult> TypeDetails(int projectId, int accommodationTypeId)
+        public async Task<ActionResult> AddRoomType(int projectId)
         {
-            var model = await _accommodationService.GetAccommodationByIdAsync(accommodationTypeId).ConfigureAwait(false);
-            if (model == null || model.ProjectId != projectId)
+            return View(new RoomTypeViewModel(
+                await ProjectRepository.GetProjectAsync(projectId), CurrentUserId));
+        }
+
+        /// <summary>
+        /// Shows "Edit room type" form
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
+        {
+            var entity = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            if (entity == null || entity.ProjectId != projectId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
 
-            return View("TypeDetails", new AccommodationTypeViewModel(model, CurrentUserId));
+            return View(new RoomTypeViewModel(entity, CurrentUserId));
         }
 
+        /// <summary>
+        /// Saves room type.
+        /// If data are valid, redirects to Index
+        /// If not, returns to edit mode
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-
-        [HttpGet]
-        public async Task<ActionResult> ProjectAccommodationEdit(int projectId, int accommodationTypeId, int projectAccommodationId)
+        [HttpPost]
+        [ValidateAntiForgeryToken]        
+        public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
         {
-            var model = await _accommodationService.GetProjectAccommodationByIdAsync(projectAccommodationId).ConfigureAwait(false);
-            if (model == null || model.ProjectId != projectId || model.AccommodationTypeId != accommodationTypeId)
+            if (!ModelState.IsValid)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                if (model.Id == 0)
+                    return View("AddRoomType", model);
+                return View("EditRoomType", model);
             }
-            ViewBag.AccomodationName = $"«{model.Project.ProjectName}\\{model.ProjectAccommodationType.Name}»";
-            return View("ProjectAccommodationEdit", new ProjectAccommodationViewModel(model));
+            await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+            return RedirectToAction("Index", new { projectId = model.ProjectId });
         }
 
+        /// <summary>
+        /// Removes room type
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpDelete]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Delete(int accomodationTypeId, int projectId)
+        [HttpGet]
+        public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
         {
-            await _accommodationService.RemoveAccommodationType(accomodationTypeId).ConfigureAwait(false);
+            await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
             return RedirectToAction("Index", new { ProjectId = projectId });
         }
 
-
-        [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpDelete]
-        [ValidateAntiForgeryToken]
-        [Route("{ProjectId:int}/rooms/ProjectAccommodationDelete")]
-        public async Task<ActionResult> ProjectAccommodationDelete(int projectId, int accommodationTypeId, int projectAccommodationId)
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpHead]
+        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, string room)
         {
-            await _accommodationService.RemoveProjectAccommodation(projectAccommodationId).ConfigureAwait(false);
-            return RedirectToAction("Edit", routeValues: new { ProjectId = projectId, AccommodationId = accommodationTypeId });
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    //TODO: Implement occupation for the specified room
+                }
+                else if (room == "all")
+                {
+                    //TODO: Implement total occupation
+                }
+                else
+                    return new HttpNotFoundResult($"Invalid room signature '{room}'");
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> OccupyAll(int projectId)
+        {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
+
+            //TODO: Implement mass occupation
+
+            return RedirectToAction("Index");
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> UnOccupyAll(int projectId)
+        {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
+
+            //TODO: Implement mass unoccupation
+
+            return RedirectToAction("Index");
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpHead]
+        public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, string room)
+        {
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    //TODO: Implement unoccupation for the specified room
+                }
+                else
+                {
+                    //TODO: Implement unoccupation for all rooms of the specified type
+                }
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Removes room
+        /// </summary>
+        [MasterAuthorize(Permission.CanManageAccommodation)]        
+        [HttpDelete]
+        public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
+        {
+            try
+            {
+                await _accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Applies new name to a room or adds a new room(s)
+        /// </summary>
+        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [HttpGet]
+        public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
+        {
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
+                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await _accommodationService.AddRooms(projectId, roomTypeId, name);
+                    return new HttpStatusCodeResult(HttpStatusCode.Created);
+                    //TODO: Fix problem with rooms IDs
+
+                    //return View("_AddedRoomsList",
+                    //    (await _accommodationService.AddRooms(projectId, roomTypeId, name))
+                    //        .Select(pa => new RoomViewModel(pa)));
+                }
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

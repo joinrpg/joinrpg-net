@@ -6,12 +6,12 @@
 @helper OtherClaimsForThisCharacterLink()
     {
         @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                new { Model.CharacterId, Model.ProjectId }, null)
+                     new { Model.CharacterId, Model.ProjectId }, null)
 }
 @helper OtherClaimsForThisPlayerLink()
     {
         @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                new { Model.ProjectId, Model.Player.UserId }, null)
+                     new { Model.ProjectId, Model.Player.UserId }, null)
 }
 
 @using JoinRpg.Web.Models
@@ -19,21 +19,12 @@
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models.Accommodation
 
+@{
+    ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
+}
+
 <div>
-    @Html.Partial("CharacterNavigation", Model.Navigation)
 
-    @if (Model.HasMasterAccess && Model.Problems.Any())
-    {
-        <div class="alert-warning alert">
-            <h4>Проблемы в заявке</h4>
-
-            @foreach (var pr in Model.Problems)
-            {
-                @Html.DisplayFor(modelItem => pr)
-            }
-
-        </div>
-    }
 
     @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
     {
@@ -42,8 +33,22 @@
 
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     <div class="panel panel-default">
-        <div class="panel-heading"><h4>Заявка</h4></div>
+        <div class="panel-heading">
+            @Html.Partial("CharacterNavigation", Model.Navigation)
+        </div>
         <div class="panel-body">
+            @if (Model.HasMasterAccess && Model.Problems.Any())
+            {
+                <div class="alert-warning alert">
+                    <b>Проблемы</b>:
+                    @foreach (var pr in Model.Problems)
+                    {
+                        @Html.DisplayFor(modelItem => pr)
+                    }
+
+                </div>
+            }
+
             <dl class="dl-horizontal">
                 <dt>
                     @Html.DisplayNameFor(model => model.Player)
@@ -87,12 +92,12 @@
                     <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
                     <dd>
                         @Html.DisplayFor(model => model.ParentGroups)
-                    @if (Model.Navigation.CanEditRoles)
-                    {
-                        <a href="@Url.Action("Edit", "Character", new { Model.ProjectId, Model.CharacterId })"><span class="glyphicon glyphicon-pencil"></span></a>
-                    }
-                </dd>
-            }
+                        @if (Model.Navigation.CanEditRoles)
+                        {
+                            <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
+                        }
+                    </dd>
+                }
                 @if (Model.ClaimFee.ShowFee)
                 {
                     <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
@@ -111,9 +116,9 @@
                                 @Html.HiddenFor(model => model.ProjectId)
                                 @Html.HiddenFor(model => model.ClaimId)
                                 @Html.DropDownListFor(
-                              model => model.ResponsibleMasterId,
-                              Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                              htmlAttributes: new { @class = "form-control" })
+                                         model => model.ResponsibleMasterId,
+                                         Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                                         htmlAttributes: new { @class = "form-control" })
 
                                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                                 <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
@@ -136,6 +141,7 @@
             </dl>
         </div>
     </div>
+
     <div class="panel-group">
         <div class="btn-group">
             @if (Model.CanManageThisClaim && Model.ProjectActive)
@@ -471,6 +477,16 @@
         </div>
     </div>
 
+@Html.Partial("_ClaimAccommodation",
+  new ClaimAccommodationViewModel {
+    ProjectId = Model.ProjectId,
+    ClaimId = Model.ClaimId,
+    AccommodationRequests = Model.AccommodationRequests,
+    AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
+    IncomingInvite = Model.IncomingInvite,
+    OutgoingInvite = Model.OutgoingInvite,
+    PotentialNeighbors = Model.PotentialNeighbors
+  })
     @if (Model.Fields.AnythingAccessible)
     {
         <div class="panel panel-default">
@@ -509,16 +525,7 @@
 </div>
 
 @Html.Partial("_PlotForCharacterPartial", Model.Plot)
-@Html.Partial("_ClaimAccommodation",
-    new ClaimAccommodationViewModel {
-       ProjectId = Model.ProjectId,
-       ClaimId = Model.ClaimId,
-       AccommodationRequests = Model.AccommodationRequests,
-       AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
-       IncomingInvite = Model.IncomingInvite,
-       OutgoingInvite = Model.OutgoingInvite,
-       PotentialNeighbors = Model.PotentialNeighbors
-    })
+
 
 @section scripts
 {

@@ -129,10 +129,11 @@ namespace JoinRpg.Web.Models
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
           HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+          CanManageThisClaim = claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageClaims, allowResponsible: true);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
+          ProjectName = claim.Project.ProjectName;
           Status = (ClaimStatusView) claim.ClaimStatus;
           CharacterGroupId = claim.CharacterGroupId;
           GroupName = claim.Group?.CharacterGroupName;
@@ -174,6 +175,8 @@ namespace JoinRpg.Web.Models
           CheckInStarted = claim.Project.Details.CheckInProgress;
           CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
           Validator = new ClaimCheckInValidator(claim);
+
+          AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 
           if (claim.PlayerUserId == currentUser.UserId ||
               claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
@@ -322,6 +325,8 @@ namespace JoinRpg.Web.Models
     public bool CheckInStarted { get; }
     public bool CheckInModuleEnabled { get; }
     public ClaimCheckInValidator Validator { get; }
+      public bool AccommodationEnabled { get; }
+      public string ProjectName { get; set; }
   }
 
 

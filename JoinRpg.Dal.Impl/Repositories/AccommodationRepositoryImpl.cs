@@ -18,7 +18,9 @@ namespace JoinRpg.Dal.Impl.Repositories
             int projectId)
         {
             return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId)
-                .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
+                .Include(x => x.ProjectAccommodations)
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyCollection<ProjectAccommodationType>>

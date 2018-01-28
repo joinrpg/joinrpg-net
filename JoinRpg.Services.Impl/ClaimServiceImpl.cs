@@ -429,16 +429,20 @@ namespace JoinRpg.Services.Impl
               claim.Character.ApprovedClaimId = null;
           }
 
+          return await ConsiderLeavingRoom(claim);
+      }
+
+      private async Task<LeaveRoomEmail> ConsiderLeavingRoom(Claim claim)
+      {
           LeaveRoomEmail email = null;
 
-            if (claim.AccommodationRequest != null)
+          if (claim.AccommodationRequest != null)
           {
               if (claim.AccommodationRequest.Accommodation != null)
               {
-                  
                   email = new LeaveRoomEmail()
                   {
-                      ChangedRequest = claim.AccommodationRequest,
+                      Changed = new [] {claim},
                       Initiator = await GetCurrentUser(),
                       ProjectName = claim.Project.ProjectName,
                       Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
@@ -454,10 +458,50 @@ namespace JoinRpg.Services.Impl
               }
           }
 
-              return email;
+          return email;
       }
 
-      public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+
+      public async Task<AccommodationRequest> SetAccommodationType(int projectId,
+          int claimId,
+          int accommodationTypeId)
+      {
+          //todo set first state to Unanswered
+          var currentClaim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
+
+          currentClaim =  currentClaim.RequestAccess(CurrentUserId,
+              acl => acl.CanSetPlayersAccommodations,
+              allowResponsible: true);
+
+          if (currentClaim.AccommodationRequest?.AccommodationTypeId == accommodationTypeId)
+          {
+              return currentClaim.AccommodationRequest;
+          }
+
+
+            var leaveEmail = await ConsiderLeavingRoom(currentClaim);
+
+            var accommodationRequest = new AccommodationRequest
+          {
+              ProjectId = projectId,
+              Subjects = new List<Claim> { currentClaim },
+              AccommodationTypeId = accommodationTypeId,
+              IsAccepted = AccommodationRequest.InviteState.Accepted
+          };
+
+          UnitOfWork
+              .GetDbSet<AccommodationRequest>()
+              .Add(accommodationRequest);
+          await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+          if (leaveEmail != null)
+          {
+              await EmailService.Email(leaveEmail);
+          }
+          return accommodationRequest;
+      }
+
+
+        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
       {
           var claim = await ClaimsRepository.GetClaim(projectId, claimId);
           if (claim == null)
@@ -646,19 +690,10 @@ namespace JoinRpg.Services.Impl
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      if (claim == null)
-      {
-        throw new ArgumentNullException(nameof(claim));
-      }
-      if (claim.Project == null)
-      {
-        throw new ArgumentNullException(nameof(IProjectEntity.Project));
-      }
-      if (!claim.CanManageClaim(currentUserId))
-      {
-        throw new NoAccessToProjectException(claim.Project, currentUserId, acl => acl.CanManageClaims);
-      }
-      return claim;
+
+        return claim.RequestMasterAccess(currentUserId,
+            acl => acl.CanManageClaims,
+            allowResponsible: true);
     }
 
     public async Task SaveFieldsFromClaim(int projectId, int characterId, IDictionary<int, string> newFieldValue)

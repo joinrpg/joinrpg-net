@@ -1,0 +1,9 @@
+﻿@using JoinRpg.Web.Models.Accommodation
+@model RoomTypeViewModel
+@{
+    ViewBag.Title = Model.Project.ProjectName + ": новый тип размещения";
+    ViewBag.ActionName = "Добавить";
+    ViewBag.IsNew = true;
+}
+<h2>@ViewBag.Title</h2>
+@Html.Partial("_RoomTypeEdit", Model)

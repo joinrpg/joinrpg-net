@@ -9,31 +9,61 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Adds new room type
         /// </summary>
-        Task<ProjectAccommodationType> RegisterNewAccommodationTypeAsync(ProjectAccommodationType newAccommodation);
+        Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType);
+
+        Task RemoveRoomType(int roomTypeId);
 
         /// <summary>
-        /// Adds new room or list of rooms
+        /// Adds rooms to specified room type of specified project
         /// </summary>
-        Task<IEnumerable<ProjectAccommodation>> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation);
+        Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms);
 
-        Task RemoveAccommodationType(int accommodationTypeId);
+        /// <summary>
+        /// Changes room name
+        /// </summary>
+        Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null);
 
-        Task RemoveProjectAccommodation(int projectAccommodationId);
+        /// <summary>
+        /// Deletes specified room
+        /// </summary>
+        Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
 
-        Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int project);
+        /// <summary>
+        /// Returns all room types for specified project Id
+        /// </summary>
+        Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId);
 
         Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId);
 
-        Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId);
-
-        Task<AccommodationRequest> CreateNewAccommodationRequest (int projectId, int claimId, int accommodationTypeId);
-
+        /// <summary>
+        /// Move inhabitants to room
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         Task OccupyRoom(OccupyRequest request);
 
+        /// <summary>
+        /// Move specific inhabitant coupling (aka AgreementRequest) from romm
+        /// </summary>
         Task UnOccupyRoom(UnOccupyRequest request);
+
+        /// <summary>
+        /// Remove all inhabitants from room
+        /// </summary>
+        Task UnOccupyRoomAll(UnOccupyAllRequest request);
+
+        /// <summary>
+        /// Removes all inhabitants from all rooms of the specified type
+        /// </summary>
+        Task UnOccupyRoomType(UnOccupyRoomTypeRequest request);
+
+        /// <summary>
+        /// Removes all inhabitants from all rooms of all types
+        /// </summary>
+        Task UnOccupyAll(int projectId);
     }
 
-    public class OccupyRequest
+    public class OccupyRequest 
     {
         public int ProjectId { get; set; }
         public int RoomId { get; set; }
@@ -45,4 +75,17 @@ namespace JoinRpg.Services.Interfaces
         public int ProjectId { get; set; }
         public int AccommodationRequestId { get; set; }
     }
+
+    public class UnOccupyAllRequest
+    {
+        public int ProjectId { get; set; }
+        public int RoomId { get; set; }
+    }
+
+    public class UnOccupyRoomTypeRequest
+    {
+        public int ProjectId { get; set; }
+        public int RoomTypeId { get; set; }
+    }
+
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -17,107 +18,37 @@ namespace JoinRpg.Services.Impl
     {
         private IEmailService EmailService { get; }
 
-        public async Task<ProjectAccommodationType> RegisterNewAccommodationTypeAsync(ProjectAccommodationType newAccommodation)
+        public async Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType)
         {
-            if (newAccommodation.ProjectId == 0) throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+            if (roomType.ProjectId == 0)
+                throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+
             ProjectAccommodationType result;
-            if (newAccommodation.Id != 0)
+
+            if (roomType.Id != 0)
             {
-                result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(newAccommodation.Id).ConfigureAwait(false);
-                if (result?.ProjectId != newAccommodation.ProjectId)
+                result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomType.Id).ConfigureAwait(false);
+                if (result?.ProjectId != roomType.ProjectId)
                 {
                     return null;
                 }
-                result.Name = newAccommodation.Name;
-                result.Cost = newAccommodation.Cost;
-                result.Capacity = newAccommodation.Capacity;
-                result.Description = newAccommodation.Description;
-                result.IsAutoFilledAccommodation = newAccommodation.IsAutoFilledAccommodation;
-                result.IsInfinite = newAccommodation.IsInfinite;
-                result.IsPlayerSelectable = newAccommodation.IsPlayerSelectable;
-
+                result.Name = roomType.Name;
+                result.Cost = roomType.Cost;
+                result.Capacity = roomType.Capacity;
+                result.Description = roomType.Description;
+                result.IsAutoFilledAccommodation = roomType.IsAutoFilledAccommodation;
+                result.IsInfinite = roomType.IsInfinite;
+                result.IsPlayerSelectable = roomType.IsPlayerSelectable;
             }
             else
             {
-                result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(newAccommodation);
+                result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(roomType);
             }
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             return result;
         }
 
-
-        public async Task<IEnumerable<ProjectAccommodation>> RegisterNewProjectAccommodationAsync(ProjectAccommodation newProjectAccommodation)
-        {
-            if (newProjectAccommodation.ProjectId == 0)
-                throw new ActivationException("Inconsistent state. ProjectId can't be 0");
-            ProjectAccommodation result = null;
-            IEnumerable<ProjectAccommodation> results = null;
-
-            //TODO: Implement rooms names checking
-            //TODO: Remove result variable
-
-            if (newProjectAccommodation.Id != 0)
-            {
-                result = await UnitOfWork.GetDbSet<ProjectAccommodation>().FindAsync(newProjectAccommodation.Id).ConfigureAwait(false);
-                if (result?.ProjectId != newProjectAccommodation.ProjectId || result.AccommodationTypeId != newProjectAccommodation.AccommodationTypeId)
-                {
-                    throw new ProjectAccomodationNotFound(newProjectAccommodation.ProjectId,
-                        newProjectAccommodation.AccommodationTypeId,
-                        newProjectAccommodation.Id);
-                }
-                result.Name = newProjectAccommodation.Name;
-            }
-            else
-            {   
-                // Creates new room using name and parameters from given room info
-                ProjectAccommodation CreateRoom(ProjectAccommodation input, string name)
-                    => new ProjectAccommodation
-                    {
-                        Name = name,
-                        AccommodationTypeId = input.AccommodationTypeId,
-                        ProjectId = input.ProjectId,
-                        Id = 0
-                    };
-
-                // Iterates through rooms list and creates object for each room from a list
-                IEnumerable<ProjectAccommodation> CreateRooms(ProjectAccommodation input)
-                {
-                    foreach (string roomCandidate in input.Name.Split(','))
-                    {
-                        int rangePos = roomCandidate.IndexOf('-');
-                        if (rangePos > -1)
-                        {
-                            if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out int roomsRangeStart)
-                                && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out int roomsRangeEnd)
-                                && roomsRangeStart < roomsRangeEnd)
-                            {
-                                while (roomsRangeStart <= roomsRangeEnd)
-                                {
-                                    yield return CreateRoom(input, roomsRangeStart.ToString());
-                                    roomsRangeStart++;
-                                }
-                                // Range was defined correctly, we can continue to next item
-                                continue;
-                            }
-                        }
-
-                        yield return CreateRoom(input, roomCandidate.Trim());
-                    }
-                }
-
-                // Inserting range of rooms instead one
-                results = UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(newProjectAccommodation));
-                //result = UnitOfWork.GetDbSet<ProjectAccommodation>().Add(newProjectAccommodation);
-            }
-            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
-            if (result != null)
-                return new[] { result };
-            return results;
-            //return result;
-        }
-
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)
+        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId)
         {
             return await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
         }
@@ -127,49 +58,6 @@ namespace JoinRpg.Services.Impl
             return await UnitOfWork.GetDbSet<ProjectAccommodationType>().Include(x=>x.ProjectAccommodations)
               .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
         }
-        public async Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId)
-        {
-            return await UnitOfWork.GetDbSet<ProjectAccommodation>()
-                .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
-        }
-
-        public async Task<AccommodationRequest> CreateNewAccommodationRequest(int projectId,
-            int claimId,
-            int accommodationTypeId)
-        {
-            //todo set first state to Unanswered
-            var currentClaim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
-
-            var oldUserRequests = UnitOfWork
-                .GetDbSet<AccommodationRequest>()
-                .Where(request => request.Subjects.Any(claim => claim.ClaimId == claimId)).Include(x=>x.Subjects);
-
-            foreach (var oldRequest in oldUserRequests)
-            {
-                oldRequest.Subjects.Remove(currentClaim);
-                if (!oldRequest.Subjects.Any())
-                {
-                    UnitOfWork
-                        .GetDbSet<AccommodationRequest>()
-                        .Remove(oldRequest);
-                }
-            }
-
-            var accommodationRequest = new AccommodationRequest
-            {
-                ProjectId = projectId,
-                Subjects = new List<Claim> {currentClaim},
-                AccommodationTypeId = accommodationTypeId,
-                IsAccepted = AccommodationRequest.InviteState.Accepted
-            };
-
-            UnitOfWork
-                .GetDbSet<AccommodationRequest>()
-                .Add(accommodationRequest);
-            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-            return accommodationRequest;
-        }
-
 
         public async Task OccupyRoom(OccupyRequest request)
         {
@@ -199,15 +87,15 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
 
-            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(accommodationRequest, room));
+            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
         }
 
-        private async Task<T> CreateRoomEmail<T>(AccommodationRequest accommodationRequest, ProjectAccommodation room)
+        private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)
         where T: RoomEmailBase, new()
         {
             return new T()
             {
-                ChangedRequest = accommodationRequest,
+                Changed = changed,
                 Initiator = await GetCurrentUser(),
                 ProjectName = room.Project.ProjectName,
                 Recipients = room.GetSubscriptions().ToList(),
@@ -231,17 +119,51 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == request.ProjectId && r.Id == accommodationRequest.AccommodationId)
                 .FirstOrDefaultAsync();
 
-            accommodationRequest.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+            await UnOccupyRoomImpl(room, new[] {accommodationRequest});
+        }
 
-            accommodationRequest.AccommodationId =null;
-            accommodationRequest.Accommodation = null;
+        private async Task UnOccupyRoomImpl(ProjectAccommodation room,
+            IReadOnlyCollection<AccommodationRequest> accommodationRequests)
+        {
+            room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+
+            foreach (var request in accommodationRequests)
+            {
+                request.AccommodationId = null;
+                request.Accommodation = null;
+            }
+            
 
             await UnitOfWork.SaveChangesAsync();
 
-            await EmailService.Email(await CreateRoomEmail<UnOccupyRoomEmail>(accommodationRequest, room));
+            await EmailService.Email(
+                await CreateRoomEmail<UnOccupyRoomEmail>(room, accommodationRequests.SelectMany(x => x.Subjects).ToArray()));
         }
 
-        public async Task RemoveAccommodationType(int accomodationTypeId)
+        public async Task UnOccupyRoomAll(UnOccupyAllRequest request)
+        {
+            var room = await UnitOfWork.GetDbSet<ProjectAccommodation>()
+                .Include(r => r.Project)
+                .Include(r => r.Inhabitants)
+                .Include(r => r.ProjectAccommodationType)
+                .Include(r => r.Inhabitants.Select(i => i.Subjects.Select(c => c.Player)))
+                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.RoomId)
+                .FirstOrDefaultAsync();
+
+            await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
+        }
+
+        public Task UnOccupyRoomType(UnOccupyRoomTypeRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UnOccupyAll(int projectId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task RemoveRoomType(int accomodationTypeId)
         {
             var entity = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(accomodationTypeId);
 
@@ -261,23 +183,96 @@ namespace JoinRpg.Services.Impl
 
         }
 
-        public async Task RemoveProjectAccommodation(int projectAccomodationId)
+        public async Task<IEnumerable<ProjectAccommodation>> AddRooms(int projectId, int roomTypeId, string rooms)
         {
-            var entity = UnitOfWork.GetDbSet<ProjectAccommodation>().Find(projectAccomodationId);
+            //TODO: Implement rooms names checking
 
-            if (entity == null)
+            ProjectAccommodationType roomType = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(roomTypeId);
+            if (roomType == null)
+                throw new JoinRpgEntityNotFoundException(roomTypeId, typeof(ProjectAccommodationType).Name);
+            if (roomType.ProjectId != projectId)
+                throw new ArgumentException($"Room type {roomTypeId} is from another project than specified", nameof(roomTypeId));
+
+            // Internal function
+            // Creates new room using name and parameters from given room info
+            ProjectAccommodation CreateRoom(string name)
+                => new ProjectAccommodation
+                {
+                    Name = name,
+                    AccommodationTypeId = roomTypeId,
+                    ProjectId = projectId,
+                    ProjectAccommodationType = roomType
+                };
+
+            // Internal function
+            // Iterates through rooms list and creates object for each room from a list
+            IEnumerable<ProjectAccommodation> CreateRooms(string r)
             {
-                throw new JoinRpgEntityNotFoundException(projectAccomodationId, "ProjectAccommodation");
+                foreach (string roomCandidate in r.Split(','))
+                {
+                    int rangePos = roomCandidate.IndexOf('-');
+                    if (rangePos > -1)
+                    {
+                        if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out int roomsRangeStart)
+                            && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out int roomsRangeEnd)
+                            && roomsRangeStart < roomsRangeEnd)
+                        {
+                            while (roomsRangeStart <= roomsRangeEnd)
+                            {
+                                yield return CreateRoom(roomsRangeStart.ToString());
+                                roomsRangeStart++;
+                            }
+                            // Range was defined correctly, we can continue to next item
+                            continue;
+                        }
+                    }
+
+                    yield return CreateRoom(roomCandidate.Trim());
+                }
             }
 
+            IEnumerable<ProjectAccommodation> result =
+                UnitOfWork.GetDbSet<ProjectAccommodation>().AddRange(CreateRooms(rooms));
+            await UnitOfWork.SaveChangesAsync();
+            return result;
+        }
+
+        private ProjectAccommodation GetRoom(int roomId, int? projectId = null, int? roomTypeId = null)
+        {
+            var result = UnitOfWork.GetDbSet<ProjectAccommodation>().Find(roomId);
+
+            if (result == null)
+                throw new JoinRpgEntityNotFoundException(roomId, typeof(ProjectAccommodation).Name);
+            if (projectId.HasValue)
+            {
+                if (result.ProjectId != projectId.Value)
+                    throw new ArgumentException($"Room {roomId} is from different project than specified", nameof(projectId));
+            }
+            if (roomTypeId.HasValue)
+            {
+                if (result.AccommodationTypeId != roomTypeId.Value)
+                    throw new ArgumentException($"Room {roomId} is from different room type than specified", nameof(projectId));
+            }
+
+            return result;
+        }
+
+        public async Task EditRoom(int roomId, string name, int? projectId = null, int? roomTypeId = null)
+        {
+            var entity = GetRoom(roomId, projectId, roomTypeId);
+            entity.Name = name;
+            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public async Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null)
+        {
+            var entity = GetRoom(roomId, projectId, roomTypeId);
             if (entity.IsOccupied())
             {
                 throw new RoomIsOccupiedException(entity);
             }
-
             UnitOfWork.GetDbSet<ProjectAccommodation>().Remove(entity);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
-
         }
 
         public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)

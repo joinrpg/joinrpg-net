@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -9,17 +10,16 @@ using JoinRpg.Domain;
 namespace JoinRpg.Web.Models.Accommodation
 {
     //todo I18n
-    public class AccommodationTypeViewModel
+    public class RoomTypeViewModel
     {
         [DisplayName("Название")]
         [Required]
         public string Name { get; set; }
 
-        [DisplayName("Description")]
+        [DisplayName("Описание")]
         public string Description { get; set; }
 
-        [DisplayName("Стоимость проживания")]
-        [Range(0, Int32.MaxValue)]
+        [DisplayName("Цена за 1 место")]
         public int Cost { get; set; }
 
         public int Id { get; set; }
@@ -27,29 +27,38 @@ namespace JoinRpg.Web.Models.Accommodation
         public Project Project { get; set; }
 
         [DisplayName("Количество мест в номере")]
+        [Range(1, int.MaxValue)]
         public int Capacity { get; set; }
+
         [DisplayName("Бесконечное поселение")]
         public bool IsInfinite { get; set; } = false;
-        [DisplayName("Игроки могут выбрать данный тип проживания")]
+
+        [Display(Name = "Игроки могут выбрать данный тип проживания",
+            Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
         public bool IsPlayerSelectable { get; set; } = true;
+
         [DisplayName("Автозаполнение")]
         public bool IsAutoFilledAccommodation { get; set; } = false;
 
         [DisplayName("Объем номерного фонда данного типа")]
-        public int TotalCapacity => Capacity * (Accommodations == null ? 0 : Accommodations.Count);
+        public int TotalCapacity => Capacity * Rooms?.Count ?? 0;
 
         [DisplayName("Проживает")]
-        public int UsedSpace { get; set; }
+        public int Occupied { get; set; }
 
-        public ICollection<ProjectAccommodationViewModel> Accommodations { get; set; }
-        public AccommodationTypeViewModel([NotNull]ProjectAccommodationType entity, int currentUserId)
+        public ICollection<RoomViewModel> Rooms { get; set; }
+
+        public bool CanAssignRooms { get; set; }
+
+        public bool CanManageRooms { get; set; }
+
+        public RoomTypeViewModel([NotNull]ProjectAccommodationType entity, int userId)
+            : this(entity.Project, userId)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
                 throw new ArgumentException("Entity must be valid object");
             }
-            ProjectId = entity.ProjectId;
-            Project = entity.Project;
             Id = entity.Id;
             Cost = entity.Cost;
             Name = entity.Name;
@@ -58,26 +67,24 @@ namespace JoinRpg.Web.Models.Accommodation
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             Description = entity.Description;
-            Accommodations = ProjectAccommodationViewModel.NewListCollection(entity.ProjectAccommodations);
-            CanManageRooms =
-                entity.Project.HasMasterAccess(currentUserId, acl => acl.CanManageAccommodation);
-            CanAssignRooms =
-                entity.Project.HasMasterAccess(currentUserId,
-                    acl => acl.CanSetPlayersAccommodations);
-
+            Rooms = RoomViewModel.NewListCollection(entity.ProjectAccommodations, CanManageRooms, CanAssignRooms);
+            Occupied = Rooms.Sum(rv => rv.Occupancy);
         }
 
-        public bool CanAssignRooms { get; set; }
+        public RoomTypeViewModel(Project project, int userId)
+        {
+            Project = project;
+            ProjectId = project.ProjectId;
+            CanManageRooms = project.HasMasterAccess(userId, acl => acl.CanManageAccommodation);
+            CanAssignRooms = project.HasMasterAccess(userId, acl => acl.CanSetPlayersAccommodations);
+        }
 
-        public bool CanManageRooms { get; set; }
-
-        public AccommodationTypeViewModel()
+        public RoomTypeViewModel()
         {
         }
 
-        public ProjectAccommodationType GetProjectAccommodationTypeMock()
-        {
-            return new ProjectAccommodationType()
+        public ProjectAccommodationType ToEntity()
+            => new ProjectAccommodationType
             {
                 ProjectId = ProjectId,
                 Id = Id,
@@ -88,8 +95,6 @@ namespace JoinRpg.Web.Models.Accommodation
                 IsInfinite = IsInfinite,
                 IsPlayerSelectable = IsPlayerSelectable,
                 IsAutoFilledAccommodation = IsAutoFilledAccommodation
-
             };
-        }
     }
 }

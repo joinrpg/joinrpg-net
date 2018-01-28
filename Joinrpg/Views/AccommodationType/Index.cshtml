@@ -1,65 +1,52 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.Accommodation.AccommodationListViewModel
-
-
+@using JoinRpg.Web.Models.Accommodation
+@model AccommodationListViewModel
 @{
-    ViewBag.Title = "Размещение на игре «" + Model.ProjectName + "»: Типы проживания";
+    ViewBag.Title = "Поселение на игре «" + Model.ProjectName + "»";
 }
+@Scripts.Render("~/Scripts/roomsMessages.js")
 
 <h2>@ViewBag.Title</h2>
 
-<div class="btn-group" style="padding: 1em">
-    <a href="@Url.Action("MainReport", "AccommodationPrint", new {Export = "xlsx", ProjectId = Model.ProjectId})" class="btn btn-default"
-       >
-        <span class="glyphicon glyphicon-download"></span>
-        Расселение (Excel)
-    </a>
+<div class="btn-group">
+    @if (Model.CanManageRooms)
+    {
+        <a href="@Url.Action("AddRoomType", "AccommodationType", new { ProjectId = Model.ProjectId })" class="btn btn-success">
+            <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения</a>
+    }
+    @if (Model.CanAssignRooms)
+    {
+        <a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
+            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>
+        <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
+            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</a>
+    }
+    <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", ProjectId = Model.ProjectId})" class="btn btn-default">
+        <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)</a>
 </div>
 
-<table class="table table-striped">
-    <thead>
-    <tr>
-        <th>Тип размещения</th>
-        <th>Стоимость</th>
-        <th>Мест</th>
-        <th>Всего мест</th>
-        <th>Бесконечное</th>
-        <th>Доступно игрокам</th>
-        <th>Автозаполнение</th>
-        @if (Model.CanManageRooms)
-        {
-            <th>Действия</th>
-        }
-    </tr>
-    </thead>
-    @foreach (var accommodationType in Model.AccommodationTypes)
-    {
-        <tr>
-            <td>@Html.ActionLink(accommodationType.Name, "TypeDetails", new { accommodationTypeId = accommodationType.Id, accommodationType.ProjectId}) </td>
-            <td>@accommodationType.Cost</td>
-            <td>@accommodationType.Capacity</td>
-            <td>@accommodationType.TotalCapacity</td>
-            <td>@accommodationType.IsInfinite</td>
-            <td>@accommodationType.IsPlayerSelectable</td>
-            <td>@accommodationType.IsAutoFilledAccommodation</td>
-            @if (Model.CanManageRooms)
+<div class="table-responsive" style="margin-top: 1em;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Описание</th>
+                <th class="price-table" style="min-width: 10em; width: 10em;">@Html.RenderPriceElement("Цена,")</th>
+                <th class="price-table">Мест</th>
+                <th class="price-table">Заполнение</th>
+                <th>Флаги</th>
+                <th style="min-width: 6em; width: 6em;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (RoomTypeViewModel roomType in Model.RoomTypes)
             {
-                <td>
-                    @using (Html.BeginForm("Delete", "AccommodationType", new {accommodationTypeId = accommodationType.Id, projectId = accommodationType.ProjectId}, FormMethod.Post, new {@style = "display:inline-block"}))
-                    {
-                        @Html.AntiForgeryToken()
-                        @Html.HttpMethodOverride(HttpVerbs.Delete)
-                        <button type="submit" class="btn btn-danger"><span title="удалить" class="glyphicon glyphicon-trash"></span>Удалить</button>
-                    }
-                </td>
+                @Html.Partial("_RoomTypeDetails", roomType);
             }
-        </tr>
-    }
-
-</table>
-
-@if (Model.CanManageRooms)
-{
-    <hr/>
-    @Html.Partial("TypeDetails", new JoinRpg.Web.Models.Accommodation.AccommodationTypeViewModel() {ProjectId = Model.ProjectId})
-}
+            @if (Model.RoomTypes.Count == 0)
+            {
+                <tr><td colspan="7">Типы размещения не добавлены</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
