@@ -21,6 +21,7 @@ namespace JoinRpg.Web.Models.Accommodation
             RoomTypeId = roomType.Id;
             Rooms = roomType.Rooms ?? null;
             RoomCapacity = roomType.Capacity;
+            CanManageRooms = roomType.CanManageRooms;
         }
 
         public ICollection<RoomViewModel> Rooms { get; set; }
@@ -30,6 +31,8 @@ namespace JoinRpg.Web.Models.Accommodation
         public int RoomTypeId { get; set; }
 
         public int RoomCapacity { get; set; }
+
+        public bool CanManageRooms { get;  }
 
     }
 
@@ -66,13 +69,20 @@ namespace JoinRpg.Web.Models.Accommodation
         public int Occupancy
             => Inhabitants?.Count ?? 0;
 
+        public bool CanManageRooms { get; }
 
-        public RoomViewModel([NotNull]ProjectAccommodation entity)
+        public bool CanAssignRoom { get; set; }
+
+
+        public RoomViewModel([NotNull]ProjectAccommodation entity, bool canManageRooms, bool canAssignRoom)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
                 throw new ArgumentException("Entity must be valid object");
             }
+
+            CanManageRooms = canManageRooms;
+            CanAssignRoom = canAssignRoom;
             Id = entity.Id;
             Name = entity.Name;
             ProjectId = entity.ProjectId;
@@ -80,34 +90,18 @@ namespace JoinRpg.Web.Models.Accommodation
             Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;            
         }
 
-        public RoomViewModel(RoomTypeViewModel roomType)
-        {
-            Id = 0;
-            ProjectId = roomType.ProjectId;
-            RoomTypeId = roomType.Id;
-            Capacity = roomType.Capacity;
-        }
-
         public RoomViewModel()
-        { }
-
-        public ProjectAccommodation GetProjectAccommodationMock()
         {
-            return new ProjectAccommodation()
-            {
-                Id = Id,
-                ProjectId = ProjectId,
-                Name = Name,
-                AccommodationTypeId = RoomTypeId
-            };
         }
 
-        internal static ICollection<RoomViewModel> NewListCollection([NotNull] ICollection<ProjectAccommodation> projectAccomodations)
+        internal static ICollection<RoomViewModel> NewListCollection([NotNull]
+            ICollection<ProjectAccommodation> projectAccomodations,
+            bool canManageRooms,
+            bool canAssignRoom)
         {
             //TODO: add claim calculation logic 
-            return projectAccomodations.Select(acc => new RoomViewModel(acc))
+            return projectAccomodations.Select(acc => new RoomViewModel(acc, canManageRooms, canAssignRoom))
                 .ToSafeReadOnlyCollection();
-            
         }
      
     }

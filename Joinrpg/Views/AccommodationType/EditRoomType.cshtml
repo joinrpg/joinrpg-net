@@ -6,6 +6,9 @@
     ViewBag.IsNew = false;
 }
 <h2>@ViewBag.Title</h2>
-@Html.Partial("_RoomTypeEdit", Model)
 @Html.Partial("_RoomsList", new RoomTypeRoomsListViewModel(Model))
 @Html.Partial("_RoomEditDlg")
+@if (Model.CanManageRooms)
+{
+    @Html.Partial("_RoomTypeEdit", Model)
+}

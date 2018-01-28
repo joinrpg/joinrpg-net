@@ -1,11 +1,8 @@
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
@@ -62,7 +59,6 @@ namespace JoinRpg.Web.Controllers
         /// <summary>
         /// Shows "Edit room type" form
         /// </summary>
-        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpGet]
         public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {

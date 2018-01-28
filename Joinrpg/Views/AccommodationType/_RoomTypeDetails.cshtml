@@ -9,7 +9,9 @@
 }
 
 <tr>
-    <td>@Model.Name</td>
+    <td>
+        @Html.ActionLink(Model.Name, "EditRoomType", "AccommodationType", actionParams, null)
+    </td>
     <td>@Model.Description</td>
     <td class="price-table">@Model.Cost</td>
     <td class="price-table">@Model.Capacity</td>
@@ -17,7 +19,7 @@
     <td>
         @if (Model.IsInfinite)
         {
-            <span class="label label-info">Безконечное</span>
+            <span class="label label-info">Бесконечное</span>
         }
         @if (!Model.IsPlayerSelectable)
         {
