@@ -442,7 +442,7 @@ namespace JoinRpg.Services.Impl
               {
                   email = new LeaveRoomEmail()
                   {
-                      ChangedRequest = claim.AccommodationRequest,
+                      Changed = new [] {claim},
                       Initiator = await GetCurrentUser(),
                       ProjectName = claim.Project.ProjectName,
                       Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),

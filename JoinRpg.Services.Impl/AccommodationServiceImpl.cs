@@ -58,11 +58,6 @@ namespace JoinRpg.Services.Impl
             return await UnitOfWork.GetDbSet<ProjectAccommodationType>().Include(x=>x.ProjectAccommodations)
               .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
         }
-        public async Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId)
-        {
-            return await UnitOfWork.GetDbSet<ProjectAccommodation>()
-                .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
-        }
 
         public async Task OccupyRoom(OccupyRequest request)
         {
@@ -92,15 +87,15 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
 
-            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(accommodationRequest, room));
+            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
         }
 
-        private async Task<T> CreateRoomEmail<T>(AccommodationRequest accommodationRequest, ProjectAccommodation room)
+        private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)
         where T: RoomEmailBase, new()
         {
             return new T()
             {
-                ChangedRequest = accommodationRequest,
+                Changed = changed,
                 Initiator = await GetCurrentUser(),
                 ProjectName = room.Project.ProjectName,
                 Recipients = room.GetSubscriptions().ToList(),
@@ -124,14 +119,38 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == request.ProjectId && r.Id == accommodationRequest.AccommodationId)
                 .FirstOrDefaultAsync();
 
-            accommodationRequest.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+            await UnOccupyRoomImpl(room, new[] {accommodationRequest});
+        }
 
-            accommodationRequest.AccommodationId =null;
-            accommodationRequest.Accommodation = null;
+        private async Task UnOccupyRoomImpl(ProjectAccommodation room,
+            IReadOnlyCollection<AccommodationRequest> accommodationRequests)
+        {
+            room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+
+            foreach (var request in accommodationRequests)
+            {
+                request.AccommodationId = null;
+                request.Accommodation = null;
+            }
+            
 
             await UnitOfWork.SaveChangesAsync();
 
-            await EmailService.Email(await CreateRoomEmail<UnOccupyRoomEmail>(accommodationRequest, room));
+            await EmailService.Email(
+                await CreateRoomEmail<UnOccupyRoomEmail>(room, accommodationRequests.SelectMany(x => x.Subjects).ToArray()));
+        }
+
+        public async Task UnOccupyRoomAll(UnOccupyAllRequest request)
+        {
+            var room = await UnitOfWork.GetDbSet<ProjectAccommodation>()
+                .Include(r => r.Project)
+                .Include(r => r.Inhabitants)
+                .Include(r => r.ProjectAccommodationType)
+                .Include(r => r.Inhabitants.Select(i => i.Subjects.Select(c => c.Player)))
+                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.RoomId)
+                .FirstOrDefaultAsync();
+
+            await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
         }
 
         public async Task RemoveRoomType(int accomodationTypeId)

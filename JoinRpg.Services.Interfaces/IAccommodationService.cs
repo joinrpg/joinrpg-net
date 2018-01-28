@@ -35,16 +35,25 @@ namespace JoinRpg.Services.Interfaces
 
         Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId);
 
-        Task<ProjectAccommodation> GetProjectAccommodationByIdAsync(int accId);
-
-        
-
+        /// <summary>
+        /// Move inhabitants to room
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         Task OccupyRoom(OccupyRequest request);
 
+        /// <summary>
+        /// Move specific inhabitant coupling (aka AgreementRequest) from romm
+        /// </summary>
         Task UnOccupyRoom(UnOccupyRequest request);
+
+        /// <summary>
+        /// Remove all inhabitants from room
+        /// </summary>
+        Task UnOccupyRoomAll(UnOccupyAllRequest request);
     }
 
-    public class OccupyRequest
+    public class OccupyRequest 
     {
         public int ProjectId { get; set; }
         public int RoomId { get; set; }
@@ -55,5 +64,11 @@ namespace JoinRpg.Services.Interfaces
     {
         public int ProjectId { get; set; }
         public int AccommodationRequestId { get; set; }
+    }
+
+    public class UnOccupyAllRequest
+    {
+    public int ProjectId { get; set; }
+    public int RoomId { get; set; }
     }
 }
