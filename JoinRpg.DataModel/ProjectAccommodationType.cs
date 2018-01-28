@@ -16,15 +16,12 @@ namespace JoinRpg.DataModel
         public string Description { get; set; }
         [Required]
         public int Cost { get; set; }
+        [Range(1, int.MaxValue)]
         public int Capacity { get; set; }
         public bool IsInfinite { get; set; } = false;
         public bool IsPlayerSelectable { get; set; } = true;
         public bool IsAutoFilledAccommodation { get; set; } = false;
-        [NotMapped]
-        public bool HasAvailableAccommodations => _HasAvailableAccommodations();
-        private bool _HasAvailableAccommodations()
-            => Capacity * ProjectAccommodations.Count - (Desirous?.Count ?? 0) > 0;
-
+       
         public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
         public virtual ICollection<AccommodationRequest> Desirous { get; set; }
     }

@@ -27,6 +27,7 @@ namespace JoinRpg.Web.Models.Accommodation
         public Project Project { get; set; }
 
         [DisplayName("Количество мест в номере")]
+        [Range(1, int.MaxValue)]
         public int Capacity { get; set; }
 
         [DisplayName("Бесконечное поселение")]
