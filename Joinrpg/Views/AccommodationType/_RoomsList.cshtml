@@ -13,8 +13,15 @@
 <hr />
 <h3>Список комнат</h3>
 <div class="btn-group">
-    <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
-    <button type="button" onclick="KickAll()" class="btn btn-default"><i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
+    @if (Model.CanManageRooms)
+    {
+        <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
+    }
+    @if (Model.CanAssignRooms)
+    {
+        <button type="button" onclick="PlaceAll()" class="btn btn-default"><i class="glyphicon glyphicon-bed"></i> Заселить всех</button>
+        <button type="button" onclick="KickAll()" class="btn btn-default"><i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
+    }
 </div>
 <table class="table table-striped">
     <thead>

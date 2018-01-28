@@ -30,10 +30,10 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (RoomTypeViewModel roomType in Model.RoomTypes)
-    {
-        @Html.Partial("_RoomTypeDetails", roomType);
-    }
+        @foreach (RoomTypeViewModel roomType in Model.RoomTypes)
+        {
+            @Html.Partial("_RoomTypeDetails", roomType);
+        }
         @if (Model.RoomTypes.Count == 0)
         {
             <tr><td colspan="7">Типы размещения не добавлены</td></tr>

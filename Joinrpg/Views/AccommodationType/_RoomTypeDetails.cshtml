@@ -9,9 +9,7 @@
 }
 
 <tr>
-    <td>
-        @Html.ActionLink(Model.Name, "EditRoomType", "AccommodationType", actionParams, null)
-    </td>
+    <td>@Model.Name</td>
     <td>@Model.Description</td>
     <td class="price-table">@Model.Cost</td>
     <td class="price-table">@Model.Capacity</td>
@@ -31,15 +29,12 @@
         }
     </td>
     <td><div class="btn-group btn-group-sm" style="display: inline-block">
-        @if (Model.CanManageRooms)
+        <a title="@(Model.CanManageRooms ? "Изменить" : "Расселение")" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
+            <i class="glyphicon glyphicon-@(Model.CanManageRooms ? "pencil" : "bed")"></i></a>
+        @if (Model.CanManageRooms && Model.Occupied == 0)
         {
-            <a title="Изменить" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
-                <i class="glyphicon glyphicon-pencil"></i></a>
-            if (Model.Occupied == 0)
-            {
-                <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
-                    <i class="glyphicon glyphicon-trash"></i></a>
-            }
+            <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
+                <i class="glyphicon glyphicon-trash"></i></a>
         }
     </div></td>
 </tr>

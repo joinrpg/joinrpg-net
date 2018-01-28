@@ -22,6 +22,7 @@ namespace JoinRpg.Web.Models.Accommodation
             Rooms = roomType.Rooms ?? null;
             RoomCapacity = roomType.Capacity;
             CanManageRooms = roomType.CanManageRooms;
+            CanAssignRooms = roomType.CanAssignRooms;
         }
 
         public ICollection<RoomViewModel> Rooms { get; set; }
@@ -32,7 +33,9 @@ namespace JoinRpg.Web.Models.Accommodation
 
         public int RoomCapacity { get; set; }
 
-        public bool CanManageRooms { get;  }
+        public bool CanManageRooms { get; }
+
+        public bool CanAssignRooms { get; }
 
     }
 

@@ -12,11 +12,16 @@ function AddPeople(roomId)
 
 }
 
-function KickPeople(roomId)
+function PlaceAll()
+{
+    
+}
+
+function KickPeople(id)
 {
     var row = roomsRows.GetRowById(id);
     var name = roomsRows.GetName(row);
-    if (confirm("Выселить всех из комнаты " + name + "?"))
+    if (confirm("Выселить всех из комнаты '" + name + "'?"))
     {
         
     }

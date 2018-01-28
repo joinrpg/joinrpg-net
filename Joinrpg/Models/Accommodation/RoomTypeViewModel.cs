@@ -32,7 +32,8 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Бесконечное поселение")]
         public bool IsInfinite { get; set; } = false;
 
-        [Display(Name = "Игроки могут выбрать данный тип проживания", Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
+        [Display(Name = "Игроки могут выбрать данный тип проживания",
+            Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
         public bool IsPlayerSelectable { get; set; } = true;
 
         [DisplayName("Автозаполнение")]
