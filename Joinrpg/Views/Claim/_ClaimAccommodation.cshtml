@@ -17,6 +17,11 @@
     return;
 }
 
+@helper ShowAccommodationTypeDesc(ProjectAccommodationType accommodationType)
+{
+    <text>(@DisplayCount.OfX(accommodationType.Capacity, "место",
+               "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
+}
 @Html.Partial("_ClaimIncomingInvites", Model)
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">
@@ -36,7 +41,7 @@
             IReadOnlyCollection<User> neighbors;
 
                                  <span>
-                                   @Model.AccommodationRequest.AccommodationType.Name @ShowAccomodationTypeDesc(Model.AccommodationRequest.AccommodationType)
+                                   @Model.AccommodationRequest.AccommodationType.Name @ShowAccommodationTypeDesc(Model.AccommodationRequest.AccommodationType)
                                  </span>
             <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
                 Изменить...
