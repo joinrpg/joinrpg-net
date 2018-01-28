@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Models.Accommodation
         /// <summary>
         /// List of rooms
         /// </summary>
-        public IEnumerable<RoomViewModel> Rooms { get; private set; }
+        public IReadOnlyCollection<RoomViewModel> Rooms { get; private set; }
 
         public int RoomsCount { get; private set; }
 
@@ -82,14 +82,11 @@ namespace JoinRpg.Web.Models.Accommodation
             Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar));
 
             // Creating a list of rooms contained in this room type
-            Rooms = entity.ProjectAccommodations.Select(acc =>
-            {
-                var result = new RoomViewModel(acc, this);
-                RoomsCount++;
-                Occupied += result.Occupancy;
-                TotalCapacity += Capacity;
-                return result;
-            });
+            Rooms = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+
+            RoomsCount = Rooms.Count;
+            Occupied = Rooms.Sum(room => room.Occupancy);
+            Capacity = Rooms.Count + Capacity;
         }
 
         public RoomTypeViewModel(Project project, int userId)
