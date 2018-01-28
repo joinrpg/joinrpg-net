@@ -4,8 +4,16 @@
 @using JoinRpg.Web.Models.Accommodation
 @model ClaimAccommodationViewModel
 
-@if (!Model.AccommodationEnabled)
+@if (!Model.AccommodationEnabledForClaim)
 {
+    <div class="panel panel-default" id="accommodationRequestsDisables">
+        <div class="panel-heading">
+            <h5>Проживание</h5>
+        </div>
+        <div class="panel-body">
+            Дождитесь одобрения заявки или включения поселения в проекте
+        </div>
+    </div>
     return;
 }
 
@@ -48,7 +56,7 @@
             else
             {
                 neighbors = Model.AccommodationRequest.Subjects.Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
-                roomFreeSpace = Model.AccommodationRequest.AccommodationType.Capacity - neighbors.Count;
+                roomFreeSpace = Model.AccommodationRequest.AccommodationType.Capacity - neighbors.Count - 1;
             }
 
             if (roomFreeSpace > 0 || neighbors.Any())
@@ -72,8 +80,9 @@
                 <b>Ваша комната полностью занята, послать новые приглашения невозможно</b>
             }
 
-            if (!Model.PotentialNeighbors.Any())
+            if (!Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
             {
+                <br/>
                 <b>Потенциальных соседей не найдено</b>
             }
 

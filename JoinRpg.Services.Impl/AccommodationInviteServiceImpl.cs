@@ -4,15 +4,20 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
     [UsedImplicitly]
-    public class AccommodationInviteServiceImpl: DbServiceImplBase, IAccommodationInviteService
+    public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
-        private const string AutomaticDeclineByAcceptOther = "Приглашение отклонено автоматически, из-за принятия другого приглашения";
-        private const string AutomaticDeclineByAcceptOtherToGroup = "Приглашение отклонено автоматически, из-за принятия другого группового приглашения";
+        private const string AutomaticDeclineByAcceptOther =
+            "Приглашение отклонено автоматически, из-за принятия другого приглашения";
+
+        private const string AutomaticDeclineByAcceptOtherToGroup =
+            "Приглашение отклонено автоматически, из-за принятия другого группового приглашения";
+
         private const string ManualAccept = "Приглашение принято";
         private const string ManualDecline = "Приглашение отклонено";
         private const string ManualCancel = "Приглашение было отозвано";
@@ -23,15 +28,17 @@ namespace JoinRpg.Services.Impl
         }
 
         public async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
-           int senderClaimId,
-           int receiverClaimId,
-           int accommodationRequestId,
-           bool inviteWithGroup = false)
+            int senderClaimId,
+            int receiverClaimId,
+            int accommodationRequestId,
+            bool inviteWithGroup = false)
         {
             //todo: make null result descriptive
 
-            var receiverCurrentAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
-                .Where(request => request.Subjects.Any(subject => subject.ClaimId == receiverClaimId))
+            var receiverCurrentAccommodationRequest = await UnitOfWork
+                .GetDbSet<AccommodationRequest>()
+                .Where(request =>
+                    request.Subjects.Any(subject => subject.ClaimId == receiverClaimId))
                 .Where(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted)
                 .Include(request => request.Subjects)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
@@ -74,8 +81,7 @@ namespace JoinRpg.Services.Impl
 
 
         public async Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
-            int inviteId,
-            bool inviteWithGroup = false)
+            int inviteId)
         {
             //todo: make null result descriptive
             var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
@@ -84,19 +90,19 @@ namespace JoinRpg.Services.Impl
                 .Include(invite => invite.From)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
-            var receiverAccommodationRequest = await GetAccommodationRequestByClaim(inviteRequest.ToClaimId).ConfigureAwait(false);
-            var senderAccommodationRequest = await GetAccommodationRequestByClaim(inviteRequest.FromClaimId).ConfigureAwait(false);
+            var receiverAccommodationRequest =
+                await GetAccommodationRequestByClaim(inviteRequest.ToClaimId).ConfigureAwait(false);
+            var senderAccommodationRequest =
+                await GetAccommodationRequestByClaim(inviteRequest.FromClaimId)
+                    .ConfigureAwait(false);
 
-            if (receiverAccommodationRequest?.AccommodationId != null)
-            {
-                return null;
-            }
+            var roomFreeSpace = (senderAccommodationRequest.AccommodationId != null)
+                ? senderAccommodationRequest.Accommodation.GetRoomFreeSpace()
+                : senderAccommodationRequest.AccommodationType.Capacity -
+                  senderAccommodationRequest.Subjects.Count;
 
-            var canInvite = (inviteWithGroup && senderAccommodationRequest.Subjects.Count +
-                             receiverAccommodationRequest?.Subjects.Count >
-                             senderAccommodationRequest.AccommodationType.Capacity) ||
-                            (!inviteWithGroup && senderAccommodationRequest.Subjects.Count <
-                             senderAccommodationRequest.AccommodationType.Capacity);
+
+            var canInvite = roomFreeSpace >= (receiverAccommodationRequest?.Subjects.Count ?? 0);
 
             if (!canInvite)
             {
@@ -105,21 +111,17 @@ namespace JoinRpg.Services.Impl
 
             receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To);
             senderAccommodationRequest.Subjects.Add(inviteRequest.To);
-        
-            await DeclineOtherInvite(inviteRequest.ToClaimId, inviteId).ConfigureAwait(false);
+            inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
 
-
-            if (inviteWithGroup)
+            for (var i = 0; i < receiverAccommodationRequest?.Subjects.Count; i++)
             {
-                foreach (var claim in receiverAccommodationRequest?.Subjects)
-                {
-                    await DeclineOtherInvite(claim.ClaimId, inviteId, onlyGroupInvite: true).ConfigureAwait(false);
-                    senderAccommodationRequest.Subjects.Add(inviteRequest.To);
-                }
-                receiverAccommodationRequest?.Subjects.Clear();
+                var claim = receiverAccommodationRequest?.Subjects.ElementAt(i);
+                await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
+                senderAccommodationRequest.Subjects.Add(claim);
+                claim.AccommodationRequest = senderAccommodationRequest;
             }
 
-            if (receiverAccommodationRequest!=null && receiverAccommodationRequest.Subjects.Any())
+            if (receiverAccommodationRequest != null && receiverAccommodationRequest.Subjects.Any())
             {
                 UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
@@ -131,7 +133,8 @@ namespace JoinRpg.Services.Impl
             return inviteRequest;
         }
 
-        public async Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId, AccommodationRequest.InviteState newState)
+        public async Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
+            AccommodationRequest.InviteState newState)
         {
             var acceptedStates = new[]
             {
@@ -149,41 +152,44 @@ namespace JoinRpg.Services.Impl
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
             inviteRequest.IsAccepted = newState;
-            inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled ? ManualCancel : ManualDecline;
+            inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled
+                ? ManualCancel
+                : ManualDecline;
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             return inviteRequest;
         }
 
 
-        private async Task<AccommodationRequest> GetAccommodationRequestByClaim(int claimId) => await UnitOfWork.GetDbSet<AccommodationRequest>()
-            .Where(request => request.Subjects.Any(subject => subject.ClaimId == claimId))
-            .Where(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted)
-            .Include(request => request.Subjects)
-            .FirstOrDefaultAsync().ConfigureAwait(false);
+        private async Task<AccommodationRequest> GetAccommodationRequestByClaim(int claimId) =>
+            await UnitOfWork.GetDbSet<AccommodationRequest>()
+                .Where(request => request.Subjects.Any(subject => subject.ClaimId == claimId))
+                .Where(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted)
+                .Include(request => request.Subjects)
+                .Include(request => request.AccommodationType)
+                .Include(request => request.Accommodation)
+                .FirstOrDefaultAsync().ConfigureAwait(false);
 
 
-        private async Task DeclineOtherInvite(int claimId, int inviteId, bool onlyGroupInvite = false)
+        private async Task DeclineOtherInvite(int claimId,
+            int inviteId)
         {
             var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
                 .Where(invite => invite.ToClaimId == claimId)
                 .Where(invite => invite.Id != inviteId)
                 .ToListAsync().ConfigureAwait(false);
+            var stateToDecline = new []{AccommodationRequest.InviteState.Unanswered};
             foreach (var accommodationInvite in inviteRequests)
             {
-
-                if (!(onlyGroupInvite && accommodationInvite.IsGroupInvite || !onlyGroupInvite))
+                if (!stateToDecline.Contains(accommodationInvite.IsAccepted))
                 {
                     continue;
                 }
 
-                if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
-                {
-                    accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
-                    accommodationInvite.ResolveDescription = onlyGroupInvite ? AutomaticDeclineByAcceptOtherToGroup : AutomaticDeclineByAcceptOther;
-                }
-
+                accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
+                accommodationInvite.ResolveDescription = AutomaticDeclineByAcceptOther;
             }
+
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
     }

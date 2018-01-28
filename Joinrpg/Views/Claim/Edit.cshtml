@@ -478,18 +478,18 @@
     </div>
 
 @Html.Partial("_ClaimAccommodation",
-  new ClaimAccommodationViewModel {
-    ProjectId = Model.ProjectId,
-    ClaimId = Model.ClaimId,
-    AccommodationRequests = Model.AccommodationRequests,
-    AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
-    IncomingInvite = Model.IncomingInvite,
-    OutgoingInvite = Model.OutgoingInvite,
-    PotentialNeighbors = Model.PotentialNeighbors,
-    AccommodationRequest = Model.AccommodationRequest,
-    AccommodationEnabled = Model.AccommodationEnabled
-  })
-    @if (Model.Fields.AnythingAccessible)
+    new ClaimAccommodationViewModel {
+        ProjectId = Model.ProjectId,
+        ClaimId = Model.ClaimId,
+        AccommodationRequests = Model.AccommodationRequests,
+        AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
+        IncomingInvite = Model.IncomingInvite,
+        OutgoingInvite = Model.OutgoingInvite,
+        PotentialNeighbors = Model.PotentialNeighbors,
+        AccommodationRequest = Model.AccommodationRequest,
+        AccommodationEnabledForClaim = Model.AccommodationEnabled && Model.Status == ClaimStatusView.Approved
+    })
+@if (Model.Fields.AnythingAccessible)
     {
         <div class="panel panel-default">
             <div class="panel-heading">

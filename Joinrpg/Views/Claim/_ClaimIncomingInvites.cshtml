@@ -33,7 +33,7 @@
                         throw new ArgumentOutOfRangeException();
                 }
                 <tr>
-                    <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
+                    <td>@Html.DisplayFor(model => accommodationInvite.From.Player)</td>
                     @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
                     {
                         <td>

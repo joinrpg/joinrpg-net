@@ -15,7 +15,6 @@ namespace JoinRpg.Services.Interfaces
             AccommodationRequest.InviteState newState);
 
         Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
-            int inviteId,
-            bool inviteWithGroup = false);
+            int inviteId);
     }
 }

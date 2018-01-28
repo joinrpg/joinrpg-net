@@ -15,6 +15,6 @@ namespace JoinRpg.Web.Models.Accommodation
         public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
         public CharacterNavigationViewModel Navigation;
         public AccommodationRequest AccommodationRequest { get; set; }
-        public bool AccommodationEnabled { get; set; }
+        public bool AccommodationEnabledForClaim { get; set; }
     }
 }
