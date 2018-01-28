@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -103,7 +104,7 @@ namespace JoinRpg.Web.Controllers
             return RedirectToAction("Index", new { ProjectId = projectId });
         }
 
-        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpHead]
         public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, string room)
         {
@@ -127,7 +128,37 @@ namespace JoinRpg.Web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> OccupyAll(int projectId)
+        {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
+
+            //TODO: Implement mass occupation
+
+            return RedirectToAction("Index");
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> UnOccupyAll(int projectId)
+        {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
+
+            //TODO: Implement mass unoccupation
+
+            return RedirectToAction("Index");
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpHead]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, string room)
         {
@@ -139,7 +170,7 @@ namespace JoinRpg.Web.Controllers
                 }
                 else
                 {
-                    //TODO: Implement total unoccupation
+                    //TODO: Implement unoccupation for all rooms of the specified type
                 }
             }
             catch
