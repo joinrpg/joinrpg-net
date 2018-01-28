@@ -55,8 +55,10 @@ namespace JoinRpg.Services.Impl
 
         public async Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId)
         {
-            return await UnitOfWork.GetDbSet<ProjectAccommodationType>().Include(x=>x.ProjectAccommodations)
-              .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
+            return await UnitOfWork.GetDbSet<ProjectAccommodationType>()
+                .Include(x => x.ProjectAccommodations)
+                .FirstOrDefaultAsync(x => x.Id == accId)
+                .ConfigureAwait(false);
         }
 
         public async Task OccupyRoom(OccupyRequest request)
@@ -142,25 +144,46 @@ namespace JoinRpg.Services.Impl
 
         public async Task UnOccupyRoomAll(UnOccupyAllRequest request)
         {
-            var room = await UnitOfWork.GetDbSet<ProjectAccommodation>()
-                .Include(r => r.Project)
-                .Include(r => r.Inhabitants)
-                .Include(r => r.ProjectAccommodationType)
-                .Include(r => r.Inhabitants.Select(i => i.Subjects.Select(c => c.Player)))
-                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.RoomId)
+            var room = await GetRoomQuery(request.ProjectId)
+                .Where(r => r.Id == request.RoomId)
                 .FirstOrDefaultAsync();
 
             await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
         }
 
-        public Task UnOccupyRoomType(UnOccupyRoomTypeRequest request)
+        private IQueryable<ProjectAccommodation> GetRoomQuery(int projectId)
         {
-            throw new NotImplementedException();
+            return UnitOfWork.GetDbSet<ProjectAccommodation>()
+                .Include(r => r.Project)
+                .Include(r => r.Inhabitants)
+                .Include(r => r.ProjectAccommodationType)
+                .Include(r => r.Inhabitants.Select(i => i.Subjects.Select(c => c.Player)))
+                .Where(r => r.ProjectId == projectId);
         }
 
-        public Task UnOccupyAll(int projectId)
+        public async Task UnOccupyRoomType(UnOccupyRoomTypeRequest request)
         {
-            throw new NotImplementedException();
+            var rooms = await GetRoomQuery(request.ProjectId)
+                .Where(r => r.Inhabitants.Any())
+                .Where(r => r.AccommodationTypeId == request.RoomTypeId)
+                .ToListAsync();
+
+            foreach (var room in rooms)
+            {
+                await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
+            }
+        }
+
+        public async Task UnOccupyAll(int projectId)
+        {
+            var rooms = await GetRoomQuery(projectId)
+                .Where(r => r.Inhabitants.Any())
+                .ToListAsync();
+
+            foreach (var room in rooms)
+            {
+                await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
+            }
         }
 
         public async Task RemoveRoomType(int accomodationTypeId)

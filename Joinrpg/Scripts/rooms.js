@@ -6,6 +6,8 @@ var roomCapacity = 0;
 var roomsRows = null;
 var rowPlaceholder = null;
 var dlgEditRoomName = null;
+var bnPlaceAll = null;
+var bnKickAll = null;
 
 function AddPeople(roomId)
 {
@@ -14,7 +16,7 @@ function AddPeople(roomId)
 
 function PlaceAll()
 {
-    
+    UpdateGlobalButtons();
 }
 
 function KickPeople(id)
@@ -23,16 +25,23 @@ function KickPeople(id)
     var name = roomsRows.GetName(row);
     if (ConfirmKickAllFromRoom(name))
     {
-        
+
+        UpdateGlobalButtons();
     }
 }
 
-function KickAll()
+function KickAll(href)
 {
     if (ConfirmKickAllFromRoomType())
     {
-        
+        location.href = href;
     }
+}
+
+function UpdateGlobalButtons()
+{
+    $(bnPlaceAll).prop("disabled", true);
+    $(bnKickAll).prop("disabled", true);
 }
 
 function AddRoom()
@@ -171,6 +180,9 @@ $(function ()
         row.getElementsByTagName("td").item(0).innerHTML = name;
     }
 
+    bnPlaceAll = document.getElementById("bnPlaceAll");
+    bnKickAll = document.getElementById("bnKickAll");
+    UpdateGlobalButtons();
 
     // Rows initialization
     if (roomsCount > 0)
@@ -183,7 +195,9 @@ $(function ()
                 room.roomId = parseIntDef(room.getAttribute("roomId"), 0);
                 room.occupancy = parseIntDef(room.getAttribute("occupancy"), 0);
                 room.bnAddPeople = document.getElementById("add" + room.roomId);
+                $(room.bnAddPeople).prop("disabled", room.occupancy === roomCapacity);
                 room.bnKickPeople = document.getElementById("kick" + room.roomId);
+                $(room.bnKickPeople).prop("disabled", room.occupancy === 0);
                 room.bnRename = document.getElementById("rename" + room.roomId);
                 room.bnDelete = document.getElementById("delete" + room.roomId);
                 $(room.bnDelete).prop("disabled", room.occupancy > 0);

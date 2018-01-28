@@ -60,11 +60,15 @@ namespace JoinRpg.Web.Models.Accommodation
     public class RoomViewModel
     {
         public int Id { get; set; }
+
         public int RoomTypeId { get; set; }
+
         public int ProjectId { get; set; }
+
         [Required]
         [DisplayName("Название (номер)")]
         public string Name { get; set; }
+
         public virtual ICollection<ClaimViewModel> Inhabitants { get; set; }
 
         public int Capacity { get; set; }
@@ -72,10 +76,10 @@ namespace JoinRpg.Web.Models.Accommodation
         public int Occupancy
             => Inhabitants?.Count ?? 0;
 
+
         public bool CanManageRooms { get; }
 
         public bool CanAssignRoom { get; set; }
-
 
         public RoomViewModel([NotNull]ProjectAccommodation entity, bool canManageRooms, bool canAssignRoom)
         {

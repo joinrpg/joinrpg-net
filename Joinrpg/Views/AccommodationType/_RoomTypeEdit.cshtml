@@ -6,7 +6,7 @@
 {
     @Html.AntiForgeryToken()
 
-    <div class="form-horizontal">
+    <div class="form-horizontal" style="margin-top: 1em;">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(model => model.Id)
         <div class="form-group">
@@ -66,7 +66,7 @@
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
                 <button type="submit" class="btn btn-success">@ViewBag.ActionName</button>
-                <a href="@Url.Action("Index", "AccommodationType", new { projectId = Model.ProjectId })" class="btn btn-default">Назад к списку типов проживания</a>
+                @Html.Partial("_BackButton", Model.ProjectId)
             </div>
         </div>
     </div>
