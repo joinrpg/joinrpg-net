@@ -12,12 +12,10 @@
 </script>
 <hr />
 <h3>Список комнат</h3>
-@if (Model.CanManageRooms)
-{
-    <div class="btn-group">
-        <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>Добавить&hellip;</button>
-    </div>
-}
+<div class="btn-group">
+    <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
+    <button type="button" onclick="KickAll()" class="btn btn-default"><i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
+</div>
 <table class="table table-striped">
     <thead>
         <tr>

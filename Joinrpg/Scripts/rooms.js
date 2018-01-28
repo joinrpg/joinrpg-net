@@ -14,7 +14,20 @@ function AddPeople(roomId)
 
 function KickPeople(roomId)
 {
+    var row = roomsRows.GetRowById(id);
+    var name = roomsRows.GetName(row);
+    if (confirm("Выселить всех из комнаты " + name + "?"))
+    {
+        
+    }
+}
 
+function KickAll()
+{
+    if (confirm("Вы точно уверены, что хотите выселить ВСЕХ участников из ВСЕХ комнат?"))
+    {
+        
+    }
 }
 
 function AddRoom()
@@ -31,7 +44,7 @@ function AddRoom()
 function DeleteRoom(id)
 {
     var row = roomsRows.GetRowById(id);
-    var name = row.getElementsByTagName("td").item(0).innerHTML;
+    var name = roomsRows.GetName(row);
     if (confirm("Удалить комнату " + name + "?"))
     {
         $(row.bnDelete).prop("disabled", true);
@@ -44,7 +57,7 @@ function RenameRoom(id)
     var row = roomsRows.GetRowById(id);
     if (row != null)
     {
-        var name = row.getElementsByTagName("td").item(0).innerHTML;
+        var name = roomsRows.GetName(row);
 
         dlgEditRoomName.roomId = id;
         dlgEditRoomName.roomName = name;
@@ -64,7 +77,7 @@ function DoEditRoom(id, name)
     else
     {        
         row = roomsRows.GetRowById(id);
-        row.getElementsByTagName("td").item(0).innerHTML = name;
+        roomsRows.SetName(row, name);
         $(row.bnRename).prop("disabled", true);
     }
 
@@ -154,6 +167,14 @@ $(function ()
     {
         return document.getElementById("room" + roomId);
     };
+    roomsRows.GetName = function(row)
+    {
+        return row.getElementsByTagName("td").item(0).innerHTML;
+    };
+    roomsRows.SetName = function(row, name)
+    {
+        row.getElementsByTagName("td").item(0).innerHTML = name;
+    }
 
 
     // Rows initialization
