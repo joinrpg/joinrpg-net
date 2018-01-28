@@ -141,9 +141,8 @@ namespace JoinRpg.Web.Controllers
 
       var availableAccommodation = await
             _accommodationRepository.GetPlayerSelectableAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
-      var requestForAccommodation = await _accommodationRequestRepository
-            .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
-      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation, requestForAccommodation);
+
+      var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation);
 
       if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
       {

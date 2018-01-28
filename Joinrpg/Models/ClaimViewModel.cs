@@ -107,31 +107,31 @@ namespace JoinRpg.Web.Models
 
 
     public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-    public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
+    public AccommodationRequest AccommodationRequest { get; set; }
 
     public ClaimViewModel(User currentUser,
           Claim claim,
           IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
-        IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
-        IEnumerable<AccommodationRequest> accommodationRequests = null)
+        IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null)
       {
           ClaimId = claim.ClaimId;
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
           HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = ClaimExtensions.HasMasterAccess(claim, currentUser.UserId, acl => acl.CanManageClaims, allowResponsible: true);
+          CanManageThisClaim = claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageClaims, allowResponsible: true);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
+          ProjectName = claim.Project.ProjectName;
           Status = (ClaimStatusView) claim.ClaimStatus;
           CharacterGroupId = claim.CharacterGroupId;
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;
           CharacterActive = claim.Character?.IsActive;
           AvailableAccommodationTypes = availableAccommodationTypes;
-          AccommodationRequests = accommodationRequests;
+          AccommodationRequest = claim.AccommodationRequest;
             OtherClaimsForThisCharacterCount = claim.IsApproved
               ? 0
               : claim.OtherClaimsForThisCharacter().Count();
@@ -314,6 +314,7 @@ namespace JoinRpg.Web.Models
     public bool CheckInModuleEnabled { get; }
     public ClaimCheckInValidator Validator { get; }
       public bool AccommodationEnabled { get; }
+      public string ProjectName { get; set; }
   }
 
 

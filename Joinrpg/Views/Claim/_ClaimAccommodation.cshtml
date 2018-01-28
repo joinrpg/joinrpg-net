@@ -7,51 +7,68 @@
     return;
 }
 <div class="panel panel-default" id="accommodationRequests">
-    <div class="panel-heading">Поданы заявки на проживание</div>
-    <div class="panel-body">
-        @if (!Model.AccommodationRequests.Any())
+    <div class="panel-heading">
+        <h5>Проживание</h5>
+        @if (Model.AccommodationRequest != null)
         {
-            <h5>Заявки на проживание не подавались.</h5>
+            <span>
+                @Model.AccommodationRequest.AccommodationType.Name (@DisplayCount.OfX(Model.AccommodationRequest.AccommodationType.Capacity, "место",  "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
+            </span>
+            <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
+                Изменить тип
+            </button>
         }
-        @foreach (var accommodationRequests in Model.AccommodationRequests)
+    </div>
+    <div class="panel-body">
+        @if (Model.AccommodationRequest == null)
         {
-            var className = "alert-warning";
-            if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted)
-            {
-                className = "alert-success";
-
-            }
-            <div class="@className">
-                @accommodationRequests.AccommodationType.Name (@accommodationRequests.AccommodationType.Capacity места, @accommodationRequests.AccommodationType.Cost рублей)
+            <h5>Тип проживания не выбран.</h5>
+        }
+        else
+        {
+            <div>
+                @Model.AccommodationRequest.AccommodationType.Description
             </div>
         }
     </div>
 </div>
-<div class="panel panel-default" id="accommodationTypes">
-    <div class="panel-heading">Возможные варианты проживания</div>
-    <div class="panel-body">
-        @using (Html.BeginForm("PostAccommodationRequest", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-        {
-            @Html.AntiForgeryToken()
-            foreach (var accommodationType in Model.AvailableAccommodationTypes)
-            {
-                var className = "";
-                var checkedState ="";
-                if (Model.AccommodationRequests.Any(request => request.AccommodationType == accommodationType))
-                {
 
-                    className = "text-success";
-                    checkedState = "checked";
+<div class="modal fade" id="changeAccommodationType" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+    @using (Html.BeginForm("PostAccommodationRequest", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+    {
+        <div class="modal-content">
+            <div class="modal-header">
+                Возможные варианты проживания
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                
+                @Html.AntiForgeryToken()
+                @foreach (var accommodationType in Model.AvailableAccommodationTypes)
+                {
+                    var checkedState = "";
+                    if (Model.AccommodationRequest != null && Model.AccommodationRequest.AccommodationType == accommodationType)
+                    {
+
+                        checkedState = "checked";
+                    }
+                    <div class="radio" style="margin-bottom: 2em;">
+                        <label>
+                            <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
+                            @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+                            @accommodationType.Description
+                        </label>
+                    </div>
                 }
-                <div class="radio" style="margin-bottom: 2em;">
-                     <label class="@className">
-                         <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
-                         @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
-                         @accommodationType.Description
-                     </label>
-                 </div>
-             }
-            <button class="btn btn-default" type="submit">Сохранить проживание</button>
-        }
+                  
+                
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" type="submit">Сохранить проживание</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    }
     </div>
 </div>

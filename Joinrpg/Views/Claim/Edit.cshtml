@@ -6,12 +6,12 @@
 @helper OtherClaimsForThisCharacterLink()
     {
         @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                new { Model.CharacterId, Model.ProjectId }, null)
+                     new { Model.CharacterId, Model.ProjectId }, null)
 }
 @helper OtherClaimsForThisPlayerLink()
     {
         @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                new { Model.ProjectId, Model.Player.UserId }, null)
+                     new { Model.ProjectId, Model.Player.UserId }, null)
 }
 
 @using JoinRpg.Web.Models
@@ -19,8 +19,12 @@
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models.Accommodation
 
+@{
+    ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
+}
+
 <div>
-    
+
 
     @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
     {
@@ -28,115 +32,115 @@
     }
 
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-<div class="panel panel-default">
-    <div class="panel-heading">
-        @Html.Partial("CharacterNavigation", Model.Navigation)
-    </div>
-    <div class="panel-body">
-        @if (Model.HasMasterAccess && Model.Problems.Any())
-        {
-            <div class="alert-warning alert">
-                <b>Проблемы</b>:
-                @foreach (var pr in Model.Problems)
-                {
-                    @Html.DisplayFor(modelItem => pr)
-                }
-
-            </div>
-        }
-
-        <dl class="dl-horizontal">
-            <dt>
-                @Html.DisplayNameFor(model => model.Player)
-            </dt>
-
-            <dd>
-                @Html.DisplayFor(model => model.Player)
-                <button type="button"
-                        class="btn btn-xs btn-default"
-                        data-toggle="popover"
-                        title="Контакты"
-                        data-html="true"
-                        data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
-                    контакты
-                </button>
-            </dd>
-            @if (Model.CharacterGroupId != null)
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @Html.Partial("CharacterNavigation", Model.Navigation)
+        </div>
+        <div class="panel-body">
+            @if (Model.HasMasterAccess && Model.Problems.Any())
             {
+                <div class="alert-warning alert">
+                    <b>Проблемы</b>:
+                    @foreach (var pr in Model.Problems)
+                    {
+                        @Html.DisplayFor(modelItem => pr)
+                    }
+
+                </div>
+            }
+
+            <dl class="dl-horizontal">
                 <dt>
-                    @Html.DisplayNameFor(model => model.GroupName)
+                    @Html.DisplayNameFor(model => model.Player)
                 </dt>
 
                 <dd>
-                    @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
+                    @Html.DisplayFor(model => model.Player)
+                    <button type="button"
+                            class="btn btn-xs btn-default"
+                            data-toggle="popover"
+                            title="Контакты"
+                            data-html="true"
+                            data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+                        контакты
+                    </button>
                 </dd>
-            }
-            <dt>
-                @Html.DisplayNameFor(model => model.Status)
-            </dt>
-            <dd>
-                @Html.DisplayFor(model => model.Status)
-            </dd>
-            <dt>
-                @Html.DisplayNameFor(model => model.Description)
-            </dt>
-            <dd>
-                @Model.Description
-            </dd>
-            @if (Model.ParentGroups != null)
-            {
-                <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-                <dd>
-                    @Html.DisplayFor(model => model.ParentGroups)
-                    @if (Model.Navigation.CanEditRoles)
-                    {
-                        <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
-                    }
-                </dd>
-            }
-            @if (Model.ClaimFee.ShowFee)
-            {
-                <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
-                <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
-            }
-            <dt>
-                @Html.DisplayNameFor(model => model.ResponsibleMasterId)
-            </dt>
-            <dd>
-                @if (Model.CanManageThisClaim && Model.ProjectActive)
+                @if (Model.CharacterGroupId != null)
                 {
-                    using (Html.BeginForm("ChangeResponsible", "Claim"))
-                    {
-                        <div class="form-inline input-group-sm" style="margin-top: 0.5em">
-                            @Html.AntiForgeryToken()
-                            @Html.HiddenFor(model => model.ProjectId)
-                            @Html.HiddenFor(model => model.ClaimId)
-                            @Html.DropDownListFor(
-                                model => model.ResponsibleMasterId,
-                                Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                                htmlAttributes: new { @class = "form-control" })
+                    <dt>
+                        @Html.DisplayNameFor(model => model.GroupName)
+                    </dt>
 
-                            @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
-                            <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
-                        </div>
-                    }
+                    <dd>
+                        @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
+                    </dd>
                 }
-                else
+                <dt>
+                    @Html.DisplayNameFor(model => model.Status)
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Status)
+                </dd>
+                <dt>
+                    @Html.DisplayNameFor(model => model.Description)
+                </dt>
+                <dd>
+                    @Model.Description
+                </dd>
+                @if (Model.ParentGroups != null)
                 {
-                    @Html.DisplayFor(model => model.ResponsibleMaster)
-                    if (Model.HasMasterAccess && !Model.CanManageThisClaim)
-                    {
-                        <input type="button"
-                               value="Изменить"
-                               class="btn btn-default btn-xs"
-                               disabled="disabled"
-                               title="Изменять ответственного мастера для чужих заявок могут только администраторы." />
-                    }
+                    <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.ParentGroups)
+                        @if (Model.Navigation.CanEditRoles)
+                        {
+                            <a href="@Url.Action("Edit", "Character", new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
+                        }
+                    </dd>
                 }
-            </dd>
-        </dl>
+                @if (Model.ClaimFee.ShowFee)
+                {
+                    <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
+                    <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
+                }
+                <dt>
+                    @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+                </dt>
+                <dd>
+                    @if (Model.CanManageThisClaim && Model.ProjectActive)
+                    {
+                        using (Html.BeginForm("ChangeResponsible", "Claim"))
+                        {
+                            <div class="form-inline input-group-sm" style="margin-top: 0.5em">
+                                @Html.AntiForgeryToken()
+                                @Html.HiddenFor(model => model.ProjectId)
+                                @Html.HiddenFor(model => model.ClaimId)
+                                @Html.DropDownListFor(
+                                         model => model.ResponsibleMasterId,
+                                         Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                                         htmlAttributes: new { @class = "form-control" })
+
+                                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
+                                <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(model => model.ResponsibleMaster)
+                        if (Model.HasMasterAccess && !Model.CanManageThisClaim)
+                        {
+                            <input type="button"
+                                   value="Изменить"
+                                   class="btn btn-default btn-xs"
+                                   disabled="disabled"
+                                   title="Изменять ответственного мастера для чужих заявок могут только администраторы." />
+                        }
+                    }
+                </dd>
+            </dl>
+        </div>
     </div>
-</div>
 
     <div class="panel-group">
         <div class="btn-group">
@@ -457,32 +461,33 @@
         PreferentialFeeConditions = Model.ClaimFee.PreferentialFeeConditions
     })
 
-<div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
-    <div class="panel-heading">Отозвать заявку</div>
-    <div class="panel-body">
-        @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-        {
-            @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+    <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
+        <div class="panel-heading">Отозвать заявку</div>
+        <div class="panel-body">
+            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
-                ProjectId = Model.ProjectId,
-                ClaimId = Model.ClaimId,
-                ActionName = "Отозвать заявку",
-                CommentText = "Извините, я передумал ехать"
-            })
-        }
+                @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+                {
+                    ProjectId = Model.ProjectId,
+                    ClaimId = Model.ClaimId,
+                    ActionName = "Отозвать заявку",
+                    CommentText = "Извините, я передумал ехать"
+                })
+            }
+        </div>
     </div>
-</div>
 
-@Html.Partial("_ClaimAccommodation",
-    new ClaimAccommodationViewModel {
-        ProjectId = Model.ProjectId,
-        ClaimId = Model.ClaimId,
-        AccommodationRequests = Model.AccommodationRequests,
-        AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
-        AccommodationEnabled = Model.AccommodationEnabled
-    })
+    @Html.Partial("_ClaimAccommodation",
+        new ClaimAccommodationViewModel
+        {
+            ProjectId = Model.ProjectId,
+            ClaimId = Model.ClaimId,
+            AccommodationRequest = Model.AccommodationRequest,
+            AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
+            AccommodationEnabled = Model.AccommodationEnabled
+        })
 
-@if (Model.Fields.AnythingAccessible)
+    @if (Model.Fields.AnythingAccessible)
     {
         <div class="panel panel-default">
             <div class="panel-heading">

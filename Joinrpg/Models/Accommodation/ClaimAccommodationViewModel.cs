@@ -9,7 +9,7 @@ namespace JoinRpg.Web.Models.Accommodation
         public int ClaimId { get; set; }
         public int ProjectId { get; set; }
         public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-        public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
+        public AccommodationRequest AccommodationRequest { get; set; }
         public bool AccommodationEnabled { get; set; }
     }
 }
