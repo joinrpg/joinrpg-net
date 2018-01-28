@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
@@ -30,74 +31,84 @@ namespace JoinRpg.Web.Controllers
             _accommodationService = accommodationService;
         }
 
+        /// <summary>
+        /// Shows list of registered room types
+        /// </summary>
         [HttpGet]
         public async Task<ActionResult> Index(int projectId)
         {
+            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
+            if (project == null)
+                return HttpNotFound($"Project {projectId} not found");
+            if (!project.Details.EnableAccommodation)
+                return RedirectToAction("Edit", "Game");
 
-            var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId).ConfigureAwait(false);
-            var accommodations = (await _accommodationService.GetAccommodationForProject(projectId).ConfigureAwait(false)).Select(x =>
-                new RoomTypeViewModel()
-                {
-                    Name = x.Name,
-                    Cost = x.Cost,
-                    ProjectId = x.ProjectId,
-                    Id = x.Id,
-                    Capacity = x.Capacity,
-                    Description = x.Description,
-                    IsAutoFilledAccommodation = x.IsAutoFilledAccommodation,
-                    IsInfinite = x.IsInfinite,
-                    IsPlayerSelectable = x.IsPlayerSelectable,
-                    Accommodations = x.ProjectAccommodations.Select(projectAccomodaion => new RoomViewModel(projectAccomodaion)).ToList()
-                }
-              ).ToList();
-            if (project == null) return HttpNotFound();
-            if (!project.Details.EnableAccommodation) return RedirectToAction("Edit", "Game");
-            var res = new AccommodationListViewModel
-            {
-                ProjectId = projectId,
-                ProjectName = project.ProjectName,
-                RoomsTypes = accommodations,
-                CanManageRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanManageAccommodation),
-                CanAssignRooms = project.HasMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations),
-            };
-            return View(res);
+            return View(new AccommodationListViewModel(project,
+                await _accommodationService.GetRoomTypes(projectId),
+                CurrentUserId));
         }
 
+        /// <summary>
+        /// Shows "Add room type" form
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]        
-        public async Task<ActionResult> Edit(RoomTypeViewModel model)
+        [HttpGet]
+        public async Task<ActionResult> AddRoomType(int projectId)
         {
-            if (!ModelState.IsValid)
-            {
-                return View("TypeDetails", model);
-            }
-            await _accommodationService.RegisterNewAccommodationTypeAsync(model.GetProjectAccommodationTypeMock()).ConfigureAwait(false);
-            return RedirectToAction("Index", routeValues: new { model.ProjectId });
+            return View(new RoomTypeViewModel(
+                await ProjectRepository.GetProjectAsync(projectId), CurrentUserId));
         }
 
-        [MasterAuthorize()]
+        /// <summary>
+        /// Shows "Edit room type" form
+        /// </summary>
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpGet]
-        public async Task<ActionResult> RoomTypeDetails(int projectId, int roomTypeId)
+        public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {
-            var model = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
-            if (model == null || model.ProjectId != projectId)
+            var entity = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            if (entity == null || entity.ProjectId != projectId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
             }
 
-            return View("TypeDetails", new RoomTypeViewModel(model, CurrentUserId));
+            return View(new RoomTypeViewModel(entity, CurrentUserId));
         }
 
+        /// <summary>
+        /// Saves room type.
+        /// If data are valid, redirects to Index
+        /// If not, returns to edit mode
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<ActionResult> DeleteRoomType(int accomodationTypeId, int projectId)
+        [ValidateAntiForgeryToken]        
+        public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
         {
-            await _accommodationService.RemoveAccommodationType(accomodationTypeId).ConfigureAwait(false);
+            if (!ModelState.IsValid)
+            {
+                if (model.Id == 0)
+                    return View("AddRoomType", model);
+                return View("EditRoomType", model);
+            }
+            await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+            return RedirectToAction("Index", new { projectId = model.ProjectId });
+        }
+
+        /// <summary>
+        /// Removes room type
+        /// </summary>
+        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [HttpGet]
+        public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
+        {
+            await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
             return RedirectToAction("Index", new { ProjectId = projectId });
         }
 
+        /// <summary>
+        /// Removes room
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]        
         [HttpDelete]
         public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
@@ -113,6 +124,9 @@ namespace JoinRpg.Web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
+        /// <summary>
+        /// Applies new name to a room or adds a new room(s)
+        /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpGet]
         public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)

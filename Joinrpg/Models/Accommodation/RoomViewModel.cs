@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Models.Accommodation
         {
             ProjectId = roomType.ProjectId;
             RoomTypeId = roomType.Id;
-            Rooms = roomType.Accommodations ?? null;
+            Rooms = roomType.Rooms ?? null;
             RoomCapacity = roomType.Capacity;
         }
 

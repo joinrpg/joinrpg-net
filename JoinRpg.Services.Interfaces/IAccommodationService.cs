@@ -9,9 +9,9 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Adds new room type
         /// </summary>
-        Task<ProjectAccommodationType> RegisterNewAccommodationTypeAsync(ProjectAccommodationType newAccommodation);
+        Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType);
 
-        Task RemoveAccommodationType(int accommodationTypeId);
+        Task RemoveRoomType(int roomTypeId);
 
         /// <summary>
         /// Adds rooms to specified room type of specified project
@@ -28,7 +28,10 @@ namespace JoinRpg.Services.Interfaces
         /// </summary>
         Task DeleteRoom(int roomId, int? projectId = null, int? roomTypeId = null);
 
-        Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int project);
+        /// <summary>
+        /// Returns all room types for specified project Id
+        /// </summary>
+        Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId);
 
         Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId);
 

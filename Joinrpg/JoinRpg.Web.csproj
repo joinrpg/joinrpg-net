@@ -754,14 +754,16 @@
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
     <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
-    <Content Include="Views\AccommodationType\TypeDetails.cshtml" />
+    <Content Include="Views\AccommodationType\EditRoomType.cshtml" />
     <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
-    <Content Include="Views\AccommodationType\_RoomEdit.cshtml" />
-    <Content Include="Views\AccommodationType\TypeEdit.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomEditDlg.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomTypeEdit.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
     <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
     <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
     <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomTypeDetails.cshtml" />
+    <Content Include="Views\AccommodationType\AddRoomType.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

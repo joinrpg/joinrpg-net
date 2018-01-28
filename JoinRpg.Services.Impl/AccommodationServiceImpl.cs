@@ -18,35 +18,37 @@ namespace JoinRpg.Services.Impl
     {
         private IEmailService EmailService { get; }
 
-        public async Task<ProjectAccommodationType> RegisterNewAccommodationTypeAsync(ProjectAccommodationType newAccommodation)
+        public async Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType)
         {
-            if (newAccommodation.ProjectId == 0) throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+            if (roomType.ProjectId == 0)
+                throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+
             ProjectAccommodationType result;
-            if (newAccommodation.Id != 0)
+
+            if (roomType.Id != 0)
             {
-                result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(newAccommodation.Id).ConfigureAwait(false);
-                if (result?.ProjectId != newAccommodation.ProjectId)
+                result = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomType.Id).ConfigureAwait(false);
+                if (result?.ProjectId != roomType.ProjectId)
                 {
                     return null;
                 }
-                result.Name = newAccommodation.Name;
-                result.Cost = newAccommodation.Cost;
-                result.Capacity = newAccommodation.Capacity;
-                result.Description = newAccommodation.Description;
-                result.IsAutoFilledAccommodation = newAccommodation.IsAutoFilledAccommodation;
-                result.IsInfinite = newAccommodation.IsInfinite;
-                result.IsPlayerSelectable = newAccommodation.IsPlayerSelectable;
-
+                result.Name = roomType.Name;
+                result.Cost = roomType.Cost;
+                result.Capacity = roomType.Capacity;
+                result.Description = roomType.Description;
+                result.IsAutoFilledAccommodation = roomType.IsAutoFilledAccommodation;
+                result.IsInfinite = roomType.IsInfinite;
+                result.IsPlayerSelectable = roomType.IsPlayerSelectable;
             }
             else
             {
-                result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(newAccommodation);
+                result = UnitOfWork.GetDbSet<ProjectAccommodationType>().Add(roomType);
             }
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             return result;
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetAccommodationForProject(int projectId)
+        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId)
         {
             return await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
         }
@@ -132,7 +134,7 @@ namespace JoinRpg.Services.Impl
             await EmailService.Email(await CreateRoomEmail<UnOccupyRoomEmail>(accommodationRequest, room));
         }
 
-        public async Task RemoveAccommodationType(int accomodationTypeId)
+        public async Task RemoveRoomType(int accomodationTypeId)
         {
             var entity = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(accomodationTypeId);
 

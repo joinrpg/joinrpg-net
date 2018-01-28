@@ -10,8 +10,9 @@
     roomsCount = @(Model.Rooms != null ? Model.Rooms.Count : 0);
     roomCapacity = @Model.RoomCapacity;
 </script>
+<hr />
 <h3>Список комнат</h3>
-<div>
+<div class="btn-group">
     <button type="button" onclick="AddRoom()" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>Добавить&hellip;</button>
 </div>
 <table class="table table-striped">
@@ -37,4 +38,3 @@
         </tr>
     </tbody>
 </table>
-<hr />
