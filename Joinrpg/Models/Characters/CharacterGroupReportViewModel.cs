@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Models.Characters
             public IList<CharacterGroupReportItemViewModel> Generate()
             {
                 GenerateFrom(Root, 0);
-                foreach (var characterGroup in Root.ChildGroups)
+                foreach (var characterGroup in Root.ChildGroups.Where(cg => cg.IsActive))
                 {
                     GenerateFrom(characterGroup, 1);
                 }
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Models.Characters
 
                 Results.Add(vm);
 
-                var flatChilds = characterGroup.FlatTree(model => model.ChildGroups).Distinct()
+                var flatChilds = characterGroup.FlatTree(model => model.ChildGroups.Where(c => c.IsActive)).Distinct()
                     .ToList();
 
                 var flatCharacters = flatChilds.SelectMany(c => c.Characters).Where(c => c.IsActive)
