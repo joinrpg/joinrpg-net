@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers
                 return RedirectToAction("Edit", "Game");
 
             return View(new AccommodationListViewModel(project,
-                await _accommodationService.GetRoomTypes(projectId),
+                await _accommodationService.GetRoomTypesAsync(projectId),
                 CurrentUserId));
         }
 
@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {
-            var entity = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
             if (entity == null || entity.ProjectId != projectId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
@@ -80,7 +80,7 @@ namespace JoinRpg.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
         {
-            var entity = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId);
             if (entity == null || entity.ProjectId != projectId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);

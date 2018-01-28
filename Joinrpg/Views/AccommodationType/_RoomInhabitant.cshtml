@@ -1,2 +1,9 @@
-﻿@model JoinRpg.Web.Models.Accommodation.RoomInhabitantViewModel
-<div>@Html.DisplayNameFor(model => model.Claim.Player)</div>
+﻿@using JoinRpg.Web.Models.Accommodation;
+@model AccRequestViewModel
+<div>
+    <button type="button" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-remove"></i></button>
+    @foreach (var participant in Model.Participants)
+    {
+        @Html.DisplayFor(model => participant.User)
+    }
+</div>

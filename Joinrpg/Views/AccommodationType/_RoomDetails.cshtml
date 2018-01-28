@@ -6,11 +6,11 @@
     <td>@Model.Name</td>
     <td>@Model.Occupancy / @Model.Capacity</td>
     <td>
-        @if (Model.Inhabitants != null)
+        @if (Model.Requests != null)
         {
-            foreach (ClaimViewModel claim in Model.Inhabitants)
+            foreach (AccRequestViewModel request in Model.Requests)
             {
-                @Html.Partial("_RoomInhabitant", new RoomInhabitantViewModel(Model, claim))
+                @Html.Partial("_RoomInhabitant", request)
             }
         }
     </td>
@@ -24,7 +24,7 @@
         }
     </td>
     <td>
-        @if (Model.CanAssignRoom)
+        @if (Model.CanAssignRooms)
         {
             <div class="btn-group btn-group-sm" style="display: inline-block">
                 <button id="add@(Model.Id)" onclick="AddPeople(@Model.Id)" type="button" class="btn glyphicon glyphicon-bed" title="Заселить"></button>

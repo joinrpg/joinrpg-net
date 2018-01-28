@@ -9,18 +9,23 @@ namespace JoinRpg.DataModel
     {
         [Key]
         public int Id { get; set; }
+
         public int ProjectId { get; set; }
         [ForeignKey("ProjectId")]
         public virtual Project Project { get; set; }
+
         public virtual ICollection<Claim> Subjects { get; set; }
+
         public int AccommodationTypeId { get; set; }
         [NotNull]
         [ForeignKey("AccommodationTypeId")]
         public virtual ProjectAccommodationType AccommodationType { get; set; }
+
         public int? AccommodationId { get; set; }
         [CanBeNull]
         [ForeignKey("AccommodationId")]
         public virtual ProjectAccommodation Accommodation { get; set; }
+
         public InviteState IsAccepted { get; set; }
 
         public enum InviteState

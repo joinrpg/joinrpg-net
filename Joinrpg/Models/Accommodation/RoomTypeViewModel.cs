@@ -40,13 +40,25 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Автозаполнение")]
         public bool IsAutoFilledAccommodation { get; set; } = false;
 
-        [DisplayName("Объем номерного фонда данного типа")]
-        public int TotalCapacity => Capacity * Rooms?.Count ?? 0;
+        [DisplayName("Общее количество мест")]
+        public int TotalCapacity
+            => RoomsCount * Capacity;
 
         [DisplayName("Проживает")]
-        public int Occupied { get; set; }
+        public int Occupied { get; }
 
-        public ICollection<RoomViewModel> Rooms { get; set; }
+        /// <summary>
+        /// List of rooms
+        /// </summary>
+        public IReadOnlyList<RoomViewModel> Rooms { get; }
+
+        public int RoomsCount
+            => Rooms?.Count ?? 0;
+
+        /// <summary>
+        /// List of requests sent for this room type
+        /// </summary>
+        public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
         public bool CanAssignRooms { get; set; }
 
@@ -67,8 +79,14 @@ namespace JoinRpg.Web.Models.Accommodation
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             Description = entity.Description;
-            Rooms = RoomViewModel.NewListCollection(entity.ProjectAccommodations, CanManageRooms, CanAssignRooms);
-            Occupied = Rooms.Sum(rv => rv.Occupancy);
+
+            // Creating a list of requests associated with this room type
+            Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
+
+            // Creating a list of rooms contained in this room type
+            Rooms = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+
+            Occupied = Rooms.Sum(room => room.Occupancy);
         }
 
         public RoomTypeViewModel(Project project, int userId)

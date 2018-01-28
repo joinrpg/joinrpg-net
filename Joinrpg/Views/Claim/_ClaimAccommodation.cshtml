@@ -35,12 +35,11 @@
             var roomFreeSpace = 0;
             IReadOnlyCollection<User> neighbors;
 
-            <span>
-                @Model.AccommodationRequest.AccommodationType.Name
-                (@DisplayCount.OfX(Model.AccommodationRequest.AccommodationType.Capacity, "место", "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
-            </span>
+                                 <span>
+                                   @Model.AccommodationRequest.AccommodationType.Name @ShowAccomodationTypeDesc(Model.AccommodationRequest.AccommodationType)
+                                 </span>
             <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
-                Изменить тип
+                Изменить...
             </button>
             <div class="help-block">
                 @Model.AccommodationRequest.AccommodationType.Description

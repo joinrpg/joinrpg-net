@@ -8,24 +8,21 @@
     @* following variables are declared in rooms.js *@
     projectId = @Model.ProjectId;
     roomTypeId = @Model.RoomTypeId;
-    roomsCount = @(Model.Rooms != null ? Model.Rooms.Count : 0);
+    roomsCount = @Model.RoomsCount;
     roomCapacity = @Model.RoomCapacity;
 </script>
 <div class="btn-group" style="margin-top: 1em;">
     @if (Model.CanManageRooms)
     {
         <button type="button" onclick="AddRoom()" class="btn btn-default">
-            <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;
-        </button>
+            <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
     }
     @if (Model.CanAssignRooms)
     {
         <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
-            <i class="glyphicon glyphicon-bed"></i> Заселить всех
-        </button>
+            <i class="glyphicon glyphicon-bed"></i> Заселить всех</button>
         <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.RoomTypeId, Room = "all" })')" class="btn btn-default">
-            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
-        </button>
+            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
     }
 </div>
 <div class="table-responsive" style="margin-top: 1em;">
@@ -40,7 +37,7 @@
             </tr>
         </thead>
         <tbody id="roomsRows">
-            @if (Model.Rooms != null && Model.Rooms.Count > 0)
+            @if (Model.Rooms != null && Model.RoomsCount > 0)
             {
                 foreach (RoomViewModel room in Model.Rooms)
                 {

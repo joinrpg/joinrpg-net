@@ -12,33 +12,9 @@ using WebGrease.Css.Extensions;
 namespace JoinRpg.Web.Models.Accommodation
 {
 
-    public class RoomTypeRoomsListViewModel
-    {
-
-        public RoomTypeRoomsListViewModel(RoomTypeViewModel roomType)
-        {
-            ProjectId = roomType.ProjectId;
-            RoomTypeId = roomType.Id;
-            Rooms = roomType.Rooms ?? null;
-            RoomCapacity = roomType.Capacity;
-            CanManageRooms = roomType.CanManageRooms;
-            CanAssignRooms = roomType.CanAssignRooms;
-        }
-
-        public ICollection<RoomViewModel> Rooms { get; set; }
-
-        public int ProjectId { get; set; }
-
-        public int RoomTypeId { get; set; }
-
-        public int RoomCapacity { get; set; }
-
-        public bool CanManageRooms { get; }
-
-        public bool CanAssignRooms { get; }
-
-    }
-
+    /// <summary>
+    /// View model for single room inhabitant
+    /// </summary>
     public class RoomInhabitantViewModel
     {
 
@@ -57,6 +33,9 @@ namespace JoinRpg.Web.Models.Accommodation
 
     }
 
+    /// <summary>
+    /// View model for single room
+    /// </summary>
     public class RoomViewModel
     {
         public int Id { get; set; }
@@ -69,48 +48,47 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Название (номер)")]
         public string Name { get; set; }
 
-        public virtual ICollection<ClaimViewModel> Inhabitants { get; set; }
+        //public virtual ICollection<ClaimViewModel> Inhabitants { get; set; }
+
+        public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
         public int Capacity { get; set; }
 
-        public int Occupancy
-            => Inhabitants?.Count ?? 0;
-
+        public int Occupancy { get; private set; }
 
         public bool CanManageRooms { get; }
 
-        public bool CanAssignRoom { get; set; }
+        public bool CanAssignRooms { get; set; }
 
-        public RoomViewModel([NotNull]ProjectAccommodation entity, bool canManageRooms, bool canAssignRoom)
+        public RoomViewModel()
+        {
+        }
+
+        public RoomViewModel([NotNull]ProjectAccommodation entity, RoomTypeViewModel owner)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
                 throw new ArgumentException("Entity must be valid object");
             }
 
-            CanManageRooms = canManageRooms;
-            CanAssignRoom = canAssignRoom;
             Id = entity.Id;
             Name = entity.Name;
             ProjectId = entity.ProjectId;
             RoomTypeId = entity.AccommodationTypeId;
-            Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;            
-        }
+            Capacity = entity.ProjectAccommodationType?.Capacity ?? 0;
 
-        public RoomViewModel()
-        {
-        }
+            // Extracting list of requests associated with this room
+            Requests = owner.Requests.Where(r =>
+            {
+                bool result = r.RoomId == Id;
+                if (result)
+                    Occupancy += r.ParticipantsCount;
+                return result;
+            }).ToList();
 
-        internal static ICollection<RoomViewModel> NewListCollection([NotNull]
-            ICollection<ProjectAccommodation> projectAccomodations,
-            bool canManageRooms,
-            bool canAssignRoom)
-        {
-            //TODO: add claim calculation logic 
-            return projectAccomodations.Select(acc => new RoomViewModel(acc, canManageRooms, canAssignRoom))
-                .ToSafeReadOnlyCollection();
+            CanManageRooms = owner.CanManageRooms;
+            CanAssignRooms = owner.CanAssignRooms;
         }
-     
     }
     
 }
