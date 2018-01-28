@@ -87,7 +87,7 @@ namespace JoinRpg.DataModel
 
         public int? AccommodationRequest_Id { get; set; }
         [ForeignKey(nameof(AccommodationRequest_Id))]
-        public AccommodationRequest AccommodationRequest { get; set; }
+        public virtual AccommodationRequest AccommodationRequest { get; set; }
 
         #region Finance
 
