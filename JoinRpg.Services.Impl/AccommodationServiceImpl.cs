@@ -48,17 +48,17 @@ namespace JoinRpg.Services.Impl
             return result;
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId)
+        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId)
         {
             return await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
         }
 
-        public async Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId)
+        public async Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId)
         {
             return await UnitOfWork.GetDbSet<ProjectAccommodationType>()
                 .Include(x => x.ProjectAccommodations)
-                .FirstOrDefaultAsync(x => x.Id == accId)
-                .ConfigureAwait(false);
+                .Include(x => x.Desirous)
+                .FirstOrDefaultAsync(x => x.Id == roomTypeId);
         }
 
         public async Task OccupyRoom(OccupyRequest request)
@@ -134,7 +134,6 @@ namespace JoinRpg.Services.Impl
                 request.AccommodationId = null;
                 request.Accommodation = null;
             }
-            
 
             await UnitOfWork.SaveChangesAsync();
 

@@ -31,9 +31,12 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Returns all room types for specified project Id
         /// </summary>
-        Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypes(int projectId);
+        Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId);
 
-        Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId);
+        /// <summary>
+        /// Returns room type by id
+        /// </summary>
+        Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId);
 
         /// <summary>
         /// Move inhabitants to room
