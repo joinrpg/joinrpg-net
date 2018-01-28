@@ -1,0 +1,13 @@
+﻿@using JoinRpg.Web.Models.Accommodation
+@model RoomTypeViewModel
+@{
+    ViewBag.Title = Model.Project.ProjectName + ": тип поселения «" + Model.Name + "»";
+}
+<h2>@ViewBag.Title</h2>
+<ul class="nav nav-tabs">
+    <li><a href="@Url.Action("EditRoomType", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+    <li class="active"><a href="#">Комнаты</a></li>
+</ul>
+@Html.Partial("_RoomsList", new RoomTypeRoomsListViewModel(Model))
+@Html.Partial("_RoomEditDlg")
+

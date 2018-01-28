@@ -74,6 +74,22 @@ namespace JoinRpg.Web.Controllers
         }
 
         /// <summary>
+        /// Shows "Edit room type" form
+        /// </summary>
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
+        {
+            var entity = await _accommodationService.GetAccommodationByIdAsync(roomTypeId).ConfigureAwait(false);
+            if (entity == null || entity.ProjectId != projectId)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
+            return View(new RoomTypeViewModel(entity, CurrentUserId));
+        }
+
+        /// <summary>
         /// Saves room type.
         /// If data are valid, redirects to Index
         /// If not, returns to edit mode
@@ -119,7 +135,7 @@ namespace JoinRpg.Web.Controllers
                     //TODO: Implement total occupation
                 }
                 else
-                    return new HttpNotFoundResult($"Invalid room signature '{room}'");
+                    return new HttpNotFoundResult($"Invalid room signature: {room}");
             }
             catch
             {
@@ -153,7 +169,7 @@ namespace JoinRpg.Web.Controllers
             if (!project.Details.EnableAccommodation)
                 return RedirectToAction("Edit", "Game");
 
-            //TODO: Implement mass unoccupation
+            await _accommodationService.UnOccupyAll(projectId);
 
             return RedirectToAction("Index");
         }
@@ -166,12 +182,23 @@ namespace JoinRpg.Web.Controllers
             {
                 if (int.TryParse(room, out int roomId))
                 {
-                    //TODO: Implement unoccupation for the specified room
+                    await _accommodationService.UnOccupyRoomAll(new UnOccupyAllRequest()
+                    {
+                        ProjectId = projectId,
+                        RoomId = roomId
+                    });
+                    
+                }
+                else if (room == "all")
+                {
+                    await _accommodationService.UnOccupyRoomType(new UnOccupyRoomTypeRequest()
+                    {
+                        ProjectId = projectId,
+                        RoomTypeId = roomTypeId
+                    });
                 }
                 else
-                {
-                    //TODO: Implement unoccupation for all rooms of the specified type
-                }
+                    return HttpNotFound($"Invalid room signature: {room}");
             }
             catch
             {

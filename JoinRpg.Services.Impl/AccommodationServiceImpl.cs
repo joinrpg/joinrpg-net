@@ -55,8 +55,10 @@ namespace JoinRpg.Services.Impl
 
         public async Task<ProjectAccommodationType> GetAccommodationByIdAsync(int accId)
         {
-            return await UnitOfWork.GetDbSet<ProjectAccommodationType>().Include(x=>x.ProjectAccommodations)
-              .FirstOrDefaultAsync(x => x.Id == accId).ConfigureAwait(false);
+            return await UnitOfWork.GetDbSet<ProjectAccommodationType>()
+                .Include(x => x.ProjectAccommodations)
+                .FirstOrDefaultAsync(x => x.Id == accId)
+                .ConfigureAwait(false);
         }
 
         public async Task OccupyRoom(OccupyRequest request)

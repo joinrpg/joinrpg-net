@@ -6,8 +6,10 @@
     ViewBag.IsNew = false;
 }
 <h2>@ViewBag.Title</h2>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+    <li><a href="@Url.Action("EditRoomTypeRooms", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })">Комнаты</a></li>
+</ul>
 @(Model.CanManageRooms
     ? Html.Partial("_RoomTypeEdit", Model)
     : Html.Partial("_RoomTypeOverview", Model))
-@Html.Partial("_RoomsList", new RoomTypeRoomsListViewModel(Model))
-@Html.Partial("_RoomEditDlg")

@@ -29,8 +29,16 @@
         }
     </td>
     <td><div class="btn-group btn-group-sm" style="display: inline-block">
-        <a title="@(Model.CanManageRooms ? "Изменить" : "Расселение")" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
-            <i class="glyphicon glyphicon-@(Model.CanManageRooms ? "pencil" : "bed")"></i></a>
+        @if (Model.CanAssignRooms)
+        {
+            <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
+                <i class="glyphicon glyphicon-bed"></i></a>
+        }
+        @if (Model.CanManageRooms)
+        {
+            <a title="Изменить" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
+                <i class="glyphicon glyphicon-pencil"></i></a>
+        }
         @if (Model.CanManageRooms && Model.Occupied == 0)
         {
             <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
