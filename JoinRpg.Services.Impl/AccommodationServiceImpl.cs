@@ -153,6 +153,16 @@ namespace JoinRpg.Services.Impl
             await UnOccupyRoomImpl(room, room.Inhabitants.ToList());
         }
 
+        public Task UnOccupyRoomType(UnOccupyRoomTypeRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UnOccupyAll(int projectId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task RemoveRoomType(int accomodationTypeId)
         {
             var entity = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(accomodationTypeId);
