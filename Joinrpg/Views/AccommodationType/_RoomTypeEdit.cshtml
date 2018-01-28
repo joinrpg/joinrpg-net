@@ -44,7 +44,7 @@
             @Html.LabelFor(model => model.IsAutoFilledAccommodation, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
                 @Html.CheckBoxFor(model => model.IsAutoFilledAccommodation, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Capacity, "", new { @class = "text-danger" })
+                @Html.ValidationMessageFor(model => model.IsAutoFilledAccommodation, "", new { @class = "text-danger" })
             </div>
         </div>
 
