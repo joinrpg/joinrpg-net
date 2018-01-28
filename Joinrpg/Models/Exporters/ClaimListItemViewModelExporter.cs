@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -24,6 +24,11 @@ namespace JoinRpg.Web.Models.Exporters
       yield return DateTimeColumn(x => x.CreateDate);
       yield return IntColumn(x => x.FeeDue);
       yield return IntColumn(x => x.FeePaid);
+        //TODO fix to use Project directly (in Accomodation branch)
+        if (Fields.FirstOrDefault()?.Project.Details.PreferentialFeeEnabled == true)
+        {
+            yield return BoolColumn(x => x.PreferentialFeeUser);
+        }
       yield return ShortUserColumn(x => x.LastModifiedBy);
       yield return ShortUserColumn(x => x.Responsible);
       foreach (var c in UserColumn(x => x.Player))

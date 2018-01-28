@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -109,6 +109,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Осталось")]
     public int FeeDue { get; }
 
+      [Display(Name = "Льготник")]
+        public bool PreferentialFeeUser { get; }
+
     public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
@@ -131,6 +134,8 @@ namespace JoinRpg.Web.Models
       Fields = claim.GetFields();
       FeePaid = claim.ClaimBalance();
       FeeDue = claim.ClaimFeeDue();
+
+        PreferentialFeeUser = claim.PreferentialFeeUser;
     }
 
     public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)

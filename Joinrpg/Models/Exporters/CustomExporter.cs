@@ -81,14 +81,32 @@ namespace JoinRpg.Web.Models.Exporters
     protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func)
     {
       var member = func.AsPropertyAccess();
-      return new TableColumn<int>(member, r => func.Compile()(r));
+        var compiledFunc = func.Compile();
+            return new TableColumn<int>(member, r => compiledFunc(r));
     }
 
     [MustUseReturnValue]
     protected ITableColumn IntColumn([NotNull] Expression<Func<TRow, int>> func, string name)
-      => new TableColumn<int>(name, r => func.Compile()(r));
+      {
+          var compiledFunc = func.Compile();
+            return new TableColumn<int>(name, r => compiledFunc(r));
+      }
 
-    [MustUseReturnValue]
+      [MustUseReturnValue]
+      protected ITableColumn BoolColumn([NotNull] Expression<Func<TRow, bool>> func)
+      {
+          var memberName = func.AsPropertyAccess()?.GetDisplayName() ?? "1";
+          return BoolColumn(func, memberName);
+      }
+
+      private static ITableColumn BoolColumn(Expression<Func<TRow, bool>> func, string name)
+      {
+          var compiledFunc = func.Compile();
+
+          return new TableColumn<string>(func.AsPropertyAccess(), r => compiledFunc(r) ? name : "");
+      }
+
+      [MustUseReturnValue]
     protected ITableColumn EnumColumn(Expression<Func<TRow, Enum>> func)
     {
       var member = func.AsPropertyAccess();
