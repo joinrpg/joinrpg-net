@@ -18,6 +18,16 @@ function ConfirmPlaceAll()
     return confirm("Приступить к заселению ВСЕХ нерасселенных участников по ВСЕМ типам комнат?");
 }
 
+function ErrorOccupation()
+{
+    alert("Произошла ошибка при заселении в комнату");
+}
+
+function ErrorUnOccupation()
+{
+    alert("Произошла ошибка при выселении из комнаты");
+}
+
 function ErrorEdit()
 {
     alert("Произошла ошибка при добавлении или изменении комнат");

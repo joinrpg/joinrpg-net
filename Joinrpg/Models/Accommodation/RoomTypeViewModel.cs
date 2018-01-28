@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -60,6 +61,11 @@ namespace JoinRpg.Web.Models.Accommodation
         /// </summary>
         public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
+        /// <summary>
+        /// List of requests not assigned to any room
+        /// </summary>
+        public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
+
         public bool CanAssignRooms { get; set; }
 
         public bool CanManageRooms { get; set; }
@@ -82,6 +88,9 @@ namespace JoinRpg.Web.Models.Accommodation
 
             // Creating a list of requests associated with this room type
             Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
+
+            // Creating a list of requests not assigned to any room
+            UnassignedRequests = Requests.Where(ar => ar.RoomId == 0).ToList();
 
             // Creating a list of rooms contained in this room type
             Rooms = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();

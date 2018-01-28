@@ -1,25 +1,43 @@
 using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using Microsoft.Practices.ObjectBuilder2;
+using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
 
     public class AccRequestViewModel
     {
+        public int Id { get; set; }
+
+        [JsonIgnore]
         public int ProjectId { get; set; }
+
+        [JsonIgnore]
         public int AccommodationTypeId { get; set; }
+
+        [JsonIgnore]
         public int RoomId { get; set; }
+
+        [JsonIgnore]
         public RoomViewModel Room { get; set; }
 
+        [JsonIgnore]
         public IReadOnlyList<RequestParticipantViewModel> Participants { get; set; }
 
-        public int ParticipantsCount
+        public int Persons
             => Participants?.Count ?? 0;
+
+        public string PersonsList
+            => Participants.JoinStrings(", ", p => p.User.GetName());
+
+        public object Instance
+            => null;
 
         public AccRequestViewModel(AccommodationRequest entity)
         {
+            Id = entity.Id;
             ProjectId = entity.ProjectId;
             AccommodationTypeId = entity.AccommodationTypeId;
             Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c)).ToList();

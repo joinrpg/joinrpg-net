@@ -770,6 +770,8 @@
     <Content Include="Views\AccommodationType\_RoomTypeOverview.cshtml" />
     <Content Include="Views\AccommodationType\EditRoomTypeRooms.cshtml" />
     <Content Include="Views\AccommodationType\_BackButton.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomRequest.cshtml" />
+    <Content Include="Views\AccommodationType\_OccupationDlg.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

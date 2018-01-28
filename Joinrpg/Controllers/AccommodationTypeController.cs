@@ -1,9 +1,12 @@
+using System;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Http.Results;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
@@ -122,26 +125,33 @@ namespace JoinRpg.Web.Controllers
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpHead]
-        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, string room)
+        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, int reqId)
         {
             try
             {
-                if (int.TryParse(room, out int roomId))
+                await _accommodationService.OccupyRoom(new OccupyRequest()
                 {
-                    //TODO: Implement occupation for the specified room
-                }
-                else if (room == "all")
-                {
-                    //TODO: Implement total occupation
-                }
-                else
-                    return new HttpNotFoundResult($"Invalid room signature: {room}");
+                    AccommodationRequestId = reqId,
+                    ProjectId = projectId,
+                    RoomId = room
+                });
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
             }
             catch
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
+
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpPost]
+        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId)
+        {
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
@@ -176,35 +186,25 @@ namespace JoinRpg.Web.Controllers
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpHead]
-        public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, string room)
+        public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, int room, int reqId)
         {
             try
             {
-                if (int.TryParse(room, out int roomId))
+                await _accommodationService.UnOccupyRoom(new UnOccupyRequest()
                 {
-                    await _accommodationService.UnOccupyRoomAll(new UnOccupyAllRequest()
-                    {
-                        ProjectId = projectId,
-                        RoomId = roomId
-                    });
-                    
-                }
-                else if (room == "all")
-                {
-                    await _accommodationService.UnOccupyRoomType(new UnOccupyRoomTypeRequest()
-                    {
-                        ProjectId = projectId,
-                        RoomTypeId = roomTypeId
-                    });
-                }
-                else
-                    return HttpNotFound($"Invalid room signature: {room}");
+                    ProjectId = projectId,
+                    AccommodationRequestId = reqId,
+                });
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
             }
             catch
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -217,12 +217,37 @@ namespace JoinRpg.Web.Controllers
             try
             {
                 await _accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
+                return new HttpStatusCodeResult(HttpStatusCode.OK);
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
             }
             catch
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
+
+        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [HttpGet]
+        public async Task<ActionResult> AddRoom(int projectId, int roomTypeId, string name)
+        {
+            try
+            {
+                //TODO: Implement room names checking
+                //TODO: Implement new rooms HTML returning
+                await _accommodationService.AddRooms(projectId, roomTypeId, name);
+                return new HttpStatusCodeResult(HttpStatusCode.Created);
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -239,21 +264,15 @@ namespace JoinRpg.Web.Controllers
                     await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
                     return new HttpStatusCodeResult(HttpStatusCode.OK);
                 }
-                else
-                {
-                    await _accommodationService.AddRooms(projectId, roomTypeId, name);
-                    return new HttpStatusCodeResult(HttpStatusCode.Created);
-                    //TODO: Fix problem with rooms IDs
-
-                    //return View("_AddedRoomsList",
-                    //    (await _accommodationService.AddRooms(projectId, roomTypeId, name))
-                    //        .Select(pa => new RoomViewModel(pa)));
-                }
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
             }
             catch
             {
                 return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
             }
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
     }
 }

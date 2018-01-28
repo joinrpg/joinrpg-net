@@ -266,3 +266,34 @@ tr.unapprovedPayment td:last-child {
     display: block;
 }
 
+#availRequestsList {
+    column-count: 2;
+}
+@media screen and (max-width: 1300px)
+{
+    #availRequestsList
+    {
+        column-count: 1;
+    }
+}
+
+
+#availRequestsList .list-group-item {
+    padding: 0.2em 0.4em;
+}
+
+#peopleList div.list-group-item {
+    cursor: pointer;
+    width: 100%;
+}
+
+#peopleList div.disabled {
+    cursor: not-allowed;
+}
+
+#peopleList div.list-group-item span.join-ellipsis
+{
+    display: inline-block;
+    width: 90%;
+    vertical-align: middle;
+}
