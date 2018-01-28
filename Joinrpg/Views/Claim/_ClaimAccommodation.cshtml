@@ -3,6 +3,12 @@
 @using JoinRpg.Web.Models.Accommodation
 @model ClaimAccommodationViewModel
 
+@helper ShowAccomodationTypeDesc(ProjectAccommodationType accommodationType)
+{
+    <text>(@DisplayCount.OfX(accommodationType.Capacity, "место",
+               "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
+}
+
 @if (!Model.AccommodationEnabled)
 {
     return;
@@ -25,8 +31,7 @@
             IReadOnlyCollection<User> neighbors = new User[] {};
 
             <span>
-                @Model.AccommodationRequest.AccommodationType.Name
-                (@DisplayCount.OfX(Model.AccommodationRequest.AccommodationType.Capacity, "место", "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
+                @Model.AccommodationRequest.AccommodationType.Name @ShowAccomodationTypeDesc(Model.AccommodationRequest.AccommodationType)
             </span>
             <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
                 Изменить....
@@ -105,7 +110,7 @@
                     <div class="radio" style="margin-bottom: 2em;">
                         <label>
                             <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
-                            @accommodationType.Name (@accommodationType.Capacity места, @accommodationType.Cost рублей)<br/>
+                            @accommodationType.Name @ShowAccomodationTypeDesc(Model.AccommodationRequest.AccommodationType)<br />
                             @accommodationType.Description
                         </label>
                     </div>
