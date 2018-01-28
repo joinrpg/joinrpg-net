@@ -1,0 +1,52 @@
+﻿@using JoinRpg.DataModel
+@model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
+
+@if (!Model.OutgoingInvite.Any())
+{
+    return;
+}
+
+@{ var resolveSectionClassName = ""; }
+<hr />
+<b>Отправленные приглашения</b>
+<table class="table">
+    @foreach (var accommodationInvite in Model.OutgoingInvite)
+    {
+        switch (@accommodationInvite.IsAccepted)
+        {
+            case AccommodationRequest.InviteState.Unanswered:
+                resolveSectionClassName = "text-info";
+                break;
+            case AccommodationRequest.InviteState.Accepted:
+                resolveSectionClassName = "text-success";
+                break;
+            case AccommodationRequest.InviteState.Declined:
+                resolveSectionClassName = "text-danger";
+                break;
+            case AccommodationRequest.InviteState.Canceled:
+                resolveSectionClassName = "text-warning";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        <tr>
+            <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
+            @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+            {
+                <td>
+                    @using (Html.BeginForm("DeclineInvite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("InviteId", accommodationInvite.Id)
+                        @Html.Hidden("InviteState", AccommodationRequest.InviteState.Canceled)
+                        <button class="btn btn-sm" type="submit"><i class="glyphicon glyphicon-ban-circle text-danger"></i>Отменить </button>
+                    }
+                </td>
+            }
+            else
+            {
+                <td class="@resolveSectionClassName"> @accommodationInvite.ResolveDescription </td>
+            }
+        </tr>
+    }
+</table>

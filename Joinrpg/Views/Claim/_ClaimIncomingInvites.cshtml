@@ -1,0 +1,73 @@
+﻿@using JoinRpg.DataModel
+@model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
+
+@if (!Model.IncomingInvite.Any())
+{
+    return;
+}
+<div class="panel panel-default" id="incomingInvite">
+    <div class="panel-heading">Приглашения к совместному проживанию</div>
+    <div class="panel-body">
+        <table class="table">
+
+            @{
+                var incomingTrClassName = "";
+            }
+            @foreach (var accommodationInvite in Model.IncomingInvite)
+            {
+                switch (@accommodationInvite.IsAccepted)
+                {
+                    case AccommodationRequest.InviteState.Unanswered:
+                        incomingTrClassName = "text-info";
+                        break;
+                    case AccommodationRequest.InviteState.Accepted:
+                        incomingTrClassName = "text-success";
+                        break;
+                    case AccommodationRequest.InviteState.Declined:
+                        incomingTrClassName = "text-danger";
+                        break;
+                    case AccommodationRequest.InviteState.Canceled:
+                        incomingTrClassName = "text-warning";
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                <tr>
+                    <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
+                    @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                    {
+                        <td>
+                            <div style="display: flex">
+                                @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                                {
+                                    using (Html.BeginForm("AcceptInvite", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        @Html.Hidden("InviteId", accommodationInvite.Id)
+                                        @Html.Hidden("InviteState", AccommodationRequest.InviteState.Accepted)
+                                        <button class="btn  btn-xs"><i class="glyphicon glyphicon-check text-success"></i> принять</button>
+                                    }
+                                }
+                                <div style="width: 10px"></div>
+                                @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                                {
+                                    using (Html.BeginForm("DeclineInvite", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        @Html.Hidden("InviteId", accommodationInvite.Id)
+                                        @Html.Hidden("InviteState", AccommodationRequest.InviteState.Declined)
+                                        <button class="btn btn-xs"><i class="glyphicon glyphicon-ban-circle text-danger"></i> отклонить</button>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="@incomingTrClassName"> @accommodationInvite.ResolveDescription </td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+</div>
