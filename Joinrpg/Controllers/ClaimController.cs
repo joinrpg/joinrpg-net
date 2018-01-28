@@ -161,7 +161,7 @@ namespace JoinRpg.Web.Controllers
             .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
         var acceptedRequest =  requestForAccommodation
             .FirstOrDefault(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted);
-            var acceptedRequestId = acceptedRequest?.AccommodationTypeId;
+            var acceptedRequestId = acceptedRequest?.Id;
           var acceptedRequestAccommodationTypeIdId = acceptedRequest?.AccommodationTypeId;
 
         if (acceptedRequestId != null)
@@ -175,7 +175,7 @@ namespace JoinRpg.Web.Controllers
           var currentNeighbors = (await
              _accommodationRequestRepository.GetClaimsWithSameAccommodationRequest(
                   acceptedRequestId.Value).ConfigureAwait(false)).Select(c => new AccommodationPotentialNeighbors(c, NeighborType.Current));
-            potentialNeighbors = sameRequest.Union(noRequest).Union(currentNeighbors);
+            potentialNeighbors = sameRequest.Union(noRequest).Where(element=> currentNeighbors.All(el => el.ClaimId != element.ClaimId));
         }
 
          incomingInvite = await AccommodationInviteRepository.GetIncomingInviteForClaim(claim).ConfigureAwait(false);
@@ -631,7 +631,8 @@ namespace JoinRpg.Web.Controllers
         }
 
       [ValidateAntiForgeryToken]
-      public async Task<ActionResult> PostAccommodationRequest(
+      [HttpPost]
+        public async Task<ActionResult> PostAccommodationRequest(
           AccommodationRequestViewModel viewModel)
       {
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false); ;
@@ -649,10 +650,12 @@ namespace JoinRpg.Web.Controllers
             await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
               viewModel.ClaimId,
               viewModel.AccommodationTypeId).ConfigureAwait(false);
-          return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
-      }
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+        }
 
       [ValidateAntiForgeryToken]
+      [HttpPost]
       public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
       {
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
@@ -670,8 +673,48 @@ namespace JoinRpg.Web.Controllers
               viewModel.ClaimId,
               viewModel.ReceiverClaimId,
               viewModel.RequestId).ConfigureAwait(false);
-          return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
 
+      [ValidateAntiForgeryToken]
+      [HttpPost]
+        public async Task<ActionResult> DeclineInvite(InviteRequestViewModel viewModel)
+      {
+          var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
+          if (project == null)
+          {
+              return HttpNotFound();
+          }
+
+          if (!ModelState.IsValid)
+          {
+              return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+          }
+
+          await AccommodationInviteService.CancelOrDeclineAccommodationInvite(viewModel.InviteId,viewModel.InviteState).ConfigureAwait(false);
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
+
+      [ValidateAntiForgeryToken]
+      [HttpPost]
+      public async Task<ActionResult> AcceptInvite(InviteRequestViewModel viewModel)
+      {
+          var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
+          if (project == null)
+          {
+              return HttpNotFound();
+          }
+
+          if (!ModelState.IsValid)
+          {
+              return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+          }
+
+          await AccommodationInviteService.AcceptAccommodationInvite(viewModel.ProjectId, viewModel.InviteId, false).ConfigureAwait(false);
+
+          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
     }
 }

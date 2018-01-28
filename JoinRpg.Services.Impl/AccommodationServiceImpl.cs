@@ -147,6 +147,12 @@ namespace JoinRpg.Services.Impl
             foreach (var oldRequest in oldUserRequests)
             {
                 oldRequest.Subjects.Remove(currentClaim);
+                if (!oldRequest.Subjects.Any())
+                {
+                    UnitOfWork
+                        .GetDbSet<AccommodationRequest>()
+                        .Remove(oldRequest);
+                }
             }
 
             var accommodationRequest = new AccommodationRequest

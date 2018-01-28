@@ -28,6 +28,8 @@ namespace JoinRpg.Dal.Impl.Repositories
         {
             return await Ctx.Set<AccommodationRequest>().Where(request =>
                     request.Subjects.Any(subject => subject.ClaimId == claimId))
+                .Include(request=> request.Subjects)                
+                .Include(request => request.Subjects.Select(cl=>cl.Player))
                 .ToListAsync().ConfigureAwait(false);
         }
 
@@ -57,12 +59,13 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IReadOnlyCollection<Claim>> GetClaimsWithSameAccommodationRequest(
             int accommodationRequestId)
         {
-            return await Ctx.Set<AccommodationRequest>()
+            var tmp =  await Ctx.Set<AccommodationRequest>()
                 .Where(request => request.Id == accommodationRequestId)
                 .SelectMany(request => request.Subjects)
                 .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
                 .Include(claim => claim.Player)
                 .ToListAsync().ConfigureAwait(false);
+            return tmp;
         }
 
         public async Task<IEnumerable<Claim>> GetClaimsWithOutAccommodationRequest(

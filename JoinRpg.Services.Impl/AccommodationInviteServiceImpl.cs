@@ -104,7 +104,8 @@ namespace JoinRpg.Services.Impl
             }
 
             receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To);
-
+            senderAccommodationRequest.Subjects.Add(inviteRequest.To);
+        
             await DeclineOtherInvite(inviteRequest.ToClaimId, inviteId).ConfigureAwait(false);
 
 
@@ -113,7 +114,14 @@ namespace JoinRpg.Services.Impl
                 foreach (var claim in receiverAccommodationRequest?.Subjects)
                 {
                     await DeclineOtherInvite(claim.ClaimId, inviteId, onlyGroupInvite: true).ConfigureAwait(false);
+                    senderAccommodationRequest.Subjects.Add(inviteRequest.To);
                 }
+                receiverAccommodationRequest?.Subjects.Clear();
+            }
+
+            if (receiverAccommodationRequest!=null && receiverAccommodationRequest.Subjects.Any())
+            {
+                UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
 
             inviteRequest.IsAccepted = AccommodationRequest.InviteState.Accepted;
@@ -169,8 +177,12 @@ namespace JoinRpg.Services.Impl
                     continue;
                 }
 
-                accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
-                accommodationInvite.ResolveDescription = onlyGroupInvite ? AutomaticDeclineByAcceptOtherToGroup : AutomaticDeclineByAcceptOther;
+                if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                {
+                    accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
+                    accommodationInvite.ResolveDescription = onlyGroupInvite ? AutomaticDeclineByAcceptOtherToGroup : AutomaticDeclineByAcceptOther;
+                }
+
             }
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
