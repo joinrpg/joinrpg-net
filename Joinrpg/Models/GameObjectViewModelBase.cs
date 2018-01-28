@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.Helpers.Validation;
@@ -15,10 +15,10 @@ namespace JoinRpg.Web.Models
     [CannotBeEmpty, DisplayName("Является частью групп")]
     public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
 
-    [Display(Name = "Публично?", Description = "Публичные группы показываются в сетке ролей и на карточках персонажей.")]
+    [Display(Name = "Публично?", Description = "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
     public bool IsPublic { get; set; } = true;
 
-    [Display(Name = "Описание", Description = "Если группа публична, будет доступно всем."), UIHint("MarkdownString")]
+    [Display(Name = "Описание", Description = "Для публичных сущностей будет доступно всем."), UIHint("MarkdownString")]
     public string Description { get; set; }
   }
 }

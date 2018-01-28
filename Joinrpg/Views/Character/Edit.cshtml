@@ -2,111 +2,127 @@
 @model JoinRpg.Web.Models.Characters.EditCharacterViewModel
 @Scripts.Render("~/Scripts/claim.js")
 
-@Html.Partial("CharacterNavigation", Model.Navigation, new ViewDataDictionary())
-@Html.Partial("CreateUpdated", Model)
+@{
+    ViewBag.Title = Model.ProjectName + ": Редактирование персонажа: " + Model.Name;
+}
+
+
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal"> 
 
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-
-        @Html.HiddenFor(model => model.CharacterId)
-        @Html.HiddenFor(model => model.ProjectId)
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            @Html.Partial("CharacterNavigation", Model.Navigation)
         </div>
+        <div class="panel-body">
+            
+            <div class="form-horizontal">
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-            </div>
-        </div>
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.IsPublic)
+                @Html.HiddenFor(model => model.CharacterId)
+                @Html.HiddenFor(model => model.ProjectId)
+
+                <div class="form-group">
+                    <span class="control-label col-md-2"><b>История обновлений</b> </span>
+                    <div class="col-md-10">
+                        <div class="help-block">
+                            @Html.Partial("CreateUpdated", Model)
+                        </div>
+                    </div>
                 </div>
-                <p class="help-block">Публичные персонажи показываются в сетке ролей.</p>
-            </div>
 
-        </div>
-
-        @if (Model.IsAcceptingClaimsEnabled)
-        {
-
-        <div class="form-group">
-
-            @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.IsAcceptingClaims)
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(model => model.Name)
+                    </div>
                 </div>
-                <p class="help-block">Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.</p>
-            </div>
-        </div>
-        }
 
-        <div class="form-group">
-
-            @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.HidePlayerForCharacter)
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(model => model.Description)
+                    </div>
                 </div>
-                <p class="help-block">Скрыть личность игрока, который играет данного персонажа.</p>
-            </div>
-        </div>
 
-        
-            @Html.LabelFor(model => model.IsHot, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-10">
-                <div class="checkbox">
-                    @Html.EditorFor(model => model.IsHot)
+                <div class="form-group">
+                    @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.IsPublic)
+                        @Html.DescriptionFor(model => model.IsPublic)
+                    </div>
+
                 </div>
-                <p class="help-block">Горячая роль специальным образом выделяется в ролевке.</p>
-            </div>
 
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-8">
-                @Html.MagicSelectParent(model => model.ParentCharacterGroupIds)
-                @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        @Html.Partial("_EditFieldsPartial", Model.Fields)
-
-        @if (Model.Fields.Fields.Any(f => f.HasPrice))
-        {
-            Html.RenderPartial("_CharacterFieldsSubtotal", Model.Fields);
-        }
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input
-                    type="submit"
-                    value="@(Model.IsActive ? "Сохранить персонажа" : "Восстановить персонажа")"
-                    class="btn btn-success"/>
-                
-                @if (Model.IsActive & Model.ActiveClaimsCount == 0)
+                @if (Model.IsAcceptingClaimsEnabled)
                 {
-                    <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
-                        <span title="удалить" class="glyphicon glyphicon-trash"></span> Удалить персонажа
-                    </a>
+
+                    <div class="form-group">
+
+                        @Html.LabelFor(model => model.IsAcceptingClaims, htmlAttributes: new {@class = "control-label col-md-2"})
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.IsAcceptingClaims)
+                            @Html.DescriptionFor(model => model.IsAcceptingClaims)
+                        </div>
+                    </div>
                 }
+
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.HidePlayerForCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.HidePlayerForCharacter)
+                        @Html.DescriptionFor(model => model.HidePlayerForCharacter)
+                    </div>
+                </div>
+
+                <div class="form-group">
+
+                    @Html.LabelFor(model => model.IsHot, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.IsHot)
+                        @Html.DescriptionFor(model => model.IsHot)
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ParentCharacterGroupIds, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-8">
+                        @Html.MagicSelectParent(model => model.ParentCharacterGroupIds)
+                        @Html.ValidationMessageFor(model => model.ParentCharacterGroupIds, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+                @if (Model.Fields.Fields.Any(f => f.HasPrice))
+                {
+                    Html.RenderPartial("_CharacterFieldsSubtotal", Model.Fields);
+                }
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit"
+                               value="@(Model.IsActive ? "Сохранить персонажа" : "Восстановить персонажа")"
+                               class="btn btn-success" />
+
+                        @if (Model.IsActive & Model.ActiveClaimsCount == 0)
+                        {
+                            <a href="@Url.Action("Delete", "Character", new {Model.ProjectId, Model.CharacterId}, null)" class="btn btn-danger">
+                                <span title="удалить" class="glyphicon glyphicon-trash"></span> Удалить персонажа
+                            </a>
+                        }
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 }
+

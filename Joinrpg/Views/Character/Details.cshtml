@@ -5,22 +5,29 @@
 }
 
 
-@Html.Partial("CharacterNavigation", Model.Navigation)
-<div>
-  @if (Model.HasMasterAccess)
-  {
-    @Html.Partial("CreateUpdated", Model)
-  }
+<div class="panel panel-default">
+<div class="panel-heading">
+    @Html.Partial("CharacterNavigation", Model.Navigation)
 </div>
-<div>
-  <dl class="dl-horizontal">
-    <dt>Игрок</dt>
-    <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
-    <dt>@Html.DisplayNameFor(model => model.Description)</dt>
-    <dd>@Model.Description</dd>
-    <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-    <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
-  </dl>
+    <div class="panel-body">
+          
+        <div>
+            <dl class="dl-horizontal">
+                @if (Model.HasMasterAccess)
+                {
+                    <dt>История обновлений</dt>
+                    <dd>@Html.Partial("CreateUpdated", Model)</dd>
+                    
+                }
+                <dt>Игрок</dt>
+                <dd>@Html.DisplayFor(model => model, "IPlayerCharacter")</dd>
+                <dt>@Html.DisplayNameFor(model => model.Description)</dt>
+                <dd>@Model.Description</dd>
+                <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+                <dd>@Html.DisplayFor(model => model.ParentGroups)</dd>
+            </dl>
+        </div>
+    </div>
 
   @if (Model.Fields.AnythingAccessible)
   {

@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Models.Characters
 
   public abstract class CharacterViewModelBase : GameObjectViewModelBase, IValidatableObject
   {
-    [DisplayName("Принимать заявки на этого персонажа")]
+    [Display(Name = "Принимать заявки на этого персонажа", Description = "Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.")]
     public bool IsAcceptingClaims
     { get; set; } = true;
 
@@ -31,10 +31,10 @@ namespace JoinRpg.Web.Models.Characters
       }
     }
 
-    [Display(Name="Всегда скрывать имя игрока"), Required]
+    [Display(Name="Всегда скрывать имя игрока", Description = "Скрыть личность игрока, который играет данного персонажа.")]
     public bool HidePlayerForCharacter { get; set; }
 
-    [Display(Name = "Горячая роль"), Required]
+    [Display(Name = "Горячая роль", Description = "Горячая роль специальным образом выделяется в ролевке.")]
     public bool IsHot { get; set; }
   }
   public class AddCharacterViewModel : CharacterViewModelBase
