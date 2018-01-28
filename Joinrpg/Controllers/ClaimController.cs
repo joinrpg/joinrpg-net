@@ -630,57 +630,40 @@ namespace JoinRpg.Web.Controllers
             
         }
 
-      [ValidateAntiForgeryToken]
-      [HttpPost]
-        public async Task<ActionResult> PostAccommodationRequest(
+       [ValidateAntiForgeryToken]
+       [HttpPost]
+       public async Task<ActionResult> PostAccommodationRequest(
           AccommodationRequestViewModel viewModel)
-      {
-       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
-       if (claim == null)
        {
-        return HttpNotFound();
-       }
-       var error = WithClaim(claim);
-       if (error != null)
-       {
-        return error;
-       }
-       try
-       {
-        if (!ModelState.IsValid)
-        {
-         return await Edit(viewModel.ProjectId, viewModel.ClaimId);
-        }
-
-
-        await _claimService.SetAccommodationType(viewModel.ProjectId,
-         viewModel.ClaimId,
-         viewModel.AccommodationTypeId).ConfigureAwait(false);
-
-        return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-       }
-       catch
-       {
-        return await Edit(viewModel.ProjectId, viewModel.ClaimId);
-       }
-   var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false); ;
-          if (project == null)
-          {
-              return HttpNotFound();
-          }
-
-          if (!ModelState.IsValid)
-          {
+         var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+            if (claim == null)
+         {
+           return HttpNotFound();
+         }
+         var error = WithClaim(claim);
+         if (error != null)
+         {
+           return error;
+         }
+         try
+         {
+           if (!ModelState.IsValid)
+           {
               return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
-          }
+           }
 
 
-            await AccommodationService.CreateNewAccommodationRequest(viewModel.ProjectId,
-              viewModel.ClaimId,
-              viewModel.AccommodationTypeId).ConfigureAwait(false);
+           await _claimService.SetAccommodationType(viewModel.ProjectId,
+             viewModel.ClaimId,
+             viewModel.AccommodationTypeId).ConfigureAwait(false);
 
-          return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
-        }
+           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+         }
+         catch
+         {
+           return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
+         }
+       }
 
       [ValidateAntiForgeryToken]
       [HttpPost]

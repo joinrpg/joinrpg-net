@@ -75,134 +75,125 @@
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">
         <h5>Проживание</h5>
+        <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
+            Изменить тип
+        </button>
+
         @if (Model.AccommodationRequest != null)
-        {
-            <span>
-                @Model.AccommodationRequest.AccommodationType.Name (@DisplayCount.OfX(Model.AccommodationRequest.AccommodationType.Capacity, "место",  "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
-            </span>
-            <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
-                Изменить тип
-            </button>
-        }
-    </div>
-    <div class="panel-body">
-      @if (Model.AccommodationRequest == null)
-      {
-     !!!! @foreach (var accommodationRequests in Model.AccommodationRequests)
-      {
-      var className = "alert alert-warning";
-      if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted)
-      {
-      className = "alert alert-success";
-      }
-      <div class="@className">
-        @accommodationRequests.AccommodationType.Name (@accommodationRequests.AccommodationType.Capacity места, @accommodationRequests.AccommodationType.Cost рублей)
+    {
+        <span>
+            @Model.AccommodationRequest.AccommodationType.Name (@DisplayCount.OfX(Model.AccommodationRequest.AccommodationType.Capacity, "место", "места", "мест") в номере, @Model.AccommodationRequest.AccommodationType.Cost &#8381;)
+        </span>
 
-        @{
-        var neighbors = accommodationRequests.Subjects.Where(subject => subject.ClaimId != Model.ClaimId).ToList();
-        if (neighbors.Any())
-        {
-        <hr />
-        <h5>Ваши соседи</h5>
-        <table class="table">
 
-          @foreach (var subject in accommodationRequests.Subjects.Where(subject => subject.ClaimId != Model.ClaimId))
-          {
-          <tr>
-            <td>@subject.Player.PrefferedName</td>
-            <td>@subject.Name</td>
-          </tr>
-          }
-        </table>
-        }
-        }
-        <hr />
-        @if (accommodationRequests.Subjects.Count >= accommodationRequests.AccommodationType.Capacity)
-        {
-        <h5 class="text-danger">Ваша комната полностью занята, послать новые приглашения невозможно</h5>
-        }
-        @if (!Model.PotentialNeighbors.Any())
-        {
-        <h5 class="text-danger">Потенциальных соседей не найдено</h5>
-        }
+           
+            var neighbors = Model.AccommodationRequest.Subjects.Where(subject => subject.ClaimId != Model.ClaimId).ToList();
+            if (neighbors.Any())
+            {
+                <hr />
+                <h5>Ваши соседи</h5>
+                <table class="table">
 
-        @if (accommodationRequests.IsAccepted == AccommodationRequest.InviteState.Accepted && Model.PotentialNeighbors.Any() && accommodationRequests.Subjects.Count < accommodationRequests.AccommodationType.Capacity)
+                    @foreach (var subject in Model.AccommodationRequest.Subjects.Where(subject => subject.ClaimId != Model.ClaimId))
+                {
+                    <tr>
+                        <td>@subject.Player.PrefferedName</td>
+                        <td>@subject.Name</td>
+                    </tr>
+                 }
+                </table>
+            
+            
+            <hr />
+            if (Model.AccommodationRequest.Subjects.Count >= Model.AccommodationRequest.AccommodationType.Capacity)
+            {
+            <h5 class="text-danger">Ваша комната полностью занята, послать новые приглашения невозможно</h5>
+             }
+            if (!Model.PotentialNeighbors.Any())
         {
-        using (Html.BeginForm("Invite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-        {
-        @Html.HiddenFor(model => model.ProjectId)
-        @Html.HiddenFor(model => model.ClaimId)
-        @Html.Hidden("RequestId", accommodationRequests.Id)
-        @Html.AntiForgeryToken()
+            <h5 class="text-danger">Потенциальных соседей не найдено</h5>
+    }
 
-        @Html.SearchableDropdown("ReceiverClaimId", Model.PotentialNeighbors
-        .Where(neighbor => neighbor.Type != NeighborType.Current)
-        .Select(
-        neighbor =>
-        new ImprovedSelectListItem()
+            if ( Model.PotentialNeighbors.Any() && Model.AccommodationRequest.Subjects.Count < Model.AccommodationRequest.AccommodationType.Capacity)
         {
-        Value = neighbor.ClaimId.ToString(),
-        Text = neighbor.UserName,
-        ExtraSearch = neighbor.ClaimName,
-        Subtext = "<br />" + neighbor.UserName + " (" + neighbor.ClaimName + " ) <br /> " + (neighbor.Type == NeighborType.NoRequest ? "еще не выбрал тип проживания" : "у вас одинаковый тип проживания")
-        }))
+            using (Html.BeginForm("Invite", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
+                @Html.AntiForgeryToken()
 
-        <button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
+                @Html.SearchableDropdown("ReceiverClaimId", Model.PotentialNeighbors
+                 .Where(neighbor => neighbor.Type != NeighborType.Current)
+                 .Select(
+                 neighbor =>
+                 new ImprovedSelectListItem()
+                 {
+                     Value = neighbor.ClaimId.ToString(),
+                     Text = neighbor.UserName,
+                     ExtraSearch = neighbor.ClaimName,
+                     Subtext = "<br />" + neighbor.UserName + " (" + neighbor.ClaimName + " ) <br /> " + (neighbor.Type == NeighborType.NoRequest ? "еще не выбрал тип проживания" : "у вас одинаковый тип проживания")
+                 }))
+
+                <button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
         }
         <hr />
-        if (Model.OutgoingInvite.Any())
-        {
+    if (Model.OutgoingInvite.Any())
+    {
         <h5>Посланные приглашения</h5>
         <table class="table">
 
-          @{
-          var trClassName = "";
-          }
-          @foreach (var accommodationInvite in Model.OutgoingInvite)
-          {
-          switch (@accommodationInvite.IsAccepted)
-          {
-          case AccommodationRequest.InviteState.Unanswered:
-          trClassName = "alert-info";
-          break;
-          case AccommodationRequest.InviteState.Accepted:
-          trClassName = "alert-success";
-          break;
-          case AccommodationRequest.InviteState.Declined:
-          trClassName = "alert-danger";
-          break;
-          case AccommodationRequest.InviteState.Canceled:
-          trClassName = "alert-warning";
-          break;
-          default:
-          throw new ArgumentOutOfRangeException();
-          }
-          <tr class="@trClassName">
-            <td>@accommodationInvite.To.Player.PrefferedName</td>
-            <td>@accommodationInvite.To.Name</td>
-            <td>@accommodationInvite.ResolveDescription</td>
-            <td>
-              @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
-              {
-              using (Html.BeginForm("DeclineInvite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
-              {
-              @Html.AntiForgeryToken()
-              @Html.Hidden("InviteId", accommodationInvite.Id)
-              @Html.Hidden("InviteState", AccommodationRequest.InviteState.Canceled)
-              <button class="btn btn-xs" type="submit"><i class="glyphicon glyphicon-ban-circle text-danger"></i> отменить</button>
-              }
-              }
-            </td>
-          </tr>
-          }
+            @{
+            var trClassName = "";
+            }
+            @foreach (var accommodationInvite in Model.OutgoingInvite)
+        {
+            switch (@accommodationInvite.IsAccepted)
+            {
+                case AccommodationRequest.InviteState.Unanswered:
+                    trClassName = "alert-info";
+                    break;
+                case AccommodationRequest.InviteState.Accepted:
+                    trClassName = "alert-success";
+                    break;
+                case AccommodationRequest.InviteState.Declined:
+                    trClassName = "alert-danger";
+                    break;
+                case AccommodationRequest.InviteState.Canceled:
+                    trClassName = "alert-warning";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            <tr class="@trClassName">
+                <td>@accommodationInvite.To.Player.PrefferedName</td>
+                <td>@accommodationInvite.To.Name</td>
+                <td>@accommodationInvite.ResolveDescription</td>
+                <td>
+                    @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
+                {
+                    using (Html.BeginForm("DeclineInvite", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.Hidden("InviteId", accommodationInvite.Id)
+                        @Html.Hidden("InviteState", AccommodationRequest.InviteState.Canceled)
+                        <button class="btn btn-xs" type="submit"><i class="glyphicon glyphicon-ban-circle text-danger"></i> отменить</button>
+                }
+            }
+                </td>
+            </tr>
+    }
         </table>
+}
+}
+        
+        }   <h5>Тип проживания не выбран.</h5>
         }
-        }
-      </div>
-      }   <h5>Тип проживания не выбран.</h5>
-      }
-      else
+    </div>
+    <div class="panel-body">
+      @if (Model.AccommodationRequest != null)
       {
+
       <div>
         @Model.AccommodationRequest.AccommodationType.Description
       </div>
