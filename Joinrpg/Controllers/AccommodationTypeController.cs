@@ -10,6 +10,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
+using Microsoft.Ajax.Utilities;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -104,6 +105,52 @@ namespace JoinRpg.Web.Controllers
         {
             await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
             return RedirectToAction("Index", new { ProjectId = projectId });
+        }
+
+        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [HttpHead]
+        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, string room)
+        {
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    //TODO: Implement occupation for the specified room
+                }
+                else if (room == "all")
+                {
+                    //TODO: Implement total occupation
+                }
+                else
+                    return new HttpNotFoundResult($"Invalid room signature '{room}'");
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
+
+        [MasterAuthorize(Permission.CanManageAccommodation)]
+        [HttpHead]
+        public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, string room)
+        {
+            try
+            {
+                if (int.TryParse(room, out int roomId))
+                {
+                    //TODO: Implement unoccupation for the specified room
+                }
+                else
+                {
+                    //TODO: Implement total unoccupation
+                }
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
         /// <summary>
