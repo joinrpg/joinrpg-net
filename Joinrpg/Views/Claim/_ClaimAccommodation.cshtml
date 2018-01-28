@@ -1,6 +1,11 @@
 ﻿@using JoinRpg.DataModel
 @using JoinRpg.Web.Models.Accommodation
 @model ClaimAccommodationViewModel
+
+@if (!Model.AccommodationEnabled)
+{
+    return;
+}
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">Поданы заявки на проживание</div>
     <div class="panel-body">

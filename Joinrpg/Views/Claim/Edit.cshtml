@@ -455,23 +455,30 @@
         PreferentialFeeConditions = Model.ClaimFee.PreferentialFeeConditions
     })
 
-    <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
-        <div class="panel-heading">Отозвать заявку</div>
-        <div class="panel-body">
-            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+<div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
+    <div class="panel-heading">Отозвать заявку</div>
+    <div class="panel-body">
+        @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
             {
-                @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ActionName = "Отозвать заявку",
-                    CommentText = "Извините, я передумал ехать"
-                })
-            }
-        </div>
+                ProjectId = Model.ProjectId,
+                ClaimId = Model.ClaimId,
+                ActionName = "Отозвать заявку",
+                CommentText = "Извините, я передумал ехать"
+            })
+        }
     </div>
+</div>
 
-    @if (Model.Fields.AnythingAccessible)
+@Html.Partial("_ClaimAccommodation",
+    new ClaimAccommodationViewModel {
+        ProjectId = Model.ProjectId,
+        ClaimId = Model.ClaimId,
+        AccommodationRequests = Model.AccommodationRequests,
+        AvailableAccommodationTypes = Model.AvailableAccommodationTypes})
+
+@if (Model.Fields.AnythingAccessible)
     {
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -509,12 +516,6 @@
 </div>
 
 @Html.Partial("_PlotForCharacterPartial", Model.Plot)
-@Html.Partial("_ClaimAccommodation",
-    new ClaimAccommodationViewModel {
-       ProjectId = Model.ProjectId,
-       ClaimId = Model.ClaimId,
-       AccommodationRequests = Model.AccommodationRequests,
-       AvailableAccommodationTypes = Model.AvailableAccommodationTypes})
 
 @section scripts
 {

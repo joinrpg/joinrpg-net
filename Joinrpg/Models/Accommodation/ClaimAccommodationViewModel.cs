@@ -10,6 +10,6 @@ namespace JoinRpg.Web.Models.Accommodation
         public int ProjectId { get; set; }
         public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
         public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
-        public CharacterNavigationViewModel Navigation;
+        public bool AccommodationEnabled { get; set; }
     }
 }

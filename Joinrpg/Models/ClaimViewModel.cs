@@ -164,6 +164,8 @@ namespace JoinRpg.Web.Models
           CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
           Validator = new ClaimCheckInValidator(claim);
 
+          AccommodationEnabled = claim.Project.Details.EnableAccommodation;
+
           if (claim.PlayerUserId == currentUser.UserId ||
               claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
           {
@@ -311,6 +313,7 @@ namespace JoinRpg.Web.Models
     public bool CheckInStarted { get; }
     public bool CheckInModuleEnabled { get; }
     public ClaimCheckInValidator Validator { get; }
+      public bool AccommodationEnabled { get; }
   }
 
 
