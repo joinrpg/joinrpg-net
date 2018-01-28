@@ -272,14 +272,14 @@ namespace JoinRpg.Services.Email
             string body;
             if (email.Room.GetAllInhabitants().Any())
             {
-                body =$@"Покинули комнату:{email.ChangedRequest.Subjects.GetPlayerList()}
+                body =$@"Покинули комнату:{email.Changed.GetPlayerList()}
 
 Остались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
             }
             else
             {
                 body =
-                    $"Все жители покинули комнату:{email.ChangedRequest.Subjects.GetPlayerList()}";
+                    $"Все жители покинули комнату:{email.Changed.GetPlayerList()}";
             }
             await SendRoomEmail(email, body);
         }
@@ -296,17 +296,11 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(OccupyRoomEmail email)
         {
-            var oldInhabitants = email.Room.GetAllInhabitants().Except(email.ChangedRequest.Subjects).ToList();
-            string body;
+            var oldInhabitants = email.Room.GetAllInhabitants().Except(email.Changed).ToList();
+            var body = $"Вселились в комнату:{email.Changed.GetPlayerList()}";
             if (oldInhabitants.Any())
             {
-                body = $@"Вселились в комнату:{email.ChangedRequest.Subjects.GetPlayerList()}
-
-Уже были в комнате:{oldInhabitants.GetPlayerList()}";
-            }
-            else
-            {
-                body = $"Вселились в комнату:{email.ChangedRequest.Subjects.GetPlayerList()}";
+                body += $"\n\nУже были в комнате:{oldInhabitants.GetPlayerList()}";
             }
 
             

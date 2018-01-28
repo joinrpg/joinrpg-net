@@ -32,7 +32,7 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Бесконечное поселение")]
         public bool IsInfinite { get; set; } = false;
 
-        [DisplayName("Игроки могут выбрать данный тип проживания")]
+        [Display(Name = "Игроки могут выбрать данный тип проживания", Description = "Если снять этот флаг, то только мастер может назначать этот тип поселения игрокам")]
         public bool IsPlayerSelectable { get; set; } = true;
 
         [DisplayName("Автозаполнение")]
@@ -65,7 +65,7 @@ namespace JoinRpg.Web.Models.Accommodation
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
             Description = entity.Description;
-            Rooms = RoomViewModel.NewListCollection(entity.ProjectAccommodations);
+            Rooms = RoomViewModel.NewListCollection(entity.ProjectAccommodations, CanManageRooms, CanAssignRooms);
             Occupied = Rooms.Sum(rv => rv.Occupancy);
         }
 

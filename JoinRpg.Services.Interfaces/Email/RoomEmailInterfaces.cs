@@ -1,10 +1,11 @@
+using System.Collections.Generic;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces.Email
 {
     public class RoomEmailBase : EmailModelBase
     {
-        public AccommodationRequest ChangedRequest { get; set; }
+        public IReadOnlyCollection<Claim> Changed{ get; set; }
         public ProjectAccommodation Room { get; set; }
     }
 
