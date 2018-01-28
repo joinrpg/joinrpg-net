@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Models.Accommodation
 
         //public virtual ICollection<ClaimViewModel> Inhabitants { get; set; }
 
-        public IEnumerable<AccRequestViewModel> Requests { get; set; }
+        public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
         public int Capacity { get; set; }
 
@@ -84,7 +84,7 @@ namespace JoinRpg.Web.Models.Accommodation
                 if (result)
                     Occupancy += r.ParticipantsCount;
                 return result;
-            });
+            }).ToList();
 
             CanManageRooms = owner.CanManageRooms;
             CanAssignRooms = owner.CanAssignRooms;

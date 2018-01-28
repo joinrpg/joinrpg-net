@@ -41,22 +41,24 @@ namespace JoinRpg.Web.Models.Accommodation
         public bool IsAutoFilledAccommodation { get; set; } = false;
 
         [DisplayName("Общее количество мест")]
-        public int TotalCapacity { get; private set; }
+        public int TotalCapacity
+            => RoomsCount * Capacity;
 
         [DisplayName("Проживает")]
-        public int Occupied { get; private set; }
+        public int Occupied { get; }
 
         /// <summary>
         /// List of rooms
         /// </summary>
-        public IReadOnlyCollection<RoomViewModel> Rooms { get; private set; }
+        public IReadOnlyList<RoomViewModel> Rooms { get; }
 
-        public int RoomsCount { get; private set; }
+        public int RoomsCount
+            => Rooms?.Count ?? 0;
 
         /// <summary>
         /// List of requests sent for this room type
         /// </summary>
-        public IEnumerable<AccRequestViewModel> Requests { get; set; }
+        public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
         public bool CanAssignRooms { get; set; }
 
@@ -79,14 +81,12 @@ namespace JoinRpg.Web.Models.Accommodation
             Description = entity.Description;
 
             // Creating a list of requests associated with this room type
-            Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar));
+            Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
 
             // Creating a list of rooms contained in this room type
             Rooms = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
 
-            RoomsCount = Rooms.Count;
             Occupied = Rooms.Sum(room => room.Occupancy);
-            Capacity = Rooms.Count + Capacity;
         }
 
         public RoomTypeViewModel(Project project, int userId)
