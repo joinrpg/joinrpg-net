@@ -111,7 +111,7 @@ namespace JoinRpg.Web.Models
     public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
     public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
     public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
-
+    public AccommodationRequest AccommodationRequest { get; set; }
 
 
         public ClaimViewModel(User currentUser,
@@ -142,6 +142,7 @@ namespace JoinRpg.Web.Models
           AvailableAccommodationTypes = availableAccommodationTypes;
           AccommodationRequests = accommodationRequests;
           PotentialNeighbors = potentialNeighbors;
+          AccommodationRequest = claim.AccommodationRequest;
           IncomingInvite = incomingInvite;
           OutgoingInvite = outgoingInvite;
           OtherClaimsForThisCharacterCount = claim.IsApproved
