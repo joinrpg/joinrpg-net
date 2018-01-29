@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using Microsoft.Practices.ObjectBuilder2;
@@ -18,7 +20,10 @@ namespace JoinRpg.Web.Models.Accommodation
         public string Name { get; set; }
 
         [DisplayName("Описание")]
-        public string Description { get; set; }
+        public IHtmlString DescriptionView { get; set; }
+
+        [DisplayName("Описание"), UIHint("MarkdownString")]
+        public string DescriptionEditable { get; set; }
 
         [DisplayName("Цена за 1 место")]
         public int Cost { get; set; }
@@ -84,7 +89,8 @@ namespace JoinRpg.Web.Models.Accommodation
             IsInfinite = entity.IsInfinite;
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-            Description = entity.Description;
+            DescriptionEditable = entity.Description.Contents;
+            DescriptionView = entity.Description.ToHtmlString();
 
             // Creating a list of requests associated with this room type
             Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
@@ -143,7 +149,7 @@ namespace JoinRpg.Web.Models.Accommodation
                 Cost = Cost,
                 Name = Name,
                 Capacity = Capacity,
-                Description = Description,
+                Description = new MarkdownString(DescriptionEditable),
                 IsInfinite = IsInfinite,
                 IsPlayerSelectable = IsPlayerSelectable,
                 IsAutoFilledAccommodation = IsAutoFilledAccommodation
