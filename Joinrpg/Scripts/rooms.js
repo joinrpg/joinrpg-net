@@ -67,19 +67,18 @@ function MoveReqToRoom(roomId, req)
     cells[2].appendChild(reqParent);
 
     requestsAssignedCount++;
-
-    CallToServer(roomId, req.Id, true);
 }
 
 // Places all requests to all rooms
 function PlaceAll()
 {
-    var req, j, freeSpace;
+    var req, j, freeSpace, reqIds = [];
     for (var i = 0; i < roomsRows.children.length; i++)
     {
         row = roomsRows.children[i];
         if (row.occupancy < roomCapacity)
         {
+            reqIds = [];
             j = 0;
             while (j < requestsNotAssigned.length)
             {
@@ -88,11 +87,14 @@ function PlaceAll()
                 if (req.Persons < freeSpace)
                 {
                     MoveReqToRoom(row.roomId, req);
+                    reqIds.push(req.Id);
                     continue;
                 }
                 else
                     j++;
             }
+            if (reqIds.length > 0)
+                CallToServer(row.roomId, reqIds.join(), true);
             UpdateRoomButtons(row.roomId);
         }
     }
@@ -134,13 +136,13 @@ function DoKick(roomId, id)
     CallToServer(roomId, req.Id, false);
 }
 
-function CallToServer(roomId, reqId, occupy)
+function CallToServer(roomId, reqIds, occupy)
 {
     var url = '/' + projectId + '/rooms/'
         + (occupy ? 'occupyroom' : 'unoccupyroom')
         + '?roomTypeId=' + roomTypeId
         + '&room=' + roomId
-        + '&reqId=' + reqId;
+        + '&reqId=' + reqIds;
 
     $.ajax(url, { method: "HEAD" })
         .done(function (data, status, xr)
@@ -534,14 +536,17 @@ $(function()
         $(dlgChoosePeople).modal("hide");
 
         var item, items = dlgChoosePeople.peopleList.getElementsByTagName("div");
+        var reqIds = [];
         for (var i = 0; i < items.length; i++)
         {
             item = items[i];
             if ($(item).hasClass("active"))
             {
                 MoveReqToRoom(dlgChoosePeople.roomId, item.req);
+                reqIds.push(item.req.Id);
             }
         }
+        CallToServer(dlgChoosePeople.roomId, reqIds.join(), true);
 
         UpdateRoomButtons(dlgChoosePeople.roomId);
         UpdateGlobalButtons();

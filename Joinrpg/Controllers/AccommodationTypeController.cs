@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
@@ -125,17 +127,24 @@ namespace JoinRpg.Web.Controllers
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpHead]
-        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, int reqId)
+        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, string reqId)
         {
             try
             {
-                await _accommodationService.OccupyRoom(new OccupyRequest()
+                IReadOnlyCollection<int> ids = reqId.Split(',')
+                    .Select(s => int.TryParse(s, out int val) ? val : 0)
+                    .Where(val => val > 0)
+                    .ToList();
+                if (ids.Count > 0)
                 {
-                    AccommodationRequestIds = new [] { reqId },
-                    ProjectId = projectId,
-                    RoomId = room
-                });
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                    await _accommodationService.OccupyRoom(new OccupyRequest()
+                    {
+                        AccommodationRequestIds = ids,
+                        ProjectId = projectId,
+                        RoomId = room
+                    });
+                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                }
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
             {
