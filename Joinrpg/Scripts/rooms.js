@@ -49,26 +49,20 @@ function MoveReqToRoom(roomId, req)
             break;
         }
     var reqParent = req.Instance.parentElement;
-    req.Instance.remove();
     reqParent.remove();
 
     var cells = room.getElementsByTagName("td");
 
     // Saving request in rooms list
     room.requests.push(req);
+    req.RoomId = roomId;
 
     // Updating occupancy counter
     room.occupancy += req.Persons;
     cells[1].innerHTML = room.occupancy + " / " + roomCapacity;
 
     // Adding person to corresponding cell
-    var item = document.createElement("div");
-    item.innerHTML = '<button type="button" class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick('
-        + room.roomId + ', '
-        + req.Id
-        + ')"></button>';
-    item.appendChild(req.Instance);
-    cells[2].appendChild(item);
+    cells[2].appendChild(reqParent);
 
     requestsAssignedCount++;
 
@@ -97,7 +91,6 @@ function DoKick(roomId, id)
         return;
 
     var reqParent = req.Instance.parentElement;
-    req.Instance.remove();
     reqParent.remove();
 
     var cells = room.getElementsByTagName("td");
@@ -107,11 +100,9 @@ function DoKick(roomId, id)
     cells[1].innerHTML = room.occupancy + " / " + roomCapacity;
 
     // Placing item to unassigned requests bank
-    var item = document.createElement("span");
-    $(item).addClass("list-group-item");
-    item.appendChild(req.Instance);
-    unassignedBank.appendChild(item);
+    unassignedBank.appendChild(reqParent);
     requestsNotAssigned.push(req);
+    req.RoomId = 0;
 
     requestsAssignedCount--;
 
@@ -143,11 +134,16 @@ function CallToServer(roomId, reqId, occupy)
 }
 
 // Kicks specific accommodation request from room
-function Kick(roomId, id)
+function Kick(id)
 {
-    DoKick(roomId, id);
-    UpdateGlobalButtons();
-    UpdateRoomButtons(roomId);
+    var reqInstance = document.getElementById("req" + id);
+    if (reqInstance.req.RoomId > 0)
+    {
+        var roomId = reqInstance.req.RoomId;
+        DoKick(reqInstance.req.RoomId, id);
+        UpdateGlobalButtons();
+        UpdateRoomButtons(roomId);
+    }
 }
 
 // Kicks all people from specific room
@@ -322,7 +318,10 @@ $(function()
     function loadInstances(list)
     {
         for (var i = 0; i < list.length; i++)
+        {
             list[i].Instance = document.getElementById("req" + list[i].Id);
+            list[i].Instance.req = list[i];
+        }
     }
 
     loadInstances(requestsNotAssigned);

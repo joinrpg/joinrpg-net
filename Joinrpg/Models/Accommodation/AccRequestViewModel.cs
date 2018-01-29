@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using Microsoft.Practices.ObjectBuilder2;
 using Newtonsoft.Json;
 
@@ -17,7 +18,6 @@ namespace JoinRpg.Web.Models.Accommodation
         [JsonIgnore]
         public int AccommodationTypeId { get; set; }
 
-        [JsonIgnore]
         public int RoomId { get; set; }
 
         [JsonIgnore]
@@ -35,6 +35,9 @@ namespace JoinRpg.Web.Models.Accommodation
         public object Instance
             => null;
 
+        // Payment status in promille (0 -- not paid, 1000 -- completedly paid by everybody in group)
+        public int PaymentStatus { get; }
+
         public AccRequestViewModel(AccommodationRequest entity)
         {
             Id = entity.Id;
@@ -42,6 +45,7 @@ namespace JoinRpg.Web.Models.Accommodation
             AccommodationTypeId = entity.AccommodationTypeId;
             RoomId = entity.AccommodationId ?? 0;
             Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c)).ToList();
+            PaymentStatus = Participants.Sum(p => p.Claim.ClaimPaidInFull() ? 1000 % Participants.Count : 0);
         }
     }
 
@@ -50,10 +54,12 @@ namespace JoinRpg.Web.Models.Accommodation
         public int UserId;
         public User User;
         public int ClaimId;
+        public Claim Claim;
 
         public RequestParticipantViewModel(Claim claim)
         {
             ClaimId = claim.ClaimId;
+            Claim = claim;
             UserId = claim.PlayerUserId;
             User = claim.Player;
         }

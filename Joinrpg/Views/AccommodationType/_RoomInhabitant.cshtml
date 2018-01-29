@@ -1,6 +1,6 @@
 ﻿@using JoinRpg.Web.Models.Accommodation;
 @model AccRequestViewModel
-<div>
-<button class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick(@Model.RoomId, @Model.Id)"></button>
+<div class="list-group-item">
+<button class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick(@Model.Id)"></button>
 @Html.Partial("_RoomRequest", Model)
 </div>

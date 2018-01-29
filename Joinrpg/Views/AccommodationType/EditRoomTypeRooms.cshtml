@@ -48,8 +48,9 @@
     <div id="availRequestsList" class="list-group" style="max-height: 200px; overflow-y: scroll; margin-bottom: 0;">
         @foreach (var req in Model.UnassignedRequests)
         {
-            <span class="list-group-item">@Html.Partial("_RoomRequest", req)</span>
+            @Html.Partial("_RoomInhabitant", req)
         }
+        @*<span class="list-group-item">@Html.Partial("_RoomRequest", req)</span>*@
     </div>
 </div>
 
