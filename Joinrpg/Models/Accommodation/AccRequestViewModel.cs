@@ -40,6 +40,7 @@ namespace JoinRpg.Web.Models.Accommodation
             Id = entity.Id;
             ProjectId = entity.ProjectId;
             AccommodationTypeId = entity.AccommodationTypeId;
+            RoomId = entity.AccommodationId ?? 0;
             Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c)).ToList();
         }
     }

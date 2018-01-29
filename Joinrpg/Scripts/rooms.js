@@ -63,10 +63,10 @@ function MoveReqToRoom(roomId, req)
 
     // Adding person to corresponding cell
     var item = document.createElement("div");
-    item.innerHTML = '<button type="button" class="btn btn-xs btn-default" title="Выселить из комнаты" onclick="Kick('
+    item.innerHTML = '<button type="button" class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick('
         + room.roomId + ', '
         + req.Id
-        + ')"><i class="glyphicon glyphicon-remove"></i></button>';
+        + ')"></button>';
     item.appendChild(req.Instance);
     cells[2].appendChild(item);
 
@@ -180,6 +180,7 @@ function KickAll(href)
 function UpdateRoomButtons(roomId)
 {
     var room = roomsRows.GetRowById(roomId);
+    $("#delete" + roomId).prop("disabled", room.occupancy !== 0);
     $("#kick" + roomId).prop("disabled", room.requests.length === 0);
     $("#add" + roomId).prop("disabled", room.occupancy === roomCapacity);
 }
@@ -499,6 +500,7 @@ $(function()
             }
         }
 
+        UpdateRoomButtons(dlgChoosePeople.roomId);
         UpdateGlobalButtons();
     });
 });

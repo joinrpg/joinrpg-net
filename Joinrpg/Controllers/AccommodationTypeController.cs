@@ -207,6 +207,26 @@ namespace JoinRpg.Web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
+        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
+        [HttpGet]
+        public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId)
+        {
+            try
+            {
+                await _accommodationService.UnOccupyRoomType(projectId, roomTypeId);
+                return RedirectToAction("EditRoomTypeRooms", "AccommodationType",
+                    new {ProjectId = projectId, RoomTypeId = roomTypeId});
+            }
+            catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
+            {
+            }
+            catch
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        }
+
         /// <summary>
         /// Removes room
         /// </summary>

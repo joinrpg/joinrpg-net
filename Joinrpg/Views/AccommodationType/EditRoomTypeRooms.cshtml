@@ -36,7 +36,7 @@
         <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
             <i class="glyphicon glyphicon-bed"></i> Заселить всех
         </button>
-        <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id, Room = "all" })')" class="btn btn-default">
+        <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.Id })')" class="btn btn-default">
             <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
         </button>
     }

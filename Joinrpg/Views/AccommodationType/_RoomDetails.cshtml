@@ -28,8 +28,8 @@
         @if (Model.CanAssignRooms)
         {
             <div class="btn-group btn-group-sm" style="display: inline-block">
-                <button id="add@(Model.Id)" onclick="AddPeople(@Model.Id)" type="button" class="btn glyphicon glyphicon-bed" title="Заселить в комнату"></button>
-                <button id="kick@(Model.Id)" onclick="KickPeople(@Model.Id)" type="button" class="btn glyphicon glyphicon-resize-full" title="Освободить комнату"></button>
+                <button id="add@(Model.Id)" onclick="AddPeople(@Model.Id)" type="button" class="btn btn-default glyphicon glyphicon-bed" title="Заселить в комнату"></button>
+                <button id="kick@(Model.Id)" onclick="KickPeople(@Model.Id)" type="button" class="btn btn-default glyphicon glyphicon-resize-full" title="Освободить комнату"></button>
             </div>
         }
     </td>

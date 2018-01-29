@@ -82,7 +82,10 @@ namespace JoinRpg.Web.Models.Accommodation
             {
                 bool result = r.RoomId == Id;
                 if (result)
+                {
                     Occupancy += r.Persons;
+                    r.Room = this;
+                }
                 return result;
             }).ToList();
 

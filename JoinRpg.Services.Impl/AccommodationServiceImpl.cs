@@ -160,11 +160,11 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == projectId);
         }
 
-        public async Task UnOccupyRoomType(UnOccupyRoomTypeRequest request)
+        public async Task UnOccupyRoomType(int projectId, int roomTypeId)
         {
-            var rooms = await GetRoomQuery(request.ProjectId)
+            var rooms = await GetRoomQuery(projectId)
                 .Where(r => r.Inhabitants.Any())
-                .Where(r => r.AccommodationTypeId == request.RoomTypeId)
+                .Where(r => r.AccommodationTypeId == roomTypeId)
                 .ToListAsync();
 
             foreach (var room in rooms)

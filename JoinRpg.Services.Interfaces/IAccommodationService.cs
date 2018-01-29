@@ -58,7 +58,7 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Removes all inhabitants from all rooms of the specified type
         /// </summary>
-        Task UnOccupyRoomType(UnOccupyRoomTypeRequest request);
+        Task UnOccupyRoomType(int projectId, int roomTypeId);
 
         /// <summary>
         /// Removes all inhabitants from all rooms of all types
