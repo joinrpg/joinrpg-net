@@ -34,7 +34,9 @@ namespace JoinRpg.Dal.Impl.Repositories
         {
 
             return await Ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
-                .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active)).Select(
+                .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
+                .Where(claim => claim.ProjectId == project)
+                .Select(
                     claim => new ClaimAccommodationInfoRow()
                     {
                         ClaimId = claim.ClaimId,
