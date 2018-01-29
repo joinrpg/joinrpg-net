@@ -131,7 +131,7 @@ namespace JoinRpg.Web.Controllers
             {
                 await _accommodationService.OccupyRoom(new OccupyRequest()
                 {
-                    AccommodationRequestId = reqId,
+                    AccommodationRequestIds = new [] { reqId },
                     ProjectId = projectId,
                     RoomId = room
                 });

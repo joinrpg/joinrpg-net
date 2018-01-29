@@ -69,27 +69,34 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == request.ProjectId && r.Id == request.RoomId)
                 .FirstOrDefaultAsync();
 
-            var accommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
+            var accommodationRequests = await UnitOfWork.GetDbSet<AccommodationRequest>()
                 .Include(r => r.Subjects.Select(s => s.Player))
                 .Include(r => r.Project)
-                .Where(r => r.ProjectId == request.ProjectId && r.Id == request.AccommodationRequestId)
-                .FirstOrDefaultAsync();
+                .Where(r => r.ProjectId == request.ProjectId && request.AccommodationRequestIds.Contains(r.Id))
+                .ToListAsync();
 
-            accommodationRequest.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+            room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
 
-            var freeSpace = room.GetRoomFreeSpace();
-
-            if (freeSpace < accommodationRequest.Subjects.Count)
+            foreach (var accommodationRequest in accommodationRequests)
             {
-                throw new JoinRpgInsufficientRoomSpaceException(room);
+                var freeSpace = room.GetRoomFreeSpace();
+
+                if (freeSpace < accommodationRequest.Subjects.Count)
+                {
+                    throw new JoinRpgInsufficientRoomSpaceException(room);
+                }
+
+                accommodationRequest.AccommodationId = room.Id;
+                accommodationRequest.Accommodation = room;
             }
 
-            accommodationRequest.AccommodationId = room.Id;
-            accommodationRequest.Accommodation = room;
 
             await UnitOfWork.SaveChangesAsync();
 
-            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
+            foreach (var accommodationRequest in accommodationRequests)
+            {
+                await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
+            }
         }
 
         private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)

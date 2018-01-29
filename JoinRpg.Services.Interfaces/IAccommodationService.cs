@@ -41,8 +41,6 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Move inhabitants to room
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         Task OccupyRoom(OccupyRequest request);
 
         /// <summary>
@@ -70,7 +68,7 @@ namespace JoinRpg.Services.Interfaces
     {
         public int ProjectId { get; set; }
         public int RoomId { get; set; }
-        public int AccommodationRequestId { get; set; }
+        public IReadOnlyCollection<int> AccommodationRequestIds { get; set; }
     }
 
     public class UnOccupyRequest
