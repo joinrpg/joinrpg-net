@@ -101,13 +101,18 @@ namespace JoinRpg.Domain
 
     public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
     {
-      if (!(discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId)))
+      if (!discussion.HasAnyAccess(currentUserId))
       {
         throw new NoAccessToProjectException(discussion, currentUserId);
       }
     }
 
-    public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
+      public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId)
+      {
+          return (discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId));
+      }
+
+      public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
     {
       var forumThread =
         commentDiscussion.GetForumThread();

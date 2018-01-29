@@ -175,27 +175,35 @@ namespace JoinRpg.Web.Controllers
       return HttpNotFound();
     }
 
-    [Authorize]
-    public async Task<ActionResult> RedirectToDiscussion(int projectid, int? commentid, int? commentDiscussionId)
-    {
-      CommentDiscussion discussion;
-      if (commentid != null)
+      [Authorize]
+      public async Task<ActionResult> RedirectToDiscussion(int projectid,
+          int? commentid,
+          int? commentDiscussionId)
       {
-        discussion = await ForumRepository.GetDiscussionByComment(projectid, (int) commentid);
-      }
-      else if (commentDiscussionId != null)
-      {
-        discussion = await ForumRepository.GetDiscussion(projectid, (int) commentDiscussionId);
-      }
-      else
-      {
-        return HttpNotFound();
-      }
-      discussion.RequestAnyAccess(CurrentUserId);
-      return ReturnToParent(discussion, commentid!= null ?  $"comment{commentid}" : null);
-    }
+          CommentDiscussion discussion;
+          if (commentid != null)
+          {
+              discussion = await ForumRepository.GetDiscussionByComment(projectid, (int) commentid);
+          }
+          else if (commentDiscussionId != null)
+          {
+              discussion =
+                  await ForumRepository.GetDiscussion(projectid, (int) commentDiscussionId);
+          }
+          else
+          {
+              return HttpNotFound();
+          }
 
-    [HttpGet]
+          if (!discussion.HasAnyAccess(CurrentUserId))
+          {
+              return NoAccesToProjectView(discussion.Project);
+          }
+
+          return ReturnToParent(discussion, commentid != null ? $"comment{commentid}" : null);
+      }
+
+      [HttpGet]
     public async Task<ActionResult> ListThreads(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
