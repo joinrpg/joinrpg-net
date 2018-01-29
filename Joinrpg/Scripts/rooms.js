@@ -72,6 +72,30 @@ function MoveReqToRoom(roomId, req)
 // Places all requests to all rooms
 function PlaceAll()
 {
+    var req, j, freeSpace;
+    for (var i = 0; i < roomsRows.children.length; i++)
+    {
+        row = roomsRows.children[i];
+        if (row.occupancy < roomCapacity)
+        {
+            j = 0;
+            while (j < requestsNotAssigned.length)
+            {
+                freeSpace = roomCapacity - row.occupancy;
+                req = requestsNotAssigned[j];
+                if (req.Persons < freeSpace)
+                {
+                    MoveReqToRoom(row.roomId, req);
+                    continue;
+                }
+                else
+                    break;
+                j++;
+            }
+            UpdateRoomButtons(row.roomId);
+        }
+    }
+
     UpdateGlobalButtons();
 }
 
