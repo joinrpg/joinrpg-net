@@ -1,7 +1,8 @@
-﻿@using JoinRpg.Web.Models.Accommodation;
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Accommodation;
 @model AccRequestViewModel
 <div class="list-group-item">
     <button class="btn btn-xs btn-default glyphicon glyphicon-remove" title="Выселить из комнаты" onclick="Kick(@Model.Id)"></button>
-    <span class="badge acc-payment alert-@Model.PaymentStatusCssClass" title="Статус оплаты: @(Model.PaymentStatus)%"><span class="price-RUR"></span>: @(Model.PaymentStatus)%</span>
+    <span class="badge acc-payment alert-@Model.PaymentStatusCssClass" title="@Model.PaymentStatusTitle"><i class="glyphicon glyphicon-thumbs-up"></i>@Html.RenderPriceElement(-Model.FeeToPay)</span>
     @Html.Partial("_RoomRequest", Model)
 </div>

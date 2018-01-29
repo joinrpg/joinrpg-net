@@ -23,6 +23,8 @@ function AddPeople(roomId)
         dlgChoosePeople.PrepareForRoom(row);
         $(dlgChoosePeople).modal("show");
     }
+    else
+        alert("Кажется, все участники уже расселены!");
 }
 
 function AddMocks()
@@ -199,9 +201,19 @@ function KickAll(href)
 function UpdateRoomButtons(roomId)
 {
     var room = roomsRows.GetRowById(roomId);
+    DoUpdateRoomButtons(room);
+/*
     $("#delete" + roomId).prop("disabled", room.occupancy !== 0);
     $("#kick" + roomId).prop("disabled", room.requests.length === 0);
     $("#add" + roomId).prop("disabled", room.occupancy === roomCapacity);
+*/
+}
+
+function DoUpdateRoomButtons(room)
+{
+    $(room.bnDelete).prop("disabled", room.occupancy !== 0);
+    $(room.bnKickPeople).prop("disabled", room.requests.length === 0);
+    $(room.bnAddPeople).prop("disabled", room.occupancy === roomCapacity);
 }
 
 function UpdateGlobalButtons()
@@ -374,6 +386,7 @@ $(function()
     // Rows initialization
     if (roomsCount > 0)
     {
+        var room;
         for (var i = 0; i < roomsRows.children.length - 1; i++)
         {
             room = roomsRows.children[i];
@@ -385,12 +398,10 @@ $(function()
                 eval("room.requests = " + room.getAttribute("requests"));
                 loadInstances(room.requests);
                 room.bnAddPeople = document.getElementById("add" + room.roomId);
-                $(room.bnAddPeople).prop("disabled", room.occupancy === roomCapacity);
                 room.bnKickPeople = document.getElementById("kick" + room.roomId);
-                $(room.bnKickPeople).prop("disabled", room.occupancy === 0);
                 room.bnRename = document.getElementById("rename" + room.roomId);
                 room.bnDelete = document.getElementById("delete" + room.roomId);
-                $(room.bnDelete).prop("disabled", room.occupancy > 0);
+                DoUpdateRoomButtons(room);
             }
         }
     }
@@ -477,12 +488,13 @@ $(function()
     dlgChoosePeople.AddItem = function(req)
     {
         var paymentBadge = '<span class="badge acc-payment alert-'
-            + (req.PaymentStatus === 100 ? 'success' : (req.PaymentStatus >= 75 ? 'info' : (req.PaymentStatus >= 50 ? 'warning' : 'danger')))
-            + '" style="float: none;"><span class="price-RUR"></span>: '
-            + req.PaymentStatus
-            + '%</span> ';
-
-
+            + req.PaymentStatusCssClass
+            + '" title="'
+            + req.PaymentStatusTitle
+            + '"><i class="glyphicon glyphicon-thumbs-up"></i>'
+            + '<span class="">-'
+            + req.FeeToPay
+            + ' ₽</span></span>';
 
         var item = document.createElement("div");
         item.setAttribute("class", "list-group-item");
