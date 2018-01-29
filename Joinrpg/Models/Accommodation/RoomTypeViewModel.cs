@@ -95,7 +95,7 @@ namespace JoinRpg.Web.Models.Accommodation
             {
                 int result = x.Persons - y.Persons;
                 if (result == 0)
-                    result = x.PaymentStatus - y.PaymentStatus;
+                    result = x.FeeToPay - y.FeeToPay;
                 if (result == 0)
                     result = string.Compare(x.PersonsList, y.PersonsList, StringComparison.CurrentCultureIgnoreCase);
                 return result;

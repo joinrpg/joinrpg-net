@@ -300,6 +300,18 @@ tr.unapprovedPayment td:last-child {
     display: inline-block;
 }
 
+#roomsRows .list-group-item .alert-success .price-value,
+#availRequestsList .list-group-item .alert-success .price-value,
+#peopleList .list-group-item .alert-success .price-value,
+#roomsRows .list-group-item .alert-warning .glyphicon,
+#availRequestsList .list-group-item .alert-warning .glyphicon,
+#peopleList .list-group-item .alert-warning .glyphicon,
+#roomsRows .list-group-item .alert-danger .glyphicon,
+#availRequestsList .list-group-item .alert-danger .glyphicon,
+#peopleList .list-group-item .alert-danger .glyphicon {
+    display: none;
+}
+
 #availRequestsList .list-group-item .acc-payment,
 #roomsRows .list-group-item .acc-payment {
     vertical-align: middle;
