@@ -773,6 +773,7 @@
     <Content Include="Views\Claim\_ClaimAccommodationTypeChange.cshtml" />
     <Content Include="Views\AccommodationType\_RoomRequest.cshtml" />
     <Content Include="Views\AccommodationType\_OccupationDlg.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\RequestParticipantViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

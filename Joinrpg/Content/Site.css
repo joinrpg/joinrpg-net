@@ -300,6 +300,20 @@ tr.unapprovedPayment td:last-child {
     display: inline-block;
 }
 
+#availRequestsList .list-group-item .acc-payment,
+#roomsRows .list-group-item .acc-payment {
+    vertical-align: middle;
+    float: none;
+    margin: 0 0.3em;
+}
+#availRequestsList .list-group-item .acc-payment {
+    margin-left: 0;
+}
+#peopleList .acc-payment {
+    float: left;
+    margin-right: 0.5em;
+}
+
 #roomsRows .list-group-item .acc-request {
     vertical-align: middle;
 }

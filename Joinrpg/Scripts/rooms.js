@@ -89,8 +89,7 @@ function PlaceAll()
                     continue;
                 }
                 else
-                    break;
-                j++;
+                    j++;
             }
             UpdateRoomButtons(row.roomId);
         }
@@ -477,9 +476,18 @@ $(function()
     };
     dlgChoosePeople.AddItem = function(req)
     {
+        var paymentBadge = '<span class="badge acc-payment alert-'
+            + (req.PaymentStatus === 100 ? 'success' : (req.PaymentStatus >= 75 ? 'info' : (req.PaymentStatus >= 50 ? 'warning' : 'danger')))
+            + '" style="float: none;"><span class="price-RUR"></span>: '
+            + req.PaymentStatus
+            + '%</span> ';
+
+
+
         var item = document.createElement("div");
         item.setAttribute("class", "list-group-item");
         item.innerHTML = '<span class="join-ellipsis">'
+            + paymentBadge
             + req.PersonsList
             + '</span><span class="badge">'
             + req.Persons

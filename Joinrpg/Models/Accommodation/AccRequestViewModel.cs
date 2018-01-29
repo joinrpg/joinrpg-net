@@ -30,13 +30,20 @@ namespace JoinRpg.Web.Models.Accommodation
             => Participants?.Count ?? 0;
 
         public string PersonsList
-            => Participants.JoinStrings(", ", p => p.User.GetName());
+            => Participants.JoinStrings(", ", p => p.UserName);
 
         public object Instance
             => null;
 
-        // Payment status in promille (0 -- not paid, 1000 -- completedly paid by everybody in group)
+        // Payment status in percents (0 -- not paid, 100 -- completedly paid by everybody in group)
         public int PaymentStatus { get; }
+
+        [JsonIgnore]
+        public string PaymentStatusCssClass
+            => PaymentStatus == 100 ? @"success"
+                : (PaymentStatus >= 75 ? @"info"
+                : (PaymentStatus >= 50 ? @"warning"
+                : @"danger"));
 
         public AccRequestViewModel(AccommodationRequest entity)
         {
@@ -45,7 +52,7 @@ namespace JoinRpg.Web.Models.Accommodation
             AccommodationTypeId = entity.AccommodationTypeId;
             RoomId = entity.AccommodationId ?? 0;
             Participants = entity.Subjects.Select(c => new RequestParticipantViewModel(c)).ToList();
-            PaymentStatus = Participants.Sum(p => p.Claim.ClaimPaidInFull() ? 1000 % Participants.Count : 0);
+            PaymentStatus = 100 * Participants.Sum(p => p.Claim.ClaimPaidInFull() ? 1 : 0) / Participants.Count;
         }
     }
 
@@ -55,6 +62,9 @@ namespace JoinRpg.Web.Models.Accommodation
         public User User;
         public int ClaimId;
         public Claim Claim;
+
+        public string UserName
+            => User?.GetDisplayName() ?? "";
 
         public RequestParticipantViewModel(Claim claim)
         {
