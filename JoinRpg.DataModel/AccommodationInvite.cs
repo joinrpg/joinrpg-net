@@ -20,7 +20,6 @@ namespace JoinRpg.DataModel
         [ForeignKey("ToClaimId")]
         public virtual Claim To { get; set; }
         public AccommodationRequest.InviteState IsAccepted { get; set; }
-        public bool IsGroupInvite { get; set; } = false;
         public string ResolveDescription { get; set; }
     }
 }

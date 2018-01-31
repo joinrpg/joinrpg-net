@@ -426,6 +426,10 @@
     <Compile Include="Migrations\201801280756568_InviteUpdate.Designer.cs">
       <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801311633464_Invite_ResolveDescription.cs" />
+    <Compile Include="Migrations\201801311633464_Invite_ResolveDescription.Designer.cs">
+      <DependentUpon>201801311633464_Invite_ResolveDescription.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -727,6 +731,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801270954367_Accommodation.resx">
       <DependentUpon>201801270954367_Accommodation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801311633464_Invite_ResolveDescription.resx">
+      <DependentUpon>201801311633464_Invite_ResolveDescription.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
