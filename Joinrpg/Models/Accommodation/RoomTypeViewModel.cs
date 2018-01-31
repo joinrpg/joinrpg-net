@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -17,7 +20,10 @@ namespace JoinRpg.Web.Models.Accommodation
         public string Name { get; set; }
 
         [DisplayName("Описание")]
-        public string Description { get; set; }
+        public IHtmlString DescriptionView { get; set; }
+
+        [DisplayName("Описание"), UIHint("MarkdownString")]
+        public string DescriptionEditable { get; set; }
 
         [DisplayName("Цена за 1 место")]
         public int Cost { get; set; }
@@ -60,6 +66,11 @@ namespace JoinRpg.Web.Models.Accommodation
         /// </summary>
         public IReadOnlyList<AccRequestViewModel> Requests { get; set; }
 
+        /// <summary>
+        /// List of requests not assigned to any room
+        /// </summary>
+        public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
+
         public bool CanAssignRooms { get; set; }
 
         public bool CanManageRooms { get; set; }
@@ -78,13 +89,42 @@ namespace JoinRpg.Web.Models.Accommodation
             IsInfinite = entity.IsInfinite;
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-            Description = entity.Description;
+            DescriptionEditable = entity.Description.Contents;
+            DescriptionView = entity.Description.ToHtmlString();
 
             // Creating a list of requests associated with this room type
             Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
 
+            // Creating a list of requests not assigned to any room
+            List<AccRequestViewModel> ua = Requests.Where(ar => ar.RoomId == 0).ToList();
+            ua.Sort((x, y) =>
+            {
+                int result = x.Persons - y.Persons;
+                if (result == 0)
+                    result = x.FeeToPay - y.FeeToPay;
+                if (result == 0)
+                    result = string.Compare(x.PersonsList, y.PersonsList, StringComparison.CurrentCultureIgnoreCase);
+                return result;
+            });
+            UnassignedRequests = ua;            
+
             // Creating a list of rooms contained in this room type
-            Rooms = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+            List<RoomViewModel> rl = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+            rl.Sort((x, y) =>
+            {
+                if (x.Occupancy == y.Occupancy)
+                {
+                    if (int.TryParse(x.Name, out int xn) && int.TryParse(y.Name, out int yn))
+                        return xn - yn;
+                    return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
+                }
+                if (x.Occupancy == x.Capacity)
+                    return 1;
+                if (y.Occupancy == y.Capacity)
+                    return -1;
+                return y.Occupancy - x.Occupancy;
+            });
+            Rooms = rl;
 
             Occupied = Rooms.Sum(room => room.Occupancy);
         }
@@ -109,7 +149,7 @@ namespace JoinRpg.Web.Models.Accommodation
                 Cost = Cost,
                 Name = Name,
                 Capacity = Capacity,
-                Description = Description,
+                Description = new MarkdownString(DescriptionEditable),
                 IsInfinite = IsInfinite,
                 IsPlayerSelectable = IsPlayerSelectable,
                 IsAutoFilledAccommodation = IsAutoFilledAccommodation

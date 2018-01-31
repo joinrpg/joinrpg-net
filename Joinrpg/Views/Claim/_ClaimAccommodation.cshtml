@@ -1,4 +1,5 @@
-﻿@using JoinRpg.DataModel
+﻿@using Joinrpg.Markdown
+@using JoinRpg.DataModel
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
@@ -40,14 +41,14 @@
             var roomFreeSpace = 0;
             IReadOnlyCollection<User> neighbors;
 
-                                 <span>
-                                   @Model.AccommodationRequest.AccommodationType.Name @ShowAccommodationTypeDesc(Model.AccommodationRequest.AccommodationType)
-                                 </span>
+            <span>
+                @Model.AccommodationRequest.AccommodationType.Name @ShowAccommodationTypeDesc(Model.AccommodationRequest.AccommodationType)
+            </span>
             <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
                 Изменить...
             </button>
             <div class="help-block">
-                @Model.AccommodationRequest.AccommodationType.Description
+                @Model.AccommodationRequest.AccommodationType.Description.ToHtmlString()
             </div>
             if (Model.AccommodationRequest.Accommodation != null)
             {

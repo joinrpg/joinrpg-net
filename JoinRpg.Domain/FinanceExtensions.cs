@@ -171,7 +171,8 @@ namespace JoinRpg.Domain
 
         public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
         {
-            if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+            if (!finance.Claim.HasAccess(currentUserId,
+                    acl => acl.CanManageMoney) &&
                 finance.PaymentType?.UserId != currentUserId)
             {
                 throw new NoAccessToProjectException(finance, currentUserId);

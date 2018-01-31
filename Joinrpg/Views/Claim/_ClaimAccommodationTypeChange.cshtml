@@ -1,10 +1,11 @@
-﻿@using JoinRpg.DataModel
+﻿@using Joinrpg.Markdown
+@using JoinRpg.DataModel
 @model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
 
 @helper ShowAccommodationTypeDesc(ProjectAccommodationType accommodationType)
     {
         <text>(@DisplayCount.OfX(accommodationType.Capacity, "место",
-                     "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
+                       "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
 }
 
 <div class="modal fade" id="changeAccommodationType" tabindex="-1" role="dialog">
@@ -46,7 +47,7 @@
                             <label>
                                 <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
                                 @accommodationType.Name @ShowAccommodationTypeDesc(accommodationType)<br />
-                                @accommodationType.Description
+                                @accommodationType.Description.ToHtmlString()
                             </label>
                         </div>
                     }

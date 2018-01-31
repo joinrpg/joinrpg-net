@@ -94,7 +94,8 @@ namespace JoinRpg.Services.Impl
 
       public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
-      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
+          ExtraAccessReason.Player); //TODO Specific right
       oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
       Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
@@ -238,7 +239,8 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
+          ExtraAccessReason.Player);
 
       SetDiscussed(claim, isVisibleToPlayer);
 
@@ -469,9 +471,13 @@ namespace JoinRpg.Services.Impl
           //todo set first state to Unanswered
           var currentClaim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
 
-          currentClaim =  currentClaim.RequestAccess(CurrentUserId,
+          currentClaim = currentClaim.RequestAccess(CurrentUserId,
               acl => acl.CanSetPlayersAccommodations,
-              allowResponsible: true);
+              currentClaim?.ClaimStatus == Claim.Status.Approved
+                  ? ExtraAccessReason.PlayerOrResponsible
+                  : ExtraAccessReason.None);
+
+          // Player cannot change accommodation type if aready checked in
 
           if (currentClaim.AccommodationRequest?.AccommodationTypeId == accommodationTypeId)
           {
@@ -508,7 +514,7 @@ namespace JoinRpg.Services.Impl
           {
               throw new DbEntityValidationException();
           }
-          claim.RequestPlayerAccess(CurrentUserId);
+          claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
           claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
           claim.PlayerDeclinedDate = Now;
@@ -691,9 +697,9 @@ namespace JoinRpg.Services.Impl
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
 
-        return claim.RequestMasterAccess(currentUserId,
+        return claim.RequestAccess(currentUserId,
             acl => acl.CanManageClaims,
-            allowResponsible: true);
+            true ? ExtraAccessReason.ResponsibleMaster : ExtraAccessReason.None);
     }
 
     public async Task SaveFieldsFromClaim(int projectId, int characterId, IDictionary<int, string> newFieldValue)

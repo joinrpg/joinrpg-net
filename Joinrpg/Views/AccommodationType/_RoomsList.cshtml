@@ -2,29 +2,6 @@
 @using JoinRpg.Web.Models.Accommodation;
 @model RoomTypeRoomsListViewModel
 
-@Scripts.Render("~/Scripts/roomsMessages.js")
-@Scripts.Render("~/Scripts/rooms.js")
-<script type="text/javascript">
-    @* following variables are declared in rooms.js *@
-    projectId = @Model.ProjectId;
-    roomTypeId = @Model.RoomTypeId;
-    roomsCount = @Model.RoomsCount;
-    roomCapacity = @Model.RoomCapacity;
-</script>
-<div class="btn-group" style="margin-top: 1em;">
-    @if (Model.CanManageRooms)
-    {
-        <button type="button" onclick="AddRoom()" class="btn btn-default">
-            <i class="glyphicon glyphicon-plus"></i> Добавить&hellip;</button>
-    }
-    @if (Model.CanAssignRooms)
-    {
-        <button id="bnPlaceAll" type="button" onclick="PlaceAll()" class="btn btn-default">
-            <i class="glyphicon glyphicon-bed"></i> Заселить всех</button>
-        <button id="bnKickAll" onclick="KickAll('@Url.Action("UnOccupyRoom", "AccommodationType", new { ProjectId = Model.ProjectId, RoomTypeId = Model.RoomTypeId, Room = "all" })')" class="btn btn-default">
-            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</button>
-    }
-</div>
 <div class="table-responsive" style="margin-top: 1em;">
     <table class="table table-striped">
         <thead>
@@ -49,7 +26,4 @@
             </tr>
         </tbody>
     </table>
-</div>
-<div>
-    @Html.Partial("_BackButton", Model.ProjectId)
 </div>

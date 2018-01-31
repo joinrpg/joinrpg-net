@@ -35,7 +35,8 @@ namespace JoinRpg.Web.Models
 
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
-    public bool ProjectActive { get; }
+   public bool CanChangeRooms { get; }
+        public bool ProjectActive { get; }
     public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
     public int? CharacterId { get; }
@@ -129,7 +130,10 @@ namespace JoinRpg.Web.Models
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
           HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageClaims, allowResponsible: true);
+          CanManageThisClaim = claim.HasAccess(currentUser.UserId,
+              acl => acl.CanManageClaims,
+              ExtraAccessReason.ResponsibleMaster);
+          CanChangeRooms = claim.HasAccess(currentUser.UserId, acl => acl.CanSetPlayersAccommodations, ExtraAccessReason.PlayerOrResponsible);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
@@ -179,8 +183,8 @@ namespace JoinRpg.Web.Models
 
           AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 
-          if (claim.PlayerUserId == currentUser.UserId ||
-              claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+          if (claim.HasAccess(currentUser.UserId,
+                  acl => acl.CanManageMoney, ExtraAccessReason.Player))
           {
               //Finance admins can create any payment. User also can create any payment, but it will be moderated
               PaymentTypes = claim.Project.ActivePaymentTypes;
@@ -360,8 +364,9 @@ namespace JoinRpg.Web.Models
                 Balance[s] = 0;
             foreach (var fo in claim.FinanceOperations)
                 Balance[fo.State] += fo.MoneyAmount;
-            
-            IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+            IsFeeAdmin = claim.HasAccess(currentUserId,
+                acl => acl.CanManageMoney);
             PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
             PreferentialFeeUser = claim.PreferentialFeeUser;
             PreferentialFeeConditions =

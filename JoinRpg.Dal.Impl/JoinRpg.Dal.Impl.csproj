@@ -732,6 +732,9 @@
     <EmbeddedResource Include="Migrations\201801270954367_Accommodation.resx">
       <DependentUpon>201801270954367_Accommodation.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801292024450_RoomDescription.resx">
+      <DependentUpon>201801292024450_RoomDescription.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801311633464_Invite_ResolveDescription.resx">
       <DependentUpon>201801311633464_Invite_ResolveDescription.cs</DependentUpon>
     </EmbeddedResource>
