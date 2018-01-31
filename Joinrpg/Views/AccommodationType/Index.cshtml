@@ -16,8 +16,8 @@
     }
     @if (Model.CanAssignRooms)
     {
-        <a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
-            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>
+        @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
+            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>*@
         <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
             <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</a>
     }
