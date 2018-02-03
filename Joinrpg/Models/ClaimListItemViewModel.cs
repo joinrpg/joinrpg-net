@@ -116,7 +116,10 @@ namespace JoinRpg.Web.Models
       [Display(Name = "Комната")]
       public string RoomName { get; }
 
-        public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
+      [Display(Name = "Льготник")]
+        public bool PreferentialFeeUser { get; }
+
+    public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
       var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
@@ -138,6 +141,9 @@ namespace JoinRpg.Web.Models
       Fields = claim.GetFields();
       FeePaid = claim.ClaimBalance();
       FeeDue = claim.ClaimFeeDue();
+
+        PreferentialFeeUser = claim.PreferentialFeeUser;
+    
 
         AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
         RoomName = claim.AccommodationRequest?.Accommodation?.Name;
