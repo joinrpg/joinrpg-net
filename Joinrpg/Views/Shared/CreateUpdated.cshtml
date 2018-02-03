@@ -1,11 +1,11 @@
 ﻿@model JoinRpg.DataModel.ICreatedUpdatedTracked
 <span>
-  <b>Создано: </b>
+  Создано: 
   @Html.DisplayFor(model => model.CreatedAt, "EventTime")
   @Html.DisplayFor(model => model.CreatedBy)
   @if (Model.UpdatedAt != Model.CreatedAt)
   {
-    <b>Изменено: </b>
+    <span> Изменено: </span>
     @Html.DisplayFor(model => model.UpdatedAt, "EventTime")
     if (Model.CreatedBy != Model.UpdatedBy)
     {

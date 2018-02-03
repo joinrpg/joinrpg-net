@@ -12,6 +12,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 
 namespace JoinRpg.Services.Impl
 {
@@ -398,55 +399,55 @@ namespace JoinRpg.Services.Impl
 
             project.Details.GenerateCharacterNamesFromPlayer = request.GenerateCharacterNamesFromPlayer;
             project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
+            project.Details.EnableAccommodation = request.IsAccommodationEnabled;
 
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task GrantAccess(int projectId,
-            int currentUserId,
-            int userId,
-            bool canGrantRights,
-            bool canChangeFields,
-            bool canChangeProjectProperties,
-            bool canApproveClaims,
-            bool canEditRoles,
-            bool canManageMoney,
-            bool canSendMassMails,
-            bool canManagePlots)
+        public async Task GrantAccess(GrantAccessRequest grantAccessRequest)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            if (!project.HasMasterAccess(currentUserId, a => a.CanGrantRights))
+            var project = await ProjectRepository.GetProjectAsync(grantAccessRequest.ProjectId);
+            if (!project.HasMasterAccess(CurrentUserId, a => a.CanGrantRights))
             {
-                var user = await UserRepository.GetById(currentUserId);
+                var user = await UserRepository.GetById(CurrentUserId);
                 if (!user.Auth?.IsAdmin == true)
                 {
-                    project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+                    project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
                 }
             }
 
             project.EnsureProjectActive();
 
-            var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == userId);
+            var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == grantAccessRequest.UserId);
             if (acl == null)
             {
                 acl = new ProjectAcl
                 {
                     ProjectId = project.ProjectId,
-                    UserId = userId,
+                    UserId = grantAccessRequest.UserId,
                 };
                 project.ProjectAcls.Add(acl);
             }
 
-            acl.CanGrantRights = canGrantRights;
-            acl.CanChangeFields = canChangeFields;
-            acl.CanChangeProjectProperties = canChangeProjectProperties;
-            acl.CanManageClaims = canApproveClaims;
-            acl.CanEditRoles = canEditRoles;
-            acl.CanManageMoney = canManageMoney;
-            acl.CanSendMassMails = canSendMassMails;
-            acl.CanManagePlots = canManagePlots;
+            SetRightsFromRequest(grantAccessRequest, acl);
 
             await UnitOfWork.SaveChangesAsync();
+        }
+
+        private static void SetRightsFromRequest(AccessRequestBase grantAccessRequest, ProjectAcl acl)
+        {
+            acl.CanGrantRights = grantAccessRequest.CanGrantRights;
+            acl.CanChangeFields = grantAccessRequest.CanChangeFields;
+            acl.CanChangeProjectProperties = grantAccessRequest.CanChangeProjectProperties;
+            acl.CanManageClaims = grantAccessRequest.CanManageClaims;
+            acl.CanEditRoles = grantAccessRequest.CanEditRoles;
+            acl.CanManageMoney = grantAccessRequest.CanManageMoney;
+            acl.CanSendMassMails = grantAccessRequest.CanSendMassMails;
+            acl.CanManagePlots = grantAccessRequest.CanManagePlots;
+            acl.CanManageAccommodation = grantAccessRequest.CanManageAccommodation &&
+                                         acl.Project.Details.EnableAccommodation;
+            acl.CanSetPlayersAccommodations = grantAccessRequest.CanSetPlayersAccommodations &&
+                                              acl.Project.Details.EnableAccommodation;
         }
 
         public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId)
@@ -480,7 +481,7 @@ namespace JoinRpg.Services.Impl
                     throw new MasterHasResponsibleException(acl);
                 }
 
-                project.RequestMasterAccess((int) newResponsibleMasterId);
+                project.RequestMasterAccess((int)newResponsibleMasterId);
 
                 foreach (var claim in claims)
                 {
@@ -506,31 +507,14 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task ChangeAccess(int projectId,
-            int currentUserId,
-            int userId,
-            bool canGrantRights,
-            bool canChangeFields,
-            bool canChangeProjectProperties,
-            bool canApproveClaims,
-            bool canEditRoles,
-            bool canManageMoney,
-            bool canSendMassMails,
-            bool canManagePlots)
+        public async Task ChangeAccess(ChangeAccessRequest changeAccessRequest)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            project.RequestMasterAccess(currentUserId, a => a.CanGrantRights);
+            var project = await ProjectRepository.GetProjectAsync(changeAccessRequest.ProjectId);
+            project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
 
             var acl = project.ProjectAcls.Single(
-                a => a.ProjectId == projectId && a.UserId == userId);
-            acl.CanGrantRights = canGrantRights;
-            acl.CanChangeFields = canChangeFields;
-            acl.CanChangeProjectProperties = canChangeProjectProperties;
-            acl.CanManageClaims = canApproveClaims;
-            acl.CanEditRoles = canEditRoles;
-            acl.CanManageMoney = canManageMoney;
-            acl.CanSendMassMails = canSendMassMails;
-            acl.CanManagePlots = canManagePlots;
+                a => a.ProjectId == changeAccessRequest.ProjectId && a.UserId == changeAccessRequest.UserId);
+            SetRightsFromRequest(changeAccessRequest, acl);
 
             await UnitOfWork.SaveChangesAsync();
         }

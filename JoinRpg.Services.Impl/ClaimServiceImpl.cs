@@ -10,6 +10,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 
 
 namespace JoinRpg.Services.Impl
@@ -82,8 +83,8 @@ namespace JoinRpg.Services.Impl
 
       await
         EmailService.Email(
-          EmailHelpers.CreateClaimEmail<CheckedInEmal>(claim, ".", s => s.ClaimStatusChange,
-            CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
+          await CreateClaimEmail<CheckedInEmal>(claim, ".", s => s.ClaimStatusChange,
+            CommentExtraAction.ApproveByMaster));
 
       if (financeEmail != null)
       {
@@ -91,9 +92,10 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-    public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
+      public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
-      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
+          ExtraAccessReason.Player); //TODO Specific right
       oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
       Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
@@ -149,13 +151,13 @@ namespace JoinRpg.Services.Impl
         FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(), 
           FieldDefaultValueGenerator);
 
-      var claimEmail = EmailHelpers.CreateClaimEmail<SecondRoleEmail>(claim, "",
-        s => s.ClaimStatusChange,
-        CommentExtraAction.NewClaim, await UserRepository.GetById(CurrentUserId));
-
       await UnitOfWork.SaveChangesAsync();
 
-      await EmailService.Email(claimEmail);
+        var claimEmail = await CreateClaimEmail<SecondRoleEmail>(claim, "",
+            s => s.ClaimStatusChange,
+            CommentExtraAction.NewClaim);
+
+            await EmailService.Email(claimEmail);
 
       return claim.ClaimId;
     }
@@ -202,8 +204,8 @@ namespace JoinRpg.Services.Impl
 
       var updatedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, fields, FieldDefaultValueGenerator);
 
-      var claimEmail = EmailHelpers.CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
-        CommentExtraAction.NewClaim, await UserRepository.GetById(CurrentUserId));
+      var claimEmail = await CreateClaimEmail<NewClaimEmail>(claim, claimText ?? "", s => s.ClaimStatusChange,
+        CommentExtraAction.NewClaim);
 
       claimEmail.UpdatedFields = updatedFields;
 
@@ -237,7 +239,8 @@ namespace JoinRpg.Services.Impl
 
     public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
-      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+      var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
+          ExtraAccessReason.Player);
 
       SetDiscussed(claim, isVisibleToPlayer);
 
@@ -348,9 +351,9 @@ namespace JoinRpg.Services.Impl
 
           await
               EmailService.Email(
-                  EmailHelpers.CreateClaimEmail<ApproveByMasterEmail>(claim, commentText,
+                 await  CreateClaimEmail<ApproveByMasterEmail>(claim, commentText,
                       s => s.ClaimStatusChange,
-                      CommentExtraAction.ApproveByMaster, await UserRepository.GetById(CurrentUserId)));
+                      CommentExtraAction.ApproveByMaster));
       }
 
       private void ConvertToIndividual(Claim claim)
@@ -404,26 +407,135 @@ namespace JoinRpg.Services.Impl
       claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
 
       claim.MasterDeclinedDate = Now;
+        claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
-      MarkCharacterChangedIfApproved(claim);
+       var roomEmail = await CommonClaimDecline(claim);
 
-      claim.ClaimStatus = Claim.Status.DeclinedByMaster;
-
-      if (claim.Character?.ApprovedClaim == claim)
-      {
-        claim.Character.ApprovedClaimId = null;
-      }
-
-      var email =
+        var email =
         await
           AddCommentWithEmail<DeclineByMasterEmail>(commentText, claim, true,
             s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster);
 
       await UnitOfWork.SaveChangesAsync();
       await EmailService.Email(email);
-    }
+        await EmailService.Email(roomEmail);
+        }
 
-    public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
+      private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
+      {
+          MarkCharacterChangedIfApproved(claim);
+
+
+          if (claim.Character?.ApprovedClaim == claim)
+          {
+              claim.Character.ApprovedClaimId = null;
+          }
+
+          return await ConsiderLeavingRoom(claim);
+      }
+
+      private async Task<LeaveRoomEmail> ConsiderLeavingRoom(Claim claim)
+      {
+          LeaveRoomEmail email = null;
+
+          if (claim.AccommodationRequest != null)
+          {
+              if (claim.AccommodationRequest.Accommodation != null)
+              {
+                  email = new LeaveRoomEmail()
+                  {
+                      Changed = new [] {claim},
+                      Initiator = await GetCurrentUser(),
+                      ProjectName = claim.Project.ProjectName,
+                      Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
+                      Room = claim.AccommodationRequest.Accommodation,
+                      Text = new MarkdownString()
+                  };
+              }
+
+              claim.AccommodationRequest.Subjects.Remove(claim);
+              if (!claim.AccommodationRequest.Subjects.Any())
+              {
+                  UnitOfWork.GetDbSet<AccommodationRequest>().Remove(claim.AccommodationRequest);
+              }
+          }
+
+          return email;
+      }
+
+
+      public async Task<AccommodationRequest> SetAccommodationType(int projectId,
+          int claimId,
+          int accommodationTypeId)
+      {
+          //todo set first state to Unanswered
+          var currentClaim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
+
+          currentClaim = currentClaim.RequestAccess(CurrentUserId,
+              acl => acl.CanSetPlayersAccommodations,
+              currentClaim?.ClaimStatus == Claim.Status.Approved
+                  ? ExtraAccessReason.PlayerOrResponsible
+                  : ExtraAccessReason.None);
+
+          // Player cannot change accommodation type if aready checked in
+
+          if (currentClaim.AccommodationRequest?.AccommodationTypeId == accommodationTypeId)
+          {
+              return currentClaim.AccommodationRequest;
+          }
+
+
+            var leaveEmail = await ConsiderLeavingRoom(currentClaim);
+
+            var accommodationRequest = new AccommodationRequest
+          {
+              ProjectId = projectId,
+              Subjects = new List<Claim> { currentClaim },
+              AccommodationTypeId = accommodationTypeId,
+              IsAccepted = AccommodationRequest.InviteState.Accepted
+          };
+
+          UnitOfWork
+              .GetDbSet<AccommodationRequest>()
+              .Add(accommodationRequest);
+          await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+          if (leaveEmail != null)
+          {
+              await EmailService.Email(leaveEmail);
+          }
+          return accommodationRequest;
+      }
+
+
+        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+      {
+          var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+          if (claim == null)
+          {
+              throw new DbEntityValidationException();
+          }
+          claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
+          claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
+
+          claim.PlayerDeclinedDate = Now;
+          claim.ClaimStatus = Claim.Status.DeclinedByUser;
+
+           var roomEmail = await CommonClaimDecline(claim);
+
+
+
+            var email =
+              await
+                  AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
+                      s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
+
+          await UnitOfWork.SaveChangesAsync();
+          await EmailService.Email(email);
+          await EmailService.Email(roomEmail);
+        }
+
+
+        public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
 
@@ -538,37 +650,6 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-
-        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
-        {
-            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-            if (claim == null)
-            {
-                throw new DbEntityValidationException();
-            }
-            claim.RequestPlayerAccess(CurrentUserId);
-            claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
-
-            claim.PlayerDeclinedDate = Now;
-            MarkCharacterChangedIfApproved(claim);
-            claim.ClaimStatus = Claim.Status.DeclinedByUser;
-
-            if (claim.Character != null && claim.Character.ApprovedClaimId == claimId)
-            {
-                claim.Character.ApprovedClaimId = null;
-            }
-
-
-
-            var email =
-              await
-                AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
-                  s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
-
-            await UnitOfWork.SaveChangesAsync();
-            await EmailService.Email(email);
-        }
-
     private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
       bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
       CommentExtraAction? extraAction = null, IEnumerable<User> extraSubscriptions = null) where T : ClaimEmailModel, new()
@@ -582,8 +663,8 @@ namespace JoinRpg.Services.Impl
 
       bool mastersOnly = !visibleToPlayerUpdated;
       return
-        EmailHelpers.CreateClaimEmail<T>(claim, commentText, predicate,
-          extraAction, await UserRepository.GetById(CurrentUserId), mastersOnly, extraRecipients);
+        await CreateClaimEmail<T>(claim, commentText, predicate,
+          extraAction, mastersOnly, extraRecipients);
     }
 
     public async Task SetResponsible(int projectId, int claimId, int currentUserId, int responsibleMasterId)
@@ -615,19 +696,10 @@ namespace JoinRpg.Services.Impl
     private async Task<Claim> LoadClaimForApprovalDecline(int projectId, int claimId, int currentUserId)
     {
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      if (claim == null)
-      {
-        throw new ArgumentNullException(nameof(claim));
-      }
-      if (claim.Project == null)
-      {
-        throw new ArgumentNullException(nameof(IProjectEntity.Project));
-      }
-      if (!claim.CanManageClaim(currentUserId))
-      {
-        throw new NoAccessToProjectException(claim.Project, currentUserId, acl => acl.CanManageClaims);
-      }
-      return claim;
+
+        return claim.RequestAccess(currentUserId,
+            acl => acl.CanManageClaims,
+            true ? ExtraAccessReason.ResponsibleMaster : ExtraAccessReason.None);
     }
 
     public async Task SaveFieldsFromClaim(int projectId, int characterId, IDictionary<int, string> newFieldValue)
@@ -641,7 +713,7 @@ namespace JoinRpg.Services.Impl
       {
         MarkChanged(claim.Character);
       }
-      var user = await UserRepository.GetById(CurrentUserId);
+      var user = await GetCurrentUser();
       var email = EmailHelpers.CreateFieldsEmail(claim, s => s.FieldChange, user, updatedFields);
 
       await UnitOfWork.SaveChangesAsync();

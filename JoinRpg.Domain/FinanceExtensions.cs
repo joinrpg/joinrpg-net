@@ -63,14 +63,16 @@ namespace JoinRpg.Domain
         private static int ClaimCurrentFee(this Claim claim, DateTime operationDate, int? fieldsFee)
         {
             return claim.BaseFee(operationDate)
-                   + claim.ClaimFieldsFee(fieldsFee);
+                   + claim.ClaimFieldsFee(fieldsFee)
+                   + claim.ClaimAccommodationFee();
             /******************************************************************
              * If you want to add additional fee to a claim's fee,
              * append your value to the expression above.
              * Example:
-             *     return (claim.CurrentFee ?? claim.Project.CurrentFee(operationDate))
+             *     return claim.BaseFee(operationDate)
              *         + claim.ClaimFieldsFee(fieldsFee)
-             *         + claim.AccommodationFee();
+             *         + claim.ClaimAccommodationFee()
+             *         + claim.SomeOtherBigFee();
              *****************************************************************/
         }
 
@@ -143,6 +145,12 @@ namespace JoinRpg.Domain
         }
 
         /// <summary>
+        /// Returns accommodation fee
+        /// </summary>
+        public static int ClaimAccommodationFee(this Claim claim)
+            => claim.AccommodationRequest?.AccommodationType?.Cost ?? 0;
+
+        /// <summary>
         /// Returns how many money left to pay
         /// </summary>
         public static int ClaimFeeDue(this Claim claim)
@@ -163,7 +171,8 @@ namespace JoinRpg.Domain
 
         public static void RequestModerationAccess(this FinanceOperation finance, int currentUserId)
         {
-            if (!finance.Claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+            if (!finance.Claim.HasAccess(currentUserId,
+                    acl => acl.CanManageMoney) &&
                 finance.PaymentType?.UserId != currentUserId)
             {
                 throw new NoAccessToProjectException(finance, currentUserId);

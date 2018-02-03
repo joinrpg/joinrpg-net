@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;

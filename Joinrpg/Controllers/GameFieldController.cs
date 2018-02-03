@@ -98,7 +98,8 @@ namespace JoinRpg.Web.Controllers
                     viewModel.CanPlayerView,
                     viewModel.ShowForUnApprovedClaim,
                     viewModel.Price,
-                    viewModel.MasterDescriptionEditable);
+                    viewModel.MasterDescriptionEditable
+                    );
 
                 return ReturnToIndex(project);
             }

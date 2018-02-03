@@ -9,10 +9,10 @@ namespace JoinRpg.Domain
   public static class ProjectEntityExtensions
   {
     [MustUseReturnValue]
-    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Func<ProjectAcl, bool> requiredAccess)
+    public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
     {
       if (entity == null) throw new ArgumentNullException(nameof(entity));
-      return entity.Project.ProjectAcls.Where(requiredAccess).Any(pa => pa.UserId == currentUserId);
+      return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
     }
 
     public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId)

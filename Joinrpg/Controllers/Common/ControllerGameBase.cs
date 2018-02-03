@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -89,6 +90,7 @@ namespace JoinRpg.Web.Controllers.Common
       menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
       menuModel.IsActive = project.Active;
       menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
+      menuModel.EnableAccommodation = project.Details.EnableAccommodation;
       menuModel.IsAdmin = IsCurrentUserAdmin();
 
 
@@ -127,7 +129,7 @@ namespace JoinRpg.Web.Controllers.Common
     }
 
     [CanBeNull]
-    protected ActionResult AsMaster<TEntity>(TEntity entity, Func<ProjectAcl, bool> requiredRights) where TEntity : IProjectEntity
+    protected ActionResult AsMaster<TEntity>(TEntity entity, Expression<Func<ProjectAcl, bool>> requiredRights) where TEntity : IProjectEntity
     {
       return entity == null ? HttpNotFound() :
              (entity.HasMasterAccess(CurrentUserId, requiredRights)

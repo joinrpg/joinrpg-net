@@ -1,0 +1,4 @@
+﻿@using JoinRpg.Web.Controllers;
+@using JoinRpg.Web.Models.Accommodation;
+@model RequestParticipantViewModel
+<a class="join-user" target="_blank" href="@Url.Action("Edit", "Claim", new { projectId = Model.Claim.ProjectId, claimId = Model.ClaimId })"><i class="glyphicon glyphicon-file"></i>@Model.UserName</a>

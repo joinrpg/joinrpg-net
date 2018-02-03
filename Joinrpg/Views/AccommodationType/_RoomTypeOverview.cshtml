@@ -1,0 +1,46 @@
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Accommodation
+@model RoomTypeViewModel
+
+<div class="form-horizontal" style="margin-top: 1em;">
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Model.Name</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Cost, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Model.Cost</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Capacity, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Model.Capacity</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.IsInfinite, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Html.DisplayFor(model => model.IsInfinite)</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.IsAutoFilledAccommodation, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Html.DisplayFor(model => model.IsAutoFilledAccommodation)</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.IsPlayerSelectable, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Html.DisplayFor(model => model.IsPlayerSelectable)</div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.DescriptionView, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">@Model.DescriptionView</div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-lg-offset-3 col-md-9">
+            @Html.Partial("_BackButton", Model.ProjectId)
+        </div>
+    </div>
+</div>

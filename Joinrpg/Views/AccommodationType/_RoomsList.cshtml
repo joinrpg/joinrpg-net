@@ -1,0 +1,29 @@
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Accommodation;
+@model RoomTypeRoomsListViewModel
+
+<div class="table-responsive" style="margin-top: 1em;">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="min-width: 10em; width: 10em;">Комната</th>
+                <th style="min-width: 10em; width: 10em;">Места</th>
+                <th>Проживающие</th>
+                <th style="min-width: 6em; width: 6em;"></th>
+                <th style="min-width: 6em; width: 6em;"></th>
+            </tr>
+        </thead>
+        <tbody id="roomsRows">
+            @if (Model.Rooms != null && Model.RoomsCount > 0)
+            {
+                foreach (RoomViewModel room in Model.Rooms)
+                {
+                    @Html.Partial("_RoomDetails", room);
+                }
+            }
+            <tr id="rowPlaceholder">
+                <td colspan="5">(комнаты не добавлены)</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

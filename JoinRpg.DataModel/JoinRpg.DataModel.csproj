@@ -49,6 +49,8 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccommodationInvite.cs" />
+    <Compile Include="AccommodationRequest.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="CharacterGroup.cs" />
     <Compile Include="Claim.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />
     <Compile Include="PlotFolder.cs" />
+    <Compile Include="ProjectAccommodation.cs" />
+    <Compile Include="ProjectAccommodationType.cs" />
     <Compile Include="ProjectFieldType.cs" />
     <Compile Include="ProjectItemTag.cs" />
     <Compile Include="Project.cs" />

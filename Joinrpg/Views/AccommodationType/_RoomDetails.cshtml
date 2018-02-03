@@ -1,0 +1,36 @@
+﻿@using JoinRpg.Web.Models;
+@using JoinRpg.Web.Models.Accommodation;
+@using Newtonsoft.Json
+@model RoomViewModel
+
+<tr id="room@(Model.Id)" roomId="@Model.Id" occupancy="@Model.Occupancy" requests="@JsonConvert.SerializeObject(Model.Requests)">
+    <td>@Model.Name</td>
+    <td>@Model.Occupancy / @Model.Capacity</td>
+    <td id="roomReqs@(Model.Id)">
+        @if (Model.Requests != null)
+        {
+            foreach (AccRequestViewModel request in Model.Requests)
+            {
+                @Html.Partial("_RoomInhabitant", request)
+            }
+        }
+    </td>
+    <td>
+        @if (Model.CanAssignRooms)
+        {
+            <div class="btn-group btn-group-sm" style="display: inline-block">
+                <button id="add@(Model.Id)" onclick="AddPeople(@Model.Id)" type="button" class="btn btn-default glyphicon glyphicon-bed" title="Заселить в комнату"></button>
+                <button id="kick@(Model.Id)" onclick="KickPeople(@Model.Id)" type="button" class="btn btn-default glyphicon glyphicon-resize-full" title="Освободить комнату"></button>
+            </div>
+        }
+    </td>
+    <td>
+        @if (Model.CanManageRooms)
+        {
+            <div class="btn-group btn-group-sm" style="display: inline-block">
+                <button id="rename@(Model.Id)" onclick="RenameRoom(@Model.Id)" type="button" class="btn btn-primary glyphicon glyphicon-pencil"></button>
+                <button id="delete@(Model.Id)" onclick="DeleteRoom(@Model.Id)" type="button" class="btn btn-warning glyphicon glyphicon-trash"></button>
+            </div>
+        }
+    </td>
+</tr>

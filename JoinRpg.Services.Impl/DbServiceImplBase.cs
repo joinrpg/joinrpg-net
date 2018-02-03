@@ -23,6 +23,9 @@ namespace JoinRpg.Services.Impl
 
         private readonly Lazy<IUserRepository> _userRepository;
 
+        protected IAccommodationRepository AccomodationRepository => _accomodationRepository.Value;
+        private readonly Lazy<IAccommodationRepository> _accomodationRepository;
+
         protected IProjectRepository ProjectRepository => _projectRepository.Value;
 
         private readonly Lazy<IProjectRepository> _projectRepository;
@@ -57,6 +60,7 @@ namespace JoinRpg.Services.Impl
             _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);
             _plotRepository = new Lazy<IPlotRepository>(unitOfWork.GetPlotRepository);
             _forumRepository = new Lazy<IForumRepository>(unitOfWork.GetForumRepository);
+            _accomodationRepository = new Lazy<IAccommodationRepository>(UnitOfWork.GetAccomodationRepository);
             _charactersRepository =
                 new Lazy<ICharacterRepository>(unitOfWork.GetCharactersRepository);
 
@@ -197,6 +201,11 @@ namespace JoinRpg.Services.Impl
         protected void MarkTreeModified([NotNull] Project project)
         {
             project.CharacterTreeModifiedAt = Now;
+        }
+
+        protected async Task<User> GetCurrentUser()
+        {
+            return await UserRepository.GetById(CurrentUserId);
         }
     }
 }

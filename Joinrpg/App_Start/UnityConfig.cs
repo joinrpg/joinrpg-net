@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -11,6 +11,7 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;

@@ -35,7 +35,8 @@ namespace JoinRpg.Web.Models
 
     public bool HasMasterAccess { get; }
     public bool CanManageThisClaim { get; }
-    public bool ProjectActive { get; }
+   public bool CanChangeRooms { get; }
+        public bool ProjectActive { get; }
     public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
     public int? CharacterId { get; }
@@ -105,26 +106,37 @@ namespace JoinRpg.Web.Models
 
     public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
-      public ClaimViewModel(User currentUser,
+
+    public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
+    public AccommodationRequest AccommodationRequest { get; set; }
+
+    public ClaimViewModel(User currentUser,
           Claim claim,
           IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
-          IUriService uriService)
+          IUriService uriService,
+        IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null)
       {
           ClaimId = claim.ClaimId;
           CommentDiscussionId = claim.CommentDiscussionId;
           RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
           HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = claim.CanManageClaim(currentUser.UserId);
+          CanManageThisClaim = claim.HasAccess(currentUser.UserId,
+              acl => acl.CanManageClaims,
+              ExtraAccessReason.ResponsibleMaster);
+          CanChangeRooms = claim.HasAccess(currentUser.UserId, acl => acl.CanSetPlayersAccommodations, ExtraAccessReason.PlayerOrResponsible);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
+          ProjectName = claim.Project.ProjectName;
           Status = (ClaimStatusView) claim.ClaimStatus;
           CharacterGroupId = claim.CharacterGroupId;
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;
           CharacterActive = claim.Character?.IsActive;
-          OtherClaimsForThisCharacterCount = claim.IsApproved
+          AvailableAccommodationTypes = availableAccommodationTypes;
+          AccommodationRequest = claim.AccommodationRequest;
+            OtherClaimsForThisCharacterCount = claim.IsApproved
               ? 0
               : claim.OtherClaimsForThisCharacter().Count();
           HasOtherApprovedClaim = !claim.IsApproved &&
@@ -156,8 +168,10 @@ namespace JoinRpg.Web.Models
           CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
           Validator = new ClaimCheckInValidator(claim);
 
-          if (claim.PlayerUserId == currentUser.UserId ||
-              claim.HasMasterAccess(currentUser.UserId, acl => acl.CanManageMoney))
+          AccommodationEnabled = claim.Project.Details.EnableAccommodation;
+
+          if (claim.HasAccess(currentUser.UserId,
+                  acl => acl.CanManageMoney, ExtraAccessReason.Player))
           {
               //Finance admins can create any payment. User also can create any payment, but it will be moderated
               PaymentTypes = claim.Project.ActivePaymentTypes;
@@ -303,6 +317,8 @@ namespace JoinRpg.Web.Models
     public bool CheckInStarted { get; }
     public bool CheckInModuleEnabled { get; }
     public ClaimCheckInValidator Validator { get; }
+      public bool AccommodationEnabled { get; }
+      public string ProjectName { get; set; }
   }
 
 
@@ -319,6 +335,10 @@ namespace JoinRpg.Web.Models
             // Checks for base fee availability
             HasBaseFee = BaseFeeInfo != null || claim.CurrentFee != null;
 
+            AccommodationFee = claim.ClaimAccommodationFee();
+            RoomType = claim.AccommodationRequest?.AccommodationType?.Name ?? "";
+            RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+
             FieldsWithFeeCount = model.Fields.FieldWithFeeCount;
             FieldsTotalFee = model.Fields.FieldsTotalFee;
 
@@ -331,8 +351,9 @@ namespace JoinRpg.Web.Models
                 Balance[s] = 0;
             foreach (var fo in claim.FinanceOperations)
                 Balance[fo.State] += fo.MoneyAmount;
-            
-            IsFeeAdmin = claim.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+
+            IsFeeAdmin = claim.HasAccess(currentUserId,
+                acl => acl.CanManageMoney);
             PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
             PreferentialFeeUser = claim.PreferentialFeeUser;
             PreferentialFeeConditions =
@@ -373,6 +394,21 @@ namespace JoinRpg.Web.Models
         public int CurrentFee { get; }
 
         /// <summary>
+        /// Accommodation fee
+        /// </summary>
+        public int AccommodationFee { get; }
+
+        /// <summary>
+        /// Name of choosen room type
+        /// </summary>
+        public string RoomType { get; }
+
+        /// <summary>
+        /// Number or name of occupied room
+        /// </summary>
+        public string RoomName { get; }
+
+        /// <summary>
         /// Fields fee, separated by bound
         /// </summary>
         public Dictionary<FieldBoundToViewModel, int> FieldsFee { get; }
@@ -391,6 +427,9 @@ namespace JoinRpg.Web.Models
         /// Returns count of fields with assigned fee
         /// </summary>
         public Dictionary<FieldBoundToViewModel, int> FieldsWithFeeCount { get; }
+
+        public bool HasAccommodationFee
+            => AccommodationFee != 0;
 
         /// <summary>
         /// Returns true if there is at least one field with fee

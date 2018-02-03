@@ -76,5 +76,11 @@ namespace JoinRpg.Domain
           .Where(u => u != null)
           .Where(u => !mastersOnly || entity.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
     }
+
+      public static IEnumerable<User> GetSubscriptions(this ProjectAccommodation room)
+      {
+          return room.Inhabitants.SelectMany(i => i.Subjects).SelectMany( claim =>
+              claim.GetSubscriptions(subs => subs.AccommodationChange, Enumerable.Empty<User>()).Distinct().ToList());
+      }
   }
 }

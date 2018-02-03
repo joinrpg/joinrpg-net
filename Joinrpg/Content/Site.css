@@ -266,3 +266,83 @@ tr.unapprovedPayment td:last-child {
     display: block;
 }
 
+#availRequestsList {
+    column-count: 2;
+}
+@media screen and (max-width: 1300px)
+{
+    #availRequestsList
+    {
+        column-count: 1;
+    }
+}
+
+
+#availRequestsList .list-group-item {
+    padding: 0.2em 0.4em;
+}
+
+#availRequestsList .list-group-item button.btn {
+    display: none;
+}
+
+#roomsRows .list-group-item {
+    padding: 0.2em 0;
+    border: none;
+    background: none;
+}
+
+#roomsRows .list-group-item button.btn {
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+    width: 1.8em;
+    display: inline-block;
+}
+
+#roomsRows .list-group-item .alert-success .price-value,
+#availRequestsList .list-group-item .alert-success .price-value,
+#peopleList .list-group-item .alert-success .price-value,
+#roomsRows .list-group-item .alert-warning .glyphicon,
+#availRequestsList .list-group-item .alert-warning .glyphicon,
+#peopleList .list-group-item .alert-warning .glyphicon,
+#roomsRows .list-group-item .alert-danger .glyphicon,
+#availRequestsList .list-group-item .alert-danger .glyphicon,
+#peopleList .list-group-item .alert-danger .glyphicon {
+    display: none;
+}
+
+#availRequestsList .list-group-item .acc-payment,
+#roomsRows .list-group-item .acc-payment {
+    vertical-align: middle;
+    float: none;
+    margin: 0 0.3em;
+}
+#availRequestsList .list-group-item .acc-payment {
+    margin-left: 0;
+}
+#peopleList .acc-payment {
+    float: left;
+    margin-right: 0.5em;
+}
+
+#roomsRows .list-group-item .acc-request {
+    vertical-align: middle;
+}
+
+#peopleList div.list-group-item {
+    cursor: pointer;
+    width: 100%;
+    padding: 0.3em 0.6em;
+}
+
+#peopleList div.disabled {
+    cursor: not-allowed;
+}
+
+#peopleList div.list-group-item span.join-ellipsis
+{
+    display: inline-block;
+    width: 90%;
+    vertical-align: middle;
+}

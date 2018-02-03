@@ -64,6 +64,8 @@ namespace JoinRpg.Web.Models
 
         [ReadOnly(true)]
         public string OriginalName { get; set; }
+    [Display(Name= "Включить систему проживания")]
+    public bool EnableAccomodation { get; set; }
 
         public bool Active { get; set; }
     }

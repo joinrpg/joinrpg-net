@@ -81,7 +81,8 @@ namespace JoinRpg.DataModel
         public bool AllowSecondRoles { get; set; } = false;
         public bool AutoAcceptClaims { get; set; } = false;
         public bool GenerateCharacterNamesFromPlayer { get; set; } = false;
-        
+        public bool EnableAccommodation { get; set; } = false;
+
     }
 
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework

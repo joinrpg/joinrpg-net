@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Models.Characters;
 
@@ -10,6 +10,7 @@ namespace JoinRpg.Web.Models
     public string ProjectName { get; set; }
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
+    public bool EnableAccommodation { get; set; }
     public int? RootGroupId { get; internal set; }
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
     public bool IsAdmin { get; set; }

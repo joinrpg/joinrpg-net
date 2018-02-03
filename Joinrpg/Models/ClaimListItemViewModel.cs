@@ -109,6 +109,13 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Осталось")]
     public int FeeDue { get; }
 
+      [Display(Name = "Тип поселения")]
+      public string AccomodationType { get; }
+
+
+      [Display(Name = "Комната")]
+      public string RoomName { get; }
+
       [Display(Name = "Льготник")]
         public bool PreferentialFeeUser { get; }
 
@@ -136,7 +143,11 @@ namespace JoinRpg.Web.Models
       FeeDue = claim.ClaimFeeDue();
 
         PreferentialFeeUser = claim.PreferentialFeeUser;
-    }
+    
+
+        AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
+        RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+        }
 
     public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
     {

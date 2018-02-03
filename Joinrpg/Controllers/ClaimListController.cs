@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Controllers
                 return
                     await
                         ExportWithCustomFronend(view.Items, title, exportType.Value,
-                            new ClaimListItemViewModelExporter(project.ProjectFields, UriService), project.ProjectName);
+                            new ClaimListItemViewModelExporter(project, UriService), project.ProjectName);
             }
         }
 
@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Controllers
                 return
                     await
                         ExportWithCustomFronend(view.Items, title, exportType.Value,
-                            new ClaimListItemViewModelExporter(characterGroup.Project.ProjectFields, UriService),
+                            new ClaimListItemViewModelExporter(characterGroup.Project, UriService),
                             characterGroup.Project.ProjectName);
             }
         }

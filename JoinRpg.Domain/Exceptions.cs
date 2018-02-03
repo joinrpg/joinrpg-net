@@ -51,8 +51,15 @@ namespace JoinRpg.Domain
     }
   }
 
+    public class JoinRpgInsufficientRoomSpaceException : JoinRpgProjectEntityException
+    {
+        public JoinRpgInsufficientRoomSpaceException(ProjectAccommodation entity) : base(entity, "There is no space in room")
+        {
+        }
+    }
 
-  public class CannotPerformOperationInFuture : JoinRpgBaseException
+
+    public class CannotPerformOperationInFuture : JoinRpgBaseException
   {
     public CannotPerformOperationInFuture() : base("Cannot perform operation in future")
     {
@@ -82,10 +89,10 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class ProjectDeactivedException : JoinRpgBaseException
-  {
-    public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+    public class ProjectDeactivedException : JoinRpgBaseException
     {
+        public ProjectDeactivedException() : base("This operation can\'t be performed on deactivated project.")
+        {
 
     }
   }
@@ -122,7 +129,14 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class NoAccessToProjectException : JoinRpgProjectEntityException
+    public class RoomIsOccupiedException : JoinRpgProjectEntityException
+    {
+        public RoomIsOccupiedException(ProjectAccommodation entity) : base(entity, "Cannot peforrm this operation on occupied room.")
+        {
+        }
+    }
+
+    public class NoAccessToProjectException : JoinRpgProjectEntityException
   {
     [PublicAPI]
     public int? UserId { get; }
@@ -176,5 +190,12 @@ namespace JoinRpg.Domain
      {
      }
   }
+    public class ProjectAccomodationNotFound : JoinRpgBaseException
+    {
+        public ProjectAccomodationNotFound(int projectId, int accomodationTypeId, int accomodationType) : base($"Место проживание с id={accomodationType} не соотвествуют проекту с id={projectId} и типом проживания с id={accomodationTypeId} ")
+        {
+        }
+
+    }
 
 }

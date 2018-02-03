@@ -7,14 +7,10 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain
 {
-  public static class ClaimExtensions
+    public static class ClaimExtensions
   {
-    public static bool HasAnyAccess(this Claim claim, int? currentUserId)
-    {
-      return claim.PlayerUserId == currentUserId || claim.HasMasterAccess(currentUserId);
-    }
-
-    public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
+    
+      public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
     {
       return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
     }
@@ -120,27 +116,7 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static Claim RequestAccess([CanBeNull] this Claim claim, int currentUserId)
-    {
-      if (claim == null) throw new ArgumentNullException(nameof(claim));
-      if (!claim.HasAnyAccess(currentUserId))
-      {
-        throw new NoAccessToProjectException(claim, currentUserId);
-      }
-      return claim;
-    }
-
-    public static Claim RequestPlayerAccess([NotNull] this Claim claim, int currentUserId)
-    {
-      if (claim == null) throw new ArgumentNullException(nameof(claim));
-      if (!claim.HasPlayerAccesToClaim(currentUserId))
-      {
-        throw new NoAccessToProjectException(claim, currentUserId);
-      }
-      return claim;
-    }
-
-    public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim)
+      public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim)
     {
       return claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
     }
@@ -161,13 +137,7 @@ namespace JoinRpg.Domain
       claim.ClaimStatus = targetStatus;
     }
 
-    public static bool CanManageClaim(this Claim claim, int currentUserId)
-    {
-      return claim.HasMasterAccess(currentUserId, acl => acl.CanManageClaims) ||
-             claim.ResponsibleMasterUserId == currentUserId;
-    }
-
-    [CanBeNull]
+      [CanBeNull]
     public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
     {
       if (claims == null) throw new ArgumentNullException(nameof(claims));

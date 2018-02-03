@@ -49,6 +49,7 @@ namespace JoinRpg.DataModel
     public virtual HashSet<UserSubscription> Subscriptions{ get; set; }
 
     public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; } = new List<UserExternalLogin>();
+
   }
 
   public enum Gender : byte

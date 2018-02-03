@@ -1,0 +1,27 @@
+﻿<!-- Choose people for occupation dialog -->
+<div id="dlgChoosePeople" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Выберите заявки для заселения в комнату <span id="spRoomName"></span></h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <label class="col-md-6" style="text-align: right;">Занято мест:</label>
+                    <span class="col-md-6"><strong id="spUsedSpace" class="text-warning">0</strong></span>
+                </div>
+                <div class="row">
+                    <label class="col-md-6" style="text-align: right;">Свободно мест:</label>
+                    <span class="col-md-6"><strong id="spFreeSpace" class="text-success">8</strong></span>
+                </div>
+                <div id="peopleList" class="list-group" style="max-height: 200px; overflow-y: scroll; margin: 1em 1em 0 1em;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="bnChoosePeopleOk" type="button" class="btn btn-success">Заселить</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>

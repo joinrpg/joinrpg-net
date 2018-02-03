@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Email;
 
 namespace JoinRpg.Services.Impl
 {
@@ -21,7 +22,7 @@ namespace JoinRpg.Services.Impl
 
     public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
     {
-        var claim = await LoadClaim(request);
+        var claim = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
       var paymentType = claim.Project.PaymentTypes.Single(pt => pt.PaymentTypeId == request.PaymentTypeId);
 
       var email = await AcceptFeeImpl(request.Contents, request.OperationDate, request.FeeChange, request.Money, paymentType, claim);
@@ -160,7 +161,7 @@ namespace JoinRpg.Services.Impl
       
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
 
-      claim.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+      claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
 
       AddCommentImpl(claim, null, feeValue.ToString(), isVisibleToPlayer: true,
         extraAction: CommentExtraAction.FeeChanged);
@@ -193,7 +194,7 @@ namespace JoinRpg.Services.Impl
 
       public async Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request)
       {
-          var claim = await LoadClaim(request);
+          var claim = await LoadClaimAsMaster(request, ExtraAccessReason.Player);
 
           CheckOperationDate(request.OperationDate);
 
@@ -224,15 +225,14 @@ namespace JoinRpg.Services.Impl
 
           claim.UpdateClaimFeeIfRequired(request.OperationDate);
 
-          var email = EmailHelpers.CreateClaimEmail<FinanceOperationEmail>(claim, request.Contents,
-              s => s.MoneyOperation,
-              commentExtraAction: CommentExtraAction.RequestPreferential,
-              initiator: await UserRepository.GetById(CurrentUserId));
-
             await UnitOfWork.SaveChangesAsync();
 
+          var email = await CreateClaimEmail<FinanceOperationEmail>(claim, request.Contents,
+              s => s.MoneyOperation,
+              commentExtraAction: CommentExtraAction.RequestPreferential);
 
-          await EmailService.Email(email);
+
+            await EmailService.Email(email);
         }
   }
 }

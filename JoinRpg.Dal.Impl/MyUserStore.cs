@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -35,6 +35,12 @@ namespace JoinRpg.Dal.Impl
         throw new ArgumentNullException(nameof(user));
       }
       user.Auth = user.Auth ?? new UserAuthDetails() {RegisterDate = DateTime.Now};
+
+        if (!_ctx.Set<User>().Any())
+        {
+            user.Auth.EmailConfirmed = true;
+            user.Auth.IsAdmin = true;
+        }
 
       _ctx.UserSet.Add(user);
       return _ctx.SaveChangesAsync();

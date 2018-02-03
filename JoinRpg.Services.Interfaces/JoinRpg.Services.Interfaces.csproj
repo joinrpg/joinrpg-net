@@ -49,10 +49,20 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessRequestBase.cs" />
+    <Compile Include="ChangeAccessRequest.cs" />
+    <Compile Include="Email\AccountEmails.cs" />
+    <Compile Include="Email\EmailModelBase.cs" />
+    <Compile Include="Email\RoomEmailInterfaces.cs" />
+    <Compile Include="Email\ForumEmail.cs" />
+    <Compile Include="GrantAccessRequest.cs" />
+    <Compile Include="IAccommodationService.cs" />
     <Compile Include="EditProjectRequest.cs" />
     <Compile Include="IClaimOperationRequest.cs" />
     <Compile Include="IClaimService.cs" />
-    <Compile Include="IEmailService.cs" />
+    <Compile Include="Email\ClaimEmail.cs" />
+    <Compile Include="Email\IEmailWithUpdatedFieldsInfo.cs" />
+    <Compile Include="Email\IEmailService.cs" />
     <Compile Include="IExportDataService.cs" />
     <Compile Include="IFieldSetupService.cs" />
     <Compile Include="IForumService.cs" />
@@ -62,6 +72,7 @@
     <Compile Include="IProjectService.cs" />
     <Compile Include="IUriService.cs" />
     <Compile Include="IUserService.cs" />
+    <Compile Include="Email\MassEmailModel.cs" />
     <Compile Include="Search\ISearchService.cs" />
     <Compile Include="Search\ISearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

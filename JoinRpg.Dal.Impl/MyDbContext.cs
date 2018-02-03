@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -39,6 +39,8 @@ namespace JoinRpg.Dal.Impl
     public IPlotRepository GetPlotRepository() => new PlotRepositoryImpl(this);
     public IForumRepository GetForumRepository() => new ForumRepositoryImpl(this);
     public ICharacterRepository GetCharactersRepository() => new CharacterRepositoryImpl(this);
+
+    public IAccommodationRepository GetAccomodationRepository() => new AccommodationRepositoryImpl(this);
 
     protected override void OnModelCreating(DbModelBuilder modelBuilder)
     {
@@ -85,6 +87,9 @@ namespace JoinRpg.Dal.Impl
         .HasOptional(c => c.ResponsibleMasterUser)
         .WithMany()
         .HasForeignKey(c => c.ResponsibleMasterUserId);
+
+            modelBuilder.Entity<AccommodationRequest>().
+               HasMany(c => c.Subjects).WithOptional(c => c.AccommodationRequest);
 
 
       modelBuilder.Entity<Comment>().HasOptional(c => c.Parent).WithMany().WillCascadeOnDelete(false);
@@ -146,6 +151,10 @@ namespace JoinRpg.Dal.Impl
       modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName). IsUnique();
       modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
 
+      modelBuilder.Entity<ProjectAccommodationType>();
+      modelBuilder.Entity<ProjectAccommodation>();
+      modelBuilder.Entity<AccommodationRequest>();
+      modelBuilder.Entity<AccommodationInvite>();
       base.OnModelCreating(modelBuilder);
     }
   }

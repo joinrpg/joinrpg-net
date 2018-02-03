@@ -205,6 +205,8 @@
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="Controllers\AccommodationPrintController.cs" />
+    <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
@@ -214,6 +216,15 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
+    <Compile Include="Models\Accommodation\AccRequestViewModel.cs" />
+    <Compile Include="Models\Accommodation\RoomTypeRoomsListViewModel.cs" />
+    <Compile Include="Models\Accommodation\RoomTypeViewModel.cs" />
+    <Compile Include="Models\Accommodation\AccommodationRequestViewModel.cs" />
+    <Compile Include="Models\Accommodation\AccomodationReportExporter.cs" />
+    <Compile Include="Models\Accommodation\AccomodationReportModels.cs" />
+    <Compile Include="Models\Accommodation\ClaimAccommodationViewModel.cs" />
+    <Compile Include="Models\Accommodation\RoomViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
@@ -563,6 +574,8 @@
     <Content Include="Scripts\respond.matchmedia.addListener.js" />
     <Content Include="Scripts\respond.matchmedia.addListener.min.js" />
     <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\rooms.js" />
+    <Content Include="Scripts\roomsMessages.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -743,6 +756,24 @@
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
     <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
+    <Content Include="Views\AccommodationType\Index.cshtml" />
+    <Content Include="Views\AccommodationType\EditRoomType.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomEditDlg.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomTypeEdit.cshtml" />
+    <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
+    <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomTypeDetails.cshtml" />
+    <Content Include="Views\AccommodationType\AddRoomType.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomTypeOverview.cshtml" />
+    <Content Include="Views\AccommodationType\EditRoomTypeRooms.cshtml" />
+    <Content Include="Views\AccommodationType\_BackButton.cshtml" />
+    <Content Include="Views\Claim\_ClaimAccommodationTypeChange.cshtml" />
+    <Content Include="Views\AccommodationType\_RoomRequest.cshtml" />
+    <Content Include="Views\AccommodationType\_OccupationDlg.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\RequestParticipantViewModel.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
