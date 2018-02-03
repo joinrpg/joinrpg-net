@@ -93,10 +93,7 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
 
-            foreach (var accommodationRequest in accommodationRequests)
-            {
-                await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
-            }
+            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequests.SelectMany(ar => ar.Subjects).ToArray()));
         }
 
         private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)
