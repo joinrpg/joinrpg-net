@@ -1,10 +1,13 @@
-﻿@model JoinRpg.Web.Models.SuperSearchViewModel
-@using (Html.BeginForm("Index", "Search"))
-{
-    <span class="input-group input-group-xs">
-        <input type="text" id="SearchRequest" name="SearchRequest" data-val-required="Требуется поле Искать." data-val="true" class="form-control"/>
-        <span class="input-group-btn">
-            <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
-        </span>
+﻿<span class="input-group input-group-xs">
+    <script>
+        function getRefToSearchResultsPage() {
+            var searchString = document.getElementById('SearchRequest').value;
+            return 'search?searchString=' + encodeURIComponent(searchString);
+        }
+    </script>
+
+    <input type="text" id="SearchRequest" name="SearchRequest" data-val-required="Требуется поле Искать." data-val="true" class="form-control"/>
+    <span class="input-group-btn">
+        <button class="btn btn-default" onclick="window.location.href = getRefToSearchResultsPage()"><span class="glyphicon glyphicon-search"></span></button>
     </span>
-    }
+</span>
