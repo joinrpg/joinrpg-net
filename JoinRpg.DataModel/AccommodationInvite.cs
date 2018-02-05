@@ -20,6 +20,32 @@ namespace JoinRpg.DataModel
         [ForeignKey("ToClaimId")]
         public virtual Claim To { get; set; }
         public AccommodationRequest.InviteState IsAccepted { get; set; }
-        public string ResolveDescription { get; set; }
+        public ResolveDescription ResolveDescription { get; set; } = ResolveDescription.Open;
     }
+
+    public enum ResolveDescription
+    {
+        Open,
+        Accepted,
+        AcceptedAuto,
+        AcceptedByMaster,
+        Declined,
+        DeclinedWithAcceptOther,
+        Canceled
+    
+    }
+
+    /*
+     *
+     *
+     *  private const string AutomaticDeclineByAcceptOther =
+        "Приглашение отклонено автоматически, из-за принятия другого приглашения";
+
+        private const string AutomaticDeclineByAcceptOtherToGroup =
+            "Приглашение отклонено автоматически, из-за принятия другого группового приглашения";
+
+        private const string ManualAccept = "Приглашение принято";
+        private const string ManualDecline = "Приглашение отклонено";
+        private const string ManualCancel = "Приглашение было отозвано";
+     */
 }

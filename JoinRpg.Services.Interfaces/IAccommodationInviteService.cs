@@ -8,8 +8,7 @@ namespace JoinRpg.Services.Interfaces
         Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
-            int accommodationRequestId,
-            bool inviteWithGroup = false);
+            int accommodationRequestId);
 
         Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
             AccommodationRequest.InviteState newState);

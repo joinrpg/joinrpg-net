@@ -12,16 +12,6 @@ namespace JoinRpg.Services.Impl
     [UsedImplicitly]
     public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
-        private const string AutomaticDeclineByAcceptOther =
-            "Приглашение отклонено автоматически, из-за принятия другого приглашения";
-
-        private const string AutomaticDeclineByAcceptOtherToGroup =
-            "Приглашение отклонено автоматически, из-за принятия другого группового приглашения";
-
-        private const string ManualAccept = "Приглашение принято";
-        private const string ManualDecline = "Приглашение отклонено";
-        private const string ManualCancel = "Приглашение было отозвано";
-
 
         public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
@@ -30,8 +20,7 @@ namespace JoinRpg.Services.Impl
         public async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
-            int accommodationRequestId,
-            bool inviteWithGroup = false)
+            int accommodationRequestId)
         {
             //todo: make null result descriptive
 
@@ -49,17 +38,20 @@ namespace JoinRpg.Services.Impl
                 .Include(request => request.AccommodationType)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
-            if (receiverCurrentAccommodationRequest?.AccommodationId != null)
+            //todo return here then we allow invitation to/from already settled members
+            if (receiverCurrentAccommodationRequest?.AccommodationId != null ||
+                senderAccommodationRequest.AccommodationId != null)
             {
                 return null;
             }
 
-            var canInvite = (inviteWithGroup && senderAccommodationRequest.Subjects.Count +
-                             receiverCurrentAccommodationRequest?.Subjects.Count >
-                             senderAccommodationRequest.AccommodationType.Capacity) ||
-                            (!inviteWithGroup && senderAccommodationRequest.Subjects.Count <
-                             senderAccommodationRequest.AccommodationType.Capacity);
-
+            var newDwellersCount = receiverCurrentAccommodationRequest?.Subjects.Count ?? 1;
+            var canInvite = senderAccommodationRequest.Subjects.Count + newDwellersCount <=
+                            senderAccommodationRequest.AccommodationType.Capacity;
+            canInvite = canInvite &&
+                        (senderAccommodationRequest.AccommodationTypeId ==
+                         receiverCurrentAccommodationRequest?.AccommodationTypeId ||
+                         receiverCurrentAccommodationRequest == null);
             if (!canInvite)
             {
                 return null;
@@ -75,6 +67,8 @@ namespace JoinRpg.Services.Impl
 
             UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+            //todo email it
+
 
             return inviteRequest;
         }
@@ -113,21 +107,20 @@ namespace JoinRpg.Services.Impl
             senderAccommodationRequest.Subjects.Add(inviteRequest.To);
             inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
 
-            for (var i = 0; i < receiverAccommodationRequest?.Subjects.Count; i++)
+            // ReSharper disable once PossibleNullReferenceException
+            foreach (var claim in receiverAccommodationRequest?.Subjects)
             {
-                var claim = receiverAccommodationRequest?.Subjects.ElementAt(i);
                 await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
                 senderAccommodationRequest.Subjects.Add(claim);
-                claim.AccommodationRequest = senderAccommodationRequest;
             }
 
-            if (receiverAccommodationRequest != null && receiverAccommodationRequest.Subjects.Any())
+            if (receiverAccommodationRequest != null)
             {
                 UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
 
             inviteRequest.IsAccepted = AccommodationRequest.InviteState.Accepted;
-            inviteRequest.ResolveDescription = ManualAccept;
+            inviteRequest.ResolveDescription = ResolveDescription.Accepted;
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             return inviteRequest;
@@ -153,8 +146,8 @@ namespace JoinRpg.Services.Impl
 
             inviteRequest.IsAccepted = newState;
             inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled
-                ? ManualCancel
-                : ManualDecline;
+                ? ResolveDescription.Canceled
+                : ResolveDescription.Declined;
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             return inviteRequest;
@@ -178,7 +171,7 @@ namespace JoinRpg.Services.Impl
                 .Where(invite => invite.ToClaimId == claimId)
                 .Where(invite => invite.Id != inviteId)
                 .ToListAsync().ConfigureAwait(false);
-            var stateToDecline = new []{AccommodationRequest.InviteState.Unanswered};
+            var stateToDecline = new[] {AccommodationRequest.InviteState.Unanswered};
             foreach (var accommodationInvite in inviteRequests)
             {
                 if (!stateToDecline.Contains(accommodationInvite.IsAccepted))
@@ -187,7 +180,7 @@ namespace JoinRpg.Services.Impl
                 }
 
                 accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
-                accommodationInvite.ResolveDescription = AutomaticDeclineByAcceptOther;
+                accommodationInvite.ResolveDescription = ResolveDescription.DeclinedWithAcceptOther;
             }
 
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);

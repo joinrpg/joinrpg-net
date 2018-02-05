@@ -23,9 +23,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IEnumerable<AccommodationInvite>>
             GetIncomingInviteForClaim(int claimId) => await Ctx.Set<AccommodationInvite>()
             .Where(invite => invite.ToClaimId == claimId)
-            .Include(invite => invite.To)
             .Include(invite => invite.To.Player)
-            .Include(invite => invite.From)
             .Include(invite => invite.From.Player)
             .ToListAsync().ConfigureAwait(false);
 
@@ -36,9 +34,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IEnumerable<AccommodationInvite>>
             GetOutgoingInviteForClaim(int claimId) => await Ctx.Set<AccommodationInvite>()
             .Where(invite => invite.FromClaimId == claimId)
-            .Include(invite => invite.To)
             .Include(invite => invite.To.Player)
-            .Include(invite => invite.From)
             .Include(invite => invite.From.Player)
             .ToListAsync().ConfigureAwait(false);
     }

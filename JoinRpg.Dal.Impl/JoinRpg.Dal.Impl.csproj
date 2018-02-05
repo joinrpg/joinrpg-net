@@ -426,14 +426,6 @@
     <Compile Include="Migrations\201801280756568_InviteUpdate.Designer.cs">
       <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201801311633464_Invite_ResolveDescription.cs" />
-    <Compile Include="Migrations\201801311633464_Invite_ResolveDescription.Designer.cs">
-      <DependentUpon>201801311633464_Invite_ResolveDescription.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201801311654340_InviteChanges.cs" />
-    <Compile Include="Migrations\201801311654340_InviteChanges.Designer.cs">
-      <DependentUpon>201801311654340_InviteChanges.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -738,12 +730,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801292024450_RoomDescription.resx">
       <DependentUpon>201801292024450_RoomDescription.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201801311633464_Invite_ResolveDescription.resx">
-      <DependentUpon>201801311633464_Invite_ResolveDescription.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201801311654340_InviteChanges.resx">
-      <DependentUpon>201801311654340_InviteChanges.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

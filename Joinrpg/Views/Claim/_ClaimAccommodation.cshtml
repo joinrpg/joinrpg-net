@@ -7,14 +7,6 @@
 
 @if (!Model.AccommodationEnabledForClaim)
 {
-    <div class="panel panel-default" id="accommodationRequestsDisables">
-        <div class="panel-heading">
-            <h5>Проживание</h5>
-        </div>
-        <div class="panel-body">
-            Дождитесь одобрения заявки или включения поселения в проекте
-        </div>
-    </div>
     return;
 }
 
@@ -110,7 +102,7 @@
                                     Value = neighbor.ClaimId.ToString(),
                                     Text = neighbor.UserName,
                                     ExtraSearch = neighbor.ClaimName,
-                                    Subtext = "<br />" + neighbor.UserName + " (" + neighbor.ClaimName + " ) <br /> " + (neighbor.Type == NeighborType.NoRequest ? "еще не выбрал тип проживания" : "у вас одинаковый тип проживания")
+                                    Subtext = (neighbor.Type == NeighborType.NoRequest ? "< br />еще не выбрал тип проживания" : "")
                                 }))
 
                     <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
