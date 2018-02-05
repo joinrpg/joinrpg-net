@@ -1,6 +1,6 @@
 using JoinRpg.DataModel;
 
-namespace JoinRpg.Services.Interfaces.Email
+namespace JoinRpg.Services.Interfaces.Notification
 {
     public class RemindPasswordEmail
     {
