@@ -140,7 +140,7 @@ namespace JoinRpg.Web.Controllers
         : new PlotElement[] { };
 
       var availableAccommodation = await
-            _accommodationRepository.GetPlayerSelectableAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
+            _accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
 
       var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation);
 

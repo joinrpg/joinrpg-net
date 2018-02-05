@@ -23,11 +23,6 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetPlayerSelectableAccommodationForProject(int projectId)
-        {
-            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == projectId && a.IsPlayerSelectable)
-                .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
-        }
 
         public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
             GetClaimAccommodationReport(int project)
