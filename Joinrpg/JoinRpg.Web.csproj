@@ -344,7 +344,6 @@
     <Compile Include="Models\ProjectCreateViewModel.cs" />
     <Compile Include="Models\SearchResultViewModel.cs" />
     <Compile Include="Models\CharacterGroups\SubscribeSettingsViewModel.cs" />
-    <Compile Include="Models\SuperSearchViewModel.cs" />
     <Compile Include="Models\TargetedSearchResultViewModel.cs" />
     <Compile Include="Models\UserProfileViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
