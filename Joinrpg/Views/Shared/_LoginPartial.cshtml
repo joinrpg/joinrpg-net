@@ -1,4 +1,4 @@
-﻿g@using Microsoft.AspNet.Identity
+﻿@using Microsoft.AspNet.Identity
 @if (Request.IsAuthenticated)
 {
     using (Html.BeginForm("LogOff", "Account", new {area = ""}, FormMethod.Post, new {id = "logoutForm", @class = "navbar-right",}))
