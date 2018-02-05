@@ -10,7 +10,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 
@@ -467,32 +466,53 @@ namespace JoinRpg.Services.Impl
 
       public async Task<AccommodationRequest> SetAccommodationType(int projectId,
           int claimId,
-          int accommodationTypeId)
+          int roomTypeId)
       {
           //todo set first state to Unanswered
-          var currentClaim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
+          var claim = await ClaimsRepository.GetClaim(projectId, claimId).ConfigureAwait(false);
 
-          currentClaim = currentClaim.RequestAccess(CurrentUserId,
+          claim = claim.RequestAccess(CurrentUserId,
               acl => acl.CanSetPlayersAccommodations,
-              currentClaim?.ClaimStatus == Claim.Status.Approved
+              claim?.ClaimStatus == Claim.Status.Approved
                   ? ExtraAccessReason.PlayerOrResponsible
                   : ExtraAccessReason.None);
 
           // Player cannot change accommodation type if aready checked in
 
-          if (currentClaim.AccommodationRequest?.AccommodationTypeId == accommodationTypeId)
+          if (claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
           {
-              return currentClaim.AccommodationRequest;
+              return claim.AccommodationRequest;
           }
 
+          var newType = await UnitOfWork.GetDbSet<ProjectAccommodationType>().FindAsync(roomTypeId)
+              .ConfigureAwait(false);
 
-            var leaveEmail = await ConsiderLeavingRoom(currentClaim);
+          if (newType == null)
+          {
+              throw new JoinRpgEntityNotFoundException(roomTypeId,
+                  nameof(ProjectAccommodationType));
+          }
 
-            var accommodationRequest = new AccommodationRequest
+          var email = EmailHelpers.CreateFieldsEmail(claim,
+              s => s.AccommodationChange,
+              await GetCurrentUser(),
+              new FieldWithPreviousAndNewValue[] {},
+              new Dictionary<string, PreviousAndNewValue>()
+              {
+                  {
+                      "Тип поселения", //TODO[Localize]
+                      new PreviousAndNewValue(newType.Name, claim.AccommodationRequest?.AccommodationType.Name)
+                  }
+              });
+
+
+          var leaveEmail = await ConsiderLeavingRoom(claim);
+
+          var accommodationRequest = new AccommodationRequest
           {
               ProjectId = projectId,
-              Subjects = new List<Claim> { currentClaim },
-              AccommodationTypeId = accommodationTypeId,
+              Subjects = new List<Claim> {claim},
+              AccommodationTypeId = roomTypeId,
               IsAccepted = AccommodationRequest.InviteState.Accepted
           };
 
@@ -500,15 +520,18 @@ namespace JoinRpg.Services.Impl
               .GetDbSet<AccommodationRequest>()
               .Add(accommodationRequest);
           await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+
+          await EmailService.Email(email);
           if (leaveEmail != null)
           {
               await EmailService.Email(leaveEmail);
           }
+
           return accommodationRequest;
       }
 
 
-        public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
+      public async Task DeclineByPlayer(int projectId, int claimId, string commentText)
       {
           var claim = await ClaimsRepository.GetClaim(projectId, claimId);
           if (claim == null)

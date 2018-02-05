@@ -85,7 +85,7 @@ namespace JoinRpg.Services.Email
 
         public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
 
-        public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model, "одобрена");
+        public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model);
 
         public Task Email(DeclineByMasterEmail model) => SendClaimEmail(model, "отклонена");
 
@@ -146,9 +146,8 @@ namespace JoinRpg.Services.Email
                 : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim?.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-            string linkString = model.IsCharacterMail
-              ? _uriService.Get(model.Character)
-              : _uriService.Get(model.Claim);
+            string linkString = _uriService.Get(model.GetLinkable());
+
             if (recipients.Any())
             {
                 string text = $@"{StandartGreeting()},
@@ -312,7 +311,7 @@ namespace JoinRpg.Services.Email
                 .Select(x => x.ToHtmlString()));
         }
 
-        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
+        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, string actionName = null, string text = "")
         {
             var projectEmailEnabled = model.GetEmailEnabled();
             if (!projectEmailEnabled)
@@ -332,9 +331,11 @@ namespace JoinRpg.Services.Email
 
             var extraText = commentExtraActionView?.GetDisplayName();
 
+            actionName = actionName ?? commentExtraActionView?.GetShortNameOrDefault() ?? "изменена";
+
             if (extraText != null)
             {
-                text = extraText + "\n\n" + text;
+                extraText = "**" + extraText + "**\n\n";
             }
 
             string text1 = $@"{StandartGreeting()}
@@ -342,7 +343,7 @@ namespace JoinRpg.Services.Email
 {text}
 
 {MessageService.GetUserDependentValue(ChangedFieldsKey)}
-{model.Text.Contents}
+{extraText}{model.Text.Contents}
 
 {model.Initiator.GetDisplayName()}
 

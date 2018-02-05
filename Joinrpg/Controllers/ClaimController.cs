@@ -618,11 +618,12 @@ namespace JoinRpg.Web.Controllers
 
                 return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
           }
-          catch
+          catch (Exception exception)
           {
+              ModelState.AddException(exception);
               return await Edit(viewModel.ProjectId, viewModel.ClaimId);
           }
-        }
+      }
 
     }
 }
