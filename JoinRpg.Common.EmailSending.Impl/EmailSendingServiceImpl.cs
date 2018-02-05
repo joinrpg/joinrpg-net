@@ -69,6 +69,8 @@ namespace JoinRpg.Common.EmailSending.Impl
                 .SetHtmlBody(html)
                 .GetMessage();
 
+            message.Dkim = true;
+
             message.RecipientVariables = recipients.ToRecipientVariables();
             if (EmailEnabled)
             {
