@@ -48,13 +48,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task ChangeAccess(ChangeAccessRequest changeAccessRequest);
 
-        Task UpdateSubscribeForGroup(int projectId,
-            int characterGroupId,
-            int currentUserId,
-            bool claimStatusChangeValue,
-            bool commentsValue,
-            bool fieldChangeValue,
-            bool moneyOperationValue);
+        Task UpdateSubscribeForGroup(SubscribeForGroupRequest request);
 
         Task DeleteCharacter(int projectId, int characterId, int currentUserId);
 

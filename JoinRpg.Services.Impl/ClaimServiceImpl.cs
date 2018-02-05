@@ -19,27 +19,30 @@ namespace JoinRpg.Services.Impl
   internal class ClaimServiceImpl : ClaimImplBase, IClaimService
   {
 
-    public async Task SubscribeClaimToUser(int projectId, int claimId)
-    {
-      var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
-      user.Subscriptions.Add(new UserSubscription() { ClaimId = claimId, ProjectId = projectId , ClaimStatusChange=true,Comments=true,FieldChange=true,MoneyOperation=true});
-      await UnitOfWork.SaveChangesAsync();
-    }
+      public async Task SubscribeClaimToUser(int projectId, int claimId)
+      {
+          var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+          (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+          user.Subscriptions.Add(
+              new UserSubscription() {ClaimId = claimId, ProjectId = projectId}.AssignFrom(
+                  SubscribeOptionsExtensions.AllSet()));
+          await UnitOfWork.SaveChangesAsync();
+      }
 
-    public async Task UnsubscribeClaimToUser(int projectId, int claimId)
-    {
-        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
-      (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
-      var subscription = user.Subscriptions.FirstOrDefault(s => s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
-        if (subscription != null)
-        {
-            UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
-            await UnitOfWork.SaveChangesAsync();
-        }
-    }
+      public async Task UnsubscribeClaimToUser(int projectId, int claimId)
+      {
+          var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+          (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId);
+          var subscription = user.Subscriptions.FirstOrDefault(s =>
+              s.ProjectId == projectId && s.UserId == CurrentUserId && s.ClaimId == claimId);
+          if (subscription != null)
+          {
+              UnitOfWork.GetDbSet<UserSubscription>().Remove(subscription);
+              await UnitOfWork.SaveChangesAsync();
+          }
+      }
 
-    public async Task CheckInClaim(int projectId, int claimId, int money)
+      public async Task CheckInClaim(int projectId, int claimId, int money)
     {
       var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
       claim.EnsureCanChangeStatus(Claim.Status.CheckedIn);

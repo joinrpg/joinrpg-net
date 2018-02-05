@@ -80,6 +80,7 @@
     <Compile Include="ProjectEntityExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SubscribeExtensions.cs" />
+    <Compile Include="SubscribeOptionsExtensions.cs" />
     <Compile Include="TagExtensions.cs" />
     <Compile Include="UserExtensions.cs" />
     <Compile Include="UserSubscriptionTooltip.cs" />
