@@ -160,13 +160,6 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class EmailSendFailedException : JoinRpgBaseException
-  {
-    public EmailSendFailedException(string message) : base(message)
-    {
-    }
-  }
-
   public class FieldRequiredException : JoinRpgBaseException
   {
     public string FieldName { get; }

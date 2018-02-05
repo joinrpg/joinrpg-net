@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Practices.ServiceLocation;
 
 namespace JoinRpg.Services.Impl

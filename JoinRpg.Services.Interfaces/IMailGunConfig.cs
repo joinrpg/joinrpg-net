@@ -1,8 +1,9 @@
-﻿namespace JoinRpg.Services.Interfaces
+namespace JoinRpg.Services.Interfaces
 {
-  public interface IMailGunConfig
-  {
-    string ApiDomain { get; }
-    string ApiKey { get; }
-  }
+    public interface IMailGunConfig
+    {
+        string ApiDomain { get; }
+        string ApiKey { get; }
+        string ServiceEmail { get; }
+    }
 }

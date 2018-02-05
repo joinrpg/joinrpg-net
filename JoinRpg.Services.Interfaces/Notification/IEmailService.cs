@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace JoinRpg.Services.Interfaces.Email
+namespace JoinRpg.Services.Interfaces.Notification
 {
     public interface IEmailService
     {

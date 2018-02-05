@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain.CharacterFields;
 
-namespace JoinRpg.Services.Interfaces.Email
+namespace JoinRpg.Services.Interfaces.Notification
 {
 
 

@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Services.Interfaces.Notification;
 
 
 namespace JoinRpg.Services.Impl
