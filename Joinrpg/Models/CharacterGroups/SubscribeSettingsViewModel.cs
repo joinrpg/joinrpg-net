@@ -72,7 +72,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
                 //Disable edit if set in parent
                 EnabledFlags.AndNotSetIn(subscribe);
 
-                if (!EnabledFlags.AnySubscribe())
+                if (!EnabledFlags.AnySet())
                 {
                     return;
                 }
@@ -81,7 +81,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
             foreach (var parentGroup in characterGroup.ParentGroups)
             {
                 ParseCharacterGroup(parentGroup, user);
-                if (!EnabledFlags.AnySubscribe())
+                if (!EnabledFlags.AnySet())
                 {
                     return;
                 }
