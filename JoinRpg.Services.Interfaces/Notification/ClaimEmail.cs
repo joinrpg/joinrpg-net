@@ -48,30 +48,30 @@ namespace JoinRpg.Services.Interfaces.Notification
 
     public class FieldsChangedEmail : EmailModelBase, IEmailWithUpdatedFieldsInfo
     {
-        public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; set; } =
-            new List<FieldWithPreviousAndNewValue>();
+        public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
 
         public IFieldContainter FieldsContainer => (IFieldContainter) Claim ?? Character;
+        public ILinkable GetLinkable() => (ILinkable) Claim ?? Character;
 
         [CanBeNull]
-        public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; set; }
-            =
-            new Dictionary<string, PreviousAndNewValue>();
-
-        public Character Character { get; set; }
+        public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
         [CanBeNull]
-        public Claim Claim { get; set; }
+        public Character Character { get; }
 
-        //Is character is null, Claim is not null and vioce versa. (restricted by constructors).
+        [CanBeNull]
+        public Claim Claim { get; }
+
+        //Is character is null, Claim is not null and vice versa. (restricted by constructors).
         public bool IsCharacterMail => Character != null;
 
         public FieldsChangedEmail(
             Claim claim,
             User initiator,
             ICollection<User> recipients,
-            IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields)
-            : this(null, claim, initiator, recipients, updatedFields, null)
+            IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
+            : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
         {
         }
 
@@ -80,7 +80,7 @@ namespace JoinRpg.Services.Interfaces.Notification
             User initiator,
             ICollection<User> recipients,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
+            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
             : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
         {
         }
@@ -93,15 +93,15 @@ namespace JoinRpg.Services.Interfaces.Notification
             [NotNull]
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
             [CanBeNull]
-            Dictionary<string, PreviousAndNewValue> otherChangedAttributes)
+            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
         {
-            if (updatedFields == null) throw new ArgumentNullException(nameof(updatedFields));
             if (character != null && claim != null)
                 throw new ArgumentException(
                     $"Both {nameof(character)} and {nameof(claim)} were provided");
             if (character == null && claim == null)
                 throw new ArgumentException(
                     $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+
             otherChangedAttributes =
                 otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();
 
@@ -111,7 +111,7 @@ namespace JoinRpg.Services.Interfaces.Notification
             Initiator = initiator;
             Text = new MarkdownString();
             Recipients = recipients;
-            UpdatedFields = updatedFields;
+            UpdatedFields = updatedFields ?? throw new ArgumentNullException(nameof(updatedFields));
             OtherChangedAttributes = otherChangedAttributes;
         }
     }

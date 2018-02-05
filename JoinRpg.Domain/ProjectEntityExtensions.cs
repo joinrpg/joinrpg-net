@@ -21,9 +21,11 @@ namespace JoinRpg.Domain
       return entity.HasMasterAccess(currentUserId, acl => true);
     }
 
-      public static void RequestMasterAccess([NotNull] this IProjectEntity field,
+      [NotNull]
+      public static T RequestMasterAccess<T>([CanBeNull] this T field,
           int? currentUserId,
           [CanBeNull] Expression<Func<ProjectAcl, bool>> accessType = null)
+      where T:IProjectEntity
       {
           if (field == null)
           {
@@ -49,19 +51,27 @@ namespace JoinRpg.Domain
                   throw new NoAccessToProjectException(field.Project, currentUserId, accessType);
               }
           }
+
+          return field;
       }
 
       [NotNull]
-    public static T EnsureActive<T>(this T entity) where T:IDeletableSubEntity, IProjectEntity
-    {
-      if (!entity.IsActive)
+      public static T EnsureActive<T>(this T entity) where T : IDeletableSubEntity, IProjectEntity
       {
-        throw new ProjectEntityDeactivedException(entity);
-      }
-      return entity;
-    }
+          if (!entity.IsActive)
+          {
+              throw new ProjectEntityDeactivedException(entity);
+          }
 
-    public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
+          if (!entity.Project.Active)
+          {
+              throw new ProjectEntityDeactivedException(entity);
+          }
+
+          return entity;
+      }
+
+      public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
       return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
@@ -90,13 +100,15 @@ namespace JoinRpg.Domain
       return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
     }
 
-    // ReSharper disable once UnusedParameter.Global
-    public static void EnsureProjectActive(this IProjectEntity character)
+    public static T EnsureProjectActive<T>(this T entity)
+    where T:IProjectEntity
     {
-      if (!character.Project.Active)
+      if (!entity.Project.Active)
       {
         throw new ProjectDeactivedException();
       }
+
+        return entity;
     }
 
     public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)

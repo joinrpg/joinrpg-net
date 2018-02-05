@@ -5,8 +5,9 @@ using System.Linq;
 namespace JoinRpg.DataModel
 {
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-  public class UserSubscription:IValidatableObject
-  {
+
+    public class UserSubscription:IValidatableObject, ISubscriptionOptions
+    {
     public int UserSubscriptionId { get; set; }
 
     public int UserId { get; set; }
@@ -29,8 +30,7 @@ namespace JoinRpg.DataModel
     public bool FieldChange { get; set; }
     public bool MoneyOperation { get; set; }
 
-      //TODO Fix to enable subscripbtion
-      public bool AccommodationChange => false;
+      public bool AccommodationChange { get; set; }
 
       public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
       {
@@ -40,5 +40,5 @@ namespace JoinRpg.DataModel
                   "Should link to the only one of kind (CharacterGroup, Character, Claim)");
           }
       }
-  }
+    }
 }

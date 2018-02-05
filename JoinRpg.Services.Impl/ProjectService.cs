@@ -520,40 +520,30 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateSubscribeForGroup(int projectId,
-            int characterGroupId,
-            int currentUserId,
-            bool claimStatusChangeValue,
-            bool commentsValue,
-            bool fieldChangeValue,
-            bool moneyOperationValue)
+        public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
         {
-            var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-            group.RequestMasterAccess(currentUserId);
-            group.EnsureProjectActive();
+            (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
+                .RequestMasterAccess(CurrentUserId)
+                .EnsureActive();
 
-            var needSubscrive = claimStatusChangeValue || commentsValue || fieldChangeValue ||
-                                moneyOperationValue;
-            var user = await UserRepository.GetWithSubscribe(currentUserId);
+            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
             var direct =
-                user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == characterGroupId);
-            if (needSubscrive)
+                user.Subscriptions.SingleOrDefault(s => s.CharacterGroupId == request.CharacterGroupId);
+
+            if (request.AnySet())
             {
                 if (direct == null)
                 {
                     direct = new UserSubscription()
                     {
-                        UserId = currentUserId,
-                        CharacterGroupId = characterGroupId,
-                        ProjectId = projectId
+                        UserId = CurrentUserId,
+                        CharacterGroupId = request.CharacterGroupId,
+                        ProjectId = request.ProjectId
                     };
                     user.Subscriptions.Add(direct);
                 }
 
-                direct.ClaimStatusChange = claimStatusChangeValue;
-                direct.Comments = commentsValue;
-                direct.FieldChange = fieldChangeValue;
-                direct.MoneyOperation = moneyOperationValue;
+                direct.AssignFrom(request);
             }
             else
             {

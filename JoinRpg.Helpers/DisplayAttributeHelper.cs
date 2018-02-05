@@ -17,7 +17,16 @@ namespace JoinRpg.Helpers
         return enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
     }
 
-      [NotNull]
+      public static string GetShortNameOrDefault([NotNull] this Enum enumValue)
+      {
+          if (enumValue == null)
+          {
+              throw new ArgumentNullException(nameof(enumValue));
+          }
+          return enumValue.GetAttribute<DisplayAttribute>()?.GetShortName();
+      }
+
+        [NotNull]
     public static string GetDisplayName([NotNull] this PropertyInfo propertyInfo)
     {
       if (propertyInfo == null) throw new ArgumentNullException(nameof(propertyInfo));

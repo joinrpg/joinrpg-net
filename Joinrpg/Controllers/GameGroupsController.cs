@@ -450,19 +450,27 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
+        var user = await _userRepository.GetWithSubscribe(CurrentUserId);
+
+            var serverModel = new SubscribeSettingsViewModel(user, group);
+
+        serverModel.OrSetIn(viewModel);
+
       try
       {
-        await
-         ProjectService.UpdateSubscribeForGroup(group.ProjectId, group.CharacterGroupId, CurrentUserId,
-           viewModel.ClaimStatusChangeValue, viewModel.CommentsValue,
-           viewModel.FieldChangeValue, viewModel.MoneyOperationValue);
+          await
+              ProjectService.UpdateSubscribeForGroup(new SubscribeForGroupRequest
+              {
+                  CharacterGroupId = group.CharacterGroupId,
+                  ProjectId = group.ProjectId,
+              }.AssignFrom(serverModel.GetOptionsToSubscribeDirectly()));
 
         return RedirectToIndex(group.Project);
       }
       catch (Exception e)
       {
         ModelState.AddException(e);
-        return View(viewModel);
+        return View(serverModel);
       }
 
     }
