@@ -147,6 +147,7 @@ namespace JoinRpg.Services.Impl
       
       UnitOfWork.GetDbSet<Claim>().Add(claim);
 
+        // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
       var updatedFields =
         FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(), 
           FieldDefaultValueGenerator);
@@ -401,26 +402,34 @@ namespace JoinRpg.Services.Impl
 
 
       public async Task DeclineByMaster(int projectId, int claimId, string commentText)
-    {
-      var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+      {
+          var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
-      claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster); 
+          claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
 
-      claim.MasterDeclinedDate = Now;
-        claim.ClaimStatus = Claim.Status.DeclinedByMaster;
+          claim.MasterDeclinedDate = Now;
+          claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
-       var roomEmail = await CommonClaimDecline(claim);
+          var roomEmail = await CommonClaimDecline(claim);
 
-        var email =
-        await
-          AddCommentWithEmail<DeclineByMasterEmail>(commentText, claim, true,
-            s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByMaster);
+          var email =
+              await
+                  AddCommentWithEmail<DeclineByMasterEmail>(commentText,
+                      claim,
+                      true,
+                      s => s.ClaimStatusChange,
+                      null,
+                      CommentExtraAction.DeclineByMaster);
 
-      await UnitOfWork.SaveChangesAsync();
-      await EmailService.Email(email);
-        await EmailService.Email(roomEmail);
-        }
+          await UnitOfWork.SaveChangesAsync();
+          await EmailService.Email(email);
+          if (roomEmail != null)
+          {
+              await EmailService.Email(roomEmail);
+          }
+      }
 
+      [ItemCanBeNull]
       private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
       {
           MarkCharacterChangedIfApproved(claim);
@@ -434,6 +443,7 @@ namespace JoinRpg.Services.Impl
           return await ConsiderLeavingRoom(claim);
       }
 
+      [ItemCanBeNull]
       private async Task<LeaveRoomEmail> ConsiderLeavingRoom(Claim claim)
       {
           LeaveRoomEmail email = null;
@@ -538,28 +548,36 @@ namespace JoinRpg.Services.Impl
           {
               throw new DbEntityValidationException();
           }
+
           claim.RequestAccess(CurrentUserId, acl => false, ExtraAccessReason.Player);
           claim.EnsureCanChangeStatus(Claim.Status.DeclinedByUser);
 
           claim.PlayerDeclinedDate = Now;
           claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
-           var roomEmail = await CommonClaimDecline(claim);
+          var roomEmail = await CommonClaimDecline(claim);
 
 
 
-            var email =
+          var email =
               await
-                  AddCommentWithEmail<DeclineByPlayerEmail>(commentText, claim, true,
-                      s => s.ClaimStatusChange, null, CommentExtraAction.DeclineByPlayer);
+                  AddCommentWithEmail<DeclineByPlayerEmail>(commentText,
+                      claim,
+                      true,
+                      s => s.ClaimStatusChange,
+                      null,
+                      CommentExtraAction.DeclineByPlayer);
 
           await UnitOfWork.SaveChangesAsync();
           await EmailService.Email(email);
-          await EmailService.Email(roomEmail);
-        }
+          if (roomEmail != null)
+          {
+              await EmailService.Email(roomEmail);
+          }
+      }
 
 
-        public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
+      public async Task RestoreByMaster(int projectId, int claimId, int currentUserId, string commentText)
     {
       var claim = await LoadClaimForApprovalDecline(projectId, claimId, currentUserId);
 
@@ -723,7 +741,7 @@ namespace JoinRpg.Services.Impl
 
         return claim.RequestAccess(currentUserId,
             acl => acl.CanManageClaims,
-            true ? ExtraAccessReason.ResponsibleMaster : ExtraAccessReason.None);
+            ExtraAccessReason.ResponsibleMaster);
     }
 
     public async Task SaveFieldsFromClaim(int projectId, int characterId, IDictionary<int, string> newFieldValue)
