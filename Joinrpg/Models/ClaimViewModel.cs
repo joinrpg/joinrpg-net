@@ -124,6 +124,9 @@ namespace JoinRpg.Web.Models
           CanManageThisClaim = claim.HasAccess(currentUser.UserId,
               acl => acl.CanManageClaims,
               ExtraAccessReason.ResponsibleMaster);
+          CanChangeRooms = claim.HasAccess(currentUser.UserId,
+              acl => acl.CanSetPlayersAccommodations,
+              ExtraAccessReason.PlayerOrResponsible);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
