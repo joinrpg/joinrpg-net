@@ -72,7 +72,7 @@ function PlaceAll()
             {
                 freeSpace = roomCapacity - row.occupancy;
                 req = requestsNotAssigned[j];
-                if (req.Persons < freeSpace)
+                if (req.Persons <= freeSpace)
                 {
                     MoveReqToRoom(row.roomId, req);
                     reqIds.push(req.Id);
@@ -479,9 +479,9 @@ $(function()
             + '" title="'
             + req.PaymentStatusTitle
             + '"><i class="glyphicon glyphicon-thumbs-up"></i>'
-            + '<span class="">-'
-            + req.FeeToPay
-            + ' ₽</span></span>';
+            + '<span class="">'
+            + (req.FeeToPay > 0 ? -req.FeeToPay + " ₽" : "")
+            + "</span></span>";
 
         var item = document.createElement("div");
         item.setAttribute("class", "list-group-item");
@@ -490,7 +490,7 @@ $(function()
             + req.PersonsList
             + '</span><span class="badge">'
             + req.Persons
-            + '</span>';
+            + "</span>";
         item.count = req.Persons;
         item.req = req;
         $(item).click(function (ev)
