@@ -8,29 +8,13 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
-    //todo I18n
-    public class RoomTypeViewModel
+    public abstract class RoomTypeViewModelBase
     {
-        [DisplayName("Название")]
-        [Required]
-        public string Name { get; set; }
-
-        [DisplayName("Описание")]
-        public IHtmlString DescriptionView { get; set; }
-
-        [DisplayName("Описание"), UIHint("MarkdownString")]
-        public string DescriptionEditable { get; set; }
-
-        [DisplayName("Цена за 1 место")]
-        public int Cost { get; set; }
-
         public int Id { get; set; }
         public int ProjectId { get; set; }
-        public Project Project { get; set; }
 
         [DisplayName("Количество мест в номере")]
         [Range(1, int.MaxValue)]
@@ -46,19 +30,41 @@ namespace JoinRpg.Web.Models.Accommodation
         [DisplayName("Автозаполнение")]
         public bool IsAutoFilledAccommodation { get; set; } = false;
 
+        public abstract int RoomsCount { get; }
+
         [DisplayName("Общее количество мест")]
         public int TotalCapacity
             => RoomsCount * Capacity;
 
-        [DisplayName("Проживает")]
-        public int Occupied { get; }
+        [DisplayName("Название")]
+        [Required]
+        public string Name { get; set; }
+
+        [DisplayName("Описание")]
+        public IHtmlString DescriptionView { get; set; }
+
+        [DisplayName("Цена за 1 место")]
+        public int Cost { get; set; }
+
+        public bool CanAssignRooms { get; set; }
+        public bool CanManageRooms { get; set; }
+    }
+
+    //todo I18n
+    public class RoomTypeViewModel : RoomTypeViewModelBase
+    {
+        [DisplayName("Описание"), UIHint("MarkdownString")]
+        public string DescriptionEditable { get; set; }
+
+        public Project Project { get; set; }
+
 
         /// <summary>
         /// List of rooms
         /// </summary>
         public IReadOnlyList<RoomViewModel> Rooms { get; }
 
-        public int RoomsCount
+        public override int RoomsCount
             => Rooms?.Count ?? 0;
 
         /// <summary>
@@ -70,10 +76,6 @@ namespace JoinRpg.Web.Models.Accommodation
         /// List of requests not assigned to any room
         /// </summary>
         public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
-
-        public bool CanAssignRooms { get; set; }
-
-        public bool CanManageRooms { get; set; }
 
         public RoomTypeViewModel([NotNull]ProjectAccommodationType entity, int userId)
             : this(entity.Project, userId)
@@ -106,7 +108,7 @@ namespace JoinRpg.Web.Models.Accommodation
                     result = string.Compare(x.PersonsList, y.PersonsList, StringComparison.CurrentCultureIgnoreCase);
                 return result;
             });
-            UnassignedRequests = ua;            
+            UnassignedRequests = ua;
 
             // Creating a list of rooms contained in this room type
             List<RoomViewModel> rl = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
@@ -125,8 +127,6 @@ namespace JoinRpg.Web.Models.Accommodation
                 return y.Occupancy - x.Occupancy;
             });
             Rooms = rl;
-
-            Occupied = Rooms.Sum(room => room.Occupancy);
         }
 
         public RoomTypeViewModel(Project project, int userId)

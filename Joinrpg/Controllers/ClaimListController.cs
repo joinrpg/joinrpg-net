@@ -18,15 +18,18 @@ namespace JoinRpg.Web.Controllers
     public class ClaimListController : Common.ControllerGameBase
     {
         private IClaimsRepository ClaimsRepository { get; }
+        private IAccommodationRepository AccommodationRepository { get; }
         private IUriService UriService { get; }
 
         public ClaimListController(ApplicationUserManager userManager, IProjectRepository projectRepository,
             IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository,
-            IUriService uriService)
+            IUriService uriService,
+            IAccommodationRepository accommodationRepository)
             : base(userManager, projectRepository, projectService, exportDataService)
         {
             ClaimsRepository = claimsRepository;
             UriService = uriService;
+            AccommodationRepository = accommodationRepository;
         }
 
         #region implementation
@@ -88,6 +91,25 @@ namespace JoinRpg.Web.Controllers
             var claims = await ClaimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Active, userId);
 
             return await ShowMasterClaimList(projectId, export, "Заявки на игроке", "Index", claims);
+        }
+
+        [HttpGet, MasterAuthorize()]
+        public async Task<ActionResult> ListForRoomType(int projectId, int? roomTypeId, string export)
+        {
+            var claims = await ClaimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId);
+
+            string title;
+            if (roomTypeId == null)
+            {
+                title = "Активные заявки без поселения";
+            }
+            else
+            {
+                title = "Активные заявки по типу поселения: " +
+                        (await AccommodationRepository.GetRoomTypeById(roomTypeId.Value)).Name;
+            }
+
+            return await ShowMasterClaimList(projectId, export, title, "Index", claims);
         }
 
         [HttpGet, MasterAuthorize()]
