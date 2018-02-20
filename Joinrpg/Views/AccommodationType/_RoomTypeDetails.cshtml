@@ -19,8 +19,10 @@
     <td class="price-table">@Html.RenderPriceElement(Model.Cost)</td>
     <td class="price-table">@Model.Capacity &#x2715; @OrInifinte(Model.RoomsCount) = @OrInifinte(Model.TotalCapacity)</td>
     <td class="price-table">@(Model.TotalCapacity - Model.Occupied)</td>
-    <td class="price-table">@(Model.ApprovedClaims - Model.Occupied)</td>
-    <td class="price-table">@(Model.Occupied) </td>
+    <td>
+        @Html.ActionLink("заявки", "ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id }, null)
+        (@(Model.ApprovedClaims - Model.Occupied) / @(Model.Occupied))
+    </td>
     <td>
         @if (Model.IsInfinite)
         {

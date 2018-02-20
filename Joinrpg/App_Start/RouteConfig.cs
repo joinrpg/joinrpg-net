@@ -106,7 +106,13 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "ClaimResp", url: "{ProjectId}/claims/for-master/{ResponsibleMasterId}",
         defaults: new {controller = "ClaimList", action = "Responsible"});
 
-      routes.MapRoute(name: "ClaimRespMaster", url: "{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}",
+        routes.MapRoute(name: "ClaimListForRoomType", url: "{ProjectId}/claims/by-roomtype/{roomTypeId}",
+            defaults: new { controller = "ClaimList", action = "ListForRoomType" });
+
+        routes.MapRoute(name: "ClaimListForRoomTypeNull", url: "{ProjectId}/claims/without-roomtype/",
+            defaults: new { controller = "ClaimList", action = "ListForRoomType" });
+
+            routes.MapRoute(name: "ClaimRespMaster", url: "{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}",
         defaults: new { controller = "ClaimList", action = "ResponsibleProblems" });
 
 

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -13,6 +12,7 @@ namespace JoinRpg.Data.Interfaces
 
         Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project);
 
+        Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId);
     }
 
     public class RoomTypeInfoRow

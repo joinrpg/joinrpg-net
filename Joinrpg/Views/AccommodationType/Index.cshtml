@@ -21,6 +21,7 @@
         <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
             <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</a>
     }
+    <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})"  class="btn btn-default">Игроки без поселения...</a>
     <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
         <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)</a>
 </div>
@@ -34,8 +35,7 @@
                 <th class="price-table" style="min-width: 10em; width: 10em;">Цена</th>
                 <th class="price-table">Мест</th>
                 <th class="price-table">Свободных</th>
-                <th class="price-table">Не заселено</th>
-                <th class="price-table">Заселено</th>
+                <th>Заявки (не заселено/заселено)</th>
                 <th>Флаги</th>
                 <th style="min-width: 9em; width: 9em;"></th>
             </tr>

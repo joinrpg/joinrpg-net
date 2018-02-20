@@ -90,7 +90,23 @@ namespace JoinRpg.Dal.Impl.Repositories
         .ToListAsync();
     }
 
-    private Task<Claim> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
+      public Task<IReadOnlyCollection<Claim>> GetClaimsForRoomType(int projectId, ClaimStatusSpec claimStatusSpec, int? roomTypeId)
+      {
+          if (roomTypeId != null)
+          {
+              return GetClaimsImpl(projectId,
+                  claimStatusSpec,
+                  claim => claim.AccommodationRequest.AccommodationTypeId == roomTypeId);
+          }
+          else
+          {
+              return GetClaimsImpl(projectId,
+                  claimStatusSpec,
+                  claim => claim.AccommodationRequest == null);
+            }
+      }
+
+      private Task<Claim> GetClaimImpl(Expression<Func<Claim, bool>> predicate)
     {
       return
         Ctx.ClaimSet.Include(c => c.Project)

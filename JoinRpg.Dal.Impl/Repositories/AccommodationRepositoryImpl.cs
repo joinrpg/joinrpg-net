@@ -64,5 +64,13 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
+
+        public async Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
+        {
+            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)
+                .Include(x => x.ProjectAccommodations)
+                .SingleAsync()
+                .ConfigureAwait(false);
+        }
     }
 }
