@@ -1,5 +1,10 @@
-﻿@using JoinRpg.Web.Models.Accommodation
-@model RoomTypeViewModel
+﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Accommodation
+@model RoomTypeListItemViewModel
+
+@helper OrInifinte(int capacity)
+{ @(Model.IsInfinite ? "∞" : capacity.ToString()) }
+
 @{
     var actionParams = new
     {
@@ -10,10 +15,12 @@
 
 <tr>
     <td>@Model.Name</td>
-    <td>@Model.DescriptionView</td>
-    <td class="price-table">@Model.Cost</td>
-    <td class="price-table">@Model.Capacity</td>
-    <td class="price-table">@Model.Occupied / @(Model.IsInfinite ? "∞" : Model.TotalCapacity.ToString())</td>
+    <td class="visible-lg">@Model.DescriptionView</td>
+    <td class="price-table">@Html.RenderPriceElement(Model.Cost)</td>
+    <td class="price-table">@Model.Capacity &#x2715; @OrInifinte(Model.RoomsCount) = @OrInifinte(Model.TotalCapacity)</td>
+    <td class="price-table">@(Model.TotalCapacity - Model.Occupied)</td>
+    <td class="price-table">@(Model.ApprovedClaims - Model.Occupied)</td>
+    <td class="price-table">@(Model.Occupied) </td>
     <td>
         @if (Model.IsInfinite)
         {
@@ -28,21 +35,26 @@
             <span class="label label-success">Автозаполнение</span>
         }
     </td>
-    <td><div class="btn-group btn-group-sm" style="display: inline-block">
-        @if (Model.CanAssignRooms)
-        {
-            <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
-                <i class="glyphicon glyphicon-bed"></i></a>
-        }
-        @if (Model.CanManageRooms)
-        {
-            <a title="Изменить" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
-                <i class="glyphicon glyphicon-pencil"></i></a>
-        }
-        @if (Model.CanManageRooms && Model.Occupied == 0)
-        {
-            <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
-                <i class="glyphicon glyphicon-trash"></i></a>
-        }
-    </div></td>
+    <td>
+        <div class="btn-group btn-group-sm" style="display: inline-block">
+            @if (Model.CanAssignRooms)
+            {
+                <a title="Расселение" href="@Url.Action("EditRoomTypeRooms", "AccommodationType", actionParams)" class="btn btn-default">
+                    <i class="glyphicon glyphicon-bed"></i>
+                </a>
+            }
+            @if (Model.CanManageRooms)
+            {
+                <a title="Изменить" href="@Url.Action("EditRoomType", "AccommodationType", actionParams)" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-pencil"></i>
+                </a>
+            }
+            @if (Model.CanManageRooms && Model.Occupied == 0)
+            {
+                <a title="Удалить" href="@Url.Action("DeleteRoomType", "AccommodationType", actionParams)" class="btn btn-warning" onclick="return confirm('Удалить тип размещения @(Model.Name)?')">
+                    <i class="glyphicon glyphicon-trash"></i>
+                </a>
+            }
+        </div>
+    </td>
 </tr>

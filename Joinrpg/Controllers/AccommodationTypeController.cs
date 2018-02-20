@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Http.Results;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -13,13 +11,13 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
-using Microsoft.Ajax.Utilities;
 
 namespace JoinRpg.Web.Controllers
 {
     [MasterAuthorize()]
     public class AccommodationTypeController : Common.ControllerGameBase
     {
+        private IAccommodationRepository AccommodationRepository { get; }
         private readonly IAccommodationService _accommodationService;
 
         public AccommodationTypeController(ApplicationUserManager userManager,
@@ -27,11 +25,13 @@ namespace JoinRpg.Web.Controllers
             IProjectRepository projectRepository,
             IProjectService projectService,
             IExportDataService exportDataService,
-            IAccommodationService accommodationService) : base(userManager,
+            IAccommodationService accommodationService,
+            IAccommodationRepository accommodationRepository) : base(userManager,
             projectRepository,
             projectService,
             exportDataService)
         {
+            AccommodationRepository = accommodationRepository;
             _accommodationService = accommodationService;
         }
 
@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Controllers
                 return RedirectToAction("Edit", "Game");
 
             return View(new AccommodationListViewModel(project,
-                await _accommodationService.GetRoomTypesAsync(projectId),
+                await AccommodationRepository.GetRoomTypesForProject(projectId),
                 CurrentUserId));
         }
 

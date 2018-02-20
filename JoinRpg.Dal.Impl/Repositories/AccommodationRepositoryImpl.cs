@@ -47,5 +47,22 @@ namespace JoinRpg.Dal.Impl.Repositories
                     }).ToListAsync();
 
         }
+
+        public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
+        {
+
+            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
+                .Include(x => x.Project)
+                .Select(x => new RoomTypeInfoRow()
+                {
+                    RoomType = x,
+                    // cast to int? required to correctly handle SQL-LINQ nullness
+                    Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?) ar.Subjects.Count)) ?? 0,
+                    RoomsCount = x.ProjectAccommodations.Count,
+                    ApprovedClaims = x.Desirous.Sum(ar => (int?) ar.Subjects.Count) ?? 0,
+                })
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
     }
 }
