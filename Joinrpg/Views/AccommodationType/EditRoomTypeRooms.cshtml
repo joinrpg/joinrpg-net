@@ -46,12 +46,13 @@
 <!-- Not assigned requests -->
 <div id="availRequests" style="margin-top: 1em; display: @(Model.UnassignedRequests.Count > 0 ? "block" : "none")">
     <h4>Нерасселенные участники</h4>
-    <div id="availRequestsList" class="list-group" style="max-height: 200px; overflow-y: scroll; margin-bottom: 0;">
+    <div id="availRequestsList" class="list-group">
+        <div id="availRequestsListContainer">
         @foreach (var req in Model.UnassignedRequests)
         {
             @Html.Partial("_RoomInhabitant", req)
         }
-        @*<span class="list-group-item">@Html.Partial("_RoomRequest", req)</span>*@
+        </div>
     </div>
 </div>
 
