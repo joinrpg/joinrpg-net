@@ -348,10 +348,10 @@ $(function()
     loadInstances(requestsNotAssigned);
 
     availRequests = document.getElementById("availRequests");
-    unassignedBank = document.getElementById("availRequestsList");
+    unassignedBank = document.getElementById("availRequestsListContainer");
     roomsRows = document.getElementById("roomsRows");
     rowPlaceholder = document.getElementById("rowPlaceholder");
-    $(rowPlaceholder).toggle(roomsCount == 0);
+    $(rowPlaceholder).toggle(roomsCount === 0);
 
     roomsRows.GetRowById = function(roomId)
     {

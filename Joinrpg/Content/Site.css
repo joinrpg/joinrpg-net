@@ -159,6 +159,10 @@ input[type=number] {
     text-align: right;
 }
 
+table .price-value {
+    text-align: right;
+}
+
 .price-value {
     white-space: nowrap;
 }
@@ -267,16 +271,21 @@ tr.unapprovedPayment td:last-child {
 }
 
 #availRequestsList {
-    column-count: 2;
+    max-height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 0;
 }
+#availRequestsListContainer {
+     column-count: 2;
+}
+
 @media screen and (max-width: 1300px)
 {
-    #availRequestsList
+    #availRequestsListContainer
     {
         column-count: 1;
     }
 }
-
 
 #availRequestsList .list-group-item {
     padding: 0.2em 0.4em;
@@ -321,6 +330,13 @@ tr.unapprovedPayment td:last-child {
 #availRequestsList .list-group-item .acc-payment {
     margin-left: 0;
 }
+
+#peopleList {
+    max-height: 200px;
+    overflow-y: scroll;
+    margin: 1em 1em 0 1em;
+}
+
 #peopleList .acc-payment {
     float: left;
     margin-right: 0.5em;

@@ -16,12 +16,11 @@
 <tr>
     <td>@Model.Name</td>
     <td class="visible-lg">@Model.DescriptionView</td>
-    <td class="price-table">@Html.RenderPriceElement(Model.Cost)</td>
-    <td class="price-table">@Model.Capacity &#x2715; @OrInifinte(Model.RoomsCount) = @OrInifinte(Model.TotalCapacity)</td>
-    <td class="price-table">@(Model.TotalCapacity - Model.Occupied)</td>
-    <td>
-        @Html.ActionLink("заявки", "ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id }, null)
-        (@(Model.ApprovedClaims - Model.Occupied) / @(Model.Occupied))
+    <td class="price-value">@Html.RenderPriceElement(Model.Cost)</td>
+    <td class="price-value">@Model.Capacity &#x2715; @OrInifinte(Model.RoomsCount) = @OrInifinte(Model.TotalCapacity)</td>
+    <td class="price-value">@(Model.TotalCapacity - Model.Occupied)</td>
+    <td class="price-value">@(Model.ApprovedClaims - Model.Occupied) / @(Model.Occupied)
+        <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-sm btn-default glyphicon glyphicon-option-horizontal" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"></a>
     </td>
     <td>
         @if (Model.IsInfinite)
