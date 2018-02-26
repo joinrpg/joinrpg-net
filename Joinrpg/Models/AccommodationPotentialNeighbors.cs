@@ -10,6 +10,7 @@ namespace JoinRpg.Web.Models
         public string ClaimName { get; set; }
         public string UserName { get; set; }
         public NeighborType Type { get; set; }
+        public int? AccommodationRequestId { get; set; }
 
         public AccommodationPotentialNeighbors(Claim claim, NeighborType type)
         {
@@ -17,6 +18,7 @@ namespace JoinRpg.Web.Models
             ClaimName = claim.Name;
             UserName = claim.Player.PrefferedName;
             Type = type;
+            AccommodationRequestId = claim.AccommodationRequest_Id;
         }
     }
 

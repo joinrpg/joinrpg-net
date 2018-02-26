@@ -773,7 +773,6 @@
     <Content Include="Views\AccommodationType\_RoomTypeEdit.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
     <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
-    <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
     <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
     <Content Include="Views\AccommodationType\_RoomTypeDetails.cshtml" />
     <Content Include="Views\AccommodationType\AddRoomType.cshtml" />
@@ -783,9 +782,12 @@
     <Content Include="Views\Claim\_ClaimIncomingInvites.cshtml" />
     <Content Include="Views\Claim\_ClaimOutgoingInvites.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodationTypeChange.cshtml" />
-    <Content Include="Views\AccommodationType\_RoomRequest.cshtml" />
     <Content Include="Views\AccommodationType\_OccupationDlg.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\RequestParticipantViewModel.cshtml" />
+    <Content Include="Views\Claim\_RoomRequest.cshtml" />
+    <Content Include="Views\Claim\_RoomInhabitant.cshtml" />
+    <Content Include="Views\Shared\_RoomInhabitant.cshtml" />
+    <Content Include="Views\Shared\_RoomRequest.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

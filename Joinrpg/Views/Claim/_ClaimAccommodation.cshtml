@@ -15,7 +15,7 @@
     <text>(@DisplayCount.OfX(accommodationType.Capacity, "место",
                "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
 }
-@Html.Partial("_ClaimIncomingInvites", Model)
+
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">
         <h5>Проживание</h5>
@@ -93,25 +93,40 @@
                     @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
                     @Html.AntiForgeryToken()
 
-                    @Html.SearchableDropdown("ReceiverClaimId", Model.PotentialNeighbors
-                        .Where(neighbor => neighbor.Type != NeighborType.Current)
-                        .Select(
-                            neighbor =>
-                                new ImprovedSelectListItem()
-                                {
-                                    Value = neighbor.ClaimId.ToString(),
-                                    Text = neighbor.UserName,
-                                    ExtraSearch = neighbor.ClaimName,
-                                    Subtext = (neighbor.Type == NeighborType.NoRequest ? "< br />еще не выбрал тип проживания" : "")
-                                }))
+                    var alreadyGroupedNeighbors = Model.PotentialNeighbors
+                        .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
+                        .GroupBy(neighbor => neighbor.AccommodationRequestId)
+                        .Select(neighborGroup =>
+                            new ImprovedSelectListItem()
+                            {
+                                Value = "gr" + neighborGroup.Key.ToString(),
+                                Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
+                                ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result)?"": ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
+                                Subtext = neighborGroup.Count()>1? "<br/>(группа проживающих)":""
+                            });
+
+                    var unGroupedNeighbors = Model.PotentialNeighbors
+                        .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
+                        .Select(neighbor =>
+                            new ImprovedSelectListItem()
+                            {
+                                Value = neighbor.ClaimId.ToString(),
+                                Text = neighbor.UserName,
+                                ExtraSearch = neighbor.ClaimName,
+                                Subtext = "< br />еще не выбрал тип проживания"
+                            });
+
+
+                    var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
+                    @Html.SearchableDropdown("ReceiverClaimId", selectableRows)
 
                     <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
                 }
             }
-
-            @Html.Partial("_ClaimOutgoingInvites", Model)
         }
     </div>
 </div>
+@Html.Partial("_ClaimIncomingInvites", Model)
+@Html.Partial("_ClaimOutgoingInvites", Model)
 
 @Html.Partial("_ClaimAccommodationTypeChange", Model)
