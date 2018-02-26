@@ -5,33 +5,40 @@
 }
 
 <h2>@ViewBag.Title</h2>
-<p>Вы искали: @Model.SearchString</p>
-@if (Model.ResultsByProject.Any())
+@if (!string.IsNullOrEmpty(Model.SearchString))
 {
-
-    foreach (var resultsForProject in Model.ResultsByProject)
+    <p>Вы искали: @Model.SearchString</p>
+    if (Model.ResultsByProject.Any())
     {
-        <div class="panel panel-default">
-            @if (resultsForProject.Key != null)
-            {
-                <div
-                    class="panel-heading"
-                    style="@(Model.ProjectDetails[resultsForProject.Key.Value].IsActive ? "" : "text-decoration: line-through")">
-                    @Model.ProjectDetails[resultsForProject.Key.Value].ProjectName
-                </div>
-            }
 
-            <div class="panel-body">
-                @foreach(var result in resultsForProject)
-                { 
-                    @Html.DisplayFor(m => result)
+        foreach (var resultsForProject in Model.ResultsByProject)
+        {
+            <div class="panel panel-default">
+                @if (resultsForProject.Key != null)
+                {
+                    <div
+                        class="panel-heading"
+                        style="@(Model.ProjectDetails[resultsForProject.Key.Value].IsActive ? "" : "text-decoration: line-through")">
+                        @Model.ProjectDetails[resultsForProject.Key.Value].ProjectName
+                    </div>
                 }
+
+                <div class="panel-body">
+                    @foreach (var result in resultsForProject)
+                    {
+                        @Html.DisplayFor(m => result)
+                    }
+                </div>
             </div>
-        </div>
-        
+
+        }
+    }
+    else
+    {
+        <p>Ничего не найдено</p>
     }
 }
 else
 {
-    <p>Ничего не найдено</p>
+    <p>Вы ничего не искали</p>
 }

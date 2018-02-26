@@ -10,9 +10,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
-using Mailgun.Core.Messages;
-using Mailgun.Messages;
-using Mailgun.Service;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Email
 {
@@ -24,161 +22,70 @@ namespace JoinRpg.Services.Email
 
         private const string ChangedFieldsKey = "changedFields";
 
-        private static string StandartGreeting() => $@"Добрый день, {MailGunExts.MailGunRecipientName},\n";
+        private string StandartGreeting() => $"Добрый день, {RecepientName},\n";
 
-        private readonly string _apiDomain;
+        private readonly RecepientData _joinRpgSender;
 
-        private const int MaxRecipientsInChunk = 1000;
-
-        private readonly Recipient _joinRpgSender;
-
-        private readonly Lazy<MessageService> _lazyService;
-        private MessageService MessageService => _lazyService.Value;
+        private IEmailSendingService MessageService { get; }
 
         private readonly IUriService _uriService;
-        private readonly bool _emailEnabled;
 
-        private async Task Send(IMessage message)
+        private string RecepientName => MessageService.GetRecepientPlaceholderName();
+
+        public EmailServiceImpl(IUriService uriService, IMailGunConfig config, IEmailSendingService messageService)
         {
-            var response = await MessageService.SendMessageAsync(_apiDomain, message);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new EmailSendFailedException(
-                  $"Failed to send email. Response is {response.StatusCode} {response.ReasonPhrase}");
-            }
-        }
-
-        public EmailServiceImpl(IUriService uriService, IMailGunConfig config)
-        {
-            _emailEnabled = !string.IsNullOrWhiteSpace(config.ApiDomain) && !string.IsNullOrWhiteSpace(config.ApiKey);
-            _apiDomain = config.ApiDomain;
-
-            _joinRpgSender = new Recipient()
-            {
-                DisplayName = JoinRpgTeam,
-                Email = "support@" + config.ApiDomain
-            };
+            _joinRpgSender = new RecepientData(JoinRpgTeam, config.ServiceEmail);
             _uriService = uriService;
-            _lazyService = new Lazy<MessageService>(() => new MessageService(config.ApiKey));
+            MessageService = messageService;
         }
 
-        private Task SendEmail(
-            User recipient,
-            string subject,
-            string text,
-            Recipient sender)
-            =>
-                SendEmail(
-                    new[] {new MailRecipient(recipient)},
-                    subject,
-                    sender,
-                    new MarkdownString(text));
-
-        /// <summary>
-        /// Use this method when no additional parameters are needed for users
-        /// </summary>
-        private async Task SendEmail(EmailModelBase model, string subject, string body)
-        {
-            var projectEmailEnabled = model.GetEmailEnabled();
-            if (!projectEmailEnabled)
-            {
-                return;
-            }
-
-            var recipients = model.GetRecipients();
-
-            await SendEmail(recipients.Select(r => new MailRecipient(r)).ToList(),
-                subject,
-                model.Initiator.ToRecipient(),
-                new MarkdownString(body));
-        }
-
-        private async Task SendEmail(
-            ICollection<MailRecipient> recipients,
-            string subject,
-            Recipient sender,
-            MarkdownString markdownString)
-        {
-            if (!recipients.Any())
-            {
-                return;
-            }
-
-            var html = markdownString.ToHtmlString().ToHtmlString();
-            var text = markdownString.ToPlainText().ToString();
-
-            for (var i = 0; i * MaxRecipientsInChunk < recipients.Count; i++)
-            {
-                await SendEmailChunkImpl(
-                    recipients.Skip(i * MaxRecipientsInChunk).Take(MaxRecipientsInChunk).ToList(),
-                    subject, text, sender, html);
-            }
-        }
-
-        private async Task SendEmailChunkImpl(IReadOnlyCollection<MailRecipient> recipients,
-            string subject,
-            string text,
-            Recipient sender,
-            string html)
-        {
-            var message = new MessageBuilder().AddUsers(recipients)
-                .SetSubject(subject)
-                .SetFromAddress(new Recipient()
-                {
-                    DisplayName = sender.DisplayName,
-                    Email = _joinRpgSender.Email
-                })
-                .SetReplyToAddress(sender)
-                .SetTextBody(text)
-                .SetHtmlBody(html)
-                .GetMessage();
-
-            message.RecipientVariables = recipients.ToRecipientVariables();
-            if (_emailEnabled)
-            {
-                await Send(message);
-            }
-        }
         #endregion
 
         #region IEmailService implementation
         #region Account emails
         public Task Email(RemindPasswordEmail email)
         {
-            return SendEmail(email.Recipient, "Восстановление пароля на JoinRpg.Ru",
-              $@"Добрый день, %recipient.name%, 
+            string text = $@"Добрый день, %recipient.name%, 
 
 вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
 Если это вы, кликните <a href=""{
-                email.CallbackUrl
+                    email.CallbackUrl
                 }"">вот по этой ссылке</a>, и мы восстановим вам пароль. 
 Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его.
 
 --
-{JoinRpgTeam}", _joinRpgSender);
+{JoinRpgTeam}";
+            User recipient = email.Recipient;
+            return MessageService.SendEmail("Восстановление пароля на JoinRpg.Ru",
+                new MarkdownString(text),
+                _joinRpgSender,
+                recipient.ToRecepientData());
         }
 
         public Task Email(ConfirmEmail email)
         {
-            return SendEmail(email.Recipient, "Регистрация на JoinRpg.Ru",
-              $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
+            string text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
 
 Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{
-                  email.CallbackUrl
-                  }"">вот по этой ссылке</a>.
+                    email.CallbackUrl
+                }"">вот по этой ссылке</a>.
 
 Это необходимо для того, чтобы мастера игр, на которые вы заявитесь, могли надежно связываться с вами.
 
 Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его.
 
 --
-{JoinRpgTeam}", _joinRpgSender);
+{JoinRpgTeam}";
+            return MessageService.SendEmail("Регистрация на JoinRpg.Ru",
+                new MarkdownString(text),
+                _joinRpgSender,
+                email.Recipient.ToRecepientData());
         }
         #endregion
 
         public Task Email(AddCommentEmail model) => SendClaimEmail(model, "откомментирована");
 
-        public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model, "одобрена");
+        public Task Email(ApproveByMasterEmail model) => SendClaimEmail(model);
 
         public Task Email(DeclineByMasterEmail model) => SendClaimEmail(model, "отклонена");
 
@@ -202,8 +109,7 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(ForumEmail model)
         {
-            await SendEmail(model,
-                $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
+            await MessageService.SendEmail(model, $"{model.ProjectName}: тема на форуме {model.ForumThread.Header}",
                 StandartGreeting() + $@"
 На форуме появилось новое сообщение: 
 
@@ -225,10 +131,11 @@ namespace JoinRpg.Services.Email
                 return;
             }
 
-            IList<MailRecipient> recipients = model
+            var recipients = model
               .GetRecipients()
-              .Select(r => new MailRecipient(
-                r,
+              .Select(r => new RecepientData(
+                r.GetDisplayName(),
+                r.Email,
                 new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
               .Where(r => !string.IsNullOrEmpty(r.RecipientSpecificValues[ChangedFieldsKey]))
               //don't email if no changes are visible to user rights
@@ -239,15 +146,14 @@ namespace JoinRpg.Services.Email
                 : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim?.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-            string linkString = model.IsCharacterMail
-              ? _uriService.Get(model.Character)
-              : _uriService.Get(model.Claim);
+            string linkString = _uriService.Get(model.GetLinkable());
+
             if (recipients.Any())
             {
-                string text = $@"Добрый день, {MailGunExts.MailGunRecipientName},
+                string text = $@"{StandartGreeting()},
 Данные {Target(true)} были изменены. Новые значения:
 
-{MailGunExts.GetUserDependentValue(ChangedFieldsKey)}
+{MessageService.GetUserDependentValue(ChangedFieldsKey)}
 
 Для просмотра всех данных перейдите на страницу {(model.IsCharacterMail ? "персонажа" : "заявки")}: {linkString}
 
@@ -257,13 +163,16 @@ namespace JoinRpg.Services.Email
                 //All emails related to claim should have the same title, even if the change was made to a character
                 Claim claim = model.IsCharacterMail ? model.Character.ApprovedClaim : model.Claim;
 
-                await SendEmail(
-                    recipients,
-                    claim != null
-                        ? GetClaimEmailTitle(model.ProjectName, claim.Name, claim.Player.GetDisplayName())
-                        : $"{model.ProjectName}: {Target(false)}",
-                    model.Initiator.ToRecipient(),
-                    new MarkdownString(text));
+                
+
+                var subject = claim != null
+                    ? model.GetClaimEmailTitle(claim)
+                    : $"{model.ProjectName}: {Target(false)}";
+
+                await MessageService.SendEmails(subject,
+                    new MarkdownString(text),
+                    model.Initiator.ToRecepientData(),
+                    recipients);
             }
         }
 
@@ -309,8 +218,7 @@ namespace JoinRpg.Services.Email
 
         private async Task SendRoomEmail(RoomEmailBase email, string body)
         {
-            await SendEmail(email,
-                $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
+            await MessageService.SendEmail(email, $"{email.ProjectName}: комната {email.Room.ProjectAccommodationType.Name} {email.Room.Name}",
                 $@"{StandartGreeting()}
 Изменен состав жителей комнаты {email.Room.ProjectAccommodationType.Name} {email.Room.Name} 
 
@@ -356,11 +264,11 @@ namespace JoinRpg.Services.Email
                 throw new ArgumentNullException(nameof(model.Text.Contents));
             }
 
-            var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MailGunExts.MailGunRecipientName,
+            var body = Regex.Replace(model.Text.Contents, EmailTokens.Name, MessageService.GetRecepientPlaceholderName(),
               RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-            await SendEmail(model, $"{model.ProjectName}: {model.Subject}",
-              $@"{body}
+            await MessageService.SendEmail(model, $"{model.ProjectName}: {model.Subject}",
+                $@"{body}
 
 {model.Initiator.GetDisplayName()}
 ");
@@ -403,7 +311,7 @@ namespace JoinRpg.Services.Email
                 .Select(x => x.ToHtmlString()));
         }
 
-        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, [NotNull] string actionName, string text = "")
+        private async Task SendClaimEmail([NotNull] ClaimEmailModel model, string actionName = null, string text = "")
         {
             var projectEmailEnabled = model.GetEmailEnabled();
             if (!projectEmailEnabled)
@@ -411,10 +319,11 @@ namespace JoinRpg.Services.Email
                 return;
             }
 
-            IList<MailRecipient> recipients = model
+            var recipients = model
               .GetRecipients()
-              .Select(r => new MailRecipient(
-                r,
+              .Select(r => new RecepientData(
+                r.GetDisplayName(),
+                r.Email,
                 new Dictionary<string, string> { { ChangedFieldsKey, GetChangedFieldsInfoForUser(model, r) } }))
               .ToList();
 
@@ -422,78 +331,29 @@ namespace JoinRpg.Services.Email
 
             var extraText = commentExtraActionView?.GetDisplayName();
 
+            actionName = actionName ?? commentExtraActionView?.GetShortNameOrDefault() ?? "изменена";
+
             if (extraText != null)
             {
-                text = extraText + "\n\n" + text;
+                extraText = "**" + extraText + "**\n\n";
             }
 
-            string text1 = $@"Добрый день, {MailGunExts.MailGunRecipientName},
+            string text1 = $@"{StandartGreeting()}
 Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
-{MailGunExts.GetUserDependentValue(ChangedFieldsKey)}
-{model.Text.Contents}
+{MessageService.GetUserDependentValue(ChangedFieldsKey)}
+{extraText}{model.Text.Contents}
 
 {model.Initiator.GetDisplayName()}
 
 Чтобы ответить на комментарий, перейдите на страницу заявки: {_uriService.Get(model.Claim.CommentDiscussion)}
 ";
-            await SendEmail(
-                recipients,
-                GetClaimEmailTitle(model.ProjectName, model.Claim.Name, model.GetPlayerName()),
-                model.Initiator.ToRecipient(),
-                new MarkdownString(text1));
-        }
 
-        private static string GetClaimEmailTitle(string projectName, string claimName, string playerName)
-        {
-            return $"{projectName}: {claimName}, игрок {playerName}";
-        }
-    }
-
-    internal static class Exts
-    {
-
-        public static string GetInitiatorString(this ClaimEmailModel model)
-        {
-            switch (model.InitiatorType)
-            {
-                case ParcipantType.Nobody:
-                return "";
-                case ParcipantType.Master:
-                return $"мастером {model.Initiator.GetDisplayName()}";
-                case ParcipantType.Player:
-                return "игроком";
-                default:
-                throw new ArgumentOutOfRangeException(nameof(model.InitiatorType), model.InitiatorType, null);
-            }
-        }
-
-        public static string GetPlayerName(this ClaimEmailModel model)
-        {
-            return model.Claim.Player.GetDisplayName();
-        }
-
-        public static bool GetEmailEnabled(this EmailModelBase model)
-        {
-            return !model.ProjectName.Trim().StartsWith("NOEMAIL");
-        }
-
-        public static List<User> GetRecipients(this EmailModelBase model)
-        {
-            return model.Recipients.Where(u => u != null && u.UserId != model.Initiator.UserId).Distinct().ToList();
-        }
-
-        public static string GetPlayerList(this IEnumerable<Claim> claims)
-        {
-            var players = claims.Select(c => c.Player.GetDisplayName()).ToArray();
-
-            if (!players.Any())
-            {
-                players = new [] { "n/a"};
-            }
-
-            return players.JoinStrings(" \n- ");
+            await MessageService.SendEmails(model.GetClaimEmailTitle(),
+                new MarkdownString(text1),
+                model.Initiator.ToRecepientData(),
+                recipients);
         }
     }
 }

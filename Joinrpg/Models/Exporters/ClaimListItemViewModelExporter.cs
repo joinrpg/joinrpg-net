@@ -25,6 +25,10 @@ namespace JoinRpg.Web.Models.Exporters
             yield return DateTimeColumn(x => x.CreateDate);
             yield return IntColumn(x => x.FeeDue);
             yield return IntColumn(x => x.FeePaid);
+            if (Project.Details.PreferentialFeeEnabled)
+            {
+                yield return BoolColumn(x => x.PreferentialFeeUser);
+            }
             if (Project.Details.EnableAccommodation)
             {
                 yield return StringColumn(x => x.AccomodationType);

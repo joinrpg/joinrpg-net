@@ -475,9 +475,10 @@
       })
       }
     </div>
-  </div>
-  @if (Model.Status == ClaimStatusView.Approved || Model.Status == ClaimStatusView.CheckedIn)
-  {
+</div>
+
+@if ((Model.Status == ClaimStatusView.Approved || Model.Status == ClaimStatusView.CheckedIn) && Model.CanChangeRooms)
+{
     @Html.Partial("_ClaimAccommodation",
       new ClaimAccommodationViewModel
       {

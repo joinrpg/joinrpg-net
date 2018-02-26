@@ -1,21 +1,15 @@
 using System;
 using System.Data.Entity;
-using System.Linq;
 using System.Web;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Experimental.Plugin.Interfaces;
-using JoinRpg.PluginHost.Impl;
-using JoinRpg.PluginHost.Interfaces;
-using JoinRpg.Services.Email;
-using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using Microsoft.Practices.Unity;
+using JoinRpg.DI;
 
 namespace JoinRpg.Web
 {
@@ -60,25 +54,13 @@ namespace JoinRpg.Web
 
       container.RegisterType<IIdentityMessageService, EmailService>();
 
-      RepositoriesRegistraton.Register(container);
+        container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
 
-      Services.Impl.Services.Register(container);
+        container.RegisterType<IUserStore<User, int>, MyUserStore>();
 
-      container.RegisterType<IExportDataService, ExportDataServiceImpl>();
+        container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 
-      container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
-
-      container.RegisterType<IEmailService, EmailServiceImpl>();
-
-      container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
-
-      container.RegisterType<IUserStore<User, int>, MyUserStore>();
-
-      container.RegisterType<IPluginFactory, PluginFactoryImpl>();
-
-      //TODO Automatically load all assemblies that start with JoinRpg.Experimental.Plugin.*
-      container.RegisterTypes(AllClasses.FromLoadedAssemblies().Where(type => typeof(IPlugin).IsAssignableFrom(type)),
-        WithMappings.FromAllInterfaces, WithName.TypeName);
+            ContainerConfig.InjectAll(container);
     }
   }
 }

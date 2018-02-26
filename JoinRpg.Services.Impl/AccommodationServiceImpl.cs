@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Practices.ServiceLocation;
 
 namespace JoinRpg.Services.Impl
@@ -93,10 +94,7 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
 
-            foreach (var accommodationRequest in accommodationRequests)
-            {
-                await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequest.Subjects.ToArray()));
-            }
+            await EmailService.Email(await CreateRoomEmail<OccupyRoomEmail>(room, accommodationRequests.SelectMany(ar => ar.Subjects).ToArray()));
         }
 
         private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)

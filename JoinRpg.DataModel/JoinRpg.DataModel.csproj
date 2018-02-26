@@ -67,6 +67,7 @@
     <Compile Include="IntList.cs" />
     <Compile Include="Interfaces\IProjectEntity.cs" />
     <Compile Include="Interfaces\IWorldObject.cs" />
+    <Compile Include="ISubscriptionOptions.cs" />
     <Compile Include="Links.cs" />
     <Compile Include="PaymentType.cs" />
     <Compile Include="PlotElement.cs" />

@@ -71,6 +71,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj">
+      <Project>{e4d7a0e5-7c93-4d5b-97e1-99f1a6c2300b}</Project>
+      <Name>JoinRpg.Common.EmailSending.Impl</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj">
       <Project>{87ac11e6-9c66-468a-ac68-927d61d1e233}</Project>
       <Name>JoinRpg.DataModel.Mocks</Name>
@@ -83,9 +87,9 @@
       <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
       <Name>JoinRpg.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj">
-      <Project>{4c917f4e-977f-4b8d-b9b1-9a92854e83bf}</Project>
-      <Name>JoinRpg.Services.Email</Name>
+    <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
+      <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>
+      <Name>JoinRpg.Services.Interfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

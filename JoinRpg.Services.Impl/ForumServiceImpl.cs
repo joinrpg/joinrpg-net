@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -8,7 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Helpers;
-using JoinRpg.Services.Interfaces.Email;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
@@ -42,22 +41,15 @@ namespace JoinRpg.Services.Impl
         IsVisibleToPlayer = !hideFromUser,
         CommentDiscussion = new CommentDiscussion() { ProjectId = projectId}
       };
-      
-      forumThread.CommentDiscussion.Comments.Add(new Comment()
-      {
-        CommentId = -1,
-        ProjectId = projectId,
-        AuthorUserId = CurrentUserId,
-        IsVisibleToPlayer = !hideFromUser,
-        CommentText = new CommentText()
-        {
-          CommentId = -1,
-          Text =  new MarkdownString(commentText)
-        },
-        CreatedAt = Now,
-        LastEditTime = Now
-      });
 
+        CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+            CurrentUserId,
+            Now,
+            commentText,
+            !hideFromUser,
+            parentComment: null);
+      
+      
       group.ForumThreads.Add(forumThread);
       await UnitOfWork.SaveChangesAsync();
 
@@ -114,33 +106,19 @@ namespace JoinRpg.Services.Impl
     }
 
     private async Task<ForumEmail> AddCommentWithEmail(string commentText, ForumThread forumThread,
-      bool isVisibleToPlayer, Comment parentComment, IEnumerable<User> extraSubscriptions = null)
+      bool isVisibleToPlayer, Comment parentComment)
     {
       var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
-      if (!isVisibleToPlayer)
-      {
-        forumThread.RequestMasterAccess(CurrentUserId);
-      }
 
-      var comment = new Comment
-      {
-        CommentId = -1,
-        ProjectId = forumThread.ProjectId,
-        AuthorUserId = CurrentUserId,
-        CommentText = new CommentText()
-        {
-          Text = new MarkdownString(commentText),
-          CommentId = -1
-        },
-        IsCommentByPlayer = !forumThread.HasMasterAccess(CurrentUserId),
-        IsVisibleToPlayer = isVisibleToPlayer,
-        Parent = parentComment,
-      };
-      forumThread.CommentDiscussion.Comments.Add(comment);
+        CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+            CurrentUserId,
+            Now,
+            commentText,
+            isVisibleToPlayer,
+            parentComment);
 
       var extraRecipients =
-        new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
-        Union(extraSubscriptions ?? Enumerable.Empty<User>());
+        new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User };
       var subscriptions =
         forumThread.GetSubscriptions(extraRecipients, visibleToPlayerUpdated).ToList();
       return new ForumEmail ()

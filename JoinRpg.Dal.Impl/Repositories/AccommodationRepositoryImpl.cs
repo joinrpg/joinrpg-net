@@ -23,13 +23,6 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>>
-            GetPlayerSelectableAccommodationForProject(int projectId)
-        {
-            return await Ctx.Set<ProjectAccommodationType>()
-                .Where(a => a.ProjectId == projectId && a.IsPlayerSelectable)
-                .Include(x => x.ProjectAccommodations).ToListAsync().ConfigureAwait(false);
-        }
 
         public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
             GetClaimAccommodationReport(int project)
@@ -51,6 +44,32 @@ namespace JoinRpg.Dal.Impl.Repositories
                                 : null,
                         User = claim.Player,
                     }).ToListAsync();
+
+        }
+
+        public async Task<IReadOnlyCollection<RoomTypeInfoRow>> GetRoomTypesForProject(int project)
+        {
+
+            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.ProjectId == project)
+                .Include(x => x.Project)
+                .Select(x => new RoomTypeInfoRow()
+                {
+                    RoomType = x,
+                    // cast to int? required to correctly handle SQL-LINQ nullness
+                    Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?) ar.Subjects.Count)) ?? 0,
+                    RoomsCount = x.ProjectAccommodations.Count,
+                    ApprovedClaims = x.Desirous.Sum(ar => (int?) ar.Subjects.Count) ?? 0,
+                })
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
+
+        public async Task<ProjectAccommodationType> GetRoomTypeById(int roomTypeId)
+        {
+            return await Ctx.Set<ProjectAccommodationType>().Where(a => a.Id == roomTypeId)
+                .Include(x => x.ProjectAccommodations)
+                .SingleAsync()
+                .ConfigureAwait(false);
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿var projectId = null;
 var roomTypeId = null;
-var roomsCount = null;
+var roomsCount = 0;
 var roomCapacity = 0;
 var roomsCapacity = 0;
 var requestsAssignedCount = 0;
 var requestsNotAssigned = [];
 
+var availRequests = null;
 var unassignedBank = null;
 var roomsRows = null;
 var rowPlaceholder = null;
@@ -25,19 +26,6 @@ function AddPeople(roomId)
     }
     else
         alert("Кажется, все участники уже расселены!");
-}
-
-function AddMocks()
-{
-    for (var i = 2; i < 6; i++)
-    {
-        dlgChoosePeople.AddItem({
-            Id: 100,
-            Persons: i,
-            PersonsList: "Persons: " + i,
-            Instance: null
-        });
-    }
 }
 
 // Moves unassigned request from bank to room
@@ -84,7 +72,7 @@ function PlaceAll()
             {
                 freeSpace = roomCapacity - row.occupancy;
                 req = requestsNotAssigned[j];
-                if (req.Persons < freeSpace)
+                if (req.Persons <= freeSpace)
                 {
                     MoveReqToRoom(row.roomId, req);
                     reqIds.push(req.Id);
@@ -204,11 +192,6 @@ function UpdateRoomButtons(roomId)
 {
     var room = roomsRows.GetRowById(roomId);
     DoUpdateRoomButtons(room);
-/*
-    $("#delete" + roomId).prop("disabled", room.occupancy !== 0);
-    $("#kick" + roomId).prop("disabled", room.requests.length === 0);
-    $("#add" + roomId).prop("disabled", room.occupancy === roomCapacity);
-*/
 }
 
 function DoUpdateRoomButtons(room)
@@ -220,13 +203,10 @@ function DoUpdateRoomButtons(room)
 
 function UpdateGlobalButtons()
 {
-    $(bnPlaceAll).prop("disabled", requestsNotAssigned.length === 0);
+    $(bnPlaceAll).prop("disabled", requestsNotAssigned.length === 0 || roomsCount === 0);
     $(bnKickAll).prop("disabled", requestsAssignedCount === 0);
-
-    if (requestsNotAssigned.length === 0)
-        $("#availRequests").hide();
-    else
-        $("#availRequests").show();
+    $(rowPlaceholder).toggle(roomsCount === 0);
+    $(availRequests).toggle(requestsNotAssigned.length > 0);
 }
 
 function AddRoom()
@@ -235,6 +215,7 @@ function AddRoom()
     dlgEditRoomName.roomName = "";
     dlgEditRoomName.pnRoomNameTitle.innerHTML = "Добавление комнат";
     dlgEditRoomName.edRoomName.value = "";
+    $(dlgEditRoomName.bnEditRoomOk).prop("disabled", true);
     $(dlgEditRoomName.addComment).show();
     $(dlgEditRoomName).modal("show");
     dlgEditRoomName.edRoomName.focus();
@@ -324,6 +305,7 @@ function DoDeleteRoom(id)
             {
                 var row = roomsRows.GetRowById(id);
                 row.remove();
+                roomsCount--;
             }
             else if (xr.status == 500)
             {
@@ -334,10 +316,12 @@ function DoDeleteRoom(id)
                 // Unknown success code -- have to reload page
                 location.reload();
             }
+            UpdateGlobalButtons();
         })
         .fail(function (xr, status, error)
         {
             ErrorDelete();
+            UpdateGlobalButtons();
         });
 }
 
@@ -363,10 +347,11 @@ $(function()
 
     loadInstances(requestsNotAssigned);
 
-    unassignedBank = document.getElementById("availRequestsList");
+    availRequests = document.getElementById("availRequests");
+    unassignedBank = document.getElementById("availRequestsListContainer");
     roomsRows = document.getElementById("roomsRows");
     rowPlaceholder = document.getElementById("rowPlaceholder");
-    $(rowPlaceholder).toggle(roomsCount == 0);
+    $(rowPlaceholder).toggle(roomsCount === 0);
 
     roomsRows.GetRowById = function(roomId)
     {
@@ -414,16 +399,16 @@ $(function()
     dlgEditRoomName.edRoomName = document.getElementById("edRoomName");
     dlgEditRoomName.bnEditRoomOk = document.getElementById("bnEditRoomOk");
     dlgEditRoomName.addComment = document.getElementById("addComment");
-    $(dlgEditRoomName.edRoomName).keypress(function()
+    $(dlgEditRoomName.edRoomName).keyup(function()
     {
         var newValue = String(dlgEditRoomName.edRoomName.value).trim();
-        dlgEditRoomName.bnEditRoomOk.disabled =
-            newValue.length == 0 || newValue == dlgEditRoomName.roomName;
+        $(dlgEditRoomName.bnEditRoomOk).prop("disabled",
+            newValue.length === 0 || newValue === dlgEditRoomName.roomName);
     });
     $(dlgEditRoomName.bnEditRoomOk).click(function()
     {
         var newValue = String(dlgEditRoomName.edRoomName.value).trim();
-        if (newValue.length == 0 || newValue == dlgEditRoomName.roomName)
+        if (newValue.length === 0 || newValue === dlgEditRoomName.roomName)
             return;
         $(dlgEditRoomName).modal("hide");
         DoEditRoom(dlgEditRoomName.roomId, newValue);
@@ -494,9 +479,9 @@ $(function()
             + '" title="'
             + req.PaymentStatusTitle
             + '"><i class="glyphicon glyphicon-thumbs-up"></i>'
-            + '<span class="">-'
-            + req.FeeToPay
-            + ' ₽</span></span>';
+            + '<span class="">'
+            + (req.FeeToPay > 0 ? -req.FeeToPay + " ₽" : "")
+            + "</span></span>";
 
         var item = document.createElement("div");
         item.setAttribute("class", "list-group-item");
@@ -505,7 +490,7 @@ $(function()
             + req.PersonsList
             + '</span><span class="badge">'
             + req.Persons
-            + '</span>';
+            + "</span>";
         item.count = req.Persons;
         item.req = req;
         $(item).click(function (ev)
@@ -551,4 +536,7 @@ $(function()
         UpdateRoomButtons(dlgChoosePeople.roomId);
         UpdateGlobalButtons();
     });
+
+    if (roomsCount === 0)
+        AddRoom();
 });

@@ -11,17 +11,18 @@
 <div class="btn-group">
     @if (Model.CanManageRooms)
     {
-        <a href="@Url.Action("AddRoomType", "AccommodationType", new { ProjectId = Model.ProjectId })" class="btn btn-success">
+        <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId })" class="btn btn-success">
             <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения</a>
     }
     @if (Model.CanAssignRooms)
     {
-        <a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
-            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>
-        <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
+        @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
+            <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>*@
+        <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
             <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</a>
     }
-    <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", ProjectId = Model.ProjectId})" class="btn btn-default">
+    <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})"  class="btn btn-default">Игроки без поселения...</a>
+    <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
         <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)</a>
 </div>
 
@@ -30,18 +31,19 @@
         <thead>
             <tr>
                 <th>Название</th>
-                <th>Описание</th>
-                <th class="price-table" style="min-width: 10em; width: 10em;">@Html.RenderPriceElement("Цена,")</th>
+                <th class="visible-lg">Описание</th>
+                <th class="price-table" style="min-width: 10em; width: 10em;">Цена</th>
                 <th class="price-table">Мест</th>
-                <th class="price-table">Заполнение</th>
+                <th class="price-table">Свободных</th>
+                <th class="price-table">Заявки<br />(не&nbsp;заселено&nbsp;/&nbsp;заселено)</th>
                 <th>Флаги</th>
                 <th style="min-width: 9em; width: 9em;"></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (RoomTypeViewModel roomType in Model.RoomTypes)
+            @foreach (var roomType in Model.RoomTypes)
             {
-                @Html.Partial("_RoomTypeDetails", roomType);
+                @Html.Partial("_RoomTypeDetails", roomType)
             }
             @if (Model.RoomTypes.Count == 0)
             {

@@ -55,8 +55,8 @@ namespace JoinRpg.Web.Models.Accommodation
             FeeTotal = Participants.Sum(p => p.FeeTotal);
             FeeToPay = Participants.Sum(p => p.FeeToPay);
             FeeToPay = FeeToPay > 0 ? FeeToPay : 0; // if FeeToPay < 0 we have overpaid
-            int percent = FeeToPay > 0 ? 100 * FeeToPay / FeeTotal : 100;
-            PaymentStatusCssClass = percent == 0 ? @"success" : (percent <= 25 ? @"warning" : @"danger");
+            int percent = FeeToPay == 0 ? 100 : (FeeToPay == FeeTotal ? 0 : 100 * FeeToPay / FeeTotal);
+            PaymentStatusCssClass = percent == 100 ? @"success" : (percent >= 25 ? @"warning" : @"danger");
         }
     }
 

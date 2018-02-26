@@ -133,7 +133,9 @@ namespace JoinRpg.Web.Models
           CanManageThisClaim = claim.HasAccess(currentUser.UserId,
               acl => acl.CanManageClaims,
               ExtraAccessReason.ResponsibleMaster);
-          CanChangeRooms = claim.HasAccess(currentUser.UserId, acl => acl.CanSetPlayersAccommodations, ExtraAccessReason.PlayerOrResponsible);
+          CanChangeRooms = claim.HasAccess(currentUser.UserId,
+              acl => acl.CanSetPlayersAccommodations,
+              ExtraAccessReason.PlayerOrResponsible);
           IsMyClaim = claim.PlayerUserId == currentUser.UserId;
           Player = claim.Player;
           ProjectId = claim.ProjectId;
@@ -143,10 +145,11 @@ namespace JoinRpg.Web.Models
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;
           CharacterActive = claim.Character?.IsActive;
-          AvailableAccommodationTypes = availableAccommodationTypes;
-          AccommodationRequests = accommodationRequests;
-          PotentialNeighbors = potentialNeighbors;
-          AccommodationRequest = claim.AccommodationRequest;
+          AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
+              a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
+              claim.HasMasterAccess(currentUser.UserId)).ToList();
+            PotentialNeighbors = potentialNeighbors;
+            AccommodationRequest = claim.AccommodationRequest;
           IncomingInvite = incomingInvite;
           OutgoingInvite = outgoingInvite;
           OtherClaimsForThisCharacterCount = claim.IsApproved

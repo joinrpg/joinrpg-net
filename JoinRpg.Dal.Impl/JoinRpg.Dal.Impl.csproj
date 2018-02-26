@@ -422,6 +422,10 @@
     <Compile Include="Migrations\201801292024450_RoomDescription.Designer.cs">
       <DependentUpon>201801292024450_RoomDescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201802052149250_AccomodationSubscribe.cs" />
+    <Compile Include="Migrations\201802052149250_AccomodationSubscribe.Designer.cs">
+      <DependentUpon>201802052149250_AccomodationSubscribe.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201801280756568_InviteUpdate.cs" />
     <Compile Include="Migrations\201801280756568_InviteUpdate.Designer.cs">
       <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
@@ -730,6 +734,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801292024450_RoomDescription.resx">
       <DependentUpon>201801292024450_RoomDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802052149250_AccomodationSubscribe.resx">
+      <DependentUpon>201802052149250_AccomodationSubscribe.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

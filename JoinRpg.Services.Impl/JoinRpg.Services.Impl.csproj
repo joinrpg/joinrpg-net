@@ -75,6 +75,7 @@
     <Compile Include="AccommodationServiceImpl.cs" />
     <Compile Include="ClaimImplBase.cs" />
     <Compile Include="ClaimServiceImpl.cs" />
+    <Compile Include="CommentHelper.cs" />
     <Compile Include="DbServiceImplBase.cs" />
     <Compile Include="EmailHelpers.cs" />
     <Compile Include="FieldDefaultValueGenerator.cs" />

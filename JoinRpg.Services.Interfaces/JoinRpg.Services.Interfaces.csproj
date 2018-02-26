@@ -51,19 +51,22 @@
   <ItemGroup>
     <Compile Include="AccessRequestBase.cs" />
     <Compile Include="ChangeAccessRequest.cs" />
-    <Compile Include="Email\AccountEmails.cs" />
-    <Compile Include="Email\EmailModelBase.cs" />
-    <Compile Include="Email\RoomEmailInterfaces.cs" />
-    <Compile Include="Email\ForumEmail.cs" />
+    <Compile Include="Email\EmailSendFailedException.cs" />
+    <Compile Include="Email\IEmailSendingService.cs" />
+    <Compile Include="Email\RecepientData.cs" />
+    <Compile Include="Notification\AccountEmails.cs" />
+    <Compile Include="Notification\EmailModelBase.cs" />
+    <Compile Include="Notification\RoomEmailInterfaces.cs" />
+    <Compile Include="Notification\ForumEmail.cs" />
     <Compile Include="GrantAccessRequest.cs" />
     <Compile Include="IAccommodationInviteService.cs" />
     <Compile Include="IAccommodationService.cs" />
     <Compile Include="EditProjectRequest.cs" />
     <Compile Include="IClaimOperationRequest.cs" />
     <Compile Include="IClaimService.cs" />
-    <Compile Include="Email\ClaimEmail.cs" />
-    <Compile Include="Email\IEmailWithUpdatedFieldsInfo.cs" />
-    <Compile Include="Email\IEmailService.cs" />
+    <Compile Include="Notification\ClaimEmail.cs" />
+    <Compile Include="Notification\IEmailWithUpdatedFieldsInfo.cs" />
+    <Compile Include="Notification\IEmailService.cs" />
     <Compile Include="IExportDataService.cs" />
     <Compile Include="IFieldSetupService.cs" />
     <Compile Include="IForumService.cs" />
@@ -73,10 +76,11 @@
     <Compile Include="IProjectService.cs" />
     <Compile Include="IUriService.cs" />
     <Compile Include="IUserService.cs" />
-    <Compile Include="Email\MassEmailModel.cs" />
+    <Compile Include="Notification\MassEmailModel.cs" />
     <Compile Include="Search\ISearchService.cs" />
     <Compile Include="Search\ISearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SubscribeForGroupRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
