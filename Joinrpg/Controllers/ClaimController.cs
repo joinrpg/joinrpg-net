@@ -156,7 +156,7 @@ namespace JoinRpg.Web.Controllers
       if (claim.Project.Details.EnableAccommodation)
       { 
         availableAccommodation = await
-            _accommodationRepository.GetPlayerSelectableAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
+            _accommodationRepository.GetAccommodationForProject(claim.ProjectId).ConfigureAwait(false);
         requestForAccommodation = await _accommodationRequestRepository
             .GetAccommodationRequestForClaim(claim.ClaimId).ConfigureAwait(false);
         var acceptedRequest =  requestForAccommodation

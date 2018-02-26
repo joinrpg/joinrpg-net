@@ -94,7 +94,7 @@
           @Html.DisplayFor(model => model.ParentGroups)
           @if (Model.Navigation.CanEditRoles)
           {
-          <a href="@Url.Action(" Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a href="@Url.Action("Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
           }
         </dd>
         }
@@ -217,20 +217,20 @@
       }
       @if (Model.Status == ClaimStatusView.Approved)
       {
-      <a href="@Url.Action(" Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
+      <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
         <span class="glyphicon glyphicon-print"></span>
         Для печати
       </a>
       foreach (var plugin in Model.PrintPlugins)
       {
-      <a class="btn btn-default" href="@Url.Action(" PrintCards", "Print" , new {Model.ProjectId, Plugin=plugin.Name, CharacterIds=new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
+      <a class="btn btn-default" href="@Url.Action("PrintCards", "Print" , new {Model.ProjectId, Plugin=plugin.Name, CharacterIds=new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
         <span class="glyphicon glyphicon-print"></span>
         @plugin.Name
       </a>
       }
       if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
       {
-      <a href="@Url.Action(" CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
+      <a href="@Url.Action("CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
         <span class="glyphicon glyphicon-tree-conifer"></span>
         Зарегистрировать
       </a>
@@ -239,7 +239,7 @@
 
       @if (Model.Status == ClaimStatusView.CheckedIn)
       {
-      <a href="@Url.Action(" SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+      <a href="@Url.Action("SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
         <span class="glyphicon glyphicon-duplicate"></span>
         Вторая роль
       </a>
@@ -247,12 +247,12 @@
 
       @if (Model.HasMasterAccess)
       {
-      <a href="@Url.Action(" Subscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+      <a href="@Url.Action("Subscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
         <span class="glyphicon glyphicon-pushpin"></span>
         Подписаться
       </a>
 
-      <a href="@Url.Action(" Unsubscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку" data-responsed="1">
+      <a href="@Url.Action("Unsubscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку" data-responsed="1">
         <span class="glyphicon glyphicon-pushpin"></span>
         Отписаться
       </a>

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 
@@ -12,7 +13,6 @@ namespace JoinRpg.Services.Impl
     [UsedImplicitly]
     public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
-
         public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
         }
@@ -25,10 +25,9 @@ namespace JoinRpg.Services.Impl
             //todo: make null result descriptive
 
             var receiverCurrentAccommodationRequest = await UnitOfWork
-                .GetDbSet<AccommodationRequest>()
-                .Where(request =>
-                    request.Subjects.Any(subject => subject.ClaimId == receiverClaimId))
-                .Where(request => request.IsAccepted == AccommodationRequest.InviteState.Accepted)
+                .GetDbSet<Claim>()
+                .Where(claim => claim.ClaimId == receiverClaimId)
+                .Select(claim => claim.AccommodationRequest)
                 .Include(request => request.Subjects)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
@@ -38,9 +37,17 @@ namespace JoinRpg.Services.Impl
                 .Include(request => request.AccommodationType)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
-            //todo return here then we allow invitation to/from already settled members
+            //we not allow invitation to/from already settled members
             if (receiverCurrentAccommodationRequest?.AccommodationId != null ||
-                senderAccommodationRequest.AccommodationId != null)
+                senderAccommodationRequest?.AccommodationId != null)
+            {
+                return null;
+            }
+
+            //invite only claims with same type of room, or claims with out room type at all
+            if (receiverCurrentAccommodationRequest?.AccommodationTypeId !=
+                senderAccommodationRequest?.AccommodationTypeId &&
+                receiverCurrentAccommodationRequest?.AccommodationTypeId != null)
             {
                 return null;
             }
@@ -92,8 +99,7 @@ namespace JoinRpg.Services.Impl
 
             var roomFreeSpace = (senderAccommodationRequest.AccommodationId != null)
                 ? senderAccommodationRequest.Accommodation.GetRoomFreeSpace()
-                : senderAccommodationRequest.AccommodationType.Capacity -
-                  senderAccommodationRequest.Subjects.Count;
+                : senderAccommodationRequest.GetAbstractRoomFreeSpace();
 
 
             var canInvite = roomFreeSpace >= (receiverAccommodationRequest?.Subjects.Count ?? 0);
