@@ -680,10 +680,11 @@ namespace JoinRpg.Web.Controllers
               return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
           }
 
-          await AccommodationInviteService.CreateAccommodationInvite(viewModel.ProjectId,
+          await AccommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
               viewModel.ClaimId,
-              viewModel.ReceiverClaimId,
-              viewModel.RequestId).ConfigureAwait(false);
+              viewModel.ReceiverClaimOrAccommodationRequest,
+              viewModel.RequestId,
+             InviteRequestViewModel.AccommodationRequestPrefix).ConfigureAwait(false);
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }

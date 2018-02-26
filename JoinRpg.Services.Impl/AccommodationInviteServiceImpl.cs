@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,6 +80,97 @@ namespace JoinRpg.Services.Impl
 
 
             return inviteRequest;
+        }
+
+
+
+        private async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToAccommodationRequest(int projectId,
+            int senderClaimId,
+            int receiverAccommodationRequestId,
+            int accommodationRequestId)
+        {
+            //todo: make null result descriptive
+
+            var receiverCurrentAccommodationRequest = await UnitOfWork
+                .GetDbSet<AccommodationRequest>()
+                .Where(request => request.Id == receiverAccommodationRequestId)
+                .Include(request => request.Subjects)
+                .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            var senderAccommodationRequest = await UnitOfWork.GetDbSet<AccommodationRequest>()
+                .Where(request => request.Id == accommodationRequestId)
+                .Include(request => request.Subjects)
+                .Include(request => request.AccommodationType)
+                .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            //we not allow invitation to/from already settled members
+            if (receiverCurrentAccommodationRequest?.AccommodationId != null ||
+                senderAccommodationRequest?.AccommodationId != null)
+            {
+                return null;
+            }
+
+            //invite only claims with same type of room, or claims with out room type at all
+            if (receiverCurrentAccommodationRequest?.AccommodationTypeId !=
+                senderAccommodationRequest?.AccommodationTypeId &&
+                receiverCurrentAccommodationRequest?.AccommodationTypeId != null)
+            {
+                return null; 
+            }
+
+            var newDwellersCount = receiverCurrentAccommodationRequest?.Subjects.Count ?? 1;
+            var canInvite = senderAccommodationRequest?.Subjects.Count + newDwellersCount <=
+                            senderAccommodationRequest?.AccommodationType.Capacity;
+            canInvite = canInvite &&
+                        (senderAccommodationRequest.AccommodationTypeId ==
+                         receiverCurrentAccommodationRequest?.AccommodationTypeId ||
+                         receiverCurrentAccommodationRequest == null);
+            if (!canInvite)
+            {
+                return null;
+            }
+
+            var receiversClaimIds = await UnitOfWork
+                .GetDbSet<Claim>()
+                .Where(claim => claim.AccommodationRequest_Id == receiverAccommodationRequestId)
+                .Select(claim=>claim.ClaimId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            var result = new List<AccommodationInvite>();
+            foreach (var receiverClaimId in receiversClaimIds)
+            {
+                var inviteRequest = new AccommodationInvite
+                {
+                    ProjectId = projectId,
+                    FromClaimId = senderClaimId,
+                    ToClaimId = receiverClaimId,
+                    IsAccepted = AccommodationRequest.InviteState.Unanswered
+                };
+
+                UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
+                result.Add(inviteRequest);
+            }
+           
+            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(int projectId,
+            int senderClaimId,
+            string receiverClaimOrAccommodationRequestId,
+            int accommodationRequestId,
+            string accommodationRequestPrefix)
+        {
+            if (receiverClaimOrAccommodationRequestId.StartsWith(accommodationRequestPrefix))
+                return await CreateAccommodationInviteToAccommodationRequest(projectId,
+                    senderClaimId,
+                    int.Parse(receiverClaimOrAccommodationRequestId.Substring(2)),
+                    accommodationRequestId).ConfigureAwait(false);
+
+            return new[]{ await CreateAccommodationInvite(projectId,
+                senderClaimId,
+                int.Parse(receiverClaimOrAccommodationRequestId),
+                accommodationRequestId).ConfigureAwait(false)};
         }
 
 

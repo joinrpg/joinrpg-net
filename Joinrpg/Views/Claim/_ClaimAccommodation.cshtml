@@ -99,7 +99,7 @@
                         .Select(neighborGroup =>
                             new ImprovedSelectListItem()
                             {
-                                Value = "gr" + neighborGroup.Key.ToString(),
+                                Value = InviteRequestViewModel.AccommodationRequestPrefix + neighborGroup.Key.ToString(),
                                 Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
                                 ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result)?"": ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
                                 Subtext = neighborGroup.Count()>1? "<br/>(группа проживающих)":""
@@ -118,7 +118,7 @@
 
 
                     var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
-                    @Html.SearchableDropdown("ReceiverClaimId", selectableRows)
+                    @Html.SearchableDropdown("ReceiverClaimOrAccommodationRequest", selectableRows)
 
                     <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
                 }

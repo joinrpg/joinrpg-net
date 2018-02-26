@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
@@ -9,6 +10,11 @@ namespace JoinRpg.Services.Interfaces
             int senderClaimId,
             int receiverClaimId,
             int accommodationRequestId);
+        Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(int projectId,
+            int senderClaimId,
+            string receiverClaimOrAccommodationRequestId,
+            int accommodationRequestId,
+            string accommodationRequestPrefix);
 
         Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
             AccommodationRequest.InviteState newState);
