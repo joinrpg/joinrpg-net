@@ -7,13 +7,13 @@ namespace JoinRpg.Dal.Impl.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class invitationmerged : IMigrationMetadata
+    public sealed partial class ResolveInviteToCode : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(invitationmerged));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(ResolveInviteToCode));
         
         string IMigrationMetadata.Id
         {
-            get { return "201802261725163_invitation-merged"; }
+            get { return "201802271503246_ResolveInviteToCode"; }
         }
         
         string IMigrationMetadata.Source

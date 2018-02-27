@@ -430,9 +430,9 @@
     <Compile Include="Migrations\201801280756568_InviteUpdate.Designer.cs">
       <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201802261725163_invitation-merged.cs" />
-    <Compile Include="Migrations\201802261725163_invitation-merged.Designer.cs">
-      <DependentUpon>201802261725163_invitation-merged.cs</DependentUpon>
+    <Compile Include="Migrations\201802271503246_ResolveInviteToCode.cs" />
+    <Compile Include="Migrations\201802271503246_ResolveInviteToCode.Designer.cs">
+      <DependentUpon>201802271503246_ResolveInviteToCode.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -745,8 +745,8 @@
     <EmbeddedResource Include="Migrations\201802052149250_AccomodationSubscribe.resx">
       <DependentUpon>201802052149250_AccomodationSubscribe.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201802261725163_invitation-merged.resx">
-      <DependentUpon>201802261725163_invitation-merged.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201802271503246_ResolveInviteToCode.resx">
+      <DependentUpon>201802271503246_ResolveInviteToCode.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
