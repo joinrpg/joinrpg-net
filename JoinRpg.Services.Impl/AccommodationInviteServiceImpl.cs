@@ -159,7 +159,7 @@ namespace JoinRpg.Services.Impl
             var receiversClaims = await UnitOfWork
                 .GetDbSet<Claim>()
                 .Where(claim => claim.AccommodationRequest_Id == receiverAccommodationRequestId)
-                .Include(c=>c.Player)
+                .Include(c => c.Player)
                 .ToArrayAsync()
                 .ConfigureAwait(false);
             var result = new List<AccommodationInvite>();
@@ -241,15 +241,15 @@ namespace JoinRpg.Services.Impl
             senderAccommodationRequest.Subjects.Add(inviteRequest.To);
             inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
 
-            // ReSharper disable once PossibleNullReferenceException
-            foreach (var claim in receiverAccommodationRequest?.Subjects)
-            {
-                await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
-                senderAccommodationRequest.Subjects.Add(claim);
-            }
-
             if (receiverAccommodationRequest != null)
             {
+                // ReSharper disable once PossibleNullReferenceException
+                foreach (var claim in receiverAccommodationRequest?.Subjects)
+                {
+                    await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
+                    senderAccommodationRequest.Subjects.Add(claim);
+                }
+
                 UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
 
@@ -259,11 +259,11 @@ namespace JoinRpg.Services.Impl
 
 
             var receivers = await UnitOfWork.GetDbSet<Claim>()
-                    .Where(claim => inviteRequest.FromClaimId == claim.ClaimId)
-                .Include(claim=>claim.Player)
+                .Where(claim => inviteRequest.FromClaimId == claim.ClaimId)
+                .Include(claim => claim.Player)
                 .ToArrayAsync()
                 .ConfigureAwait(false);
-                
+
             await EmailService
                 .Email(await CreateInviteEmail<AcceptInviteEmail>(receivers,
                     inviteRequest.Project).ConfigureAwait(false))
@@ -289,10 +289,10 @@ namespace JoinRpg.Services.Impl
             //todo: make null result descriptive
             var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
                 .Where(invite => invite.Id == inviteId)
-                .Include(invite=>invite.Project)
+                .Include(invite => invite.Project)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
-            if(inviteRequest == null)
+            if (inviteRequest == null)
                 throw new Exception("Invite request not found.");
 
             inviteRequest.IsAccepted = newState;
@@ -303,7 +303,9 @@ namespace JoinRpg.Services.Impl
 
             var receivers = await UnitOfWork
                 .GetDbSet<Claim>()
-                .Where(claim => claim.ClaimId == inviteRequest.FromClaimId || claim.ClaimId == inviteRequest.ToClaimId)
+                .Where(claim =>
+                    claim.ClaimId == inviteRequest.FromClaimId ||
+                    claim.ClaimId == inviteRequest.ToClaimId)
                 .Include(c => c.Player)
                 .ToArrayAsync()
                 .ConfigureAwait(false);
@@ -318,13 +320,12 @@ namespace JoinRpg.Services.Impl
 
         public async Task DeclineAllClaimInvites(int claimId)
         {
-
             var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
                 .Where(invite => invite.ToClaimId == claimId || invite.FromClaimId == claimId)
                 .ToListAsync()
                 .ConfigureAwait(false);
 
-            if(inviteRequests.Count == 0)
+            if (inviteRequests.Count == 0)
                 return;
 
             var claims = new List<int>();
