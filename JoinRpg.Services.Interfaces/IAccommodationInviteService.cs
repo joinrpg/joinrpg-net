@@ -22,5 +22,7 @@ namespace JoinRpg.Services.Interfaces
 
         Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
             int inviteId);
+
+        Task DeclineAllClaimInvites(int claimId);
     }
 }

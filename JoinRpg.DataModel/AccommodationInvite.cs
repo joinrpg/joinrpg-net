@@ -45,8 +45,9 @@ namespace JoinRpg.DataModel
         [Description("Отколнено принятием другого приглашения")]
         DeclinedWithAcceptOther,
         [Description("Отозвано")]
-        Canceled
-    
+        Canceled,
+        [Description("Связанная заявка отозвана")]
+        ClaimCanceled
     }
 
     /*

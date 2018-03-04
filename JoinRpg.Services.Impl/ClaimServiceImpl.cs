@@ -558,7 +558,10 @@ namespace JoinRpg.Services.Impl
           claim.PlayerDeclinedDate = Now;
           claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
-          var roomEmail = await CommonClaimDecline(claim);
+
+          await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+
+            var roomEmail = await CommonClaimDecline(claim);
 
 
 
@@ -791,10 +794,13 @@ namespace JoinRpg.Services.Impl
       }
     }
 
+      private IAccommodationInviteService accommodationInviteService;
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork, emailService,
+      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+        IAccommodationInviteService accommodationInviteService) : base(unitOfWork, emailService,
       fieldDefaultValueGenerator)
     {
+        this.accommodationInviteService = accommodationInviteService;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)

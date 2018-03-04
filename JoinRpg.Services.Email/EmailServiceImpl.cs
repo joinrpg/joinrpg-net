@@ -195,7 +195,7 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(LeaveRoomEmail email)
         {
-            string body = $"{email.Claim.Player.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
+            string body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
             if (email.Room.GetAllInhabitants().Any())
             {
                 body += $"\n\nОстались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";

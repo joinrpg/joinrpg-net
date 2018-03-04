@@ -316,6 +316,49 @@ namespace JoinRpg.Services.Impl
             return inviteRequest;
         }
 
+        public async Task DeclineAllClaimInvites(int claimId)
+        {
+
+            var inviteRequests = await UnitOfWork.GetDbSet<AccommodationInvite>()
+                .Where(invite => invite.ToClaimId == claimId || invite.FromClaimId == claimId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            if(inviteRequests.Count == 0)
+                return;
+
+            var claims = new List<int>();
+            foreach (var accommodationInvite in inviteRequests)
+            {
+                claims.Add(accommodationInvite.FromClaimId);
+                claims.Add(accommodationInvite.ToClaimId);
+                accommodationInvite.IsAccepted = AccommodationRequest.InviteState.Declined;
+                accommodationInvite.ResolveDescription = ResolveDescription.ClaimCanceled;
+            }
+
+            await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+
+            claims = claims.Distinct().ToList();
+            claims.Remove(claimId);
+
+            var receivers = await UnitOfWork
+                .GetDbSet<Claim>()
+                .Where(claim => claims.Contains(claim.ClaimId))
+                .Include(c => c.Player)
+                .ToArrayAsync()
+                .ConfigureAwait(false);
+
+            var firstClaim = receivers.First();
+            var project = await UnitOfWork.GetDbSet<Project>()
+                .Where(proj => proj.ProjectId == firstClaim.ProjectId)
+                .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            await EmailService
+                .Email(await CreateInviteEmail<DeclineInviteEmail>(receivers,
+                    project).ConfigureAwait(false))
+                .ConfigureAwait(false);
+        }
+
 
         private async Task<AccommodationRequest> GetAccommodationRequestByClaim(int claimId) =>
             await UnitOfWork.GetDbSet<AccommodationRequest>()
