@@ -212,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
+    <Content Include="App_Code\ConfirmDialog.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="Controllers\AccommodationPrintController.cs" />
