@@ -7,7 +7,7 @@ namespace JoinRpg.DataModel.Mocks
   {
     public Project Project { get; }
     public CharacterGroup Group { get; }
-    public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com" };
+    public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>()};
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com" };
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
@@ -131,26 +131,32 @@ namespace JoinRpg.DataModel.Mocks
 
       Group = new CharacterGroup()
       {
-        AvaiableDirectSlots = 0,
-        HaveDirectSlots = true
+        AvaiableDirectSlots = 1,
+        HaveDirectSlots = true,
       };
 
-      Project = new Project()
-      {
-        Active = true,
-        IsAcceptingClaims = true,
-        ProjectAcls = new List<ProjectAcl>
+        Project = new Project()
         {
-          ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
-        },
-        ProjectFields = new List<ProjectField>()
-        {
-          MasterOnlyField, CharacterField, ConditionalField, HideForUnApprovedClaim, PublicField, ConditionalHeader
-        },
-        Characters = new List<Character>() { Character, CharacterWithoutGroup },
-        CharacterGroups = new List<CharacterGroup> {  Group},
-        Claims = new List<Claim>()
-      };
+            Active = true,
+            IsAcceptingClaims = true,
+            ProjectAcls = new List<ProjectAcl>
+            {
+                ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
+            },
+            ProjectFields = new List<ProjectField>()
+            {
+                MasterOnlyField,
+                CharacterField,
+                ConditionalField,
+                HideForUnApprovedClaim,
+                PublicField,
+                ConditionalHeader,
+            },
+            Characters = new List<Character>() {Character, CharacterWithoutGroup},
+            CharacterGroups = new List<CharacterGroup> {Group},
+            Claims = new List<Claim>(),
+            Details = new ProjectDetails(),
+        };
 
       FixProjectSubEntities(Project);
       //That needs to happen after FixProjectSubEntities(..)
@@ -162,21 +168,22 @@ namespace JoinRpg.DataModel.Mocks
       ConditionalHeader.AvailableForCharacterGroupIds = new[] { Group.CharacterGroupId };
     }
 
-    public Claim CreateClaim(Character mockCharacter, User mockUser)
-    {
-      var claim = new Claim
+      public Claim CreateClaim(Character mockCharacter, User mockUser)
       {
-        Project = Project,
-        Character = mockCharacter,
-        CharacterId = mockCharacter.CharacterId,
-        Player = mockUser,
-        PlayerUserId = mockUser.UserId
-      };
-      Project.Claims.Add(claim);
-      return claim;
-    }
+          var claim = new Claim
+          {
+              Project = Project,
+              Character = mockCharacter,
+              CharacterId = mockCharacter.CharacterId,
+              Player = mockUser,
+              PlayerUserId = mockUser.UserId
+          };
+          Project.Claims.Add(claim);
+          mockUser.Claims.Add(claim);
+          return claim;
+      }
 
-    public Claim CreateClaim(CharacterGroup mockGroup, User mockUser)
+      public Claim CreateClaim(CharacterGroup mockGroup, User mockUser)
     {
       var claim = new Claim
       {
@@ -187,6 +194,7 @@ namespace JoinRpg.DataModel.Mocks
         PlayerUserId = mockUser.UserId
       };
       Project.Claims.Add(claim);
+        mockUser.Claims.Add(claim);
       return claim;
     }
 

@@ -71,6 +71,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="AddClaimViewModelTest.cs" />
     <Compile Include="CustomFieldsViewModelTest.cs" />
     <Compile Include="EnumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

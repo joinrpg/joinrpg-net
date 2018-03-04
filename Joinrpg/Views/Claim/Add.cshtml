@@ -3,7 +3,7 @@
 @Scripts.Render("~/Scripts/claim.js")
 
 @{
-    ViewBag.Title = "Новая заявка на игру «" + @Model.ProjectName + "»";
+    ViewBag.Title = "Новая заявка на игру «" + Model.ProjectName + "»";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -15,26 +15,31 @@
     @Html.HiddenFor(model => model.ProjectId)
 
     <div class="form-horizontal">
+        @if (!Model.IsProjectAccepting)
+        {
+            <div class="alert alert-warning">
+                Заявки на проект закрыты.
+            </div>
+            return;
+        }
+
         @if (!Model.IsAvailable)
         {
-            if (!Model.IsProjectAccepting)
-            {
-                <div class="alert alert-warning">
-                    Заявки на проект закрыты. 
-                </div>
-                return;
-            }
-
             if (Model.IsRoot)
             {
                 <div class="alert alert-warning">
                     Мастера проекта закрыли заявки «просто на игру».
                     Вы должны выбрать определенную роль
-                    из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new {ProjectId = Model.ProjectId }, null), чтобы заявиться на проект.
+                    из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new {Model.ProjectId}, null), чтобы заявиться.
                 </div>
-                return;
             }
-            <div class="alert alert-danger">Заявки не принимаются</div>
+            else
+            {
+                <div class="alert alert-warning">
+                    Заявки на роль «@Model.TargetName» не принимаются.
+                    Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new {Model.ProjectId}, null)?
+                </div>
+            }
         }
         else if (Model.HasApprovedClaim)
         {
@@ -54,7 +59,7 @@
             <div>@Model.ClaimApplyRules</div>
         }
 
-        @if (Model.CharacterId != null)
+        @if (!Model.IsRoot)
         {
             <div class="form-group">
                 @Html.LabelFor(model => model.TargetName, htmlAttributes: new {@class = "control-label col-md-2"})
@@ -62,23 +67,9 @@
                     @Html.DisplayFor(model => model.TargetName, new {htmlAttributes = new {@class = "form-control"}})
                 </div>
             </div>
-
-            @Html.HiddenFor(model => model.CharacterId)
         }
 
-        @if (Model.CharacterGroupId != null)
-        {
-            if (!Model.IsRoot)
-            {
-                <div class="form-group">
-                    @Html.LabelFor(model => model.TargetName, htmlAttributes: new {@class = "control-label col-md-2"})
-                    <div class="col-md-10">
-                        @Html.DisplayFor(model => model.TargetName, new {htmlAttributes = new {@class = "form-control"}})
-                    </div>
-                </div>
-            }
-            @Html.HiddenFor(model => model.CharacterGroupId)
-        }
+
 
         @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
@@ -91,26 +82,29 @@
             </div>
         }
 
-        @{ ViewBag.HideCharacterClaimFieldsIcon = true; }
-
-        @Html.Partial("_EditFieldsPartial", Model.Fields)
-
-        @if (Model.Fields.Fields.Any(f => f.HasPrice))
+        @if (Model.CanSendClaim)
         {
-            Html.RenderPartial("_ClaimFieldsSubtotal", 0);
-        }
+            ViewBag.HideCharacterClaimFieldsIcon = true;
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.ClaimText, htmlAttributes: new {@class = "control-label col-md-2"})
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.ClaimText, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.ClaimText, "", new {@class = "text-danger"})
-                @Html.DescriptionFor(model => model.ClaimText)
+            @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+            if (Model.Fields.Fields.Any(f => f.HasPrice))
+            {
+                Html.RenderPartial("_ClaimFieldsSubtotal", 0);
+            }
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.ClaimText, htmlAttributes: new {@class = "control-label col-md-2"})
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.ClaimText, new {htmlAttributes = new {@class = "form-control"}})
+                    @Html.ValidationMessageFor(model => model.ClaimText, "", new {@class = "text-danger"})
+                    @Html.DescriptionFor(model => model.ClaimText)
+                </div>
             </div>
-        </div>
 
-        @if (!Model.HasApprovedClaim && Model.IsAvailable && !Model.HasMyClaim)
-        {
+            @Html.HiddenFor(model => model.CharacterId)
+            @Html.HiddenFor(model => model.CharacterGroupId)
+
             <div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
                     <input type="submit" value="Отправить заявку" class="btn btn-success"/>

@@ -109,7 +109,7 @@ namespace JoinRpg.Services.Impl
 
       MarkChanged(source);
 
-      EnsureCanAddClaim(oldClaim.PlayerUserId, source);
+        source.EnsureCanAddClaim(oldClaim.PlayerUserId);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
@@ -170,7 +170,7 @@ namespace JoinRpg.Services.Impl
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
-      EnsureCanAddClaim(CurrentUserId, source);
+        source.EnsureCanAddClaim(CurrentUserId);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
@@ -229,19 +229,7 @@ namespace JoinRpg.Services.Impl
         }
     }
 
-    private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
-    {
-      //TODO add more validation checks, move to Domain
-      if (claimSource.HasClaimForUser(currentUserId))
-      {
-        throw new ClaimAlreadyPresentException();
-      }
-      claimSource.EnsureAvailable();
-
-      claimSource.EnsureProjectActive();
-    }
-
-    public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
+      public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
       var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
           ExtraAccessReason.Player);
@@ -624,7 +612,7 @@ namespace JoinRpg.Services.Impl
       //Grab subscribtions before change 
       var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
-      EnsureCanAddClaim(claim.PlayerUserId, source);
+        source.EnsureCanAddClaim(claim.PlayerUserId);
 
       MarkCharacterChangedIfApproved(claim); // before move
 

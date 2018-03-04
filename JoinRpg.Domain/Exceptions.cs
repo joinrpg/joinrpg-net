@@ -115,7 +115,12 @@ namespace JoinRpg.Domain
     public ClaimAlreadyPresentException(): base("Claim already present for this character or group.") { }
   }
 
-  public class ClaimTargetIsNotAcceptingClaims: JoinRpgBaseException
+    public class OnlyOneApprovedClaimException: JoinRpgBaseException
+    {
+        public OnlyOneApprovedClaimException() : base("Approved claim already present for this player, and project allows only one character.") { }
+    }
+
+    public class ClaimTargetIsNotAcceptingClaims: JoinRpgBaseException
   {
     public ClaimTargetIsNotAcceptingClaims() : base("This character or group does not accept claims.") { }
   }

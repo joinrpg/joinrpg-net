@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddClaimForbideReasonTranslation.cs" />
     <Compile Include="EnumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -70,6 +71,10 @@
       <Project>{bd1358f0-8c7b-4205-84bc-b1c954364df0}</Project>
       <Name>JoinRpg.DataModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
+      <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
+      <Name>JoinRpg.Domain</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj">
       <Project>{7b8db01f-423b-4bc9-9336-50d772f34f82}</Project>
       <Name>JoinRpg.TestHelpers</Name>
@@ -80,6 +85,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\xunit.analyzers.0.8.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
