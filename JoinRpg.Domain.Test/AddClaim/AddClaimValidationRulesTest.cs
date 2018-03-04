@@ -22,6 +22,18 @@ namespace JoinRpg.Domain.Test.AddClaim
         }
 
         [Fact]
+        public void AddClaimAllowedCharacterWithoutUser()
+        {
+            Mock.Character.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void AddClaimAllowedGroupWithoutUser()
+        {
+            Mock.Group.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
+        }
+
+        [Fact]
         public void CantSendClaimIfProjectClaimsClosed()
         {
             Mock.Project.IsAcceptingClaims = false;
@@ -100,6 +112,13 @@ namespace JoinRpg.Domain.Test.AddClaim
         {
             Mock.Project.Details.EnableManyCharacters = true;
             Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
+            ShouldBeAllowed(Mock.Group);
+        }
+
+        [Fact]
+        public void AllowSendClaimEvenIfHasAnotherNotApproved()
+        {
+            Mock.CreateClaim(Mock.Character, Mock.Player);
             ShouldBeAllowed(Mock.Group);
         }
 

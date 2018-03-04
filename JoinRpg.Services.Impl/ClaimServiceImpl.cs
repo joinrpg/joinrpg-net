@@ -97,8 +97,7 @@ namespace JoinRpg.Services.Impl
 
       public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
-      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
-          ExtraAccessReason.Player); //TODO Specific right
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
       oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
       Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
@@ -109,7 +108,7 @@ namespace JoinRpg.Services.Impl
 
       MarkChanged(source);
 
-        source.EnsureCanAddClaim(oldClaim.PlayerUserId);
+        source.EnsureCanMoveClaim(oldClaim);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
@@ -612,7 +611,7 @@ namespace JoinRpg.Services.Impl
       //Grab subscribtions before change 
       var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
-        source.EnsureCanAddClaim(claim.PlayerUserId);
+        source.EnsureCanMoveClaim(claim);
 
       MarkCharacterChangedIfApproved(claim); // before move
 
@@ -648,7 +647,7 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
-    public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
+      public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
       var watermarks =
         UnitOfWork.GetDbSet<ReadCommentWatermark>()

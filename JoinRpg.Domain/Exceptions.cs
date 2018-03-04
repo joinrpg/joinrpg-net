@@ -110,6 +110,13 @@ namespace JoinRpg.Domain
     }
   }
 
+    public class ApprovedClaimCannotBeMovedFromCharacterException : JoinRpgBaseException
+    {
+        public ApprovedClaimCannotBeMovedFromCharacterException() : base("Cannot move Approved Claim from character to character group")
+        {
+        }
+    }
+
   public class ClaimAlreadyPresentException : JoinRpgBaseException
   {
     public ClaimAlreadyPresentException(): base("Claim already present for this character or group.") { }

@@ -80,6 +80,7 @@
     <Compile Include="FinanceExtensions.cs" />
     <Compile Include="ProjectEntityExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResponsibleMasterExtensions.cs" />
     <Compile Include="SubscribeExtensions.cs" />
     <Compile Include="SubscribeOptionsExtensions.cs" />
     <Compile Include="TagExtensions.cs" />

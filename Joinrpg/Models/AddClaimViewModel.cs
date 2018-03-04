@@ -27,15 +27,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание")]
         public IHtmlString Description { get; set; }
 
-        public bool HasApprovedClaim { get; set; }
-
-        public bool HasAnyClaim { get; set; }
-
-        public bool HasMyClaim { get; set; }
-
         public bool IsAvailable { get; set; }
-
-        public bool IsProjectAccepting { get; set; }
 
         public IReadOnlyCollection<AddClaimForbideReasonViewModel> ValidationStatus
         {
@@ -51,38 +43,58 @@ namespace JoinRpg.Web.Models
         [ReadOnly(true)]
         public CustomFieldsViewModel Fields { get; private set; }
 
-        public static AddClaimViewModel Create(Character character, User user)
-            => new AddClaimViewModel {CharacterId = character.CharacterId}.Fill(character, user);
+        public static AddClaimViewModel Create(Character character, int playerUserId)
+            => new AddClaimViewModel {CharacterId = character.CharacterId}.Fill(character, playerUserId);
 
-        public static AddClaimViewModel Create(CharacterGroup group, User user)
-            => new AddClaimViewModel {CharacterGroupId = group.CharacterGroupId}.Fill(group, user);
+        public static AddClaimViewModel Create(CharacterGroup group, int playerUserId)
+            => new AddClaimViewModel {CharacterGroupId = group.CharacterGroupId}.Fill(group, playerUserId);
 
-        public AddClaimViewModel Fill(IClaimSource obj, User user)
+        public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId)
         {
-            var disallowReasons = obj.ValidateIfCanAddClaim(user.UserId);
+            var disallowReasons = claimSource.ValidateIfCanAddClaim(playerUserId)
+                .Select(x => x.ToViewModel()).ToList();
 
             CanSendClaim = !disallowReasons.Any();
 
-            ValidationStatus = disallowReasons.Select(x => x.ToViewModel()).ToList();
+            IsProjectRelatedReason = disallowReasons.Intersect(new[]
+                {
+                    AddClaimForbideReasonViewModel.ProjectClaimsClosed,
+                    AddClaimForbideReasonViewModel.ProjectNotActive,
+                })
+                .Any();
 
-            IsProjectAccepting = obj.Project.IsAcceptingClaims;
-            ProjectId = obj.Project.ProjectId;
-            ProjectName = obj.Project.ProjectName;
-            HasAnyClaim = user.Claims.Any(c => c.ProjectId == obj.ProjectId && c.IsPending);
-            HasApprovedClaim = !obj.Project.Details.EnableManyCharacters &&
-                               obj.Project.Claims.OfUserApproved(user.UserId).Any();
-            HasMyClaim = obj.HasClaimForUser(user.UserId);
-            TargetName = obj.Name;
-            Description = obj.Description.ToHtmlString();
-            IsAvailable = obj.IsAvailable;
-            ClaimApplyRules = obj.Project.Details.ClaimApplyRules.ToHtmlString();
-            Fields = new CustomFieldsViewModel(user.UserId, obj);
-            IsRoot = obj.IsRoot;
+            
+
+            if (!disallowReasons.Any())
+            {
+                var myClaims = claimSource.Project.Claims.OfUserActive(playerUserId);
+                if (myClaims.Any())
+                {
+                    disallowReasons.Add(AddClaimForbideReasonViewModel
+                        .AlredySentNotApprovedClaimToAnotherPlace);
+                }
+            }
+
+            ValidationStatus = disallowReasons;
+            ProjectAllowsMultipleCharacters = claimSource.Project.Details.EnableManyCharacters;
+
+            ProjectId = claimSource.Project.ProjectId;
+            ProjectName = claimSource.Project.ProjectName;
+            TargetName = claimSource.Name;
+            Description = claimSource.Description.ToHtmlString();
+            IsAvailable = claimSource.IsAvailable;
+            ClaimApplyRules = claimSource.Project.Details.ClaimApplyRules.ToHtmlString();
+            Fields = new CustomFieldsViewModel(playerUserId, claimSource);
+            IsRoot = claimSource.IsRoot;
             return this;
         }
 
         public bool IsRoot { get; private set; }
 
         public bool CanSendClaim { get; private set; }
+
+        public bool IsProjectRelatedReason { get; private set; }
+
+        public bool ProjectAllowsMultipleCharacters { get; private set; }
     }
 }

@@ -77,6 +77,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj">
+      <Project>{81185840-6DA0-440B-813A-E32D6CCAD34E}</Project>
+      <Name>JoinRpg.CommonUI.Models</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj">
       <Project>{87ac11e6-9c66-468a-ac68-927d61d1e233}</Project>
       <Name>JoinRpg.DataModel.Mocks</Name>

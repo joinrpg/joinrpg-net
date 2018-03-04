@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="AddClaim\AddClaimValidationRulesTest.cs" />
     <Compile Include="AddClaim\ExceptionTranslationTest.cs" />
+    <Compile Include="AddClaim\MoveClaimValidationRulesTest.cs" />
     <Compile Include="ClaimSourceExtensionsTest.cs" />
     <Compile Include="CustomFieldsExtensionsTest.cs" />
     <Compile Include="FieldSaveHelperTest.cs" />
