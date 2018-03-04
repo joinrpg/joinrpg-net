@@ -25,6 +25,9 @@ namespace JoinRpg.Services.Interfaces.Notification
         Task Email([NotNull] OccupyRoomEmail createClaimEmail);
         Task Email([NotNull] UnOccupyRoomEmail email);
         Task Email([NotNull] LeaveRoomEmail email);
+        Task Email([NotNull] NewInviteEmail email);
+        Task Email([NotNull] AcceptInviteEmail email);
+        Task Email([NotNull] DeclineInviteEmail email);
     }
 
     public static class EmailTokens

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -82,5 +82,14 @@ namespace JoinRpg.Domain
           return room.Inhabitants.SelectMany(i => i.Subjects).SelectMany( claim =>
               claim.GetSubscriptions(subs => subs.AccommodationChange, Enumerable.Empty<User>()).Distinct().ToList());
       }
-  }
+
+      public static ICollection<User> GetInviteSubscriptions(this Claim[] possibleRecipients)
+      {
+          return possibleRecipients.Select(claim =>
+              claim.GetSubscriptions(subs => subs.AccommodationChange, Enumerable.Empty<User>()))
+              .SelectMany(user=>user)
+              .Distinct()
+              .ToList();
+      }
+    }
 }

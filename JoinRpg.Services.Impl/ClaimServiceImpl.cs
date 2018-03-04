@@ -490,7 +490,7 @@ namespace JoinRpg.Services.Impl
                   ? ExtraAccessReason.PlayerOrResponsible
                   : ExtraAccessReason.None);
 
-          // Player cannot change accommodation type if aready checked in
+          // Player cannot change accommodation type if already checked in
 
           if (claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
           {

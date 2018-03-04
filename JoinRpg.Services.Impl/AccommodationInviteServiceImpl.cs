@@ -9,17 +9,22 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Extensions;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
     [UsedImplicitly]
     public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
-        public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) :
+            base(unitOfWork)
         {
+            EmailService = emailService;
         }
 
-        public async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
+        private IEmailService EmailService { get; }
+
+        private async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
             int accommodationRequestId)
@@ -37,6 +42,7 @@ namespace JoinRpg.Services.Impl
                 .Where(request => request.Id == accommodationRequestId)
                 .Include(request => request.Subjects)
                 .Include(request => request.AccommodationType)
+                .Include(c => c.Project)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
             //we not allow invitation to/from already settled members
@@ -78,16 +84,36 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             //todo email it
 
+            var receiver = await UnitOfWork
+                .GetDbSet<Claim>()
+                .Where(claim => claim.ClaimId == receiverClaimId)
+                .ToArrayAsync().ConfigureAwait(false);
+
+            await EmailService
+                .Email(await CreateInviteEmail<NewInviteEmail>(receiver,
+                    senderAccommodationRequest.Project).ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             return inviteRequest;
         }
 
+        private async Task<T> CreateInviteEmail<T>(Claim[] recipients, Project project)
+            where T : InviteEmailModel, new()
+        {
+            return new T()
+            {
+                Initiator = await GetCurrentUser().ConfigureAwait(false),
+                ProjectName = project.ProjectName,
+                Recipients = recipients.GetInviteSubscriptions(),
+                Text = new MarkdownString()
+            };
+        }
 
-
-        private async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToAccommodationRequest(int projectId,
-            int senderClaimId,
-            int receiverAccommodationRequestId,
-            int accommodationRequestId)
+        private async Task<IEnumerable<AccommodationInvite>>
+            CreateAccommodationInviteToAccommodationRequest(int projectId,
+                int senderClaimId,
+                int receiverAccommodationRequestId,
+                int accommodationRequestId)
         {
             //todo: make null result descriptive
 
@@ -115,7 +141,7 @@ namespace JoinRpg.Services.Impl
                 senderAccommodationRequest?.AccommodationTypeId &&
                 receiverCurrentAccommodationRequest?.AccommodationTypeId != null)
             {
-                return null; 
+                return null;
             }
 
             var newDwellersCount = receiverCurrentAccommodationRequest?.Subjects.Count ?? 1;
@@ -130,32 +156,38 @@ namespace JoinRpg.Services.Impl
                 return null;
             }
 
-            var receiversClaimIds = await UnitOfWork
+            var receiversClaims = await UnitOfWork
                 .GetDbSet<Claim>()
                 .Where(claim => claim.AccommodationRequest_Id == receiverAccommodationRequestId)
-                .Select(claim=>claim.ClaimId)
-                .ToListAsync()
+                .Include(c=>c.Player)
+                .ToArrayAsync()
                 .ConfigureAwait(false);
             var result = new List<AccommodationInvite>();
-            foreach (var receiverClaimId in receiversClaimIds)
+            foreach (var receiverClaim in receiversClaims)
             {
                 var inviteRequest = new AccommodationInvite
                 {
                     ProjectId = projectId,
                     FromClaimId = senderClaimId,
-                    ToClaimId = receiverClaimId,
+                    ToClaimId = receiverClaim.ClaimId,
                     IsAccepted = AccommodationRequest.InviteState.Unanswered
                 };
 
                 UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
                 result.Add(inviteRequest);
             }
-           
+
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+
+            await EmailService
+                .Email(await CreateInviteEmail<NewInviteEmail>(receiversClaims,
+                    senderAccommodationRequest.Project).ConfigureAwait(false))
+                .ConfigureAwait(false);
             return result;
         }
 
-        public async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(int projectId,
+        public async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(
+            int projectId,
             int senderClaimId,
             string receiverClaimOrAccommodationRequestId,
             int accommodationRequestId,
@@ -167,10 +199,13 @@ namespace JoinRpg.Services.Impl
                     int.Parse(receiverClaimOrAccommodationRequestId.Substring(2)),
                     accommodationRequestId).ConfigureAwait(false);
 
-            return new[]{ await CreateAccommodationInvite(projectId,
-                senderClaimId,
-                int.Parse(receiverClaimOrAccommodationRequestId),
-                accommodationRequestId).ConfigureAwait(false)};
+            return new[]
+            {
+                await CreateAccommodationInvite(projectId,
+                    senderClaimId,
+                    int.Parse(receiverClaimOrAccommodationRequestId),
+                    accommodationRequestId).ConfigureAwait(false)
+            };
         }
 
 
@@ -222,6 +257,19 @@ namespace JoinRpg.Services.Impl
             inviteRequest.ResolveDescription = ResolveDescription.Accepted;
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
+
+            var receivers = await UnitOfWork.GetDbSet<Claim>()
+                    .Where(claim => inviteRequest.FromClaimId == claim.ClaimId)
+                .Include(claim=>claim.Player)
+                .ToArrayAsync()
+                .ConfigureAwait(false);
+                
+            await EmailService
+                .Email(await CreateInviteEmail<AcceptInviteEmail>(receivers,
+                    inviteRequest.Project).ConfigureAwait(false))
+                .ConfigureAwait(false);
+
+
             return inviteRequest;
         }
 
@@ -241,13 +289,29 @@ namespace JoinRpg.Services.Impl
             //todo: make null result descriptive
             var inviteRequest = await UnitOfWork.GetDbSet<AccommodationInvite>()
                 .Where(invite => invite.Id == inviteId)
+                .Include(invite=>invite.Project)
                 .FirstOrDefaultAsync().ConfigureAwait(false);
+
+            if(inviteRequest == null)
+                throw new Exception("Invite request not found.");
 
             inviteRequest.IsAccepted = newState;
             inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled
                 ? ResolveDescription.Canceled
                 : ResolveDescription.Declined;
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
+
+            var receivers = await UnitOfWork
+                .GetDbSet<Claim>()
+                .Where(claim => claim.ClaimId == inviteRequest.FromClaimId || claim.ClaimId == inviteRequest.ToClaimId)
+                .Include(c => c.Player)
+                .ToArrayAsync()
+                .ConfigureAwait(false);
+
+            await EmailService
+                .Email(await CreateInviteEmail<DeclineInviteEmail>(receivers,
+                    inviteRequest.Project).ConfigureAwait(false))
+                .ConfigureAwait(false);
 
             return inviteRequest;
         }

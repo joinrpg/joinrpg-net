@@ -229,6 +229,39 @@ namespace JoinRpg.Services.Email
 ");
         }
 
+        public Task Email(NewInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} отправил Вам приглашение к совместному проживанию.";
+    
+            return SendInviteEmail(email, body);
+        }
+
+        public Task Email(DeclineInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} отменил приглашение к совместному проживанию.";
+
+            return SendInviteEmail(email, body);
+        }
+
+        public Task Email(AcceptInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} принял Ваше приглашение к совместному проживанию.";
+
+            return SendInviteEmail(email, body);
+        }
+
+        private async Task SendInviteEmail(InviteEmailModel email, string body)
+        {
+            await MessageService.SendEmail(email, $"{email.ProjectName}: приглашения к проживанию",
+                $@"{StandartGreeting()}
+
+{body}
+
+{email.Initiator.GetDisplayName()}
+
+");
+        }
+
         public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",
           "Игрок прошел регистрацию на полигоне");
 

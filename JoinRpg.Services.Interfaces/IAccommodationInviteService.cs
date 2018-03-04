@@ -5,11 +5,12 @@ using JoinRpg.DataModel;
 namespace JoinRpg.Services.Interfaces
 {
     public interface IAccommodationInviteService
-    {
+    {/*
         Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
             int accommodationRequestId);
+            */
         Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(int projectId,
             int senderClaimId,
             string receiverClaimOrAccommodationRequestId,
