@@ -414,8 +414,9 @@ namespace JoinRpg.Services.Impl
           claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
           var roomEmail = await CommonClaimDecline(claim);
+          await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
-          var email =
+            var email =
               await
                   AddCommentWithEmail<DeclineByMasterEmail>(commentText,
                       claim,
@@ -559,7 +560,7 @@ namespace JoinRpg.Services.Impl
           claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
 
-          await accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+          await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
             var roomEmail = await CommonClaimDecline(claim);
 
@@ -794,13 +795,13 @@ namespace JoinRpg.Services.Impl
       }
     }
 
-      private IAccommodationInviteService accommodationInviteService;
+      private readonly IAccommodationInviteService _accommodationInviteService;
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
       IFieldDefaultValueGenerator fieldDefaultValueGenerator,
         IAccommodationInviteService accommodationInviteService) : base(unitOfWork, emailService,
       fieldDefaultValueGenerator)
     {
-        this.accommodationInviteService = accommodationInviteService;
+        this._accommodationInviteService = accommodationInviteService;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
