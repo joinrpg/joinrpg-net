@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.Helpers
 @model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
 
 @if (!Model.OutgoingInvite.Any())
@@ -13,24 +14,7 @@
         <table class="table">
             @foreach (var accommodationInvite in Model.OutgoingInvite)
             {
-                switch (@accommodationInvite.IsAccepted)
-                {
-                    case AccommodationRequest.InviteState.Unanswered:
-                        resolveSectionClassName = "text-info";
-                        break;
-                    case AccommodationRequest.InviteState.Accepted:
-                        resolveSectionClassName = "text-success";
-                        break;
-                    case AccommodationRequest.InviteState.Declined:
-                        resolveSectionClassName = "text-danger";
-                        break;
-                    case AccommodationRequest.InviteState.Canceled:
-                        resolveSectionClassName = "text-warning";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                <tr>
+               <tr>
                     <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
                     @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
                     {
@@ -49,7 +33,7 @@
                     }
                     else
                     {
-                        <td class="@resolveSectionClassName"> @accommodationInvite.ResolveDescription </td>
+                        <td class="@accommodationInvite.IsAccepted.GetAppropriateTextStyle()">  @accommodationInvite.IsAccepted.GetDescription() </td>
                     }
                 </tr>
             }

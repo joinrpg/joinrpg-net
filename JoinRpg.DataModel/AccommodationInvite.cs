@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
@@ -20,17 +21,30 @@ namespace JoinRpg.DataModel
         [ForeignKey("ToClaimId")]
         public virtual Claim To { get; set; }
         public AccommodationRequest.InviteState IsAccepted { get; set; }
-        public ResolveDescription ResolveDescription { get; set; } = ResolveDescription.Open;
+        public ResolveDescription ResolveDescription { get; set; } = ResolveDescription.Unspecified;
     }
 
     public enum ResolveDescription
     {
+        [Description("Не указан")]
+        Unspecified,
+        [Description("Отправлено")]
         Open,
+        [Description("Принято игроком")]
         Accepted,
+        [Description("Принято автоматически")]
         AcceptedAuto,
+        [Description("Принято мастером")]
         AcceptedByMaster,
+        [Description("Отколнено игроком")]
         Declined,
+        [Description("Отколнено автоматически")]
+        DeclinedAuto,
+        [Description("Отколнено мастером")]
+        DeclinedByMaster,
+        [Description("Отколнено принятием другого приглашения")]
         DeclinedWithAcceptOther,
+        [Description("Отозвано")]
         Canceled
     
     }

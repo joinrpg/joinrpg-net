@@ -107,7 +107,7 @@
             Value = InviteRequestViewModel.AccommodationRequestPrefix + neighborGroup.Key.ToString(),
             Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
             ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result)?"": ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
-            Subtext = neighborGroup.Count()>1? "<br />(группа проживающих)":""
+            Subtext = neighborGroup.Count()>1? "<br/>(группа проживающих)":""
             });
 
             var unGroupedNeighbors = Model.PotentialNeighbors
@@ -118,7 +118,7 @@
             Value = neighbor.ClaimId.ToString(),
             Text = neighbor.UserName,
             ExtraSearch = neighbor.ClaimName,
-            Subtext = "<br />еще не выбрал тип проживания"
+            Subtext = "<br/>еще не выбрал тип проживания"
             });
 
 

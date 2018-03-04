@@ -226,6 +226,8 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Helpers\EnumExtensions.cs" />
+    <Compile Include="Helpers\InviteStateExtensions.cs" />
     <Compile Include="Models\AccommodationPotentialNeighbors.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccRequestViewModel.cs" />
