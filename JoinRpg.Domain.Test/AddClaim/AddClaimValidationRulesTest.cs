@@ -71,6 +71,13 @@ namespace JoinRpg.Domain.Test.AddClaim
         }
 
         [Fact]
+        public void CantSendClaimIfCharacterHasCheckedInClaim()
+        {
+            Mock.CreateCheckedInClaim(Mock.Character, Mock.Master);
+            ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.Busy);
+        }
+
+        [Fact]
         public void CantSendClaimToSameGroup()
         {
             Mock.CreateClaim(Mock.Group, Mock.Player);

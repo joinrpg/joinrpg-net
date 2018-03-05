@@ -17,6 +17,13 @@ namespace JoinRpg.Domain.Test.AddClaim
         }
 
         [Fact]
+        public void AllowMoveClaimFromCharacterToCharacter()
+        {
+            var claim = Mock.CreateClaim(Mock.Character, Mock.Player);
+            ShouldAllowMove(claim, Mock.CharacterWithoutGroup);
+        }
+
+        [Fact]
         public void AllowMoveClaimFromGroupToCharacter()
         {
             var claim = Mock.CreateClaim(Mock.Group, Mock.Player);
@@ -28,6 +35,14 @@ namespace JoinRpg.Domain.Test.AddClaim
         {
             var claim = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
             ShouldDisAllowMove(claim, Mock.Group, AddClaimForbideReason.ApprovedClaimMovedToGroup);
+        }
+
+
+        [Fact]
+        public void CantMoveCheckedInClaimFromCharacterToCharacter()
+        {
+            var claim = Mock.CreateCheckedInClaim(Mock.Character, Mock.Player);
+            ShouldDisAllowMove(claim, Mock.CharacterWithoutGroup, AddClaimForbideReason.CheckedInClaimCantBeMoved);
         }
 
 

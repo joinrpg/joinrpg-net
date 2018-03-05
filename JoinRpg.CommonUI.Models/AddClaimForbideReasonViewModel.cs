@@ -15,6 +15,8 @@ namespace JoinRpg.CommonUI.Models
         OnlyOneCharacter,
         AlredySentNotApprovedClaimToAnotherPlace,
         ApprovedClaimMovedToGroup,
+        CheckedInClaimCantBeMoved
+
     }
 
     public static class AddClaimForbideReasonToViewModel
@@ -41,8 +43,10 @@ namespace JoinRpg.CommonUI.Models
                     return AddClaimForbideReasonViewModel.OnlyOneCharacter;
                 case AddClaimForbideReason.ApprovedClaimMovedToGroup:
                     return AddClaimForbideReasonViewModel.ApprovedClaimMovedToGroup;
+                case AddClaimForbideReason.CheckedInClaimCantBeMoved:
+                    return AddClaimForbideReasonViewModel.CheckedInClaimCantBeMoved;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(reason), reason, null);
+                    throw new ArgumentOutOfRangeException(nameof(reason), reason, message: null);
             }
         }
     }

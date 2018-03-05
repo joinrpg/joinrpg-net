@@ -8,7 +8,7 @@ namespace JoinRpg.DataModel.Mocks
     public Project Project { get; }
     public CharacterGroup Group { get; }
     public User Player { get; } = new User() { UserId = 1, PrefferedName = "Player", Email = "player@example.com", Claims = new HashSet<Claim>()};
-    public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com" };
+    public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>()};
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
     public ProjectField ConditionalField { get; }
@@ -203,7 +203,17 @@ namespace JoinRpg.DataModel.Mocks
       var claim = CreateClaim(character, player);
       claim.ClaimStatus = Claim.Status.Approved;
       character.ApprovedClaim = claim;
+        character.ApprovedClaimId = claim.ClaimId;
       return claim;
     }
-  }
+
+      public Claim CreateCheckedInClaim(Character character, User player)
+      {
+          var claim = CreateClaim(character, player);
+          claim.ClaimStatus = Claim.Status.CheckedIn;
+          character.ApprovedClaim = claim;
+          character.ApprovedClaimId = claim.ClaimId;
+            return claim;
+      }
+    }
 }
