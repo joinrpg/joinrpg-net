@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using JoinRpg.Domain;
 
 namespace JoinRpg.DataModel.Mocks
@@ -11,10 +13,8 @@ namespace JoinRpg.DataModel.Mocks
     public User Master { get; } = new User() { UserId = 2, PrefferedName = "Master", Email = "master@example.com", Claims = new HashSet<Claim>()};
     public ProjectField MasterOnlyField { get; }
     public ProjectField CharacterField { get; }
-    public ProjectField ConditionalField { get; }
     public ProjectField HideForUnApprovedClaim { get; }
     public ProjectField PublicField { get; }
-    public ProjectField ConditionalHeader { get; }
 
     public Character Character { get; }
     public Character CharacterWithoutGroup { get; }
@@ -52,121 +52,114 @@ namespace JoinRpg.DataModel.Mocks
 
 
 
-    public MockedProject()
-    {
-      MasterOnlyField = new ProjectField()
+      public MockedProject()
       {
-        CanPlayerEdit = false,
-        CanPlayerView = false,
-        IsActive = true,
-        ShowOnUnApprovedClaims = true
-      };
-      CharacterField = new ProjectField()
+          MasterOnlyField = new ProjectField()
+          {
+              CanPlayerEdit = false,
+              CanPlayerView = false,
+              IsActive = true,
+              ShowOnUnApprovedClaims = true
+          };
+          CharacterField = new ProjectField()
+          {
+              CanPlayerEdit = true,
+              CanPlayerView = true,
+              IsActive = true,
+              FieldBoundTo = FieldBoundTo.Character,
+              ShowOnUnApprovedClaims = true,
+              AvailableForCharacterGroupIds = new int[0]
+          };
+
+          HideForUnApprovedClaim = new ProjectField()
+          {
+              CanPlayerEdit = true,
+              CanPlayerView = true,
+              IsActive = true,
+              FieldBoundTo = FieldBoundTo.Character,
+              ShowOnUnApprovedClaims = false,
+              AvailableForCharacterGroupIds = new int[0]
+          };
+
+          PublicField = new ProjectField()
+          {
+              CanPlayerEdit = false,
+              CanPlayerView = true,
+              IsPublic = true,
+              IsActive = true,
+              FieldBoundTo = FieldBoundTo.Character,
+              AvailableForCharacterGroupIds = new int[0],
+              ShowOnUnApprovedClaims = true,
+          };
+
+          var characterFieldValue = new FieldWithValue(CharacterField, "Value");
+          var publicFieldValue = new FieldWithValue(PublicField, "Public");
+          Character = new Character
+          {
+              IsActive = true,
+              IsAcceptingClaims = true,
+              ParentCharacterGroupIds = new int[0]
+          };
+
+          CharacterWithoutGroup = new Character
+          {
+              IsActive = true,
+              IsAcceptingClaims = true,
+              ParentCharacterGroupIds = new int[0]
+          };
+
+
+          Group = new CharacterGroup()
+          {
+              AvaiableDirectSlots = 1,
+              HaveDirectSlots = true,
+          };
+
+          Project = new Project()
+          {
+              Active = true,
+              IsAcceptingClaims = true,
+              ProjectAcls = new List<ProjectAcl>
+              {
+                  ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
+              },
+              ProjectFields = new List<ProjectField>()
+              {
+                  MasterOnlyField,
+                  CharacterField,
+                  HideForUnApprovedClaim,
+                  PublicField,
+              },
+              Characters = new List<Character>() {Character, CharacterWithoutGroup},
+              CharacterGroups = new List<CharacterGroup> {Group},
+              Claims = new List<Claim>(),
+              Details = new ProjectDetails(),
+          };
+
+          FixProjectSubEntities(Project);
+          //That needs to happen after FixProjectSubEntities(..)
+          //Character.JsonData = new[] {characterFieldValue, publicFieldValue}.SerializeFields();
+
+          Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
+
+      }
+
+      public ProjectField CreateConditionalField(ProjectField field, CharacterGroup conditionGroup)
       {
-        CanPlayerEdit = true,
-        CanPlayerView = true,
-        IsActive = true,
-        FieldBoundTo = FieldBoundTo.Character,
-        ShowOnUnApprovedClaims = true,
-        AvailableForCharacterGroupIds = new int[0]
-      };
-      ConditionalField = new ProjectField()
+          AddField(field);
+          field.AvailableForCharacterGroupIds = new[] {conditionGroup.CharacterGroupId};
+          return field;
+      }
+
+      private void AddField(ProjectField field)
       {
-        CanPlayerEdit = true,
-        CanPlayerView = true,
-        IsActive = true,
-        ShowOnUnApprovedClaims = true,
-        FieldBoundTo = FieldBoundTo.Character,
-        AvailableForCharacterGroupIds = new int[0]
-      };
-
-      HideForUnApprovedClaim = new ProjectField()
-      {
-        CanPlayerEdit = true,
-        CanPlayerView = true,
-        IsActive = true,
-        FieldBoundTo = FieldBoundTo.Character,
-        ShowOnUnApprovedClaims = false,
-        AvailableForCharacterGroupIds = new int[0]
-      };
-
-      PublicField = new ProjectField()
-      {
-        CanPlayerEdit = false,
-        CanPlayerView = true,
-        IsPublic = true,
-        IsActive = true,
-        FieldBoundTo = FieldBoundTo.Character,
-        AvailableForCharacterGroupIds = new int[0],
-        ShowOnUnApprovedClaims =  true,
-      };
-
-      ConditionalHeader = new ProjectField()
-      {
-        CanPlayerEdit = true,
-        CanPlayerView = true,
-        IsActive = true,
-        ShowOnUnApprovedClaims = true,
-        FieldBoundTo = FieldBoundTo.Character,
-        AvailableForCharacterGroupIds = new int[0],
-        FieldType = ProjectFieldType.Header
-      };
-
-      var characterFieldValue = new FieldWithValue(CharacterField, "Value");
-      var publicFieldValue = new FieldWithValue(PublicField, "Public");
-      Character = new Character
-      {
-        IsActive = true,
-        IsAcceptingClaims = true,
-        ParentCharacterGroupIds = new int[0]
-      };
-
-      CharacterWithoutGroup = new Character
-      {
-        IsActive = true,
-        IsAcceptingClaims = true,
-        ParentCharacterGroupIds = new int[0]
-      };
-
-
-      Group = new CharacterGroup()
-      {
-        AvaiableDirectSlots = 1,
-        HaveDirectSlots = true,
-      };
-
-        Project = new Project()
-        {
-            Active = true,
-            IsAcceptingClaims = true,
-            ProjectAcls = new List<ProjectAcl>
-            {
-                ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
-            },
-            ProjectFields = new List<ProjectField>()
-            {
-                MasterOnlyField,
-                CharacterField,
-                ConditionalField,
-                HideForUnApprovedClaim,
-                PublicField,
-                ConditionalHeader,
-            },
-            Characters = new List<Character>() {Character, CharacterWithoutGroup},
-            CharacterGroups = new List<CharacterGroup> {Group},
-            Claims = new List<Claim>(),
-            Details = new ProjectDetails(),
-        };
-
-      FixProjectSubEntities(Project);
-      //That needs to happen after FixProjectSubEntities(..)
-      Character.JsonData = new[] { characterFieldValue, publicFieldValue }.SerializeFields();
-
-      Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
-
-      ConditionalField.AvailableForCharacterGroupIds = new[] {Group.CharacterGroupId};
-      ConditionalHeader.AvailableForCharacterGroupIds = new[] { Group.CharacterGroupId };
-    }
+          field.Project = Project;
+          field.ProjectId = Project.ProjectId;
+          field.ProjectFieldId = Project.ProjectFields.Max(f => f.ProjectFieldId) + 1;
+          field.AvailableForCharacterGroupIds = Array.Empty<int>();
+          field.IsActive = true;
+          Project.ProjectFields.Add(field);
+      }
 
       public Claim CreateClaim(Character mockCharacter, User mockUser)
       {
@@ -215,5 +208,37 @@ namespace JoinRpg.DataModel.Mocks
           character.ApprovedClaimId = claim.ClaimId;
             return claim;
       }
-    }
+
+      public ProjectField CreateConditionalHeader()
+      {
+          return CreateConditionalField(new ProjectField()
+              {
+                  CanPlayerEdit = true,
+                  CanPlayerView = true,
+                  ShowOnUnApprovedClaims = true,
+                  FieldBoundTo = FieldBoundTo.Character,
+                  FieldType = ProjectFieldType.Header,
+                  FieldName = "Conditional",
+              },
+              Group);
+      }
+
+      public ProjectField CreateConditionalField()
+      {
+          return CreateConditionalField(new ProjectField()
+              {
+                  CanPlayerEdit = true,
+                  CanPlayerView = true,
+                  IsActive = true,
+                  ShowOnUnApprovedClaims = true,
+                  FieldBoundTo = FieldBoundTo.Character,
+              },
+              Group);
+      }
+
+      public static void AssignFieldValues(IFieldContainter mockCharacter, params FieldWithValue[] fieldWithValues)
+      {
+          mockCharacter.JsonData = fieldWithValues.SerializeFields();
+      }
+  }
 }
