@@ -122,7 +122,7 @@ namespace JoinRpg.Web.Models.Characters
       }
       else // if we have My claims, try select single one. We may fail to do so.
       {
-        claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId).ToArray().TrySelectSingleClaim()?.ClaimId;
+        claimId = character.Claims.Where(c => c.PlayerUserId == currentUserId).TrySelectSingleClaim()?.ClaimId;
       }
 
       var vm = new CharacterNavigationViewModel

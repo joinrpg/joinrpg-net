@@ -103,12 +103,7 @@ namespace JoinRpg.Domain
     public static T EnsureProjectActive<T>(this T entity)
     where T:IProjectEntity
     {
-      if (!entity.Project.Active)
-      {
-        throw new ProjectDeactivedException();
-      }
-
-        return entity;
+        return !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
     }
 
     public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)

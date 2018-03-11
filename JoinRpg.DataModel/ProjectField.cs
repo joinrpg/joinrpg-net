@@ -135,6 +135,8 @@ namespace JoinRpg.DataModel
             }
       
     }
+
+        public override string ToString() => $"ProjectField(Id={ProjectFieldId}, Name={FieldName})";
   }
   
   public enum FieldBoundTo

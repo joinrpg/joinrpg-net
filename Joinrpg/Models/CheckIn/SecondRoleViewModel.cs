@@ -21,7 +21,7 @@ namespace JoinRpg.Web.Models.CheckIn
           {
             Id = c.CharacterId.ToString(),
             Name = c.CharacterName,
-            Master = c.GetResponsibleMaster()?.GetDisplayName() ?? "нет",
+            Master = ResponsibleMasterExtensions.GetResponsibleMaster(c)?.GetDisplayName() ?? "нет",
           });
     }
 

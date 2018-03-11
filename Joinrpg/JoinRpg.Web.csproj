@@ -234,6 +234,7 @@
     <Compile Include="Models\Accommodation\AccomodationReportModels.cs" />
     <Compile Include="Models\Accommodation\ClaimAccommodationViewModel.cs" />
     <Compile Include="Models\Accommodation\RoomViewModel.cs" />
+    <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\Characters\BusyStatusExtensions.cs" />
     <Compile Include="Models\Characters\CharacterBusyStatusView.cs" />
     <Compile Include="Models\Characters\CharacterGroupReportItemViewModel.cs" />
@@ -311,7 +312,6 @@
     <Compile Include="Models\Characters\CharacterTreeBuilder.cs" />
     <Compile Include="Models\Characters\CharacterTreeViewModel.cs" />
     <Compile Include="Models\Characters\CharacterViewModels.cs" />
-    <Compile Include="Models\AddClaimViewModel.cs" />
     <Compile Include="Models\CommentModels.cs" />
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CustomFieldsViewModels.cs" />

@@ -9,28 +9,30 @@ namespace JoinRpg.Domain.Test
   
   public class CustomFieldsExtensionsTest
   {
-    private MockedProject projectMock;
+    private MockedProject projectMock = new MockedProject();
     private ProjectField[] allFieldsExceptMasterOnly;
     private ProjectField[] allFields;
 
       public CustomFieldsExtensionsTest()
-    {
-      projectMock = new MockedProject();
-      allFieldsExceptMasterOnly = new[] 
       {
-        projectMock.CharacterField,
-        projectMock.PublicField,
-        projectMock.HideForUnApprovedClaim,
-        projectMock.ConditionalField,
-        projectMock.ConditionalHeader
-      };
+          var conditionalHeader = projectMock.CreateConditionalHeader();
+          var conditionalField = projectMock.CreateConditionalField();
 
-      allFields = allFieldsExceptMasterOnly
-        .Union(new[] {projectMock.MasterOnlyField})
-        .ToArray();
-    }
+          allFieldsExceptMasterOnly = new[]
+          {
+              projectMock.CharacterField,
+              projectMock.PublicField,
+              projectMock.HideForUnApprovedClaim,
+              conditionalField,
+              conditionalHeader,
+          };
 
-    [Fact]
+          allFields = allFieldsExceptMasterOnly
+              .Union(new[] {projectMock.MasterOnlyField})
+              .ToArray();
+      }
+
+      [Fact]
     public void CharacterFieldVisibilityByPlayerTest()
     {
       VerifyCharacter( //Assert that
@@ -119,14 +121,7 @@ namespace JoinRpg.Domain.Test
 
     private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectField[] expectedFields)
     {
-        expectedFields.Length.ShouldBe(actualFields.Count, $"Expected {expectedFields.Length} fields visible but were {actualFields.Count}");
-
-        foreach (var expectedField in expectedFields)
-        {
-            actualFields.Any(f => f.Field.ProjectFieldId == expectedField.ProjectFieldId)
-                .ShouldBeTrue(
-                    $"The field {expectedField.FieldName} was expected to be visible but was not.");
-        }
+        actualFields.Select(actual => actual.Field).ShouldBe(expectedFields, ignoreOrder: true);
     }
   }
 }

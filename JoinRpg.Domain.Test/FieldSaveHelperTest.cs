@@ -65,6 +65,11 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
             var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+
+            var publicField = new FieldWithValue(mock.PublicField, "Public");
+
+            MockedProject.AssignFieldValues(claim, publicField);
+
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
@@ -74,8 +79,8 @@ namespace JoinRpg.Domain.Test
                     {mock.CharacterField.ProjectFieldId, null}
                 },
                 _generator);
-            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
-                $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+
+            mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaim, "test"), publicField);
             ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
         }
 
@@ -85,6 +90,8 @@ namespace JoinRpg.Domain.Test
             _original = new MockedProject();
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
+            var publicField = new FieldWithValue(mock.PublicField, "Public");
+            MockedProject.AssignFieldValues(mock.Character, publicField);
             FieldSaveHelper.SaveCharacterFields(
                 mock.Master.UserId,
                 mock.Character,
@@ -94,8 +101,8 @@ namespace JoinRpg.Domain.Test
                     {mock.CharacterField.ProjectFieldId, null}
                 },
                 _generator);
-            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
-                $"{{\"{mock.HideForUnApprovedClaim.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+
+            mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.HideForUnApprovedClaim, "test"), publicField);
         }
 
         [Fact]
@@ -104,9 +111,7 @@ namespace JoinRpg.Domain.Test
             _original = new MockedProject();
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
-            var claim = mock.CreateClaim(mock.Character, mock.Player);
-            claim.ClaimStatus = Claim.Status.Approved;
-            mock.Character.ApprovedClaim = claim;
+            var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
@@ -116,8 +121,9 @@ namespace JoinRpg.Domain.Test
                     {mock.CharacterField.ProjectFieldId, "test"}
                 },
                 _generator);
-            ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
-                $"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\",\"{mock.PublicField.ProjectFieldId}\":\"Public\"}}");
+
+            mock.Character.FieldValuesShouldBe(new FieldWithValue(mock.CharacterField, "test"));
+
             ShouldBeTestExtensions.ShouldBe(claim.JsonData, "{}");
         }
 
@@ -128,17 +134,18 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
             var claim = mock.CreateClaim(mock.Character, mock.Player);
+            var conditionalField = mock.CreateConditionalField();
 
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {mock.ConditionalField.ProjectFieldId, "test"}
+                    {conditionalField.ProjectFieldId, "test"}
                 },
                 _generator);
             ShouldBeTestExtensions.ShouldBe(claim.JsonData,
-                $"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}");
+                $"{{\"{conditionalField.ProjectFieldId}\":\"test\"}}");
             ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
                 _original.Character.JsonData,
                 "Adding claim should not modify any character fields");
@@ -152,17 +159,18 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
             var claim = mock.CreateClaim(mock.Group, mock.Player);
+            var conditionalField = mock.CreateConditionalField();
 
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {mock.ConditionalField.ProjectFieldId, "test"}
+                    {conditionalField.ProjectFieldId, "test"}
                 },
                 _generator);
             ShouldBeTestExtensions.ShouldBe(claim.JsonData,
-                $"{{\"{mock.ConditionalField.ProjectFieldId}\":\"test\"}}");
+                $"{{\"{conditionalField.ProjectFieldId}\":\"test\"}}");
             ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
                 _original.Character.JsonData,
                 "Adding claim should not modify any character fields");

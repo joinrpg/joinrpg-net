@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddClaimForbideReasonViewModel.cs" />
     <Compile Include="CommentExtraAction.cs" />
     <Compile Include="FinanceDisplayExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
