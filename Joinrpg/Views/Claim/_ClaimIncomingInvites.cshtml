@@ -12,7 +12,7 @@
         <table class="table">
 
 
-            @foreach (var accommodationInvite in Model.IncomingInvite)
+            @foreach (var accommodationInvite in Model.IncomingInvite.Where(invite => invite.IsAccepted != AccommodationRequest.InviteState.Accepted))
             {
                <tr>
                     <td>@Html.DisplayFor(model => accommodationInvite.From.Player)</td>
