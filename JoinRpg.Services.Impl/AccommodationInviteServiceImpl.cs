@@ -105,6 +105,7 @@ namespace JoinRpg.Services.Impl
                 Initiator = await GetCurrentUser().ConfigureAwait(false),
                 ProjectName = project.ProjectName,
                 Recipients = recipients.GetInviteSubscriptions(),
+                RecipientClaims = recipients,
                 Text = new MarkdownString()
             };
         }

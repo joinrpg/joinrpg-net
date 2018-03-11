@@ -252,14 +252,24 @@ namespace JoinRpg.Services.Email
 
         private async Task SendInviteEmail(InviteEmailModel email, string body)
         {
-            await MessageService.SendEmail(email, $"{email.ProjectName}: приглашения к проживанию",
-                $@"{StandartGreeting()}
+
+            var messageTemplate = $@"{StandartGreeting()}
 
 {body}
 
+Вы можете управлять приглашениями на странице Вашей заявки {{0}}
+
 {email.Initiator.GetDisplayName()}
 
-");
+";
+
+            var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
+                    new MarkdownString(String.Format(messageTemplate, _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
+                    email.Initiator.ToRecepientData(),
+                    emailRecipient.ToRecepientData()))
+                .ToList();
+
+            await Task.WhenAll(sendTasks).ConfigureAwait(false);
         }
 
         public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",

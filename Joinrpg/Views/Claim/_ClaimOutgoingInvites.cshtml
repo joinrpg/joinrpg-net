@@ -14,7 +14,7 @@
         <table class="table">
             @foreach (var accommodationInvite in Model.OutgoingInvite)
             {
-               <tr>
+                <tr>
                     <td>@Html.DisplayFor(model => accommodationInvite.To.Player)</td>
                     @if (accommodationInvite.IsAccepted == AccommodationRequest.InviteState.Unanswered)
                     {
@@ -25,15 +25,15 @@
                                 @Html.Hidden("InviteId", accommodationInvite.Id)
                                 @Html.Hidden("InviteState", AccommodationRequest.InviteState.Canceled)
                                 var name = "selfCancelInvite_" + @accommodationInvite.Id;
-                                var targetName = "#"+ name;
-                                <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-ban-circle text-danger"></i></button>
-                                @Html.ConfirmDialog(name, "Отменить приглашение к совместному проживанию?")
+                                var targetName = "#" + name;
+                                <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отменить</button>
+                                @Html.ConfirmDialog(name, "Отменить приглашение к совместному проживанию?", "Подтвердите действие", "Да", "Нет")
                             }
                         </td>
                     }
                     else
                     {
-                        <td class="@accommodationInvite.IsAccepted.GetAppropriateTextStyle()">  @accommodationInvite.IsAccepted.GetDescription() </td>
+                        <td class="@accommodationInvite.IsAccepted.GetAppropriateTextStyle()"> @accommodationInvite.IsAccepted.GetDescription() </td>
                     }
                 </tr>
             }
