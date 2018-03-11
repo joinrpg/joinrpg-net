@@ -24,6 +24,7 @@ namespace JoinRpg.DataModel
         public ResolveDescription ResolveDescription { get; set; } = ResolveDescription.Unspecified;
     }
 
+    //TODO[Localize]
     public enum ResolveDescription
     {
         [Description("Не указан")]

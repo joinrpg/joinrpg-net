@@ -29,6 +29,7 @@ namespace JoinRpg.DataModel
 
         public InviteState IsAccepted { get; set; }
 
+        //TODO[Localize]
         public enum InviteState
         {
             [Description("Не отвечено")]
