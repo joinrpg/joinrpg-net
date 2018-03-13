@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using JetBrains.Annotations;
@@ -28,11 +29,16 @@ namespace JoinRpg.DataModel
 
         public InviteState IsAccepted { get; set; }
 
+        //TODO[Localize]
         public enum InviteState
         {
+            [Description("Не отвечено")]
             Unanswered,
+            [Description("Принято")]
             Accepted,
+            [Description("Отклонено")]
             Declined,
+            [Description("Отменено")]
             Canceled
         }
     }

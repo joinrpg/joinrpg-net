@@ -211,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
+    <Content Include="App_Code\ConfirmDialog.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="Controllers\AccommodationPrintController.cs" />
@@ -224,6 +225,9 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Helpers\EnumExtensions.cs" />
+    <Compile Include="Helpers\InviteStateExtensions.cs" />
+    <Compile Include="Models\AccommodationPotentialNeighbors.cs" />
     <Compile Include="Models\Accommodation\AccommodationListViewModel.cs" />
     <Compile Include="Models\Accommodation\AccRequestViewModel.cs" />
     <Compile Include="Models\Accommodation\RoomTypeRoomsListViewModel.cs" />
@@ -240,6 +244,7 @@
     <Compile Include="Models\Characters\CharacterGroupReportViewModel.cs" />
     <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
     <Compile Include="Models\GameRolesReportViewModel.cs" />
+    <Compile Include="Models\InviteRequestViewModel.cs" />
     <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
@@ -770,17 +775,21 @@
     <Content Include="Views\AccommodationType\_RoomTypeEdit.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodation.cshtml" />
     <Content Include="Views\AccommodationType\_RoomDetails.cshtml" />
-    <Content Include="Views\AccommodationType\_RoomInhabitant.cshtml" />
     <Content Include="Views\AccommodationType\_AddedRoomsList.cshtml" />
     <Content Include="Views\AccommodationType\_RoomTypeDetails.cshtml" />
     <Content Include="Views\AccommodationType\AddRoomType.cshtml" />
     <Content Include="Views\AccommodationType\_RoomTypeOverview.cshtml" />
     <Content Include="Views\AccommodationType\EditRoomTypeRooms.cshtml" />
     <Content Include="Views\AccommodationType\_BackButton.cshtml" />
+    <Content Include="Views\Claim\_ClaimIncomingInvites.cshtml" />
+    <Content Include="Views\Claim\_ClaimOutgoingInvites.cshtml" />
     <Content Include="Views\Claim\_ClaimAccommodationTypeChange.cshtml" />
-    <Content Include="Views\AccommodationType\_RoomRequest.cshtml" />
     <Content Include="Views\AccommodationType\_OccupationDlg.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\RequestParticipantViewModel.cshtml" />
+    <Content Include="Views\Claim\_RoomRequest.cshtml" />
+    <Content Include="Views\Claim\_RoomInhabitant.cshtml" />
+    <Content Include="Views\Shared\_RoomInhabitant.cshtml" />
+    <Content Include="Views\Shared\_RoomRequest.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

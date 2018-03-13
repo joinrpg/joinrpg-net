@@ -57,6 +57,7 @@
     <Compile Include="ClaimExtensionsTemp.cs" />
     <Compile Include="Comment.cs" />
     <Compile Include="CommentDiscussion.cs" />
+    <Compile Include="Extensions\AccommodationRequestExtensions.cs" />
     <Compile Include="FinanceOperation.cs" />
     <Compile Include="ForumThread.cs" />
     <Compile Include="GameReportTemplate.cs" />
@@ -75,11 +76,11 @@
     <Compile Include="ProjectAccommodation.cs" />
     <Compile Include="ProjectAccommodationType.cs" />
     <Compile Include="ProjectFieldType.cs" />
-    <Compile Include="ProjectItemTag.cs" />
     <Compile Include="Project.cs" />
     <Compile Include="ProjectAcl.cs" />
     <Compile Include="ProjectField.cs" />
     <Compile Include="ProjectFieldDropdownValue.cs" />
+    <Compile Include="ProjectItemTag.cs" />
     <Compile Include="ProjectPlugin.cs" />
     <Compile Include="ReadCommentWatermark.cs" />
     <Compile Include="Security.cs" />

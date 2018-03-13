@@ -17,6 +17,7 @@ namespace JoinRpg.Dal.Impl
       container.RegisterType<ICharacterRepository, CharacterRepositoryImpl>();
       container.RegisterType<IAccommodationRepository, AccommodationRepositoryImpl>();
       container.RegisterType<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl>();
+      container.RegisterType<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>();
     }
   }
 }

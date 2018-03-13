@@ -426,10 +426,19 @@
     <Compile Include="Migrations\201802052149250_AccomodationSubscribe.Designer.cs">
       <DependentUpon>201802052149250_AccomodationSubscribe.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201801280756568_InviteUpdate.cs" />
+    <Compile Include="Migrations\201801280756568_InviteUpdate.Designer.cs">
+      <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201802271503246_ResolveInviteToCode.cs" />
+    <Compile Include="Migrations\201802271503246_ResolveInviteToCode.Designer.cs">
+      <DependentUpon>201802271503246_ResolveInviteToCode.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
+    <Compile Include="Repositories\AccommodationInviteRepositoryImpl.cs" />
     <Compile Include="Repositories\AccommodationRepositoryImpl.cs" />
     <Compile Include="Repositories\AccommodationRequestRepositoryImpl.cs" />
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
@@ -727,11 +736,17 @@
     <EmbeddedResource Include="Migrations\201801270954367_Accommodation.resx">
       <DependentUpon>201801270954367_Accommodation.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201801280756568_InviteUpdate.resx">
+      <DependentUpon>201801280756568_InviteUpdate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201801292024450_RoomDescription.resx">
       <DependentUpon>201801292024450_RoomDescription.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201802052149250_AccomodationSubscribe.resx">
       <DependentUpon>201802052149250_AccomodationSubscribe.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201802271503246_ResolveInviteToCode.resx">
+      <DependentUpon>201802271503246_ResolveInviteToCode.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -401,8 +401,9 @@ namespace JoinRpg.Services.Impl
           claim.ClaimStatus = Claim.Status.DeclinedByMaster;
 
           var roomEmail = await CommonClaimDecline(claim);
+          await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
-          var email =
+            var email =
               await
                   AddCommentWithEmail<DeclineByMasterEmail>(commentText,
                       claim,
@@ -477,7 +478,7 @@ namespace JoinRpg.Services.Impl
                   ? ExtraAccessReason.PlayerOrResponsible
                   : ExtraAccessReason.None);
 
-          // Player cannot change accommodation type if aready checked in
+          // Player cannot change accommodation type if already checked in
 
           if (claim.AccommodationRequest?.AccommodationTypeId == roomTypeId)
           {
@@ -545,7 +546,10 @@ namespace JoinRpg.Services.Impl
           claim.PlayerDeclinedDate = Now;
           claim.ClaimStatus = Claim.Status.DeclinedByUser;
 
-          var roomEmail = await CommonClaimDecline(claim);
+
+          await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+
+            var roomEmail = await CommonClaimDecline(claim);
 
 
 
@@ -778,10 +782,13 @@ namespace JoinRpg.Services.Impl
       }
     }
 
+      private readonly IAccommodationInviteService _accommodationInviteService;
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork, emailService,
+      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+        IAccommodationInviteService accommodationInviteService) : base(unitOfWork, emailService,
       fieldDefaultValueGenerator)
     {
+        this._accommodationInviteService = accommodationInviteService;
     }
 
     private void SetDiscussed(Claim claim, bool isVisibleToPlayer)

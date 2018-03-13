@@ -2,22 +2,24 @@
 
 namespace JoinRpg.Helpers
 {
-  public class UnSafeHtml
-  {
-    [NotNull]
-    public string UnValidatedValue { get; }
-
-    private UnSafeHtml([NotNull] string value)
+    public class UnSafeHtml
     {
-      UnValidatedValue = value;
-    }
+        [NotNull]
+        public string UnValidatedValue { get; }
 
-    [CanBeNull]
-    public static implicit operator UnSafeHtml([CanBeNull] string s)
-    {
-      return s == null ? null : new UnSafeHtml(s);
-    }
+        private UnSafeHtml([NotNull]
+            string value)
+        {
+            UnValidatedValue = value;
+        }
 
-    public override string ToString() => $"UnSafeHtml({UnValidatedValue})";
-  }
+        [CanBeNull]
+        public static implicit operator UnSafeHtml([CanBeNull]
+            string s)
+        {
+            return s == null ? null : new UnSafeHtml(s);
+        }
+
+        public override string ToString() => $"UnSafeHtml({UnValidatedValue})";
+    }
 }

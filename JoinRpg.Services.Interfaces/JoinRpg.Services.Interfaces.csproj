@@ -56,9 +56,11 @@
     <Compile Include="Email\RecepientData.cs" />
     <Compile Include="Notification\AccountEmails.cs" />
     <Compile Include="Notification\EmailModelBase.cs" />
+    <Compile Include="Notification\InviteEmailModel.cs" />
     <Compile Include="Notification\RoomEmailInterfaces.cs" />
     <Compile Include="Notification\ForumEmail.cs" />
     <Compile Include="GrantAccessRequest.cs" />
+    <Compile Include="IAccommodationInviteService.cs" />
     <Compile Include="IAccommodationService.cs" />
     <Compile Include="EditProjectRequest.cs" />
     <Compile Include="IClaimOperationRequest.cs" />

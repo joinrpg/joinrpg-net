@@ -195,7 +195,7 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(LeaveRoomEmail email)
         {
-            string body = $"{email.Claim.Player.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
+            string body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
             if (email.Room.GetAllInhabitants().Any())
             {
                 body += $"\n\nОстались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
@@ -227,6 +227,49 @@ namespace JoinRpg.Services.Email
 {email.Initiator.GetDisplayName()}
 
 ");
+        }
+
+        public Task Email(NewInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} отправил Вам приглашение к совместному проживанию.";
+    
+            return SendInviteEmail(email, body);
+        }
+
+        public Task Email(DeclineInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} отменил приглашение к совместному проживанию.";
+
+            return SendInviteEmail(email, body);
+        }
+
+        public Task Email(AcceptInviteEmail email)
+        {
+            string body = $"{email.Initiator.GetDisplayName()} принял Ваше приглашение к совместному проживанию.";
+
+            return SendInviteEmail(email, body);
+        }
+
+        private async Task SendInviteEmail(InviteEmailModel email, string body)
+        {
+
+            var messageTemplate = $@"{StandartGreeting()}
+
+{body}
+
+Вы можете управлять приглашениями на странице Вашей заявки {{0}}
+
+{email.Initiator.GetDisplayName()}
+
+";
+
+            var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
+                    new MarkdownString(String.Format(messageTemplate, email.GetClaimByPerson(emailRecipient)==null? "" :_uriService.Get(email.GetClaimByPerson(emailRecipient)))),
+                    email.Initiator.ToRecepientData(),
+                    emailRecipient.ToRecepientData()))
+                .ToList();
+
+            await Task.WhenAll(sendTasks).ConfigureAwait(false);
         }
 
         public Task Email(CheckedInEmal createClaimEmail) => SendClaimEmail(createClaimEmail, "изменена",

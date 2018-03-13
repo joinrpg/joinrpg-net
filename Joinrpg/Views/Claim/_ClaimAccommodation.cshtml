@@ -1,19 +1,25 @@
 ﻿@using Joinrpg.Markdown
 @using JoinRpg.DataModel
 @using JoinRpg.Domain
+@using JoinRpg.Web
+@using JoinRpg.Web.Models
 @using JoinRpg.Web.Models.Accommodation
+@using ConfirmDialogMvcHelper = JoinRpg.Web.ConfirmDialogMvcHelper
 @model ClaimAccommodationViewModel
 
-@helper ShowAccommodationTypeDesc(ProjectAccommodationType accommodationType)
-{
-    <text>(@DisplayCount.OfX(accommodationType.Capacity, "место",
-               "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
-}
-
-@if (!Model.AccommodationEnabled)
+@if (!Model.AccommodationEnabledForClaim)
 {
     return;
 }
+
+@helper ShowAccommodationTypeDesc(ProjectAccommodationType accommodationType)
+{
+<text>
+    (@DisplayCount.OfX(accommodationType.Capacity, "место",
+    "места", "мест") в номере, @accommodationType.Cost &#8381;)
+</text>
+}
+
 <div class="panel panel-default" id="accommodationRequests">
     <div class="panel-heading">
         <h5>Проживание</h5>
@@ -21,56 +27,112 @@
     <div class="panel-body">
         @if (Model.AccommodationRequest == null)
         {
-            <span>Тип проживания не выбран.</span>
-            <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
-                Выбрать...
-            </button>
+        <span>Тип проживания не выбран.</span>
+        <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
+            Выбрать...
+        </button>
         }
         else
         {
-            var roomFreeSpace = 0;
-            IReadOnlyCollection<User> neighbors = new User[] {};
+        var roomFreeSpace = 0;
+        IReadOnlyCollection<User>
+            neighbors;
 
             <span>
                 @Model.AccommodationRequest.AccommodationType.Name @ShowAccommodationTypeDesc(Model.AccommodationRequest.AccommodationType)
             </span>
             <button class="btn btn-default btn-sm" type="submit" data-toggle="modal" data-target="#changeAccommodationType">
-                Изменить....
+                Изменить...
             </button>
             <div class="help-block">
                 @Model.AccommodationRequest.AccommodationType.Description.ToHtmlString()
             </div>
             if (Model.AccommodationRequest.Accommodation != null)
             {
-                <hr />
-                <span> Назначена комната: <b>@Model.AccommodationRequest.Accommodation.Name</b></span>
+            <hr />
+            <span> Назначена комната: <b>@Model.AccommodationRequest.Accommodation.Name</b></span>
 
-                neighbors = Model.AccommodationRequest.Accommodation.Inhabitants.SelectMany(i => i.Subjects).Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
-                roomFreeSpace = Model.AccommodationRequest.Accommodation.GetRoomFreeSpace();
+            neighbors = Model.AccommodationRequest.Accommodation.Inhabitants.SelectMany(i => i.Subjects).Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
+            roomFreeSpace = Model.AccommodationRequest.Accommodation.GetRoomFreeSpace();
             }
-            else if (Model.AccommodationRequest.Subjects.Count > 1)
+            else
             {
-
-                neighbors = Model.AccommodationRequest.Subjects.Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
+            neighbors = Model.AccommodationRequest.Subjects.Where(s => s.ClaimId != Model.ClaimId).Select(c => c.Player).ToList();
+            roomFreeSpace = Model.AccommodationRequest.AccommodationType.Capacity - neighbors.Count - 1;
             }
 
             if (roomFreeSpace > 0 || neighbors.Any())
             {
-                <br />
-                <b>Соседи по комнате:</b>
-                <ul>
-                    @foreach (var neighbor in neighbors)
-                    {
-                        <li>@Html.DisplayFor(model => neighbor)</li>
-                    }
-                    @if (roomFreeSpace > 0)
-                    {
-                        <li>@DisplayCount.OfX(roomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
-                    }
-                </ul>
+            <br />
+            <b>Соседи по комнате:</b>
+            <ul>
+                @foreach (var neighbor in neighbors)
+                {
+                <li>@Html.DisplayFor(model => neighbor)</li>
+                }
+                @if (roomFreeSpace > 0)
+                {
+                <li>@DisplayCount.OfX(roomFreeSpace, " свободное место", "свободных места", "свободных мест")</li>
+                }
+            </ul>
+            }
+            if (roomFreeSpace == 0)
+            {
+            <br />
+            <b>Ваша комната полностью занята, послать новые приглашения невозможно</b>
             }
 
-        }
+            if (!Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
+            {
+            <br />
+            <b>Потенциальных соседей не найдено</b>
+            }
+
+
+            if (Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
+            {
+            using (Html.BeginForm("Invite", "Claim", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            {
+            @Html.HiddenFor(model => model.ProjectId)
+            @Html.HiddenFor(model => model.ClaimId)
+            @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
+            @Html.AntiForgeryToken()
+
+            var alreadyGroupedNeighbors = Model.PotentialNeighbors
+            .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
+            .GroupBy(neighbor => neighbor.AccommodationRequestId)
+            .Select(neighborGroup =>
+            new ImprovedSelectListItem()
+            {
+            Value = InviteRequestViewModel.AccommodationRequestPrefix + neighborGroup.Key.ToString(),
+            Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
+            ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result)?"": ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
+            Subtext = neighborGroup.Count()>1? "<br/>(группа проживающих)":""
+            });
+
+            var unGroupedNeighbors = Model.PotentialNeighbors
+            .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
+            .Select(neighbor =>
+            new ImprovedSelectListItem()
+            {
+            Value = neighbor.ClaimId.ToString(),
+            Text = neighbor.UserName,
+            ExtraSearch = neighbor.ClaimName,
+            Subtext = "<br/>еще не выбрал тип проживания"
+            });
+
+
+            var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
+            @Html.SearchableDropdown("ReceiverClaimOrAccommodationRequest", selectableRows)
+
+            <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#sendInvite"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
+            @Html.ConfirmDialog("sendInvite","Отправить приглашение на совместное проживание?", "Подтвердите действие", "Да", "Нет")
+            }
+            }
+            }
     </div>
 </div>
+@Html.Partial("_ClaimIncomingInvites", Model)
+@Html.Partial("_ClaimOutgoingInvites", Model)
+
 @Html.Partial("_ClaimAccommodationTypeChange", Model)

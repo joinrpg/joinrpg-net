@@ -27,7 +27,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IReadOnlyCollection<ClaimAccommodationInfoRow>>
             GetClaimAccommodationReport(int project)
         {
-
             return await Ctx.Set<Claim>().AsExpandable().Include(claim => claim.Player.Extra)
                 .Where(ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active))
                 .Where(claim => claim.ProjectId == project)

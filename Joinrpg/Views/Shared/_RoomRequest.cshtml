@@ -1,0 +1,8 @@
+﻿@using JoinRpg.Web.Models.Accommodation;
+@model AccRequestViewModel
+<span id="req@(Model.Id)" class="acc-request" requestId="@Model.Id" count="@Model.Persons">
+    @foreach (var participant in Model.Participants)
+    {
+        @Html.DisplayFor(model => participant)
+    }
+</span>
