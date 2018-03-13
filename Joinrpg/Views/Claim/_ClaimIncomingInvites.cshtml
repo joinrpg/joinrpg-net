@@ -30,7 +30,7 @@
                                         var name = "acceptInvite_" + @accommodationInvite.Id;
                                         var targetName = "#"+ name;
                                         <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-check text-success"></i>&nbsp;Принять</button>
-                                        @Html.ConfirmDialog(name, "Принять приглашение к совместному проживанию?")
+                                        @Html.ConfirmDialog(name, "Принять приглашение к совместному проживанию?", "Подтвердите действие", "Да", "Нет")
                                     }
                                 }
                                 <div style="width: 10px"></div>
@@ -44,7 +44,7 @@
                                         var name = "cancelInvite_" + @accommodationInvite.Id;
                                         var targetName = "#"+ name;
                                 <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отменить</button>
-                                        @Html.ConfirmDialog(name, "Отказаться от совместного проживания?")
+                                        @Html.ConfirmDialog(name, "Отказаться от совместного проживания?", "Подтвердите действие", "Да", "Нет")
                                     }
                                 }
                             </div>

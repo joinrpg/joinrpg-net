@@ -27,7 +27,7 @@
                                 var name = "selfCancelInvite_" + @accommodationInvite.Id;
                                 var targetName = "#" + name;
                                 <button type="button" class="btn btn-xs" data-toggle="modal" data-target="@targetName"><i class="glyphicon glyphicon-ban-circle text-danger"></i>&nbsp;Отменить</button>
-                                @Html.ConfirmDialog(name, "Отменить приглашение к совместному проживанию?")
+                                @Html.ConfirmDialog(name, "Отменить приглашение к совместному проживанию?", "Подтвердите действие", "Да", "Нет")
                             }
                         </td>
                     }

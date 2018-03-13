@@ -9,9 +9,9 @@ namespace JoinRpg.Web
             this HtmlHelper self,
             string confirmId,
             string confirmInfo,
-            string confirmHeader = "Подтвердите действие",
-            string confirmYes = "Да",
-            string confirmNo = "Нет")
+            string confirmHeader,
+            string confirmYes,
+            string confirmNo)
         {
             return MvcHtmlString.Create(string.Format(@"<div class=""modal fade"" tabindex=""-1"" role=""dialog"" id=""{4}"">
   <div class=""modal-dialog"" role=""document"">
