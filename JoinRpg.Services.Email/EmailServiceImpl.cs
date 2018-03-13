@@ -264,7 +264,7 @@ namespace JoinRpg.Services.Email
 ";
 
             var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                    new MarkdownString(String.Format(messageTemplate, _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
+                    new MarkdownString(String.Format(messageTemplate, email.GetClaimByPerson(emailRecipient)==null? "" :_uriService.Get(email.GetClaimByPerson(emailRecipient)))),
                     email.Initiator.ToRecepientData(),
                     emailRecipient.ToRecepientData()))
                 .ToList();
