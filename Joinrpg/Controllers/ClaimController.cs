@@ -39,8 +39,8 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
       var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
-      if (field == null) return HttpNotFound();
-      return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+            if (field == null) return HttpNotFound();
+        return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
     [HttpGet]
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Controllers
         }
       var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
       if (field == null) return HttpNotFound();
-      return View("Add", AddClaimViewModel.Create(field, GetCurrentUser()));
+        return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
       public ClaimController(ApplicationUserManager userManager,
@@ -114,9 +114,8 @@ namespace JoinRpg.Web.Controllers
       catch (Exception exception)
       {
         ModelState.AddException(exception);
-        var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
-        //TODO: Отображать ошибки верно
-        return View(viewModel.Fill(source, GetCurrentUser()));
+         var source = await ProjectRepository.GetClaimSource(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId).ConfigureAwait(false);
+          return View(viewModel.Fill(source,CurrentUserId));
       }
     }
 
@@ -619,7 +618,7 @@ namespace JoinRpg.Web.Controllers
                         Contents = viewModel.CommentText,
                         OperationDate = viewModel.OperationDate,
                     })
-                        .ConfigureAwait(false); ;
+                        .ConfigureAwait(false);
 
                 return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
             }

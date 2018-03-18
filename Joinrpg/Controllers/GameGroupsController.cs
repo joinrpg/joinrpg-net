@@ -249,7 +249,7 @@ namespace JoinRpg.Web.Controllers
 
     private static string GetDefaultResponsible(IClaimSource group, bool includeSelf)
     {
-      var result = group.GetResponsibleMasters(includeSelf)
+      var result = ResponsibleMasterExtensions.GetResponsibleMasters(@group, includeSelf)
           .Select(u => u.GetDisplayName())
           .JoinStrings(", ");
       return string.IsNullOrWhiteSpace(result) ? "Никто" : result;

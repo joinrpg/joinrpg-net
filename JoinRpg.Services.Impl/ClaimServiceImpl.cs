@@ -97,8 +97,7 @@ namespace JoinRpg.Services.Impl
 
       public async Task<int> MoveToSecondRole(int projectId, int claimId, int characterId)
     {
-      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
-          ExtraAccessReason.Player); //TODO Specific right
+      var oldClaim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId); //TODO Specific right
       oldClaim.EnsureStatus(Claim.Status.CheckedIn);
 
       Debug.Assert(oldClaim.Character != null, "oldClaim.Character != null");
@@ -109,7 +108,7 @@ namespace JoinRpg.Services.Impl
 
       MarkChanged(source);
 
-      EnsureCanAddClaim(oldClaim.PlayerUserId, source);
+        source.EnsureCanMoveClaim(oldClaim);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
@@ -170,7 +169,7 @@ namespace JoinRpg.Services.Impl
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
-      EnsureCanAddClaim(CurrentUserId, source);
+        source.EnsureCanAddClaim(CurrentUserId);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
@@ -229,19 +228,7 @@ namespace JoinRpg.Services.Impl
         }
     }
 
-    private static void EnsureCanAddClaim<T>(int currentUserId, T claimSource) where T: IClaimSource
-    {
-      //TODO add more validation checks, move to Domain
-      if (claimSource.HasClaimForUser(currentUserId))
-      {
-        throw new ClaimAlreadyPresentException();
-      }
-      claimSource.EnsureAvailable();
-
-      claimSource.EnsureProjectActive();
-    }
-
-    public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
+      public async Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction)
     {
       var claim = (await ClaimsRepository.GetClaim(projectId, claimId)).RequestAccess(CurrentUserId,
           ExtraAccessReason.Player);
@@ -628,7 +615,7 @@ namespace JoinRpg.Services.Impl
       //Grab subscribtions before change 
       var subscribe = claim.GetSubscriptions(s => s.ClaimStatusChange);
 
-      EnsureCanAddClaim(claim.PlayerUserId, source);
+        source.EnsureCanMoveClaim(claim);
 
       MarkCharacterChangedIfApproved(claim); // before move
 
@@ -664,7 +651,7 @@ namespace JoinRpg.Services.Impl
       await EmailService.Email(email);
     }
 
-    public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
+      public async Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId)
     {
       var watermarks =
         UnitOfWork.GetDbSet<ReadCommentWatermark>()

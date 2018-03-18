@@ -137,7 +137,7 @@ namespace JoinRpg.Domain
       claim.ClaimStatus = targetStatus;
     }
 
-      [CanBeNull]
+      [CanBeNull, MustUseReturnValue]
     public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
     {
       if (claims == null) throw new ArgumentNullException(nameof(claims));
@@ -156,5 +156,12 @@ namespace JoinRpg.Domain
       }
       return null;
     }
+
+      [CanBeNull, MustUseReturnValue]
+      public static Claim TrySelectSingleClaim(
+          [NotNull, ItemNotNull]
+          this IEnumerable<Claim> claims)
+          => claims.ToList().TrySelectSingleClaim();
+      //That's not optimal way to do it, but in practice, claims.Length will be 1 or 2.
   }
 }

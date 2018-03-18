@@ -4,7 +4,6 @@ using System.Web;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Helpers;
-using KatanaContrib.Security.VK;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
@@ -13,6 +12,7 @@ using Microsoft.Owin.Security.DataProtection;
 using Microsoft.Owin.Security.Google;
 using Microsoft.Owin.Security.OAuth;
 using Owin;
+using Owin.Security.Providers.VKontakte;
 
 namespace JoinRpg.Web
 {
@@ -109,7 +109,7 @@ namespace JoinRpg.Web
       if (!string.IsNullOrWhiteSpace(ApiSecretsStorage.VkClientId) &&
           !string.IsNullOrWhiteSpace(ApiSecretsStorage.VkClientSecret))
       {
-        app.UseVkontakteAuthentication(new VkAuthenticationOptions
+        app.UseVKontakteAuthentication(new VKontakteAuthenticationOptions()
         {
           Scope = new List<string>() {"email"},
           ClientId = ApiSecretsStorage.VkClientId,
