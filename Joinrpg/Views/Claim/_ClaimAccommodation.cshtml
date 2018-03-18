@@ -101,6 +101,7 @@
             var alreadyGroupedNeighbors = Model.PotentialNeighbors
             .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
             .GroupBy(neighbor => neighbor.AccommodationRequestId)
+            .Where(group=>group.Count() <= roomFreeSpace)
             .Select(neighborGroup =>
             new ImprovedSelectListItem()
             {
