@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using JoinRpg.Domain;
 
 namespace JoinRpg.DataModel.Mocks
@@ -35,16 +34,6 @@ namespace JoinRpg.DataModel.Mocks
       {
         id++;
         field.CharacterId = id;
-        field.Project = project1;
-        field.ProjectId = project1.ProjectId;
-      }
-
-
-      id = 0;
-      foreach (var field in project1.CharacterGroups)
-      {
-        id++;
-        field.CharacterGroupId = id;
         field.Project = project1;
         field.ProjectId = project1.ProjectId;
       }
@@ -107,12 +96,6 @@ namespace JoinRpg.DataModel.Mocks
           };
 
 
-          Group = new CharacterGroup()
-          {
-              AvaiableDirectSlots = 1,
-              HaveDirectSlots = true,
-          };
-
           Project = new Project()
           {
               Active = true,
@@ -129,12 +112,18 @@ namespace JoinRpg.DataModel.Mocks
                   PublicField,
               },
               Characters = new List<Character>() {Character, CharacterWithoutGroup},
-              CharacterGroups = new List<CharacterGroup> {Group},
+              CharacterGroups = new List<CharacterGroup>(),
               Claims = new List<Claim>(),
               Details = new ProjectDetails(),
           };
 
           FixProjectSubEntities(Project);
+
+          Group = CreateCharacterGroup(new CharacterGroup()
+          {
+              AvaiableDirectSlots = 1,
+              HaveDirectSlots = true,
+          });
 
           Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
 
@@ -146,7 +135,7 @@ namespace JoinRpg.DataModel.Mocks
 
           characterGroup.Project = Project;
           characterGroup.ProjectId = Project.ProjectId;
-          characterGroup.CharacterGroupId = Project.CharacterGroups.Max(f => f.CharacterGroupId) + 1;
+          characterGroup.CharacterGroupId = Project.CharacterGroups.GetNextId();
           characterGroup.CharacterGroupName = characterGroup.CharacterGroupName ?? "test_" + characterGroup.CharacterGroupId;
           characterGroup.IsActive = true;
           Project.CharacterGroups.Add(characterGroup);
@@ -165,7 +154,7 @@ namespace JoinRpg.DataModel.Mocks
       {
           field.Project = Project;
           field.ProjectId = Project.ProjectId;
-          field.ProjectFieldId = Project.ProjectFields.Max(f => f.ProjectFieldId) + 1;
+          field.ProjectFieldId = Project.ProjectFields.GetNextId();
           field.FieldName = field.FieldName ?? "test_" + field.ProjectFieldId;
           field.AvailableForCharacterGroupIds = Array.Empty<int>();
           field.IsActive = true;
