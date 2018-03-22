@@ -1,5 +1,7 @@
 using JoinRpg.CommonUI.Models;
+using JoinRpg.DataModel;
 using JoinRpg.DataModel.Mocks;
+using JoinRpg.Domain;
 using JoinRpg.Web.Models;
 using Shouldly;
 using Xunit;
@@ -137,5 +139,33 @@ namespace JoinRpg.Web.Test
             vm.ValidationStatus.ShouldContain(AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace);
         }
 
+        [Fact]
+        public void PublicFieldsShouldBeShownOnCharacters()
+        {
+            var field = Mock.CreateField(new ProjectField() { IsPublic =  true, CanPlayerEdit = false});
+            var value = new FieldWithValue(field, "xxx");
+            Mock.Character.JsonData = new[] {value}.SerializeFields();
+
+            var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+            var fieldView = vm.Fields.Field(field);
+            fieldView.ShouldNotBeNull();
+            fieldView.ShouldBeVisible();
+            fieldView.ShouldBeReadonly();
+            fieldView.Value.ShouldBe("xxx");
+        }
+
+        [Fact]
+        public void NonPublicFieldsShouldNotBeShownOnCharacters()
+        {
+            var field = Mock.CreateField(new ProjectField() { IsPublic =  false, CanPlayerEdit = false });
+            var value = new FieldWithValue(field, "xxx");
+            Mock.Character.JsonData = new[] { value }.SerializeFields();
+
+            var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
+            var fieldView = vm.Fields.Field(field);
+            fieldView.ShouldNotBeNull();
+            fieldView.ShouldBeHidden();
+            fieldView.ShouldBeReadonly();
+        }
     }
 }

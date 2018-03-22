@@ -150,8 +150,9 @@ namespace JoinRpg.DataModel.Mocks
           return field;
       }
 
-      public ProjectField CreateField(ProjectField field)
+      public ProjectField CreateField(ProjectField field = null)
       {
+          field = field ?? new ProjectField();
           field.Project = Project;
           field.ProjectId = Project.ProjectId;
           field.ProjectFieldId = Project.ProjectFields.GetNextId();
