@@ -63,6 +63,9 @@ namespace JoinRpg.Web.Models.Characters
             }, currentUserId);
             return this;
         }
+
+        [Display(Name="Добавить еще одного персонажа", Description ="После сохранения продолжить добавлять персонажей в эту группу")]
+        public bool ContinueCreating { get; set; }
     }
 
     public class EditCharacterViewModel : CharacterViewModelBase, ICreatedUpdatedTracked

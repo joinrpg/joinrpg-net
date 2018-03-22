@@ -115,7 +115,7 @@ namespace JoinRpg.Web.Controllers
 
         [HttpGet]
         [MasterAuthorize(Permission.CanEditRoles)]
-        public async Task<ActionResult> Create(int projectid, int charactergroupid)
+        public async Task<ActionResult> Create(int projectid, int charactergroupid, bool continueCreating = false)
         {
             var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
@@ -126,6 +126,7 @@ namespace JoinRpg.Web.Controllers
                 ProjectId = projectid,
                 ProjectName = characterGroup.Project.ProjectName,
                 ParentCharacterGroupIds = characterGroup.AsPossibleParentForEdit(),
+                ContinueCreating = continueCreating,
             }.Fill(characterGroup, CurrentUserId));
         }
 
@@ -150,8 +151,16 @@ namespace JoinRpg.Web.Controllers
                     FieldValues = GetCustomFieldValuesFromPost(),
                 });
 
-                return RedirectToIndex(viewModel.ProjectId,
-                    viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());
+                var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First();
+
+                if (viewModel.ContinueCreating)
+                {
+                    return RedirectToAction("Create",
+                        new {viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating});
+                }
+
+                
+                return RedirectToIndex(viewModel.ProjectId, characterGroupId);
             }
             catch
             {
