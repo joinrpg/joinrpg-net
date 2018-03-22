@@ -298,7 +298,8 @@ namespace JoinRpg.Web.Models
             var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
             Fields =
               character.Project.GetFieldsNotFilled()
-                .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
+                .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
+                .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
                 .ToList()
                 .FillIfEnabled(character.ApprovedClaim, character)
                 .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
@@ -348,5 +349,10 @@ namespace JoinRpg.Web.Models
     {
       return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
     }
-  }
+
+        public FieldValueViewModel Field(ProjectField field)
+        {
+            return FieldById(field.ProjectFieldId);
+        }
+    }
 }

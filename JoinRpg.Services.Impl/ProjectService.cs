@@ -12,7 +12,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
@@ -111,36 +110,35 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task AddCharacter(int projectId,
-            int currentUserId,
-            string name,
-            bool isPublic,
-            IReadOnlyCollection<int> parentCharacterGroupIds,
-            bool isAcceptingClaims,
-            string description,
-            bool hidePlayerForCharacter,
-            bool isHot)
+        public async Task AddCharacter(AddCharacterRequest addCharacterRequest)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
+            var project = await ProjectRepository.GetProjectAsync(addCharacterRequest.ProjectId);
 
-            project.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
             project.EnsureProjectActive();
 
             var character = new Character
             {
-                CharacterName = Required(name),
+                CharacterName = Required(addCharacterRequest.Name),
                 ParentCharacterGroupIds =
-                    await ValidateCharacterGroupList(projectId, Required(parentCharacterGroupIds)),
-                ProjectId = projectId,
-                IsPublic = isPublic,
+                    await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
+                ProjectId = addCharacterRequest.ProjectId,
+                IsPublic = addCharacterRequest.IsPublic,
                 IsActive = true,
-                IsAcceptingClaims = isAcceptingClaims,
-                Description = new MarkdownString(description),
-                HidePlayerForCharacter = hidePlayerForCharacter,
-                IsHot = isHot
+                IsAcceptingClaims = addCharacterRequest.IsAcceptingClaims,
+                Description = new MarkdownString(addCharacterRequest.Description),
+                HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
+                IsHot = addCharacterRequest.IsHot
             };
             Create(character);
             MarkTreeModified(project);
+
+            // ReSharper disable once MustUseReturnValue
+            //TODO we do not send message for creating character
+            FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+                character,
+                addCharacterRequest.FieldValues,
+                FieldDefaultValueGenerator);
 
             await UnitOfWork.SaveChangesAsync();
         }
@@ -155,7 +153,7 @@ namespace JoinRpg.Services.Impl
             bool isAcceptingClaims,
             string contents,
             bool hidePlayerForCharacter,
-            IDictionary<int, string> characterFields,
+            IReadOnlyDictionary<int, string> characterFields,
             bool isHot)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
@@ -324,10 +322,10 @@ namespace JoinRpg.Services.Impl
             int directSlots,
             int? responsibleMasterId)
         {
-            var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-
-            characterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            characterGroup.EnsureProjectActive();
+            var characterGroup =
+                (await ProjectRepository.GetGroupAsync(projectId, characterGroupId))
+                .RequestMasterAccess(currentUserId, acl => acl.CanEditRoles)
+                .EnsureProjectActive();
 
             if (!characterGroup.IsRoot
             ) //We shoud not edit root group, except of possibility of direct claims here

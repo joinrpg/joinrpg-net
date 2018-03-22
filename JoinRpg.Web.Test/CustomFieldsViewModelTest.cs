@@ -76,9 +76,10 @@ namespace JoinRpg.Web.Test
       var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
+        characterField.ShouldBeHidden();
         characterField.Value.ShouldBe("test");
-            characterField.CanEdit.ShouldBeTrue();
+
+            characterField.ShouldBeEditable();
     }
 
     [Fact]
@@ -92,22 +93,23 @@ namespace JoinRpg.Web.Test
       var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
-        characterField.Value.ShouldBeNull();
+        characterField.ShouldBeHidden();
+        characterField.ShouldNotHaveValue();
 
-        characterField.CanEdit.ShouldBeTrue();
+        characterField.ShouldBeEditable();
         }
 
     [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
-      var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
+      var characterField = vm.Field(Mock.CharacterField);
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
-        characterField.Value.ShouldBeNull();
 
-        characterField.CanEdit.ShouldBeTrue();
+        characterField.ShouldBeHidden();
+        characterField.ShouldNotHaveValue();
+
+        characterField.ShouldBeEditable();
         }
 
       [Fact]
@@ -120,10 +122,10 @@ namespace JoinRpg.Web.Test
           var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeFalse();
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldBeHidden();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeFalse();
+          characterField.ShouldBeReadonly();
       }
 
       [Fact]
@@ -136,10 +138,10 @@ namespace JoinRpg.Web.Test
           var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeTrue();
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldBeVisible();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeTrue();
+          characterField.ShouldBeEditable();
       }
 
 
@@ -149,11 +151,11 @@ namespace JoinRpg.Web.Test
           var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
           var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeFalse();
+          characterField.ShouldBeHidden();
 
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeTrue();
+          characterField.ShouldBeEditable();
       }
   }
 }

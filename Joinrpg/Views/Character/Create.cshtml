@@ -80,6 +80,12 @@
             </div>
         </div>
 
+        @Html.Partial("_EditFieldsPartial", Model.Fields)
+
+        @if (Model.Fields.Fields.Any(f => f.HasPrice))
+        {
+            Html.RenderPartial("_CharacterFieldsSubtotal", Model.Fields);
+        }
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

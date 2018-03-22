@@ -117,16 +117,16 @@ namespace JoinRpg.Web.Controllers
         [MasterAuthorize(Permission.CanEditRoles)]
         public async Task<ActionResult> Create(int projectid, int charactergroupid)
         {
-            var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
+            var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-            if (field == null) return HttpNotFound();
+            if (characterGroup == null) return HttpNotFound();
 
             return View(new AddCharacterViewModel()
             {
                 ProjectId = projectid,
-                ProjectName = field.Project.ProjectName,
-                ParentCharacterGroupIds = field.AsPossibleParentForEdit()
-            });
+                ProjectName = characterGroup.Project.ProjectName,
+                ParentCharacterGroupIds = characterGroup.AsPossibleParentForEdit(),
+            }.Fill(characterGroup, CurrentUserId));
         }
 
         [HttpPost]
@@ -136,16 +136,19 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
-                await ProjectService.AddCharacter(
-                    viewModel.ProjectId,
-                    CurrentUserId,
-                    viewModel.Name,
-                    viewModel.IsPublic,
-                    viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
-                    viewModel.IsAcceptingClaims,
-                    viewModel.Description,
-                    viewModel.HidePlayerForCharacter,
-                    viewModel.IsHot);
+                await ProjectService.AddCharacter(new AddCharacterRequest()
+                {
+                    ProjectId = viewModel.ProjectId,
+                    Description = viewModel.Description,
+                    Name = viewModel.Name,
+                    IsAcceptingClaims = viewModel.IsAcceptingClaims,
+                    ParentCharacterGroupIds =
+                        viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
+                    HidePlayerForCharacter = viewModel.HidePlayerForCharacter,
+                    IsHot = viewModel.IsHot,
+                    IsPublic = viewModel.IsPublic,
+                    FieldValues = GetCustomFieldValuesFromPost(),
+                });
 
                 return RedirectToIndex(viewModel.ProjectId,
                     viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First());

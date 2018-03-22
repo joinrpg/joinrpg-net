@@ -92,8 +92,6 @@ namespace JoinRpg.DataModel.Mocks
               ShowOnUnApprovedClaims = true,
           };
 
-          var characterFieldValue = new FieldWithValue(CharacterField, "Value");
-          var publicFieldValue = new FieldWithValue(PublicField, "Public");
           Character = new Character
           {
               IsActive = true,
@@ -137,28 +135,42 @@ namespace JoinRpg.DataModel.Mocks
           };
 
           FixProjectSubEntities(Project);
-          //That needs to happen after FixProjectSubEntities(..)
-          //Character.JsonData = new[] {characterFieldValue, publicFieldValue}.SerializeFields();
 
           Character.ParentCharacterGroupIds = new[] {Group.CharacterGroupId};
 
       }
 
+      public CharacterGroup CreateCharacterGroup(CharacterGroup characterGroup = null)
+      {
+          characterGroup = characterGroup ?? new CharacterGroup();
+
+          characterGroup.Project = Project;
+          characterGroup.ProjectId = Project.ProjectId;
+          characterGroup.CharacterGroupId = Project.CharacterGroups.Max(f => f.CharacterGroupId) + 1;
+          characterGroup.CharacterGroupName = characterGroup.CharacterGroupName ?? "test_" + characterGroup.CharacterGroupId;
+          characterGroup.IsActive = true;
+          Project.CharacterGroups.Add(characterGroup);
+
+          return characterGroup;
+      }
+
       public ProjectField CreateConditionalField(ProjectField field, CharacterGroup conditionGroup)
       {
-          AddField(field);
+          field = CreateField(field);
           field.AvailableForCharacterGroupIds = new[] {conditionGroup.CharacterGroupId};
           return field;
       }
 
-      private void AddField(ProjectField field)
+      public ProjectField CreateField(ProjectField field)
       {
           field.Project = Project;
           field.ProjectId = Project.ProjectId;
           field.ProjectFieldId = Project.ProjectFields.Max(f => f.ProjectFieldId) + 1;
+          field.FieldName = field.FieldName ?? "test_" + field.ProjectFieldId;
           field.AvailableForCharacterGroupIds = Array.Empty<int>();
           field.IsActive = true;
           Project.ProjectFields.Add(field);
+          return field;
       }
 
       public Claim CreateClaim(Character mockCharacter, User mockUser)

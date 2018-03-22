@@ -72,9 +72,11 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AddClaimViewModelTest.cs" />
+    <Compile Include="CharacterViewModelTest.cs" />
     <Compile Include="CustomFieldsViewModelTest.cs" />
     <Compile Include="EnumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShouldlyFieldValueViewModelExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj">

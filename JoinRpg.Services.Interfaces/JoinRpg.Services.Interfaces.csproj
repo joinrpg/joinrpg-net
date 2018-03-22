@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessRequestBase.cs" />
+    <Compile Include="AddCharacterRequest.cs" />
     <Compile Include="ChangeAccessRequest.cs" />
     <Compile Include="Email\EmailSendFailedException.cs" />
     <Compile Include="Email\IEmailSendingService.cs" />
