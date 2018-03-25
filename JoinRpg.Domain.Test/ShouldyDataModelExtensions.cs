@@ -2,7 +2,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using Shouldly;
 
-static internal class ShouldyDataModelExtensions
+internal static class ShouldyDataModelExtensions
 {
     public static void FieldValuesShouldBe(this IFieldContainter mockCharacter,
         params FieldWithValue[] field2) =>

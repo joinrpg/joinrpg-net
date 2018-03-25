@@ -6,7 +6,11 @@ namespace JoinRpg.Services.Interfaces
 {
   public interface IClaimService
   {
-    Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, string claimText, IDictionary<int, string> fields);
+    Task AddClaimFromUser(int projectId,
+        int? characterGroupId,
+        int? characterId,
+        string claimText,
+        IReadOnlyDictionary<int, string> fields);
 
     Task AddComment(int projectId, int claimId, int? parentCommentId, bool isVisibleToPlayer, string commentText, FinanceOperationAction financeAction);
 
@@ -23,7 +27,9 @@ namespace JoinRpg.Services.Interfaces
 
     Task UpdateReadCommentWatermark(int projectId, int commentDiscussionId, int maxCommentId);
 
-    Task SaveFieldsFromClaim(int projectId, int claimId, IDictionary<int, string> newFieldValue);
+    Task SaveFieldsFromClaim(int projectId,
+        int claimId,
+        IReadOnlyDictionary<int, string> newFieldValue);
 
     Task SubscribeClaimToUser(int projectId, int claimId);
     Task UnsubscribeClaimToUser(int projectId, int claimId);

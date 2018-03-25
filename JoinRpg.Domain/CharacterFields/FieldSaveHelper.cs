@@ -161,7 +161,7 @@ namespace JoinRpg.Domain.CharacterFields
     public static IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Claim claim,
-      [NotNull] IDictionary<int, string> newFieldValue,
+      [NotNull] IReadOnlyDictionary<int, string> newFieldValue,
       IFieldDefaultValueGenerator generator)
     {
       if (claim == null) throw new ArgumentNullException(nameof(claim));
@@ -176,7 +176,7 @@ namespace JoinRpg.Domain.CharacterFields
     public static IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFields(
       int currentUserId,
       [NotNull] Character character,
-      [NotNull] IDictionary<int, string> newFieldValue,
+      [NotNull] IReadOnlyDictionary<int, string> newFieldValue,
       IFieldDefaultValueGenerator generator)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
@@ -185,7 +185,7 @@ namespace JoinRpg.Domain.CharacterFields
 
     [MustUseReturnValue]
     private static IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(int currentUserId,
-      [CanBeNull] Character character, [CanBeNull] Claim claim, [NotNull] IDictionary<int, string> newFieldValue,
+      [CanBeNull] Character character, [CanBeNull] Claim claim, [NotNull] IReadOnlyDictionary<int, string> newFieldValue,
       IFieldDefaultValueGenerator generator)
     {
       if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));

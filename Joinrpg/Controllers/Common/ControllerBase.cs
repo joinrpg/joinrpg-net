@@ -72,7 +72,7 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-      protected IDictionary<int, string> GetDynamicValuesFromPost(string prefix)
+      protected IReadOnlyDictionary<int, string> GetDynamicValuesFromPost(string prefix)
     {
       //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
       var post = Request.Unvalidated.Form.ToDictionary();
@@ -86,8 +86,7 @@ namespace JoinRpg.Web.Controllers.Common
 
       if (header == null) return false;
 
-      DateTime isModifiedSince;
-      return DateTime.TryParse(header, out isModifiedSince) && isModifiedSince.ToUniversalTime() > contentModified;
+        return DateTime.TryParse(header, out var isModifiedSince) && isModifiedSince.ToUniversalTime() > contentModified;
     }
     
     protected bool CheckCache(DateTime characterTreeModifiedAt)

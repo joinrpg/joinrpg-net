@@ -188,7 +188,7 @@ namespace JoinRpg.Web.Models
         public bool EditAllowed { get; }
         public IClaimSource Target { get; }
 
-        public ICollection<FieldValueViewModel> Fields { get; }
+        public IReadOnlyCollection<FieldValueViewModel> Fields { get; }
 
         /// <summary>
         /// Sum of fields fees
@@ -252,10 +252,17 @@ namespace JoinRpg.Web.Models
 
             var renderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
 
+            var fieldsList = target.Project.GetFieldsNotFilled();
+            if (target is Character character)
+            {
+                fieldsList.FillIfEnabled(claim: null, character: character);
+            }
             Fields =
-              target.Project.GetFieldsNotFilled()
+              fieldsList
                 .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToList();
+
+            
         }
 
         /// <summary>
@@ -298,7 +305,8 @@ namespace JoinRpg.Web.Models
             var joinrpgMarkdownLinkRenderer = new JoinrpgMarkdownLinkRenderer(Target.Project);
             Fields =
               character.Project.GetFieldsNotFilled()
-                .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character && (!wherePrintEnabled || f.Field.IncludeInPrint))
+                .Where(f => f.Field.FieldBoundTo == FieldBoundTo.Character)
+                .Where(f => !wherePrintEnabled || f.Field.IncludeInPrint)
                 .ToList()
                 .FillIfEnabled(character.ApprovedClaim, character)
                 .Select(ch => CreateFieldValueView(ch, joinrpgMarkdownLinkRenderer))
@@ -348,5 +356,10 @@ namespace JoinRpg.Web.Models
     {
       return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
     }
-  }
+
+        public FieldValueViewModel Field(ProjectField field)
+        {
+            return FieldById(field.ProjectFieldId);
+        }
+    }
 }

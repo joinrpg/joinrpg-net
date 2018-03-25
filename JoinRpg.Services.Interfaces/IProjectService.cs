@@ -19,15 +19,7 @@ namespace JoinRpg.Services.Interfaces
             int directSlotsForSave,
             int? responsibleMasterId);
 
-        Task AddCharacter(int projectId,
-            int currentUserId,
-            string name,
-            bool isPublic,
-            IReadOnlyCollection<int> parentCharacterGroupIds,
-            bool isAcceptingClaims,
-            string description,
-            bool hidePlayerForCharacter,
-            bool isHot);
+        Task AddCharacter(AddCharacterRequest addCharacterRequest);
 
         Task EditCharacterGroup(int projectId,
             int currentUserId,
@@ -61,7 +53,7 @@ namespace JoinRpg.Services.Interfaces
             bool isAcceptingClaims,
             string contents,
             bool hidePlayerForCharacter,
-            IDictionary<int, string> characterFields,
+            IReadOnlyDictionary<int, string> characterFields,
             bool isHot);
 
         Task MoveCharacterGroup(int currentUserId,

@@ -118,12 +118,10 @@ namespace JoinRpg.Web.Controllers.Common
       return null;
     }
 
-    protected IDictionary<int,string> GetCustomFieldValuesFromPost()
-    {
-      return GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
-    }
+      protected IReadOnlyDictionary<int, string> GetCustomFieldValuesFromPost() =>
+          GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
 
-    protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity
+      protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity
     {
       return AsMaster(entity, acl => true);
     }

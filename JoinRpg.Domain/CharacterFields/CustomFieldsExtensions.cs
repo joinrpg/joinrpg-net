@@ -17,7 +17,7 @@ namespace JoinRpg.Domain
       if (project == null) throw new ArgumentNullException(nameof(project));
       return
         project.GetOrderedFields()
-          .Select(pf => new FieldWithValue(pf, null)).ToList().AsReadOnly();
+          .Select(pf => new FieldWithValue(pf, value: null)).ToList().AsReadOnly();
     }
 
     /// <summary>

@@ -76,9 +76,10 @@ namespace JoinRpg.Web.Test
       var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
+        characterField.ShouldBeHidden();
         characterField.Value.ShouldBe("test");
-            characterField.CanEdit.ShouldBeTrue();
+
+            characterField.ShouldBeEditable();
     }
 
     [Fact]
@@ -89,25 +90,43 @@ namespace JoinRpg.Web.Test
 
       var vm = new CustomFieldsViewModel(mock.Player.UserId, claim);
 
-      var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
+      var characterField = vm.Field(mock.CharacterField);
 
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
-        characterField.Value.ShouldBeNull();
+        characterField.ShouldBeHidden();
+        characterField.ShouldNotHaveValue();
 
-        characterField.CanEdit.ShouldBeTrue();
+        characterField.ShouldBeEditable();
         }
 
-    [Fact]
+      [Fact]
+      public void DoNotDiscloseOriginalFieldValuesOnAddTest()
+      {
+          var mock = new MockedProject();
+
+          var vm = new CustomFieldsViewModel(mock.Player.UserId, (IClaimSource)mock.Character);
+
+          var characterField = vm.Field(mock.CharacterField);
+
+          characterField.ShouldNotBeNull();
+          characterField.ShouldBeHidden();
+          characterField.ShouldNotHaveValue();
+
+          characterField.ShouldBeEditable();
+      }
+
+
+        [Fact]
     public void AllowCharactersFieldOnAddClaimForCharacterTest()
     {
       var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
-      var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
+      var characterField = vm.Field(Mock.CharacterField);
         characterField.ShouldNotBeNull();
-        characterField.CanView.ShouldBeFalse();
-        characterField.Value.ShouldBeNull();
 
-        characterField.CanEdit.ShouldBeTrue();
+        characterField.ShouldBeHidden();
+        characterField.ShouldNotHaveValue();
+
+        characterField.ShouldBeEditable();
         }
 
       [Fact]
@@ -120,10 +139,10 @@ namespace JoinRpg.Web.Test
           var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeFalse();
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldBeHidden();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeFalse();
+          characterField.ShouldBeReadonly();
       }
 
       [Fact]
@@ -136,10 +155,10 @@ namespace JoinRpg.Web.Test
           var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeTrue();
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldBeVisible();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeTrue();
+          characterField.ShouldBeEditable();
       }
 
 
@@ -149,11 +168,67 @@ namespace JoinRpg.Web.Test
           var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
           var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
           characterField.ShouldNotBeNull();
-          characterField.CanView.ShouldBeFalse();
+          characterField.ShouldBeHidden();
 
-          characterField.Value.ShouldBeNull();
+          characterField.ShouldNotHaveValue();
 
-          characterField.CanEdit.ShouldBeTrue();
+          characterField.ShouldBeEditable();
       }
-  }
+
+      [Fact]
+      public void ShowPublicCharactersFieldValueOnAddClaim()
+      {
+          var field = Mock.CreateField(new ProjectField() {IsPublic = true, CanPlayerEdit = false});
+          var value = new FieldWithValue(field, "xxx");
+          Mock.Character.JsonData = new[] {value}.SerializeFields();
+
+          var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource) Mock.Character);
+          var characterField = vm.Field(field);
+          characterField.ShouldNotBeNull();
+          characterField.ShouldBeVisible();
+
+          characterField.Value.ShouldBe("xxx");
+
+          characterField.ShouldBeReadonly();
+      }
+
+      [Fact]
+      public void PublicCharactersFieldValueOnAddClaimAreReadonlyIfNotShowForUnApprovedClaims()
+      {
+          var field = Mock.CreateField(new ProjectField() { IsPublic = true, CanPlayerEdit = true, ShowOnUnApprovedClaims = false});
+          var value = new FieldWithValue(field, "xxx");
+          Mock.Character.JsonData = new[] { value }.SerializeFields();
+
+          var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+          var characterField = vm.Field(field);
+          characterField.ShouldNotBeNull();
+          characterField.ShouldBeVisible();
+
+          characterField.Value.ShouldBe("xxx");
+
+          characterField.ShouldBeReadonly();
+      }
+
+      [Fact]
+      public void PublicCharactersFieldValueOnAddClaimShouldBeEditableIfNotShowForUnApprovedClaims()
+      {
+          var field = Mock.CreateField(new ProjectField()
+          {
+              IsPublic = true,
+              CanPlayerEdit = true,
+              ShowOnUnApprovedClaims = true
+          });
+          var value = new FieldWithValue(field, "xxx");
+          Mock.Character.JsonData = new[] { value }.SerializeFields();
+
+          var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
+          var characterField = vm.Field(field);
+          characterField.ShouldNotBeNull();
+          characterField.ShouldBeVisible();
+
+          characterField.Value.ShouldBe("xxx");
+
+          characterField.ShouldBeEditable();
+      }
+    }
 }

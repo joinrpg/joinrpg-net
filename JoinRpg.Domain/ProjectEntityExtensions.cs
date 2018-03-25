@@ -100,6 +100,7 @@ namespace JoinRpg.Domain
       return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
     }
 
+      [NotNull]
     public static T EnsureProjectActive<T>(this T entity)
     where T:IProjectEntity
     {

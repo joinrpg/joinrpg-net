@@ -165,7 +165,11 @@ namespace JoinRpg.Services.Impl
       return claim.ClaimId;
     }
 
-    public async Task AddClaimFromUser(int projectId, int? characterGroupId, int? characterId, string claimText, IDictionary<int, string> fields)
+    public async Task AddClaimFromUser(int projectId,
+        int? characterGroupId,
+        int? characterId,
+        string claimText,
+        IReadOnlyDictionary<int, string> fields)
     {
       var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
@@ -738,7 +742,9 @@ namespace JoinRpg.Services.Impl
             ExtraAccessReason.ResponsibleMaster);
     }
 
-    public async Task SaveFieldsFromClaim(int projectId, int characterId, IDictionary<int, string> newFieldValue)
+    public async Task SaveFieldsFromClaim(int projectId,
+        int characterId,
+        IReadOnlyDictionary<int, string> newFieldValue)
     {
       //TODO: Prevent lazy load here - use repository 
       var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);
