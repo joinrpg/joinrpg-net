@@ -2,9 +2,8 @@ using System;
 using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
-using JoinRpg.Helpers.Web;
 using Markdig;
+using Vereyon.Web;
 
 namespace Joinrpg.Markdown
 {
@@ -17,71 +16,47 @@ namespace Joinrpg.Markdown
         /// Converts markdown to HtmlString with all sanitization
         /// </summary>
         [NotNull]
-        public static IHtmlString ToHtmlString([CanBeNull] this MarkdownString markdownString,
-            [NotNull] ILinkRenderer renderer)
-        {
-            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
-            return markdownString?.Contents == null
-                ? new HtmlString("")
-                : markdownString.RenderMarkDownToHtmlUnsafe(renderer).SanitizeHtml();
-        }
-
-        /// <summary>
-        /// Converts markdown to HtmlString with all sanitization
-        /// </summary>
-        [NotNull]
         public static IHtmlString ToHtmlString([CanBeNull]
-            this MarkdownString markdownString) =>
-            markdownString.ToHtmlString(DoNothingLinkRenderer.Instance);
-
-        /// <summary>
-        /// Converts markdown to plain text
-        /// </summary>
-        [NotNull]
-        public static IHtmlString ToPlainText([CanBeNull] this MarkdownString markdownString,
-            [NotNull] ILinkRenderer renderer)
-        {
-            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
-            if (markdownString?.Contents == null)
-            {
-                return new HtmlString("");
-            }
-            return markdownString.RenderMarkDownToPlainTextUnsafe(renderer).RemoveHtml();
-        }
+            this MarkdownString markdownString,
+            ILinkRenderer renderer = null)
+            => PerformRender(markdownString,
+                renderer,
+                Markdig.Markdown.ToHtml,
+                HtmlSanitizers.Simple);
 
         /// <summary>
         /// Converts markdown to plain text
         /// </summary>
         [NotNull]
         public static IHtmlString ToPlainText([CanBeNull]
-            this MarkdownString markdownString) =>
-            markdownString.ToPlainText(DoNothingLinkRenderer.Instance);
-
-
-        private static UnSafeHtml RenderMarkDownToHtmlUnsafe(this MarkdownString markdownString,
-            [NotNull] ILinkRenderer renderer)
-        {
-            var pipeline = ConstructPipelineWithRenderer(renderer);
-            return Markdig.Markdown.ToHtml(markdownString.Contents, pipeline);
-        }
-
-        private static UnSafeHtml RenderMarkDownToPlainTextUnsafe(
             this MarkdownString markdownString,
-            [NotNull] ILinkRenderer renderer)
-        {
-            var pipeline = ConstructPipelineWithRenderer(renderer);
-            return Markdig.Markdown.ToPlainText(markdownString.Contents, pipeline);
-        }
+            ILinkRenderer renderer = null)
+            =>
+                PerformRender(markdownString,
+                    renderer,
+                    Markdig.Markdown.ToPlainText,
+                    HtmlSanitizers.RemoveAll);
 
-        private static MarkdownPipeline ConstructPipelineWithRenderer(ILinkRenderer renderer)
+        private static IHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer linkRenderer,
+            Func<string, MarkdownPipeline, string> renderMethod, IHtmlSanitizer sanitizer)
         {
-            if (renderer == null) throw new ArgumentNullException(nameof(renderer));
+            linkRenderer = linkRenderer ?? DoNothingLinkRenderer.Instance;
+            if (markdownString?.Contents == null)
+            {
+                return new HtmlString("");
+            }
+
+            var contents = sanitizer.Sanitize(markdownString.Contents);
+
+
             //TODO - do we need to save re-use pipeline?
-            return new MarkdownPipelineBuilder()
+            var pipeline = new MarkdownPipelineBuilder()
                 .UseSoftlineBreakAsHardlineBreak()
                 .UseAutoLinks()
-                .UseEntityLinker(renderer)
+                .UseEntityLinker(linkRenderer)
                 .Build();
+
+            return new HtmlString(renderMethod(contents, pipeline).Trim());
         }
     }
 }

@@ -1,15 +1,15 @@
 using System;
 using Vereyon.Web;
 
-namespace JoinRpg.Helpers.Web
+namespace Joinrpg.Markdown
 {
     internal static class HtmlSanitizers
     {
         private static readonly Lazy<HtmlSanitizer> SimpleHtml5Sanitizer = new Lazy<HtmlSanitizer>(InitHtml5Sanitizer);
-        public static HtmlSanitizer Simple { get; } = SimpleHtml5Sanitizer.Value;
+        public static IHtmlSanitizer Simple { get; } = SimpleHtml5Sanitizer.Value;
 
         private static readonly Lazy<HtmlSanitizer> RemoveAllHtmlSanitizer = new Lazy<HtmlSanitizer>(InitRemoveSanitizer);
-        public static HtmlSanitizer RemoveAll { get; } = RemoveAllHtmlSanitizer.Value;
+        public static IHtmlSanitizer RemoveAll { get; } = RemoveAllHtmlSanitizer.Value;
 
         private static HtmlSanitizer InitRemoveSanitizer()
         {

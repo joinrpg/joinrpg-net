@@ -15,7 +15,7 @@ namespace JoinRpg.Markdown.Test
         /// <summary>
         /// Ensures that some markdown string will be converted to some HTML
         /// </summary>
-        private static void ShouldBeHtml(this MarkdownString markdownString, string expectedHtml) =>
-            markdownString.ToHtmlString().ToHtmlString().ShouldBe(expectedHtml);
+        public static void ShouldBeHtml(this MarkdownString markdownString, string expectedHtml, ILinkRenderer linkRenderer = null) =>
+            markdownString.ToHtmlString(linkRenderer).ToHtmlString().ShouldBe(expectedHtml);
     }
 }

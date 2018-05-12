@@ -1,8 +1,9 @@
 using System;
 using System.Web;
 using JetBrains.Annotations;
+using JoinRpg.Helpers;
 
-namespace JoinRpg.Helpers.Web
+namespace Joinrpg.Markdown
 {
     /// <summary>
     /// Facade for HTML sanitization

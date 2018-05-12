@@ -34,6 +34,9 @@
     <DocumentationFile>bin\Release\Joinrpg.Markdown.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.5.0.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.5.0\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
@@ -52,11 +55,16 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="Vereyon.Web.HtmlSanitizer, Version=1.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vereyon.Web.HtmlSanitizer.1.4.0\lib\net40\Vereyon.Web.HtmlSanitizer.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DoNothingLinkRenderer.cs" />
     <Compile Include="EntityLinkerExtension.cs" />
     <Compile Include="EntityLinkInline.cs" />
+    <Compile Include="HtmlSanitizeFacade.cs" />
+    <Compile Include="HtmlSanitizers.cs" />
     <Compile Include="ILinkRenderer.cs" />
     <Compile Include="LinkerParser.cs" />
     <Compile Include="LinkerRenderAdapter.cs" />
@@ -66,10 +74,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
-      <Project>{dfe0d0a8-980e-49a1-9d9f-c7866faf4c05}</Project>
-      <Name>JoinRpg.Helpers.Web</Name>
-    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
       <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
       <Name>JoinRpg.Helpers</Name>
