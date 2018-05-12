@@ -338,14 +338,14 @@ namespace JoinRpg.Services.Email
               .Select(updatedField =>
                 new MarkdownString(
                   $@"__**{updatedField.Field.FieldName}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
+{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
             //Add info about other changed atttributes (no access rights validation)
             IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
               .OtherChangedAttributes
               .Select(changedAttribute => new MarkdownString(
                 $@"__**{changedAttribute.Key}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
+{MarkdownTransformations.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
 
             return string.Join(
               "\n\n",

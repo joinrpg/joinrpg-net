@@ -20,6 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Debug\Joinrpg.Markdown.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +30,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Release\Joinrpg.Markdown.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
@@ -50,12 +54,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DoNothingLinkRenderer.cs" />
     <Compile Include="EntityLinkerExtension.cs" />
     <Compile Include="EntityLinkInline.cs" />
+    <Compile Include="ILinkRenderer.cs" />
     <Compile Include="LinkerParser.cs" />
     <Compile Include="LinkerRenderAdapter.cs" />
     <Compile Include="MarkdownEntityLinkerExtensions.cs" />
-    <Compile Include="MarkDownHelper.cs" />
+    <Compile Include="MarkDownRendererFacade.cs" />
+    <Compile Include="MarkdownTransformations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
