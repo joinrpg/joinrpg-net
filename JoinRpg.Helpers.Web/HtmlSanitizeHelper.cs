@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Web;
 using JetBrains.Annotations;
 using Vereyon.Web;
-using JoinRpg.Helpers;
 
 namespace JoinRpg.Helpers.Web
 {
@@ -37,14 +36,6 @@ namespace JoinRpg.Helpers.Web
       var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
       sanitizer.Tag("img").AllowAttributes("src");
       sanitizer.Tag("hr");
-      //This is temporary changes to be upstreamed into HtmlRuleSanitizer
-      sanitizer.Tag("ol")
-          .AllowAttributes("start")
-          .AllowAttributes("type")
-          .AllowAttributes("reversed");
-      sanitizer.Tag("li")
-          .AllowAttributes("value");
-      //end of
       sanitizer.Tag("blockquote");
       sanitizer.Tag("s");
       sanitizer.Tag("pre");
