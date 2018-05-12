@@ -76,7 +76,12 @@
     }
 </h3>
 
-@Html.Partial("Elements", Model.Elements)
+@Html.Partial("_PlotElements", Model.Elements)
+
+@Html.Partial("_PublishPlotElementDlg", new PublishPlotElementViewModel(Model))
+@Html.Partial("_DeletePlotElementDlg", Model)
+@Html.Partial("_UnpublishPlotElementDlg", Model)
+
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

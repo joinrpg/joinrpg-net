@@ -1,0 +1,26 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model EditPlotFolderViewModel
+
+<div class="modal fade" id="unpublishElementModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("UnPublishElement", "Plot", new { Model.PlotFolderId, Model.ProjectId }, FormMethod.Post))
+            {
+                <input type="hidden" name="PlotElementId" id="publishPlotElementId" value="0" />
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Скрыть вводную (отменить публикацию)</h4>
+                </div>
+
+                <div class="modal-body">Вводная будет скрыта от игроков</div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Скрыть</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+
+                </div>
+            }
+        </div>
+    </div>
+</div>

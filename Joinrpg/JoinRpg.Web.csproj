@@ -245,6 +245,7 @@
     <Compile Include="Models\CheckIn\SecondRoleViewModel.cs" />
     <Compile Include="Models\GameRolesReportViewModel.cs" />
     <Compile Include="Models\InviteRequestViewModel.cs" />
+    <Compile Include="Models\Plot\PublishPlotElementViewModel.cs" />
     <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
@@ -649,7 +650,7 @@
     <Content Include="Views\Plot\Create.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
     <Content Include="Views\Plot\Edit.cshtml" />
-    <Content Include="Views\Plot\Elements.cshtml" />
+    <Content Include="Views\Plot\_PlotElements.cshtml" />
     <Content Include="Views\Plot\CreateElement.cshtml" />
     <Content Include="Views\Menu\MyProjectDropdown.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\MarkdownString.cshtml" />
@@ -790,6 +791,9 @@
     <Content Include="Views\Claim\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomRequest.cshtml" />
+    <Content Include="Views\Plot\_PublishPlotElementDlg.cshtml" />
+    <Content Include="Views\Plot\_DeletePlotElementDlg.cshtml" />
+    <Content Include="Views\Plot\_UnpublishPlotElementDlg.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

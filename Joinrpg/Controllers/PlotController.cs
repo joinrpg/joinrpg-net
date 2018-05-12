@@ -386,21 +386,24 @@ namespace JoinRpg.Web.Controllers
     }
 
 
-    [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
-    public async Task<ActionResult> PublishElement(int plotelementid, int plotFolderId, int projectId, int version)
-    {
-      try
-      {
-        await _plotService.PublishElementVersion(projectId, plotFolderId, plotelementid, version);
-        return ReturnToPlot(projectId, plotFolderId);
-      }
-      catch (Exception)
-      {
-        return await Edit(projectId, plotFolderId);
-      }
-    }
+        [HttpPost]
+        [MasterAuthorize(Permission.CanManagePlots)]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> PublishElement(PublishPlotElementViewModel model)
+        {
+            try
+            {
+                await _plotService.PublishElementVersion(model.ProjectId, model.PlotFolderId,
+                    model.PlotElementId, model.Version);
+                return ReturnToPlot(model.ProjectId, model.PlotFolderId);
+            }
+            catch (Exception)
+            {
+                return await Edit(model.ProjectId, model.PlotFolderId);
+            }
+        }
 
-    [HttpGet, MasterAuthorize()]
+        [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> ShowElementVersion(int projectId, int plotFolderId, int plotElementId, int version)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);

@@ -10,13 +10,24 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
+using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
   [UsedImplicitly]
   public class PlotServiceImpl : DbServiceImplBase, IPlotService
   {
-    public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
+
+        private readonly IEmailService _email;
+
+        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email) : base(unitOfWork)
+        {
+            _email = email;
+        }
+
+
+
+        public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
     {
       if (masterTitle == null) throw new ArgumentNullException(nameof(masterTitle));
       var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
@@ -236,18 +247,41 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    public async Task PublishElementVersion(int projectId, int plotFolderId, int plotelementid, int? version)
-    {
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-      plotElement.EnsureActive();
-      plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
-      plotElement.IsCompleted = version != null;
-      plotElement.Published = version;
-      plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
-      await UnitOfWork.SaveChangesAsync();
+        
+        private List<Claim> GetClaimsFromGroups(IEnumerable<CharacterGroup> groups)
+        {
+            List<Claim> claims = new List<Claim>();
+
+            void InternalGetClaimsFromGroups(IEnumerable<CharacterGroup> src)
+            {
+                foreach(var g in src)
+                {
+                    claims.AddRange(g.Characters.Where(c => c.ApprovedClaimId.HasValue).Select(c => c.ApprovedClaim);
+                    InternalGetClaimsFromGroups(g.ChildGroups);
+                }
+            }
+
+            InternalGetClaimsFromGroups(groups);
+            return claims;
+        }
+
+        public async Task PublishElementVersion(IPublishPlotElementModel model)
+        {
+            // Publishing
+            var plotElement = await LoadElement(model.ProjectId, model.PlotFolderId, model.PlotElementId);
+            plotElement.EnsureActive();
+            plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            plotElement.IsCompleted = model.Version != null;
+            plotElement.Published = model.Version;
+            plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
+            await UnitOfWork.SaveChangesAsync();
+
+            // Sending notifications
+            List<Claim> claims = GetClaimsFromGroups(plotElement.TargetGroups);
+            claims.AddRange(plotElement.TargetCharacters.Where(c => c.ApprovedClaimId.HasValue).Select(c => c.ApprovedClaim));
+
+            // Now we have list of claims
+        }
+
     }
-    public PlotServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
-    {
-    }
-  }
 }

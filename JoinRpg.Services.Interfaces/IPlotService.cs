@@ -1,11 +1,33 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
-  public interface IPlotService
+
+    public interface IPlotElementModel
+    {
+
+        int ProjectId { get; }
+
+        int PlotFolderId { get; }
+
+        int PlotElementId { get; }
+
+        int? Version { get; }
+
+    }
+
+    public interface IPublishPlotElementModel : IPlotElementModel
+    {
+
+        bool SendNotification { get; }
+
+        string CommentText { get; }
+    }
+
+    public interface IPlotService
   {
     Task CreatePlotFolder(int projectId, [NotNull] string masterTitle, [NotNull] string todo);
     Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField);
@@ -20,7 +42,9 @@ namespace JoinRpg.Services.Interfaces
       IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars);
 
     Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction);
-    Task PublishElementVersion(int projectId, int plotFolderId, int plotelementid, int? version);
+
+    Task PublishElementVersion(IPublishPlotElementModel model);
+
     Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string content, string todoField);
   }
 }
