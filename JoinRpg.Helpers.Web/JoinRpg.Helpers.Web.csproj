@@ -83,7 +83,9 @@
   <ItemGroup>
     <Compile Include="CompressAttribute.cs" />
     <Compile Include="GravatarExtensions.cs" />
-    <Compile Include="HtmlSanitizeHelper.cs" />
+    <Compile Include="HtmlSanitizeFacade.cs" />
+    <Compile Include="HtmlSanitizers.cs" />
+    <Compile Include="HtmlStringExtensions.cs" />
     <Compile Include="IdListUrlExtensions.cs" />
     <Compile Include="ImageHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
