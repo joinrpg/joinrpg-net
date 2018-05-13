@@ -278,7 +278,7 @@ namespace JoinRpg.Services.Impl
             plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
             await UnitOfWork.SaveChangesAsync();
 
-            if (model.SendNotification)
+            if (plotElement.IsCompleted && model.SendNotification)
             {
                 // Preparing list of users to send notification to
                 List<Claim> claims = GetClaimsFromGroups(plotElement.TargetGroups);
