@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Helpers
     private string GroupLinkImpl(int index, string extra, CharacterGroup group)
     {
       var name = extra == "" ? group.CharacterGroupName : extra;
-      return $"<a href=\"/{Project.ProjectId}/groups/{index}\">{name}</a>";
+      return $"<a href=\"/{Project.ProjectId}/roles/{index}/details\">{name}</a>";
     }
 
     private string CharacterFullFunc(string match, int index, string extra)
