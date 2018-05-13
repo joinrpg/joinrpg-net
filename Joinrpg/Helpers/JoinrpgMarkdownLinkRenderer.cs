@@ -72,12 +72,23 @@ namespace JoinRpg.Web.Helpers
 
     private string CharacterImpl(Character character, string extra = "")
     {
-      var characterLink = CharacterLinkImpl(character, extra);
-      var player = character.ApprovedClaim?.Player;
-      var playerString = player == null
-        ? "нет игрока"
-        : $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
-      return $"<span>{characterLink}&nbsp;({playerString})</span>";
+        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString()})</span>";
+
+        string GetPlayerString()
+        {
+            if (character.IsNpc())
+            {
+                return "NPC";
+            }
+            var player = character.ApprovedClaim?.Player;
+
+            if (player == null)
+            {
+                return "нет игрока";
+            }
+
+            return $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
+        }
     }
 
     private static string GetEmailLinkImpl([NotNull] User player)
