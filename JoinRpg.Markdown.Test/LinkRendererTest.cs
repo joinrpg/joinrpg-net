@@ -32,7 +32,7 @@ namespace JoinRpg.Markdown.Test
       private readonly LinkRendererMock _mock = new LinkRendererMock();
     
     [Fact]
-    public void TestSimpleMatch() => Match("<p><b>12</b></p>", "%test12");
+    public void TestSimpleMatch() => Match("<p><strong>12</strong></p>", "%test12");
     
     [Fact]
     public void TestNoMatchWithoutIndex() => NoMatch("%test");
@@ -41,12 +41,12 @@ namespace JoinRpg.Markdown.Test
     public void TestNoMatchInMiddle() => NoMatch("test%test12");
 
     [Fact]
-    public void TestMatchWithExtra() => Match("<p><b>121</b>extra</p>", "%test121(extra)");
+    public void TestMatchWithExtra() => Match("<p><strong>121</strong>extra</p>", "%test121(extra)");
 
     [Fact]
     public void TestNoMatchZero() => NoMatch("%test0(extra)");
 
     [Fact]
-    public void TestMiddleOfSentence() => Match("<p>s <b>12</b></p>", "s %test12");
+    public void TestMiddleOfSentence() => Match("<p>s <strong>12</strong></p>", "s %test12");
   }
 }

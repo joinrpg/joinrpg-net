@@ -56,7 +56,7 @@ namespace Joinrpg.Markdown
                 .UseEntityLinker(linkRenderer)
                 .Build();
 
-            return new HtmlString(renderMethod(contents, pipeline).Trim());
+            return new HtmlString(sanitizer.Sanitize(renderMethod(contents, pipeline)));
         }
     }
 }

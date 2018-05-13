@@ -14,6 +14,6 @@ namespace JoinRpg.Markdown.Test
         [Fact]
         public void TestBr()
             => @"test
-break".ShouldBeHtml("<p>test<br />\nbreak</p>");
+break".ShouldBeHtml("<p>test<br>\nbreak</p>");
     }
 }
