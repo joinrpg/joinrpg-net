@@ -4,55 +4,58 @@
 
 @{
     var hideClass = Model.Status == PlotStatus.InWork ? "world-object-hidden" : "";
+    string id = @"pe" + Model.PlotElementId;
 }
 
-@if (Model.HasMasterAccess || Model.PublishMode)
-{
-    <div>
-        @if (Model.HasEditAccess)
-        {
-            @Html.DisplayFor(model => model.Status)
-        }
-        <b>Для</b>
-        @if (Model.TargetsForDisplay.Any())
-        {
-            foreach (var target in Model.TargetsForDisplay)
+<div id="@id">
+    @if (Model.HasMasterAccess || Model.PublishMode)
+    {
+        <div>
+            @if (Model.HasEditAccess)
             {
-                @Html.DisplayFor(model => target)
+                @Html.DisplayFor(model => model.Status)
             }
-        }
-        else
-        {
-            <span>Не установлено</span>
-        }
-        @if (Model.HasEditAccess)
-        {
-
-            <span>
-                @Html.ActionLink(
-             "Изменить",
-             "Edit",
-             "Plot",
-             null,
-             null,
-             "panelPlotElement" + Model.PlotElementId,
-             new {Model.PlotFolderId, Model.ProjectId},
-             new {@class = "btn btn-default btn-sm"})
-
-                @if (Model.CharacterId != null)
+            <b>Для</b>
+            @if (Model.TargetsForDisplay.Any())
+            {
+                foreach (var target in Model.TargetsForDisplay)
                 {
-                    @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+                    @Html.DisplayFor(model => target)
                 }
-            </span>
-        }
+            }
+            else
+            {
+                <span>Не установлено</span>
+            }
+            @if (Model.HasEditAccess)
+            {
+
+                <span>
+                    @Html.ActionLink(
+                      "Изменить",
+                      "Edit",
+                      "Plot",
+                      null,
+                      null,
+                      "panelPlotElement" + Model.PlotElementId,
+                      new { Model.PlotFolderId, Model.ProjectId },
+                      new { @class = "btn btn-default btn-sm" })
+
+                    @if (Model.CharacterId != null)
+                    {
+                        @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+                    }
+                </span>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasMasterAccess)
+    {
+        <p><b>Доделать</b>: @Model.TodoField</p>
+    }
+
+    <div class="@hideClass">
+        @Model.Content
     </div>
-}
-
-@if (!string.IsNullOrWhiteSpace(Model.TodoField) && Model.HasMasterAccess)
-{
-    <p><b>Доделать</b>: @Model.TodoField</p>
-}
-
-<div class="@hideClass">
-    @Model.Content
 </div>

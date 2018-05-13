@@ -55,9 +55,11 @@
     <Compile Include="Email\EmailSendFailedException.cs" />
     <Compile Include="Email\IEmailSendingService.cs" />
     <Compile Include="Email\RecepientData.cs" />
+    <Compile Include="Plot\IPlotElementModel.cs" />
     <Compile Include="Notification\AccountEmails.cs" />
     <Compile Include="Notification\EmailModelBase.cs" />
     <Compile Include="Notification\InviteEmailModel.cs" />
+    <Compile Include="Notification\PlotEmail.cs" />
     <Compile Include="Notification\RoomEmailInterfaces.cs" />
     <Compile Include="Notification\ForumEmail.cs" />
     <Compile Include="GrantAccessRequest.cs" />
@@ -79,6 +81,7 @@
     <Compile Include="IUriService.cs" />
     <Compile Include="IUserService.cs" />
     <Compile Include="Notification\MassEmailModel.cs" />
+    <Compile Include="Plot\IPublishPlotElementModel.cs" />
     <Compile Include="Search\ISearchService.cs" />
     <Compile Include="Search\ISearchResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

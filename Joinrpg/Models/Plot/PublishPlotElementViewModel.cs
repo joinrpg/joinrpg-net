@@ -32,6 +32,5 @@ namespace JoinRpg.Web.Models.Plot
             ProjectId = source.ProjectId;
             PlotFolderId = source.PlotFolderId;
         }
-
     }
 }

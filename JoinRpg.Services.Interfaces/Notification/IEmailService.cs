@@ -28,6 +28,7 @@ namespace JoinRpg.Services.Interfaces.Notification
         Task Email([NotNull] NewInviteEmail email);
         Task Email([NotNull] AcceptInviteEmail email);
         Task Email([NotNull] DeclineInviteEmail email);
+        Task Email([NotNull] PublishPlotElementEmail email);
     }
 
     public static class EmailTokens

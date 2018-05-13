@@ -393,8 +393,7 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
-                await _plotService.PublishElementVersion(model.ProjectId, model.PlotFolderId,
-                    model.PlotElementId, model.Version);
+                await _plotService.PublishElementVersion(model);
                 return ReturnToPlot(model.ProjectId, model.PlotFolderId);
             }
             catch (Exception)

@@ -252,16 +252,18 @@ namespace JoinRpg.Services.Impl
         {
             List<Claim> claims = new List<Claim>();
 
-            void InternalGetClaimsFromGroups(IEnumerable<CharacterGroup> src)
+            void InternalGetUsersFromGroups(IEnumerable<CharacterGroup> src)
             {
                 foreach(var g in src)
                 {
-                    claims.AddRange(g.Characters.Where(c => c.ApprovedClaimId.HasValue).Select(c => c.ApprovedClaim);
-                    InternalGetClaimsFromGroups(g.ChildGroups);
+                    claims.AddRange(g.Characters
+                        .Where(c => c.ApprovedClaimId.HasValue)
+                        .Select(c => c.ApprovedClaim));
+                    InternalGetUsersFromGroups(g.ChildGroups);
                 }
             }
 
-            InternalGetClaimsFromGroups(groups);
+            InternalGetUsersFromGroups(groups);
             return claims;
         }
 
@@ -276,12 +278,24 @@ namespace JoinRpg.Services.Impl
             plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;
             await UnitOfWork.SaveChangesAsync();
 
-            // Sending notifications
-            List<Claim> claims = GetClaimsFromGroups(plotElement.TargetGroups);
-            claims.AddRange(plotElement.TargetCharacters.Where(c => c.ApprovedClaimId.HasValue).Select(c => c.ApprovedClaim));
+            if (model.SendNotification)
+            {
+                // Preparing list of users to send notification to
+                List<Claim> claims = GetClaimsFromGroups(plotElement.TargetGroups);
+                claims.AddRange(plotElement.TargetCharacters
+                    .Where(c => c.ApprovedClaimId.HasValue)
+                    .Select(c => c.ApprovedClaim));
 
-            // Now we have list of claims
+                // Now we have list of claims
+                await _email.Email(new PublishPlotElementEmail
+                {
+                    Initiator = await GetCurrentUser(),
+                    Claims = claims,
+                    ProjectName = plotElement.Project.ProjectName,
+                    PlotElement = plotElement,
+                    Text = new MarkdownString(model.CommentText)
+                });
+            }
         }
-
     }
 }
