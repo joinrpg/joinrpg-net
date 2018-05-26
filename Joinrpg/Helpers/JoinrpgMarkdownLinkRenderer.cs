@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Helpers
         return Fail(match, index, extra);
       }
       var groupLink = GroupLinkImpl(index, extra, group);
-      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId)).ToList();
+      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId) && c.IsActive).ToList();
       var builder = new StringBuilder(groupLink);
       foreach (var character in characters)
       {
