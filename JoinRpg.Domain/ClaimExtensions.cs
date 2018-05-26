@@ -95,7 +95,7 @@ namespace JoinRpg.Domain
             new[]
             {
               Claim.Status.AddedByUser, Claim.Status.Discussed, Claim.Status.AddedByMaster,
-              Claim.Status.Approved, Claim.Status.OnHold
+              Claim.Status.Approved, Claim.Status.OnHold,
             }.Contains(fromStatus);
         case Claim.Status.Discussed:
           return

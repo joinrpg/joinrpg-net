@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Controllers
       {
         Name = pt.GetDisplayName(),
         Master = pt.User,
-        Total = project.FinanceOperations.Where(fo => fo.PaymentTypeId == pt.PaymentTypeId && fo.Approved).Sum(fo => fo.MoneyAmount)
+        Total = project.FinanceOperations.Where(fo => fo.PaymentTypeId == pt.PaymentTypeId && fo.Approved).Sum(fo => fo.MoneyAmount),
       }).Where(m => m.Total != 0).OrderByDescending(m => m.Total).ThenBy(m => m.Name);
 
       var exportType = GetExportTypeByName(export);
@@ -158,7 +158,7 @@ namespace JoinRpg.Web.Controllers
         {
           IsDefault = paymentType.IsDefault,
           Name = paymentType.Name,
-          ProjectId = projectid
+          ProjectId = projectid,
         });
     }
 
@@ -280,7 +280,7 @@ namespace JoinRpg.Web.Controllers
             ProjectId = viewModel.ProjectId,
             WarnOnOverPayment = viewModel.WarnOnOverPayment,
             PreferentialFeeEnabled = viewModel.PreferentialFeeEnabled,
-            PreferentialFeeConditions = viewModel.PreferentialFeeConditions
+            PreferentialFeeConditions = viewModel.PreferentialFeeConditions,
         });
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }

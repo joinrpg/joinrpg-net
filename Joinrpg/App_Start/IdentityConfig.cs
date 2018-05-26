@@ -20,7 +20,7 @@ namespace JoinRpg.Web
       UserValidator = new UserValidator<User, int>(this)
       {
         AllowOnlyAlphanumericUserNames = false,
-        RequireUniqueEmail = true
+        RequireUniqueEmail = true,
       };
 
       // Configure validation logic for passwords

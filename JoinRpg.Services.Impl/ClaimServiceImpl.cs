@@ -139,7 +139,7 @@ namespace JoinRpg.Services.Impl
         IsVisibleToPlayer = true,
         ProjectId = projectId,
         LastEditTime = Now,
-        ExtraAction = CommentExtraAction.SecondRole
+        ExtraAction = CommentExtraAction.SecondRole,
       });
 
       oldClaim.ClaimStatus = Claim.Status.Approved;
@@ -203,7 +203,7 @@ namespace JoinRpg.Services.Impl
           IsVisibleToPlayer = true,
           ProjectId = projectId,
           LastEditTime = Now,
-            ExtraAction = CommentExtraAction.NewClaim
+            ExtraAction = CommentExtraAction.NewClaim,
         });
       }
 
@@ -454,7 +454,7 @@ namespace JoinRpg.Services.Impl
                       ProjectName = claim.Project.ProjectName,
                       Recipients = claim.AccommodationRequest.Accommodation.GetSubscriptions().ToList(),
                       Room = claim.AccommodationRequest.Accommodation,
-                      Text = new MarkdownString()
+                      Text = new MarkdownString(),
                   };
               }
 
@@ -507,7 +507,7 @@ namespace JoinRpg.Services.Impl
                   {
                       "Тип поселения", //TODO[Localize]
                       new PreviousAndNewValue(newType.Name, claim.AccommodationRequest?.AccommodationType.Name)
-                  }
+                  },
               });
 
 
@@ -518,7 +518,7 @@ namespace JoinRpg.Services.Impl
               ProjectId = projectId,
               Subjects = new List<Claim> {claim},
               AccommodationTypeId = roomTypeId,
-              IsAccepted = AccommodationRequest.InviteState.Accepted
+              IsAccepted = AccommodationRequest.InviteState.Accepted,
           };
 
           UnitOfWork
@@ -677,7 +677,7 @@ namespace JoinRpg.Services.Impl
         {
           CommentDiscussionId = commentDiscussionId,
           ProjectId = projectId,
-          UserId = CurrentUserId
+          UserId = CurrentUserId,
         };
         UnitOfWork.GetDbSet<ReadCommentWatermark>().Add(watermark);
       }

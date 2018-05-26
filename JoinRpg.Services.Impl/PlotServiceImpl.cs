@@ -29,7 +29,7 @@ namespace JoinRpg.Services.Impl
         ProjectId = projectId,
         MasterTitle = Required(masterTitle.RemoveTagNames()),
         TodoField = todo,
-        IsActive = true
+        IsActive = true,
       };
 
       await AssignTagList(plotFolder.PlotTags, masterTitle);
@@ -95,7 +95,7 @@ namespace JoinRpg.Services.Impl
         PlotFolderId = plotFolderId,
         TargetGroups = characterGroups,
         TargetCharacters = await ValidateCharactersList(projectId, targetChars),
-        ElementType = elementType
+        ElementType = elementType,
       };
 
       plotElement.Texts.Add(new PlotElementTexts()
@@ -104,7 +104,7 @@ namespace JoinRpg.Services.Impl
         TodoField = todoField,
         Version = 0,
         ModifiedDateTime = now,
-        AuthorUserId = CurrentUserId
+        AuthorUserId = CurrentUserId,
       });
 
       folder.ModifiedDateTime = now;
@@ -194,7 +194,7 @@ namespace JoinRpg.Services.Impl
         Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
         PlotElementId = plotElement.PlotElementId,
         ModifiedDateTime = now,
-        AuthorUserId = CurrentUserId
+        AuthorUserId = CurrentUserId,
       };
       plotElement.Texts.Add(text);
       plotElement.IsCompleted = false;

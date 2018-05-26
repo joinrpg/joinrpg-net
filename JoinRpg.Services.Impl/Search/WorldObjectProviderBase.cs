@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Impl.Search
             ProjectId = result.ProjectId,
             IsPublic = result.IsPublic,
             IsActive = result.IsActive,
-            IsPerfectMatch = perfectMatchPredicte(result)
+            IsPerfectMatch = perfectMatchPredicte(result),
           })
         .ToList();
     }

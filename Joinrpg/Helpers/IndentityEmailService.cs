@@ -29,13 +29,13 @@ namespace JoinRpg.Web.Helpers
       var message = new MessageBuilder().
         AddToRecipient(new Recipient()
         {
-          Email = identityMessage.Destination
+          Email = identityMessage.Destination,
         })
         .SetSubject(identityMessage.Subject)
         .SetFromAddress(new Recipient()
         {
           DisplayName = "Команда JoinRpg.Ru",
-          Email = "support@dev.joinrpg.ru"
+          Email = "support@dev.joinrpg.ru",
         })
         .SetTextBody(identityMessage.Body)
         .SetHtmlBody(identityMessage.Body)

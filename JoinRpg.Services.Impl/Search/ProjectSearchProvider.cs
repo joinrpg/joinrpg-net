@@ -31,7 +31,7 @@ namespace JoinRpg.Services.Impl.Search
                 Identification = proj.ProjectId.ToString(),
                 ProjectId = proj.ProjectId,
                 IsPublic = true,
-                IsActive = proj.Active
+                IsActive = proj.Active,
             }).ToList();
         
         }

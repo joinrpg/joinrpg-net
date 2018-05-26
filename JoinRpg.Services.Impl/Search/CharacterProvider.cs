@@ -13,7 +13,7 @@ namespace JoinRpg.Services.Impl.Search
     private static readonly string[] keysForPerfectMath =
     {
       "%персонаж",
-      "персонаж"
+      "персонаж",
     };
 
     public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)

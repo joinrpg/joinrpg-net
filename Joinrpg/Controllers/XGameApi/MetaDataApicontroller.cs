@@ -41,9 +41,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
                   IsActive = variant.IsActive,
                   Description = variant.Description.ToHtmlString().ToHtmlString(),
                   MasterDescription = variant.MasterDescription.ToHtmlString().ToHtmlString(),
-                  ProgrammaticValue = variant.ProgrammaticValue
-                })
-            })
+                  ProgrammaticValue = variant.ProgrammaticValue,
+                }),
+            }),
         };
     }
   }

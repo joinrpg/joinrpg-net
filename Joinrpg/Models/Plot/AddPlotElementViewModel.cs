@@ -49,6 +49,6 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Обычная вводная", Description = "Текст, который нужно выдать игроку.")]
     RegularPlot,
     [Display(Name = "Элемент раздатки", Description = "Инструкция службе регистрации выдать какой-то определенный предмет игроку. Одна строка — один предмет.")]
-    Handout
+    Handout,
   }
 }

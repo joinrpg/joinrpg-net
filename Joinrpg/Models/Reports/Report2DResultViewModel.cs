@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models.Reports
         {
           Name = null,
           Characters = template.Project.Characters
-            .Except(rowsSet.SelectMany(r => r.Value.Characters)).ToList()
+            .Except(rowsSet.SelectMany(r => r.Value.Characters)).ToList(),
         });
       return rowsSet;
     }

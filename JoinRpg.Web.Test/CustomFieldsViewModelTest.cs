@@ -216,7 +216,7 @@ namespace JoinRpg.Web.Test
           {
               IsPublic = true,
               CanPlayerEdit = true,
-              ShowOnUnApprovedClaims = true
+              ShowOnUnApprovedClaims = true,
           });
           var value = new FieldWithValue(field, "xxx");
           Mock.Character.JsonData = new[] { value }.SerializeFields();

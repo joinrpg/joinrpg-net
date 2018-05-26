@@ -107,7 +107,7 @@ namespace JoinRpg.Services.Impl
                 ProjectName = room.Project.ProjectName,
                 Recipients = room.GetSubscriptions().ToList(),
                 Room = room,
-                Text = new MarkdownString()
+                Text = new MarkdownString(),
             };
         }
 
@@ -228,7 +228,7 @@ namespace JoinRpg.Services.Impl
                     Name = name,
                     AccommodationTypeId = roomTypeId,
                     ProjectId = projectId,
-                    ProjectAccommodationType = roomType
+                    ProjectAccommodationType = roomType,
                 };
 
             // Internal function

@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models.CheckIn
       [Display(Name="Мастер")]
       Master,
       [Display(Name = "Игрок")]
-      Player
+      Player,
     }
   }
 }

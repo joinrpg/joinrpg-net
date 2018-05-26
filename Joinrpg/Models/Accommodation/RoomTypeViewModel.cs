@@ -152,7 +152,7 @@ namespace JoinRpg.Web.Models.Accommodation
                 Description = new MarkdownString(DescriptionEditable),
                 IsInfinite = IsInfinite,
                 IsPlayerSelectable = IsPlayerSelectable,
-                IsAutoFilledAccommodation = IsAutoFilledAccommodation
+                IsAutoFilledAccommodation = IsAutoFilledAccommodation,
             };
     }
 }

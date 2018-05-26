@@ -75,7 +75,7 @@ namespace JoinRpg.Web.Controllers
                 Active = project.Active,
                 AutoAcceptClaims = project.Details.AutoAcceptClaims,
                 GenerateCharacterNamesFromPlayer = project.Details.GenerateCharacterNamesFromPlayer,
-                EnableAccomodation = project.Details.EnableAccommodation
+                EnableAccomodation = project.Details.EnableAccommodation,
             });
         }
 
@@ -97,7 +97,7 @@ namespace JoinRpg.Web.Controllers
                         PublishPlot = viewModel.PublishPlot,
                         AutoAcceptClaims = viewModel.AutoAcceptClaims,
                         GenerateCharacterNamesFromPlayer = viewModel.GenerateCharacterNamesFromPlayer,
-                        IsAccommodationEnabled = viewModel.EnableAccomodation
+                        IsAccommodationEnabled = viewModel.EnableAccomodation,
                     });
 
                 return RedirectTo(project);

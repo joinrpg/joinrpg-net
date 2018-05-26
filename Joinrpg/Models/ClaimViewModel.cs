@@ -236,7 +236,7 @@ namespace JoinRpg.Web.Models
         ClaimStatusChange = false,
         Comments = false,
         FieldChange = false,
-        MoneyOperation = false
+        MoneyOperation = false,
       };
 
       subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == claimId) != null;

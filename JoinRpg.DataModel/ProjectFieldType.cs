@@ -8,6 +8,6 @@ namespace JoinRpg.DataModel
         Checkbox,
         MultiSelect,
         Header,
-        Number
+        Number,
     }
 }

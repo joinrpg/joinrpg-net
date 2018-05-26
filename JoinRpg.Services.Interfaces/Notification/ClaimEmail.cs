@@ -150,6 +150,6 @@ namespace JoinRpg.Services.Interfaces.Notification
     {
         Nobody,
         Master,
-        Player
+        Player,
     }
 }

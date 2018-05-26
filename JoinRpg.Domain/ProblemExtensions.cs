@@ -23,7 +23,7 @@ namespace JoinRpg.Domain
       Filters = new IProblemFilter<Claim>[]
       {
         new ResponsibleMasterProblemFilter(), new NotAnsweredClaim(), new BrokenClaimsAndCharacters(),
-        new FinanceProblemsFilter(), new ClaimWorkStopped(), new FieldNotSetFilterClaim()
+        new FinanceProblemsFilter(), new ClaimWorkStopped(), new FieldNotSetFilterClaim(),
       };
     }
 
@@ -49,7 +49,7 @@ namespace JoinRpg.Domain
     {
       Filters = new IProblemFilter<Character>[]
       {
-        new FieldNotSetFilterCharacter()
+        new FieldNotSetFilterCharacter(),
       };
     }
 
@@ -114,7 +114,7 @@ namespace JoinRpg.Domain
     FieldIsEmpty,
     FieldShouldNotHaveValue,
     NoParentGroup,
-    GroupIsBroken
+    GroupIsBroken,
   }
 
   public enum ProblemSeverity
@@ -122,6 +122,6 @@ namespace JoinRpg.Domain
     Hint,
     Warning,
     Error,
-    Fatal
+    Fatal,
   }
 }

@@ -168,7 +168,7 @@ namespace JoinRpg.Web.Controllers
       return View(new ManageLoginsViewModel
       {
         CurrentLogins = userLogins,
-        OtherLogins = otherLogins
+        OtherLogins = otherLogins,
       });
     }
 
@@ -226,7 +226,7 @@ namespace JoinRpg.Web.Controllers
         Telegram = user.Extra?.Telegram,
         Skype = user.Extra?.Skype,
         LastClaimId = lastClaim?.ClaimId,
-        LastClaimProjectId = lastClaim?.ProjectId
+        LastClaimProjectId = lastClaim?.ProjectId,
       });
     }
 
@@ -270,7 +270,7 @@ namespace JoinRpg.Web.Controllers
       ChangePasswordSuccess,
       SetPasswordSuccess,
       RemoveLoginSuccess,
-      Error
+      Error,
     }
 
     #endregion

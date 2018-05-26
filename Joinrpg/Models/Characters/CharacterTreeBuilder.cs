@@ -70,7 +70,7 @@ namespace JoinRpg.Web.Models.Characters
     {
       var vm = new CharacterLinkViewModel(arg)
       {
-        IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId)
+        IsFirstCopy = !AlreadyOutputedChars.Contains(arg.CharacterId),
       };
       if (vm.IsFirstCopy)
       {
