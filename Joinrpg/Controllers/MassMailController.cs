@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = project.ProjectName,
           Text = new MarkdownString(viewModel.Body),
           Recipients = recipients.ToList(),
-          Subject = viewModel.Subject
+          Subject = viewModel.Subject,
         });
         return View("Success");
       }

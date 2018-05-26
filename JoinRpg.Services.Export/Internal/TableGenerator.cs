@@ -32,7 +32,7 @@ namespace JoinRpg.Services.Export.Internal
         {
           Backend.WriteRow(columns.Select(tableColumn => new Cell()
           {
-            Content = tableColumn.ExtractValue(row)
+            Content = tableColumn.ExtractValue(row),
           }));
         }
 

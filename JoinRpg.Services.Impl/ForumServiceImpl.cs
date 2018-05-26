@@ -39,7 +39,7 @@ namespace JoinRpg.Services.Impl
         ModifiedAt = Now,
         AuthorUserId = CurrentUserId,
         IsVisibleToPlayer = !hideFromUser,
-        CommentDiscussion = new CommentDiscussion() { ProjectId = projectId}
+        CommentDiscussion = new CommentDiscussion() { ProjectId = projectId},
       };
 
         CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,

@@ -26,7 +26,7 @@ namespace JoinRpg.Domain.Test
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {mock.CharacterField.ProjectFieldId, "test"}
+                    {mock.CharacterField.ProjectFieldId, "test"},
                 },
                 _generator);
             mock.Character.JsonData
@@ -53,7 +53,7 @@ namespace JoinRpg.Domain.Test
                     mock.CreateClaim(mock.Character, mock.Player),
                     new Dictionary<int, string>()
                     {
-                        {mock.MasterOnlyField.ProjectFieldId, "test"}
+                        {mock.MasterOnlyField.ProjectFieldId, "test"},
                     },
                     _generator));
         }
@@ -76,7 +76,7 @@ namespace JoinRpg.Domain.Test
                 new Dictionary<int, string>()
                 {
                     {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-                    {mock.CharacterField.ProjectFieldId, null}
+                    {mock.CharacterField.ProjectFieldId, null},
                 },
                 _generator);
 
@@ -98,7 +98,7 @@ namespace JoinRpg.Domain.Test
                 new Dictionary<int, string>()
                 {
                     {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-                    {mock.CharacterField.ProjectFieldId, null}
+                    {mock.CharacterField.ProjectFieldId, null},
                 },
                 _generator);
 
@@ -118,7 +118,7 @@ namespace JoinRpg.Domain.Test
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {mock.CharacterField.ProjectFieldId, "test"}
+                    {mock.CharacterField.ProjectFieldId, "test"},
                 },
                 _generator);
 
@@ -141,7 +141,7 @@ namespace JoinRpg.Domain.Test
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {conditionalField.ProjectFieldId, "test"}
+                    {conditionalField.ProjectFieldId, "test"},
                 },
                 _generator);
             ShouldBeTestExtensions.ShouldBe(claim.JsonData,
@@ -166,7 +166,7 @@ namespace JoinRpg.Domain.Test
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {conditionalField.ProjectFieldId, "test"}
+                    {conditionalField.ProjectFieldId, "test"},
                 },
                 _generator);
             ShouldBeTestExtensions.ShouldBe(claim.JsonData,
@@ -191,7 +191,7 @@ namespace JoinRpg.Domain.Test
                     claim,
                     new Dictionary<int, string>()
                     {
-                        {mock.HideForUnApprovedClaim.ProjectFieldId, "test"}
+                        {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
                     },
                     _generator));
         }
@@ -208,7 +208,7 @@ namespace JoinRpg.Domain.Test
                 claim,
                 new Dictionary<int, string>()
                 {
-                    {mock.CharacterField.ProjectFieldId, "test"}
+                    {mock.CharacterField.ProjectFieldId, "test"},
                 },
                 _generator);
             ShouldBeTestExtensions.ShouldBe(mock.Character.JsonData,
@@ -235,7 +235,7 @@ namespace JoinRpg.Domain.Test
                     mock.Character,
                     new Dictionary<int, string>()
                     {
-                        {mock.CharacterField.ProjectFieldId, "test"}
+                        {mock.CharacterField.ProjectFieldId, "test"},
                     },
                     _generator));
         }

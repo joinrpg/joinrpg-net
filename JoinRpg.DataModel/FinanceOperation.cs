@@ -59,6 +59,6 @@ namespace JoinRpg.DataModel
     {
         Approved,
         Proposed,
-        Declined
+        Declined,
     }
 }

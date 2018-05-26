@@ -94,7 +94,7 @@ namespace JoinRpg.Web
         defaults: new
         {
           controller = "GameField",
-          action = "Create"
+          action = "Create",
         });
 
       routes.MapRoute(name: "ProjectFields", url: "{ProjectId}/fields/{ProjectFieldId}/{action}",

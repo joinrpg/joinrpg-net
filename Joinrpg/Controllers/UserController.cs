@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Controllers
           UserId = user.UserId,
           Details = new  UserProfileDetailsViewModel(user, accessReason),
           HasAdminAccess = currentUser?.Auth?.IsAdmin ?? false,
-          IsAdmin = user.Auth?.IsAdmin ?? false
+          IsAdmin = user.Auth?.IsAdmin ?? false,
         };
 
 

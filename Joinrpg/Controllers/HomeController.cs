@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Controllers
       return new HomeViewModel
       {
         ActiveProjects = finalProjects,
-        HasMoreProjects = projects.Count > finalProjects.Count
+        HasMoreProjects = projects.Count > finalProjects.Count,
       };
     }
 

@@ -45,7 +45,7 @@ namespace JoinRpg.Dal.Impl
       return new[]
       {
         entityTypeConfiguration.Property(p1),
-        entityTypeConfiguration.Property(p2)
+        entityTypeConfiguration.Property(p2),
       };
     }
   }

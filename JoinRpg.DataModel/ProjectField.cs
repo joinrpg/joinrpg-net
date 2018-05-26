@@ -142,13 +142,13 @@ namespace JoinRpg.DataModel
   public enum FieldBoundTo
   {
     Character,
-    Claim
+    Claim,
   }
 
   public enum MandatoryStatus
   {
     Optional, 
     Recommended,
-    Required
+    Required,
   }
 }

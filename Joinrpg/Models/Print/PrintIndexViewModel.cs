@@ -26,7 +26,7 @@ namespace JoinRpg.Web.Models.Print
       return new PluginOperationDescriptionViewModel()
       {
         Name = p.OperationName,
-        Description = p.Description
+        Description = p.Description,
       };
     }
 

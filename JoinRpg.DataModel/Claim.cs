@@ -80,7 +80,7 @@ namespace JoinRpg.DataModel
       DeclinedByMaster,
       Discussed,
       OnHold,
-      CheckedIn
+      CheckedIn,
     }
 
     public Status ClaimStatus { get; set; }

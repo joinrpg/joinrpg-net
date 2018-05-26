@@ -43,7 +43,7 @@ namespace JoinRpg.Web
         AuthorizeEndpointPath = new PathString("/x-api/Account/ExternalLogin"),
         AccessTokenExpireTimeSpan = TimeSpan.FromDays(30),
         //TODO[SSL]
-        AllowInsecureHttp = true
+        AllowInsecureHttp = true,
       };
 
       // Enable the application to use bearer tokens to authenticate users
@@ -76,8 +76,8 @@ namespace JoinRpg.Web
             (validateInterval: TimeSpan.FromDays(30),
               regenerateIdentityCallback: (manager, user) => user.GenerateUserIdentityAsync(manager,
                 DefaultAuthenticationTypes.ApplicationCookie),
-              getUserIdCallback: claimsIdentity => claimsIdentity.GetUserId<int>())
-        }
+              getUserIdCallback: claimsIdentity => claimsIdentity.GetUserId<int>()),
+        },
       }); 
       app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
     }
@@ -113,7 +113,7 @@ namespace JoinRpg.Web
         {
           Scope = new List<string>() {"email"},
           ClientId = ApiSecretsStorage.VkClientId,
-          ClientSecret = ApiSecretsStorage.VkClientSecret
+          ClientSecret = ApiSecretsStorage.VkClientSecret,
         });
       }
     }

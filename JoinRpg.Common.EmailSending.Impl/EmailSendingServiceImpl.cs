@@ -62,7 +62,7 @@ namespace JoinRpg.Common.EmailSending.Impl
                 .SetFromAddress(new Recipient()
                 {
                     DisplayName = sender.DisplayName,
-                    Email = ServiceEmail
+                    Email = ServiceEmail,
                 })
                 .SetReplyToAddress(sender.ToMailGunRecepient())
                 .SetTextBody(text)

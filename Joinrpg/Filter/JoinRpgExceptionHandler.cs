@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Filter
         {
 
           ViewName = "ErrorNoAccessToProject",
-          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(noAccess.Project))
+          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(noAccess.Project)),
         };
       }
       base.OnException(filterContext);

@@ -85,7 +85,7 @@ namespace JoinRpg.Services.Impl
         PaymentType = paymentType,
         State = state,
         ProjectId = claim.ProjectId,
-        OperationDate = operationDate
+        OperationDate = operationDate,
       };
 
       comment.Finance = financeOperation;
@@ -149,7 +149,7 @@ namespace JoinRpg.Services.Impl
               InitiatorType = initiator.UserId == claim.PlayerUserId ? ParcipantType.Player : ParcipantType.Master,
               Recipients = subscriptions,
               Text = new MarkdownString(commentText),
-              CommentExtraAction = commentExtraAction
+              CommentExtraAction = commentExtraAction,
           };
       }
   }

@@ -83,7 +83,7 @@ namespace JoinRpg.Services.Impl
         IsDefault = project.PaymentTypes.All(pt => !pt.IsDefault),
         Name = Required(name),
         UserId = targetMasterId,
-        ProjectId = projectId
+        ProjectId = projectId,
       });
 
       await UnitOfWork.SaveChangesAsync();
@@ -217,7 +217,7 @@ namespace JoinRpg.Services.Impl
               State = FinanceOperationState.Proposed,
               ProjectId = claim.ProjectId,
               OperationDate = request.OperationDate,
-              MarkMeAsPreferential = true
+              MarkMeAsPreferential = true,
           };
 
           comment.Finance = financeOperation;

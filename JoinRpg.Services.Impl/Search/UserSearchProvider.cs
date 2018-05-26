@@ -17,7 +17,7 @@ namespace JoinRpg.Services.Impl.Search
       "%контакты",
       "контакты",
       "%игрок",
-      "игрок"
+      "игрок",
     };
 
     public IUnitOfWork UnitOfWork { private get; set; }
@@ -61,7 +61,7 @@ namespace JoinRpg.Services.Impl.Search
                   ProjectId = null, //Users not associated with any project
                   IsPublic = true,
                   IsActive = true,
-                  IsPerfectMatch = wasfoundById && matchByIdIsPerfect
+                  IsPerfectMatch = wasfoundById && matchByIdIsPerfect,
                 };
       }).ToList();
     }

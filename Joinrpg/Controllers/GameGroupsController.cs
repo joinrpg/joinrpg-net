@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Controllers
           ShowEditControls = field.HasEditRolesAccess(CurrentUserIdOrDefault),
           HasMasterAccess = field.HasMasterAccess(CurrentUserIdOrDefault),
           Data = CharacterGroupListViewModel.GetGroups(field, CurrentUserIdOrDefault),
-          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Roles)
+          Details = new CharacterGroupDetailsViewModel(field, CurrentUserIdOrDefault, GroupNavigationPage.Roles),
         });
     }
 
@@ -167,7 +167,7 @@ namespace JoinRpg.Web.Controllers
         Data = data,
         ContentEncoding = Encoding.UTF8,
         JsonRequestBehavior = JsonRequestBehavior.AllowGet,
-        MaxJsonLength = int.MaxValue
+        MaxJsonLength = int.MaxValue,
       };
     }
 
@@ -199,7 +199,7 @@ namespace JoinRpg.Web.Controllers
         ch.CharacterId,
         ch.IsAvailable,
         ch.IsFirstCopy,
-        ch.CharacterName
+        ch.CharacterName,
       };
     }
 
@@ -243,7 +243,7 @@ namespace JoinRpg.Web.Controllers
         .Union(new MasterListItemViewModel()
         {
           Id = "-1",
-          Name = "По умолчанию" // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
+          Name = "По умолчанию", // TODO Temporary disabled as shown in hot profiles + GetDefaultResponsible(group, includeSelf)
         }).OrderByDescending(m => m.Id == "-1").ThenBy(m => m.Name);
     }
 
@@ -355,7 +355,7 @@ namespace JoinRpg.Web.Controllers
       return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
         ParentCharacterGroupIds = field.AsPossibleParentForEdit(),
-        ResponsibleMasterId = -1
+        ResponsibleMasterId = -1,
       }, field));
     }
 

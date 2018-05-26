@@ -116,7 +116,7 @@ namespace JoinRpg.Web.Models.Characters
         Editing,
         Claim,
         RejectedClaim,
-        AddClaim
+        AddClaim,
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ namespace JoinRpg.Web.Models.Characters
                 ProjectId = character.ProjectId,
                 Page = page,
                 Name = character.CharacterName,
-                IsActive = character.IsActive
+                IsActive = character.IsActive,
             };
 
             vm.LoadClaims(character);
@@ -206,7 +206,7 @@ namespace JoinRpg.Web.Models.Characters
                 Page = characterNavigationPage,
                 Name = claim.GetTarget().Name,
                 CanEditRoles = claim.HasEditRolesAccess(currentUserId),
-                IsActive = claim.GetTarget().IsActive
+                IsActive = claim.GetTarget().IsActive,
             };
             vm.LoadClaims(claim.Character);
             if (vm.RejectedClaims.Any(c => c.ClaimId == claim.ClaimId))
