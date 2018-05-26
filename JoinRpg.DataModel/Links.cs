@@ -11,7 +11,7 @@ namespace JoinRpg.DataModel
     Plot,
     Comment,
     Project,
-    CommentDiscussion
+    CommentDiscussion,
   }
 
   public interface ILinkable

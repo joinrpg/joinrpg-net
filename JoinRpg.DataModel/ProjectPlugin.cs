@@ -29,6 +29,6 @@ namespace JoinRpg.DataModel
 
   public enum PluginFieldMappingType
   {
-    GenerateDefault 
+    GenerateDefault, 
   }
 }

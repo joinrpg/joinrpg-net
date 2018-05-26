@@ -52,7 +52,7 @@ namespace JoinRpg.Services.Export.BackEnds
       var headerCells = columns.Select(c => new Cell()
       {
         Content = c.Name,
-        ColumnHeader = true
+        ColumnHeader = true,
       });
       WriteRow(headerCells);
     }

@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Impl.Search
     private static readonly string[] keysForPerfectMath =
     {
       "%заявка",
-      "заявка"
+      "заявка",
     };
 
     public IUnitOfWork UnitOfWork { private get; set; }
@@ -51,7 +51,7 @@ namespace JoinRpg.Services.Impl.Search
             ProjectId = claim.ProjectId,
             IsPublic = false,
             IsActive = claim.ClaimStatus.IsActive(),
-            IsPerfectMatch = claim.ClaimId == idToFind && matchByIdIsPerfect
+            IsPerfectMatch = claim.ClaimId == idToFind && matchByIdIsPerfect,
           })
         .ToList();
     }

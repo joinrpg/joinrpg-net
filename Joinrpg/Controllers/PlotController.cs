@@ -116,7 +116,7 @@ namespace JoinRpg.Web.Controllers
       return View(new AddPlotFolderViewModel
       {
         ProjectId = project1.ProjectId,
-        ProjectName = project1.ProjectName
+        ProjectName = project1.ProjectName,
       });
     }
 

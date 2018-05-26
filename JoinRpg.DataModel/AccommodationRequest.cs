@@ -39,7 +39,7 @@ namespace JoinRpg.DataModel
             [Description("Отклонено")]
             Declined,
             [Description("Отменено")]
-            Canceled
+            Canceled,
         }
     }
 }

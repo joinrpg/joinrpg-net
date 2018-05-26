@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
             PlayerId = claim.Player.UserId,
             NickName = claim.Player.GetDisplayName(),
             FullName = claim.Player.FullName,
-            OtherNicks = claim.Player.Extra?.Nicknames ?? ""
+            OtherNicks = claim.Player.Extra?.Nicknames ?? "",
           },
         });
     }
@@ -85,8 +85,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
           Handouts =  new[] //TODO FIX ME
           {
             new HandoutItem {Label = "Хайратник"},
-            new HandoutItem {Label = "Ленточка"}
-          }
+            new HandoutItem {Label = "Ленточка"},
+          },
         };
     }
 

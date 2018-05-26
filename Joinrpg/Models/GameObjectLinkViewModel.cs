@@ -69,6 +69,6 @@ namespace JoinRpg.Web.Models
     Plot,
     Comment,
     [Display(Name = "Проект")]
-    Project
+    Project,
     }
 }

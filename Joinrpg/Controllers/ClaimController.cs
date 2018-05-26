@@ -466,7 +466,7 @@ namespace JoinRpg.Web.Controllers
                   FeeChange = viewModel.FeeChange,
                   Money = viewModel.Money,
                   OperationDate = viewModel.OperationDate,
-                  PaymentTypeId = viewModel.PaymentTypeId
+                  PaymentTypeId = viewModel.PaymentTypeId,
               });
         
         return RedirectToAction("Edit", "Claim", new {viewModel.ClaimId, viewModel.ProjectId });
@@ -577,7 +577,7 @@ namespace JoinRpg.Web.Controllers
                   {
                       ProjectId = projectid,
                       ClaimId = claimid,
-                      Preferential = preferential
+                      Preferential = preferential,
                   });
 
               return RedirectToAction("Edit", "Claim", new {claimid, projectid});

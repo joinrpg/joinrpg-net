@@ -194,6 +194,6 @@ namespace JoinRpg.Domain
         AlreadySent,
         OnlyOneCharacter,
         ApprovedClaimMovedToGroup,
-        CheckedInClaimCantBeMoved
+        CheckedInClaimCantBeMoved,
     }
 }

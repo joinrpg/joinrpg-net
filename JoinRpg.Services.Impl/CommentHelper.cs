@@ -29,14 +29,14 @@ namespace JoinRpg.Services.Impl
                 CommentText = new CommentText()
                 {
                     CommentId = -1,
-                    Text = new MarkdownString(commentText)
+                    Text = new MarkdownString(commentText),
                 },
                 IsCommentByPlayer = !commentDiscussion.HasMasterAccess(currentUserId),
                 IsVisibleToPlayer = isVisibleToPlayer,
                 Parent = parentComment,
                 ExtraAction = extraAction,
                 CreatedAt = createdAt,
-                LastEditTime = createdAt
+                LastEditTime = createdAt,
             };
             commentDiscussion.Comments.Add(comment);
             if (!isVisibleToPlayer)

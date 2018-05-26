@@ -12,7 +12,7 @@ namespace JoinRpg.Data.Interfaces
     Discussion,
     OnHold, Approved,
     ReadyForCheckIn,
-    CheckedIn
+    CheckedIn,
   }
 
   public class ClaimCountByMaster

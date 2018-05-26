@@ -77,7 +77,7 @@ namespace JoinRpg.Services.Impl
                 ProjectId = projectId,
                 FromClaimId = senderClaimId,
                 ToClaimId = receiverClaimId,
-                IsAccepted = AccommodationRequest.InviteState.Unanswered
+                IsAccepted = AccommodationRequest.InviteState.Unanswered,
             };
 
             UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
@@ -106,7 +106,7 @@ namespace JoinRpg.Services.Impl
                 ProjectName = project.ProjectName,
                 Recipients = recipients.GetInviteSubscriptions(),
                 RecipientClaims = recipients,
-                Text = new MarkdownString()
+                Text = new MarkdownString(),
             };
         }
 
@@ -171,7 +171,7 @@ namespace JoinRpg.Services.Impl
                     ProjectId = projectId,
                     FromClaimId = senderClaimId,
                     ToClaimId = receiverClaim.ClaimId,
-                    IsAccepted = AccommodationRequest.InviteState.Unanswered
+                    IsAccepted = AccommodationRequest.InviteState.Unanswered,
                 };
 
                 UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
@@ -205,7 +205,7 @@ namespace JoinRpg.Services.Impl
                 await CreateAccommodationInvite(projectId,
                     senderClaimId,
                     int.Parse(receiverClaimOrAccommodationRequestId),
-                    accommodationRequestId).ConfigureAwait(false)
+                    accommodationRequestId).ConfigureAwait(false),
             };
         }
 
@@ -279,7 +279,7 @@ namespace JoinRpg.Services.Impl
         {
             var acceptedStates = new[]
             {
-                AccommodationRequest.InviteState.Declined, AccommodationRequest.InviteState.Canceled
+                AccommodationRequest.InviteState.Declined, AccommodationRequest.InviteState.Canceled,
             };
 
             if (!acceptedStates.Contains(newState))

@@ -48,7 +48,7 @@ namespace JoinRpg.DataModel.Mocks
               CanPlayerEdit = false,
               CanPlayerView = false,
               IsActive = true,
-              ShowOnUnApprovedClaims = true
+              ShowOnUnApprovedClaims = true,
           };
           CharacterField = new ProjectField()
           {
@@ -57,7 +57,7 @@ namespace JoinRpg.DataModel.Mocks
               IsActive = true,
               FieldBoundTo = FieldBoundTo.Character,
               ShowOnUnApprovedClaims = true,
-              AvailableForCharacterGroupIds = new int[0]
+              AvailableForCharacterGroupIds = new int[0],
           };
 
           HideForUnApprovedClaim = new ProjectField()
@@ -67,7 +67,7 @@ namespace JoinRpg.DataModel.Mocks
               IsActive = true,
               FieldBoundTo = FieldBoundTo.Character,
               ShowOnUnApprovedClaims = false,
-              AvailableForCharacterGroupIds = new int[0]
+              AvailableForCharacterGroupIds = new int[0],
           };
 
           PublicField = new ProjectField()
@@ -85,14 +85,14 @@ namespace JoinRpg.DataModel.Mocks
           {
               IsActive = true,
               IsAcceptingClaims = true,
-              ParentCharacterGroupIds = new int[0]
+              ParentCharacterGroupIds = new int[0],
           };
 
           CharacterWithoutGroup = new Character
           {
               IsActive = true,
               IsAcceptingClaims = true,
-              ParentCharacterGroupIds = new int[0]
+              ParentCharacterGroupIds = new int[0],
           };
 
 
@@ -102,7 +102,7 @@ namespace JoinRpg.DataModel.Mocks
               IsAcceptingClaims = true,
               ProjectAcls = new List<ProjectAcl>
               {
-                  ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true)
+                  ProjectAcl.CreateRootAcl(Master.UserId, isOwner: true),
               },
               ProjectFields = new List<ProjectField>()
               {
@@ -171,7 +171,7 @@ namespace JoinRpg.DataModel.Mocks
               Character = mockCharacter,
               CharacterId = mockCharacter.CharacterId,
               Player = mockUser,
-              PlayerUserId = mockUser.UserId
+              PlayerUserId = mockUser.UserId,
           };
           Project.Claims.Add(claim);
           mockUser.Claims.Add(claim);
@@ -186,7 +186,7 @@ namespace JoinRpg.DataModel.Mocks
         CharacterGroupId = mockGroup.CharacterGroupId,
         Group =  mockGroup,
         Player = mockUser,
-        PlayerUserId = mockUser.UserId
+        PlayerUserId = mockUser.UserId,
       };
       Project.Claims.Add(claim);
         mockUser.Claims.Add(claim);

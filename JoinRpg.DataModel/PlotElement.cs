@@ -46,7 +46,7 @@ namespace JoinRpg.DataModel
   public enum PlotElementType
   {
     RegularPlot,
-    Handout
+    Handout,
   }
 
   //Sometimes we need to load bunch of plots w/o texts...

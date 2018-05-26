@@ -52,13 +52,13 @@ namespace JoinRpg.Services.Impl
                 ProjectName = Required(projectName),
                 CharacterGroups = new List<CharacterGroup>()
                 {
-                    rootGroup
+                    rootGroup,
                 },
                 ProjectAcls = new List<ProjectAcl>()
                 {
-                    ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true)
+                    ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
                 },
-                Details = new ProjectDetails()
+                Details = new ProjectDetails(),
             };
             MarkTreeModified(project);
             UnitOfWork.GetDbSet<Project>().Add(project);
@@ -128,7 +128,7 @@ namespace JoinRpg.Services.Impl
                 IsAcceptingClaims = addCharacterRequest.IsAcceptingClaims,
                 Description = new MarkdownString(addCharacterRequest.Description),
                 HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
-                IsHot = addCharacterRequest.IsHot
+                IsHot = addCharacterRequest.IsHot,
             };
             Create(character);
             MarkTreeModified(project);
@@ -536,7 +536,7 @@ namespace JoinRpg.Services.Impl
                     {
                         UserId = CurrentUserId,
                         CharacterGroupId = request.CharacterGroupId,
-                        ProjectId = request.ProjectId
+                        ProjectId = request.ProjectId,
                     };
                     user.Subscriptions.Add(direct);
                 }

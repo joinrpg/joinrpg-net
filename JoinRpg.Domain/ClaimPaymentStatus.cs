@@ -23,6 +23,6 @@ namespace JoinRpg.Domain
         /// <summary>
         /// Claim is not paid
         /// </summary>
-        NotPaid
+        NotPaid,
     }
 }

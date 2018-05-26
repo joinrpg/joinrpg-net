@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Impl.Test
     private static readonly string[] KeysForPerfectMath =
     {
       "%контакты",
-      "контакты"
+      "контакты",
     };
 
     private void Verify(string searchString, int? expectedId, bool exactMatchFlag)

@@ -48,7 +48,7 @@ namespace JoinRpg.DataModel
         [Description("Отозвано")]
         Canceled,
         [Description("Связанная заявка отозвана")]
-        ClaimCanceled
+        ClaimCanceled,
     }
 
     /*

@@ -83,7 +83,7 @@ namespace JoinRpg.Domain.Test
       {
         UserId = 3,
         PrefferedName = "Player2",
-        Email = "player2@example.com"
+        Email = "player2@example.com",
       };
 
       VerifyClaim( //Ensure that

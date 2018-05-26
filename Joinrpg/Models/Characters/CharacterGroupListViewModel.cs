@@ -136,7 +136,7 @@ namespace JoinRpg.Web.Models.Characters
           ParentCharacterGroupId = group.CharacterGroupId,
           RootGroupId = Root.CharacterGroupId,
           IsHot = arg.IsHot && arg.IsAvailable,
-          IsAcceptingClaims =  arg.IsAcceptingClaims
+          IsAcceptingClaims =  arg.IsAcceptingClaims,
         };
         if (vm.IsFirstCopy)
         {

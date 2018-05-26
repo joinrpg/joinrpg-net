@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
         Header,
         [Display(Name = "Число", Order = 7), UsedImplicitly]
-        Number
+        Number,
     }
 
     public static class ProjectFieldViewTypeHelper
@@ -74,7 +74,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Обязательное",
             Description = "Сохранение с незаполенным полем будет невозможно."),
             UsedImplicitly]
-        Required
+        Required,
     }
 
     public class GameFieldViewModelBase: IValidatableObject, IProjectIdAware

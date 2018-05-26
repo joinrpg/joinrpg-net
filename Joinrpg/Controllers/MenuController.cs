@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Controllers
       var projects = ProjectRepository.GetMyActiveProjects(user).Select(p => new ProjectLinkViewModel()
       {
         ProjectId = p.ProjectId,
-        ProjectName = p.ProjectName
+        ProjectName = p.ProjectName,
       });
       return PartialView(projects);
     }

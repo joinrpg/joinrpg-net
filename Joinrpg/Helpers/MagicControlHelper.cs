@@ -7,12 +7,12 @@ namespace JoinRpg.Web.Helpers
 {
   public enum ShowImplicitGroups
   {
-    None, Children, Parents
+    None, Children, Parents,
   }
 
   public enum MagicControlStrategy
   {
-    Changer, NonChanger
+    Changer, NonChanger,
   }
 
 

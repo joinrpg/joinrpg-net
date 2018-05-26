@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Impl.Search
         Identification = plot.PlotFolderId.ToString(),
         ProjectId = plot.ProjectId,
         IsPublic = false,
-        IsActive = plot.IsActive
+        IsActive = plot.IsActive,
       }).ToList();
     }
   }

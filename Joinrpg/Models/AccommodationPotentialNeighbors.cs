@@ -26,7 +26,7 @@ namespace JoinRpg.Web.Models
     {
         Current,
         WithSameType,
-        NoRequest
+        NoRequest,
     }
 
 

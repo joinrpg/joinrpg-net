@@ -78,7 +78,7 @@ namespace JoinRpg.Web.Controllers.Common
         menuModel = new PlayerMenuViewModel()
         {
           Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          PlotPublished = project.Details.PublishPlot
+          PlotPublished = project.Details.PublishPlot,
         };
       }
       menuModel.ProjectId = project.ProjectId;

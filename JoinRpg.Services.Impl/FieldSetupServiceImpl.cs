@@ -173,7 +173,7 @@ namespace JoinRpg.Services.Impl
                 MasterDescription = new MarkdownString(request.MasterDescription),
                 ProgrammaticValue = request.ProgrammaticValue,
                 Price = request.Price,
-                PlayerSelectable = request.PlayerSelectable && field.CanPlayerEdit
+                PlayerSelectable = request.PlayerSelectable && field.CanPlayerEdit,
             };
 
             CreateOrUpdateSpecialGroup(fieldValue);

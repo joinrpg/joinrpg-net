@@ -33,7 +33,7 @@ namespace JoinRpg.Dal.Impl.Repositories
               IsAcceptingClaims = project.IsAcceptingClaims,
               ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
               HasMyClaims = project.Claims.Any(claim => myClaim.Invoke(claim)),
-              HasMasterAccess = project.ProjectAcls.Any(acl => acl.UserId == userId)
+              HasMasterAccess = project.ProjectAcls.Any(acl => acl.UserId == userId),
           };
       }
 

@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Controllers
                     RoomName = row.RoomName,
                     DisplayName = row.User.GetDisplayName(),
                     FullName = row.User.FullName,
-                    Phone = row.User.Extra?.PhoneNumber
+                    Phone = row.User.Extra?.PhoneNumber,
                 });
             
             var exportType = GetExportTypeByName(export);

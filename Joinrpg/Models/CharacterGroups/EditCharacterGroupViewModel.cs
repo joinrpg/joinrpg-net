@@ -69,7 +69,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
     [Display(Name = "Разрешены заявки в группу (без лимита)")]
     DirectClaimsUnlimited,
     [Display(Name = "Разрешены заявки в группу, но не более лимита")]
-    DirectClaimsLimited
+    DirectClaimsLimited,
   }
 
   public class AddCharacterGroupViewModel : CharacterGroupViewModelBase
