@@ -1,5 +1,4 @@
 ﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models
 @model JoinRpg.Web.Models.GameFieldCreateViewModel
 @Scripts.Render("~/Scripts/createfield.js")
 
@@ -26,8 +25,8 @@
 
         <div class="form-group">
             @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-3">
-                @Html.EnumDropDownListFor(model => model.FieldViewType, new { @class = "form-control"})
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.FieldViewType, new { @class = "form-control"})
                 @Html.ValidationMessageFor(model => model.FieldViewType, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -36,7 +35,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
             <div class="col-md-7">
-                @Html.EnumDropDownListFor(model => model.FieldBoundTo, new {@class = "form-control"})
+                @Html.EditorFor(model => model.FieldBoundTo, new {@class = "form-control"})
                 @Html.ValidationMessageFor(model => model.FieldBoundTo, "", new {@class = "text-danger"})
                 @Html.DescriptionFor(model => model.FieldBoundTo)
             </div>
@@ -53,41 +52,33 @@
         <div class="form-group">
             @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                <div class="checkbox">
                     @Html.EditorFor(model => model.IsPublic)
                     @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
-                </div>
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                <div class="checkbox">
                     @Html.EditorFor(model => model.CanPlayerView)
                     @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
-                </div>
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                <div class="checkbox">
                     @Html.EditorFor(model => model.CanPlayerEdit)
                     @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
                     @Html.DescriptionFor(model => model.CanPlayerEdit)
-                </div>
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                <div class="checkbox">
                     @Html.EditorFor(model => model.ShowForUnApprovedClaim)
                     @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
-                </div>
             </div>
         </div>
 
