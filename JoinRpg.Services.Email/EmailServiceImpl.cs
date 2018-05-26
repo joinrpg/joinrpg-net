@@ -330,11 +330,11 @@ namespace JoinRpg.Services.Email
                 return "";
             }
             //Add project fields that user has right to view
-            Predicate<FieldWithValue> accessRightsPredicate =
-              CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
+            var accessArguments = mailWithFields.FieldsContainer.GetAccessArguments(user.UserId);
+
             IEnumerable<MarkdownString> fieldString = mailWithFields
               .UpdatedFields
-              .Where(f => accessRightsPredicate(f))
+              .Where(f => f.HasViewAccess(accessArguments))
               .Select(updatedField =>
                 new MarkdownString(
                   $@"__**{updatedField.Field.FieldName}:**__
