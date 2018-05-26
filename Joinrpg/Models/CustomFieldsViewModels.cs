@@ -7,7 +7,6 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -126,11 +125,9 @@ namespace JoinRpg.Web.Models
 
           HasValue = ch.HasViewableValue;
 
-          var hasViewAccess = ch.HasViewableValue
-                              && ch.HasViewAccess(model.AccessArguments);
-
-          CanView = hasViewAccess &&
-                    (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+          CanView = ch.HasViewableValue
+                    && ch.HasViewAccess(model.AccessArguments)
+                    && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
           CanEdit = model.EditAllowed
                     && ch.HasEditAccess(model.AccessArguments)
@@ -356,7 +353,7 @@ namespace JoinRpg.Web.Models
     {
       return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
     }
-
+        [CanBeNull]
         public FieldValueViewModel Field(ProjectField field)
         {
             return FieldById(field.ProjectFieldId);
