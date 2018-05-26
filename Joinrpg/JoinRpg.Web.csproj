@@ -790,6 +790,7 @@
     <Content Include="Views\Claim\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomRequest.cshtml" />
+    <Content Include="Views\Shared\ErrorNotActiveProject.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
