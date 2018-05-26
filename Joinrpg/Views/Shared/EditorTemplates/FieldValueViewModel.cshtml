@@ -12,10 +12,7 @@
 }
 @helper ValidationMessage()
     {
-        if (Model.MandatoryStatus != MandatoryStatusViewType.Optional)
-        {
             <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
-        }
 }
 
 @helper ShowDescription()
@@ -141,7 +138,11 @@
             case ProjectFieldViewType.String:
                 <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value" />
                 break;
-
+            case ProjectFieldViewType.Login:
+                <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
+                       data-val-regex="Это поле должно состоять из латинских букв и цифр, и начинаться с латинской буквы"
+                       data-val-regex-pattern="^[a-zA-Z][a-zA-Z0-9]*$" data-val="true"/>
+                break;
             case ProjectFieldViewType.Number:
                 <div class="form-control-complex">
                     <div class="form-control-left"><input type="number" onchange="numberChanged(event)" @Html.RenderAttrs(attrs) value="@Model.Value" /></div>

@@ -9,5 +9,6 @@ namespace JoinRpg.DataModel
         MultiSelect,
         Header,
         Number,
+        Login,
     }
 }

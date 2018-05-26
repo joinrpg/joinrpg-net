@@ -19,6 +19,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.String:
                 case ProjectFieldType.Text:
                 case ProjectFieldType.Header:
+                case ProjectFieldType.Login:
                     return false;
                 default:
                     throw new ArgumentException(nameof(self));
@@ -40,6 +41,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Dropdown:
                 case ProjectFieldType.MultiSelect:
                 case ProjectFieldType.Header:
+                case ProjectFieldType.Login:
                     return false;
                 default:
                     throw new ArgumentException(nameof(self));
@@ -61,6 +63,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Checkbox:
                 case ProjectFieldType.Header:
                 case ProjectFieldType.Number:
+                case ProjectFieldType.Login:
                     return false;
                 default:
                     throw new ArgumentException(nameof(self));

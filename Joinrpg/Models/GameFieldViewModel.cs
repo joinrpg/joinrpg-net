@@ -29,6 +29,8 @@ namespace JoinRpg.Web.Models
         Header,
         [Display(Name = "Число", Order = 7), UsedImplicitly]
         Number,
+        [Display(Name = "Логин/идентификатор", Order = 8), UsedImplicitly]
+        Login,
     }
 
     public static class ProjectFieldViewTypeHelper
