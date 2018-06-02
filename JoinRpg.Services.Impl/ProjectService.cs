@@ -368,6 +368,27 @@ namespace JoinRpg.Services.Impl
             characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
             characterGroup.EnsureProjectActive();
 
+            foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
+            {
+                if (character.ParentCharacterGroupIds.Except(new[] {characterGroupId}).Any())
+                {
+                    continue;
+                }
+
+                character.ParentCharacterGroupIds = character.ParentCharacterGroupIds
+                    .Union(characterGroup.ParentCharacterGroupIds).ToArray();
+            }
+
+            foreach (var character in characterGroup.ChildGroups.Where(ch => ch.IsActive))
+            {
+                if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
+                {
+                    continue;
+                }
+
+                character.ParentCharacterGroupIds = character.ParentCharacterGroupIds
+                    .Union(characterGroup.ParentCharacterGroupIds).ToArray();
+            }
 
             MarkTreeModified(characterGroup.Project);
             MarkChanged(characterGroup);
