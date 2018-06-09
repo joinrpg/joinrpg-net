@@ -24,6 +24,6 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
 
   public enum CardSize
   {
-    A7
+    A7,
   }
 }

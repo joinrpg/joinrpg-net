@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Helpers
         return Fail(match, index, extra);
       }
       var groupLink = GroupLinkImpl(index, extra, group);
-      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId)).ToList();
+      var characters = Project.Characters.Where(c => c.IsPartOfGroup(group.CharacterGroupId) && c.IsActive).ToList();
       var builder = new StringBuilder(groupLink);
       foreach (var character in characters)
       {
@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Helpers
     private string GroupLinkImpl(int index, string extra, CharacterGroup group)
     {
       var name = extra == "" ? group.CharacterGroupName : extra;
-      return $"<a href=\"/{Project.ProjectId}/groups/{index}\">{name}</a>";
+      return $"<a href=\"/{Project.ProjectId}/roles/{index}/details\">{name}</a>";
     }
 
     private string CharacterFullFunc(string match, int index, string extra)
@@ -72,12 +72,23 @@ namespace JoinRpg.Web.Helpers
 
     private string CharacterImpl(Character character, string extra = "")
     {
-      var characterLink = CharacterLinkImpl(character, extra);
-      var player = character.ApprovedClaim?.Player;
-      var playerString = player == null
-        ? "нет игрока"
-        : $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
-      return $"<span>{characterLink}&nbsp;({playerString})</span>";
+        return $"<span>{CharacterLinkImpl(character, extra)}&nbsp;({GetPlayerString()})</span>";
+
+        string GetPlayerString()
+        {
+            if (character.IsNpc())
+            {
+                return "NPC";
+            }
+            var player = character.ApprovedClaim?.Player;
+
+            if (player == null)
+            {
+                return "нет игрока";
+            }
+
+            return $"{player.GetDisplayName()}: {string.Join(", ", GetEmailLinkImpl(player), GetVKLinkImpl(player))}";
+        }
     }
 
     private static string GetEmailLinkImpl([NotNull] User player)

@@ -83,7 +83,7 @@ namespace JoinRpg.Domain.Test
       {
         UserId = 3,
         PrefferedName = "Player2",
-        Email = "player2@example.com"
+        Email = "player2@example.com",
       };
 
       VerifyClaim( //Ensure that
@@ -103,18 +103,19 @@ namespace JoinRpg.Domain.Test
 
     private void VerifyClaim(Claim claim, User viewerUser, params ProjectField[] expectedFields)
     {
-      var accessPredicate = CustomFieldsExtensions.GetShowForUserPredicate(claim, viewerUser.UserId);
+      var accessPredicate = claim.GetAccessArguments(viewerUser.UserId);
 
-      IList<FieldWithValue> userVisibleFields = claim.GetFields().Where(f => accessPredicate(f)).ToList();
+      IList<FieldWithValue> userVisibleFields = claim.GetFields().Where(f => f.HasViewAccess(accessPredicate)).ToList();
 
       AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }
 
     private void VerifyCharacter(User viewerUser, params ProjectField[] expectedFields)
     {
-      var accessPredicate = CustomFieldsExtensions.GetShowForUserPredicate(projectMock.Character, viewerUser.UserId);
+      var accessPredicate = projectMock.Character.GetAccessArguments(viewerUser.UserId);
 
-      IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields().Where(f => accessPredicate(f)).ToList();
+        IList<FieldWithValue> userVisibleFields = projectMock.Character.GetFields()
+            .Where(f => f.HasViewAccess(accessPredicate)).ToList();
 
       AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
     }

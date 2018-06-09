@@ -78,7 +78,7 @@ namespace JoinRpg.Dal.Impl.Repositories
             AuthorUserId = c.AuthorUserId,
             Project = c.Project,
             IsVisibleToPlayer = c.IsVisibleToPlayer,
-            Id = c.CommentId
+            Id = c.CommentId,
           }).ToList(),
           Watermarks = thread.CommentDiscussion.Watermarks.ToList(),
           Project = thread.Project,

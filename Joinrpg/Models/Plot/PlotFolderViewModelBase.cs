@@ -53,6 +53,6 @@ namespace JoinRpg.Web.Models.Plot
     [Display(Name = "Удален")]
     Deleted,
     [Display(Name="Есть новая версия")]
-    HasNewVersion
+    HasNewVersion,
   }
 }

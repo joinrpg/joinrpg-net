@@ -133,8 +133,8 @@ namespace JoinRpg.Web.Models.Plot
       PlotFolderId = e.PlotFolderId;
       Status = e.GetStatus();
       ElementType = (PlotElementTypeView)e.ElementType;
-      ShortContent = HtmlSanitizeHelper.WithDefaultStringValue(currentVersionText.Content.TakeWords(10)
-          .ToPlainText(renderer), "***");
+      ShortContent = currentVersionText.Content.TakeWords(10)
+          .ToPlainText(renderer).WithDefaultStringValue("***");
       HasEditAccess = e.PlotFolder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && e.Project.Active;
       HasMasterAccess = e.PlotFolder.HasMasterAccess(currentUserId);
       ModifiedDateTime = currentVersionText.ModifiedDateTime;

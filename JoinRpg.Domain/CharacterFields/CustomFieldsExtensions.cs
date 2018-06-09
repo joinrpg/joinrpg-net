@@ -112,9 +112,9 @@ namespace JoinRpg.Domain
         .FillIfEnabled(claim, claim.Character);
     }
 
-    [MustUseReturnValue]
-    public static Predicate<FieldWithValue> GetShowForUserPredicate(
-      [NotNull] IFieldContainter entityWithFields,
+    [MustUseReturnValue, NotNull]
+    public static AccessArguments GetAccessArguments(
+      [NotNull] this IFieldContainter entityWithFields,
       int userId)
     {
       if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
@@ -124,11 +124,11 @@ namespace JoinRpg.Domain
 
       if (claim != null)
       {
-        return f => f.HasViewAccess(new AccessArguments(claim, userId));
+        return new AccessArguments(claim, userId);
       }
       if (character != null)
       {
-        return f => f.HasViewAccess(new AccessArguments(character, userId));
+        return new AccessArguments(character, userId);
       }
       throw new NotSupportedException($"{entityWithFields.GetType()} is not supported to get fields for.");
     }

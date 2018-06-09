@@ -132,7 +132,7 @@ namespace JoinRpg.Web.Controllers
     public enum Checkbox
     {
       on = 1,
-      off = 0
+      off = 0,
     }
 
     [HttpGet]

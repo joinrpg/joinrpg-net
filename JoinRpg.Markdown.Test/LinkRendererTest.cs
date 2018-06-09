@@ -16,7 +16,7 @@ namespace JoinRpg.Markdown.Test
 
       public string Render(string match, int index, string extra)
       {
-          ShouldBeTestExtensions.ShouldBe(match, "%" + Test);
+          match.ShouldBe("%" + Test);
           index.ShouldBeGreaterThan(0);
         return $"<b>{index}</b>{extra}";
       }
@@ -27,7 +27,7 @@ namespace JoinRpg.Markdown.Test
           => new MarkdownString(contents).ToPlainText(_mock).ToHtmlString().ShouldBe(contents);
 
       private void Match(string expected, string original)
-          => new MarkdownString(original).ToHtmlString(_mock).ToString().ShouldBe(expected);
+          => new MarkdownString(original).ShouldBeHtml(expected, _mock);
 
       private readonly LinkRendererMock _mock = new LinkRendererMock();
     

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Filter
         filterContext.Result = new ViewResult()
         {
           ViewName = "ErrorNoAccessToProject",
-          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(project, Permission))
+          ViewData = new ViewDataDictionary(new ErrorNoAccessToProjectViewModel(project, Permission)),
         };
       }
     }

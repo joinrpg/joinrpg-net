@@ -16,7 +16,7 @@ namespace JoinRpg.Services.Interfaces
   public enum ExportType
   {
     Csv,
-    ExcelXml
+    ExcelXml,
   }
 
   public interface IExportGenerator

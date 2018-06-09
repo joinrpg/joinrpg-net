@@ -23,7 +23,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         {
           IsActive = c.IsActive,
           CharacterId = c.CharacterId,
-          UpdatedAt = c.UpdatedAt
+          UpdatedAt = c.UpdatedAt,
         }).ToListAsync();
     }
 
@@ -82,7 +82,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                             claim.ClaimStatus == Claim.Status.Approved).Select(
               claim => new ClaimHeader()
               {
-                IsActive = activeClaimPredicate.Invoke(claim) 
+                IsActive = activeClaimPredicate.Invoke(claim), 
               }).ToListAsync(),
           Groups = await Ctx.Set<CharacterGroup>()
             .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
@@ -91,7 +91,7 @@ namespace JoinRpg.Dal.Impl.Repositories
               IsActive = group.IsActive,
               CharacterGroupId = group.CharacterGroupId,
               CharacterGroupName = group.CharacterGroupName,
-              IsSpecial = group.IsSpecial
+              IsSpecial = group.IsSpecial,
             }).ToListAsync(),
         };
     }

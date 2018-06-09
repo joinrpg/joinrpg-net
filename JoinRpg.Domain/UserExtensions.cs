@@ -46,7 +46,7 @@ namespace JoinRpg.Domain
       ItsMe,
       Master,
       CoMaster,
-      Administrator
+      Administrator,
     }
 
         [NotNull]

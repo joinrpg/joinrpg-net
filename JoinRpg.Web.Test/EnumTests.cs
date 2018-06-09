@@ -10,12 +10,15 @@ namespace JoinRpg.Web.Test
     public class EnumTests
     {
         [Fact]
-        public void ProblemEnum()
-        {
-            EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
-            EnumerationTestHelper.CheckEnums<ProjectFieldViewType, DataModel.ProjectFieldType>();
-            EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
-            EnumerationTestHelper.CheckEnums<FinanceOperationActionView, FinanceOperationAction>();
-        }
+        public void AccessReason() => EnumerationTestHelper.CheckEnums<UserExtensions.AccessReason, AccessReason>();
+
+        [Fact]
+        public void ProjectFieldType() => EnumerationTestHelper.CheckEnums<ProjectFieldViewType, DataModel.ProjectFieldType>();
+
+        [Fact]
+        public void ClaimStatus() => EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
+
+        [Fact]
+        public void FinanceOperation() => EnumerationTestHelper.CheckEnums<FinanceOperationActionView, FinanceOperationAction>();
     }
 }

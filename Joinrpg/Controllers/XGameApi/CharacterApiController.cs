@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
             CharacterId = character.CharacterId,
             UpdatedAt = character.UpdatedAt,
             IsActive = character.IsActive,
-            CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/"
+            CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/",
           });
     }
 
@@ -59,16 +59,16 @@ namespace JoinRpg.Web.Controllers.XGameApi
             group => new GroupHeader
             {
               CharacterGroupId = group.CharacterGroupId,
-              CharacterGroupName = group.CharacterGroupName
+              CharacterGroupName = group.CharacterGroupName,
             }).OrderBy(group => group.CharacterGroupId),
           Fields = GetFields(character, project).Where(field => field.HasViewableValue)
             .Select(field => new FieldValue
             {
               ProjectFieldId = field.Field.ProjectFieldId,
               Value = field.Value,
-              DisplayString = field.DisplayString
+              DisplayString = field.DisplayString,
             }),
-          PlayerUserId = character.ApprovedClaim?.PlayerUserId
+          PlayerUserId = character.ApprovedClaim?.PlayerUserId,
         };
     }
 

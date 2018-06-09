@@ -37,6 +37,7 @@
                 case ProjectFieldType.Dropdown:
                 case ProjectFieldType.Checkbox:
                 case ProjectFieldType.MultiSelect:
+                case ProjectFieldType.Login:
             <th>@field.FieldName</th>
                     break;
                 case ProjectFieldType.Header:
@@ -119,16 +120,17 @@
 
         @foreach (var field in Model.Fields)
         {
-          var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
-          switch (field.FieldType)
-          {
-            case ProjectFieldType.Text:
-              continue;
-            case ProjectFieldType.String:
-            case ProjectFieldType.Number:
-            case ProjectFieldType.Dropdown:
-            case ProjectFieldType.Checkbox:
-            case ProjectFieldType.MultiSelect:
+            var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
+            switch (field.FieldType)
+            {
+                case ProjectFieldType.Text:
+                    continue;
+                case ProjectFieldType.String:
+                case ProjectFieldType.Number:
+                case ProjectFieldType.Dropdown:
+                case ProjectFieldType.Checkbox:
+                case ProjectFieldType.MultiSelect:
+                case ProjectFieldType.Login:
               <td>
                 @if (fieldValueViewModel != null)
                 {

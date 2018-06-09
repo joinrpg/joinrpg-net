@@ -26,6 +26,11 @@ namespace JoinRpg.Web.Controllers
     {
       var claims = (await ClaimRepository.GetClaimsByIds(projectid, claimIds.UnCompressIdList())).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(projectid);
+
+        if (!project.Active)
+        {
+            return View("ErrorNotActiveProject");
+        }
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var filteredClaims = claims.Where(c => c.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
       return View(new MassMailViewModel
@@ -45,6 +50,7 @@ namespace JoinRpg.Web.Controllers
     {
       var claims = (await ClaimRepository.GetClaimsByIds(viewModel.ProjectId, viewModel.ClaimIds.UnCompressIdList())).ToList();
       var project = claims.Select(c => c.Project).FirstOrDefault() ?? await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
+        project.EnsureProjectActive();
       var canSendMassEmails = project.HasMasterAccess(CurrentUserId, acl => acl.CanSendMassMails);
       var filteredClaims = claims.Where(claim => claim.ResponsibleMasterUserId == CurrentUserId || canSendMassEmails).ToArray();
       
@@ -63,7 +69,7 @@ namespace JoinRpg.Web.Controllers
           ProjectName = project.ProjectName,
           Text = new MarkdownString(viewModel.Body),
           Recipients = recipients.ToList(),
-          Subject = viewModel.Subject
+          Subject = viewModel.Subject,
         });
         return View("Success");
       }

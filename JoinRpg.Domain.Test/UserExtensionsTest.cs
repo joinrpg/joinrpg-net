@@ -11,7 +11,7 @@ namespace JoinRpg.Domain.Test
         {
             var user = new User
             {
-                Email = "somebody@example.com"
+                Email = "somebody@example.com",
             };
             user.GetDisplayName().ShouldBe("somebody");
         }

@@ -15,7 +15,7 @@ namespace JoinRpg.CommonUI.Models
         OnlyOneCharacter,
         AlredySentNotApprovedClaimToAnotherPlace,
         ApprovedClaimMovedToGroup,
-        CheckedInClaimCantBeMoved
+        CheckedInClaimCantBeMoved,
 
     }
 

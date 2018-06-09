@@ -121,7 +121,7 @@ namespace JoinRpg.Web.Models
                 ClaimsCount = count,
                 UserDetails = new UserProfileDetailsViewModel(acl.User, AccessReason.CoMaster),
                 ResponsibleFor = groups.AsObjectLinks(uriService),
-                Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name)
+                Masters = acl.Project.GetMasterListViewModel().Where(master => master.Id != acl.UserId.ToString()).OrderBy(m => m.Name),
             };
         }
     }

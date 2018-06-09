@@ -28,7 +28,13 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
         Header,
         [Display(Name = "Число", Order = 7), UsedImplicitly]
-        Number
+        Number,
+        [Display(
+            Name = "Логин/идентификатор",
+            Description = "Латинские буквы и цифры. Если вам нужен логин во внешнюю систему, адрес игровой электронной почты, блога etc",
+            Order = 8)]
+        [UsedImplicitly]
+        Login,
     }
 
     public static class ProjectFieldViewTypeHelper
@@ -54,10 +60,16 @@ namespace JoinRpg.Web.Models
 
     public enum FieldBoundToViewModel
     {
-        [Display(Name = "персонажу"), UsedImplicitly]
+        [Display(
+             Name = "персонажу",
+             Description = "Все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию.")]
+        [UsedImplicitly]
         Character,
 
-        [Display(Name = "заявке"), UsedImplicitly]
+        [Display(
+             Name = "заявке",
+             Description = "всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
+        [UsedImplicitly]
         Claim,
     }
 
@@ -74,7 +86,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Обязательное",
             Description = "Сохранение с незаполенным полем будет невозможно."),
             UsedImplicitly]
-        Required
+        Required,
     }
 
     public class GameFieldViewModelBase: IValidatableObject, IProjectIdAware
@@ -248,7 +260,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание (для мастеров)"), UIHint("MarkdownString")]
         public string MasterDescriptionEditable { get; set; }
 
-        [Display(Name = "Привязано к", Description = "<b>Поля персонажа</b> — все, что связано с персонажем, его умения, особенности, предыстория. Выбирайте этот вариант по умолчанию. <br> <b>Поля заявки</b> — всё, что связано с конкретным игроком: пожелания по завязкам, направлению игры и т.п. После отклонения принятой заявки они не будут доступны новому игроку на этой роли.")]
+        [Display(Name = "Привязано к")]
         public FieldBoundToViewModel FieldBoundTo { get; set; }
 
         protected override IEnumerable<ValidationResult> ValidateCore()

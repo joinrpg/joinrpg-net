@@ -141,7 +141,7 @@ namespace JoinRpg.Web.Controllers
                     {
                         AccommodationRequestIds = ids,
                         ProjectId = projectId,
-                        RoomId = room
+                        RoomId = room,
                     });
                     return new HttpStatusCodeResult(HttpStatusCode.OK);
                 }

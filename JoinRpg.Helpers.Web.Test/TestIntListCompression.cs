@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Shouldly; using Xunit;
 
@@ -9,7 +10,10 @@ namespace JoinRpg.Helpers.Web.Test
     [Fact]
     public void Test123() => TestList(new[] {1, 2, 3});
 
-    [Fact]
+      [Fact]
+      public void TestEmpty() => TestList(Array.Empty<int>());
+
+        [Fact]
     public void Test1234567() => TestList(new[] {1, 2, 3, 4, 5, 6, 7});
 
     [Fact]
@@ -104,7 +108,7 @@ namespace JoinRpg.Helpers.Web.Test
           6403, 6410, 6411, 6414, 6419, 6435, 6453, 6455, 6469, 6470, 6483, 6490, 6513, 6520, 6525, 6535, 6541, 6549,
           6552, 6555, 6556, 6557, 6559, 6560, 6561, 6562, 6563, 6564, 6565, 6568, 6577, 6586, 6587, 6588, 6590, 6595,
           6617, 6630, 6649, 6653, 6655, 6656, 6659, 6672, 6701, 6712, 6721, 6738, 6742, 6753, 6755, 6760, 6770, 6771,
-          6777, 6782, 6796, 6831, 6836, 6848, 6870, 6915, 6919, 6953
+          6777, 6782, 6796, 6831, 6836, 6848, 6870, 6915, 6919, 6953,
         });
 
       private static void TestList(int[] list)

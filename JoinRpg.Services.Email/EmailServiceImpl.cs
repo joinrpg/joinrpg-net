@@ -330,22 +330,22 @@ namespace JoinRpg.Services.Email
                 return "";
             }
             //Add project fields that user has right to view
-            Predicate<FieldWithValue> accessRightsPredicate =
-              CustomFieldsExtensions.GetShowForUserPredicate(mailWithFields.FieldsContainer, user.UserId);
+            var accessArguments = mailWithFields.FieldsContainer.GetAccessArguments(user.UserId);
+
             IEnumerable<MarkdownString> fieldString = mailWithFields
               .UpdatedFields
-              .Where(f => accessRightsPredicate(f))
+              .Where(f => f.HasViewAccess(accessArguments))
               .Select(updatedField =>
                 new MarkdownString(
                   $@"__**{updatedField.Field.FieldName}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
+{MarkdownTransformations.HighlightDiffPlaceholder(updatedField.DisplayString, updatedField.PreviousDisplayString).Contents}"));
 
             //Add info about other changed atttributes (no access rights validation)
             IEnumerable<MarkdownString> otherAttributesStrings = mailWithFields
               .OtherChangedAttributes
               .Select(changedAttribute => new MarkdownString(
                 $@"__**{changedAttribute.Key}:**__
-{MarkDownHelper.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
+{MarkdownTransformations.HighlightDiffPlaceholder(changedAttribute.Value.DisplayString, changedAttribute.Value.PreviousDisplayString).Contents}"));
 
             return string.Join(
               "\n\n",
