@@ -791,13 +791,10 @@
     <Content Include="Views\Claim\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomInhabitant.cshtml" />
     <Content Include="Views\Shared\_RoomRequest.cshtml" />
-<<<<<<< HEAD
     <Content Include="Views\Plot\_PublishPlotElementDlg.cshtml" />
     <Content Include="Views\Plot\_DeletePlotElementDlg.cshtml" />
     <Content Include="Views\Plot\_UnpublishPlotElementDlg.cshtml" />
-=======
     <Content Include="Views\Shared\ErrorNotActiveProject.cshtml" />
->>>>>>> 36cabf9daee2eae6a2eee1c7760c7f2ddad966e3
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
