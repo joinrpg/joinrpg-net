@@ -1,0 +1,11 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model  IEnumerable<PlotElementListItemViewModel>
+@if (Model.Any())
+{
+    <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
+        @foreach (var item in Model)
+        {
+            @Html.Partial("EditElementPartial", item)
+        }
+    </div>
+}

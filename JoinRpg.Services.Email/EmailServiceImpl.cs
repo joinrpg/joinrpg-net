@@ -398,5 +398,25 @@ namespace JoinRpg.Services.Email
                 model.Initiator.ToRecepientData(),
                 recipients);
         }
+
+        private const string ClaimUriKey = "claimUri";
+
+        public async Task Email([NotNull] PublishPlotElementEmail email)
+        {                
+            string plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
+
+            string subject = $@"{email.ProjectName}: опубликована вводная";
+            string body = $@"{StandartGreeting()}"
+                + $"\nПрочитать вводную: [Link]({MessageService.GetUserDependentValue(ClaimUriKey)})"
+                + $"\n\n{email.Text.Contents}";
+
+            List<RecepientData> recipients = email.Claims
+                .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
+                    { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
+                .ToList();
+
+            await MessageService.SendEmails(subject, new MarkdownString(body),
+                email.Initiator.ToRecepientData(), recipients);
+        }
     }
 }
