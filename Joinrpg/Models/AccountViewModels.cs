@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
@@ -36,7 +36,7 @@ namespace JoinRpg.Web.Models
     public string Email { get; set; }
 
     [Required]
-    [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 6)]
+    [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов", MinimumLength = 6)]
     [DataType(DataType.Password)]
     [Display(Name = "Пароль")]
     public string Password { get; set; }
@@ -55,7 +55,7 @@ namespace JoinRpg.Web.Models
     public string Email { get; set; }
 
     [Required]
-    [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 6)]
+    [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов", MinimumLength = 6)]
     [DataType(DataType.Password)]
     [Display(Name = "Пароль")]
     public string Password { get; set; }

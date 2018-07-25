@@ -6,12 +6,14 @@
 <div class="form-horizontal">
 
     <div class="form-group">
-        @Html.LabelFor(model => model.NewEmail, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.NewEmail, new { htmlAttributes = new { @class = "form-control" } })
+        <div class="col-md-8 col-md-offset-2">
+            @Html.LabelFor(model => model.NewEmail, htmlAttributes: new { @class = "control-label" })
+            @Html.EditorFor(model => model.NewEmail, new { htmlAttributes = new { @class = "form-control", type = "email", onkeypress = "return emailKeyPress(event)", oninput = "emailInput(this)", onpaste = "emailPaste(this)" } })
             @Html.DescriptionFor(model => model.NewEmail)
             @Html.ValidationMessageFor(model => model.NewEmail, "", new { @class = "text-danger" })
         </div>
     </div>
 
 </div>
+
+@Scripts.Render("~/Scripts/keyhandler.js")

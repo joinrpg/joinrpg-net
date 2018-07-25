@@ -13,12 +13,12 @@
             {
                 @Html.AntiForgeryToken()
                 <h4>Логин и пароль</h4>
-                <hr/>
+                <hr />
                 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                 <div class="form-group">
                     @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
                     <div class="col-md-10">
-                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", onkeypress = "return emailKeyPress(event)", oninput = "emailInput(this)", onpaste = "emailPaste(this)" })
                         @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
                     </div>
                 </div>
@@ -31,22 +31,25 @@
                 </div>
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Войти" class="btn btn-success" /> | @Html.ActionLink("Регистрация (Новый пользователь)", "Register") | @Html.ActionLink("Забыли пароль?", "ForgotPassword")
+                        <input type="submit" value="Войти" class="btn btn-success" />
+                        | @Html.ActionLink("Регистрация (Новый пользователь)", "Register")
+                        | @Html.ActionLink("Забыли пароль?", "ForgotPassword")
                     </div>
                 </div>
                 <p>
-                    
+
                 </p>
             }
         </section>
     </div>
     <div class="col-md-4">
         <section id="socialLoginForm">
-            @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel {ReturnUrl = ViewBag.ReturnUrl})
+            @Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
         </section>
     </div>
 </div>
 
 @section Scripts {
+    @Scripts.Render("~/Scripts/keyhandler.js")
     @Scripts.Render("~/bundles/jqueryval")
 }
