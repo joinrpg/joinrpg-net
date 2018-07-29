@@ -11,8 +11,7 @@
         <li><a href="@Url.Action("Index", new {Model.ProjectId})">Активные</a></li>
         <li class="active"><a href="#">Удаленные</a></li>
     </ul>
-    <div class="join alert alert-warning"><i
-        class="glyphicon glyphicon-info-sign"></i>Здесь показываются только поля, которые были использованы хотя бы один раз.</div>    
+    <div class="join alert alert-warning" style="margin-top: 1em;"><i class="glyphicon glyphicon-info-sign"></i><div>Здесь показываются только поля, которые были использованы хотя бы один раз.</div></div>    
 </div>
 
 @Html.Partial("FieldList", Model.Items.Where(i => !i.IsActive))

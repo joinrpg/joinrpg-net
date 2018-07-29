@@ -3,15 +3,7 @@
 }
 
 blockquote {
-  font-size: 14px;
-}
-
-.input-group-xs>.form-control,
-.input-group-xs>.input-group-addon,
-.input-group-xs>.input-group-btn>.btn {
-    padding: 1px 5px;
-    font-size: 12px;
-    line-height: 1.5;
+  font-size: 11pt;
 }
 
 html, body
