@@ -60,7 +60,8 @@ namespace JoinRpg.Web.Controllers.Common
 
     private void RegisterProjectMenu(Project project)
     {
-      ViewBag.ProjectId = project.ProjectId;
+        ViewBag.ProjectId = project.ProjectId;
+        ViewBag.ProjectName = project.ProjectName;
 
       var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
       
@@ -102,6 +103,9 @@ namespace JoinRpg.Web.Controllers.Common
       {
         ViewBag.PlayerMenu = menuModel;
       }
+
+        ViewBag.MainMenu = menuModel;
+        ViewBag.HasMainMenu = true;
     }
 
     protected ActionResult WithCharacter(Character character)

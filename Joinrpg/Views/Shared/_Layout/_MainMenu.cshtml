@@ -1,0 +1,30 @@
+﻿@using JoinRpg.Web.Models
+@model MenuViewModelBase
+
+<nav class="navbar navbar-default navbar-aside">
+    <div class="navbar-header">
+        <span class="navbar-brand">@Html.ActionLink(Model.ProjectName, "Details", "Game", new { Model.ProjectId }, null)</span>
+    </div>
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-menu-collapse" title="Показать меню проекта"><i class="glyphicon glyphicon-menu-hamburger"></i></button>
+    <div class="navbar-collapse collapse" id="main-menu-collapse">
+        <ul class="nav navbar-nav">
+            @if (Model is MasterMenuViewModel)
+            {
+                @Html.Partial("_Layout/_MasterMenu", (MasterMenuViewModel)Model)
+            }
+            else if (Model is PlayerMenuViewModel)
+            {
+                @Html.Partial("_Layout/_PlayerMenu", (PlayerMenuViewModel)Model)
+            }
+
+            @if (!Model.IsActive)
+            {
+                <li class="navbar-text danger">Проект в архиве</li>
+            }
+            else if (!Model.IsAcceptingClaims)
+            {
+                <li class="navbar-text danger">Прием заявок закрыт</li>
+            }
+        </ul>
+    </div>
+</nav>

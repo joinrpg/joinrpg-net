@@ -1,0 +1,26 @@
+﻿<div class="input-group flex-grow-1">
+    <script>
+        function getRefToSearchResultsPage() {
+            var searchString = document.getElementById('SearchRequest').value;
+            return '/search?searchString=' + encodeURIComponent(searchString);
+        }
+
+        function navbarSearchKeyPress(ev) {
+            if (ev.keyCode === 13) {
+                ev.stopPropagation();
+                navbarSearch();
+                return false;
+            }
+            return true;
+        }
+
+        function navbarSearch() {
+            window.location.href = getRefToSearchResultsPage();
+        }
+    </script>
+
+    <input class="form-control flex-grow-1" type="text" id="SearchRequest" onkeypress="return navbarSearchKeyPress(event)" placeholder="Поиск" data-val-required="Введите поисковый  запрос" data-val="true"/>
+    <div class="input-group-btn">
+        <button class="btn btn-default" onclick="navbarSearch()"><i class="glyphicon glyphicon-search"></i></button>
+    </div>
+</div>

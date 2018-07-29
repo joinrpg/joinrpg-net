@@ -384,6 +384,7 @@
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
+    <Content Include="Content\navbar.css" />
     <Content Include="Content\Print.css" />
     <Content Include="external\joinrpg-api.css" />
     <Content Include="external\joinrpg-api.js" />
@@ -620,7 +621,7 @@
     <Content Include="Views\Manage\ManageLogins.cshtml" />
     <Content Include="Views\Manage\SetPassword.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
-    <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Shared\_Layout\_Login.cshtml" />
     <Content Include="Views\Game\Create.cshtml" />
     <Content Include="Views\Game\Details.cshtml" />
     <Content Include="Views\GameField\Index.cshtml" />
@@ -642,11 +643,11 @@
     <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\Enum.cshtml" />
-    <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
+    <Content Include="Views\Shared\_Layout\_SearchBar.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\TargetedSearchResultViewModel.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
     <Content Include="Views\Web.config" />
-    <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
+    <Content Include="Views\Shared\_Layout\_MasterMenu.cshtml" />
     <Content Include="Views\Plot\Index.cshtml" />
     <Content Include="Views\Plot\Create.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
@@ -707,7 +708,7 @@
     <Content Include="Views\Finances\MoneySummary.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
-    <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
+    <Content Include="Views\Shared\_Layout\_PlayerMenu.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
     <Content Include="Views\Home\FromAllrpgInfo.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MandatoryStatusViewType.cshtml" />
@@ -796,6 +797,11 @@
     <Content Include="Views\Plot\_DeletePlotElementDlg.cshtml" />
     <Content Include="Views\Plot\_UnpublishPlotElementDlg.cshtml" />
     <Content Include="Views\Shared\ErrorNotActiveProject.cshtml" />
+    <Content Include="Views\Shared\_Layout\_AppInsights.cshtml" />
+    <Content Include="Views\Shared\_Layout\_Footer.cshtml" />
+    <Content Include="Views\Shared\_Layout\_Header.cshtml" />
+    <Content Include="Views\Shared\_Layout\_YandexMetrics.cshtml" />
+    <Content Include="Views\Shared\_Layout\_MainMenu.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

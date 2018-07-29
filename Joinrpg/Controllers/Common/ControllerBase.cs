@@ -20,6 +20,7 @@ namespace JoinRpg.Web.Controllers.Common
     protected ControllerBase(ApplicationUserManager userManager)
     {
       UserManager = userManager;
+        ViewBag.HasMainMenu = false;
     }
 
       protected override void OnActionExecuting(ActionExecutingContext filterContext)

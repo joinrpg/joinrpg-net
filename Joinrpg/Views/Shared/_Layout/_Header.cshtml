@@ -1,0 +1,25 @@
+﻿<div class="navbar-header">
+    @Html.ActionLink("JoinRpg", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+</div>
+<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#header-menu-collapse" title="Показать меню сайта"><i class="glyphicon glyphicon-menu-hamburger"></i></button>
+<div id="header-menu-collapse" class="navbar-collapse collapse">
+    <ul class="nav navbar-nav">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new { area = "" }, null)</li>
+        }
+        @Html.Action("MyProjectDropdown", "Menu", new { area = "" })
+        @if (ViewBag.IsProduction != true)
+        {
+            <li class="alert-danger">@Html.ActionLink("Тестовая версия", "About", "Home", new { area = "" }, null)</li>
+        }
+        else
+        {
+            <li>@Html.ActionLink("О сайте", "About", "Home", new { area = "" }, null)</li>
+        }
+        <li class="navbar-form">
+            @Html.Partial("_Layout/_SearchBar")
+        </li>
+    </ul>
+    @Html.Partial("_Layout/_Login")
+</div>

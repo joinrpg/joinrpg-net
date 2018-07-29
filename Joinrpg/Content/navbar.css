@@ -1,0 +1,272 @@
+﻿.navbar
+{
+    margin: 0;
+}
+
+header.navbar,
+nav.navbar
+{
+    margin-bottom: 0.5em;
+}
+
+.navbar
+{
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.navbar-header
+{
+    display: flex;
+    align-items: center;
+    float: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+    padding: 0 0.5em;
+    max-width: 90%;
+}
+
+.navbar-toggle
+{
+    float: none;
+    padding: 0;
+    margin: 0.25em 0.25em 0.25em auto;
+    width: auto;
+    height: auto;
+    font-size: larger;
+    font-weight: normal;
+    padding: 0.25em;
+    align-self: center;
+    border: none;
+}
+
+.navbar-collapse
+{
+    border: none;
+    width: 100%;
+}
+
+.navbar-inverse .navbar-toggle
+{
+    color: white;
+    border-color: silver;
+}
+
+.navbar-header .navbar-brand
+{
+    display: block;
+    float: none;
+    height: auto;
+    width: auto;
+    padding: 0;
+    margin: 0.25em 0 0.25em 0;
+    font-size: larger;
+    align-self: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .navbar-header
+    {
+        max-width: 40%;
+    }
+
+    .navbar-collapse
+    {
+        float: none;
+        width: auto;
+        height: auto;
+        flex-grow: 1;
+        align-items: center;
+        padding: 0 0.5em;
+    }
+
+    .navbar-collapse.collapse
+    {
+        display: flex !important;
+        height: auto !important;
+        padding-bottom: 0;
+        overflow: visible !important;
+    }
+
+    .navbar-nav
+    {
+        flex-grow: 1;
+    }
+
+    .navbar-right
+    {
+        float: none;
+        width: auto;
+        height: auto;
+        margin: 0;
+        margin-left: auto;
+        padding: 0;
+        padding-left: 1em;
+        flex-grow: 0;
+    }
+
+    .navbar-nav > li.navbar-text
+    {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding: 0 0.5em;
+    }
+
+    .navbar-nav > li.navbar-form
+    {
+        align-self: center;
+        flex-grow: 1;
+    }
+}
+
+@media (min-width: 1200px)
+{
+
+    .navbar-aside .navbar-header {
+        max-width: 100%;
+        margin: 0.5em 0.5em 0 0.5em;
+    }
+
+    .navbar-aside .navbar-collapse {
+        margin: 0.5em 0 0 0;
+    }
+
+    .navbar-aside .navbar-collapse > ul.navbar-nav
+    {
+        flex-flow: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+    }
+
+    .navbar-aside .navbar-collapse > ul.navbar-nav > li
+    {
+        padding: 0;
+        margin: 0.25em 0;
+    }
+
+    .navbar-aside .navbar-collapse > ul.navbar-nav > li > a {
+        width: 100%;
+    }
+
+    .navbar-aside .navbar-collapse > ul.navbar-nav > li > a > span.caret {
+        border-left: 4px dashed;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+        border-right: none;
+        margin-left: auto;
+    }
+
+    .navbar-aside .navbar-collapse > ul.navbar-nav > li.dropdown > ul.dropdown-menu {
+        top: 0;
+        left: 100%;
+    }
+
+}
+
+.navbar-nav
+{
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-nav > li
+{
+    float: none;
+    display: flex;
+    width: auto;
+    height: auto;
+    align-self: stretch;
+    align-items: center;
+    flex-flow: row;
+    margin: 0 0.5em;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.navbar-nav > li.dropdown > a.dropdown-toggle > span.caret
+{
+    margin-left: 0.5em;
+}
+
+.navbar-collapse.in > .navbar-nav > li.navbar-text,
+.navbar-collapse.in > .navbar-nav > li.alert-danger
+{
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding: 0;
+}
+
+.navbar-nav > li.navbar-form
+{
+    align-self: stretch;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.navbar-form .input-group-addon,
+.navbar-form .input-group-btn
+{
+    width: auto;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.navbar-form .form-control
+{
+    float: none;
+}
+
+.navbar-form .input-group
+{
+    display: flex;
+}
+
+.navbar-nav > li > a
+{
+    align-self: stretch;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    flex-grow: 0;
+    padding: 0.5em;
+    margin: 0;
+}
+
+.navbar-collapse.in
+{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.navbar-collapse.in > ul.navbar-nav
+{
+    flex-flow: column;
+}
+
+.navbar-collapse.in li.dropdown
+{
+    flex-flow: column;
+}
+
+.navbar-collapse.in li.dropdown > ul.dropdown-menu
+{
+    align-self: stretch;
+}
+
+.navbar-collapse .nav {
+    display: flex;
+    width: auto;
+    height: auto;
+    align-self: stretch;
+    align-items: stretch;
+    float: none;
+    flex-wrap: wrap;
+}
