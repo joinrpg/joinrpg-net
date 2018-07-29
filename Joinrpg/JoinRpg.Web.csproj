@@ -803,6 +803,7 @@
     <Content Include="Views\Shared\_Layout\_Header.cshtml" />
     <Content Include="Views\Shared\_Layout\_YandexMetrics.cshtml" />
     <Content Include="Views\Shared\_Layout\_MainMenu.cshtml" />
+    <Content Include="Views\Home\_DevModeAlert.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

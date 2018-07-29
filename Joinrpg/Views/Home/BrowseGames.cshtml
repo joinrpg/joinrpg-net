@@ -3,11 +3,15 @@
 @{
   ViewBag.Title = "Все игры";
 }
-<h3>Игры</h3>
+<h2 class="workspace-bar">@ViewBag.Title</h2>
 
-<div class="row">
-    @foreach (var project in Model.ActiveProjects)
-    {
-    @Html.Partial("ProjectCard", project)
-    }
+<div class="workspace">
+    <div class="workspace-body flex-grow-1">
+        <div class="workspace-control overflow-scroll-y">
+            @foreach (var project in Model.ActiveProjects)
+            {
+                @Html.Partial("ProjectCard", project)
+            }
+        </div>
+    </div>
 </div>

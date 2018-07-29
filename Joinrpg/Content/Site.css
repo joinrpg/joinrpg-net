@@ -178,18 +178,22 @@ textarea {
     }
 }
 
-.panel {
+.alert {
+    padding: 0.75em;
+}
+
+.panel, .alert {
     margin-bottom: 1em;
 }
 
-.panel:last-child {
+.panel:last-child, .alert:last-child {
     margin-bottom: 0;
 }
 
-p {
+p, ol, ul {
     margin-bottom: 0.5em;
 }
-p:last-child {
+p:last-child, ol:last-child, ul:last-child {
     margin-bottom: 0;
 }
 
@@ -383,17 +387,9 @@ tr.unapprovedPayment td:last-child {
 }
 
 .join.alert {
-    padding: 0.75em;
-    margin: 0.5em 0;
     display: flex;
     flex-flow: row;
     align-items: center;
-}
-.join.alert:first-child {
-    margin-top: 0;
-}
-.join.alert:last-child {
-    margin-bottom: 0;
 }
 
 .join.alert .glyphicon {
