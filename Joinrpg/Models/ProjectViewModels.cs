@@ -96,8 +96,11 @@ namespace JoinRpg.Web.Models
         [DisplayName("Анонс проекта")]
         public IHtmlString ProjectAnnounce { get; }
 
+        public bool HasAnnounce { get; }
+
         public ProjectDetailsViewModel(Project project)
         {
+            HasAnnounce = !string.IsNullOrWhiteSpace(project.Details.ProjectAnnounce.Contents);
             ProjectAnnounce = project.Details.ProjectAnnounce.ToHtmlString();
             ProjectId = project.ProjectId;
             ProjectName = project.ProjectName;

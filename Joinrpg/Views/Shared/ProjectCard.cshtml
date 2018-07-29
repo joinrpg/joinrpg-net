@@ -1,54 +1,30 @@
 ﻿@model JoinRpg.Web.Models.ProjectListItemViewModel
-<div class="col-sm-6 col-md-4">
-    <div class="thumbnail">
-        <div class="caption">
-            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@Model.ProjectName">
-                <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)">@Model.ProjectName</a>
-            </h4>
-            <p>
-                @if (Model.IsMaster)
-                {
-                    <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-info btn-sm"
-                       role="button"
-                       title="У меня есть права мастера на этой игре">Мой проект</a>
-                }
-                @if (Model.HasMyClaims)
-                {
-                    <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-success btn-sm"
-                       role="button"
-                       title="Моя заявка">
-                        Моя заявка
-                    </a>
-                }
 
-                <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId, area = ""}, null)"
-                   class="btn btn-primary btn-sm"
-                   role="button"
-                   title="Сетка ролей">
-                    Сетка ролей
-                </a>
-
-                @if (!Model.IsMaster && Model.PublishPlot)
-                {
-                <a href="@Url.Action("Index", "Plot", new {Model.ProjectId, area = ""}, null)"
-                   class="btn btn-info btn-sm"
-                   role="button">
-                     Материалы
-                </a>
-                }
-
-                @if (!Model.IsMaster && !Model.HasMyClaims && Model.IsAcceptingClaims)
-                {
-                    <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
-                       class="btn btn-info btn-sm"
-                       role="button">
-                        Заявиться
-                    </a>
-                }
-            </p>
-        </div>
+<div class="thumb panel panel-default">
+    <h4 class="join-ellipsis"><a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)">@Model.ProjectName</a></h4>
+    <div>
+        @if (Model.IsMaster)
+        {
+            <a href="@Url.Action("Details", "Game", new {Model.ProjectId, area = ""}, null)"
+               class="btn btn-info btn-sm" role="button"
+               title="У меня есть права мастера на этой игре">Мой проект</a>
+        }
+        @if (Model.HasMyClaims)
+        {
+            <a href="@Url.Action("MyClaim", "Claim", new {Model.ProjectId, area = ""}, null)"
+               class="btn btn-primary btn-sm" role="button">Моя заявка</a>
+        }
+        @if (!Model.IsMaster && !Model.HasMyClaims && Model.IsAcceptingClaims)
+        {
+            <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"
+               class="btn btn-info btn-sm" role="button">Заявиться</a>
+        }
+        <a href="@Url.Action("Index", "GameGroups", new {Model.ProjectId, area = ""}, null)"
+           class="btn btn-default btn-sm" role="button">Сетка ролей</a>
+        @if (!Model.IsMaster && Model.PublishPlot)
+        {
+            <a href="@Url.Action("Index", "Plot", new {Model.ProjectId, area = ""}, null)"
+               class="btn btn-default btn-sm" role="button">Материалы</a>
+        }
     </div>
 </div>
-

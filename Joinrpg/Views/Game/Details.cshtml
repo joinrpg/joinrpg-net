@@ -1,44 +1,50 @@
 ﻿@model JoinRpg.Web.Models.ProjectDetailsViewModel
 
 @{
-    ViewBag.Title = "Игра «" + Model.ProjectName + "»";
+    ViewBag.Title = Model.ProjectName;
 }
 
-<h2>@ViewBag.Title</h2>
+<h2 class="workspace-bar">@ViewBag.Title</h2>
 
-<hr />
+<div class="workspace">
+<div class="workspace-body flex-grow-1">
+    <div class="workspace-control overflow-scroll-y">
 
-<div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div>
+        <div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i><div>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div></div>
 
-@if (Model.IsActive)
-{
-    <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Проект <strong>активен</strong></div>
-    if (Model.IsAcceptingClaims)
-    {
-        <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Прием заявок <strong>открыт</strong></div>
-    }
-    else
-    {
-        <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i>Прием заявок <strong>закрыт</strong></div>
-    }
-}
-else
-{
-    <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i>Проект <strong>закрыт</strong></div>
-}
-
-<hr />
-
-@Model.ProjectAnnounce
-
-<hr />
-
-<div class="panel panel-default">
-    <div class="panel-heading">Мастера</div>
-    <ul class="panel-body join-users-h">
-        @foreach (var master in Model.Masters)
+        @if (Model.IsActive)
         {
-            <li>@Html.DisplayFor(model => master)</li>
+            <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Проект <strong>активен</strong></div></div>
+            if (Model.IsAcceptingClaims)
+            {
+                <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Прием заявок <strong>открыт</strong></div></div>
+            }
+            else
+            {
+                <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i><div>Прием заявок <strong>закрыт</strong></div></div>
+            }
         }
-    </ul>
+        else
+        {
+            <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i><div>Проект <strong>закрыт</strong></div></div>
+        }
+
+        @if (Model.HasAnnounce)
+        {
+            <hr />
+            @Model.ProjectAnnounce
+            <hr />
+        }
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Мастера</div>
+            <ul class="panel-body join-users-h">
+                @foreach (var master in Model.Masters)
+                {
+                    <li>@Html.DisplayFor(model => master)</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
 </div>

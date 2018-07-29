@@ -3,57 +3,63 @@
 @{
     ViewBag.Title = ViewBag.IsProduction ?  "JoinRpg.RU" : "Dev.JoinRpg.RU";
 }
-<br/>
-<div class="panel panel-default well">
-    <div class="panel-body">
-        <h2 >@ViewBag.Title</h2>
-        @if (ViewBag.IsProduction)
-        {
+<div class="workspace">
+
+    <div class="workspace-body fb-33 flex-grow-0 flex-shrink-0">
+
+        <h3 class="workspace-bar">@ViewBag.Title</h3>
+
         <div>
-            <p>
-                Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База заявок от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.
-            </p>
 
-            @Html.ActionLink("О проекте", "About", null, new { @class = "btn btn-primary" })
-            <a href="http://docs.joinrpg.ru" class="btn btn-info">Документация</a>
-            @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
-            @Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn btn-default" })
-        </div>
-        }
-        else
-        {
-        <div>
-            <div class="alert alert-danger">
-                Это тестовая версия JoinRpg.ru.<br/>Не используйте ее для реальной работы с игроками<br/>
-            Если вы игрок и забрели сюда случайно, вам <a href="http://joinrpg.ru">на основной сервер</a> 
-            </div>. 
-
-            @Html.ActionLink("О проекте", "About", null, new { @class = "btn btn-primary" })
-            <a href="http://docs.joinrpg.ru" class="btn btn-info">Документация</a>
-            @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })
-            <a href="http://joinrpg.ru" class="btn btn-info"> Перейти на основной сервер</a>
-        </div>
-        }
-        
-    </div>
-</div>
-
-
-<h3>Игры</h3>
-
-<div class="row">
-    @foreach (var project in Model.ActiveProjects)
-    {
-        @Html.Partial("ProjectCard", project)
-    }
-        @if (Model.HasMoreProjects)
-        {
-            <div class="col-sm-12">
-                <div class="thumbnail">
-                    <div class="caption text-center">
-                         @Html.ActionLink("Еще игры...", "BrowseGames", "Home")  / @Html.ActionLink("Архив...", "GameArchive", "Home") </div>
+            @if (ViewBag.IsProduction == true)
+            {
+                <p>Joinrpg помогает мастерам и игрокам готовиться к играм с 2015 года. База заявок от создателей <a href="http://kogda-igra.ru">Kogda-Igra.ru</a>.</p>
+                <p>@Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })</p>
+                <p>@Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn btn-default" })</p>
+            }
+            else
+            {
+                <div class="join alert alert-danger">
+                    <i class="glyphicon glyphicon-exclamation-sign"></i>
+                    <div>
+                        <p>Это тестовая версия JoinRpg.ru.</p>
+                        <p>Не используйте ее для реальной работы с игроками!</p>
+                        <p>Если вы игрок и забрели сюда случайно, вам&nbsp;<a href="http://joinrpg.ru">на&nbsp;основной&nbsp;сервер</a>.</p>
+                    </div>
                 </div>
+                <p>@Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success" })</p>
+                <p><a href="http://joinrpg.ru" class="btn btn-default">Перейти на основной сервер</a></p>
+            }
 
+            <p><a href="http://docs.joinrpg.ru" class="btn btn-default">Документация</a></p>
+            <p>@Html.ActionLink("О проекте", "About", null, new { @class = "btn btn-default" })</p>
+        </div>
+
+    </div>
+
+    <div class="workspace-body flex-grow-1 flex-shrink-1">
+
+        <div class="workspace-host">
+
+            <h3 class="workspace-bar">Игры</h3>
+
+            <div class="workspace">         
+                <div class="workspace-body flex-grow-1">
+                    <div class="workspace-control overflow-scroll-y">
+                        @foreach (var project in Model.ActiveProjects)
+                        {
+                            @Html.Partial("ProjectCard", project)
+                        }
+                    </div>
+                </div>
             </div>
-        }
+            @if (Model.HasMoreProjects)
+            {
+                <div class="workspace-bar">
+                    @Html.ActionLink("Еще игры...", "BrowseGames", "Home", new { @class="btn btn-sm btn-default"})
+                    @Html.ActionLink("Архив...", "GameArchive", "Home", new { @class = "btn btn-sm btn-default" })
+                </div>
+            }
+        </div>
+    </div>
 </div>

@@ -386,6 +386,7 @@
     <Content Include="Content\multicontrol.css" />
     <Content Include="Content\navbar.css" />
     <Content Include="Content\Print.css" />
+    <Content Include="Content\workspace.css" />
     <Content Include="external\joinrpg-api.css" />
     <Content Include="external\joinrpg-api.js" />
     <Content Include="external\roles-1.js" />
