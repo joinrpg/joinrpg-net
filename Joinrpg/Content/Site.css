@@ -395,7 +395,7 @@ tr.unapprovedPayment td:last-child {
 
 .join-ellipsis {
     white-space: nowrap;
-    overflow-x: hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -433,7 +433,7 @@ tr.unapprovedPayment td:last-child {
 .join-users-h li
 {
     margin: 0.2em;
-    display: block;
+    display: inline-block;
 }
 
 #availRequestsList {
