@@ -294,6 +294,11 @@
             Variants
             </summary>
         </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.ProjectFieldInfo.ProgrammaticValue">
+            <summary>
+            Programmatic Value. Ignored by Joinrpg, to use by external system
+            </summary>
+        </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.ProjectFieldsMetadata">
             <summary>
             Project fields

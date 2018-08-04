@@ -39,6 +39,9 @@ namespace JoinRpg.DataModel
         /// </summary>
         public int Price { get; set; }
 
+        /// <summary>
+        /// External value for external IT systems
+        /// </summary>
         public string ProgrammaticValue { get; set; }
 
         [CanBeNull]

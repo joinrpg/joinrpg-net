@@ -7,27 +7,164 @@ namespace JoinRpg.Services.Interfaces
 {
     public interface IFieldSetupService
     {
-        Task UpdateFieldParams(int projectId, int fieldId, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims, int price, string masterFieldHint);
+        Task UpdateFieldParams(UpdateFieldRequest request);
 
         Task<ProjectField> DeleteField(int projectId, int projectFieldId);
 
         Task DeleteField(ProjectField field);
 
-        Task AddField(int projectId, ProjectFieldType fieldType, string name, string fieldHint, bool canPlayerEdit, bool canPlayerView, bool isPublic, FieldBoundTo fieldBoundTo, MandatoryStatus mandatoryStatus, List<int> showForGroups, bool validForNpc, bool includeInPrint, bool showForUnapprovedClaims, int price, string masterFieldHint);
+        Task AddField(CreateFieldRequest request);
 
         Task CreateFieldValueVariant(CreateFieldValueVariantRequest request);
 
         Task UpdateFieldValueVariant(UpdateFieldValueVariantRequest request);
 
-        Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId);
+        Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId,
+            int projectFieldId,
+            int valueId);
 
         Task MoveField(int projectid, int projectcharacterfieldid, short direction);
 
-        Task MoveFieldVariant(int projectid, int projectFieldId, int projectFieldVariantId, short direction);
+        Task MoveFieldVariant(int projectid,
+            int projectFieldId,
+            int projectFieldVariantId,
+            short direction);
 
-        Task CreateFieldValueVariants(int projectId, int projectFieldId, [NotNull] string valuesToAdd);
+        Task CreateFieldValueVariants(int projectId,
+            int projectFieldId,
+            [NotNull]
+            string valuesToAdd);
 
         Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
+    }
+
+    public abstract class FieldRequestBase
+    {
+        protected FieldRequestBase(int projectId,
+            string name,
+            string fieldHint,
+            bool canPlayerEdit,
+            bool canPlayerView,
+            bool isPublic,
+            MandatoryStatus mandatoryStatus,
+            IReadOnlyCollection<int> showForGroups,
+            bool validForNpc,
+            bool includeInPrint,
+            bool showForUnapprovedClaims,
+            int price,
+            string masterFieldHint,
+            string programmaticValue)
+        {
+            ProjectId = projectId;
+            Name = name;
+            FieldHint = fieldHint;
+            CanPlayerEdit = canPlayerEdit;
+            CanPlayerView = canPlayerView;
+            IsPublic = isPublic;
+            MandatoryStatus = mandatoryStatus;
+            ShowForGroups = showForGroups;
+            ValidForNpc = validForNpc;
+            IncludeInPrint = includeInPrint;
+            ShowForUnapprovedClaims = showForUnapprovedClaims;
+            Price = price;
+            MasterFieldHint = masterFieldHint;
+            ProgrammaticValue = programmaticValue;
+        }
+
+        public int ProjectId { get; }
+        public string Name { get; }
+        public string FieldHint { get; }
+
+        public bool CanPlayerEdit { get; }
+        public bool CanPlayerView { get; }
+        public bool IsPublic { get; }
+        public MandatoryStatus MandatoryStatus { get; }
+        public IReadOnlyCollection<int> ShowForGroups { get; }
+        public bool ValidForNpc { get; }
+        public bool IncludeInPrint { get; }
+        public bool ShowForUnapprovedClaims { get; }
+        public int Price { get; }
+        public string MasterFieldHint { get; }
+        public string ProgrammaticValue { get; }
+    }
+
+    public sealed class CreateFieldRequest : FieldRequestBase
+    {
+        public ProjectFieldType FieldType { get; }
+        public FieldBoundTo FieldBoundTo { get; }
+
+        /// <inheritdoc />
+        public CreateFieldRequest(int projectId,
+            ProjectFieldType fieldType,
+            string name,
+            string fieldHint,
+            bool canPlayerEdit,
+            bool canPlayerView,
+            bool isPublic,
+            FieldBoundTo fieldBoundTo,
+            MandatoryStatus mandatoryStatus,
+            IReadOnlyCollection<int> showForGroups,
+            bool validForNpc,
+            bool includeInPrint,
+            bool showForUnapprovedClaims,
+            int price,
+            string masterFieldHint,
+            string programmaticValue) : base(projectId,
+            name,
+            fieldHint,
+            canPlayerEdit,
+            canPlayerView,
+            isPublic,
+            mandatoryStatus,
+            showForGroups,
+            validForNpc,
+            includeInPrint,
+            showForUnapprovedClaims,
+            price,
+            masterFieldHint,
+            programmaticValue)
+        {
+            FieldType = fieldType;
+            FieldBoundTo = fieldBoundTo;
+        }
+    }
+
+    public sealed class UpdateFieldRequest : FieldRequestBase
+    {
+        /// <inheritdoc />
+        public UpdateFieldRequest(int projectId,
+            string name,
+            string fieldHint,
+            bool canPlayerEdit,
+            bool canPlayerView,
+            bool isPublic,
+            MandatoryStatus mandatoryStatus,
+            IReadOnlyCollection<int> showForGroups,
+            bool validForNpc,
+            bool includeInPrint,
+            bool showForUnapprovedClaims,
+            int price,
+            string masterFieldHint,
+            int projectFieldId,
+            string programmaticValue) : base(projectId,
+            name,
+            fieldHint,
+            canPlayerEdit,
+            canPlayerView,
+            isPublic,
+            mandatoryStatus,
+            showForGroups,
+            validForNpc,
+            includeInPrint,
+            showForUnapprovedClaims,
+            price,
+            masterFieldHint,
+            programmaticValue)
+        {
+            ProjectFieldId = projectFieldId;
+        }
+
+        public int ProjectFieldId { get; }
     }
 
     public abstract class FieldValueVariantRequestBase

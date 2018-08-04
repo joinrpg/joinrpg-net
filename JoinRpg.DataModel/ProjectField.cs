@@ -65,6 +65,11 @@ namespace JoinRpg.DataModel
     public virtual CharacterGroup CharacterGroup { get; set; }
     public int CharacterGroupId { get; set; }
 
+      /// <summary>
+      /// External value for external IT systems
+      /// </summary>
+      public string ProgrammaticValue { get; set; }
+
     [NotMapped]
     public int[] AvailableForCharacterGroupIds
     {

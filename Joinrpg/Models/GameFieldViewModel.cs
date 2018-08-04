@@ -165,6 +165,10 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Описание (только для мастеров)"), UIHint("MarkdownString")]
         public string MasterDescriptionEditable { get; set; }
 
+        [Display(Name = "Программный ID",
+            Description = "Используется для передачи во внешние ИТ-системы игры, если они есть. Значение определяется программистами внешней системы. Игнорируйте это поле, если у вас на игре нет никакой ИТ-системы")]
+        public string ProgrammaticValue { get; set; }
+
         [ReadOnly(true)]
         public bool WasEverUsed { get; set; }
 
@@ -190,6 +194,7 @@ namespace JoinRpg.Web.Models
             ValidForNpc = field.ValidForNpc;
             ShowForUnApprovedClaim = field.ShowOnUnApprovedClaims;
             Price = field.Price;
+            ProgrammaticValue = field.ProgrammaticValue;
 
             FillNotEditable(field, currentUserId);
         }
@@ -398,6 +403,7 @@ namespace JoinRpg.Web.Models
             Price = value.Price;
             ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
             PlayerSelectable = value.PlayerSelectable;
+            ProgrammaticValue = value.ProgrammaticValue;
         }
 
         public GameFieldDropdownValueEditViewModel() { }//For binding

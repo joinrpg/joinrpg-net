@@ -83,7 +83,8 @@ namespace JoinRpg.Web.Controllers
             }
             try
             {
-                await FieldSetupService.AddField(project.ProjectId,
+                var request = new CreateFieldRequest(
+                    project.ProjectId,
                     (ProjectFieldType) viewModel.FieldViewType,
                     viewModel.Name,
                     viewModel.DescriptionEditable,
@@ -94,12 +95,13 @@ namespace JoinRpg.Web.Controllers
                     (MandatoryStatus) viewModel.MandatoryStatus,
                     viewModel.ShowForGroups.GetUnprefixedGroups(),
                     viewModel.ValidForNpc,
-                    viewModel.FieldBoundTo == FieldBoundToViewModel.Character &&
-                    viewModel.CanPlayerView,
+                    viewModel.FieldBoundTo == FieldBoundToViewModel.Character && viewModel.CanPlayerView,
                     viewModel.ShowForUnApprovedClaim,
                     viewModel.Price,
-                    viewModel.MasterDescriptionEditable
-                    );
+                    viewModel.MasterDescriptionEditable,
+                    programmaticValue: null);
+
+                await FieldSetupService.AddField(request);
 
                 return ReturnToIndex(project);
             }
@@ -142,21 +144,23 @@ namespace JoinRpg.Web.Controllers
       }
       try
       {
-          await
-              FieldSetupService.UpdateFieldParams(project.ProjectId,
-                  field.ProjectFieldId,
-                  viewModel.Name,
-                  viewModel.DescriptionEditable,
-                  viewModel.CanPlayerEdit,
-                  viewModel.CanPlayerView,
-                  viewModel.IsPublic,
-                  (MandatoryStatus) viewModel.MandatoryStatus,
-                  viewModel.ShowForGroups.GetUnprefixedGroups(),
-                  viewModel.ValidForNpc,
-                  viewModel.IncludeInPrint,
-                  viewModel.ShowForUnApprovedClaim,
-                  viewModel.Price,
-                  viewModel.MasterDescriptionEditable);
+          var request = new UpdateFieldRequest(project.ProjectId,
+              viewModel.Name,
+              viewModel.DescriptionEditable,
+              viewModel.CanPlayerEdit,
+              viewModel.CanPlayerView,
+              viewModel.IsPublic,
+              (MandatoryStatus) viewModel.MandatoryStatus,
+              viewModel.ShowForGroups.GetUnprefixedGroups(),
+              viewModel.ValidForNpc,
+              viewModel.IncludeInPrint,
+              viewModel.ShowForUnApprovedClaim,
+              viewModel.Price,
+              viewModel.MasterDescriptionEditable,
+              field.ProjectFieldId,
+              viewModel.ProgrammaticValue);
+
+          await FieldSetupService.UpdateFieldParams(request);
 
         return ReturnToIndex(project);
       }

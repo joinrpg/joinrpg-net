@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,101 +13,67 @@ namespace JoinRpg.Services.Impl
     public class FieldSetupServiceImpl: DbServiceImplBase, IFieldSetupService
     {
 
-        public async Task AddField(int projectId,
-            ProjectFieldType fieldType,
-            string name,
-            string fieldHint,
-            bool canPlayerEdit,
-            bool canPlayerView,
-            bool isPublic,
-            FieldBoundTo fieldBoundTo,
-            MandatoryStatus mandatoryStatus,
-            List<int> showForGroups,
-            bool validForNpc,
-            bool includeInPrint,
-            bool showForUnapprovedClaims,
-            int price,
-            string masterFieldHint)
+        public async Task AddField(CreateFieldRequest request)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
+            var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
             project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             var field = new ProjectField
             {
-                FieldType = fieldType,
-                FieldBoundTo = fieldBoundTo,
-
-                FieldName = Required(name),
-                Description = new MarkdownString(fieldHint),
-                MasterDescription = new MarkdownString(masterFieldHint),
-                CanPlayerEdit = canPlayerEdit,
-                CanPlayerView = canPlayerView,
-                ValidForNpc = validForNpc,
-                IsPublic = isPublic,
-                ProjectId = projectId,
-                Project = project, //We require it for CreateOrUpdateSpecailGroup
-                IsActive = true,
-                MandatoryStatus = mandatoryStatus,
-                AvailableForCharacterGroupIds =
-                    await ValidateCharacterGroupList(projectId, showForGroups),
-                IncludeInPrint = includeInPrint,
-                ShowOnUnApprovedClaims = showForUnapprovedClaims,
-                Price = price,
+                ProjectId = request.ProjectId,
+                Project = project,
+                FieldType = request.FieldType,
+                FieldBoundTo = request.FieldBoundTo,
             };
 
-            CreateOrUpdateSpecialGroup(field);
+            await SetFieldPropertiesFromRequest(request, field);
 
             UnitOfWork.GetDbSet<ProjectField>().Add(field);
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task UpdateFieldParams(int projectId,
-            int fieldId,
-            string name,
-            string fieldHint,
-            bool canPlayerEdit,
-            bool canPlayerView,
-            bool isPublic,
-            MandatoryStatus mandatoryStatus,
-            List<int> showForGroups,
-            bool validForNpc,
-            bool includeInPrint,
-            bool showForUnapprovedClaims,
-            int price,
-            string masterFieldHint)
+
+        public async Task UpdateFieldParams(UpdateFieldRequest request)
         {
-            var field = await ProjectRepository.GetProjectField(projectId, fieldId);
+            var field = await ProjectRepository.GetProjectField(request.ProjectId, request.ProjectFieldId);
 
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             // If we are changing field.CanPlayerEdit, we should update variants to match
-            if (field.CanPlayerEdit != canPlayerEdit)
+            if (field.CanPlayerEdit != request.CanPlayerEdit)
             {
                 foreach (var variant in field.DropdownValues)
                 {
-                    variant.PlayerSelectable = canPlayerEdit;
+                    variant.PlayerSelectable = request.CanPlayerEdit;
                 }
             }
 
-            field.FieldName = Required(name);
-            field.Description = new MarkdownString(fieldHint);
-            field.MasterDescription = new MarkdownString(masterFieldHint);
-            field.CanPlayerEdit = canPlayerEdit;
-            field.CanPlayerView = canPlayerView;
-            field.IsPublic = isPublic;
-            field.IsActive = true;
-            field.MandatoryStatus = mandatoryStatus;
-            field.ValidForNpc = validForNpc;
-            field.AvailableForCharacterGroupIds =
-                await ValidateCharacterGroupList(projectId, showForGroups);
-            field.IncludeInPrint = includeInPrint;
-            field.ShowOnUnApprovedClaims = showForUnapprovedClaims;
-            field.Price = price;
-
-            CreateOrUpdateSpecialGroup(field);
+            await SetFieldPropertiesFromRequest(request, field);
 
             await UnitOfWork.SaveChangesAsync();
+        }
+
+        private async Task SetFieldPropertiesFromRequest(FieldRequestBase request, ProjectField field)
+        {
+            field.IsActive = true;
+
+            field.FieldName = Required(request.Name);
+            field.Description = new MarkdownString(request.FieldHint);
+            field.MasterDescription = new MarkdownString(request.MasterFieldHint);
+            field.CanPlayerEdit = request.CanPlayerEdit;
+            field.CanPlayerView = request.CanPlayerView;
+            field.ValidForNpc = request.ValidForNpc;
+            field.IsPublic = request.IsPublic;
+            field.MandatoryStatus = request.MandatoryStatus;
+            field.AvailableForCharacterGroupIds =
+                await ValidateCharacterGroupList(request.ProjectId, request.ShowForGroups);
+            field.IncludeInPrint = request.IncludeInPrint;
+            field.ShowOnUnApprovedClaims = request.ShowForUnapprovedClaims;
+            field.Price = request.Price;
+            field.ProgrammaticValue = request.ProgrammaticValue;
+
+            CreateOrUpdateSpecialGroup(field);
         }
 
         public async Task<ProjectField> DeleteField(int projectId, int projectFieldId)
@@ -158,27 +123,48 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
+
+        public async Task UpdateFieldValueVariant(UpdateFieldValueVariantRequest request)
+        {
+            var field = await ProjectRepository.GetFieldValue(request.ProjectId,
+                request.ProjectFieldId,
+                request.ProjectFieldDropdownValueId);
+
+            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+
+            SetFieldVariantPropsFromRequest(request, field);
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        private void SetFieldVariantPropsFromRequest(FieldValueVariantRequestBase request,
+            ProjectFieldDropdownValue field)
+        {
+            field.Description = new MarkdownString(request.Description);
+            field.Label = request.Label;
+            field.IsActive = true;
+            field.MasterDescription = new MarkdownString(request.MasterDescription);
+            field.ProgrammaticValue = request.ProgrammaticValue;
+            field.Price = request.Price;
+            field.PlayerSelectable = request.PlayerSelectable;
+
+            CreateOrUpdateSpecialGroup(field);
+        }
+
         private void CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
         {
-            var fieldValue = new ProjectFieldDropdownValue()
+            var fieldVariant = new ProjectFieldDropdownValue()
             {
-                Description = new MarkdownString(request.Description),
-                Label = request.Label,
-                IsActive = true,
                 WasEverUsed = false,
                 ProjectId = field.ProjectId,
                 ProjectFieldId = field.ProjectFieldId,
                 Project = field.Project,
                 ProjectField = field,
-                MasterDescription = new MarkdownString(request.MasterDescription),
-                ProgrammaticValue = request.ProgrammaticValue,
-                Price = request.Price,
-                PlayerSelectable = request.PlayerSelectable && field.CanPlayerEdit,
             };
 
-            CreateOrUpdateSpecialGroup(fieldValue);
+            SetFieldVariantPropsFromRequest(request, fieldVariant);
 
-            field.DropdownValues.Add(fieldValue);
+            field.DropdownValues.Add(fieldVariant);
         }
 
         private void CreateOrUpdateSpecialGroup(ProjectFieldDropdownValue fieldValue)
@@ -275,25 +261,6 @@ namespace JoinRpg.Services.Impl
                 characterGroup.CharacterGroupName = specialGroupName;
                 MarkChanged(characterGroup);
             }
-        }
-
-        public async Task UpdateFieldValueVariant(UpdateFieldValueVariantRequest request)
-        {
-            var field = await ProjectRepository.GetFieldValue(request.ProjectId, request.ProjectFieldId, request.ProjectFieldDropdownValueId);
-
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
-
-            field.Description = new MarkdownString(request.Description);
-            field.Label = request.Label;
-            field.IsActive = true;
-            field.MasterDescription = new MarkdownString(request.MasterDescription);
-            field.ProgrammaticValue = request.ProgrammaticValue;
-            field.Price = request.Price;
-            field.PlayerSelectable = request.PlayerSelectable;
-
-            CreateOrUpdateSpecialGroup(field);
-
-            await UnitOfWork.SaveChangesAsync();
         }
 
         public async Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId)
