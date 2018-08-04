@@ -293,7 +293,7 @@ namespace JoinRpg.Services.Impl
                     Claims = claims,
                     ProjectName = plotElement.Project.ProjectName,
                     PlotElement = plotElement,
-                    Text = new MarkdownString(model.CommentText)
+                    Text = new MarkdownString(model.CommentText),
                 });
             }
         }
