@@ -15,142 +15,152 @@
   @Html.HiddenFor(model => model.ProjectId)
   @Html.HiddenFor(model => model.ProjectFieldId)
     
-    <div class="form-horizontal">
+<div class="form-horizontal">
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        <div class="form-group">
-
-            @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.DisplayFor(model => model.FieldViewType)
-            </div>
-        </div>
-        <div class="form-group">
-
-            @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.DisplayFor(model => model.FieldBoundTo)
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.MandatoryStatus, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.MandatoryStatus)
-                @Html.ValidationMessageFor(model => model.MandatoryStatus, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.IsPublic)
-                @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.CanPlayerView)
-                @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.CanPlayerEdit)
-                @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.CanPlayerEdit)
-            </div>
-        </div>
-        
-        <div class="form-group">
-            @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.ShowForUnApprovedClaim)
-                @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.DescriptionEditable, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.DescriptionEditable, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.DescriptionEditable, "", new {@class = "text-danger"})
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.MasterDescriptionEditable, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.MasterDescriptionEditable, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.MasterDescriptionEditable, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new {@class = "control-label col-md-3"})
-            <div class="col-md-9">
-                @Html.MagicSelectBindGroups(model => model.ShowForGroups)
-                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new {@class = "text-danger"})
-                <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
-            </div>
-        </div>
-        
-        @if (Model.FieldBoundTo == FieldBoundToViewModel.Character)
-        {
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new {@class = "control-label col-md-3"})
-                <div class="col-md-9">
-                    @Html.EditorFor(model => model.ValidForNpc)
-                    @Html.ValidationMessageFor(model => model.ValidForNpc, "", new {@class = "text-danger"})
-                    @Html.DescriptionFor(model => model.ValidForNpc)
-                </div>
-            </div>
-        }
-        else
-        {
-          @Html.HiddenFor(model => model.ValidForNpc)
-        }
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.IncludeInPrint, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.IncludeInPrint)
-                @Html.ValidationMessageFor(model => model.IncludeInPrint, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.IncludeInPrint)
-            </div>
-        </div>
-
-        @if (Model.FieldViewType.SupportsPricingOnField())
-        {
-            <div class="form-group">
-                @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
-                <div class="col-md-9">
-                    @Html.EditorFor(model => model.Price)
-                    @Html.DescriptionFor(model => model.Price)
-                </div>
-            </div>
-        }
-
-        <div class="form-group">
-            <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success"/>
-                @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new { @class = "btn btn-default" })
-            </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
         </div>
     </div>
+
+    <div class="form-group">
+
+        @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.DisplayFor(model => model.FieldViewType)
+        </div>
+    </div>
+    <div class="form-group">
+
+        @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.DisplayFor(model => model.FieldBoundTo)
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.MandatoryStatus, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.MandatoryStatus)
+            @Html.ValidationMessageFor(model => model.MandatoryStatus, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.IsPublic)
+            @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.CanPlayerView)
+            @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.CanPlayerEdit)
+            @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
+            @Html.DescriptionFor(model => model.CanPlayerEdit)
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.ShowForUnApprovedClaim)
+            @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.DescriptionEditable, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.DescriptionEditable, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.DescriptionEditable, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.MasterDescriptionEditable, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.MasterDescriptionEditable, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.DescriptionFor(model => model.MasterDescriptionEditable)
+            @Html.ValidationMessageFor(model => model.MasterDescriptionEditable, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.ProgrammaticValue, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.DescriptionFor(model => model.ProgrammaticValue)
+            @Html.ValidationMessageFor(model => model.ProgrammaticValue, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.MagicSelectBindGroups(model => model.ShowForGroups)
+            @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
+            <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
+        </div>
+    </div>
+
+    @if (Model.FieldBoundTo == FieldBoundToViewModel.Character)
+    {
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.ValidForNpc)
+                @Html.ValidationMessageFor(model => model.ValidForNpc, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.ValidForNpc)
+            </div>
+        </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.ValidForNpc)
+    }
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.IncludeInPrint, htmlAttributes: new { @class = "control-label col-md-3" })
+        <div class="col-md-9">
+            @Html.EditorFor(model => model.IncludeInPrint)
+            @Html.ValidationMessageFor(model => model.IncludeInPrint, "", new { @class = "text-danger" })
+            @Html.DescriptionFor(model => model.IncludeInPrint)
+        </div>
+    </div>
+
+    @if (Model.FieldViewType.SupportsPricingOnField())
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.Price)
+                @Html.DescriptionFor(model => model.Price)
+            </div>
+        </div>
+    }
+
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-9">
+            <input type="submit" value="@(Model.IsActive ? "Сохранить" : "Восстановить")" class="btn btn-success" />
+            @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new { @class = "btn btn-default" })
+        </div>
+    </div>
+</div>
 }
 
 @if (Model.HasValueList)
