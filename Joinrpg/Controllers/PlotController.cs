@@ -398,7 +398,8 @@ namespace JoinRpg.Web.Controllers
             }
             catch (Exception)
             {
-                return await Edit(model.ProjectId, model.PlotFolderId);
+                throw;
+                // return await Edit(model.ProjectId, model.PlotFolderId);
             }
         }
 
@@ -415,7 +416,8 @@ namespace JoinRpg.Web.Controllers
             }
             catch (Exception)
             {
-                return await Edit(model.ProjectId, model.PlotFolderId);
+                throw;
+                //return await Edit(model.ProjectId, model.PlotFolderId);
             }
         }
 
