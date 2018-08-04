@@ -401,6 +401,13 @@ namespace JoinRpg.Services.Email
 
         private const string ClaimUriKey = "claimUri";
 
+        private class ClaimsComparer : IEqualityComparer<Claim>
+        {
+            public bool Equals(Claim x, Claim y) => x?.PlayerUserId == y?.PlayerUserId;
+
+            public int GetHashCode(Claim obj) => obj.PlayerUserId.GetHashCode();
+        }
+
         public async Task Email([NotNull] PublishPlotElementEmail email)
         {                
             string plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
@@ -411,6 +418,7 @@ namespace JoinRpg.Services.Email
                 + $"\n\n{email.Text.Contents}";
 
             List<RecepientData> recipients = email.Claims
+                .Distinct(new ClaimsComparer())
                 .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
                     { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
                 .ToList();
