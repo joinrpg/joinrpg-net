@@ -11,6 +11,12 @@ namespace JoinRpg.Services.Interfaces.Email
             RecepientData sender,
             IReadOnlyCollection<RecepientData> to);
 
+        Task SendEmails(string subject,
+            string body,
+            string text,
+            RecepientData sender,
+            IReadOnlyCollection<RecepientData> to);
+
         string GetRecepientPlaceholderName();
         string GetUserDependentValue(string valueKey);
     }
