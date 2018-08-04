@@ -414,7 +414,7 @@ namespace JoinRpg.Services.Email
 
             string subject = $@"{email.ProjectName}: опубликована вводная";
             string body = $@"{StandartGreeting()}"
-                + $"\nПрочитать вводную: [Link]({MessageService.GetUserDependentValue(ClaimUriKey)})"
+                + $"\nПрочитать вводную: {MessageService.GetUserDependentValue(ClaimUriKey)}"
                 + $"\n\n{email.Text.Contents}";
 
             List<RecepientData> recipients = email.Claims
