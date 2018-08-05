@@ -61,6 +61,11 @@
         </member>
         <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.Groups">
             <summary>
+            Groups that character part of (directly)
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.AllGroups">
+            <summary>
             Groups that character part of 
             </summary>
         </member>
