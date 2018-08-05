@@ -9,7 +9,7 @@ namespace JoinRpg.DataModel
   public class IntList
   {
     private string _internalData;
-    internal int[] _parentCharacterGroupIds = {};
+      public int[] _parentCharacterGroupIds = {};
 
     [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
     public string ListIds
