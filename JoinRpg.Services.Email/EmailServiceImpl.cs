@@ -414,8 +414,12 @@ namespace JoinRpg.Services.Email
 
             string subject = $@"{email.ProjectName}: опубликована вводная";
             string body = $@"{StandartGreeting()}"
+                + $"<br />Прочитать вводную: <a href=\"{MessageService.GetUserDependentValue(ClaimUriKey)}\">{MessageService.GetUserDependentValue(ClaimUriKey)}</a>"
+                + "<br /><br />"
+                + email.Text.ToHtmlString().ToHtmlString();
+            string text = $@"{StandartGreeting()}"
                 + $"\nПрочитать вводную: {MessageService.GetUserDependentValue(ClaimUriKey)}"
-                + $"\n\n{email.Text.Contents}";
+                + $"\n\n{email.Text.ToPlainText()}";
 
             List<RecepientData> recipients = email.Claims
                 .Distinct(new ClaimsComparer())
@@ -423,7 +427,7 @@ namespace JoinRpg.Services.Email
                     { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
                 .ToList();
 
-            await MessageService.SendEmails(subject, new MarkdownString(body),
+            await MessageService.SendEmails(subject, body, text,
                 email.Initiator.ToRecepientData(), recipients);
         }
     }
