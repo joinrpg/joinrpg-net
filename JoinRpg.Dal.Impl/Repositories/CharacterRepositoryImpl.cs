@@ -106,8 +106,10 @@ namespace JoinRpg.Dal.Impl.Repositories
             .Select(groupHeaderSelector).ToListAsync(),
         };
 
-        view.AllGroups = view.DirectGroups.SelectMany(g =>
-            g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id]))).ToList();
+        view.AllGroups = view.DirectGroups
+            .SelectMany(g => g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id])))
+            .Distinct()
+            .ToList();
         return view;
     }
 
