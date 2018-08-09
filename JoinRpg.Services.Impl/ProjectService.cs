@@ -524,6 +524,10 @@ namespace JoinRpg.Services.Impl
             }
 
             UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
+            UnitOfWork.GetDbSet<UserSubscription>()
+                .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
+                             .Where(x => x.UserId == userId && x.ProjectId == projectId));
+
             await UnitOfWork.SaveChangesAsync();
         }
 
