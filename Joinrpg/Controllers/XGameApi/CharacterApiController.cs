@@ -68,7 +68,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
               Value = field.Value,
               DisplayString = field.DisplayString,
             }),
-          PlayerUserId = character.ApprovedClaim?.PlayerUserId,
+          PlayerUserId = character.ApprovedClaim?.Player.UserId,
+            PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName(),
+            PlayerFullName = character.ApprovedClaim?.Player.FullName,
         };
     }
 

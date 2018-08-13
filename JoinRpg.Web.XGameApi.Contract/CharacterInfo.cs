@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,6 +41,17 @@ namespace JoinRpg.Web.XGameApi.Contract
     /// Player user id
     /// </summary>
     public int? PlayerUserId { get; set; }
+
+
+      /// <summary>
+      /// Рекомендованное имя игрока
+      /// </summary>
+      public string PlayerDisplayName { get; set; }
+
+      /// <summary>
+      /// Полное фио игрока
+      /// </summary>
+      public string PlayerFullName { get; set; }
   }
 
   /// <summary>

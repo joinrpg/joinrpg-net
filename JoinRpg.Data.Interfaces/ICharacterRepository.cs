@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -33,7 +33,7 @@ namespace JoinRpg.Data.Interfaces
     public bool IsActive { get; set; }
     public bool InGame { get; set; }
     public bool IsAcceptingClaims { get; set; }
-    public ClaimView ApprovedClaim { get; set; }
+    public ClaimFullView ApprovedClaim { get; set; }
     public IReadOnlyCollection<ClaimHeader> Claims { get; set; }
     public IReadOnlyCollection<GroupHeader> Groups { get; set; }
     public string JsonData { get; set; }
@@ -47,13 +47,13 @@ namespace JoinRpg.Data.Interfaces
     public string CharacterGroupName { get; set; }
   }
 
-  public class ClaimView : IFieldContainter
-  {
-    public int PlayerUserId { get; set; }
-    public string JsonData { get; set; }
-  }
+    public class ClaimFullView : IFieldContainter
+    {
+        public string JsonData { get; set; }
+        public User Player { get; set; }
+    }
 
-  public class ClaimHeader
+    public class ClaimHeader
   {
     public bool IsActive { get; set; }
   }

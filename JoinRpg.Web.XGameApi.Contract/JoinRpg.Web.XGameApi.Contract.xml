@@ -74,6 +74,16 @@
             Player user id
             </summary>
         </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.PlayerDisplayName">
+            <summary>
+            Рекомендованное имя игрока
+            </summary>
+        </member>
+        <member name="P:JoinRpg.Web.XGameApi.Contract.CharacterInfo.PlayerFullName">
+            <summary>
+            Полное фио игрока
+            </summary>
+        </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus">
             <summary>
             Has player or not
