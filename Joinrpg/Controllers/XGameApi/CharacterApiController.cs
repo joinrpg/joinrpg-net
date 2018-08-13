@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,43 +14,45 @@ using GroupHeader = JoinRpg.Web.XGameApi.Contract.GroupHeader;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-  [RoutePrefix("x-game-api/{projectId}/characters"), XGameAuthorize()]
-  public class CharacterApiController : XGameApiController
-  {
-    private ICharacterRepository CharacterRepository { get; }
-
-    public CharacterApiController(IProjectRepository projectRepository,
-      ICharacterRepository characterRepository) : base(projectRepository)
+    [RoutePrefix("x-game-api/{projectId}/characters"), XGameAuthorize()]
+    public class CharacterApiController : XGameApiController
     {
-      CharacterRepository = characterRepository;
-    }
+        private ICharacterRepository CharacterRepository { get; }
 
-    [HttpGet]
-    [Route("")]
-    public async Task<IEnumerable<CharacterHeader>> GetList(int projectId,
-      [FromUri] DateTime? modifiedSince = null)
-    {
-      return (await CharacterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(
-        character =>
-          new CharacterHeader
-          {
-            CharacterId = character.CharacterId,
-            UpdatedAt = character.UpdatedAt,
-            IsActive = character.IsActive,
-            CharacterLink = $"/x-game-api/{projectId}/characters/{character.CharacterId}/",
-          });
-    }
-
-    [HttpGet]
-    [Route("{characterId}/")]
-    public async Task<CharacterInfo> GetOne(int projectId, int characterId)
-    {
-      var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
-      var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
-      return
-        new CharacterInfo
+        public CharacterApiController(IProjectRepository projectRepository,
+            ICharacterRepository characterRepository) : base(projectRepository)
         {
-          CharacterId = character.CharacterId,
+            CharacterRepository = characterRepository;
+        }
+
+        [HttpGet]
+        [Route("")]
+        public async Task<IEnumerable<CharacterHeader>> GetList(int projectId,
+            [FromUri]
+            DateTime? modifiedSince = null)
+        {
+            return (await CharacterRepository.GetCharacterHeaders(projectId, modifiedSince)).Select(
+                character =>
+                    new CharacterHeader
+                    {
+                        CharacterId = character.CharacterId,
+                        UpdatedAt = character.UpdatedAt,
+                        IsActive = character.IsActive,
+                        CharacterLink =
+                            $"/x-game-api/{projectId}/characters/{character.CharacterId}/",
+                    });
+        }
+
+        [HttpGet]
+        [Route("{characterId}/")]
+        public async Task<CharacterInfo> GetOne(int projectId, int characterId)
+        {
+            var character = await CharacterRepository.GetCharacterViewAsync(projectId, characterId);
+            var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
+            return
+                new CharacterInfo
+                {
+                   CharacterId = character.CharacterId,
           UpdatedAt = character.UpdatedAt,
           IsActive = character.IsActive,
           InGame = character.InGame,
@@ -72,14 +74,28 @@ namespace JoinRpg.Web.Controllers.XGameApi
             PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName(),
             PlayerFullName = character.ApprovedClaim?.Player.FullName,
         };
-    }
+                };
+        }
 
-    private List<FieldWithValue> GetFields(CharacterView character, Project project)
-    {
-      var projectFields = project.GetFieldsNotFilled().ToList();
-      projectFields.FillFrom(character.ApprovedClaim);
-      projectFields.FillFrom(character);
-      return projectFields;
+        private static IOrderedEnumerable<GroupHeader> ToGroupHeaders(
+            IReadOnlyCollection<Data.Interfaces.GroupHeader> characterDirectGroups)
+        {
+            return characterDirectGroups.Where(group => group.IsActive && !group.IsSpecial)
+                .Select(
+                    group => new GroupHeader
+                    {
+                        CharacterGroupId = group.CharacterGroupId,
+                        CharacterGroupName = group.CharacterGroupName,
+                    })
+                .OrderBy(group => group.CharacterGroupId);
+        }
+
+        private List<FieldWithValue> GetFields(CharacterView character, Project project)
+        {
+            var projectFields = project.GetFieldsNotFilled().ToList();
+            projectFields.FillFrom(character.ApprovedClaim);
+            projectFields.FillFrom(character);
+            return projectFields;
+        }
     }
-  }
 }

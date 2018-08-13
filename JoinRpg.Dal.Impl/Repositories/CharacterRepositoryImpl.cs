@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
 using LinqKit;
 
 namespace JoinRpg.Dal.Impl.Repositories
@@ -54,13 +56,28 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public async Task<CharacterView> GetCharacterViewAsync(int projectId, int characterId)
     {
-      var character = await Ctx.Set<Character>().AsNoTracking()
+        Expression<Func<CharacterGroup, GroupHeader>> groupHeaderSelector = group =>
+            new GroupHeader()
+            {
+                IsActive = group.IsActive,
+                CharacterGroupId = group.CharacterGroupId,
+                CharacterGroupName = group.CharacterGroupName,
+                IsSpecial = group.IsSpecial,
+                ParentGroupIds = group.ParentGroupsImpl,
+            };
+
+            var character = await Ctx.Set<Character>().AsNoTracking()
         .Where(e => e.CharacterId == characterId && e.ProjectId == projectId)
         .SingleOrDefaultAsync();
 
+        var allGroups = await Ctx.Set<CharacterGroup>().AsNoTracking()
+            .Where(cg => cg.ProjectId == projectId && cg.IsActive)
+            .Select(groupHeaderSelector)
+            .ToDictionaryAsync(d => d.CharacterGroupId);
+
       var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
 
-      return
+        var view =
         new CharacterView()
         {
           CharacterId = character.CharacterId,
@@ -84,16 +101,16 @@ namespace JoinRpg.Dal.Impl.Repositories
               {
                 IsActive = activeClaimPredicate.Invoke(claim), 
               }).ToListAsync(),
-          Groups = await Ctx.Set<CharacterGroup>()
+          DirectGroups = await Ctx.Set<CharacterGroup>()
             .Where(group => character.ParentCharacterGroupIds.Contains(group.CharacterGroupId))
-            .Select(group => new GroupHeader()
-            {
-              IsActive = group.IsActive,
-              CharacterGroupId = group.CharacterGroupId,
-              CharacterGroupName = group.CharacterGroupName,
-              IsSpecial = group.IsSpecial,
-            }).ToListAsync(),
+            .Select(groupHeaderSelector).ToListAsync(),
         };
+
+        view.AllGroups = view.DirectGroups
+            .SelectMany(g => g.FlatTree(group => group.ParentGroupIds._parentCharacterGroupIds.Select(id => allGroups[id])))
+            .Distinct()
+            .ToList();
+        return view;
     }
 
     public async Task<IEnumerable<Character>> GetAvailableCharacters(int projectId)

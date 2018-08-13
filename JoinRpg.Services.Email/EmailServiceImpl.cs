@@ -195,7 +195,7 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(LeaveRoomEmail email)
         {
-            string body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отзована или отклонена.";
+            string body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отозвана или отклонена.";
             if (email.Room.GetAllInhabitants().Any())
             {
                 body += $"\n\nОстались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
@@ -414,8 +414,12 @@ namespace JoinRpg.Services.Email
 
             string subject = $@"{email.ProjectName}: опубликована вводная";
             string body = $@"{StandartGreeting()}"
+                + $"<br />Прочитать вводную: <a href=\"{MessageService.GetUserDependentValue(ClaimUriKey)}\">{MessageService.GetUserDependentValue(ClaimUriKey)}</a>"
+                + "<br /><br />"
+                + email.Text.ToHtmlString().ToHtmlString();
+            string text = $@"{StandartGreeting()}"
                 + $"\nПрочитать вводную: {MessageService.GetUserDependentValue(ClaimUriKey)}"
-                + $"\n\n{email.Text.Contents}";
+                + $"\n\n{email.Text.ToPlainText()}";
 
             List<RecepientData> recipients = email.Claims
                 .Distinct(new ClaimsComparer())
@@ -423,7 +427,7 @@ namespace JoinRpg.Services.Email
                     { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
                 .ToList();
 
-            await MessageService.SendEmails(subject, new MarkdownString(body),
+            await MessageService.SendEmails(subject, body, text,
                 email.Initiator.ToRecepientData(), recipients);
         }
     }
