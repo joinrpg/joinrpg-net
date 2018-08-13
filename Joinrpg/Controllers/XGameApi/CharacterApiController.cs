@@ -52,28 +52,23 @@ namespace JoinRpg.Web.Controllers.XGameApi
             return
                 new CharacterInfo
                 {
-                   CharacterId = character.CharacterId,
-          UpdatedAt = character.UpdatedAt,
-          IsActive = character.IsActive,
-          InGame = character.InGame,
-          BusyStatus = (CharacterBusyStatus) character.GetBusyStatus(),
-          Groups = character.Groups.Where(group => group.IsActive && !group.IsSpecial).Select(
-            group => new GroupHeader
-            {
-              CharacterGroupId = group.CharacterGroupId,
-              CharacterGroupName = group.CharacterGroupName,
-            }).OrderBy(group => group.CharacterGroupId),
-          Fields = GetFields(character, project).Where(field => field.HasViewableValue)
-            .Select(field => new FieldValue
-            {
-              ProjectFieldId = field.Field.ProjectFieldId,
-              Value = field.Value,
-              DisplayString = field.DisplayString,
-            }),
-          PlayerUserId = character.ApprovedClaim?.Player.UserId,
-            PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName(),
-            PlayerFullName = character.ApprovedClaim?.Player.FullName,
-        };
+                    CharacterId = character.CharacterId,
+                    UpdatedAt = character.UpdatedAt,
+                    IsActive = character.IsActive,
+                    InGame = character.InGame,
+                    BusyStatus = (CharacterBusyStatus) character.GetBusyStatus(),
+                    Groups = ToGroupHeaders(character.DirectGroups),
+                    AllGroups = ToGroupHeaders(character.AllGroups),
+                    Fields = GetFields(character, project).Where(field => field.HasViewableValue)
+                        .Select(field => new FieldValue
+                        {
+                            ProjectFieldId = field.Field.ProjectFieldId,
+                            Value = field.Value,
+                            DisplayString = field.DisplayString,
+                        }),
+                    PlayerUserId = character.ApprovedClaim?.Player.UserId,
+                    PlayerDisplayName = character.ApprovedClaim?.Player.GetDisplayName(),
+                    PlayerFullName = character.ApprovedClaim?.Player.FullName,
                 };
         }
 

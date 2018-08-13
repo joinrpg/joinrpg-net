@@ -53,37 +53,22 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// Player user id
         /// </summary>
         public int? PlayerUserId { get; set; }
+
+
+        /// <summary>
+        /// Рекомендованное имя игрока
+        /// </summary>
+        public string PlayerDisplayName { get; set; }
+
+        /// <summary>
+        /// Полное фио игрока
+        /// </summary>
+        public string PlayerFullName { get; set; }
     }
 
     /// <summary>
-    /// Has player or not
+    /// Is character busy or not
     /// </summary>
-    public CharacterBusyStatus BusyStatus { get; set; }
-    /// <summary>
-    /// Groups that character part of 
-    /// </summary>
-    public IOrderedEnumerable<GroupHeader> Groups { get; set; }
-    /// <summary>
-    /// Field values
-    /// </summary>
-    public IEnumerable<FieldValue> Fields { get; set; }
-    /// <summary>
-    /// Player user id
-    /// </summary>
-    public int? PlayerUserId { get; set; }
-
-
-      /// <summary>
-      /// Рекомендованное имя игрока
-      /// </summary>
-      public string PlayerDisplayName { get; set; }
-
-      /// <summary>
-      /// Полное фио игрока
-      /// </summary>
-      public string PlayerFullName { get; set; }
-  }
-
     public enum CharacterBusyStatus
     {
         /// <summary>

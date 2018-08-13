@@ -91,7 +91,7 @@
         </member>
         <member name="T:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus">
             <summary>
-            Has player or not
+            Is character busy or not
             </summary>
         </member>
         <member name="F:JoinRpg.Web.XGameApi.Contract.CharacterBusyStatus.HasPlayer">
