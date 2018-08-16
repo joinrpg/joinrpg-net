@@ -16,6 +16,7 @@
   @Html.HiddenFor(model => model.ProjectId)
   @Html.HiddenFor(model=>model.ClaimId)
   @Html.AntiForgeryToken()
+  @Html.ValidationSummary()
 
   <div class="form-horizontal">
     

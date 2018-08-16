@@ -108,7 +108,8 @@ namespace JoinRpg.Services.Impl
 
       MarkChanged(source);
 
-        source.EnsureCanMoveClaim(oldClaim);
+        // TODO improve valitdation here
+        //source.EnsureCanMoveClaim(oldClaim);
 
       var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
       var claim = new Claim()
