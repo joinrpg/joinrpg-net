@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -123,20 +122,21 @@ namespace JoinRpg.Web.Models.Exporters
     [MustUseReturnValue]
     protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User>> func)
     {
-      return ComplexColumn(
-          func,
-          u => u.GetDisplayName(),
-          u => u.SurName,
-          u => u.FatherName,
-          u => u.BornName,
-          u => u.Email)
-        .Union(new[]
-        {
-          ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
-          ComplexElementMemberColumn(func, u => u.Extra, e => e.Skype),
-          ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
-          ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
-        });
+        return ComplexColumn(
+                func,
+                u => u.GetDisplayName(),
+                u => u.SurName,
+                u => u.FatherName,
+                u => u.BornName,
+                u => u.Email)
+            .Union(new[]
+            {
+                ComplexElementMemberColumn(func, u => u.Extra, e => e.Vk),
+                ComplexElementMemberColumn(func, u => u.Extra, e => e.Skype),
+                ComplexElementMemberColumn(func, u => u.Extra, e => e.Telegram),
+                ComplexElementMemberColumn(func, u => u.Extra, e => e.Livejournal),
+                ComplexElementMemberColumn(func, u => u.Extra, e => e.PhoneNumber),
+            });
     }
 
     [MustUseReturnValue]
