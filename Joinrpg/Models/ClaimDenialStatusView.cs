@@ -28,14 +28,11 @@ namespace JoinRpg.Web.Models
 
     public static class ClaimDenialStatusViewExtensions
     {
-        public static string GetDisplayName(this Enum enumValue)
-        {
-            return enumValue.GetType()
+        public static string GetDisplayName(this Enum enumValue) => enumValue.GetType()
                             .GetMember(enumValue.ToString())
                             .First()
                             .GetCustomAttribute<DisplayAttribute>()
                             .GetName();
-        }
     }
 
 }
