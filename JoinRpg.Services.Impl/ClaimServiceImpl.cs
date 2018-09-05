@@ -396,7 +396,8 @@ namespace JoinRpg.Services.Impl
       }
 
 
-      public async Task DeclineByMaster(int projectId, int claimId, string commentText)
+      //TODO[#803]: добавить ClaimDenialStatus
+      public async Task DeclineByMaster(int projectId, int claimId, int claimDenialStatus, string commentText)
       {
           var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
@@ -404,6 +405,7 @@ namespace JoinRpg.Services.Impl
 
           claim.MasterDeclinedDate = Now;
           claim.ClaimStatus = Claim.Status.DeclinedByMaster;
+          claim.ClaimDenialStatus = claimDenialStatus;
 
           var roomEmail = await CommonClaimDecline(claim);
           await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);

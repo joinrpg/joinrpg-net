@@ -125,6 +125,8 @@ namespace JoinRpg.Web.Models
     [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"), UIHint("MarkdownString")]
     public string CommentText { get; set; }
 
+    public int DenialStatus { get; set; }
+
     public string ActionName { get; set; }
   }
 }

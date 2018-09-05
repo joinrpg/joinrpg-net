@@ -1,0 +1,24 @@
+﻿@using System.Net;
+@using System.ComponentModel.DataAnnotations;
+@using System.Reflection
+@using JoinRpg.Web.Models
+
+@helper CreateValue(string value, string name)
+{
+    <option value="@value">@name</option>
+}
+
+<div class="form-horizontal">
+    <div class="form-group">
+        @Html.Label("", "Причина отказа", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            <select name="DenialStatus" id="DenialStatus" class="form-control col-md-10">
+                @foreach (ClaimDenialStatusView denial in Enum.GetValues(typeof(ClaimDenialStatusView)))
+                {
+                    @CreateValue(denial.ToString("d"), denial.GetDisplayName());
+                }
+            </select>
+        </div>
+    </div>
+
+</div>

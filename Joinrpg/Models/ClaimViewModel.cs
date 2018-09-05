@@ -31,6 +31,9 @@ namespace JoinRpg.Web.Models
     [Display(Name = "Статус заявки")]
     public ClaimStatusView Status { get; set; }
 
+    [Display(Name = "Причина отказа")]
+    public ClaimDenialStatusView DenialStatus { get; set; }
+
     public bool IsMyClaim { get; }
 
     public bool HasMasterAccess { get; }
