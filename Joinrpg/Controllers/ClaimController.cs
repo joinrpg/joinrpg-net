@@ -284,7 +284,8 @@ namespace JoinRpg.Web.Controllers
           return await ShowClaim(claim);
         }
         await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
+                    //TODO[#803]: Добавить ClaimDenialStatus из viewModel
+          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, viewModel.DenialStatus, viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }

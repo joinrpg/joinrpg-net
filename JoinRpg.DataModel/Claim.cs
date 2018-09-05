@@ -49,6 +49,8 @@ namespace JoinRpg.DataModel
     public virtual User ResponsibleMasterUser { get; set; }
     public int? ResponsibleMasterUserId { get; set; }
 
+    public int? ClaimDenialStatus { get; set; }
+
       public bool IsPending =>
             ClaimStatus != Status.DeclinedByMaster
             && ClaimStatus != Status.DeclinedByUser;
