@@ -1,12 +1,5 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
-using System.Reflection;
-using JoinRpg.DataModel;
-using JoinRpg.Domain;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace JoinRpg.Web.Models
 {
@@ -25,14 +18,4 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Игрок не выполнил условия участия или не сдал взнос"), UsedImplicitly]
         NotImplementable,
     }
-
-    public static class ClaimDenialStatusViewExtensions
-    {
-        public static string GetDisplayName(this Enum enumValue) => enumValue.GetType()
-                            .GetMember(enumValue.ToString())
-                            .First()
-                            .GetCustomAttribute<DisplayAttribute>()
-                            .GetName();
-    }
-
 }

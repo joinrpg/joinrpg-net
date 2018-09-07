@@ -438,9 +438,9 @@
     <Compile Include="Migrations\201808040915132_FieldProgrammaticValue.Designer.cs">
       <DependentUpon>201808040915132_FieldProgrammaticValue.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201809051639100_ClaimUpdate.cs" />
-    <Compile Include="Migrations\201809051639100_ClaimUpdate.Designer.cs">
-      <DependentUpon>201809051639100_ClaimUpdate.cs</DependentUpon>
+    <Compile Include="Migrations\201809071005431_ClaimUpdate.cs" />
+    <Compile Include="Migrations\201809071005431_ClaimUpdate.Designer.cs">
+      <DependentUpon>201809071005431_ClaimUpdate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
@@ -759,8 +759,8 @@
     <EmbeddedResource Include="Migrations\201808040915132_FieldProgrammaticValue.resx">
       <DependentUpon>201808040915132_FieldProgrammaticValue.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809051639100_ClaimUpdate.resx">
-      <DependentUpon>201809051639100_ClaimUpdate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201809071005431_ClaimUpdate.resx">
+      <DependentUpon>201809071005431_ClaimUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

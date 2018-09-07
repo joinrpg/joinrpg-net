@@ -396,8 +396,7 @@ namespace JoinRpg.Services.Impl
       }
 
 
-      //TODO[#803]: добавить ClaimDenialStatus
-      public async Task DeclineByMaster(int projectId, int claimId, int claimDenialStatus, string commentText)
+      public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText)
       {
           var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 

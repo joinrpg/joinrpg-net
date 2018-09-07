@@ -1,6 +1,14 @@
-﻿@model JoinRpg.Web.Models.ClaimOperationViewModel
+﻿@using JoinRpg.Web.Models
+@using JoinRpg.Helpers
+
+@model JoinRpg.Web.Models.ClaimOperationViewModel
 @{
     Model.ActionName = Model.ActionName ?? "Отправить";
+}
+
+@helper CreateValue(string value, string name)
+{
+    <option value="@value">@name</option>
 }
 
 @Html.AntiForgeryToken()
@@ -9,6 +17,18 @@
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     @Html.HiddenFor(model => model.ProjectId)
     @Html.HiddenFor(model => model.ClaimId)
+
+    <div class="form-group">
+        @Html.Label("", "Причина отказа", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            <select name="DenialStatus" id="DenialStatus" class="form-control col-md-10">
+                @foreach (ClaimDenialStatusView denial in Enum.GetValues(typeof(ClaimDenialStatusView)))
+                {
+                    @CreateValue(denial.ToString("d"), denial.GetDisplayName());
+                }
+            </select>
+        </div>
+    </div>
 
     <div class="form-group">
         @Html.LabelFor(model => model.CommentText, htmlAttributes: new { @class = "control-label col-md-2" })
