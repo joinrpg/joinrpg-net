@@ -345,7 +345,6 @@
         }
         @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
-        @Html.Partial("AvailClaimDenialsPartial");
         @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
         {
         ProjectId = Model.ProjectId,

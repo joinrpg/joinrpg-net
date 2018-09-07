@@ -19,6 +19,9 @@ namespace JoinRpg.Web.Test
         public void ClaimStatus() => EnumerationTestHelper.CheckEnums<ClaimStatusView, DataModel.Claim.Status>();
 
         [Fact]
+        public void ClaimDenialStatus() => EnumerationTestHelper.CheckEnums<ClaimDenialStatusView, DataModel.Claim.DenialStatus>();
+
+        [Fact]
         public void FinanceOperation() => EnumerationTestHelper.CheckEnums<FinanceOperationActionView, FinanceOperationAction>();
     }
 }
