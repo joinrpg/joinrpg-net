@@ -183,7 +183,7 @@
       </button>
       }
       }
-      @if (Model.IsPaymentsEnabled && Model.Status.IsActive())
+      @if (Model.IsPaymentsEnabled)
       {
       <div class="btn-group">
 
@@ -195,7 +195,7 @@
 
 
 
-        @if (Model.ClaimFee.PreferentialFeeEnabled && !Model.ClaimFee.PreferentialFeeUser)
+        @if (Model.ClaimFee.PreferentialFeeEnabled && !Model.ClaimFee.PreferentialFeeUser && Model.Status.IsActive())
         {
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span class="caret"></span>
