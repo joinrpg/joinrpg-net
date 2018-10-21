@@ -797,6 +797,7 @@
     <Content Include="Views\Plot\_DeletePlotElementDlg.cshtml" />
     <Content Include="Views\Plot\_UnpublishPlotElementDlg.cshtml" />
     <Content Include="Views\Shared\ErrorNotActiveProject.cshtml" />
+    <Content Include="Views\Plot\_RestorePlotElementDlg.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
