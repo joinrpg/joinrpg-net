@@ -583,6 +583,7 @@ namespace JoinRpg.Services.Impl
 
       claim.EnsureCanChangeStatus(Claim.Status.AddedByUser); 
       claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
+        claim.ClaimDenialStatus = null;
       SetDiscussed(claim, true);
       claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
 
