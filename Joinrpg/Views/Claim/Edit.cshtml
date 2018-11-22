@@ -153,7 +153,7 @@
         Принять заявку
       </button>
       }
-      if (Model.Status == ClaimStatusView.AddedByUser || Model.Status == ClaimStatusView.Approved || Model.Status == ClaimStatusView.Discussed || Model.Status == ClaimStatusView.OnHold)
+      if (Model.Status.CanMove())
       {
       <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
               aria-expanded="false">
@@ -215,7 +215,7 @@
       </button>
 
       }
-      @if (Model.Status == ClaimStatusView.Approved)
+      @if (Model.Status.IsAlreadyApproved())
       {
       <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
         <span class="glyphicon glyphicon-print"></span>
@@ -237,7 +237,7 @@
       }
       }
 
-      @if (Model.Status == ClaimStatusView.CheckedIn)
+      @if (Model.Status.CanHaveSecondRole())
       {
       <a href="@Url.Action("SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
         <span class="glyphicon glyphicon-duplicate"></span>
@@ -332,7 +332,7 @@
 
       <div class="panel-heading">Отклонение заявки</div>
       <div class="panel-body">
-        @if (Model.Status == ClaimStatusView.AddedByUser)
+        @if (Model.Status.ClaimStatus == ClaimStatusView.AddedByUser || Model.Status.ClaimStatus == ClaimStatusView.Discussed)
         {
         <div class="alert alert-info">
           При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
@@ -345,7 +345,7 @@
         }
         @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
-        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
+        @Html.Partial("MasterDenialOperationPartial", new MasterDenialOperationViewModel
         {
         ProjectId = Model.ProjectId,
         ClaimId = Model.ClaimId,
@@ -358,7 +358,7 @@
     <div class="panel panel-default collapse" id="moveClaimActionPanel">
       <div class="panel-heading">Перемещение заявки</div>
       <div class="panel-body">
-        @if (Model.Status == ClaimStatusView.Approved)
+        @if (Model.Status.IsAlreadyApproved())
         {
         <div class="alert alert-warning">
           <span class="glyphicon glyphicon-exclamation-sign"></span>
@@ -441,7 +441,7 @@
   PaymentTypes = Model.PaymentTypes,
   Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
   CommentText = "Сдан взнос",
-  ClaimApproved = Model.Status == ClaimStatusView.Approved,
+  ClaimApproved = Model.Status.IsAlreadyApproved(),
   HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
   }; }
 
@@ -477,7 +477,7 @@
     </div>
 </div>
 
-@if ((Model.Status == ClaimStatusView.Approved || Model.Status == ClaimStatusView.CheckedIn) && Model.CanChangeRooms)
+@if (Model.Status.IsAlreadyApproved() && Model.CanChangeRooms)
 {
     @Html.Partial("_ClaimAccommodation",
       new ClaimAccommodationViewModel
@@ -490,7 +490,7 @@
         OutgoingInvite = Model.OutgoingInvite,
         PotentialNeighbors = Model.PotentialNeighbors,
         AccommodationRequest = Model.AccommodationRequest,
-        AccommodationEnabledForClaim = Model.AccommodationEnabled && Model.Status == ClaimStatusView.Approved
+        AccommodationEnabledForClaim = Model.AccommodationEnabled && Model.Status.ClaimStatus == ClaimStatusView.Approved
       })
   }
   @if (Model.Fields.AnythingAccessible)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -17,14 +17,13 @@ namespace JoinRpg.Helpers
         public static PropertyInfo AsPropertyAccess<T1, T2>(
             this Expression<Func<T1, T2>> expression)
         {
-            var body = expression.Body;
-            var convertExpression = body as UnaryExpression;
-            if (convertExpression != null && convertExpression.NodeType == ExpressionType.Convert)
+            if (expression.Body is UnaryExpression convertExpression &&
+                convertExpression.NodeType == ExpressionType.Convert)
             {
                 return AsPropertyAccess(convertExpression.Operand);
             }
 
-            return AsPropertyAccess(body);
+            return AsPropertyAccess(expression.Body);
         }
 
         [CanBeNull]

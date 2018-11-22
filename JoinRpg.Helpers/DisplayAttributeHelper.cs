@@ -8,12 +8,12 @@ namespace JoinRpg.Helpers
     public static class DisplayAttributeHelper
     {
         [NotNull]
-        public static string GetDisplayName([NotNull]
+        public static string GetDisplayName(
             this Enum enumValue)
         {
             if (enumValue == null)
             {
-                throw new ArgumentNullException(nameof(enumValue));
+                return "";
             }
 
             return enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
