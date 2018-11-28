@@ -52,6 +52,13 @@ $("#unpublishElementModal").on("show.bs.modal", function (event) {
     modal.find("#publishPlotElementId").val(plotElementId);
 });
 
+$("#restoreElementModal").on("show.bs.modal", function (event) {
+    var button = $(event.relatedTarget);
+    var plotElementId = button.data("element");
+    var modal = $(this);
+    modal.find("#publishPlotElementId").val(plotElementId);
+});
+
 $(".modaldialogforid").on("show.bs.modal", function (event) {
   var button = $(event.relatedTarget);
   var entityId = button.data("element");

@@ -271,6 +271,11 @@ namespace JoinRpg.Services.Impl
         {
             // Publishing
             var plotElement = await LoadElement(model.ProjectId, model.PlotFolderId, model.PlotElementId);
+            if (!plotElement.IsActive)
+            {
+                var now = DateTime.UtcNow;
+                UpdateElementMetadata(plotElement, now);
+            }
             plotElement.EnsureActive();
             plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
             plotElement.IsCompleted = model.Version != null;
