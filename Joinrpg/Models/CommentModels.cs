@@ -117,17 +117,22 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class ClaimOperationViewModel 
-  {
-    public int ProjectId { get; set; }
-    public int ClaimId { get; set; }
+    public class ClaimOperationViewModel
+    {
+        public int ProjectId { get; set; }
+        public int ClaimId { get; set; }
 
-    [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"), UIHint("MarkdownString")]
-    public string CommentText { get; set; }
+        [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"),
+         UIHint("MarkdownString")]
+        public string CommentText { get; set; }
 
-    public int DenialStatus { get; set; }
+        public string ActionName { get; set; }
+    }
 
-    public string ActionName { get; set; }
-  }
+    public class MasterDenialOperationViewModel : ClaimOperationViewModel
+    {
+        [Required(ErrorMessage = "Надо указать причину отказа"), Display(Name ="Причина отказа")]
+        public ClaimDenialStatusView DenialStatus { get; set; }
+    }
 }
 

@@ -269,7 +269,7 @@ namespace JoinRpg.Web.Controllers
     [HttpPost]
     [MasterAuthorize()]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> DeclineByMaster(ClaimOperationViewModel viewModel)
+    public async Task<ActionResult> DeclineByMaster(MasterDenialOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
@@ -283,8 +283,13 @@ namespace JoinRpg.Web.Controllers
         {
           return await ShowClaim(claim);
         }
-        await
-          _claimService.DeclineByMaster(claim.ProjectId, claim.ClaimId, (Claim.DenialStatus)viewModel.DenialStatus, viewModel.CommentText);
+
+          await
+              _claimService.DeclineByMaster(
+                  claim.ProjectId,
+                  claim.ClaimId,
+                  (Claim.DenialStatus) viewModel.DenialStatus,
+                  viewModel.CommentText);
 
         return ReturnToClaim(viewModel);
       }
@@ -293,7 +298,6 @@ namespace JoinRpg.Web.Controllers
         ModelState.AddException(exception);
         return await ShowClaim(claim);
       }
-
     }
 
     [HttpPost]

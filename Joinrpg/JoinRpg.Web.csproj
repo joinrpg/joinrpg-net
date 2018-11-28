@@ -798,6 +798,8 @@
     <Content Include="Views\Plot\_UnpublishPlotElementDlg.cshtml" />
     <Content Include="Views\Shared\ErrorNotActiveProject.cshtml" />
     <Content Include="Views\Plot\_RestorePlotElementDlg.cshtml" />
+    <Content Include="Views\Claim\MasterDenialOperationPartial.cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\ClaimFullStatusView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

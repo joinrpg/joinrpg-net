@@ -157,13 +157,6 @@ namespace JoinRpg.Web.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpPost]
-        public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId)
-        {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        }
-
-        [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
         [HttpGet]
         public async Task<ActionResult> OccupyAll(int projectId)
         {

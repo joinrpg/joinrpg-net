@@ -66,102 +66,106 @@ namespace JoinRpg.Web.Models
     }
   }
 
-  public class ClaimListItemViewModel : ILinkable
-  {
-    [Display(Name="Имя")]
-    public string Name { get; set; }
+    public class ClaimListItemViewModel : ILinkable
+    {
+        [Display(Name = "Имя")]
+        public string Name { get; set; }
 
-    [Display(Name = "Игрок")]
-    public User Player { get; set; }
+        [Display(Name = "Игрок")]
+        public User Player { get; set; }
 
-    [Display (Name="Игра")]
-    public string ProjectName { get; set; }
+        [Display(Name = "Игра")]
+        public string ProjectName { get; set; }
 
-    [Display (Name="Статус")]
-    public ClaimStatusView ClaimStatus { get; set; }
+        [Display(Name = "Статус")]
+        public ClaimFullStatusView ClaimFullStatusView { get; set; }
 
-    [Display (Name ="Обновлена"),UIHint("EventTime")]
-    public DateTime? UpdateDate { get; set; }
+        [Display(Name = "Обновлена"), UIHint("EventTime")]
+        public DateTime? UpdateDate { get; set; }
 
-    [Display(Name = "Создана"), UIHint("EventTime")]
-    public DateTime? CreateDate { get; set; }
+        [Display(Name = "Создана"), UIHint("EventTime")]
+        public DateTime? CreateDate { get; set; }
 
-    [Display (Name = "Ответственный")]
-    public User Responsible { get; set; }
+        [Display(Name = "Ответственный")]
+        public User Responsible { get; set; }
 
-    [CanBeNull]
-    public User LastModifiedBy { get; set; }
+        [CanBeNull]
+        public User LastModifiedBy { get; set; }
 
-    public int ProjectId { get; }
+        public int ProjectId { get; }
 
-    public int ClaimId{ get; }
+        public int ClaimId { get; }
 
-    public int UnreadCommentsCount { get; }
+        public int UnreadCommentsCount { get; }
 
-    [Display(Name = "Проблема")]
-    public ICollection<ProblemViewModel> Problems { get; set; }
+        [Display(Name = "Проблема")]
+        public ICollection<ProblemViewModel> Problems { get; set; }
 
-    [NotNull, ReadOnly(true)]
-    public IReadOnlyCollection<FieldWithValue> Fields { get; }
+        [NotNull, ReadOnly(true)]
+        public IReadOnlyCollection<FieldWithValue> Fields { get; }
 
-    [Display(Name= "Уплачено")]
-    public int FeePaid { get; }
-    [Display(Name = "Осталось")]
-    public int FeeDue { get; }
+        [Display(Name = "Уплачено")]
+        public int FeePaid { get; }
 
-      [Display(Name = "Тип поселения")]
-      public string AccomodationType { get; }
+        [Display(Name = "Осталось")]
+        public int FeeDue { get; }
+
+        [Display(Name = "Тип поселения")]
+        public string AccomodationType { get; }
 
 
-      [Display(Name = "Комната")]
-      public string RoomName { get; }
+        [Display(Name = "Комната")]
+        public string RoomName { get; }
 
-      [Display(Name = "Льготник")]
+        [Display(Name = "Льготник")]
         public bool PreferentialFeeUser { get; }
 
-    public ClaimListItemViewModel ([NotNull] Claim claim, int currentUserId)
-    {
-      if (claim == null) throw new ArgumentNullException(nameof(claim));
-      var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer).OrderByDescending(c => c.CommentId).FirstOrDefault();
+        public ClaimListItemViewModel([NotNull]
+            Claim claim,
+            int currentUserId)
+        {
+            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer)
+                .OrderByDescending(c => c.CommentId).FirstOrDefault();
 
-      ClaimId = claim.ClaimId;
-      ClaimStatus = (ClaimStatusView) claim.ClaimStatus;
-      
-      Name = claim.Name;
-      Player = claim.Player;
+            ClaimId = claim.ClaimId;
 
-      UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
-      CreateDate = claim.CreateDate;
-      Responsible = claim.ResponsibleMasterUser;
-      LastModifiedBy = lastComment?.Author ?? claim.Player;
-      UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
+            ClaimFullStatusView = new ClaimFullStatusView(claim);
+            Name = claim.Name;
+            Player = claim.Player;
 
-      ProjectId = claim.ProjectId;
-      ProjectName = claim.Project.ProjectName;
-      Fields = claim.GetFields();
-      FeePaid = claim.ClaimBalance();
-      FeeDue = claim.ClaimFeeDue();
+            UpdateDate = lastComment?.LastEditTime ?? claim.CreateDate;
+            CreateDate = claim.CreateDate;
+            Responsible = claim.ResponsibleMasterUser;
+            LastModifiedBy = lastComment?.Author ?? claim.Player;
+            UnreadCommentsCount = claim.CommentDiscussion.GetUnreadCount(currentUserId);
 
-        PreferentialFeeUser = claim.PreferentialFeeUser;
-    
+            ProjectId = claim.ProjectId;
+            ProjectName = claim.Project.ProjectName;
+            Fields = claim.GetFields();
+            FeePaid = claim.ClaimBalance();
+            FeeDue = claim.ClaimFeeDue();
 
-        AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
-        RoomName = claim.AccommodationRequest?.Accommodation?.Name;
+            PreferentialFeeUser = claim.PreferentialFeeUser;
+
+
+            AccomodationType = claim.AccommodationRequest?.AccommodationType.Name;
+            RoomName = claim.AccommodationRequest?.Accommodation?.Name;
         }
 
-    public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
-    {
-      Problems =
-        problem.Select(p => new ProblemViewModel(p)).ToList();
-      return this;
+        public ClaimListItemViewModel AddProblems(IEnumerable<ClaimProblem> problem)
+        {
+            Problems =
+                problem.Select(p => new ProblemViewModel(p)).ToList();
+            return this;
+        }
+
+        #region Implementation of ILinkable
+
+        public LinkType LinkType => LinkType.Claim;
+        public string Identification => ClaimId.ToString();
+        int? ILinkable.ProjectId => ProjectId;
+
+        #endregion
     }
-
-    #region Implementation of ILinkable
-
-    public LinkType LinkType => LinkType.Claim;
-    public string Identification => ClaimId.ToString();
-    int? ILinkable.ProjectId => ProjectId;
-
-    #endregion
-  }
 }
