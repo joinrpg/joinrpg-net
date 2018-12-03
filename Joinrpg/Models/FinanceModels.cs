@@ -212,7 +212,7 @@ namespace JoinRpg.Web.Models
       HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
 
       var potentialCashPaymentTypes =
-        project.ProjectAcls.Where(acl => project.PaymentTypes.All(pt => pt.UserId != acl.UserId))
+        project.ProjectAcls.Where(acl => project.PaymentTypes.Where(pt => pt.IsCash == true).All(pt => pt.UserId != acl.UserId))
           .Select(acl => new PaymentTypeListItemViewModel(acl));
 
       var createdPaymentTypes = project.PaymentTypes.Select(p => new PaymentTypeListItemViewModel(p));
