@@ -26,5 +26,7 @@ namespace JoinRpg.Web.Models.Money
         PendingForReceiver,
         [Display(Name = "Должен подтвердить отправитель")]
         PendingForSender,
+        [Display(Name = "Нужно подтвердить")]
+        PendingForBoth,
     }
 }
