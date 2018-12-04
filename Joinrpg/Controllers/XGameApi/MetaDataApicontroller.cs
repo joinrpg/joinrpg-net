@@ -16,6 +16,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
         {
         }
 
+        /// <summary>
+        /// All required metadata for fields
+        /// </summary>
         [HttpGet]
         [Route("fields")]
         public async Task<ProjectFieldsMetadata> GetFieldsList(int projectId)
