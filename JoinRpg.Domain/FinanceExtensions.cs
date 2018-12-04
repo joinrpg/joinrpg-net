@@ -199,22 +199,40 @@ namespace JoinRpg.Domain
         }
 
         [CanBeNull]
-        public static PaymentType GetCashPaymentType([NotNull] this Project project, int userId)
+        public static PaymentType GetCashPaymentType([NotNull]
+            this Project project,
+            int userId)
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
             return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.IsCash);
         }
 
-        public static bool CanAcceptCash([NotNull] this Project project, [NotNull] User user)
+        public static bool CanAcceptCash([NotNull]
+            this Project project,
+            [NotNull]
+            User user)
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
             if (user == null) throw new ArgumentNullException(nameof(user));
             return GetCashPaymentType(project, user.UserId)?.IsActive ?? false;
         }
 
-        public static IEnumerable<MoneyTransfer> SendedByMaster(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.Where(mt => mt.SenderId == master.UserId);
-        public static IEnumerable<MoneyTransfer> ReceivedByMaster(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.Where(mt => mt.ReceiverId == master.UserId);
-        public static int SendedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.SendedByMaster(master).Sum(mt => -mt.Amount);
-        public static int ReceivedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.ReceivedByMaster(master).Sum(mt => mt.Amount);
+        public static IEnumerable<MoneyTransfer> Approved(
+            this IEnumerable<MoneyTransfer> transfers)
+            => transfers.Where(mt => mt.ResultState == MoneyTransferState.Approved);
+
+        public static IEnumerable<MoneyTransfer> SendedByMaster(
+            this IEnumerable<MoneyTransfer> transfers,
+            User master) => transfers.Where(mt => mt.SenderId == master.UserId);
+
+        public static IEnumerable<MoneyTransfer> ReceivedByMaster(
+            this IEnumerable<MoneyTransfer> transfers,
+            User master) => transfers.Where(mt => mt.ReceiverId == master.UserId);
+
+        public static int SendedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers,
+            User master) => transfers.Approved().SendedByMaster(master).Sum(mt => -mt.Amount);
+
+        public static int ReceivedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers,
+            User master) => transfers.Approved().ReceivedByMaster(master).Sum(mt => mt.Amount);
     }
 }
