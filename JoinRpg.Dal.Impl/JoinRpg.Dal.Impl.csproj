@@ -456,6 +456,7 @@
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
     <Compile Include="Repositories\ClaimPredicates.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />
+    <Compile Include="Repositories\FinanceReportRepositoryImpl.cs" />
     <Compile Include="Repositories\ForumRepositoryImpl.cs" />
     <Compile Include="Repositories\GameRepositoryImplBase.cs" />
     <Compile Include="Repositories\PlotRepositoryImpl.cs" />

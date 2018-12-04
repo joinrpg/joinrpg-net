@@ -23,9 +23,6 @@ namespace JoinRpg.Dal.Impl
         public DbSet<User> UserSet => Set<User>();
 
         public DbSet<Claim> ClaimSet => Set<Claim>();
-
-        public DbSet<GameReport2DTemplate> GameReport2DTemplates { get; set; }
-
         DbSet<T> IUnitOfWork.GetDbSet<T>() => Set<T>();
 
         Task IUnitOfWork.SaveChangesAsync() => SaveChangesAsync();
@@ -185,6 +182,10 @@ namespace JoinRpg.Dal.Impl
         private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)
         {
             var entity = modelBuilder.Entity<MoneyTransfer>();
+            entity.HasRequired(e => e.Sender).WithMany().WillCascadeOnDelete(false);
+            entity.HasRequired(e => e.Receiver).WithMany().WillCascadeOnDelete(false);
+            entity.HasRequired(e => e.CreatedBy).WithMany().WillCascadeOnDelete(false);
+            entity.HasRequired(e => e.ChangedBy).WithMany().WillCascadeOnDelete(false);
         }
     }
 }

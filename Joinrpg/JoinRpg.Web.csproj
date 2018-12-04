@@ -247,6 +247,7 @@
     <Compile Include="Models\ClaimDenialStatusView.cs" />
     <Compile Include="Models\GameRolesReportViewModel.cs" />
     <Compile Include="Models\InviteRequestViewModel.cs" />
+    <Compile Include="Models\Money\Enums.cs" />
     <Compile Include="Models\Plot\PublishPlotElementViewModel.cs" />
     <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
@@ -323,7 +324,7 @@
     <Compile Include="Models\ClaimListItemViewModel.cs" />
     <Compile Include="Models\CustomFieldsViewModels.cs" />
     <Compile Include="Models\Exporters\MoneySummaryByMasterExporter.cs" />
-    <Compile Include="Models\FinanceModels.cs" />
+    <Compile Include="Models\Money\FinanceModels.cs" />
     <Compile Include="Models\GameObjectViewModelBase.cs" />
     <Compile Include="Models\Characters\CharacterDetailsViewModel.cs" />
     <Compile Include="Models\Characters\CharacterGroupListViewModel.cs" />
@@ -335,7 +336,7 @@
     <Compile Include="Models\IProjectIdAware.cs" />
     <Compile Include="Models\MassMailViewModels.cs" />
     <Compile Include="Models\CommonTypes\IMovableListItem.cs" />
-    <Compile Include="Models\MoneySummaryByMasterListItemViewModel.cs" />
+    <Compile Include="Models\Money\FinanceReportModels.cs" />
     <Compile Include="Models\MoveControlParametersViewModel.cs" />
     <Compile Include="Models\Permission.cs" />
     <Compile Include="Models\Plugins\PluginListViewModel.cs" />
@@ -801,6 +802,11 @@
     <Content Include="Views\Plot\_RestorePlotElementDlg.cshtml" />
     <Content Include="Views\Claim\MasterDenialOperationPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ClaimFullStatusView.cshtml" />
+    <Content Include="Views\Finances\_Transfers.cshtml" />
+    <Content Include="Views\Finances\ByMaster.cshtml" />
+    <Content Include="Views\Finances\_Operations.cshtml" />
+    <Content Include="Views\Finances\_MasterBalance.cshtml" />
+    <Content Include="Views\Finances\_PaymentTypes.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

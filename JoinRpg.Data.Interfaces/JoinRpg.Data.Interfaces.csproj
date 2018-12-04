@@ -59,6 +59,7 @@
     <Compile Include="IAccommodationRequestRepository.cs" />
     <Compile Include="ICharacterRepository.cs" />
     <Compile Include="IClaimsRepository.cs" />
+    <Compile Include="IFinanceReportRepository.cs" />
     <Compile Include="IForumRepository.cs" />
     <Compile Include="IPlotRepository.cs" />
     <Compile Include="IProjectRepository.cs" />

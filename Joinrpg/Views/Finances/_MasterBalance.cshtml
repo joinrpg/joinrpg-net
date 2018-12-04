@@ -1,0 +1,53 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.MasterBalanceViewModel>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Master)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Total)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FeeBalance)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.ReceiveBalance)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SendBalance)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ExpensesBalance)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Master)
+            @if (ViewBag.ShowLinks == true)
+            {
+                @Html.ActionLink("(подробнее)", "ByMaster", new {item.ProjectId, MasterId = item.Master.UserId})
+            }
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Total)&nbsp;&#8381;
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.FeeBalance)&nbsp;&#8381;
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ReceiveBalance)&nbsp;&#8381;
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SendBalance)&nbsp;&#8381;
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ExpensesBalance)
+        </td>
+    </tr>
+}
+
+</table>

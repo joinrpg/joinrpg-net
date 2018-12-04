@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 
 namespace JoinRpg.Domain
 {
@@ -209,5 +211,10 @@ namespace JoinRpg.Domain
             if (user == null) throw new ArgumentNullException(nameof(user));
             return GetCashPaymentType(project, user.UserId)?.IsActive ?? false;
         }
+
+        public static IEnumerable<MoneyTransfer> SendedByMaster(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.Where(mt => mt.SenderId == master.UserId);
+        public static IEnumerable<MoneyTransfer> ReceivedByMaster(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.Where(mt => mt.ReceiverId == master.UserId);
+        public static int SendedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.SendedByMaster(master).Sum(mt => -mt.Amount);
+        public static int ReceivedByMasterSum(this IReadOnlyCollection<MoneyTransfer> transfers, User master) => transfers.ReceivedByMaster(master).Sum(mt => mt.Amount);
     }
 }

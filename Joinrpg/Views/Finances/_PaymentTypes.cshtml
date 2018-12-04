@@ -1,0 +1,46 @@
+﻿@model IEnumerable<JoinRpg.Web.Models.PaymentTypeSummaryViewModel>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Master)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Total)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Moderation)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>@Html.DisplayFor(modelItem => item.Master)</td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Total)&nbsp;&#8381;
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Moderation)&nbsp;&#8381;
+        </td>
+    </tr>
+}
+    <tr>
+        <td>
+            <b>Итого</b>:
+        </td>
+        <td></td>
+        <td>
+            <b>@Model.Sum(m => m.Total)&nbsp;&#8381;</b>
+        </td>
+        <td>
+            <b>@Model.Sum(m => m.Moderation)&nbsp;&#8381;</b>
+        </td>
+    </tr>
+
+</table>

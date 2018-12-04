@@ -1,44 +1,16 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.PaymentTypeSummaryViewModel>
+﻿@model JoinRpg.Web.Models.MoneyInfoTotalViewModel
 
 @{
     ViewBag.Title = "Сводка по деньгам";
+    ViewBag.ShowLinks = true;
 }
 
 <h2>@ViewBag.Title</h2>
 
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Master)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Total)
-        </th>
-        <th></th>
-    </tr>
+<h3>Итого</h3>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>@Html.DisplayFor(modelItem => item.Master)</td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Total)&nbsp;&#8381;
-        </td>
-    </tr>
-}
-    <tr>
-        <td>
-            <b>Итого</b>:
-        </td>
-        <td></td>
-        <td>
-            <b>@Model.Sum(m => m.Total)&nbsp;&#8381;</b>
-        </td>
-    </tr>
+@Html.Partial("_MasterBalance", Model.Balance)
 
-</table>
+<h3>По типам</h3>
+
+@Html.Partial("_PaymentTypes", Model.PaymentTypeSummary)

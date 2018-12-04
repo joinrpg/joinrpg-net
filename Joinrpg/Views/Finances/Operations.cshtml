@@ -2,7 +2,6 @@
 
 @{
   ViewBag.Title = "Список финансовых операций";
-  var firstItem = Model.Items.FirstOrDefault();
     ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "операция", "операции", "операций");
 }
 
@@ -10,68 +9,4 @@
 
 @Html.Partial("_ListOperationsDropdown", Model)
 
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.FinanceOperationId)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.Money)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.FeeChange)
-        </th>
-
-        <th>
-            @Html.DisplayNameFor(model => firstItem.PaymentMaster)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.PaymentTypeName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.Claim)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.Player)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.OperationDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => firstItem.MarkingMaster)
-        </th>
-    </tr>
-
-@foreach (var item in Model.Items) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.FinanceOperationId)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Money)&nbsp;&#8381;
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FeeChange)&nbsp;&#8381;
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PaymentMaster)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PaymentTypeName)
-        </td>
-        <td>
-            <a href="@item.ClaimLink">@item.Claim</a>
-        </td>
-        <td>
-            @Html.DisplayFor(model => item.Player)
-        </td>
-        <td>
-            @item.OperationDate.ToShortDateString()
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MarkingMaster)
-        </td>
-    </tr>
-}
-
-</table>
+@Html.Partial("_Operations", Model.Items)

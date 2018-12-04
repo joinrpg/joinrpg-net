@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
+using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -19,18 +21,28 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class FinancesController : Common.ControllerGameBase
   {
-    private IFinanceService FinanceService { get; }
-    private IUriService UriService { get; }
+      private IFinanceService FinanceService { get; }
+      private IUriService UriService { get; }
+      private IFinanceReportRepository FinanceReportRepository { get; }
+      private IUserRepository UserRepository { get; }
 
-    public FinancesController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IFinanceService financeService, IUriService uriService)
-      : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      FinanceService = financeService;
-      UriService = uriService;
-    }
+      public FinancesController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IExportDataService exportDataService,
+          IFinanceService financeService,
+          IUriService uriService,
+          IFinanceReportRepository financeReportRepository,
+          IUserRepository userRepository)
+          : base(userManager, projectRepository, projectService, exportDataService)
+      {
+          FinanceService = financeService;
+          UriService = uriService;
+          FinanceReportRepository = financeReportRepository;
+          UserRepository = userRepository;
+      }
 
-    [HttpGet]
+      [HttpGet]
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
@@ -66,32 +78,30 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [MasterAuthorize()]
-    public async Task<ActionResult> MoneySummary(int projectId, string export)
-    {
-      var project = await ProjectRepository.GetProjectWithFinances(projectId);
-      if (project == null)
+      [MasterAuthorize()]
+      public async Task<ActionResult> MoneySummary(int projectId)
       {
-        return HttpNotFound();
-      }
-      var viewModel = project.PaymentTypes.Select(pt => new PaymentTypeSummaryViewModel()
-      {
-        Name = pt.GetDisplayName(),
-        Master = pt.User,
-        Total = project.FinanceOperations.Where(fo => fo.PaymentTypeId == pt.PaymentTypeId && fo.Approved).Sum(fo => fo.MoneyAmount),
-      }).Where(m => m.Total != 0).OrderByDescending(m => m.Total).ThenBy(m => m.Name);
+          var project = await ProjectRepository.GetProjectWithFinances(projectId);
+          if (project == null)
+          {
+              return HttpNotFound();
+          }
 
-      var exportType = GetExportTypeByName(export);
+          var transfers =
+              await FinanceReportRepository.GetAllMoneyTransfers(projectId);
 
-      if (exportType == null)
-      {
-        return View(viewModel);
+          var payments = project.PaymentTypes
+              .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
+              .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
+
+          var viewModel = new MoneyInfoTotalViewModel(project,
+              transfers,
+              new UrlHelper(ControllerContext.RequestContext),
+              project.FinanceOperations.ToArray(),
+              payments);
+
+          return View(viewModel);
       }
-      else
-      {
-        return await Export(viewModel, "money-summary", exportType.Value);
-      }
-    }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> TogglePaymentType(int projectid, int paymentTypeId)
@@ -235,35 +245,35 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet,AllowAnonymous]
-    public async Task<ActionResult> SummaryByMaster(string token, int projectId)
-    {
-      var project = await ProjectRepository.GetProjectWithFinances(projectId);
-
-      var guid = new Guid(token.FromHexString());
-
-      var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
-
-      if (acl == null)
+      [HttpGet, AllowAnonymous]
+      public async Task<ActionResult> SummaryByMaster(string token, int projectId)
       {
-        return Content("Unauthorized");
+          var project = await ProjectRepository.GetProjectWithFinances(projectId);
+
+          var guid = new Guid(token.FromHexString());
+
+          var acl = project.ProjectAcls.SingleOrDefault(a => a.Token == guid);
+
+          if (acl == null)
+          {
+              return Content("Unauthorized");
+          }
+
+          var masterOperations = project.FinanceOperations.ToArray();
+
+          var masterTransfers = await FinanceReportRepository.GetAllMoneyTransfers(projectId);
+
+          var summary =
+              MasterBalanceBuilder.ToMasterBalanceViewModels(masterOperations, masterTransfers, projectId);
+
+          return
+              await
+                  ExportWithCustomFronend(summary,
+                      "money-summary",
+                      ExportType.Csv,
+                      new MoneySummaryByMasterExporter(UriService),
+                      project.ProjectName);
       }
-
-      var summary =
-        project.FinanceOperations.Where(fo => fo.Approved && fo.PaymentType != null)
-          .GroupBy(fo => fo.PaymentType?.User)
-          .Select(
-            fg =>
-              new MoneySummaryByMasterListItemViewModel(fg.Sum(fo => fo.MoneyAmount), fg.Key))
-          .Where(fr => fr.Total != 0)
-          .OrderBy(fr => fr.Master.GetDisplayName());
-
-      return
-        await
-          ExportWithCustomFronend(summary, "money-summary", ExportType.Csv,
-            new MoneySummaryByMasterExporter(UriService),
-            project.ProjectName);
-    }
 
     public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
     {
@@ -291,5 +301,31 @@ namespace JoinRpg.Web.Controllers
         return RedirectToAction("Setup", new { viewModel.ProjectId });
       }
     }
+
+      [MasterAuthorize()]
+      public async Task<ActionResult> ByMaster(int projectId, int masterId)
+      {
+          var project = await ProjectRepository.GetProjectWithFinances(projectId);
+          var transfers =
+              await FinanceReportRepository.GetMoneyTransfersForMaster(projectId, masterId);
+          var user = await UserRepository.GetById(masterId);
+
+          var operations = project.FinanceOperations
+              .Where(fo => fo.State == FinanceOperationState.Approved).ToArray();
+
+          var payments = project.PaymentTypes
+              .Where(pt => pt.UserId == masterId)
+              .Select(pt => new PaymentTypeSummaryViewModel(pt, project.FinanceOperations))
+              .Where(m => m.Total != 0).OrderByDescending(m => m.Total).ToArray();
+
+
+          var viewModel = new MoneyInfoForUserViewModel(project,
+              transfers,
+              user,
+              new UrlHelper(ControllerContext.RequestContext),
+              operations,
+              payments);
+          return View(viewModel);
+      }
   }
 }

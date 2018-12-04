@@ -14,9 +14,7 @@ namespace JoinRpg.Dal.Impl.Migrations
                         Id = c.Int(nullable: false, identity: true),
                         ProjectId = c.Int(nullable: false),
                         SenderId = c.Int(nullable: false),
-                        SenderState = c.Int(nullable: false),
                         ReceiverId = c.Int(nullable: false),
-                        ReceiverState = c.Int(nullable: false),
                         Amount = c.Int(nullable: false),
                         ResultState = c.Int(nullable: false),
                         Created = c.DateTimeOffset(nullable: false, precision: 7),
@@ -26,11 +24,11 @@ namespace JoinRpg.Dal.Impl.Migrations
                         OperationDate = c.DateTimeOffset(nullable: false, precision: 7),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Users", t => t.ChangedById, cascadeDelete: true)
-                .ForeignKey("dbo.Users", t => t.CreatedById, cascadeDelete: true)
+                .ForeignKey("dbo.Users", t => t.ChangedById)
+                .ForeignKey("dbo.Users", t => t.CreatedById)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
-                .ForeignKey("dbo.Users", t => t.ReceiverId, cascadeDelete: true)
-                .ForeignKey("dbo.Users", t => t.SenderId, cascadeDelete: true)
+                .ForeignKey("dbo.Users", t => t.ReceiverId)
+                .ForeignKey("dbo.Users", t => t.SenderId)
                 .Index(t => t.ProjectId)
                 .Index(t => t.SenderId)
                 .Index(t => t.ReceiverId)
