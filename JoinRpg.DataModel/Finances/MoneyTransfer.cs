@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel.Finances
 {
@@ -38,18 +37,12 @@ namespace JoinRpg.DataModel.Finances
         public DateTimeOffset OperationDate { get; set; }
     }
 
-    public class MoneyTransferText
-    {
-        public int MoneyTransferId { get; set; }
-        [NotNull]
-        public MarkdownString Text { get; set; } = new MarkdownString();
-    }
-
     public enum MoneyTransferState
     {
         Approved,
         Declined,
         PendingForReceiver,
         PendingForSender,
+        PendingForBoth,
     }
 }

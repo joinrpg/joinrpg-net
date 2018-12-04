@@ -125,6 +125,7 @@
                         <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Оплаченные отклоненные заявки", "PaidDeclined", "ClaimList", new { Model.ProjectId }, null)</li>
                         <li role="separator" class="divider"></li>
+                        <li>@Html.ActionLink("Отметить расход", "Create", "Transfer", new { Model.ProjectId }, null)</li>
                         <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
                         <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Настройка финансов", "Setup", "Finances", new { Model.ProjectId }, null)</li>
                         @if (Model.EnableAccommodation)

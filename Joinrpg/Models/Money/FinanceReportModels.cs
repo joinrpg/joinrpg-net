@@ -184,27 +184,23 @@ namespace JoinRpg.Web.Models
         }
     }
 
-    public class  MoneyTransferListItemViewModel
+    public class  MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     {
-        [Display(Name = "Сумма денег"), Required]
-        public int Money { get; }
+        [Display(Name = "Внес"), Required]
+        public User MarkingMaster { get; set; }
+
+        [Display(Name = "Статус")]
+        public MoneyTransferStateViewModel State { get; set; }
 
         [Display(Name = "От")]
-        public User Sender { get; }
+        public User Sender { get; set; }
 
         [Display(Name = "Кому")]
-        public User Receiver { get; }
-
-        [Display(Name = "Внес"), Required]
-        public User MarkingMaster { get; }
-
-        [Display(Name = "Дата перевода"), Required, DateShouldBeInPast]
-        public DateTime OperationDate { get; }
-
-        public MoneyTransferStateViewModel State { get; }
+        public User Receiver { get; set; }
 
         public MoneyTransferListItemViewModel(MoneyTransfer fo)
         {
+            ProjectId = fo.ProjectId;
             Sender = fo.Sender;
             Receiver = fo.Sender;
             MarkingMaster = fo.CreatedBy;

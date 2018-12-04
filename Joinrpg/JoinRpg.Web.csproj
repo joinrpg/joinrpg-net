@@ -219,6 +219,7 @@
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
+    <Compile Include="Controllers\Money\TransferController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
@@ -248,6 +249,7 @@
     <Compile Include="Models\GameRolesReportViewModel.cs" />
     <Compile Include="Models\InviteRequestViewModel.cs" />
     <Compile Include="Models\Money\Enums.cs" />
+    <Compile Include="Models\Money\MoneyTransferViewModel.cs" />
     <Compile Include="Models\Plot\PublishPlotElementViewModel.cs" />
     <Compile Include="Models\Reports\Report2DResultViewModel.cs" />
     <Compile Include="WebApiConfig.cs" />
@@ -807,6 +809,7 @@
     <Content Include="Views\Finances\_Operations.cshtml" />
     <Content Include="Views\Finances\_MasterBalance.cshtml" />
     <Content Include="Views\Finances\_PaymentTypes.cshtml" />
+    <Content Include="Views\Transfer\Create.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
