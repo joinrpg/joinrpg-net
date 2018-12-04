@@ -68,7 +68,7 @@ namespace JoinRpg.Web
 
     public class ImprovedSelectListItem : SelectListItem
     {
-        public object ExtraSearch { get; set; }
-        public object Subtext { get; set; }
+        public string ExtraSearch { get; set; }
+        public string Subtext { get; set; }
     }
 }
