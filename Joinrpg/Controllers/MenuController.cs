@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Controllers
 {
   public class MenuController : Common.ControllerGameBase
   {
-    //TODO: Current ASP.net MVC doesn't support async child actions. This limitations will be lifted in ASP.vnext
+    //TODO: Current ASP.net MVC doesn't support async child actions. This limitations will be lifted in ASP.NET Core
     public ActionResult MyProjectDropdown()
     {
       var user = CurrentUserIdOrDefault;
