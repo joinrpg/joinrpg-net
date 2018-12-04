@@ -25,6 +25,10 @@ namespace JoinRpg.Web.Controllers.XGameApi
             CharacterRepository = characterRepository;
         }
 
+        /// <summary>
+        /// Load character list. If you aggressively pull characters,
+        /// please use modifiedSince parameter.
+        /// </summary>
         [HttpGet]
         [Route("")]
         public async Task<IEnumerable<CharacterHeader>> GetList(int projectId,
@@ -43,6 +47,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     });
         }
 
+        /// <summary>
+        /// Character details
+        /// </summary>
         [HttpGet]
         [Route("{characterId}/")]
         public async Task<CharacterInfo> GetOne(int projectId, int characterId)

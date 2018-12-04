@@ -12,96 +12,114 @@ using JoinRpg.Web.XGameApi.Contract;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-  [RoutePrefix("x-game-api/{projectId}/checkin"), XGameAuthorize()]
-  public class CheckInController : XGameApiController
-  {
-    [ProvidesContext]
-    private IClaimsRepository ClaimsRepository { get; }
-
-    [ProvidesContext]
-    private IClaimService ClaimsService { get; }
-
-
-    public CheckInController(IProjectRepository projectRepository,
-      IClaimsRepository claimsRepository, IClaimService claimsService) : base(projectRepository)
+    [RoutePrefix("x-game-api/{projectId}/checkin"), XGameAuthorize()]
+    public class CheckInController : XGameApiController
     {
-      ClaimsRepository = claimsRepository;
-      ClaimsService = claimsService;
-    }
+        [ProvidesContext]
+        private IClaimsRepository ClaimsRepository { get; }
 
-    [Route("allclaims")]
-    public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
-    {
-      return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId, ClaimStatusSpec.ReadyForCheckIn)).Select(claim =>
+        [ProvidesContext]
+        private IClaimService ClaimsService { get; }
 
-        new ClaimHeaderInfo
+
+        public CheckInController(IProjectRepository projectRepository,
+            IClaimsRepository claimsRepository,
+            IClaimService claimsService) : base(projectRepository)
         {
-          ClaimId = claim.ClaimId,
-          CharacterName = claim.CharacterName,
-          Player = new PlayerInfo()
-          {
-            PlayerId = claim.Player.UserId,
-            NickName = claim.Player.GetDisplayName(),
-            FullName = claim.Player.FullName,
-            OtherNicks = claim.Player.Extra?.Nicknames ?? "",
-          },
-        });
-    }
+            ClaimsRepository = claimsRepository;
+            ClaimsService = claimsService;
+        }
 
-
-    [Route("stat")]
-    public async Task<CheckInStats> GetCheckInStat(int projectId)
-    {
-      return new CheckInStats()
-      {
-        CheckIn = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
-          ClaimStatusSpec.CheckedIn)).Count,
-        Ready = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
-          ClaimStatusSpec.ReadyForCheckIn)).Count,
-
-      };
-    }
-    [Route("{claimId}/prepare")]
-    [HttpGet]
-    public async Task<ClaimCheckInValidationResult> PrepareClaimFoCheckIn([FromUri] int projectId,
-      [FromUri] int claimId)
-    {
-      var claim = await ClaimsRepository.GetClaim(projectId, claimId);
-      if (claim == null)
-      {
-        throw new HttpResponseException(HttpStatusCode.NotFound);
-      }
-
-      var validator = new ClaimCheckInValidator(claim);
-      return
-        new ClaimCheckInValidationResult
+        /// <summary>
+        /// Claims that are ready for checkin
+        /// </summary>
+        [Route("allclaims")]
+        public async Task<IEnumerable<ClaimHeaderInfo>> GetClaimsForCheckIn(int projectId)
         {
-          ClaimId = claim.ClaimId,
-          CheckedIn = !validator.NotCheckedInAlready,
-          Approved = validator.IsApproved,
-          CheckInPossible = validator.CanCheckInInPrinciple,
-          EverythingFilled = !validator.NotFilledFields.Any(),
-          ClaimFeeBalance = validator.FeeDue,
-          Handouts =  new[] //TODO FIX ME
-          {
-            new HandoutItem {Label = "Хайратник"},
-            new HandoutItem {Label = "Ленточка"},
-          },
-        };
-    }
+            return (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+                    ClaimStatusSpec.ReadyForCheckIn))
+                .Select(claim =>
 
-    [Route("checkin")]
-    [HttpPost]
-    public async Task<string> CheckinClaim([FromUri] int projectId,
-      [FromBody] CheckInCommand command)
-    {
-      var claim = await ClaimsRepository.GetClaim(projectId, command.ClaimId);
-      if (claim == null)
-      {
-        throw new HttpResponseException(HttpStatusCode.NotFound);
-      }
-      await ClaimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
-      return "OK";
+                    new ClaimHeaderInfo
+                    {
+                        ClaimId = claim.ClaimId,
+                        CharacterName = claim.CharacterName,
+                        Player = new PlayerInfo()
+                        {
+                            PlayerId = claim.Player.UserId,
+                            NickName = claim.Player.GetDisplayName(),
+                            FullName = claim.Player.FullName,
+                            OtherNicks = claim.Player.Extra?.Nicknames ?? "",
+                        },
+                    });
+        }
+
+
+        [Route("stat")]
+        public async Task<CheckInStats> GetCheckInStat(int projectId)
+        {
+            return new CheckInStats()
+            {
+                CheckIn = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+                    ClaimStatusSpec.CheckedIn)).Count,
+                Ready = (await ClaimsRepository.GetClaimHeadersWithPlayer(projectId,
+                    ClaimStatusSpec.ReadyForCheckIn)).Count,
+
+            };
+        }
+
+        /// <summary>
+        /// Stub method. Not tested.
+        /// </summary>
+        [Route("{claimId}/prepare")]
+        [HttpGet]
+        public async Task<ClaimCheckInValidationResult> PrepareClaimFoCheckIn([FromUri]
+            int projectId,
+            [FromUri]
+            int claimId)
+        {
+            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+            if (claim == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            var validator = new ClaimCheckInValidator(claim);
+            return
+                new ClaimCheckInValidationResult
+                {
+                    ClaimId = claim.ClaimId,
+                    CheckedIn = !validator.NotCheckedInAlready,
+                    Approved = validator.IsApproved,
+                    CheckInPossible = validator.CanCheckInInPrinciple,
+                    EverythingFilled = !validator.NotFilledFields.Any(),
+                    ClaimFeeBalance = validator.FeeDue,
+                    Handouts = new[] //TODO FIX ME
+                    {
+                        new HandoutItem {Label = "Хайратник"},
+                        new HandoutItem {Label = "Ленточка"},
+                    },
+                };
+        }
+
+        /// <summary>
+        /// Stub method. Not tested.
+        /// </summary>
+        [Route("checkin")]
+        [HttpPost]
+        public async Task<string> CheckinClaim([FromUri]
+            int projectId,
+            [FromBody]
+            CheckInCommand command)
+        {
+            var claim = await ClaimsRepository.GetClaim(projectId, command.ClaimId);
+            if (claim == null)
+            {
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+
+            await ClaimsService.CheckInClaim(projectId, command.ClaimId, command.MoneyPaid);
+            return "OK";
+        }
     }
-  }
 }
