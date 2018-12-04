@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
