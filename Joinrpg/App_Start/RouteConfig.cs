@@ -159,7 +159,10 @@ namespace JoinRpg.Web
       routes.MapRoute(name: "FinanceExport", url: "{ProjectId}/money.csv/{action}/{token}",
         defaults: new { controller = "Finances", action = "MoneySummary" });
 
-      routes.MapRoute(name: "Finances", url: "{ProjectId}/money/{action}",
+        routes.MapRoute(name: "FinanceByMaster", url: "{ProjectId}/money/bymaster/{masterId}",
+            defaults: new { controller = "Finances", action = "ByMaster" });
+
+            routes.MapRoute(name: "Finances", url: "{ProjectId}/money/{action}",
         defaults: new { controller = "Finances", action = "Setup" });
 
       routes.MapRoute(name: "PrintCOntroller", url: "{ProjectId}/print/{action}",
