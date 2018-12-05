@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -113,7 +113,7 @@ namespace JoinRpg.Web.Models.Plot
                   selector = element => element.PublishedVersion();
               }
 
-              Elements = plots.Where(p => p.ElementType == plotElementType)
+              Elements = plots.Where(p => p.ElementType == plotElementType && p.IsActive == true)
                   .Select(selector)
                   .Where(p => p != null)
                   .Select(
