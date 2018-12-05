@@ -26,30 +26,88 @@
         </th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.State)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Money)&nbsp;&#8381;
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Sender)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Receiver)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MarkingMaster)
-        </td>
-        <td>
-            @item.OperationDate.ToShortDateString()
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MarkingMaster)
-        </td>
-    </tr>
-}
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.State)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Money)&nbsp;&#8381;
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Receiver)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MarkingMaster)
+            </td>
+            <td>
+                @item.OperationDate.ToShortDateString()
+            </td>
+            <td>
+                @if (item.HasApproveAccess)
+                {
+                    <button type="button" class="btn btn-success btn-sm"
+                            data-toggle="modal"
+                            data-target="#approveTransfer"
+                            data-element="@item.Id">
+                        <span class="glyphicon glyphicon-ok"></span>Подтвердить
+                    </button>
+
+                    <button type="button" class="btn btn-danger btn-sm"
+                            data-toggle="modal"
+                            data-target="#rejectTransfer"
+                            data-element="@item.Id">
+                        <span class="glyphicon glyphicon-remove"></span>Отклонить
+                    </button>
+                }
+            </td>
+        </tr>
+    }
 
 </table>
+
+<div class="modal fade require-element-id" id="approveTransfer" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Approve", "Transfer", new { Model.First().ProjectId }, FormMethod.Post))
+            {
+                <input type="hidden" name="moneyTransferId" id="elementId" value="0" />
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Подтвердить перевод денег</h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Подтвердить </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade require-element-id" id="rejectTransfer" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("Decline", "Transfer", new { Model.First().ProjectId }, FormMethod.Post))
+            {
+                <input type="hidden" name="moneyTransferId" id="elementId" value="0" />
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Отклонить перевод денег</h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Отклонить </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+

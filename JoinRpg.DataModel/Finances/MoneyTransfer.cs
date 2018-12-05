@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JoinRpg.DataModel.Finances
 {
-    public class MoneyTransfer
+    public class MoneyTransfer : IProjectEntity
     {
         public int Id { get; set; }
 

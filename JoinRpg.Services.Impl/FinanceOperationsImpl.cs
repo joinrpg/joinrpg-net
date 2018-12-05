@@ -1,6 +1,8 @@
 using System;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -175,9 +177,9 @@ namespace JoinRpg.Services.Impl
 
         public async Task ChangeFee(int projectId, int claimId, int feeValue)
         {
-            var claim = await ClaimsRepository.GetClaim(projectId, claimId);
+            var claim = (await ClaimsRepository.GetClaim(projectId, claimId))
 
-            claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                .RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
 
             AddCommentImpl(claim,
                 null,
@@ -268,7 +270,7 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            if (request.Receiver != CurrentUserId)
+            if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
             {
                 project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
             }
@@ -280,8 +282,6 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            
-
             var transfer = new MoneyTransfer()
             {
                 SenderId = request.Sender,
@@ -292,14 +292,72 @@ namespace JoinRpg.Services.Impl
                 CreatedById = CurrentUserId,
                 OperationDate = request.OperationDate,
                 ProjectId = request.ProjectId,
-                ResultState =
-                    MoneyTransferState.Approved, //We will implement ability to approve /decline
                 ReceiverId = request.Receiver,
             };
+
+            if (CurrentUserId == request.Sender)
+            {
+                transfer.ResultState = MoneyTransferState.PendingForReceiver;
+            } else if (CurrentUserId == request.Receiver)
+            {
+                transfer.ResultState = MoneyTransferState.PendingForSender;
+            }
+            else
+            {
+                transfer.ResultState = MoneyTransferState.PendingForBoth;
+            }
 
             project.MoneyTransfers.Add(transfer);
 
             //TODO send email
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        public async Task MarkTransfer(ApproveRejectTransferRequest request)
+        {
+            var moneyTransfer = await UnitOfWork.GetDbSet<MoneyTransfer>()
+                .Include(transfer => transfer.Project)
+                .Include(transfer => transfer.Sender)
+                .Include(transfer => transfer.Receiver)
+                .SingleAsync(transfer => transfer.Id == request.MoneyTranferId &&
+                                    transfer.ProjectId == request.ProjectId);
+            moneyTransfer.RequestMasterAccess(CurrentUserId);
+
+            switch (moneyTransfer.ResultState)
+            {
+                case MoneyTransferState.Approved:
+                case MoneyTransferState.Declined:
+                    throw new EntityWrongStatusException(moneyTransfer);
+
+                case MoneyTransferState.PendingForReceiver when CurrentUserId == moneyTransfer.ReceiverId:
+                case MoneyTransferState.PendingForSender when CurrentUserId == moneyTransfer.SenderId:
+                    moneyTransfer.ResultState = request.Approved
+                        ? MoneyTransferState.Approved
+                        : MoneyTransferState.Declined;
+                    break;
+
+                case MoneyTransferState.PendingForBoth when CurrentUserId == moneyTransfer.ReceiverId:
+                    moneyTransfer.ResultState = request.Approved
+                        ? MoneyTransferState.PendingForSender
+                        : MoneyTransferState.Declined;
+                    break;
+                case MoneyTransferState.PendingForBoth when CurrentUserId == moneyTransfer.SenderId:
+                    moneyTransfer.ResultState = request.Approved
+                        ? MoneyTransferState.PendingForReceiver
+                        : MoneyTransferState.Declined;
+                    break;
+
+                default: //admin tries to approve with superpowers
+                    moneyTransfer.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    moneyTransfer.ResultState = request.Approved
+                        ? MoneyTransferState.Approved
+                        : MoneyTransferState.Declined;
+                    break;
+            }
+
+            moneyTransfer.ChangedById = CurrentUserId;
+            moneyTransfer.Changed = DateTimeOffset.UtcNow;
 
             await UnitOfWork.SaveChangesAsync();
         }

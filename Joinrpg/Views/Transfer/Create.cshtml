@@ -15,6 +15,10 @@
     
     <div class="form-horizontal">
         <h2>Перевод денег от мастера к мастеру</h2>
+        @if (!Model.HasAdminAccess)
+        {
+            <div class="alert alert-info">Вы можете отмечать переводы только со своим участием.</div>
+        }
         <hr />
         @Html.HiddenFor(model => model.ProjectId)
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
@@ -27,8 +31,6 @@
             </div>
         </div>
 
-        @if (Model.HasAdminAccess)
-        {
             <div class="form-group">
                 @Html.LabelFor(model => model.Receiver, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
@@ -36,17 +38,6 @@
                     @Html.ValidationMessageFor(model => model.Receiver, "", new { @class = "text-danger" })
                 </div>
             </div>
-        }
-        else
-        {
-            @Html.HiddenFor(model => model.Receiver)
-            <div class="form-group">
-                @Html.LabelFor(model => model.Receiver, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    Деньги были переведены мне
-                </div>
-            </div>
-        }
 
         <div class="form-group">
             @Html.LabelFor(model => model.Money, htmlAttributes: new { @class = "control-label col-md-2" })

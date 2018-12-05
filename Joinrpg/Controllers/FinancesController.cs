@@ -98,7 +98,8 @@ namespace JoinRpg.Web.Controllers
               transfers,
               new UrlHelper(ControllerContext.RequestContext),
               project.FinanceOperations.ToArray(),
-              payments);
+              payments,
+              CurrentUserId);
 
           return View(viewModel);
       }
@@ -324,7 +325,8 @@ namespace JoinRpg.Web.Controllers
               user,
               new UrlHelper(ControllerContext.RequestContext),
               operations,
-              payments);
+              payments,
+              CurrentUserId);
           return View(viewModel);
       }
   }

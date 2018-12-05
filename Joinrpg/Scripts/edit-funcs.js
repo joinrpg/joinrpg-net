@@ -74,3 +74,13 @@ if (hash) {
 $(function() {
   $('[data-toggle="tooltip"]').tooltip();
 });
+
+$('.require-element-id')
+    .on('show.bs.modal',
+        function(event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('element');
+            var modal = $(this);
+            modal.find('#elementId').val(id);
+        });
+

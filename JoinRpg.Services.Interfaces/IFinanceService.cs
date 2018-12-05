@@ -55,6 +55,13 @@ namespace JoinRpg.Services.Interfaces
         public DateTime OperationDate { get; set; }
     }
 
+    public class ApproveRejectTransferRequest
+    {
+        public int ProjectId { get; set; }
+        public int MoneyTranferId { get; set; }
+        public bool Approved { get; set; }
+    }
+
     public interface IFinanceService
     {
         Task FeeAcceptedOperation(FeeAcceptedOperationRequest request);
@@ -71,5 +78,6 @@ namespace JoinRpg.Services.Interfaces
         Task RequestPreferentialFee(MarkMeAsPreferentialFeeOperationRequest request);
 
         Task CreateTransfer(CreateTransferRequest request);
+        Task MarkTransfer(ApproveRejectTransferRequest request);
     }
 }

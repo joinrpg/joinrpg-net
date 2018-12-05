@@ -18,7 +18,7 @@ namespace JoinRpg.Web.Models
     {
         public User Master { get; }
 
-        [Display(Name="Общая сумма взносов")]
+        [Display(Name="Денег на руках")]
         public int Total { get; }
 
         [Display(Name = "Получено от других мастеров")]
@@ -101,11 +101,12 @@ namespace JoinRpg.Web.Models
             User master,
             UrlHelper urlHelper,
             IReadOnlyCollection<FinanceOperation> operations,
-            PaymentTypeSummaryViewModel[] payments)
+            PaymentTypeSummaryViewModel[] payments,
+            int currentUserId)
         {
             Transfers = transfers
                 .OrderBy(f => f.Id)
-                .Select(f => new MoneyTransferListItemViewModel(f)).ToArray();
+                .Select(f => new MoneyTransferListItemViewModel(f, currentUserId)).ToArray();
             ProjectId = project.ProjectId;
             UserDetails = new UserProfileDetailsViewModel(master, AccessReason.CoMaster);
 
@@ -187,28 +188,46 @@ namespace JoinRpg.Web.Models
     public class  MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     {
         [Display(Name = "Внес"), Required]
-        public User MarkingMaster { get; set; }
+        public User MarkingMaster { get; }
 
         [Display(Name = "Статус")]
-        public MoneyTransferStateViewModel State { get; set; }
+        public MoneyTransferStateViewModel State { get;  }
 
         [Display(Name = "От")]
-        public User Sender { get; set; }
+        public User Sender { get;  }
 
         [Display(Name = "Кому")]
-        public User Receiver { get; set; }
+        public User Receiver { get;  }
 
-        public MoneyTransferListItemViewModel(MoneyTransfer fo)
+        public bool HasApproveAccess { get; }
+
+        public int Id { get; }
+
+        public MoneyTransferListItemViewModel(MoneyTransfer fo, int currentUserId)
         {
+            Id = fo.Id;
             ProjectId = fo.ProjectId;
             Sender = fo.Sender;
-            Receiver = fo.Sender;
+            Receiver = fo.Receiver;
             MarkingMaster = fo.CreatedBy;
             OperationDate = fo.OperationDate.UtcDateTime;
             State = (MoneyTransferStateViewModel)fo.ResultState;
 
             Money = fo.Amount;
             MarkingMaster = fo.CreatedBy;
+
+            var isPendingSender = State == MoneyTransferStateViewModel.PendingForSender ||
+                        State == MoneyTransferStateViewModel.PendingForBoth;
+
+            var isPendingReceiver = State == MoneyTransferStateViewModel.PendingForReceiver ||
+                              State == MoneyTransferStateViewModel.PendingForBoth;
+            var isPendingAny = isPendingReceiver || isPendingSender;
+
+            HasApproveAccess =
+                (fo.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) &&
+                 isPendingAny)
+                || (currentUserId == Sender.UserId && isPendingSender)
+                || (currentUserId == Receiver.UserId && isPendingReceiver);
         }
     }
 
@@ -248,11 +267,14 @@ namespace JoinRpg.Web.Models
 
         public IReadOnlyCollection<PaymentTypeSummaryViewModel> PaymentTypeSummary { get; }
 
+        public IReadOnlyCollection<MoneyTransferListItemViewModel> Transfers { get; set; }
+
         public MoneyInfoTotalViewModel(Project project,
             IReadOnlyCollection<MoneyTransfer> transfers,
             UrlHelper urlHelper,
             IReadOnlyCollection<FinanceOperation> operations,
-            PaymentTypeSummaryViewModel[] payments)
+            PaymentTypeSummaryViewModel[] payments,
+            int currentUserId)
         {
 
             var masters = operations.Select(fo => fo.PaymentType?.User)
@@ -266,7 +288,11 @@ namespace JoinRpg.Web.Models
 
             Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(operations, transfers, project.ProjectId);
 
+            Transfers = transfers.Select(transfer =>
+                new MoneyTransferListItemViewModel(transfer, currentUserId)).ToArray();
+
             PaymentTypeSummary = payments;
         }
+
     }
 }

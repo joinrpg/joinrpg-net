@@ -90,7 +90,6 @@ namespace JoinRpg.Web.Controllers.Money
             }
 
             return RedirectToAction("MoneySummary", "Finances", new {viewModel.ProjectId});
-
         }
 
 
@@ -99,6 +98,37 @@ namespace JoinRpg.Web.Controllers.Money
             viewModel.Masters = project.GetMasterListViewModel();
             viewModel.HasAdminAccess =
                 project.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+        }
+
+        public async Task<ActionResult> Approve(int projectId, int moneyTransferId)
+            => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
+            {
+                Approved = true,
+                ProjectId = projectId,
+                MoneyTranferId = moneyTransferId,
+            });
+
+        public async Task<ActionResult> Decline(int projectId, int moneyTransferId)
+            => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
+            {
+                Approved = false,
+                ProjectId = projectId,
+                MoneyTranferId = moneyTransferId,
+            });
+
+        private async Task<ActionResult> ApproveRejectTransfer(ApproveRejectTransferRequest request)
+        {
+            try
+            {
+                await FinanceService.MarkTransfer(request);
+            }
+            catch
+            {
+                //TODO handle error
+                return RedirectToAction("MoneySummary", "Finances", new {request.ProjectId});
+            }
+
+            return RedirectToAction("MoneySummary", "Finances", new {request.ProjectId});
         }
     }
 }
