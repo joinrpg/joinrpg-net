@@ -133,6 +133,8 @@ namespace JoinRpg.Web.Models
     {
         [Required(ErrorMessage = "Надо указать причину отказа"), Display(Name ="Причина отказа")]
         public ClaimDenialStatusView DenialStatus { get; set; }
+        [Display(Name = "Удалить персонажа", Description = "Одновременно с отклонением заявки будет удален персонаж")]
+        public bool DeleteCharacter { get; set; }
     }
 }
 
