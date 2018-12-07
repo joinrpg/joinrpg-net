@@ -289,7 +289,8 @@ namespace JoinRpg.Web.Controllers
                   claim.ProjectId,
                   claim.ClaimId,
                   (Claim.DenialStatus) viewModel.DenialStatus,
-                  viewModel.CommentText);
+                  viewModel.CommentText,
+                  viewModel.DeleteCharacter);
 
         return ReturnToClaim(viewModel);
       }

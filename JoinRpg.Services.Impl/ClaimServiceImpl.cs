@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Helpers;
 
 
 namespace JoinRpg.Services.Impl
@@ -396,18 +397,23 @@ namespace JoinRpg.Services.Impl
       }
 
 
-      public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText)
-      {
-          var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
+        public async Task DeclineByMaster(int projectId, int claimId, Claim.DenialStatus claimDenialStatus, string commentText, bool deleteCharacter)
+        {
+            var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
-          claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
+            claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
 
-          claim.MasterDeclinedDate = Now;
-          claim.ClaimStatus = Claim.Status.DeclinedByMaster;
-          claim.ClaimDenialStatus = claimDenialStatus;
+            claim.MasterDeclinedDate = Now;
+            claim.ClaimStatus = Claim.Status.DeclinedByMaster;
+            claim.ClaimDenialStatus = claimDenialStatus;
 
-          var roomEmail = await CommonClaimDecline(claim);
-          await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
+            var roomEmail = await CommonClaimDecline(claim);
+            if (deleteCharacter)
+            {
+                await DeleteCharacter(projectId, claim.Character.CharacterId, CurrentUserId);
+            }
+
+            await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
 
             var email =
               await
@@ -418,15 +424,39 @@ namespace JoinRpg.Services.Impl
                       null,
                       CommentExtraAction.DeclineByMaster);
 
-          await UnitOfWork.SaveChangesAsync();
-          await EmailService.Email(email);
-          if (roomEmail != null)
-          {
-              await EmailService.Email(roomEmail);
-          }
-      }
+            await UnitOfWork.SaveChangesAsync();
+            await EmailService.Email(email);
+            if (roomEmail != null)
+            {
+                await EmailService.Email(roomEmail);
+            }
+        }
+      
+        public async Task DeleteCharacter(int projectId, int characterId, int currentUserId)
+        {
+            var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
-      [ItemCanBeNull]
+            character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            character.EnsureProjectActive();
+
+            if (character.HasActiveClaims())
+            {
+                return;
+            }
+
+            MarkTreeModified(character.Project);
+
+            if (character.CanBePermanentlyDeleted)
+            {
+                character.DirectlyRelatedPlotElements.CleanLinksList();
+            }
+
+            character.IsActive = false;
+            MarkChanged(character);
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        [ItemCanBeNull]
       private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
       {
           MarkCharacterChangedIfApproved(claim);
