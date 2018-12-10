@@ -1,4 +1,5 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.MasterBalanceViewModel>
+﻿@using JoinRpg.Web.App_Code
+@model IEnumerable<JoinRpg.Web.Models.MasterBalanceViewModel>
 
 <table class="table">
     <tr>
@@ -33,19 +34,19 @@
             }
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Total)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.Total)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.FeeBalance)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.FeeBalance)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.ReceiveBalance)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.ReceiveBalance)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.SendBalance)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.SendBalance)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.ExpensesBalance)
+            @Html.RenderPriceElement(item.ExpensesBalance)
         </td>
     </tr>
 }

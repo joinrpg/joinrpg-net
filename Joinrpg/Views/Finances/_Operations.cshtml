@@ -1,4 +1,5 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
+﻿@using JoinRpg.Web.App_Code
+@model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
 
 <table class="table">
     <tr>
@@ -38,10 +39,10 @@
             @Html.DisplayFor(modelItem => item.FinanceOperationId)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Money)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.Money)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.FeeChange)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.FeeChange)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.PaymentMaster)

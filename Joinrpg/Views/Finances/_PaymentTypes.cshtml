@@ -1,4 +1,5 @@
-﻿@model IEnumerable<JoinRpg.Web.Models.PaymentTypeSummaryViewModel>
+﻿@using JoinRpg.Web.App_Code
+@model IEnumerable<JoinRpg.Web.Models.PaymentTypeSummaryViewModel>
 
 <table class="table">
     <tr>
@@ -23,10 +24,10 @@
         </td>
         <td>@Html.DisplayFor(modelItem => item.Master)</td>
         <td>
-            @Html.DisplayFor(modelItem => item.Total)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.Total)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Moderation)&nbsp;&#8381;
+            @Html.RenderPriceElement(item.Moderation)
         </td>
     </tr>
 }

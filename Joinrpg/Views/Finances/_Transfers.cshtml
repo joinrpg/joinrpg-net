@@ -1,4 +1,5 @@
-﻿@model  IEnumerable<JoinRpg.Web.Models.MoneyTransferListItemViewModel>
+﻿@using JoinRpg.Web.App_Code
+@model  IEnumerable<JoinRpg.Web.Models.MoneyTransferListItemViewModel>
 
 <table class="table">
     <tr>
@@ -32,7 +33,7 @@
                 @Html.DisplayFor(modelItem => item.State)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Money)&nbsp;&#8381;
+                @Html.RenderPriceElement(item.Money)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Sender)
@@ -69,45 +70,10 @@
 
 </table>
 
-<div class="modal fade require-element-id" id="approveTransfer" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("Approve", "Transfer", new { Model.First().ProjectId }, FormMethod.Post))
-            {
-                <input type="hidden" name="moneyTransferId" id="elementId" value="0" />
-                @Html.AntiForgeryToken()
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Подтвердить перевод денег</h4>
-                </div>
+@if (Model.Any())
+{
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="submit-button">Подтвердить </button>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
-<div class="modal fade require-element-id" id="rejectTransfer" tabindex="-1" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("Decline", "Transfer", new { Model.First().ProjectId }, FormMethod.Post))
-            {
-                <input type="hidden" name="moneyTransferId" id="elementId" value="0" />
-                @Html.AntiForgeryToken()
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Отклонить перевод денег</h4>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="submit-button">Отклонить </button>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
+@Html.Partial("_ApproveTransferDialog", Model.First().ProjectId)
+    @Html.Partial("_DeclineTransferDialog", Model.First().ProjectId)
+    
+}
