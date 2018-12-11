@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Joinrpg.Markdown;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
@@ -202,6 +204,7 @@ namespace JoinRpg.Web.Models
         public bool HasApproveAccess { get; }
 
         public int Id { get; }
+        public IHtmlString Comment { get; }
 
         public MoneyTransferListItemViewModel(MoneyTransfer fo, int currentUserId)
         {
@@ -228,6 +231,8 @@ namespace JoinRpg.Web.Models
                  isPendingAny)
                 || (currentUserId == Sender.UserId && isPendingSender)
                 || (currentUserId == Receiver.UserId && isPendingReceiver);
+
+            Comment = fo.TransferText.Text.ToHtmlString();
         }
     }
 

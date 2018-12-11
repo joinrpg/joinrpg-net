@@ -18,12 +18,14 @@ namespace JoinRpg.Dal.Impl.Repositories
 
         public Task<List<MoneyTransfer>> GetMoneyTransfersForMaster(int projectId, int masterId)
             => Ctx.Set<MoneyTransfer>()
+                .Include(mt => mt.TransferText)
                 .Where(mt => mt.SenderId == masterId || mt.ReceiverId == masterId)
                 .Where(mt => mt.ProjectId == projectId)
                 .ToListAsync();
 
         public Task<List<MoneyTransfer>> GetAllMoneyTransfers(int projectId)
             => Ctx.Set<MoneyTransfer>()
+                .Include(mt => mt.TransferText)
                 .Where(mt => mt.ProjectId == projectId)
                 .ToListAsync();
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using JoinRpg.DataModel;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Web.Models.CharacterGroups;
 
@@ -32,6 +31,9 @@ namespace JoinRpg.Web.Models.Money
 
         [Display(Name = "Кому")]
         public int Receiver { get; set; }
+
+        [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"), UIHint("MarkdownString")]
+        public string CommentText { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

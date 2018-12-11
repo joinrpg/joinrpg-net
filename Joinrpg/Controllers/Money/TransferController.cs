@@ -77,6 +77,7 @@ namespace JoinRpg.Web.Controllers.Money
                 Receiver = viewModel.Receiver,
                 Amount = viewModel.Money,
                 OperationDate = viewModel.OperationDate,
+                Comment = viewModel.CommentText,
             };
 
             try

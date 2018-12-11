@@ -53,6 +53,7 @@ namespace JoinRpg.Services.Interfaces
         public int Receiver { get; set; }
         public int Amount { get; set; }
         public DateTime OperationDate { get; set; }
+        public string Comment { get; set; }
     }
 
     public class ApproveRejectTransferRequest

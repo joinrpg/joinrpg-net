@@ -293,6 +293,10 @@ namespace JoinRpg.Services.Impl
                 OperationDate = request.OperationDate,
                 ProjectId = request.ProjectId,
                 ReceiverId = request.Receiver,
+                TransferText = new TransferText()
+                {
+                    Text = new MarkdownString(Required(request.Comment)),
+                },
             };
 
             if (CurrentUserId == request.Sender)
