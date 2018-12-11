@@ -1,7 +1,10 @@
+using JoinRpg.DataModel;
+using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.TestHelpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Money;
 using Xunit;
 
 namespace JoinRpg.Web.Test
@@ -23,5 +26,13 @@ namespace JoinRpg.Web.Test
 
         [Fact]
         public void FinanceOperation() => EnumerationTestHelper.CheckEnums<FinanceOperationActionView, FinanceOperationAction>();
+
+        [Fact]
+        public void FinanceState()
+            => EnumerationTestHelper.CheckEnums<FinanceOperationState, FinanceOperationStateViewModel>();
+
+        [Fact]
+        public void MoneyTransferState()
+            => EnumerationTestHelper.CheckEnums<MoneyTransferState, MoneyTransferStateViewModel>();
     }
 }

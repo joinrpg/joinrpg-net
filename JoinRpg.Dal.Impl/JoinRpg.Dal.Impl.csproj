@@ -442,6 +442,10 @@
     <Compile Include="Migrations\201809071005431_ClaimUpdate.Designer.cs">
       <DependentUpon>201809071005431_ClaimUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201812041004384_AddMoneyTransfer.cs" />
+    <Compile Include="Migrations\201812041004384_AddMoneyTransfer.Designer.cs">
+      <DependentUpon>201812041004384_AddMoneyTransfer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="MyUserStore.cs" />
@@ -452,6 +456,7 @@
     <Compile Include="Repositories\CharacterRepositoryImpl.cs" />
     <Compile Include="Repositories\ClaimPredicates.cs" />
     <Compile Include="Repositories\ClaimsRepositoryImpl.cs" />
+    <Compile Include="Repositories\FinanceReportRepositoryImpl.cs" />
     <Compile Include="Repositories\ForumRepositoryImpl.cs" />
     <Compile Include="Repositories\GameRepositoryImplBase.cs" />
     <Compile Include="Repositories\PlotRepositoryImpl.cs" />
@@ -761,6 +766,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809071005431_ClaimUpdate.resx">
       <DependentUpon>201809071005431_ClaimUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201812041004384_AddMoneyTransfer.resx">
+      <DependentUpon>201812041004384_AddMoneyTransfer.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

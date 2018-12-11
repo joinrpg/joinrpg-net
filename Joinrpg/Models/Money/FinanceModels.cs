@@ -4,13 +4,13 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
-using System.Web.Mvc;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.Money;
 
 namespace JoinRpg.Web.Models
 {
@@ -23,17 +23,7 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public static string ToTitleString(this FinanceOperationState self)
         {
-            switch (self)
-            {
-                case FinanceOperationState.Approved:
-                    return "Подтверждено";
-                case FinanceOperationState.Proposed:
-                    return "Ожидает подтверждения";
-                case FinanceOperationState.Declined:
-                    return "Отклонено";
-                default:
-                    return "";
-            }
+            return ((FinanceOperationStateViewModel)self).GetDisplayName();
         }
 
         /// <summary>
@@ -47,8 +37,10 @@ namespace JoinRpg.Web.Models
                     return "unapprovedPayment";
                 case FinanceOperationState.Declined:
                     return "unapprovedPayment danger";
-                default:
+                case FinanceOperationState.Approved:
                     return "";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(self));
             }
         }
     }
@@ -87,83 +79,6 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool HasUnApprovedPayments { get; set; }
-  }
-
-  public class FinOperationListViewModel : IOperationsAwareView
-  {
-    public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; }
-
-    public int? ProjectId { get; }
-
-    public IReadOnlyCollection<int> ClaimIds { get; }
-    public IReadOnlyCollection<int> CharacterIds => new int[] {};
-
-    public FinOperationListViewModel(Project project, UrlHelper urlHelper, IReadOnlyCollection<FinanceOperation> operations)
-    {
-      Items = operations
-        .OrderBy(f => f.CommentId)
-        .Select(f => new FinOperationListItemViewModel(f, urlHelper)).ToArray();
-      ProjectId = project.ProjectId;
-      ClaimIds = operations.Select(c => c.ClaimId).Distinct().ToArray();
-    }
-  }
-
-  public class FinOperationListItemViewModel
-  {
-    [Display(Name="# операции")]
-    public int FinanceOperationId { get; }
-
-    [Display(Name = "Внесено денег"), Required]
-    public int Money { get; }
-
-    [Display(Name = "Изменение взноса"), Required]
-    public int FeeChange { get;  }
-
-    [Display(Name = "Оплачено мастеру")]
-    public User PaymentMaster { get;  }
-
-    [Display(Name = "Способ оплаты"), Required]
-    public string PaymentTypeName { get; }
-
-    [Display(Name = "Отметил"), Required]
-    public User MarkingMaster { get; }
-
-    [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
-    public DateTime OperationDate { get;  }
-
-    [Display(Name = "Заявка"), Required]
-    public string Claim { get; }
-
-    [Url,Display(Name="Ссылка на заявку")]
-    public string ClaimLink { get; }
-
-    [Display(Name = "Игрок"), Required]
-    public User Player { get; }
-
-    public FinOperationListItemViewModel (FinanceOperation fo, UrlHelper url)
-    {
-      PaymentTypeName = fo.PaymentType?.GetDisplayName();
-      PaymentMaster = fo.PaymentType?.User;
-      Claim = fo.Claim.Name;
-      FeeChange = fo.FeeChange;
-      Money = fo.MoneyAmount;
-      OperationDate = fo.OperationDate;
-      FinanceOperationId = fo.CommentId;
-      MarkingMaster = fo.Comment.Author;
-      Player = fo.Claim.Player;
-      ClaimLink = url.Action("Edit", "Claim", new {fo.ProjectId, fo.ClaimId},
-        url.RequestContext.HttpContext.Request.Url?.Scheme ?? "http");
-    }
-  }
-
-  public class PaymentTypeSummaryViewModel
-  {
-    [Display(Name="Способ приема оплаты")]
-    public string Name { get; set; }
-    [Display(Name = "Мастер")]
-    public User Master { get; set; }
-    [Display(Name = "Итого")]
-    public int Total { get; set; }
   }
 
   public abstract class PaymentTypeViewModelBase

@@ -51,18 +51,25 @@ namespace JoinRpg.Web.Models.CharacterGroups
   {
     public string Id { get; set; }
     public string Name { get; set; }
+      public string FullName { get; set; }
   }
 
-  public static class MasterListExtensions
-  {
-    public static IEnumerable<MasterListItemViewModel> GetMasterListViewModel(this Project project)
+    public static class MasterListExtensions
     {
-      return project.ProjectAcls.Select(
-        acl => new MasterListItemViewModel() {Id = acl.UserId.ToString(), Name = acl.User.GetDisplayName() }).OrderBy(a => a.Name);
+        public static IEnumerable<MasterListItemViewModel> GetMasterListViewModel(
+            this Project project)
+        {
+            return project.ProjectAcls.Select(
+                    acl => new MasterListItemViewModel()
+                    {
+                        Id = acl.UserId.ToString(), Name = acl.User.GetDisplayName(),
+                        FullName = acl.User.FullName,
+                    })
+                .OrderBy(a => a.Name);
+        }
     }
-  }
 
-  public enum DirectClaimSettings
+    public enum DirectClaimSettings
   {
     [Display(Name= "Заявки вне прописанных мастерами персонажей запрещены")]
     NoDirectClaims,

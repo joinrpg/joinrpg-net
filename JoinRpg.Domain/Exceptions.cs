@@ -110,7 +110,15 @@ namespace JoinRpg.Domain
     }
   }
 
-  public class ClaimAlreadyPresentException : JoinRpgBaseException
+    public class EntityWrongStatusException : JoinRpgProjectEntityException
+    {
+        public EntityWrongStatusException(IProjectEntity entity)
+            : base(entity, $"This operation can not be performed on entity with this status")
+        {
+        }
+    }
+
+    public class ClaimAlreadyPresentException : JoinRpgBaseException
   {
     public ClaimAlreadyPresentException(): base("Claim already present for this character or group.") { }
   }

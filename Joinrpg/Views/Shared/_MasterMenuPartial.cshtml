@@ -22,17 +22,18 @@
 
                         <ul class="dropdown-menu">
                             <li>
-                                @Html.ActionLink("Мои игроки", "Responsible", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои игроки", "Responsible", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои проблемные заявки", "ResponsibleProblems", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
                             <li>
-                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "ClaimList", new {Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId()}, null)
+                                @Html.ActionLink("Мои обсуждаемые заявки", "ResponsibleDiscussing", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
                             <li>
                                 @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.Identity.GetUserId() }, null)
                             </li>
+                            <li>@Html.ActionLink("Мои деньги", "ByMaster", "Finances", new { Model.ProjectId, MasterId = User.Identity.GetUserId() }, null)</li>
                         </ul>
                     </li>
                     <li class="dropdown">
@@ -119,17 +120,18 @@
                   <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Финансы/АХЧ<span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                      <li>@Html.ActionLink("Все операции", "Operations", "Finances", new {Model.ProjectId}, null)</li>
-                      <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new {Model.ProjectId}, null)</li>
-                      <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new {Model.ProjectId}, null)</li>
-                      <li>@Html.ActionLink("Оплаченные отклоненные заявки", "PaidDeclined", "ClaimList", new { Model.ProjectId }, null)</li>
-                      <li role="separator" class="divider"></li>
-                      <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new {Model.ProjectId}, null)</li>
-                      <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Настройка финансов", "Setup", "Finances", new {Model.ProjectId}, null)</li>
-                      @if (Model.EnableAccommodation)
-                      {
-                        <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new {Model.ProjectId}, null)</li>
-                      }
+                        <li>@Html.ActionLink("Все операции", "Operations", "Finances", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("На модерации", "Moderation", "Finances", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("Неоплаченные принятые заявки", "WaitingForFee", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("Оплаченные отклоненные заявки", "PaidDeclined", "ClaimList", new { Model.ProjectId }, null)</li>
+                        <li role="separator" class="divider"></li>
+                        <li>@Html.ActionLink("Отметить перевод", "Create", "Transfer", new { Model.ProjectId }, null)</li>
+                        <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
+                        <li @GetDisabled(Model.AccessToProject.CanManageMoney)>@Html.ActionLink("Настройка финансов", "Setup", "Finances", new { Model.ProjectId }, null)</li>
+                        @if (Model.EnableAccommodation)
+                        {
+                            <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new { Model.ProjectId }, null)</li>
+                        }
                     </ul>
                   </li>
                   <li class="dropdown">

@@ -1,0 +1,84 @@
+﻿@using JoinRpg.Web.App_Code
+@model  IEnumerable<JoinRpg.Web.Models.MoneyTransferListItemViewModel>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.State)
+        </th>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.Money)
+        </th>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.Sender)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.Receiver)
+        </th>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.MarkingMaster)
+        </th>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.OperationDate)
+        </th>
+        <th>
+
+        </th>
+    </tr>
+
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.State)
+            </td>
+            <td>
+                @Html.RenderPriceElement(item.Money)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Sender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Receiver)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MarkingMaster)
+            </td>
+            <td>
+                @item.OperationDate.ToShortDateString()
+            </td>
+            <td>
+                @if (item.HasApproveAccess)
+                {
+                    <button type="button" class="btn btn-success btn-sm"
+                            data-toggle="modal"
+                            data-target="#approveTransfer"
+                            data-element="@item.Id">
+                        <span class="glyphicon glyphicon-ok"></span>Подтвердить
+                    </button>
+
+                    <button type="button" class="btn btn-danger btn-sm"
+                            data-toggle="modal"
+                            data-target="#rejectTransfer"
+                            data-element="@item.Id">
+                        <span class="glyphicon glyphicon-remove"></span>Отклонить
+                    </button>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="0">
+                @item.Comment
+            </td>
+        </tr>
+    }
+
+</table>
+
+@if (Model.Any())
+{
+
+    @Html.Partial("_ApproveTransferDialog", Model.First())
+    @Html.Partial("_DeclineTransferDialog", Model.First())
+
+}

@@ -58,7 +58,8 @@
     <Compile Include="Comment.cs" />
     <Compile Include="CommentDiscussion.cs" />
     <Compile Include="Extensions\AccommodationRequestExtensions.cs" />
-    <Compile Include="FinanceOperation.cs" />
+    <Compile Include="Finances\FinanceOperation.cs" />
+    <Compile Include="Finances\MoneyTransfer.cs" />
     <Compile Include="ForumThread.cs" />
     <Compile Include="GameReportTemplate.cs" />
     <Compile Include="ICreatedUpdatedTracked.cs" />
