@@ -1,11 +1,11 @@
-﻿@model int
+﻿@model JoinRpg.Web.Models.IProjectIdAware
 
 <div class="modal fade require-element-id" id="approveTransfer" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("Approve", "Transfer", new {ProjectId = Model}, FormMethod.Post))
+            @using (Html.BeginForm("Approve", "Transfer", new { Model.ProjectId }, FormMethod.Post))
             {
-                <input type="hidden" name="moneyTransferId" id="elementId" value="0"/>
+                <input type="hidden" name="moneyTransferId" id="elementId" value="0" />
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>

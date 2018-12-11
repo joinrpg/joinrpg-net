@@ -8,7 +8,7 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Money
 {
-    public abstract class MoneyTransferViewModelBase
+    public abstract class MoneyTransferViewModelBase : IProjectIdAware
     {
         [Display(Name = "Сумма денег"), Required, Range(1, 1000000)]
         public int Money { get; set; }

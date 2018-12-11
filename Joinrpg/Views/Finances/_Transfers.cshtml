@@ -73,7 +73,7 @@
 @if (Model.Any())
 {
 
-@Html.Partial("_ApproveTransferDialog", Model.First().ProjectId)
-    @Html.Partial("_DeclineTransferDialog", Model.First().ProjectId)
-    
+    @Html.Partial("_ApproveTransferDialog", Model.First())
+    @Html.Partial("_DeclineTransferDialog", Model.First())
+
 }
