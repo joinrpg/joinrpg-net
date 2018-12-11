@@ -35,20 +35,34 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.CreatedById)
                 .Index(t => t.ChangedById);
             
+            CreateTable(
+                "dbo.TransferTexts",
+                c => new
+                    {
+                        MoneyTransferId = c.Int(nullable: false),
+                        Text_Contents = c.String(),
+                    })
+                .PrimaryKey(t => t.MoneyTransferId)
+                .ForeignKey("dbo.MoneyTransfers", t => t.MoneyTransferId)
+                .Index(t => t.MoneyTransferId);
+            
         }
         
         public override void Down()
         {
+            DropForeignKey("dbo.TransferTexts", "MoneyTransferId", "dbo.MoneyTransfers");
             DropForeignKey("dbo.MoneyTransfers", "SenderId", "dbo.Users");
             DropForeignKey("dbo.MoneyTransfers", "ReceiverId", "dbo.Users");
             DropForeignKey("dbo.MoneyTransfers", "ProjectId", "dbo.Projects");
             DropForeignKey("dbo.MoneyTransfers", "CreatedById", "dbo.Users");
             DropForeignKey("dbo.MoneyTransfers", "ChangedById", "dbo.Users");
+            DropIndex("dbo.TransferTexts", new[] { "MoneyTransferId" });
             DropIndex("dbo.MoneyTransfers", new[] { "ChangedById" });
             DropIndex("dbo.MoneyTransfers", new[] { "CreatedById" });
             DropIndex("dbo.MoneyTransfers", new[] { "ReceiverId" });
             DropIndex("dbo.MoneyTransfers", new[] { "SenderId" });
             DropIndex("dbo.MoneyTransfers", new[] { "ProjectId" });
+            DropTable("dbo.TransferTexts");
             DropTable("dbo.MoneyTransfers");
         }
     }

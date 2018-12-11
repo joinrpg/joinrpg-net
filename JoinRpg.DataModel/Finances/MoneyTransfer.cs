@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel.Finances
 {
@@ -35,6 +36,10 @@ namespace JoinRpg.DataModel.Finances
         public virtual User ChangedBy { get; set; }
 
         public DateTimeOffset OperationDate { get; set; }
+
+
+        [NotNull]
+        public virtual TransferText TransferText { get; set; }
     }
 
     public enum MoneyTransferState
@@ -44,5 +49,12 @@ namespace JoinRpg.DataModel.Finances
         PendingForReceiver,
         PendingForSender,
         PendingForBoth,
+    }
+
+    public class TransferText
+    {
+        public int MoneyTransferId { get; set; }
+        [NotNull]
+        public MarkdownString Text { get; set; } = new MarkdownString();
     }
 }

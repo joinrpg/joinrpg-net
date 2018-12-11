@@ -186,6 +186,9 @@ namespace JoinRpg.Dal.Impl
             entity.HasRequired(e => e.Receiver).WithMany().WillCascadeOnDelete(false);
             entity.HasRequired(e => e.CreatedBy).WithMany().WillCascadeOnDelete(false);
             entity.HasRequired(e => e.ChangedBy).WithMany().WillCascadeOnDelete(false);
+
+            entity.HasRequired(comment => comment.TransferText).WithRequiredPrincipal();
+            modelBuilder.Entity<TransferText>().HasKey(pd => pd.MoneyTransferId);
         }
     }
 }
