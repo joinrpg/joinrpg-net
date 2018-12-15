@@ -32,7 +32,12 @@ namespace JoinRpg.Web.Models.Money
         [Display(Name = "Кому")]
         public int Receiver { get; set; }
 
-        [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"), UIHint("MarkdownString")]
+        [Required(ErrorMessage = "Заполните текст комментария"),
+         Display(
+             Name = "Текст комментария",
+             Description = "Укажите при каких обстоятельствах и когда вы передавали деньги. Например: на мастерской стрелке у такого-то дома, кинул на Тинькофф. Это нужно, чтобы противоположной стороне легче вспомнилось. "
+             ),
+         UIHint("MarkdownString")]
         public string CommentText { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
