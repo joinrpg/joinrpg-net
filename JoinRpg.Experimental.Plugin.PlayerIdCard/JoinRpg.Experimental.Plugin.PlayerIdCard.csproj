@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Experimental.Plugin.PlayerIdCard</AssemblyTitle>
     <Product>JoinRpg.Experimental.Plugin.PlayerIdCard</Product>
     <Copyright>Copyright ©  2017</Copyright>

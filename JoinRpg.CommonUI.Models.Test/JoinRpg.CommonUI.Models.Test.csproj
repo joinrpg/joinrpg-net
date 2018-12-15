@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.CommonUI.Models.Test</AssemblyTitle>
     <Product>JoinRpg.CommonUI.Models.Test</Product>
     <Copyright>Copyright ©  2015</Copyright>

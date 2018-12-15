@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Services.Email.Test</AssemblyTitle>
     <Product>JoinRpg.Services.Email.Test</Product>
     <Copyright>Copyright ©  2017</Copyright>

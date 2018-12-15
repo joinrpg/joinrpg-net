@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Markdown.Test</AssemblyTitle>
     <Product>JoinRpg.Markdown.Test</Product>
     <Copyright>Copyright ©  2016</Copyright>

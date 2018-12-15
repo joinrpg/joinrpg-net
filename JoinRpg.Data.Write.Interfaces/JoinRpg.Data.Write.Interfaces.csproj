@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Data.Write.Interfaces</AssemblyTitle>
     <Product>JoinRpg.Data.Write.Interfaces</Product>
     <Copyright>Copyright ©  2015</Copyright>

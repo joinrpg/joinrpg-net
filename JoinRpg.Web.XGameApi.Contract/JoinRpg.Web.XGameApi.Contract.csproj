@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Web.XGameApi.Contract</AssemblyTitle>
     <Product>JoinRpg.Web.XGameApi.Contract</Product>
     <Copyright>Copyright ©  2017</Copyright>

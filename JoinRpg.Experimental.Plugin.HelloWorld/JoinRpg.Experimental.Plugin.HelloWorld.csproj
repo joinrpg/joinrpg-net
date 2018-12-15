@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Experimental.Plugin.HelloWorld</AssemblyTitle>
     <Product>JoinRpg.Experimental.Plugin.HelloWorld</Product>
     <Copyright>Copyright ©  2016</Copyright>

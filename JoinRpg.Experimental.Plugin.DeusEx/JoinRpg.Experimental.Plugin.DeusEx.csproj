@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Experimental.Plugin.DeusEx</AssemblyTitle>
     <Product>JoinRpg.Experimental.Plugin.DeusEx</Product>
     <Copyright>Copyright ©  2017</Copyright>

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.DataModel.Mocks</AssemblyTitle>
     <Product>JoinRpg.DataModel.Mocks</Product>
     <Copyright>Copyright ©  2016</Copyright>

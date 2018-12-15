@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers.Web.Test</AssemblyTitle>
     <Product>JoinRpg.Helpers.Web.Test</Product>
     <Copyright>Copyright ©  2016</Copyright>
