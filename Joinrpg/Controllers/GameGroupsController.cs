@@ -21,9 +21,14 @@ namespace JoinRpg.Web.Controllers
 {
   public class GameGroupsController : ControllerGameBase
   {
-    private readonly IUserRepository _userRepository;
 
-    [HttpGet]
+      public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
+          IProjectService projectService, IUserRepository userRepository, IExportDataService exportDataService)
+          : base(userManager, projectRepository, projectService, exportDataService, userRepository)
+      {
+      }
+
+      [HttpGet]
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -337,13 +342,6 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IUserRepository userRepository, IExportDataService exportDataService)
-      : base(userManager, projectRepository, projectService, exportDataService)
-    {
-      _userRepository = userRepository;
-    }
-
     [HttpGet]
     [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> AddGroup(int projectid, int charactergroupid)
@@ -435,7 +433,7 @@ namespace JoinRpg.Web.Controllers
     {
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-      var user = await _userRepository.GetWithSubscribe(CurrentUserId);
+      var user = await UserRepository.GetWithSubscribe(CurrentUserId);
 
       return AsMaster(group) ?? View(new SubscribeSettingsViewModel(user, group));
     }
@@ -450,7 +448,7 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
-        var user = await _userRepository.GetWithSubscribe(CurrentUserId);
+        var user = await UserRepository.GetWithSubscribe(CurrentUserId);
 
             var serverModel = new SubscribeSettingsViewModel(user, group);
 

@@ -18,14 +18,12 @@ namespace JoinRpg.Web.Controllers
   public class ManageController : Common.ControllerBase
   {
     private readonly ApplicationSignInManager _signInManager;
-    private readonly IUserRepository _userRepository;
-    private readonly IUserService _userService;
+      private readonly IUserService _userService;
 
     public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUserRepository userRepository, IUserService userService)
-      : base(userManager)
+      : base(userManager, userRepository)
     {
       _signInManager = signInManager;
-      _userRepository = userRepository;
       _userService = userService;
     }
 
@@ -34,8 +32,6 @@ namespace JoinRpg.Web.Controllers
 
 
     [Authorize]
-    //
-    // GET: /Manage/Index
     public async Task<ActionResult> Index(ManageMessageId? message)
     {
       ViewBag.StatusMessage =
@@ -164,7 +160,7 @@ namespace JoinRpg.Web.Controllers
         AuthenticationManager.GetExternalAuthenticationTypes()
           .Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider))
           .ToList();
-      ViewBag.ShowRemoveButton = user.PasswordHash != null || userLogins.Count > 1;
+      ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
       return View(new ManageLoginsViewModel
       {
         CurrentLogins = userLogins,
@@ -201,7 +197,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false)
     {
-      var user = await _userRepository.WithProfile(CurrentUserId);
+      var user = await UserRepository.WithProfile(CurrentUserId);
       var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
       var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
       if (claimBeforeThat != null && claimBeforeThat.CreateDate.AddMonths(3) > DateTime.Now && lastClaim != null)
@@ -262,7 +258,7 @@ namespace JoinRpg.Web.Controllers
     private bool HasPassword()
     {
       var user = UserManager.FindById(CurrentUserId);
-      return user?.PasswordHash != null;
+      return user.HasPassword;
     }
 
     public enum ManageMessageId

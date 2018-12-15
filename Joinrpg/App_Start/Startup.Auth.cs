@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.Mvc;
-using JoinRpg.DataModel;
+using Joinrpg.Web.Identity;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
@@ -72,7 +72,7 @@ namespace JoinRpg.Web
           // Enables the application to validate the security stamp when the user logs in.
           // This is a security feature which is used when you change a password or add an external login to your account.  
           OnValidateIdentity = SecurityStampValidator
-            .OnValidateIdentity<ApplicationUserManager, User, int>
+            .OnValidateIdentity<ApplicationUserManager, IdentityUser, int>
             (validateInterval: TimeSpan.FromDays(30),
               regenerateIdentityCallback: (manager, user) => user.GenerateUserIdentityAsync(manager,
                 DefaultAuthenticationTypes.ApplicationCookie),

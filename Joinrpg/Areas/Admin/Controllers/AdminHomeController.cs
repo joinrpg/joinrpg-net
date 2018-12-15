@@ -1,4 +1,5 @@
 using System.Web.Mvc;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Areas.Admin.Controllers
@@ -8,7 +9,8 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     {
         public ActionResult Index() => View();
 
-        public AdminHomeController(ApplicationUserManager userManager) : base(userManager)
+        public AdminHomeController(ApplicationUserManager userManager,
+            IUserRepository userRepository) : base(userManager, userRepository)
         {
         }
     }

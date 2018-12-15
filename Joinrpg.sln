@@ -87,6 +87,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Common.EmailSending
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DI", "JoinRpg.DI\JoinRpg.DI.csproj", "{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.Web.Identity", "Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{A940653D-D2AD-4701-AE83-2A425ACCA10E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -229,6 +231,10 @@ Global
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A940653D-D2AD-4701-AE83-2A425ACCA10E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
@@ -10,8 +10,8 @@ namespace JoinRpg.Web.Controllers
   public class GameToolsController : Common.ControllerGameBase
   {
     public GameToolsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService)
-      : base(userManager, projectRepository, projectService, exportDataService)
+      IProjectService projectService, IExportDataService exportDataService, IUserRepository userRepository)
+      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
     {
     }
 

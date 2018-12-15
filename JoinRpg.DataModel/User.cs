@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
-using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.DataModel
 {
-  //TODO: We need to untie User from AspNet.Identity by providing proxy class
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-  public class User : IUser<int>
+  public class User
   {
     public int UserId { get; set; }
 
@@ -25,7 +23,6 @@ namespace JoinRpg.DataModel
 
     public string SurName { get; set; }
 
-    int IUser<int>.Id => UserId;
     public string UserName { get; set; }
     public string Email { get; set; }
 
@@ -125,11 +122,12 @@ namespace JoinRpg.DataModel
     public int? Sid { get; set; }
     public string JsonProfile { get; set; }
 
+      [Obsolete("Not used anymore")]
     public bool PreventAllrpgPassword { get; set; }
 
     public override string ToString()
     {
-      return $"AllrpgUser(UserId: {UserId}, Sid: {Sid}, JsonProfile: {JsonProfile}, PreventAllrpgPassword: {PreventAllrpgPassword})";
+      return $"AllrpgUser(UserId: {UserId}, Sid: {Sid}, JsonProfile: {JsonProfile}";
     }
   }
 }

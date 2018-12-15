@@ -1,23 +1,27 @@
-using Joinrpg.Web.Identity;
+
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 
-internal static class Builders
+namespace Joinrpg.Web.Identity
 {
-    public static IdentityUser ToIdentityUser(this User dbUser)
-        => new IdentityUser()
-        {
-            UserName = dbUser.UserName,
-            Id = dbUser.UserId,
-        };
+    internal static class Builders
+    {
+        public static IdentityUser ToIdentityUser(this User dbUser)
+            => new IdentityUser()
+            {
+                UserName = dbUser.UserName,
+                Id = dbUser.UserId,
+                HasPassword = dbUser.PasswordHash != null,
+            };
 
-    public static UserExternalLogin ToUserExternalLogin(this UserLoginInfo login)
-        => new UserExternalLogin()
-        {
-            Key = login.ProviderKey,
-            Provider = login.LoginProvider,
-        };
+        public static UserExternalLogin ToUserExternalLogin(this UserLoginInfo login)
+            => new UserExternalLogin()
+            {
+                Key = login.ProviderKey,
+                Provider = login.LoginProvider,
+            };
 
-    public static UserLoginInfo ToUserLoginInfo(this UserExternalLogin uel)
-        => new UserLoginInfo(uel.Provider, uel.Key);
+        public static UserLoginInfo ToUserLoginInfo(this UserExternalLogin uel)
+            => new UserLoginInfo(uel.Provider, uel.Key);
+    }
 }

@@ -65,7 +65,14 @@ namespace JoinRpg.Web.Controllers
       return await ExportWithCustomFronend(list.Items, list.Title, exportType.Value, new CharacterListItemViewModelExporter(list.Fields, UriService), list.ProjectName);
     }
 
-    public CharacterListController(ApplicationUserManager userManager, IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService, IPlotRepository plotRepository, IUriService uriService, ICharacterRepository characterRepository) : base(userManager, projectRepository, projectService, exportDataService)
+    public CharacterListController(ApplicationUserManager userManager,
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IExportDataService exportDataService,
+        IPlotRepository plotRepository,
+        IUriService uriService,
+        ICharacterRepository characterRepository,
+        IUserRepository userRepository) : base(userManager, projectRepository, projectService, exportDataService, userRepository)
     {
       PlotRepository = plotRepository;
       UriService = uriService;

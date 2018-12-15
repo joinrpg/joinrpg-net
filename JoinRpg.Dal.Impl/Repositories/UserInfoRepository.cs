@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
@@ -38,12 +38,6 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Include(u => u.Allrpg)
         .Include(u => u.Extra)
         .SingleOrDefaultAsync(u => u.Email == email);
-    }
-
-    public Task<User> GetByAllRpgId(int allrpgId)
-    {
-      return
-        _ctx.Set<User>().Include(u => u.Allrpg).SingleOrDefaultAsync(u => u.Allrpg != null && u.Allrpg.Sid == allrpgId);
     }
   }
 }

@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Controllers
           IUriService uriService,
           IFinanceReportRepository financeReportRepository,
           IUserRepository userRepository)
-          : base(userManager, projectRepository, projectService, exportDataService)
+          : base(userManager, projectRepository, projectService, exportDataService, userRepository)
       {
           FinanceService = financeService;
           UriService = uriService;

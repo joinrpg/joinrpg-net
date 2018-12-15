@@ -22,11 +22,16 @@ namespace JoinRpg.Web.Controllers
     private ICharacterRepository CharacterRepository { get; }
       private IUriService UriService { get; }
 
-      public PrintController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService,
-      IPlotRepository plotRepository,
-      IPluginFactory pluginFactory, ICharacterRepository characterRepository, IUriService uriService) : base(userManager,
-      projectRepository, projectService, exportDataService)
+      public PrintController(ApplicationUserManager userManager,
+          IProjectRepository projectRepository,
+          IProjectService projectService,
+          IExportDataService exportDataService,
+          IPlotRepository plotRepository,
+          IPluginFactory pluginFactory,
+          ICharacterRepository characterRepository,
+          IUriService uriService,
+          IUserRepository userRepository) : base(userManager,
+      projectRepository, projectService, exportDataService, userRepository)
     {
       PlotRepository = plotRepository;
       PluginFactory = pluginFactory;

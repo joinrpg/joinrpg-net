@@ -70,6 +70,7 @@
     <Content Include="App_Code\ConfirmDialog.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="App_Start\UnityWebApiActivator.cs" />
     <Compile Include="Controllers\AccommodationPrintController.cs" />
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
@@ -740,6 +741,10 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj">
       <Project>{7032C5D8-131D-4E84-ADF4-263399F9626A}</Project>
       <Name>JoinRpg.Services.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj">
+      <Project>{a940653d-d2ad-4701-ae83-2a425acca10e}</Project>
+      <Name>Joinrpg.Web.Identity</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj">
       <Project>{5EDF70DA-E612-4514-80FF-8F72AAB87DA8}</Project>
