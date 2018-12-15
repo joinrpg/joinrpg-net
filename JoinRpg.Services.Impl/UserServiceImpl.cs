@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl
   [UsedImplicitly]
   public class UserServiceImpl : DbServiceImplBase, IUserService
   {
-    public UserServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public UserServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
     }
 

@@ -18,8 +18,10 @@ namespace JoinRpg.Services.Impl
     protected IEmailService EmailService { get; }
     protected IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
-    protected ClaimImplBase(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
+    protected ClaimImplBase(IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+        ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
       EmailService = emailService;
       FieldDefaultValueGenerator = fieldDefaultValueGenerator;

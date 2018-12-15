@@ -11,7 +11,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using Microsoft.AspNet.Identity;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
@@ -19,6 +19,7 @@ namespace JoinRpg.Services.Impl
     public class DbServiceImplBase
     {
         protected readonly IUnitOfWork UnitOfWork;
+        private readonly ICurrentUserAccessor _currentUserAccessor;
         protected IUserRepository UserRepository => _userRepository.Value;
 
         private readonly Lazy<IUserRepository> _userRepository;
@@ -44,17 +45,18 @@ namespace JoinRpg.Services.Impl
 
         private int? _impersonatedUserId;
 
-        protected int CurrentUserId => _impersonatedUserId ??
-                                       int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+        protected int CurrentUserId => _impersonatedUserId ?? _currentUserAccessor.CurrentUserId;
 
         /// <summary>
         /// Time of service creaton. Used to mark consistent time for all operations performed by service
         /// </summary>
         protected DateTime Now { get; }
 
-        protected DbServiceImplBase(IUnitOfWork unitOfWork)
+        protected DbServiceImplBase(IUnitOfWork unitOfWork,
+            ICurrentUserAccessor currentUserAccessor)
         {
             UnitOfWork = unitOfWork;
+            _currentUserAccessor = currentUserAccessor;
             _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
             _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
             _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);

@@ -21,9 +21,11 @@ namespace JoinRpg.Services.Impl
     {
         public FinanceOperationsImpl(IUnitOfWork unitOfWork,
             IEmailService emailService,
-            IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork,
+            IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+            ICurrentUserAccessor currentUserAccessor) : base(unitOfWork,
             emailService,
-            fieldDefaultValueGenerator)
+            fieldDefaultValueGenerator,
+            currentUserAccessor)
         {
         }
 

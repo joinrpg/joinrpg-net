@@ -302,7 +302,9 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
+        public AccommodationServiceImpl(IUnitOfWork unitOfWork,
+            IEmailService emailService,
+            ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
             EmailService = emailService;
         }

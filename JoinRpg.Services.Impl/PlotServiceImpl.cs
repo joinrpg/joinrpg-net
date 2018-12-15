@@ -20,7 +20,9 @@ namespace JoinRpg.Services.Impl
 
         private readonly IEmailService _email;
 
-        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email) : base(unitOfWork)
+        public PlotServiceImpl(IUnitOfWork unitOfWork,
+            IEmailService email,
+            ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
             _email = email;
         }

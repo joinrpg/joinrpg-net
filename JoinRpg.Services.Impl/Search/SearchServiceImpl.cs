@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl.Search
   [UsedImplicitly]
   public class SearchServiceImpl : DbServiceImplBase, ISearchService
   {
-    public SearchServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public SearchServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
     }
 

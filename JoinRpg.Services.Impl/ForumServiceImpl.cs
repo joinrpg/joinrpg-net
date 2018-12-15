@@ -15,7 +15,9 @@ namespace JoinRpg.Services.Impl
   internal class ForumServiceImpl : DbServiceImplBase, IForumService
   {
     private IEmailService EmailService { get; }
-    public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
+    public ForumServiceImpl(IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
       EmailService = emailService;
     }

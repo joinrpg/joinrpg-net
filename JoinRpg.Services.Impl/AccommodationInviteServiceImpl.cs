@@ -16,8 +16,10 @@ namespace JoinRpg.Services.Impl
     [UsedImplicitly]
     public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
-        public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) :
-            base(unitOfWork)
+        public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork,
+            IEmailService emailService,
+            ICurrentUserAccessor currentUserAccessor) :
+            base(unitOfWork, currentUserAccessor)
         {
             EmailService = emailService;
         }

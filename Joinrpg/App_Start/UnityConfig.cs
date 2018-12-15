@@ -60,6 +60,8 @@ namespace JoinRpg.Web
 
         container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 
+        container.RegisterType<ICurrentUserAccessor, CurrentUserAccessor>();
+
             ContainerConfig.InjectAll(container);
     }
   }

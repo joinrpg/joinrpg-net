@@ -108,7 +108,8 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public FieldSetupServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public FieldSetupServiceImpl(IUnitOfWork unitOfWork,
+            ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
         }
 

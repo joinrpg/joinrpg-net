@@ -24,7 +24,8 @@ namespace JoinRpg.Services.Impl
 
         public ProjectService(IUnitOfWork unitOfWork,
             IEmailService emailService,
-            IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
+            IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+            ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
             FieldDefaultValueGenerator = fieldDefaultValueGenerator;
             EmailService = emailService;

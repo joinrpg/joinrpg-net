@@ -792,10 +792,13 @@ namespace JoinRpg.Services.Impl
     }
 
       private readonly IAccommodationInviteService _accommodationInviteService;
-    public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
-        IAccommodationInviteService accommodationInviteService) : base(unitOfWork, emailService,
-      fieldDefaultValueGenerator)
+    public ClaimServiceImpl(IUnitOfWork unitOfWork,
+        IEmailService emailService,
+        IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+        IAccommodationInviteService accommodationInviteService,
+        ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, emailService,
+      fieldDefaultValueGenerator,
+        currentUserAccessor)
     {
         this._accommodationInviteService = accommodationInviteService;
     }
