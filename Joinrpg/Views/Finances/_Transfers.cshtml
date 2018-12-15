@@ -25,6 +25,9 @@
         <th>
 
         </th>
+        <th>
+            @Html.DisplayNameFor(modelItem => modelItem.Comment)
+        </th>
     </tr>
 
     @foreach (var item in Model) {
@@ -65,9 +68,7 @@
                     </button>
                 }
             </td>
-        </tr>
-        <tr>
-            <td colspan="0">
+            <td>
                 @item.Comment
             </td>
         </tr>

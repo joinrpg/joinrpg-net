@@ -204,6 +204,7 @@ namespace JoinRpg.Web.Models
         public bool HasApproveAccess { get; }
 
         public int Id { get; }
+        [Display(Name = "Комментарий")]
         public IHtmlString Comment { get; }
 
         public MoneyTransferListItemViewModel(MoneyTransfer fo, int currentUserId)
