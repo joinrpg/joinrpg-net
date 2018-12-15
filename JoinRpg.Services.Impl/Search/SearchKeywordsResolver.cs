@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Services.Impl.Search
 {
@@ -23,11 +22,14 @@ namespace JoinRpg.Services.Impl.Search
       //"%контакты4196", "персонаж4196", etc provide a perfect match
       if (keysForPerfectMath.Any(k => searchString.StartsWith(k, StringComparison.InvariantCultureIgnoreCase)))
       {
-        keysForPerfectMath.ForEach(k =>
-          searchString = Regex.Replace(searchString, Regex.Escape(k), "", RegexOptions.IgnoreCase));
+          foreach (var k in keysForPerfectMath)
+          {
+              searchString =
+                  Regex.Replace(searchString, Regex.Escape(k), "", RegexOptions.IgnoreCase);
+          }
 
         //"e.g %контакты 65" is not accepted. Space between keyword and number is prohibited
-        if (!searchString.StartsWith(" ") && Int32.TryParse(searchString, out entityId))
+        if (!searchString.StartsWith(" ") && int.TryParse(searchString, out entityId))
         {
           whenFoundItIsPerfectMatch = true;
           return entityId;

@@ -13,8 +13,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="10.4.0" />
-    <PackageReference Include="RoslynAnalyzers.SA1413" Version="1.0.9" />
     <PackageReference Include="System.Runtime" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>

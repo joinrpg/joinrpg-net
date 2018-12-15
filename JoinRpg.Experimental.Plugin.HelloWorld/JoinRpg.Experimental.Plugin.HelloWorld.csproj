@@ -13,9 +13,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="RoslynAnalyzers.SA1413" Version="1.0.9" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj" />
   </ItemGroup>
 </Project>
