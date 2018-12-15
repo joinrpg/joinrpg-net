@@ -1,179 +1,25 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{916C67F2-50B1-45DA-B970-222CEE4FC8D8}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.PluginHost.Interfaces</RootNamespace>
-    <AssemblyName>JoinRpg.PluginHost.Interfaces</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>net46</TargetFramework>
+    <AssemblyTitle>JoinRpg.PluginHost.Interfaces</AssemblyTitle>
+    <Product>JoinRpg.PluginHost.Interfaces</Product>
+    <Copyright>Copyright ©  2016</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=10.4.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\packages\JetBrains.Annotations.10.4.0\lib\net\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="JetBrains.Annotations" Version="10.4.0" />
+    <PackageReference Include="RoslynAnalyzers.SA1413" Version="1.0.9" />
+    <PackageReference Include="System.Runtime" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PluginFactoryExtenstions.cs" />
-    <Compile Include="PluginOperationData.cs" />
-    <Compile Include="IPluginFactory.cs" />
-    <Compile Include="ProjectPluginConfiguraton.cs" />
-    <Compile Include="ProjectPluginInfo.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
-      <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
-      <Name>JoinRpg.DataModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj">
-      <Project>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</Project>
-      <Name>JoinRpg.Experimental.Plugin.Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
-      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
-      <Name>JoinRpg.Helpers</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\Microsoft.Build.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\Microsoft.Build.Framework.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\Microsoft.Build.Tasks.Core.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\Microsoft.Build.Utilities.Core.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\Microsoft.Win32.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\netstandard.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\RoslynAnalyzers.SA1413.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.AppContext.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Collections.Concurrent.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Collections.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Collections.NonGeneric.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Collections.Specialized.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ComponentModel.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ComponentModel.EventBasedAsync.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ComponentModel.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ComponentModel.TypeConverter.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Console.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Data.Common.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.Contracts.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.Debug.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.FileVersionInfo.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.Process.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.StackTrace.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.TextWriterTraceListener.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.Tools.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.TraceSource.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Diagnostics.Tracing.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Drawing.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Dynamic.Runtime.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Globalization.Calendars.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Globalization.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Globalization.Extensions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.Compression.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.Compression.ZipFile.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.FileSystem.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.FileSystem.DriveInfo.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.FileSystem.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.FileSystem.Watcher.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.IsolatedStorage.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.MemoryMappedFiles.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.Pipes.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.IO.UnmanagedMemoryStream.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Linq.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Linq.Expressions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Linq.Parallel.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Linq.Queryable.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Http.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.NameResolution.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.NetworkInformation.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Ping.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Requests.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Security.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.Sockets.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.WebHeaderCollection.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.WebSockets.Client.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Net.WebSockets.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ObjectModel.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Reflection.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Reflection.Extensions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Reflection.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Resources.Reader.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Resources.ResourceManager.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Resources.Writer.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.CompilerServices.VisualC.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Extensions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Handles.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.InteropServices.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.InteropServices.RuntimeInformation.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Numerics.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Serialization.Formatters.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Serialization.Json.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Serialization.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Runtime.Serialization.Xml.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Claims.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Cryptography.Algorithms.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Cryptography.Csp.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Cryptography.Encoding.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Cryptography.Primitives.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Cryptography.X509Certificates.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.Principal.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Security.SecureString.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Text.Encoding.CodePages.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Text.Encoding.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Text.Encoding.Extensions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Text.RegularExpressions.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Overlapped.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Tasks.Dataflow.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Tasks.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Tasks.Parallel.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Thread.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.ThreadPool.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Threading.Timer.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.ValueTuple.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.ReaderWriter.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.XDocument.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.XmlDocument.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.XmlSerializer.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.XPath.dll" />
-    <Analyzer Include="..\packages\RoslynAnalyzers.SA1413.1.0.9\analyzers\dotnet\cs\System.Xml.XPath.XDocument.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
