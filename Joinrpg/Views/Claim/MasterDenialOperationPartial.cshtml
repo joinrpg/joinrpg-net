@@ -1,4 +1,15 @@
 ﻿@model JoinRpg.Web.Models.MasterDenialOperationViewModel
+
+@using JoinRpg.Web.Models
+
+@functions {
+
+    private object CheckBoxChecked(bool enabled)
+    {
+        return enabled ? new { @checked = "checked" } : null;
+    }
+
+}
 @{
     Model.ActionName = Model.ActionName ?? "Отправить";
 }
@@ -24,14 +35,16 @@
         </div>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.DeleteCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-8">
-            @Html.CheckBoxFor(model => model.DeleteCharacter, false)
-            @Html.ValidationMessageFor(model => model.DeleteCharacter, "", new { @class = "text-danger" })
+    @if (Model.ClaimStatus == ClaimStatusView.Approved)
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.DeleteCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-8">
+                @Html.CheckBox("DeleteCharacter", CheckBoxChecked(Model.CharacterAutoCreated))
+                @Html.ValidationMessageFor(model => model.DeleteCharacter, "", new { @class = "text-danger" })
+            </div>
         </div>
-    </div>
-
+    }
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
             <input type="submit" value="@Model.ActionName" class="btn btn-success" />

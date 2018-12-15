@@ -121,6 +121,8 @@ namespace JoinRpg.Web.Models
     {
         public int ProjectId { get; set; }
         public int ClaimId { get; set; }
+        public ClaimStatusView ClaimStatus { get; set; }
+        public bool CharacterAutoCreated { get; set; }
 
         [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"),
          UIHint("MarkdownString")]

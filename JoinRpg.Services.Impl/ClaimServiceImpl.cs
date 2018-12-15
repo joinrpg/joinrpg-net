@@ -437,23 +437,12 @@ namespace JoinRpg.Services.Impl
             var character = await CharactersRepository.GetCharacterAsync(projectId, characterId);
 
             character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            character.EnsureProjectActive();
-
-            if (character.HasActiveClaims())
-            {
-                return;
-            }
-
             MarkTreeModified(character.Project);
 
-            if (character.CanBePermanentlyDeleted)
-            {
-                character.DirectlyRelatedPlotElements.CleanLinksList();
-            }
+            character.DirectlyRelatedPlotElements.CleanLinksList();
 
             character.IsActive = false;
             MarkChanged(character);
-            await UnitOfWork.SaveChangesAsync();
         }
 
         [ItemCanBeNull]
