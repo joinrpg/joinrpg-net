@@ -423,8 +423,13 @@ namespace JoinRpg.Services.Email
 
             List<RecepientData> recipients = email.Claims
                 .Distinct(new ClaimsComparer())
-                .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
-                    { ClaimUriKey, _uriService.Get(c) + plotElementId } }))
+                .Select(c => c.Player.ToRecepientData(new Dictionary<string, string>
+                {
+                    {
+                        ClaimUriKey,
+                        _uriService.Get(c) + plotElementId
+                    },
+                }))
                 .ToList();
 
             await MessageService.SendEmails(subject, body, text,
