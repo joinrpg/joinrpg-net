@@ -97,6 +97,9 @@ namespace JoinRpg.Web.Models
     public UserProfileDetailsViewModel PlayerDetails { get; set; }
 
     [ReadOnly(true)]
+    public bool? CharacterAutoCreated { get; }
+
+    [ReadOnly(true)]
     public bool? CharacterActive { get; }
 
     public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
@@ -144,7 +147,8 @@ namespace JoinRpg.Web.Models
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;
           CharacterActive = claim.Character?.IsActive;
-          AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
+            CharacterAutoCreated= claim.Character?.AutoCreated;
+            AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
               a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
               claim.HasMasterAccess(currentUser.UserId)).ToList();
             PotentialNeighbors = potentialNeighbors;
