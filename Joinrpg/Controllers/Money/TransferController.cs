@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -19,18 +15,18 @@ namespace JoinRpg.Web.Controllers.Money
     [MasterAuthorize()]
     public class TransferController : Common.ControllerGameBase
     {
-        public IFinanceService FinanceService { get; }
+        private IFinanceService FinanceService { get; }
 
         public TransferController(ApplicationUserManager userManager,
-            [NotNull]
             IProjectRepository projectRepository,
             IProjectService projectService,
             IExportDataService exportDataService,
-            IFinanceService financeService
-        ) : base(userManager,
+            IFinanceService financeService,
+            IUserRepository userRepository) : base(userManager,
             projectRepository,
             projectService,
-            exportDataService)
+            exportDataService,
+            userRepository)
         {
             FinanceService = financeService;
         }

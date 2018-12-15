@@ -99,10 +99,11 @@ namespace JoinRpg.Web.Controllers
           IPlotService plotService,
           IPlotRepository plotRepository,
           IExportDataService exportDataService,
-          IUriService uriService) : base(userManager,
+          IUriService uriService,
+          IUserRepository userRepository) : base(userManager,
           projectRepository,
           projectService,
-          exportDataService)
+          exportDataService, userRepository)
       {
           _plotService = plotService;
           _plotRepository = plotRepository;

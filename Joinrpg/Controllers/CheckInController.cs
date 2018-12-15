@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -28,16 +28,17 @@ namespace JoinRpg.Web.Controllers
     [ProvidesContext]
     private ICharacterRepository CharacterRepository { get; }
 
-    public CheckInController(
-      ApplicationUserManager userManager,
-      [NotNull] IProjectRepository projectRepository, 
-      IProjectService projectService,
-      IExportDataService exportDataService,
-      IClaimsRepository claimsRepository, 
-      IPlotRepository plotRepository, 
-      IClaimService claimService, 
-      ICharacterRepository characterRepository) 
-      : base(userManager, projectRepository, projectService, exportDataService)
+    public CheckInController(ApplicationUserManager userManager,
+        [NotNull]
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IExportDataService exportDataService,
+        IClaimsRepository claimsRepository,
+        IPlotRepository plotRepository,
+        IClaimService claimService,
+        ICharacterRepository characterRepository,
+        IUserRepository userRepository) 
+      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
     {
       ClaimsRepository = claimsRepository;
       PlotRepository = plotRepository;

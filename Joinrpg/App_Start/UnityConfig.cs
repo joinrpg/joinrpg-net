@@ -1,22 +1,22 @@
 using System;
 using System.Data.Entity;
 using System.Web;
+using Joinrpg.Web.Identity;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Data.Write.Interfaces;
-using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
+using JoinRpg.DI;
+using Microsoft.Practices.Unity;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
-using Microsoft.Practices.Unity;
-using JoinRpg.DI;
 
 namespace JoinRpg.Web
 {
-  /// <summary>
-  /// Specifies the Unity configuration for the main container.
-  /// </summary>
-  public static class UnityConfig
+    /// <summary>
+    /// Specifies the Unity configuration for the main container.
+    /// </summary>
+    public static class UnityConfig
   {
     #region Unity Container
 
@@ -56,7 +56,7 @@ namespace JoinRpg.Web
 
         container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
 
-        container.RegisterType<IUserStore<User, int>, MyUserStore>();
+        container.RegisterType<IUserStore<IdentityUser, int>, MyUserStore>();
 
         container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 

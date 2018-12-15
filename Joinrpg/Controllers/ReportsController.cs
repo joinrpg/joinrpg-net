@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -10,31 +10,37 @@ using JoinRpg.Web.Models.Reports;
 
 namespace JoinRpg.Web.Controllers
 {
-  [MasterAuthorize()]
-  public class ReportsController : ControllerGameBase
-  {
-    public async Task<ActionResult> Report2D(int projectId, int gameReport2DTemplateId)
+    [MasterAuthorize()]
+    public class ReportsController : ControllerGameBase
     {
-      var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
+        public async Task<ActionResult> Report2D(int projectId, int gameReport2DTemplateId)
+        {
+            var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
 
-      if (field == null) return HttpNotFound();
+            if (field == null) return HttpNotFound();
 
-      var template =
-        field.Project.GameReport2DTemplates.SingleOrDefault(
-          t => t.GameReport2DTemplateId == gameReport2DTemplateId);
+            var template =
+                field.Project.GameReport2DTemplates.SingleOrDefault(
+                    t => t.GameReport2DTemplateId == gameReport2DTemplateId);
 
-      if (template == null) return HttpNotFound();
+            if (template == null) return HttpNotFound();
 
-      var report2DResultViewModel = new Report2DResultViewModel(template);
+            var report2DResultViewModel = new Report2DResultViewModel(template);
 
-      return View(report2DResultViewModel);
+            return View(report2DResultViewModel);
+        }
+
+        public ReportsController(ApplicationUserManager userManager,
+            [NotNull]
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IExportDataService exportDataService,
+            IUserRepository userRepository) : base(userManager,
+            projectRepository,
+            projectService,
+            exportDataService,
+            userRepository)
+        {
+        }
     }
-
-    public ReportsController(ApplicationUserManager userManager,
-      [NotNull] IProjectRepository projectRepository, IProjectService projectService,
-      IExportDataService exportDataService) : base(userManager, projectRepository, projectService,
-      exportDataService)
-    {
-    }
-  }
 }

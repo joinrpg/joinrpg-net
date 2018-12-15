@@ -16,8 +16,8 @@ namespace JoinRpg.Web.Controllers
         public GameController(IProjectService projectService,
             ApplicationUserManager userManager,
             IProjectRepository projectRepository,
-            IExportDataService exportDataService)
-            : base(userManager, projectRepository, projectService, exportDataService)
+            IExportDataService exportDataService, IUserRepository userRepository)
+            : base(userManager, projectRepository, projectService, exportDataService, userRepository)
         {
         }
 

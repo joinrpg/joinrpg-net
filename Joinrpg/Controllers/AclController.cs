@@ -53,8 +53,9 @@ namespace JoinRpg.Web.Controllers
             IProjectService projectService,
             IExportDataService exportDataService,
             IClaimsRepository claimRepository,
-            IUriService uriService)
-            : base(userManager, projectRepository, projectService, exportDataService)
+            IUriService uriService,
+            IUserRepository userRepository)
+            : base(userManager, projectRepository, projectService, exportDataService, userRepository)
         {
             ClaimRepository = claimRepository;
             UriService = uriService;

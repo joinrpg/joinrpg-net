@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
@@ -15,9 +15,13 @@ namespace JoinRpg.Web.Controllers
   {
     private IPluginFactory PluginFactory { get; }
 
-    public PluginSetupController(ApplicationUserManager userManager, IPluginFactory pluginFactory,
-      IProjectRepository projectRepository, IProjectService projectService, IExportDataService exportDataService)
-      : base(userManager, projectRepository, projectService, exportDataService)
+    public PluginSetupController(ApplicationUserManager userManager,
+        IPluginFactory pluginFactory,
+        IProjectRepository projectRepository,
+        IProjectService projectService,
+        IExportDataService exportDataService,
+        IUserRepository userRepository)
+      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
     {
       PluginFactory = pluginFactory;
     }
