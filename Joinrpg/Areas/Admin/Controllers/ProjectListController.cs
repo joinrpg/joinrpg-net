@@ -25,7 +25,9 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
             return View(projects);
         }
 
-        public ProjectListController(ApplicationUserManager userManager, IProjectRepository projectRepository) : base(userManager)
+        public ProjectListController(ApplicationUserManager userManager,
+            IProjectRepository projectRepository,
+            IUserRepository userRepository) : base(userManager, userRepository)
         {
             _projectRepository = projectRepository;
         }

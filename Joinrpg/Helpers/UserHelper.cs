@@ -1,13 +1,13 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using JoinRpg.DataModel;
+using Joinrpg.Web.Identity;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Helpers
 {
-  static class UserHelper
+    static class UserHelper
   {
-    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this User user, UserManager<User, int> manager, string authenticationType)
+    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this IdentityUser user, UserManager<IdentityUser, int> manager, string authenticationType)
     {
       return manager.ClaimsIdentityFactory.CreateAsync(manager, user, authenticationType);
     }

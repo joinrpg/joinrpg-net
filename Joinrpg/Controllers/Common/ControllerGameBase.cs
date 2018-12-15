@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Controllers.Common
     public IProjectRepository ProjectRepository { get; }
 
     protected ControllerGameBase(ApplicationUserManager userManager, [NotNull] IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService) : base(userManager)
+      IProjectService projectService, IExportDataService exportDataService, IUserRepository userRepository) : base(userManager, userRepository)
     {
       if (projectRepository == null) throw new ArgumentNullException(nameof(projectRepository));
       ProjectRepository = projectRepository;

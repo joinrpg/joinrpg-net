@@ -12,7 +12,9 @@ namespace JoinRpg.Web.Controllers
     private const int ProjectsOnHomePage = 9;
     private readonly IProjectRepository _projectRepository;
 
-    public HomeController(IProjectRepository projectRepository, ApplicationUserManager userManager) : base (userManager)
+    public HomeController(IProjectRepository projectRepository,
+        ApplicationUserManager userManager,
+        IUserRepository userRepository) : base (userManager, userRepository)
     {
       _projectRepository = projectRepository;
     }

@@ -26,8 +26,8 @@ namespace JoinRpg.Web.Controllers
     private IClaimService ClaimService { get; }
 
     public ForumController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IForumService forumService, IForumRepository forumRepository, IClaimsRepository claimsRepository, IClaimService claimService)
-      : base(userManager, projectRepository, projectService, exportDataService)
+      IProjectService projectService, IExportDataService exportDataService, IForumService forumService, IForumRepository forumRepository, IClaimsRepository claimsRepository, IClaimService claimService, IUserRepository userRepository)
+      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
     {
       ForumService = forumService;
       ForumRepository = forumRepository;

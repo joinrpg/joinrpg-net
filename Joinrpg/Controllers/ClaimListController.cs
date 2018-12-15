@@ -21,11 +21,15 @@ namespace JoinRpg.Web.Controllers
         private IAccommodationRepository AccommodationRepository { get; }
         private IUriService UriService { get; }
 
-        public ClaimListController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-            IProjectService projectService, IExportDataService exportDataService, IClaimsRepository claimsRepository,
+        public ClaimListController(ApplicationUserManager userManager,
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IExportDataService exportDataService,
+            IClaimsRepository claimsRepository,
             IUriService uriService,
-            IAccommodationRepository accommodationRepository)
-            : base(userManager, projectRepository, projectService, exportDataService)
+            IAccommodationRepository accommodationRepository,
+            IUserRepository userRepository)
+            : base(userManager, projectRepository, projectService, exportDataService, userRepository)
         {
             ClaimsRepository = claimsRepository;
             UriService = uriService;
@@ -236,11 +240,12 @@ namespace JoinRpg.Web.Controllers
         }
 
         [HttpGet, Authorize]
-        public ActionResult My()
+        public async Task<ActionResult> My()
         {
+            var user = await GetCurrentUserAsync();
             ViewBag.Title = "Мои заявки";
             return View("Index",
-                new ClaimListViewModel(CurrentUserId, GetCurrentUser().Claims.ToList(), null, showCount: false,
+                new ClaimListViewModel(CurrentUserId, user.Claims.ToList(), null, showCount: false,
                     showUserColumn: false));
         }
 
