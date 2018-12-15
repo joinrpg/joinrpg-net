@@ -163,7 +163,7 @@ namespace JoinRpg.Web.Models.Exporters
     [Pure]
     private static string CombineName(params PropertyInfo[] propertyAccessors)
     {
-      return string.Join(".", propertyAccessors.Select(prop => prop?.GetDisplayName()));
+      return propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
     }
 
     [MustUseReturnValue]
