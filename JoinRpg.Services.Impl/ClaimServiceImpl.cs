@@ -409,7 +409,7 @@ namespace JoinRpg.Services.Impl
             claim.ClaimDenialStatus = claimDenialStatus;
 
             var roomEmail = await CommonClaimDecline(claim);
-            if (deleteCharacter)
+            if (deleteCharacter && statusWasApproved)
             {
                 await DeleteCharacter(claim.Character);
             }
