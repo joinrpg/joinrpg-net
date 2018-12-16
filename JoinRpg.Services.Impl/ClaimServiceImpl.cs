@@ -410,7 +410,7 @@ namespace JoinRpg.Services.Impl
             var roomEmail = await CommonClaimDecline(claim);
             if (deleteCharacter)
             {
-                await DeleteCharacter(projectId, claim.Character.CharacterId, CurrentUserId);
+                await DeleteCharacter(claim.Character);
             }
 
             await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
