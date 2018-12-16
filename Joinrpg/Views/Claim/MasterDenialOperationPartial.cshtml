@@ -4,9 +4,9 @@
 
 @functions {
 
-    private object CheckBoxChecked(bool enabled)
+    private object CheckBoxChecked(bool autoCreated)
     {
-        return enabled ? new { @checked = "checked" } : null;
+        return autoCreated ? new { @checked = "checked" } : null;
     }
 
 }

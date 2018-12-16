@@ -402,7 +402,7 @@ namespace JoinRpg.Services.Impl
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
-            var statusWasApproved = claim.Status == Claim.Status.Approved;
+            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
 
             claim.MasterDeclinedDate = Now;
             claim.ClaimStatus = Claim.Status.DeclinedByMaster;
@@ -411,7 +411,7 @@ namespace JoinRpg.Services.Impl
             var roomEmail = await CommonClaimDecline(claim);
             if (deleteCharacter && statusWasApproved)
             {
-                await DeleteCharacter(claim.Character);
+                await DeleteCharacter(claim.Character, CurrentUserId);
             }
 
             await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
@@ -433,7 +433,7 @@ namespace JoinRpg.Services.Impl
             }
         }
       
-        private async Task DeleteCharacter(Character character)
+        private async Task DeleteCharacter(Character character, int currentUserId)
         {
 
             character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
