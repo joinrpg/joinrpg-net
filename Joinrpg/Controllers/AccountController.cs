@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
                 return View(model);
             }
 
-            var user = new IdentityUser {UserName = model.Email};
+            var user = new JoinIdentityUser {UserName = model.Email};
             var result = await UserManager.CreateAsync(user);
             if (!result.Succeeded)
             {
@@ -141,7 +141,7 @@ namespace JoinRpg.Web.Controllers
             return View("RegisterSuccess");
         }
 
-        private async Task SendConfirmationEmail(IdentityUser user)
+        private async Task SendConfirmationEmail(JoinIdentityUser user)
         {
             string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
             var callbackUrl = Url.Action("ConfirmEmail",
@@ -357,7 +357,7 @@ namespace JoinRpg.Web.Controllers
                     return View("ExternalLoginFailure");
                 }
 
-                var user = new IdentityUser() {UserName = model.Email};
+                var user = new JoinIdentityUser() {UserName = model.Email};
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

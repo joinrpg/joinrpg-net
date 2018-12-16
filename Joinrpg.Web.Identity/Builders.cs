@@ -6,8 +6,8 @@ namespace Joinrpg.Web.Identity
 {
     internal static class Builders
     {
-        public static IdentityUser ToIdentityUser(this User dbUser)
-            => new IdentityUser()
+        public static JoinIdentityUser ToIdentityUser(this User dbUser)
+            => new JoinIdentityUser()
             {
                 UserName = dbUser.UserName,
                 Id = dbUser.UserId,

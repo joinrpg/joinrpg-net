@@ -7,7 +7,7 @@ namespace JoinRpg.Web.Helpers
 {
     static class UserHelper
   {
-    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this IdentityUser user, UserManager<IdentityUser, int> manager, string authenticationType)
+    public static Task<ClaimsIdentity> GenerateUserIdentityAsync(this JoinIdentityUser user, UserManager<JoinIdentityUser, int> manager, string authenticationType)
     {
       return manager.ClaimsIdentityFactory.CreateAsync(manager, user, authenticationType);
     }
