@@ -402,6 +402,7 @@ namespace JoinRpg.Services.Impl
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
+            var statusWasApproved = claim.Status == Claim.Status.Approved;
 
             claim.MasterDeclinedDate = Now;
             claim.ClaimStatus = Claim.Status.DeclinedByMaster;
