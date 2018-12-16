@@ -433,7 +433,7 @@ namespace JoinRpg.Services.Impl
             }
         }
       
-        public async Task DeleteCharacter(int projectId, int characterId, int currentUserId)
+        private async Task DeleteCharacter(Character character)
         {
 
             character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
