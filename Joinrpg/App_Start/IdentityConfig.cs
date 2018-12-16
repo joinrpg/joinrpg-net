@@ -47,16 +47,22 @@ namespace JoinRpg.Web
     }
   }
 
-  [UsedImplicitly]
-  public class ApplicationSignInManager : SignInManager<JoinIdentityUser, int>
-  {
-    public ApplicationSignInManager(ApplicationUserManager userManager,
-      IAuthenticationManager authenticationManager)
-      : base(userManager, authenticationManager)
+    [UsedImplicitly]
+    public class ApplicationSignInManager : SignInManager<JoinIdentityUser, int>
     {
-    }
+        public ApplicationSignInManager(ApplicationUserManager userManager,
+            IAuthenticationManager authenticationManager)
+            : base(userManager, authenticationManager)
+        {
+        }
 
-    public override Task<ClaimsIdentity> CreateUserIdentityAsync(JoinIdentityUser user) => user
-      .GenerateUserIdentityAsync(UserManager, AuthenticationType);
-  }
+        public override Task<ClaimsIdentity> CreateUserIdentityAsync(JoinIdentityUser user) => user
+            .GenerateUserIdentityAsync(UserManager, AuthenticationType);
+
+        public async Task ReLoginUser(int userId)
+        {
+            var user = await UserManager.FindByIdAsync(userId);
+            await SignInAsync(user, isPersistent: true, rememberBrowser: false);
+        }
+    }
 }

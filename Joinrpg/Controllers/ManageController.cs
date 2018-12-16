@@ -235,7 +235,10 @@ namespace JoinRpg.Web.Controllers
           _userService.UpdateProfile(viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
             viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal, viewModel.Telegram);
-        if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
+
+          await SignInManager.ReLoginUser(CurrentUserId);
+
+          if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
         {
           return RedirectToAction("SetupProfile");
         }
@@ -252,7 +255,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    #region Helpers
+      #region Helpers
     private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
 
     private bool HasPassword()

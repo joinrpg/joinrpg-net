@@ -10,7 +10,7 @@ namespace JoinRpg.Web.Controllers
     public class UserController : Common.ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult> Details(int userId)
+        public async Task<ActionResult> Details(int userId) 
         {
             var user = await UserRepository.GetById(userId);
 

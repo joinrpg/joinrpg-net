@@ -1,4 +1,5 @@
 
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 
@@ -6,7 +7,7 @@ namespace Joinrpg.Web.Identity
 {
     internal static class Builders
     {
-        public static JoinIdentityUser ToIdentityUser(this User dbUser)
+        public static JoinIdentityUser ToIdentityUser([NotNull] this User dbUser)
             => new JoinIdentityUser()
             {
                 UserName = dbUser.UserName,

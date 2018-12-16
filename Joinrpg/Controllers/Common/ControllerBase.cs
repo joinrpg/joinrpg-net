@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Joinrpg.Web.Identity;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using Microsoft.AspNet.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -18,6 +21,9 @@ namespace JoinRpg.Web.Controllers.Common
     {
         protected readonly ApplicationUserManager UserManager;
         protected readonly IUserRepository UserRepository;
+
+        [CanBeNull]
+        protected ICurrentUserInfo CurrentUser;
 
         protected ControllerBase(ApplicationUserManager userManager, IUserRepository userRepository)
         {
@@ -30,10 +36,8 @@ namespace JoinRpg.Web.Controllers.Common
             ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
             if (CurrentUserIdOrDefault != null)
             {
-                //TODO read this from claims to speed up everything
-                var currentUser = Task.Run(() => GetCurrentUserAsync()).GetAwaiter().GetResult();
-                ViewBag.UserDisplayName = currentUser.GetDisplayName();
-                ViewBag.GravatarHash = currentUser.Email.GravatarHash().Trim();
+                CurrentUser = ((ClaimsIdentity) User.Identity).GetCurrentUserInfo();
+                ViewBag.CurrentUser = CurrentUser;
             }
 
             base.OnActionExecuting(filterContext);

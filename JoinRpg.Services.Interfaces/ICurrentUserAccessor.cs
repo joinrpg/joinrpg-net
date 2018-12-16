@@ -15,5 +15,13 @@ namespace JoinRpg.Services.Interfaces
     public interface ICurrentUserAccessor
     {
         int CurrentUserId { get; }
+
+    }
+
+    public interface ICurrentUserInfo
+    {
+        int UserId { get; }
+        string DisplayName { get; }
+        string Email { get; }
     }
 }

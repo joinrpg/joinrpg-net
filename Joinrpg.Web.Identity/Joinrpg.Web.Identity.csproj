@@ -11,5 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
         <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+        <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
+        <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     </ItemGroup>
 </Project>

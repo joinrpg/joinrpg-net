@@ -36,7 +36,7 @@ namespace JoinRpg.DataModel
 
     public string PrefferedName { get; set; }
 
-    [CanBeNull]
+    [NotNull]
     public virtual UserAuthDetails Auth { get; set; }
 
     public virtual AllrpgUserDetails Allrpg { get; set; }

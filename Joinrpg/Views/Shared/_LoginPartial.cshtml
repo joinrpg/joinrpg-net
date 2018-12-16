@@ -1,6 +1,10 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using JoinRpg.Helpers.Web
+@using JoinRpg.Services.Interfaces
+@using Microsoft.AspNet.Identity
 @if (Request.IsAuthenticated)
 {
+    ICurrentUserInfo currentUser = ViewBag.CurrentUser;
+    var gravatar = currentUser.Email.GravatarHash().Trim();
     using (Html.BeginForm("LogOff", "Account", new {area = ""}, FormMethod.Post, new {id = "logoutForm", @class = "navbar-right",}))
     {
         @Html.AntiForgeryToken()
@@ -8,7 +12,7 @@
         <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                    <img src="https://www.gravatar.com/avatar/@ViewBag.GravatarHash?d=identicon&s=24"/>&nbsp;@ViewBag.UserDisplayName
+                    <img src="https://www.gravatar.com/avatar/@gravatar?d=identicon&s=24"/>&nbsp;@currentUser.DisplayName
                 </a>
 
                 <ul class="dropdown-menu">

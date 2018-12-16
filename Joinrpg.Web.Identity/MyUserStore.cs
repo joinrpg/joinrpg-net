@@ -3,28 +3,32 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
+using Claim = System.Security.Claims.Claim;
 using DbUser = JoinRpg.DataModel.User;
 
 namespace Joinrpg.Web.Identity
 {
+    [UsedImplicitly]
     public class MyUserStore :
         IUserPasswordStore<JoinIdentityUser, int>,
         IUserLockoutStore<JoinIdentityUser, int>,
         IUserTwoFactorStore<JoinIdentityUser, int>,
         IUserEmailStore<JoinIdentityUser, int>,
         IUserLoginStore<JoinIdentityUser, int>,
-        IUserRoleStore<JoinIdentityUser, int>
+        IUserRoleStore<JoinIdentityUser, int>,
+        IUserClaimStore<JoinIdentityUser, int>
     {
         private readonly MyDbContext _ctx;
-        private readonly IDbSet<DbUser> UserSet;
+        private readonly IDbSet<DbUser> _userSet;
 
         public MyUserStore(MyDbContext ctx)
         {
             _ctx = ctx;
-            UserSet = _ctx.Set<User>();
+            _userSet = _ctx.Set<User>();
         }
 
         public void Dispose() => _ctx?.Dispose();
@@ -36,7 +40,7 @@ namespace Joinrpg.Web.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var hasAnyUser = await UserSet.AnyAsync();
+            var hasAnyUser = await _userSet.AnyAsync();
 
             var dbUser = new DbUser()
             {
@@ -78,7 +82,7 @@ namespace Joinrpg.Web.Identity
         public async Task<JoinIdentityUser> FindByNameAsync(string userName)
         {
             var dbUser = await LoadUser(userName);
-            return dbUser.ToIdentityUser();
+            return dbUser?.ToIdentityUser();
         }
 
 
@@ -90,6 +94,11 @@ namespace Joinrpg.Web.Identity
             }
 
             var dbUser = await LoadUser(user.UserName);
+
+            if (dbUser == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             dbUser.PasswordHash = passwordHash;
 
@@ -160,7 +169,7 @@ namespace Joinrpg.Web.Identity
         public async Task<JoinIdentityUser> FindByEmailAsync(string email)
         {
             var user = await LoadUser(email);
-            return user.ToIdentityUser();
+            return user?.ToIdentityUser();
         }
 
         public async Task AddLoginAsync(JoinIdentityUser user, UserLoginInfo login)
@@ -208,15 +217,7 @@ namespace Joinrpg.Web.Identity
         public async Task<IList<string>> GetRolesAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
-            List<string> list;
-            if (dbUser.Auth?.IsAdmin ?? false)
-            {
-                list = new List<string>() {Security.AdminRoleName};
-            }
-            else
-            {
-                list = new List<string>();
-            }
+            var list = dbUser.Auth.IsAdmin ? new List<string>() {Security.AdminRoleName} : new List<string>();
 
             return list;
         }
@@ -229,13 +230,26 @@ namespace Joinrpg.Web.Identity
 
         #endregion
 
+        [ItemCanBeNull]
         private async Task<DbUser> LoadUser(string userName) =>
             await _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == userName);
 
+        [ItemNotNull]
         private async Task<DbUser> LoadUser(int id) =>
-            await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserId == id);
+            await _ctx.UserSet.SingleAsync(user => user.UserId == id);
 
+        [ItemNotNull]
         private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser) =>
-            await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id);
+            await _ctx.UserSet.Include(u => u.ExternalLogins).SingleAsync(user => user.UserId == joinIdentityUser.Id);
+
+        public async Task<IList<Claim>> GetClaimsAsync(JoinIdentityUser user)
+        {
+            var dbUser = await LoadUser(user);
+            return dbUser.ToClaimsList();
+        }
+
+        public Task AddClaimAsync(JoinIdentityUser user, Claim claim) => throw new NotImplementedException();
+
+        public Task RemoveClaimAsync(JoinIdentityUser user, Claim claim) => throw new NotImplementedException();
     }
 }
