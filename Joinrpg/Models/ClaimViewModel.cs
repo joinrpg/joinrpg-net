@@ -142,7 +142,7 @@ namespace JoinRpg.Web.Models
           Player = claim.Player;
           ProjectId = claim.ProjectId;
           ProjectName = claim.Project.ProjectName;
-          Status =  new ClaimFullStatusView(claim);
+          Status =  new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));
           CharacterGroupId = claim.CharacterGroupId;
           GroupName = claim.Group?.CharacterGroupName;
           CharacterId = claim.CharacterId;

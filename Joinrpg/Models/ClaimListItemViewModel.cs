@@ -130,7 +130,7 @@ namespace JoinRpg.Web.Models
 
             ClaimId = claim.ClaimId;
 
-            ClaimFullStatusView = new ClaimFullStatusView(claim);
+            ClaimFullStatusView = new ClaimFullStatusView(claim, new AccessArguments(claim, currentUserId));
             Name = claim.Name;
             Player = claim.Player;
 

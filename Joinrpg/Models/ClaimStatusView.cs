@@ -34,8 +34,9 @@ namespace JoinRpg.Web.Models
 
     public class ClaimFullStatusView
     {
-        public ClaimFullStatusView(Claim claim)
+        public ClaimFullStatusView(Claim claim, AccessArguments accessArguments)
         {
+            AccessArguments = accessArguments;
             ClaimStatus = (ClaimStatusView)claim.ClaimStatus;
             ClaimDenialStatus = (ClaimDenialStatusView?)claim.ClaimDenialStatus;
         }
@@ -45,6 +46,8 @@ namespace JoinRpg.Web.Models
 
         [Display(Name = "Причина отказа")]
         public ClaimDenialStatusView? ClaimDenialStatus { get; }
+
+        public AccessArguments AccessArguments { get; }
     }
 
 
