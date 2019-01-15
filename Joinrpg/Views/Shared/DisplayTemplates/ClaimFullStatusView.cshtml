@@ -1,3 +1,3 @@
 @using JoinRpg.Helpers
 @model JoinRpg.Web.Models.ClaimFullStatusView
-<text>@Html.DisplayFor(model => model.ClaimStatus) (@if (Model.ClaimDenialStatus != null) { @Model.ClaimDenialStatus.GetDisplayName()})</text>
+<text>@Html.DisplayFor(model => model.ClaimStatus) (@if (Model.ClaimDenialStatus != null && Model.AccessArguments.MasterAccess) { @Model.ClaimDenialStatus.GetDisplayName()})</text>
