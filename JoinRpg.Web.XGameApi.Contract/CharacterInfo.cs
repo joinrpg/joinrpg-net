@@ -53,6 +53,16 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// Player user id
         /// </summary>
         public int? PlayerUserId { get; set; }
+
+        /// <summary>
+        /// Character name
+        /// </summary>
+        public string CharacterName { get; set; }
+
+        /// <summary>
+        /// Description
+        /// </summary>
+        public string CharacterDescription { get; set; }
     }
 
     /// <summary>
