@@ -38,6 +38,8 @@ namespace JoinRpg.Data.Interfaces
     public IReadOnlyCollection<GroupHeader> DirectGroups { get; set; }
       public IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
         public string JsonData { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
   }
 
   public class GroupHeader : IEquatable<GroupHeader>

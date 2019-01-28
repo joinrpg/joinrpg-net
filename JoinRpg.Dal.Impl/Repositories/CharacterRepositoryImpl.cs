@@ -81,6 +81,8 @@ namespace JoinRpg.Dal.Impl.Repositories
         new CharacterView()
         {
           CharacterId = character.CharacterId,
+          Name = character.CharacterName,
+          Description = character.Description.Contents,
           UpdatedAt = character.UpdatedAt,
           IsActive = character.IsActive,
           InGame = character.InGame,
