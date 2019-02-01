@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.DataModel.Mocks</AssemblyTitle>
     <Product>JoinRpg.DataModel.Mocks</Product>
+    <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.ComponentModel.DataAnnotations" />

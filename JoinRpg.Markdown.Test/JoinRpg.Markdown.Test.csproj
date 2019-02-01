@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Markdown.Test</AssemblyTitle>
-    <Product>JoinRpg.Markdown.Test</Product>
+    <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Web" />
@@ -13,9 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
     <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Shouldly" Version="2.8.3" />

@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers.Test</AssemblyTitle>
     <Product>JoinRpg.Helpers.Test</Product>
+    <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
