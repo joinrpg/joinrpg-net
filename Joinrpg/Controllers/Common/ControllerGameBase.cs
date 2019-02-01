@@ -44,18 +44,19 @@ namespace JoinRpg.Web.Controllers.Common
 
     protected override void OnActionExecuting(ActionExecutingContext filterContext)
     {
-      var projectIdValue = ValueProvider.GetValue("projectid");
-      if (projectIdValue == null)
-      {
-        return;
-      }
-      var projectIdRawValue = projectIdValue.RawValue;
-      var projectId = projectIdRawValue.GetType().IsArray ? int.Parse(((string[])projectIdRawValue)[0]) : int.Parse((string)projectIdRawValue);
+        var projectIdValue = ValueProvider.GetValue("projectid");
+        if (projectIdValue != null)
+        {
+            var projectIdRawValue = projectIdValue.RawValue;
+            var projectId = projectIdRawValue.GetType().IsArray
+                ? int.Parse(((string[]) projectIdRawValue)[0])
+                : int.Parse((string) projectIdRawValue);
 
-      var project = ProjectRepository.GetProjectAsync(projectId).Result;
-      RegisterProjectMenu(project);
+            var project = ProjectRepository.GetProjectAsync(projectId).Result;
+            RegisterProjectMenu(project);
+        }
 
-      base.OnActionExecuting(filterContext);
+        base.OnActionExecuting(filterContext);
     }
 
     private void RegisterProjectMenu(Project project)
