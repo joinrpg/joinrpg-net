@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <AssemblyTitle>JoinRpg.Services.Interfaces</AssemblyTitle>
-        <Product>JoinRpg.Services.Interfaces</Product>
+        <AssemblyTitle>JoinRpg.Web.Identity</AssemblyTitle>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.2" />
