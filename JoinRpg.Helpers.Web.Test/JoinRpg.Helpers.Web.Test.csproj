@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers.Web.Test</AssemblyTitle>
     <Product>JoinRpg.Helpers.Web.Test</Product>
+    <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
