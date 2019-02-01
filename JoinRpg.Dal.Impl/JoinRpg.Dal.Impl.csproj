@@ -748,9 +748,6 @@
     <PackageReference Include="LinqKit.EntityFramework">
       <Version>1.1.9</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNet.Identity.Core">
-      <Version>2.2.2</Version>
-    </PackageReference>
     <PackageReference Include="Unity">
       <Version>4.0.1</Version>
     </PackageReference>
