@@ -1,81 +1,31 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{81185840-6DA0-440B-813A-E32D6CCAD34E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.CommonUI.Models</RootNamespace>
-    <AssemblyName>JoinRpg.CommonUI.Models</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>JoinRpg.CommonUI.Models</AssemblyTitle>
+    <Product>JoinRpg.CommonUI.Models</Product>
+    <Copyright>Copyright ©  2015</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddClaimForbideReasonViewModel.cs" />
-    <Compile Include="CommentExtraAction.cs" />
-    <Compile Include="FinanceDisplayExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
-      <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
-      <Name>JoinRpg.DataModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj">
-      <Project>{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}</Project>
-      <Name>JoinRpg.Domain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
-      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
-      <Name>JoinRpg.Helpers</Name>
-    </ProjectReference>
+    <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
+    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.2" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations">
-      <Version>2018.3.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNet.Identity.Core">
-      <Version>2.2.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
