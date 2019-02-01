@@ -2,17 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Web.XGameApi.Contract</AssemblyTitle>
-    <Product>JoinRpg.Web.XGameApi.Contract</Product>
-    <Copyright>Copyright ©  2017</Copyright>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>JoinRpg.Web.XGameApi.Contract.xml</DocumentationFile>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
