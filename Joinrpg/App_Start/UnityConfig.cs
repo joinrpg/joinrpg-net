@@ -56,7 +56,7 @@ namespace JoinRpg.Web
 
         container.RegisterType<IUriService>(new InjectionFactory(c => new UriServiceImpl(new HttpContextWrapper(HttpContext.Current))));
 
-        container.RegisterType<IUserStore<IdentityUser, int>, MyUserStore>();
+        container.RegisterType<IUserStore<JoinIdentityUser, int>, MyUserStore>();
 
         container.RegisterType<IMailGunConfig, ApiSecretsStorage>();
 

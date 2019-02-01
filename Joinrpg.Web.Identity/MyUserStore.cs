@@ -11,12 +11,12 @@ using DbUser = JoinRpg.DataModel.User;
 namespace Joinrpg.Web.Identity
 {
     public class MyUserStore :
-        IUserPasswordStore<IdentityUser, int>,
-        IUserLockoutStore<IdentityUser, int>,
-        IUserTwoFactorStore<IdentityUser, int>,
-        IUserEmailStore<IdentityUser, int>,
-        IUserLoginStore<IdentityUser, int>,
-        IUserRoleStore<IdentityUser, int>
+        IUserPasswordStore<JoinIdentityUser, int>,
+        IUserLockoutStore<JoinIdentityUser, int>,
+        IUserTwoFactorStore<JoinIdentityUser, int>,
+        IUserEmailStore<JoinIdentityUser, int>,
+        IUserLoginStore<JoinIdentityUser, int>,
+        IUserRoleStore<JoinIdentityUser, int>
     {
         private readonly MyDbContext _ctx;
         private readonly IDbSet<DbUser> UserSet;
@@ -29,7 +29,7 @@ namespace Joinrpg.Web.Identity
 
         public void Dispose() => _ctx?.Dispose();
 
-        public async Task CreateAsync(IdentityUser user)
+        public async Task CreateAsync(JoinIdentityUser user)
         {
             if (user == null)
             {
@@ -59,7 +59,7 @@ namespace Joinrpg.Web.Identity
             user.Id = dbUser.UserId;
         }
 
-        public async Task UpdateAsync(IdentityUser user)
+        public async Task UpdateAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             dbUser.UserName = user.UserName;
@@ -67,22 +67,22 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
-        public Task DeleteAsync(IdentityUser user) => throw new NotImplementedException();
+        public Task DeleteAsync(JoinIdentityUser user) => throw new NotImplementedException();
 
-        public async Task<IdentityUser> FindByIdAsync(int userId)
+        public async Task<JoinIdentityUser> FindByIdAsync(int userId)
         {
             var dbUser = await LoadUser(userId);
             return dbUser.ToIdentityUser();
         }
 
-        public async Task<IdentityUser> FindByNameAsync(string userName)
+        public async Task<JoinIdentityUser> FindByNameAsync(string userName)
         {
             var dbUser = await LoadUser(userName);
             return dbUser.ToIdentityUser();
         }
 
 
-        public async Task SetPasswordHashAsync(IdentityUser user, string passwordHash)
+        public async Task SetPasswordHashAsync(JoinIdentityUser user, string passwordHash)
         {
             if (user == null)
             {
@@ -96,42 +96,42 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task<string> GetPasswordHashAsync(IdentityUser user)
+        public async Task<string> GetPasswordHashAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.PasswordHash;
         }
 
-        public async Task<bool> HasPasswordAsync(IdentityUser user)
+        public async Task<bool> HasPasswordAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.PasswordHash != null;
         }
 
-        public Task<DateTimeOffset> GetLockoutEndDateAsync(IdentityUser user) =>
+        public Task<DateTimeOffset> GetLockoutEndDateAsync(JoinIdentityUser user) =>
             throw new NotImplementedException();
 
-        public Task SetLockoutEndDateAsync(IdentityUser user, DateTimeOffset lockoutEnd) =>
+        public Task SetLockoutEndDateAsync(JoinIdentityUser user, DateTimeOffset lockoutEnd) =>
             throw new NotImplementedException();
 
-        public Task<int> IncrementAccessFailedCountAsync(IdentityUser user) =>
+        public Task<int> IncrementAccessFailedCountAsync(JoinIdentityUser user) =>
             throw new NotImplementedException();
 
-        public Task ResetAccessFailedCountAsync(IdentityUser user) => Task.FromResult<object>(null);
+        public Task ResetAccessFailedCountAsync(JoinIdentityUser user) => Task.FromResult<object>(null);
 
-        public Task<int> GetAccessFailedCountAsync(IdentityUser user) => Task.FromResult(0);
+        public Task<int> GetAccessFailedCountAsync(JoinIdentityUser user) => Task.FromResult(0);
 
-        public Task<bool> GetLockoutEnabledAsync(IdentityUser user) => Task.FromResult(false);
+        public Task<bool> GetLockoutEnabledAsync(JoinIdentityUser user) => Task.FromResult(false);
 
-        public Task SetLockoutEnabledAsync(IdentityUser user, bool enabled) =>
+        public Task SetLockoutEnabledAsync(JoinIdentityUser user, bool enabled) =>
             throw new NotImplementedException();
 
-        public Task SetTwoFactorEnabledAsync(IdentityUser user, bool enabled) =>
+        public Task SetTwoFactorEnabledAsync(JoinIdentityUser user, bool enabled) =>
             throw new NotImplementedException();
 
-        public Task<bool> GetTwoFactorEnabledAsync(IdentityUser user) => Task.FromResult(false);
+        public Task<bool> GetTwoFactorEnabledAsync(JoinIdentityUser user) => Task.FromResult(false);
 
-        public async Task SetEmailAsync(IdentityUser user, string email)
+        public async Task SetEmailAsync(JoinIdentityUser user, string email)
         {
             var dbUser = await LoadUser(user);
             dbUser.Email = email;
@@ -139,38 +139,38 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
-        public Task<string> GetEmailAsync(IdentityUser user)
+        public Task<string> GetEmailAsync(JoinIdentityUser user)
         {
             return Task.FromResult(user.UserName);
         }
 
-        public async Task<bool> GetEmailConfirmedAsync(IdentityUser user)
+        public async Task<bool> GetEmailConfirmedAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.Auth.EmailConfirmed;
         }
 
-        public async Task SetEmailConfirmedAsync(IdentityUser user, bool confirmed)
+        public async Task SetEmailConfirmedAsync(JoinIdentityUser user, bool confirmed)
         {
             var dbUser = await LoadUser(user);
             dbUser.Auth.EmailConfirmed = confirmed;
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task<IdentityUser> FindByEmailAsync(string email)
+        public async Task<JoinIdentityUser> FindByEmailAsync(string email)
         {
             var user = await LoadUser(email);
             return user.ToIdentityUser();
         }
 
-        public async Task AddLoginAsync(IdentityUser user, UserLoginInfo login)
+        public async Task AddLoginAsync(JoinIdentityUser user, UserLoginInfo login)
         {
             var dbUser = await LoadUser(user);
             dbUser.ExternalLogins.Add(login.ToUserExternalLogin());
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task RemoveLoginAsync(IdentityUser user, UserLoginInfo login)
+        public async Task RemoveLoginAsync(JoinIdentityUser user, UserLoginInfo login)
         {
             var dbUser = await LoadUser(user);
             var el =
@@ -181,13 +181,13 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
-        public async Task<IList<UserLoginInfo>> GetLoginsAsync(IdentityUser user)
+        public async Task<IList<UserLoginInfo>> GetLoginsAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.ExternalLogins.Select(uel => uel.ToUserLoginInfo()).ToList();
         }
 
-        public async Task<IdentityUser> FindAsync(UserLoginInfo login)
+        public async Task<JoinIdentityUser> FindAsync(UserLoginInfo login)
         {
             var uel =
                 await _ctx.Set<UserExternalLogin>()
@@ -199,13 +199,13 @@ namespace Joinrpg.Web.Identity
 
         #region Implementation of IUserRoleStore<User,in int>
 
-        public Task AddToRoleAsync(IdentityUser user, string roleName) =>
+        public Task AddToRoleAsync(JoinIdentityUser user, string roleName) =>
             throw new NotSupportedException();
 
-        public Task RemoveFromRoleAsync(IdentityUser user, string roleName) =>
+        public Task RemoveFromRoleAsync(JoinIdentityUser user, string roleName) =>
             throw new NotSupportedException();
 
-        public async Task<IList<string>> GetRolesAsync(IdentityUser user)
+        public async Task<IList<string>> GetRolesAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             List<string> list;
@@ -221,7 +221,7 @@ namespace Joinrpg.Web.Identity
             return list;
         }
 
-        public async Task<bool> IsInRoleAsync(IdentityUser user, string roleName)
+        public async Task<bool> IsInRoleAsync(JoinIdentityUser user, string roleName)
         {
             var roles = await GetRolesAsync(user);
             return roles.Contains(roleName);
@@ -235,7 +235,7 @@ namespace Joinrpg.Web.Identity
         private async Task<DbUser> LoadUser(int id) =>
             await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserId == id);
 
-        private async Task<DbUser> LoadUser(IdentityUser identityUser) =>
-            await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == identityUser.Id);
+        private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser) =>
+            await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id);
     }
 }

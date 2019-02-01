@@ -11,13 +11,13 @@ using Microsoft.Owin.Security;
 namespace JoinRpg.Web
 {
     [UsedImplicitly]
-  public class ApplicationUserManager : UserManager<IdentityUser, int>
+  public class ApplicationUserManager : UserManager<JoinIdentityUser, int>
   {
-    public ApplicationUserManager(IUserStore<IdentityUser, int> store, IIdentityMessageService messageService)
+    public ApplicationUserManager(IUserStore<JoinIdentityUser, int> store, IIdentityMessageService messageService)
       : base(store)
     {
       // Configure validation logic for usernames
-      UserValidator = new UserValidator<IdentityUser, int>(this)
+      UserValidator = new UserValidator<JoinIdentityUser, int>(this)
       {
         AllowOnlyAlphanumericUserNames = false,
         RequireUniqueEmail = true,
@@ -41,14 +41,14 @@ namespace JoinRpg.Web
       EmailService = messageService;
 
       UserTokenProvider =
-        new DataProtectorTokenProvider<IdentityUser, int>(
+        new DataProtectorTokenProvider<JoinIdentityUser, int>(
           Startup.DataProtectionProvider.Create("ASP.NET Identity"));
 
     }
   }
 
   [UsedImplicitly]
-  public class ApplicationSignInManager : SignInManager<IdentityUser, int>
+  public class ApplicationSignInManager : SignInManager<JoinIdentityUser, int>
   {
     public ApplicationSignInManager(ApplicationUserManager userManager,
       IAuthenticationManager authenticationManager)
@@ -56,7 +56,7 @@ namespace JoinRpg.Web
     {
     }
 
-    public override Task<ClaimsIdentity> CreateUserIdentityAsync(IdentityUser user) => user
+    public override Task<ClaimsIdentity> CreateUserIdentityAsync(JoinIdentityUser user) => user
       .GenerateUserIdentityAsync(UserManager, AuthenticationType);
   }
 }
