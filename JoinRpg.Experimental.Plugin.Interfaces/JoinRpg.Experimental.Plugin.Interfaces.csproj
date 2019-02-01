@@ -1,82 +1,26 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JoinRpg.Experimental.Plugin.Interfaces</RootNamespace>
-    <AssemblyName>JoinRpg.Experimental.Plugin.Interfaces</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyTitle>JoinRpg.Experimental.Plugin.Interfaces</AssemblyTitle>
+    <Product>JoinRpg.Experimental.Plugin.Interfaces</Product>
+    <Copyright>Copyright ©  2016</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DomainModel\CharacterFieldInfo.cs" />
-    <Compile Include="DomainModel\CharacterGroupInfo.cs" />
-    <Compile Include="DomainModel\CharacterInfo.cs" />
-    <Compile Include="HtmlPrintResult.cs" />
-    <Compile Include="IPlugin.cs" />
-    <Compile Include="Operations\IGenerateFieldOperation.cs" />
-    <Compile Include="PluginConfiguration.cs" />
-    <Compile Include="IPluginOperation.cs" />
-    <Compile Include="Operations\IPrintCardPluginOperation.cs" />
-    <Compile Include="Operations\IStaticPagePluginOperation.cs" />
-    <Compile Include="PluginConfigurationIncorrectException.cs" />
-    <Compile Include="PluginImplementationBase.cs" />
-    <Compile Include="PluginOperationMetadata.cs" />
-    <Compile Include="DomainModel\ProjectFieldInfo.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj" />
+    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj">
-      <Project>{BD1358F0-8C7B-4205-84BC-B1C954364DF0}</Project>
-      <Name>JoinRpg.DataModel</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj">
-      <Project>{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}</Project>
-      <Name>JoinRpg.Helpers.Web</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj">
-      <Project>{011FE918-5653-4A6D-BF65-BB0E01DD74AC}</Project>
-      <Name>JoinRpg.Helpers</Name>
-    </ProjectReference>
+    <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations">
-      <Version>2018.3.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
