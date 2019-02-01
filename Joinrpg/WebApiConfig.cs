@@ -1,4 +1,5 @@
-﻿using System.Web.Http;
+using System.Web.Http;
+using Microsoft.Practices.Unity.WebApi;
 
 namespace JoinRpg.Web
 {
@@ -8,7 +9,7 @@ namespace JoinRpg.Web
     {
       config.MapHttpAttributeRoutes();
       var container = UnityConfig.GetConfiguredContainer();
-      config.DependencyResolver = new Unity.WebApi.UnityDependencyResolver(container);
+      config.DependencyResolver = new UnityDependencyResolver(container);
     }
   }
 }
