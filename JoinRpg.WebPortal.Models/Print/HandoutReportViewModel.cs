@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -21,14 +20,14 @@ namespace JoinRpg.Web.Models.Print
 
   public class HandoutViewModelBase 
   {
-    public HandoutViewModelBase(IHtmlString text, User master)
+    public HandoutViewModelBase(JoinHtmlString text, User master)
     {
       Text = text;
       Master = master;
     }
 
     [Display(Name = "Что раздавать")]
-    public IHtmlString Text { get; }
+    public JoinHtmlString Text { get; }
 
     [Display(Name="Мастер")]
     public User Master { get; }

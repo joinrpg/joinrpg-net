@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
@@ -15,7 +15,7 @@ namespace JoinRpg.Web.Models.Plot
   public class PlotElementViewModel : IMovableListItem
   {
     public PlotStatus Status { get; }
-    public IHtmlString Content { get; }
+    public JoinHtmlString Content { get; }
     public string TodoField{ get; }
     public int PlotFolderId { get; }
 

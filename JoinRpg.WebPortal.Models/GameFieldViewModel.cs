@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
 
@@ -108,10 +109,10 @@ namespace JoinRpg.Web.Models
         public bool CanPlayerEdit { get; set; }
 
         [Display(Name = "Описание")]
-        public IHtmlString DescriptionDisplay { get; set; }
+        public JoinHtmlString DescriptionDisplay { get; set; }
 
         [Display(Name = "Описание (только для мастеров)")]
-        public IHtmlString MasterDescriptionDisplay { get; set; }
+        public JoinHtmlString MasterDescriptionDisplay { get; set; }
 
         [Display(Name = "Обязательное?")]
         public MandatoryStatusViewType MandatoryStatus { get; set; }

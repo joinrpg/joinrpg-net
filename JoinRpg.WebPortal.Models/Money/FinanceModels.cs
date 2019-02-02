@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Money;
 
@@ -59,7 +60,7 @@ namespace JoinRpg.Web.Models
 
     public class MarkMeAsPreferentialViewModel : FinanceViewModelBase
     {
-        public IHtmlString PreferentialFeeConditions { get; set; }
+        public JoinHtmlString PreferentialFeeConditions { get; set; }
     }
 
   public class FeeAcceptanceViewModel : FinanceViewModelBase

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Plot;
@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Models.Print
 
   public class PrintCharacterViewModel : PrintCharacterViewModelSlim
   {
-    public IHtmlString CharacterDescription{ get; }
+    public JoinHtmlString CharacterDescription{ get; }
     public PlotDisplayViewModel Plots { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string PlayerPhoneNumber { get; }
@@ -74,7 +74,7 @@ namespace JoinRpg.Web.Models.Print
 
   public class HandoutListItemViewModel : HandoutViewModelBase
   {
-    public HandoutListItemViewModel(IHtmlString text, User master) : base(text, master)
+    public HandoutListItemViewModel(JoinHtmlString text, User master) : base(text, master)
     {
     }
   }

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models
 {
@@ -94,7 +93,7 @@ namespace JoinRpg.Web.Models
         public IEnumerable<User> Masters { get; }
 
         [DisplayName("Анонс проекта")]
-        public IHtmlString ProjectAnnounce { get; }
+        public JoinHtmlString ProjectAnnounce { get; }
 
         public ProjectDetailsViewModel(Project project)
         {

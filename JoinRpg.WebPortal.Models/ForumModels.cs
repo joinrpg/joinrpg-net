@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models
@@ -121,7 +121,7 @@ namespace JoinRpg.Web.Models
     public int ProjectId { get; }
     public string Header { get; }
     public User Topicstarter { get; set; }
-    public IHtmlString LastMessageText { get; }
+    public JoinHtmlString LastMessageText { get; }
     public User LastMessageAuthor { get;  }
     public DateTime UpdatedAt { get; }
     public int UnreadCount { get; }

@@ -5,6 +5,7 @@ using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -79,7 +80,7 @@ namespace JoinRpg.Web.Models.Plot
 
   public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
   {
-    public IHtmlString Summary { get; }
+    public JoinHtmlString Summary { get; }
     public IEnumerable<PlotElementViewModel> Elements { get; }
     public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 

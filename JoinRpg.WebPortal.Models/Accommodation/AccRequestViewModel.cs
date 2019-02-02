@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using Microsoft.Practices.ObjectBuilder2;
+using JoinRpg.Helpers;
 using Newtonsoft.Json;
 
 namespace JoinRpg.Web.Models.Accommodation
@@ -30,11 +29,9 @@ namespace JoinRpg.Web.Models.Accommodation
         public int Persons
             => Participants?.Count ?? 0;
 
-        public string PersonsList
-            => Participants.JoinStrings(@", ", p => p.UserName);
+        public string PersonsList => Participants.Select(p => p.UserName).JoinStrings(@", ");
 
-        public object Instance
-            => null;
+        public object Instance => null;
 
         public int FeeTotal { get; protected set; }
 
