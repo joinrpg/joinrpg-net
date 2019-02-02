@@ -2,6 +2,7 @@ using System;
 using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers.Web;
 using Markdig;
 using Vereyon.Web;
 
@@ -16,7 +17,7 @@ namespace Joinrpg.Markdown
         /// Converts markdown to HtmlString with all sanitization
         /// </summary>
         [NotNull]
-        public static IHtmlString ToHtmlString([CanBeNull]
+        public static JoinHtmlString ToHtmlString([CanBeNull]
             this MarkdownString markdownString,
             ILinkRenderer renderer = null)
             => PerformRender(markdownString,
@@ -28,7 +29,7 @@ namespace Joinrpg.Markdown
         /// Converts markdown to plain text
         /// </summary>
         [NotNull]
-        public static IHtmlString ToPlainText([CanBeNull]
+        public static JoinHtmlString ToPlainText([CanBeNull]
             this MarkdownString markdownString,
             ILinkRenderer renderer = null)
             =>
@@ -37,7 +38,7 @@ namespace Joinrpg.Markdown
                     Markdig.Markdown.ToPlainText,
                     HtmlSanitizers.RemoveAll);
 
-        private static IHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer linkRenderer,
+        private static JoinHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer linkRenderer,
             Func<string, MarkdownPipeline, string> renderMethod, IHtmlSanitizer sanitizer)
         {
             linkRenderer = linkRenderer ?? DoNothingLinkRenderer.Instance;

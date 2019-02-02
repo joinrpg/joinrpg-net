@@ -1,6 +1,6 @@
 using System;
-using System.Web;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Helpers.Web
 {
@@ -13,7 +13,7 @@ namespace JoinRpg.Helpers.Web
         /// Default value for IHtmlString
         /// </summary>
         [NotNull]
-        public static IHtmlString WithDefaultStringValue([NotNull] this IHtmlString toHtmlString, [NotNull] string defaultValue)
+        public static JoinHtmlString WithDefaultStringValue([NotNull] this JoinHtmlString toHtmlString, [NotNull] string defaultValue)
         {
             if (toHtmlString == null) throw new ArgumentNullException(nameof(toHtmlString));
             if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));

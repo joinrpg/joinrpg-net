@@ -1,7 +1,7 @@
 using System;
 using System.Web;
 using JetBrains.Annotations;
-using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 
 namespace Joinrpg.Markdown
 {
@@ -15,7 +15,7 @@ namespace Joinrpg.Markdown
         /// </summary>
         /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
-        public static IHtmlString RemoveHtml([NotNull]
+        public static JoinHtmlString RemoveHtml([NotNull]
             this UnSafeHtml unsafeHtml)
         {
             if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
@@ -27,7 +27,7 @@ namespace Joinrpg.Markdown
         /// </summary>
         /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
-        public static IHtmlString SanitizeHtml([NotNull]
+        public static JoinHtmlString SanitizeHtml([NotNull]
             this UnSafeHtml unsafeHtml)
         {
             if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
@@ -39,7 +39,7 @@ namespace Joinrpg.Markdown
         /// </summary>
         /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
-        public static IHtmlString SanitizeHtml([NotNull]
+        public static JoinHtmlString SanitizeHtml([NotNull]
             this string str)
         {
             var unsafeHtml = (UnSafeHtml) str;
