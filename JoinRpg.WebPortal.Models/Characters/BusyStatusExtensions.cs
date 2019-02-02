@@ -4,7 +4,7 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  internal static class BusyStatusExtensions
+  public static class BusyStatusExtensions
   {
     public static CharacterBusyStatusView GetBusyStatus(this Character character)
     {
