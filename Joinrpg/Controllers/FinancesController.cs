@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JoinRpg.CommonUI.Models;
-using JoinRpg.Dal.Impl.Repositories;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.DataModel.Finances;
-using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
@@ -63,7 +58,7 @@ namespace JoinRpg.Web.Controllers
       {
         return errorResult;
       }
-      var viewModel = new FinOperationListViewModel(project, new UrlHelper(ControllerContext.RequestContext),
+      var viewModel = new FinOperationListViewModel(project, UriService,
         project.FinanceOperations.Where(predicate).ToArray());
 
       var exportType = GetExportTypeByName(export);
@@ -96,7 +91,7 @@ namespace JoinRpg.Web.Controllers
 
           var viewModel = new MoneyInfoTotalViewModel(project,
               transfers,
-              new UrlHelper(ControllerContext.RequestContext),
+              UriService,
               project.FinanceOperations.ToArray(),
               payments,
               CurrentUserId);
@@ -323,7 +318,7 @@ namespace JoinRpg.Web.Controllers
           var viewModel = new MoneyInfoForUserViewModel(project,
               transfers,
               user,
-              new UrlHelper(ControllerContext.RequestContext),
+              UriService,
               operations,
               payments,
               CurrentUserId);
