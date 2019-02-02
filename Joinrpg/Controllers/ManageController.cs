@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Controllers
       {
         HasPassword = HasPassword(),
         Email = await UserManager.GetEmailAsync(userId),
-        Logins = await UserManager.GetLoginsAsync(userId),
+        LoginsCount = (await UserManager.GetLoginsAsync(userId)).Count,
       };
       return View(model);
     }
@@ -161,11 +161,19 @@ namespace JoinRpg.Web.Controllers
           .Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider))
           .ToList();
       ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
-      return View(new ManageLoginsViewModel
-      {
-        CurrentLogins = userLogins,
-        OtherLogins = otherLogins,
-      });
+        return View(new ManageLoginsViewModel
+        {
+            CurrentLogins = userLogins.Select(ul => new UserLoginInfoViewModel()
+            {
+                LoginProvider = ul.LoginProvider,
+                ProviderKey = ul.ProviderKey
+            }).ToList(),
+            OtherLogins = otherLogins.Select(ol => new AuthenticationDescriptionViewModel()
+            {
+                AuthenticationType = ol.AuthenticationType,
+                Caption = ol.Caption
+            }).ToList(),
+        });
     }
 
     //
