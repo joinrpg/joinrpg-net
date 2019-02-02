@@ -1,5 +1,4 @@
 using System;
-using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 
@@ -13,31 +12,31 @@ namespace Joinrpg.Markdown
         /// <summary>
         /// Remove all Html from string
         /// </summary>
-        /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
+        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
         public static JoinHtmlString RemoveHtml([NotNull]
             this UnSafeHtml unsafeHtml)
         {
             if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
-            return new HtmlString(HtmlSanitizers.RemoveAll.Sanitize(unsafeHtml.UnValidatedValue));
+            return HtmlSanitizers.RemoveAll.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
         }
 
         /// <summary>
         /// Sanitize all Html, leaving safe subset
         /// </summary>
-        /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
+        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
         public static JoinHtmlString SanitizeHtml([NotNull]
             this UnSafeHtml unsafeHtml)
         {
             if (unsafeHtml == null) throw new ArgumentNullException(nameof(unsafeHtml));
-            return new HtmlString(HtmlSanitizers.Simple.Sanitize(unsafeHtml.UnValidatedValue));
+            return HtmlSanitizers.Simple.Sanitize(unsafeHtml.UnValidatedValue).MarkAsHtmlString();
         }
 
         /// <summary>
         /// Sanitize all Html, leaving safe subset
         /// </summary>
-        /// <returns>We are returning <see cref="IHtmlString"/> to signal "no need to sanitize this again"</returns>
+        /// <returns>We are returning <see cref="JoinHtmlString"/> to signal "no need to sanitize this again"</returns>
         [NotNull]
         public static JoinHtmlString SanitizeHtml([NotNull]
             this string str)
