@@ -1,5 +1,4 @@
 using System;
-using System.Web;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
@@ -44,7 +43,7 @@ namespace Joinrpg.Markdown
             linkRenderer = linkRenderer ?? DoNothingLinkRenderer.Instance;
             if (markdownString?.Contents == null)
             {
-                return new HtmlString("");
+                return "".MarkAsHtmlString();
             }
 
             var contents = sanitizer.Sanitize(markdownString.Contents);
@@ -57,7 +56,7 @@ namespace Joinrpg.Markdown
                 .UseEntityLinker(linkRenderer)
                 .Build();
 
-            return new HtmlString(sanitizer.Sanitize(renderMethod(contents, pipeline)));
+            return sanitizer.Sanitize(renderMethod(contents, pipeline)).MarkAsHtmlString();
         }
     }
 }
