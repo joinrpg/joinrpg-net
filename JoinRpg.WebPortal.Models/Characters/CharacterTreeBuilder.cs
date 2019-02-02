@@ -6,7 +6,7 @@ using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  internal class CharacterTreeBuilder
+    public class CharacterTreeBuilder
   {
     private CharacterGroup Root { get; }
 

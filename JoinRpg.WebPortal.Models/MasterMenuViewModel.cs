@@ -11,7 +11,7 @@ namespace JoinRpg.Web.Models
     public bool IsActive { get; set; }
     public bool IsAcceptingClaims { get; set; }
     public bool EnableAccommodation { get; set; }
-    public int? RootGroupId { get; internal set; }
+    public int? RootGroupId { get; set; }
     public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
     public bool IsAdmin { get; set; }
   }
