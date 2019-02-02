@@ -506,7 +506,9 @@
     <Content Include="Views\Shared\SuperSearchPartial.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\TargetedSearchResultViewModel.cshtml" />
     <Content Include="Views\Search\Index.cshtml" />
-    <Content Include="Views\Web.config" />
+    <Content Include="Views\Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
     <Content Include="Views\Plot\Index.cshtml" />
     <Content Include="Views\Plot\Create.cshtml" />
@@ -674,6 +676,10 @@
     <Folder Include="Views\Account\DisplayTemplates\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.AspNetLegacy.Helpers\JoinRpg.AspNetLegacy.Helpers.csproj">
+      <Project>{3493E4CA-6BA2-4E95-A66D-6DC748A3E887}</Project>
+      <Name>JoinRpg.AspNetLegacy.Helpers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj">
       <Project>{81185840-6da0-440b-813a-e32d6ccad34e}</Project>
       <Name>JoinRpg.CommonUI.Models</Name>

@@ -12,6 +12,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -1,20 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <AssemblyTitle>JoinRpg.Helpers.Web</AssemblyTitle>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
-    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <AssemblyTitle>JoinRpg.Helpers.Web</AssemblyTitle>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="System.ComponentModel.Composition" />
+        <Reference Include="System.Web" />
+        <Reference Include="System.Data.DataSetExtensions" />
+        <Reference Include="Microsoft.CSharp" />
+        <Reference Include="System.Net.Http" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
+        <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.1.1" />
+    </ItemGroup>
 </Project>
