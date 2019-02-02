@@ -8,7 +8,6 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
-using Microsoft.Practices.ObjectBuilder2;
 
 namespace JoinRpg.Web.Models.Exporters
 {
@@ -65,7 +64,7 @@ namespace JoinRpg.Web.Models.Exporters
     {
       var compiledFunc = func.Compile();
       return new TableColumn<string>(func.AsPropertyAccess(),
-        row => compiledFunc(row).Select(link => UriService.GetUri(link)).JoinStrings(" | "));
+        row => compiledFunc(row).Select(link => UriService.GetUri(link).ToString()).JoinStrings(" | "));
     }
 
     [Pure]

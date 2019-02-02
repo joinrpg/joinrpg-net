@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
@@ -30,11 +31,11 @@ namespace JoinRpg.Web.Models
 
     public int ProjectFieldDropdownValueId { get; }
 
-    public IHtmlString DescriptionPlainText { get; }
+    public JoinHtmlString DescriptionPlainText { get; }
 
     public string Label { get; }
-    public IHtmlString DescriptionHtml { get; }
-    public IHtmlString MasterDescriptionHtml { get; }
+    public JoinHtmlString DescriptionHtml { get; }
+    public JoinHtmlString MasterDescriptionHtml { get; }
 
         /// <summary>
         /// Value's price as specified in value's definition
@@ -65,14 +66,14 @@ namespace JoinRpg.Web.Models
 
     public bool HasValue { get; }
 
-    public IHtmlString DisplayString { get; }
+    public JoinHtmlString DisplayString { get; }
     public string FieldName { get; }
 
     public bool IsDeleted { get; }
 
-    public IHtmlString Description { get; }
+    public JoinHtmlString Description { get; }
 
-      public IHtmlString MasterDescription { get; }
+      public JoinHtmlString MasterDescription { get; }
 
         /// <summary>
         /// Field's price as specified in field's definition
@@ -118,7 +119,7 @@ namespace JoinRpg.Web.Models
           HasMasterAccess = model.AccessArguments.MasterAccess;
           Description = ch.Field.Description.ToHtmlString();
 
-          MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : MvcHtmlString.Empty;
+          MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : "".MarkAsHtmlString();
 
           IsPlayerVisible = ch.Field.CanPlayerView;
           IsDeleted = !ch.Field.IsActive;

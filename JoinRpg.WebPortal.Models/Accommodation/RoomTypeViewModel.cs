@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models.Accommodation
 {
@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Models.Accommodation
         public string Name { get; set; }
 
         [DisplayName("Описание")]
-        public IHtmlString DescriptionView { get; set; }
+        public JoinHtmlString DescriptionView { get; set; }
 
         [DisplayName("Цена за 1 место")]
         public int Cost { get; set; }

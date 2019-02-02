@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
@@ -62,7 +63,7 @@ namespace JoinRpg.Web.Models
     public User Author { get; }
     public DateTime CreatedTime { get; }
     public FinanceOperation Finance { get; }
-    public IHtmlString CommentText { get; }
+    public JoinHtmlString CommentText { get; }
     public int CommentId { get; }
     public IEnumerable<CommentViewModel> ChildComments { get; }
     public int ProjectId { get;  }

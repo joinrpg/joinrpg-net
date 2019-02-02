@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Characters
@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Models.Characters
 
     public IEnumerable<CharacterGroupListItemViewModel> ChildGroups { get; set; }
 
-    public IHtmlString Description { get; set; }
+    public JoinHtmlString Description { get; set; }
 
     public IEnumerable<CharacterGroupListItemViewModel> Path { get; set; }
 

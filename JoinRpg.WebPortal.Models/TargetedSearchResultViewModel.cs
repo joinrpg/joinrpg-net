@@ -1,10 +1,11 @@
 using System;
 using System.Text.RegularExpressions;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
+using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Web.Models
 {
@@ -19,7 +20,7 @@ namespace JoinRpg.Web.Models
         public GameObjectLinkType LinkType => SearchResult.LinkType.AsViewModel();
         public Uri Url { get; }
 
-        public IHtmlString GetFormattedDescription(int maxLengthToShow)
+        public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
         {
             string descriptionToShow = TruncateString(
                 SearchResult.Description.ToPlainText().ToHtmlString(),

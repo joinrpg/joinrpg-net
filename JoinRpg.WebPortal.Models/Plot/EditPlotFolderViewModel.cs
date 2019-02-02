@@ -155,9 +155,9 @@ namespace JoinRpg.Web.Models.Plot
     public int PlotElementId { get; }
     
     [Display(Name = "Текст вводной"), UIHint("MarkdownString")]
-    public IHtmlString Content { get; }
+    public JoinHtmlString Content { get; }
 
-    public IHtmlString ShortContent { get; }
+    public JoinHtmlString ShortContent { get; }
 
     [UIHint("EventTime")]
     public DateTime ModifiedDateTime { get; }

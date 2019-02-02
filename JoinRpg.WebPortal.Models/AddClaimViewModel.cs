@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using Joinrpg.Markdown;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models
 {
@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models
 
         public string ProjectName { get; set; }
 
-        public IHtmlString ClaimApplyRules { get; set; }
+        public JoinHtmlString ClaimApplyRules { get; set; }
 
         public int? CharacterId { get; set; }
         public int? CharacterGroupId { get; set; }
@@ -25,7 +25,7 @@ namespace JoinRpg.Web.Models
         public string TargetName { get; set; }
 
         [Display(Name = "Описание")]
-        public IHtmlString Description { get; set; }
+        public JoinHtmlString Description { get; set; }
 
         public bool IsAvailable { get; set; }
 

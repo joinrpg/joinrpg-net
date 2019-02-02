@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -12,6 +10,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.Money;
 
 namespace JoinRpg.Web.Models
@@ -205,7 +204,7 @@ namespace JoinRpg.Web.Models
 
         public int Id { get; }
         [Display(Name = "Комментарий")]
-        public IHtmlString Comment { get; }
+        public JoinHtmlString Comment { get; }
 
         public MoneyTransferListItemViewModel(MoneyTransfer fo, int currentUserId)
         {

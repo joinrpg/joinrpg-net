@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
@@ -48,7 +48,7 @@ namespace JoinRpg.Web.Models
     public int OtherClaimsFromThisPlayerCount { get; }
 
     [Display(Name = "Описание персонажа")]
-    public IHtmlString Description { get; set; }
+    public JoinHtmlString Description { get; set; }
 
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; set; }
@@ -481,7 +481,7 @@ namespace JoinRpg.Web.Models
 
         public bool PreferentialFeeEnabled { get; }
         public bool PreferentialFeeUser { get; }
-        public IHtmlString PreferentialFeeConditions { get; }
+        public JoinHtmlString PreferentialFeeConditions { get; }
 
         public int ClaimId { get; }
         public int ProjectId { get; }

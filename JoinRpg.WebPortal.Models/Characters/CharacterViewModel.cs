@@ -1,6 +1,6 @@
-﻿using System;
-using System.Web;
+using System;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models.Characters
 {
@@ -14,7 +14,7 @@ namespace JoinRpg.Web.Models.Characters
 
     public bool IsAvailable { get; set; }
 
-    public IHtmlString Description { get; set; }
+    public JoinHtmlString Description { get; set; }
 
     public bool IsPublic { get; set; }
 
