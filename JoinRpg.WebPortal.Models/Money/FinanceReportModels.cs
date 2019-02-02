@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web.Mvc;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.CommonUI.Models;
@@ -11,6 +10,7 @@ using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
 
 namespace JoinRpg.Web.Models
@@ -100,7 +100,7 @@ namespace JoinRpg.Web.Models
         public MoneyInfoForUserViewModel(Project project,
             IReadOnlyCollection<MoneyTransfer> transfers,
             User master,
-            UrlHelper urlHelper,
+            IUriService urlHelper,
             IReadOnlyCollection<FinanceOperation> operations,
             PaymentTypeSummaryViewModel[] payments,
             int currentUserId)
@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Models
         public IReadOnlyCollection<int> ClaimIds { get; }
         public IReadOnlyCollection<int> CharacterIds => new int[] { };
 
-        public FinOperationListViewModel(Project project, UrlHelper urlHelper, IReadOnlyCollection<FinanceOperation> operations)
+        public FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations)
         {
             Items = operations
               .OrderBy(f => f.CommentId)
@@ -170,7 +170,7 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Игрок"), Required]
         public User Player { get; }
 
-        public FinOperationListItemViewModel(FinanceOperation fo, UrlHelper url)
+        public FinOperationListItemViewModel(FinanceOperation fo, IUriService uriService)
         {
             PaymentTypeName = fo.PaymentType?.GetDisplayName();
             PaymentMaster = fo.PaymentType?.User;
@@ -181,8 +181,7 @@ namespace JoinRpg.Web.Models
             FinanceOperationId = fo.CommentId;
             MarkingMaster = fo.Comment.Author;
             Player = fo.Claim.Player;
-            ClaimLink = url.Action("Edit", "Claim", new { fo.ProjectId, fo.ClaimId },
-              url.RequestContext.HttpContext.Request.Url?.Scheme ?? "http");
+            ClaimLink = uriService.Get(fo.Claim);
         }
     }
 
@@ -276,7 +275,7 @@ namespace JoinRpg.Web.Models
 
         public MoneyInfoTotalViewModel(Project project,
             IReadOnlyCollection<MoneyTransfer> transfers,
-            UrlHelper urlHelper,
+            IUriService urlHelper,
             IReadOnlyCollection<FinanceOperation> operations,
             PaymentTypeSummaryViewModel[] payments,
             int currentUserId)
