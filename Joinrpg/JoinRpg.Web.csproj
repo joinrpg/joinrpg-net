@@ -135,7 +135,6 @@
     <Compile Include="Helpers\JoinrpgMarkdownLinkRenderer.cs" />
     <Compile Include="Helpers\MagicControlHelper.cs" />
     <Compile Include="Helpers\ModelStateExtensions.cs" />
-    <Compile Include="Helpers\ObjectLinkHelper.cs" />
     <Compile Include="Helpers\ApiSecretsStorage.cs" />
     <Compile Include="Helpers\UriServiceImpl.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
@@ -673,6 +672,10 @@
     <ProjectReference Include="..\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj">
       <Project>{5EDF70DA-E612-4514-80FF-8F72AAB87DA8}</Project>
       <Name>JoinRpg.Web.XGameApi.Contract</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj">
+      <Project>{232A3943-E85F-47AB-8FDB-B50BD8971738}</Project>
+      <Name>JoinRpg.WebPortal.Models</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
