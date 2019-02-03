@@ -748,9 +748,6 @@
     <PackageReference Include="LinqKit.EntityFramework">
       <Version>1.1.9</Version>
     </PackageReference>
-    <PackageReference Include="Unity">
-      <Version>4.0.1</Version>
-    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

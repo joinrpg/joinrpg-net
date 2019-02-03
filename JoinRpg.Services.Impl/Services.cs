@@ -1,29 +1,24 @@
 using System;
-using JetBrains.Annotations;
-using JoinRpg.Domain.CharacterFields;
+using System.Collections.Generic;
 using JoinRpg.Services.Impl.Search;
-using JoinRpg.Services.Interfaces;
-using Microsoft.Practices.Unity;
 
 namespace JoinRpg.Services.Impl
 {
-  public static class Services
-  {
-    public static void Register([NotNull] IUnityContainer container)
+    public static class Services
     {
-      if (container == null) throw new ArgumentNullException(nameof(container));
-
-      container.RegisterType<IProjectService, ProjectService>();
-      container.RegisterType<IClaimService, ClaimServiceImpl>();
-      container.RegisterType<ISearchService, SearchServiceImpl>();
-      container.RegisterType<IPlotService, PlotServiceImpl>();
-      container.RegisterType<IUserService, UserServiceImpl>();
-      container.RegisterType<IFinanceService, FinanceOperationsImpl>();
-      container.RegisterType<IForumService, ForumServiceImpl>();
-      container.RegisterType<IFieldSetupService, FieldSetupServiceImpl>();
-      container.RegisterType<IFieldDefaultValueGenerator, FieldDefaultValueGenerator>();
-      container.RegisterType<IAccommodationInviteService, AccommodationInviteServiceImpl>();
-      container.RegisterType<IAccommodationService, AccommodationServiceImpl>();
+        public static IEnumerable<Type> GetTypes()
+        {
+            yield return typeof(ProjectService);
+            yield return typeof(ClaimServiceImpl);
+            yield return typeof(SearchServiceImpl);
+            yield return typeof(PlotServiceImpl);
+            yield return typeof(UserServiceImpl);
+            yield return typeof(FinanceOperationsImpl);
+            yield return typeof(ForumServiceImpl);
+            yield return typeof(FieldSetupServiceImpl);
+            yield return typeof(FieldDefaultValueGenerator);
+            yield return typeof(AccommodationInviteServiceImpl);
+            yield return typeof(AccommodationServiceImpl);
+        }
     }
-  }
 }
