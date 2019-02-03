@@ -9,6 +9,7 @@ using JoinRpg.Services.Export;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.WebPortal.Managers;
 using Microsoft.Practices.Unity;
 
 namespace JoinRpg.DI
@@ -36,6 +37,10 @@ namespace JoinRpg.DI
             //TODO Automatically load all assemblies that start with JoinRpg.Experimental.Plugin.*
             container.RegisterTypes(AllClasses.FromLoadedAssemblies().Where(type => typeof(IPlugin).IsAssignableFrom(type)),
                 WithMappings.FromAllInterfaces, WithName.TypeName);
+
+            container.RegisterTypes(Registration.GetTypes(),
+                WithMappings.FromAllInterfaces,
+                WithName.TypeName);
         }
     }
 }

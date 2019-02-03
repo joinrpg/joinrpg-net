@@ -83,6 +83,7 @@
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
+    <Compile Include="Helpers\CurrentUserAccessor.cs" />
     <Compile Include="Helpers\EnumExtensions.cs" />
     <Compile Include="Helpers\InviteStateExtensions.cs" />
     <Compile Include="WebApiConfig.cs" />
@@ -670,6 +671,10 @@
     <ProjectReference Include="..\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj">
       <Project>{5EDF70DA-E612-4514-80FF-8F72AAB87DA8}</Project>
       <Name>JoinRpg.Web.XGameApi.Contract</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj">
+      <Project>{a5275764-eb9f-49da-9fec-5bd8e67d758f}</Project>
+      <Name>JoinRpg.WebPortal.Managers</Name>
     </ProjectReference>
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj">
       <Project>{232A3943-E85F-47AB-8FDB-B50BD8971738}</Project>

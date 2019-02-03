@@ -18,6 +18,7 @@
     <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
+    <ProjectReference Include="..\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Unity" Version="4.0.1" />
