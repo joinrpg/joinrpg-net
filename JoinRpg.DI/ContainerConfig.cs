@@ -18,25 +18,30 @@ namespace JoinRpg.DI
     {
         public static void InjectAll(IUnityContainer container)
         {
-            RepositoriesRegistraton.Register(container);
+            container.RegisterTypes(RepositoriesRegistraton.GetTypes(),
+                WithMappings.FromAllInterfaces,
+                WithName.TypeName);
 
-            Services.Impl.Services.Register(container);
+            container.RegisterTypes(Services.Impl.Services.GetTypes(),
+                WithMappings.FromAllInterfaces,
+                WithName.TypeName);
 
             container.RegisterType<IExportDataService, ExportDataServiceImpl>();
 
 
-
             container.RegisterType<IEmailService, EmailServiceImpl>();
 
-           
 
             container.RegisterType<IPluginFactory, PluginFactoryImpl>();
 
             container.RegisterType<IEmailSendingService, EmailSendingServiceImpl>();
 
             //TODO Automatically load all assemblies that start with JoinRpg.Experimental.Plugin.*
-            container.RegisterTypes(AllClasses.FromLoadedAssemblies().Where(type => typeof(IPlugin).IsAssignableFrom(type)),
-                WithMappings.FromAllInterfaces, WithName.TypeName);
+            container.RegisterTypes(
+                AllClasses.FromLoadedAssemblies()
+                    .Where(type => typeof(IPlugin).IsAssignableFrom(type)),
+                WithMappings.FromAllInterfaces,
+                WithName.TypeName);
 
             container.RegisterTypes(Registration.GetTypes(),
                 WithMappings.FromAllInterfaces,

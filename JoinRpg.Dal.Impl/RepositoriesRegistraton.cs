@@ -1,28 +1,23 @@
-using JetBrains.Annotations;
+using System;
+using System.Collections.Generic;
 using JoinRpg.Dal.Impl.Repositories;
-using JoinRpg.Data.Interfaces;
-using Microsoft.Practices.Unity;
 
 namespace JoinRpg.Dal.Impl
 {
     public static class RepositoriesRegistraton
     {
-        public static void Register([NotNull]
-            IUnityContainer container)
+        public static IEnumerable<Type> GetTypes()
         {
-            container.RegisterType<IProjectRepository, ProjectRepository>();
-            container.RegisterType<IUserRepository, UserInfoRepository>();
-            container.RegisterType<IClaimsRepository, ClaimsRepositoryImpl>();
-            container.RegisterType<IPlotRepository, PlotRepositoryImpl>();
-            container.RegisterType<IForumRepository, ForumRepositoryImpl>();
-            container.RegisterType<ICharacterRepository, CharacterRepositoryImpl>();
-            container.RegisterType<IAccommodationRepository, AccommodationRepositoryImpl>();
-            container
-                .RegisterType<IAccommodationRequestRepository, AccommodationRequestRepositoryImpl
-                >();
-            container
-                .RegisterType<IAccommodationInviteRepository, AccommodationInviteRepositoryImpl>();
-            container.RegisterType<IFinanceReportRepository, FinanceReportRepositoryImpl>();
+            yield return typeof(ProjectRepository);
+            yield return typeof(UserInfoRepository);
+            yield return typeof(ClaimsRepositoryImpl);
+            yield return typeof(PlotRepositoryImpl);
+            yield return typeof(ForumRepositoryImpl);
+            yield return typeof(CharacterRepositoryImpl);
+            yield return typeof(AccommodationRepositoryImpl);
+            yield return typeof(AccommodationRequestRepositoryImpl);
+            yield return typeof(AccommodationInviteRepositoryImpl);
+            yield return typeof(FinanceReportRepositoryImpl);
         }
     }
 }
