@@ -20,11 +20,11 @@ namespace JoinRpg.DI
         {
             container.RegisterTypes(RepositoriesRegistraton.GetTypes(),
                 WithMappings.FromAllInterfaces,
-                WithName.TypeName);
+                WithName.Default);
 
             container.RegisterTypes(Services.Impl.Services.GetTypes(),
                 WithMappings.FromAllInterfaces,
-                WithName.TypeName);
+                WithName.Default);
 
             container.RegisterType<IExportDataService, ExportDataServiceImpl>();
 
@@ -45,7 +45,7 @@ namespace JoinRpg.DI
 
             container.RegisterTypes(Registration.GetTypes(),
                 WithMappings.FromAllInterfaces,
-                WithName.TypeName);
+                WithName.Default);
         }
     }
 }
