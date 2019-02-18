@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
@@ -59,6 +60,7 @@ namespace Joinrpg.Web.Identity
             user.Id = dbUser.UserId;
         }
 
+        /// <inheritdoc />
         public async Task UpdateAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
@@ -67,21 +69,24 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public Task DeleteAsync(JoinIdentityUser user) => throw new NotImplementedException();
 
+        /// <inheritdoc />
         public async Task<JoinIdentityUser> FindByIdAsync(int userId)
         {
             var dbUser = await LoadUser(userId);
-            return dbUser.ToIdentityUser();
+            return dbUser?.ToIdentityUser();
         }
 
+        /// <inheritdoc />
         public async Task<JoinIdentityUser> FindByNameAsync(string userName)
         {
             var dbUser = await LoadUser(userName);
-            return dbUser.ToIdentityUser();
+            return dbUser?.ToIdentityUser();
         }
 
-
+        /// <inheritdoc />
         public async Task SetPasswordHashAsync(JoinIdentityUser user, string passwordHash)
         {
             if (user == null)
@@ -139,17 +144,20 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public Task<string> GetEmailAsync(JoinIdentityUser user)
         {
             return Task.FromResult(user.UserName);
         }
 
+        /// <inheritdoc />
         public async Task<bool> GetEmailConfirmedAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.Auth.EmailConfirmed;
         }
 
+        /// <inheritdoc />
         public async Task SetEmailConfirmedAsync(JoinIdentityUser user, bool confirmed)
         {
             var dbUser = await LoadUser(user);
@@ -157,12 +165,14 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public async Task<JoinIdentityUser> FindByEmailAsync(string email)
         {
             var user = await LoadUser(email);
-            return user.ToIdentityUser();
+            return user?.ToIdentityUser();
         }
 
+        /// <inheritdoc />
         public async Task AddLoginAsync(JoinIdentityUser user, UserLoginInfo login)
         {
             var dbUser = await LoadUser(user);
@@ -170,6 +180,7 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public async Task RemoveLoginAsync(JoinIdentityUser user, UserLoginInfo login)
         {
             var dbUser = await LoadUser(user);
@@ -181,12 +192,14 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         public async Task<IList<UserLoginInfo>> GetLoginsAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.ExternalLogins.Select(uel => uel.ToUserLoginInfo()).ToList();
         }
 
+        /// <inheritdoc />
         public async Task<JoinIdentityUser> FindAsync(UserLoginInfo login)
         {
             var uel =
@@ -229,12 +242,15 @@ namespace Joinrpg.Web.Identity
 
         #endregion
 
+        [ItemCanBeNull]
         private async Task<DbUser> LoadUser(string userName) =>
             await _ctx.UserSet.SingleOrDefaultAsync(user => user.Email == userName);
 
+        [ItemCanBeNull]
         private async Task<DbUser> LoadUser(int id) =>
             await _ctx.UserSet.SingleOrDefaultAsync(user => user.UserId == id);
 
+        [ItemCanBeNull]
         private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser) =>
             await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id);
     }
