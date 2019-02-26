@@ -20,6 +20,7 @@ namespace JoinRpg.Web.Controllers
         private IPlotRepository PlotRepository { get; }
         private ICharacterRepository CharacterRepository { get; }
         private IUriService UriService { get; }
+        private ICharacterService CharacterService { get; }
 
         public CharacterController(ApplicationUserManager userManager,
             IProjectRepository projectRepository,
@@ -28,12 +29,14 @@ namespace JoinRpg.Web.Controllers
             IExportDataService exportDataService,
             ICharacterRepository characterRepository,
             IUriService uriService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ICharacterService characterService)
             : base(userManager, projectRepository, projectService, exportDataService, userRepository)
         {
             PlotRepository = plotRepository;
             CharacterRepository = characterRepository;
             UriService = uriService;
+            CharacterService = characterService;
         }
 
         [HttpGet]
@@ -90,7 +93,7 @@ namespace JoinRpg.Web.Controllers
                     return View(viewModel.Fill(field, CurrentUserId));
                 }
 
-                await ProjectService.EditCharacter(
+                await CharacterService.EditCharacter(
                     CurrentUserId,
                     viewModel.CharacterId,
                     viewModel.ProjectId,
@@ -138,7 +141,7 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
-                await ProjectService.AddCharacter(new AddCharacterRequest()
+                await CharacterService.AddCharacter(new AddCharacterRequest()
                 {
                     ProjectId = viewModel.ProjectId,
                     Description = viewModel.Description,
@@ -186,7 +189,7 @@ namespace JoinRpg.Web.Controllers
             var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
             try
             {
-                await ProjectService.DeleteCharacter(projectId, characterId, CurrentUserId);
+                await CharacterService.DeleteCharacter(projectId, characterId, CurrentUserId);
 
                 return RedirectToIndex(field.Project);
             }
@@ -224,7 +227,7 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
-                await ProjectService.MoveCharacter(CurrentUserId,
+                await CharacterService.MoveCharacter(CurrentUserId,
                     projectId,
                     characterId,
                     parentCharacterGroupId,
