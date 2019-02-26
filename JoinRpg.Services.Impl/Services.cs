@@ -19,6 +19,7 @@ namespace JoinRpg.Services.Impl
             yield return typeof(FieldDefaultValueGenerator);
             yield return typeof(AccommodationInviteServiceImpl);
             yield return typeof(AccommodationServiceImpl);
+            yield return typeof(CharacterServiceImpl);
             yield return typeof(AntiSpamServiceImpl);
         }
     }

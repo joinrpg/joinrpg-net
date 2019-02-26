@@ -19,7 +19,6 @@ namespace JoinRpg.Web.Controllers
       private IFinanceService FinanceService { get; }
       private IUriService UriService { get; }
       private IFinanceReportRepository FinanceReportRepository { get; }
-      private IUserRepository UserRepository { get; }
 
       public FinancesController(ApplicationUserManager userManager,
           IProjectRepository projectRepository,
@@ -34,7 +33,6 @@ namespace JoinRpg.Web.Controllers
           FinanceService = financeService;
           UriService = uriService;
           FinanceReportRepository = financeReportRepository;
-          UserRepository = userRepository;
       }
 
       [HttpGet]
