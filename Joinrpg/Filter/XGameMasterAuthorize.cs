@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -14,13 +14,13 @@ using AuthorizeAttribute = System.Web.Http.AuthorizeAttribute;
 namespace JoinRpg.Web.Filter
 {
 
-  public class XGameAuthorize : AuthorizeAttribute
+  public class XGameMasterAuthorize : AuthorizeAttribute
   {
     public Permission Permission { get; set; }
 
     public bool AllowAdmin { get; set; }
 
-    public XGameAuthorize(Permission permission = Permission.None)
+    public XGameMasterAuthorize(Permission permission = Permission.None)
     {
       Permission = permission;
     }

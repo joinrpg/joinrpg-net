@@ -37,7 +37,7 @@ namespace JoinRpg.Services.Impl
             Func<UserSubscription, bool> subscribePredicate,
             User initiator,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
+            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
         {
             if (character == null) throw new ArgumentNullException(nameof(character));
 

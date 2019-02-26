@@ -12,7 +12,7 @@ using JoinRpg.Web.XGameApi.Contract;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-    [RoutePrefix("x-game-api/{projectId}/checkin"), XGameAuthorize()]
+    [RoutePrefix("x-game-api/{projectId}/checkin"), XGameMasterAuthorize()]
     public class CheckInController : XGameApiController
     {
         [ProvidesContext]
