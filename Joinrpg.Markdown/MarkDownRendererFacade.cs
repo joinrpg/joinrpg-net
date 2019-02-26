@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
@@ -21,7 +22,7 @@ namespace Joinrpg.Markdown
             ILinkRenderer renderer = null)
             => PerformRender(markdownString,
                 renderer,
-                Markdig.Markdown.ToHtml,
+                (text, writer, pipeline, context) => Markdig.Markdown.ToHtml(text, writer, pipeline, context),
                 HtmlSanitizers.Simple);
 
         /// <summary>
@@ -34,11 +35,11 @@ namespace Joinrpg.Markdown
             =>
                 PerformRender(markdownString,
                     renderer,
-                    Markdig.Markdown.ToPlainText,
+                    (text, writer, pipeline, context) => Markdig.Markdown.ToPlainText(text, writer, pipeline, context),
                     HtmlSanitizers.RemoveAll);
 
         private static JoinHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer linkRenderer,
-            Func<string, MarkdownPipeline, string> renderMethod, IHtmlSanitizer sanitizer)
+            Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
         {
             linkRenderer = linkRenderer ?? DoNothingLinkRenderer.Instance;
             if (markdownString?.Contents == null)
@@ -46,8 +47,9 @@ namespace Joinrpg.Markdown
                 return "".MarkAsHtmlString();
             }
 
-            var contents = sanitizer.Sanitize(markdownString.Contents);
+            var context = new MarkdownParserContext();
 
+            var contents = sanitizer.Sanitize(markdownString.Contents);
 
             //TODO - do we need to save re-use pipeline?
             var pipeline = new MarkdownPipelineBuilder()
@@ -56,7 +58,11 @@ namespace Joinrpg.Markdown
                 .UseEntityLinker(linkRenderer)
                 .Build();
 
-            return sanitizer.Sanitize(renderMethod(contents, pipeline)).MarkAsHtmlString();
+            var writer = new StringWriter();
+            
+            renderMethod(contents, writer, pipeline, context);
+
+            return sanitizer.Sanitize(writer.ToString()).MarkAsHtmlString();
         }
     }
 }
