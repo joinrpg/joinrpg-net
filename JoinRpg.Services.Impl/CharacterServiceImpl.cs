@@ -173,5 +173,39 @@ namespace JoinRpg.Services.Impl
                 .GetCharactersContainer().Move(item, direction).GetStoredOrder();
             await UnitOfWork.SaveChangesAsync();
         }
+
+        public async Task SetFields(int projectId, int characterId, Dictionary<int, string> requestFieldValues)
+        {
+            var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
+            character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+
+            character.EnsureProjectActive();
+
+            var changedFields = FieldSaveHelper.SaveCharacterFields(CurrentUserId,
+                character,
+                requestFieldValues,
+                FieldDefaultValueGenerator);
+
+            MarkChanged(character);
+
+            FieldsChangedEmail email = null;
+
+            if (changedFields.Any())
+            {
+                var user = await UserRepository.GetById(CurrentUserId);
+                email = EmailHelpers.CreateFieldsEmail(
+                    character,
+                    s => s.FieldChange,
+                    user,
+                    changedFields);
+            }
+
+            await UnitOfWork.SaveChangesAsync();
+
+            if (email != null)
+            {
+                await EmailService.Email(email);
+            }
+        }
     }
 }

@@ -29,5 +29,7 @@ namespace JoinRpg.Services.Interfaces
             int characterId,
             int parentCharacterGroupId,
             short direction);
+
+        Task SetFields(int projectId, int characterId, Dictionary<int, string> requestFieldValues);
     }
 }

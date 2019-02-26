@@ -82,7 +82,7 @@
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
     <Compile Include="Controllers\XGameApi\MyProfileController.cs" />
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
-    <Compile Include="Filter\XGameAuthorize.cs" />
+    <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Helpers\CurrentUserAccessor.cs" />
     <Compile Include="Helpers\EnumExtensions.cs" />

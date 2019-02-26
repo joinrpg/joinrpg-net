@@ -9,7 +9,7 @@ using JoinRpg.Web.XGameApi.Contract;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-    [RoutePrefix("x-game-api/{projectId}/metadata"), XGameAuthorize()]
+    [RoutePrefix("x-game-api/{projectId}/metadata"), XGameMasterAuthorize()]
     public class MetaDataApiController : XGameApiController
     {
         public MetaDataApiController(IProjectRepository projectRepository) : base(projectRepository)

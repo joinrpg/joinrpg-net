@@ -6,6 +6,7 @@ using System.Web.Http;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.XGameApi.Contract;
@@ -14,15 +15,20 @@ using GroupHeader = JoinRpg.Web.XGameApi.Contract.GroupHeader;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-    [RoutePrefix("x-game-api/{projectId}/characters"), XGameAuthorize()]
+    [RoutePrefix("x-game-api/{projectId}/characters"), XGameMasterAuthorize()]
     public class CharacterApiController : XGameApiController
     {
         private ICharacterRepository CharacterRepository { get; }
+        private ICharacterService CharacterService { get; }
 
-        public CharacterApiController(IProjectRepository projectRepository,
-            ICharacterRepository characterRepository) : base(projectRepository)
+        public CharacterApiController(
+            IProjectRepository projectRepository,
+            ICharacterRepository characterRepository,
+            ICharacterService characterService
+            ) : base(projectRepository)
         {
             CharacterRepository = characterRepository;
+            CharacterService = characterService;
         }
 
         /// <summary>
@@ -77,6 +83,19 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     CharacterDescription = character.Description,
                     CharacterName = character.Name,
                 };
+        }
+
+        /// <summary>
+        /// Allows to set character fields as master
+        /// <param name="fieldValues">Key = FieldId, Value = field value</param>
+        /// </summary>
+        [XGameMasterAuthorize()]
+        [HttpPost]
+        [Route("{characterId}/fields")]
+        public async Task<string> SetCharacterFields(int projectId, int characterId, Dictionary<int, string> fieldValues)
+        {
+            await CharacterService.SetFields(projectId, characterId, fieldValues);
+            return "ok";
         }
 
         private static IOrderedEnumerable<GroupHeader> ToGroupHeaders(

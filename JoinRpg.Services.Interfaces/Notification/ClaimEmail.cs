@@ -53,7 +53,7 @@ namespace JoinRpg.Services.Interfaces.Notification
         public IFieldContainter FieldsContainer => (IFieldContainter) Claim ?? Character;
         public ILinkable GetLinkable() => (ILinkable) Claim ?? Character;
 
-        [CanBeNull]
+        [NotNull]
         public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
         [CanBeNull]
@@ -80,6 +80,7 @@ namespace JoinRpg.Services.Interfaces.Notification
             User initiator,
             ICollection<User> recipients,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
+            [CanBeNull]
             IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
             : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
         {
@@ -102,9 +103,6 @@ namespace JoinRpg.Services.Interfaces.Notification
                 throw new ArgumentException(
                     $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
 
-            otherChangedAttributes =
-                otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();
-
             Character = character;
             Claim = claim;
             ProjectName = character?.Project.ProjectName ?? claim?.Project.ProjectName;
@@ -112,7 +110,7 @@ namespace JoinRpg.Services.Interfaces.Notification
             Text = new MarkdownString();
             Recipients = recipients;
             UpdatedFields = updatedFields ?? throw new ArgumentNullException(nameof(updatedFields));
-            OtherChangedAttributes = otherChangedAttributes;
+            OtherChangedAttributes = otherChangedAttributes ?? new Dictionary<string, PreviousAndNewValue>();
         }
     }
 
