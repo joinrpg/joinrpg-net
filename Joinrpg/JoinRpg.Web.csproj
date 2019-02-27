@@ -587,6 +587,7 @@
     <Content Include="Views\Transfer\Create.cshtml" />
     <Content Include="Views\Finances\_ApproveTransferDialog.cshtml" />
     <Content Include="Views\Finances\_DeclineTransferDialog.cshtml" />
+    <Content Include="Views\Account\_RegistrationRules.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
