@@ -40,6 +40,11 @@ namespace JoinRpg.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(ProjectCreateViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             try
             {
                 var project = await ProjectService.AddProject(model.ProjectName);
