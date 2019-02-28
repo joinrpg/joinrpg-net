@@ -49,6 +49,7 @@
                     @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
                     <div class="col-md-2">
                         @Html.EditorFor(m => m.RulesApproved)
+                        @Html.ValidationMessageFor(model => model.RulesApproved, "", new { @class = "text-danger" })
                     </div>
                 </div>
 
