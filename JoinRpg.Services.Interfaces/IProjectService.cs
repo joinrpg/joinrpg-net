@@ -6,7 +6,10 @@ namespace JoinRpg.Services.Interfaces
 {
     public interface IProjectService
     {
-        Task<Project> AddProject(string projectName);
+        /// <summary>
+        /// Create of new project
+        /// </summary>
+        Task<Project> AddProject(CreateProjectRequest request);
 
         Task EditProject(EditProjectRequest request);
 
@@ -54,5 +57,17 @@ namespace JoinRpg.Services.Interfaces
             bool modelAllowSecondRoles);
 
         Task GrantAccessAsAdmin(int projectId);
+    }
+
+    public class CreateProjectRequest
+    {
+        public string ProjectName { get; set; }
+        public ProjectTypeDto ProjectType { get; set; }
+    }
+
+    public enum ProjectTypeDto
+    {
+        Larp,
+        Convention
     }
 }

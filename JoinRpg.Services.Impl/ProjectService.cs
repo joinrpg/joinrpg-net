@@ -23,7 +23,7 @@ namespace JoinRpg.Services.Impl
         {
         }
 
-        public async Task<Project> AddProject(string projectName)
+        public async Task<Project> AddProject(CreateProjectRequest request)
         {
             var rootGroup = new CharacterGroup()
             {
@@ -42,7 +42,7 @@ namespace JoinRpg.Services.Impl
                 Active = true,
                 IsAcceptingClaims = false,
                 CreatedDate = Now,
-                ProjectName = Required(projectName),
+                ProjectName = Required(request.ProjectName),
                 CharacterGroups = new List<CharacterGroup>()
                 {
                     rootGroup,
@@ -54,6 +54,18 @@ namespace JoinRpg.Services.Impl
                 Details = new ProjectDetails(),
             };
             MarkTreeModified(project);
+            switch (request.ProjectType)
+            {
+                case ProjectTypeDto.Larp:
+                    break;
+                case ProjectTypeDto.Convention:
+                    project.Details.AutoAcceptClaims = true;
+                    project.Details.EnableAccommodation = true;
+                    project.Details.GenerateCharacterNamesFromPlayer = true;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
             UnitOfWork.GetDbSet<Project>().Add(project);
             await UnitOfWork.SaveChangesAsync();
             return project;
