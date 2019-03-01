@@ -1,4 +1,5 @@
-﻿@model JoinRpg.Web.Models.ProjectCreateViewModel
+﻿@using JoinRpg.Web.App_Code
+@model JoinRpg.Web.Models.ProjectCreateViewModel
 
 @{
     ViewBag.Title = "Создание базы заявок для новой игры";
@@ -50,6 +51,15 @@
                     <div class="col-md-2">
                         @Html.EditorFor(m => m.RulesApproved)
                         @Html.ValidationMessageFor(model => model.RulesApproved, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(m => m.ProjectType, new {@class = "col-md-2 control-label"})
+                    <div class="col-md-10">
+                        @Html.EditorFor(m => m.ProjectType)
+                        @Html.ValidationMessageFor(model => model.ProjectType, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(m => m.ProjectType)
                     </div>
                 </div>
 

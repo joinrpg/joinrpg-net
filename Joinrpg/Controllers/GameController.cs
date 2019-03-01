@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Controllers
         [Authorize]
         public ActionResult Create()
         {
-            return View();
+            return View(new ProjectCreateViewModel());
         }
 
         // POST: Game/Create
@@ -47,7 +47,11 @@ namespace JoinRpg.Web.Controllers
 
             try
             {
-                var project = await ProjectService.AddProject(model.ProjectName);
+                var project = await ProjectService.AddProject(new CreateProjectRequest()
+                {
+                    ProjectType = (ProjectTypeDto) model.ProjectType,
+                    ProjectName = model.ProjectName
+                });
 
                 return RedirectTo(project);
             }

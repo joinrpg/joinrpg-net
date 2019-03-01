@@ -34,5 +34,9 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void MoneyTransferState()
             => EnumerationTestHelper.CheckEnums<MoneyTransferState, MoneyTransferStateViewModel>();
+
+        [Fact]
+        public void ProjectType()
+            => EnumerationTestHelper.CheckEnums<ProjectTypeDto, ProjectTypeViewModel>();
     }
 }

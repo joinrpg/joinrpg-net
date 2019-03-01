@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models
@@ -16,5 +17,21 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
+
+        [Required]
+        [Display(Name = "Тип проекта",
+         Description = "Выберите, что лучше описывает ваш проект и мы сразу настроим его наиболее оптимально для вас. Не бойтесь, вы всегда сможете изменить конкретные настройки позже.")]
+        public ProjectTypeViewModel ProjectType { get; set; }
+    }
+
+    [UsedImplicitly(ImplicitUseTargetFlags.Members)]
+    public enum ProjectTypeViewModel
+    {
+        [Display(Name="Ролевая игра",
+            Description = "")]
+        Larp,
+        [Display(Name = "Конвент",
+            Description = "")]
+        Convention
     }
 }
