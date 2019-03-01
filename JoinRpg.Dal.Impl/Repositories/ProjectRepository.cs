@@ -225,6 +225,56 @@ namespace JoinRpg.Dal.Impl.Repositories
         .Where(group => group.ProjectId == projectId && group.ResponsibleMasterUserId != null).ToListAsync();
     }
 
+    public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
+        DateTime inActiveSince)
+    {
+        var commentQuery = GetLastUpdateQuery<Comment>(comment => comment.LastEditTime, inActiveSince);
+        var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt, inActiveSince);
+        var characterGroupQuery = GetLastUpdateQuery<CharacterGroup>(group => group.UpdatedAt, inActiveSince);
+        var plotQuery = GetLastUpdateQuery<PlotFolder>(pf => pf.ModifiedDateTime, inActiveSince);
+        var plotElementQuery =
+            GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime, inActiveSince);
+
+
+
+        var allQuery =
+            from updated in
+                commentQuery
+                    .Union(characterQuery)
+                    .Union(characterGroupQuery)
+                    .Union(plotQuery)
+                    .Union(plotElementQuery)
+            group updated by new {updated.ProjectId, updated.ProjectName}
+            into gr
+            select new ProjectWithUpdateDateDto()
+            {
+                ProjectId = gr.Key.ProjectId,
+                ProjectName = gr.Key.ProjectName,
+                LastUpdated = gr.Max(g => g.LastUpdated),
+            };
+
+            return await allQuery.ToListAsync();
+    }
+
+    private IQueryable<ProjectWithUpdateDateDto> GetLastUpdateQuery<T>(
+        Expression<Func<T, DateTime>> lastUpdateExpression,
+        DateTime inActiveSince) where T: class, IProjectEntity
+    {
+        return from entity in Ctx.Set<T>().AsExpandable()
+            where entity.Project.Active
+            group new {entity} by entity.Project
+            into gr
+            select new ProjectWithUpdateDateDto
+            {
+                ProjectId = gr.Key.ProjectId,
+                ProjectName = gr.Key.ProjectName,
+                LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
+            }
+            into beforeFilter
+            where beforeFilter.LastUpdated < inActiveSince
+            select beforeFilter;
+    }
+
     public async Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds)
     {
       await LoadProjectFields(projectId);
