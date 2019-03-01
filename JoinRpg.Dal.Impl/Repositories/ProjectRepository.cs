@@ -228,12 +228,13 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(
         DateTime inActiveSince)
     {
-        var commentQuery = GetLastUpdateQuery<Comment>(comment => comment.LastEditTime, inActiveSince);
-        var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt, inActiveSince);
-        var characterGroupQuery = GetLastUpdateQuery<CharacterGroup>(group => group.UpdatedAt, inActiveSince);
-        var plotQuery = GetLastUpdateQuery<PlotFolder>(pf => pf.ModifiedDateTime, inActiveSince);
+        var commentQuery = GetLastUpdateQuery<Comment>(comment => comment.LastEditTime);
+        var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt);
+        var characterGroupQuery = GetLastUpdateQuery<CharacterGroup>(group => group.UpdatedAt);
+        var plotQuery = GetLastUpdateQuery<PlotFolder>(pf => pf.ModifiedDateTime);
         var plotElementQuery =
-            GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime, inActiveSince);
+            GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime);
+        var claimQuery = GetLastUpdateQuery<Claim>(pfs => pfs.LastUpdateDateTime);
 
 
 
@@ -244,6 +245,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                     .Union(characterGroupQuery)
                     .Union(plotQuery)
                     .Union(plotElementQuery)
+                    .Union(claimQuery)
             group updated by new {updated.ProjectId, updated.ProjectName}
             into gr
             select new ProjectWithUpdateDateDto()
@@ -251,14 +253,16 @@ namespace JoinRpg.Dal.Impl.Repositories
                 ProjectId = gr.Key.ProjectId,
                 ProjectName = gr.Key.ProjectName,
                 LastUpdated = gr.Max(g => g.LastUpdated),
-            };
+            }
+            into beforeFilter
+            where beforeFilter.LastUpdated < inActiveSince
+            select beforeFilter;
 
             return await allQuery.ToListAsync();
     }
 
     private IQueryable<ProjectWithUpdateDateDto> GetLastUpdateQuery<T>(
-        Expression<Func<T, DateTime>> lastUpdateExpression,
-        DateTime inActiveSince) where T: class, IProjectEntity
+        Expression<Func<T, DateTime>> lastUpdateExpression) where T: class, IProjectEntity
     {
         return from entity in Ctx.Set<T>().AsExpandable()
             where entity.Project.Active
@@ -269,10 +273,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 ProjectId = gr.Key.ProjectId,
                 ProjectName = gr.Key.ProjectName,
                 LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
-            }
-            into beforeFilter
-            where beforeFilter.LastUpdated < inActiveSince
-            select beforeFilter;
+            };
     }
 
     public async Task<ICollection<Character>> GetCharacterByGroups(int projectId, int[] characterGroupIds)
