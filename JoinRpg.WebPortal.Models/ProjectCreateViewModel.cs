@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models
 {
@@ -13,10 +14,7 @@ namespace JoinRpg.Web.Models
 
         [Required]
         [Display(Name = "Согласен с правилами")]
-        [Range(typeof(bool),
-            "true",
-            "true",
-            ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
+        [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
     }
 }
