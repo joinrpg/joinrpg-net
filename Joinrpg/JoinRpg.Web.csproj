@@ -199,6 +199,7 @@
     <Content Include="Content\bootstrap-select.css.map" />
     <Content Include="Scripts\bootstrap-select.js" />
     <Content Include="Scripts\bootstrap-select.js.map" />
+    <Content Include="Areas\Admin\Views\AdminHome\StaleGames.cshtml" />
     <None Include="Scripts\jquery-2.1.4.intellisense.js" />
     <Content Include="Scripts\bootstrap-datepicker.js" />
     <Content Include="Scripts\bootstrap-datepicker.min.js" />

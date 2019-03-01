@@ -49,5 +49,12 @@ namespace JoinRpg.Data.Interfaces
 
         [NotNull, ItemNotNull]
         Task<IReadOnlyCollection<CharacterGroup>> GetGroupsWithResponsible(int projectId);
+
+        /// <summary>
+        /// Get projects not active since
+        /// </summary>
+        /// <returns></returns>
+        [NotNull,ItemNotNull]
+        Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
     }
 }
