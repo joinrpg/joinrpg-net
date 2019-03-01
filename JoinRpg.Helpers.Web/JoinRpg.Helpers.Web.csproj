@@ -5,6 +5,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="System.ComponentModel.Composition" />
+        <Reference Include="System.ComponentModel.DataAnnotations" />
         <Reference Include="System.Web" />
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="Microsoft.CSharp" />
