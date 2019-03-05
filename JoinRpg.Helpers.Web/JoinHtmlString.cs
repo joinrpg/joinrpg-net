@@ -45,5 +45,7 @@ namespace JoinRpg.Helpers.Web
 
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder) => writer.Write(Value);
+
+        public override string ToString() => Value;
     }
 }
