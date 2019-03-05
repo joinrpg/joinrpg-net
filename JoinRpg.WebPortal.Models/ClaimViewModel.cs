@@ -28,6 +28,7 @@ namespace JoinRpg.Web.Models
     [DisplayName("Игрок")]
     public User Player { get; set; }
 
+    [Display(Name="Статус заявки")]
     public ClaimFullStatusView Status { get; set; }
 
     public bool IsMyClaim { get; }
