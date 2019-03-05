@@ -256,6 +256,7 @@ namespace JoinRpg.Dal.Impl.Repositories
             }
             into beforeFilter
             where beforeFilter.LastUpdated < inActiveSince
+            orderby beforeFilter.LastUpdated ascending 
             select beforeFilter;
 
             return await allQuery.ToListAsync();
