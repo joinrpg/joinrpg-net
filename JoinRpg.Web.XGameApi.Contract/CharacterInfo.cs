@@ -60,7 +60,8 @@ namespace JoinRpg.Web.XGameApi.Contract
         public string CharacterName { get; set; }
 
         /// <summary>
-        /// Description
+        /// Description.
+        /// This is legacy field, in future will be removed in favor of just using Fields
         /// </summary>
         public string CharacterDescription { get; set; }
     }

@@ -72,14 +72,10 @@
             </div>
         </div>
 
-      <div class="form-group">
-        @Html.LabelFor(model => model.GenerateCharacterNamesFromPlayer, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-          @Html.EditorFor(model => model.GenerateCharacterNamesFromPlayer)
-          @Html.ValidationMessageFor(model => model.GenerateCharacterNamesFromPlayer, "", new { @class = "text-danger" })
-          @Html.DescriptionFor(model => model.GenerateCharacterNamesFromPlayer)
+        <div class="alert alert-info">
+            Настройки формирования имени персонажа ищите на странице с
+            @Html.ActionLink("настройкой полей", "Index", "GameField").
         </div>
-      </div>
 
       <div class="form-group">
         @Html.LabelFor(model => model.EnableAccomodation, htmlAttributes: new { @class = "control-label col-md-2" })

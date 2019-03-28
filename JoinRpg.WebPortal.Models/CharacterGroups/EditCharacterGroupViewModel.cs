@@ -29,6 +29,11 @@ namespace JoinRpg.Web.Models.CharacterGroups
     [ReadOnly(true)]
     public IEnumerable<MasterListItemViewModel> Masters { get; set; }
 
+    [Display(Name = "Описание", Description = "Для публичных сущностей будет доступно всем."),
+     // ReSharper disable once Mvc.TemplateNotResolved
+     UIHint("MarkdownString")]
+    public string Description { get; set; }
+
     public bool HaveDirectSlotsForSave() => HaveDirectSlots != DirectClaimSettings.NoDirectClaims;
 
     public int DirectSlotsForSave() => HaveDirectSlots == DirectClaimSettings.DirectClaimsUnlimited ? -1 : DirectSlots;

@@ -87,6 +87,8 @@ namespace JoinRpg.Web.Controllers.XGameApi
 
         /// <summary>
         /// Allows to set character fields as master
+        /// <param name="projectId">Project ID</param>
+        /// <param name="characterId">Character ID</param>
         /// <param name="fieldValues">Key = FieldId, Value = field value</param>
         /// </summary>
         [XGameMasterAuthorize()]

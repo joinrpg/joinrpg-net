@@ -43,8 +43,7 @@ namespace JoinRpg.Web.Models.Print
 
   public class PrintCharacterViewModel : PrintCharacterViewModelSlim
   {
-    public JoinHtmlString CharacterDescription{ get; }
-    public PlotDisplayViewModel Plots { get; }
+      public PlotDisplayViewModel Plots { get; }
     public IReadOnlyCollection<HandoutListItemViewModel> Handouts { get; }
     public string PlayerPhoneNumber { get; }
     public CustomFieldsViewModel Fields { get; }
@@ -55,7 +54,6 @@ namespace JoinRpg.Web.Models.Print
       : base(character)
     {
       if (character == null) throw new ArgumentNullException(nameof(character));
-      CharacterDescription = character.Description.ToHtmlString();
       
       var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
       Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService);

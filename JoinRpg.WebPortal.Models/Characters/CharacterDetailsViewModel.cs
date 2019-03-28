@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Plot;
 
@@ -40,9 +37,6 @@ namespace JoinRpg.Web.Models.Characters
 
   public class CharacterDetailsViewModel : ICharacterWithPlayerViewModel, ICreatedUpdatedTracked
   {
-    [Display(Name = "Описание персонажа")]
-    public JoinHtmlString Description { get; }
-
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; }
 
@@ -60,7 +54,6 @@ namespace JoinRpg.Web.Models.Characters
 
     public CharacterDetailsViewModel (int? currentUserIdOrDefault, Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
     {
-      Description = character.Description.ToHtmlString();
       Player = character.ApprovedClaim?.Player;
       HasAccess = character.HasAnyAccess(currentUserIdOrDefault);
       ParentGroups = new CharacterParentGroupsViewModel(character, character.HasMasterAccess(currentUserIdOrDefault));

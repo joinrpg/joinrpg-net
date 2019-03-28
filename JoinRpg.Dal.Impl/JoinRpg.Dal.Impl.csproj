@@ -415,6 +415,10 @@
     <Compile Include="Migrations\201812041004384_AddMoneyTransfer.Designer.cs">
       <DependentUpon>201812041004384_AddMoneyTransfer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903070953331_CharacterNames.cs" />
+    <Compile Include="Migrations\201903070953331_CharacterNames.Designer.cs">
+      <DependentUpon>201903070953331_CharacterNames.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
@@ -736,6 +740,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201812041004384_AddMoneyTransfer.resx">
       <DependentUpon>201812041004384_AddMoneyTransfer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903070953331_CharacterNames.resx">
+      <DependentUpon>201903070953331_CharacterNames.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

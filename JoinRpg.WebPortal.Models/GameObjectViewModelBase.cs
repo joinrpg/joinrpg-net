@@ -5,20 +5,21 @@ using JoinRpg.Helpers.Validation;
 
 namespace JoinRpg.Web.Models
 {
-  public abstract class GameObjectViewModelBase  : IProjectIdAware
-  {
-    public int ProjectId { get; set; }
-    
-    [ReadOnly(true)]
-    public string ProjectName { get; set; }
+    public abstract class GameObjectViewModelBase : IProjectIdAware
+    {
+        public int ProjectId { get; set; }
 
-    [CannotBeEmpty, DisplayName("Является частью групп")]
-    public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
+        [ReadOnly(true)]
+        public string ProjectName { get; set; }
 
-    [Display(Name = "Публично?", Description = "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
-    public bool IsPublic { get; set; } = true;
+        [CannotBeEmpty, DisplayName("Является частью групп")]
+        public List<string> ParentCharacterGroupIds { get; set; } = new List<string>();
 
-    [Display(Name = "Описание", Description = "Для публичных сущностей будет доступно всем."), UIHint("MarkdownString")]
-    public string Description { get; set; }
-  }
+        [Display(Name = "Публично?",
+            Description =
+                "Публичные сущности показываются в сетке ролей, их описание и карточки доступны всем.")]
+        public bool IsPublic { get; set; } = true;
+
+        // ReSharper disable once Mvc.TemplateNotResolved
+    }
 }

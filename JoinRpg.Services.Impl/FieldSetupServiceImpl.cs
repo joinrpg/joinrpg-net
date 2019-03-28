@@ -293,7 +293,8 @@ namespace JoinRpg.Services.Impl
             var field = await ProjectRepository.GetProjectField(projectId, projectcharacterfieldid);
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
-            field.Project.ProjectFieldsOrdering = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
+            field.Project.Details.FieldsOrdering
+                = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
             await UnitOfWork.SaveChangesAsync();
         }
 
@@ -335,7 +336,8 @@ namespace JoinRpg.Services.Impl
 
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
-            field.Project.ProjectFieldsOrdering = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
+            field.Project.Details.FieldsOrdering
+                = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
 
             await UnitOfWork.SaveChangesAsync();
         }
