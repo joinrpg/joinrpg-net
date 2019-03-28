@@ -57,10 +57,6 @@ namespace JoinRpg.Web.Models
             Description ="Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
         public bool AutoAcceptClaims { get; set; }
 
-        [Display(Name = "Формировать имя персонажа из имени игрока",
-            Description = "При автоматическом создании нового персонажа (при принятии заявки в группу) joinrpg сформирует имя персонажа из имени игрока. Удобно для конвентов.")]
-        public bool GenerateCharacterNamesFromPlayer { get; set; }
-
         [ReadOnly(true)]
         public string OriginalName { get; set; }
     [Display(Name= "Включить систему проживания")]

@@ -42,7 +42,6 @@ namespace JoinRpg.Services.Impl
                 IsPublic = addCharacterRequest.IsPublic,
                 IsActive = true,
                 IsAcceptingClaims = addCharacterRequest.IsAcceptingClaims,
-                Description = new MarkdownString(addCharacterRequest.Description),
                 HidePlayerForCharacter = addCharacterRequest.HidePlayerForCharacter,
                 IsHot = addCharacterRequest.IsHot,
             };
@@ -59,8 +58,6 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-
-        //TODO: move character operations to a separate service.
         public async Task EditCharacter(int currentUserId,
             int characterId,
             int projectId,
@@ -68,7 +65,6 @@ namespace JoinRpg.Services.Impl
             bool isPublic,
             IReadOnlyCollection<int> parentCharacterGroupIds,
             bool isAcceptingClaims,
-            string contents,
             bool hidePlayerForCharacter,
             IReadOnlyDictionary<int, string> characterFields,
             bool isHot)
@@ -86,12 +82,6 @@ namespace JoinRpg.Services.Impl
 
             character.IsAcceptingClaims = isAcceptingClaims;
             character.IsPublic = isPublic;
-
-            var newDescription = new MarkdownString(contents);
-
-            changedAttributes.Add("Описание персонажа",
-                new PreviousAndNewValue(newDescription, character.Description));
-            character.Description = newDescription;
 
             character.HidePlayerForCharacter = hidePlayerForCharacter;
             character.IsHot = isHot;

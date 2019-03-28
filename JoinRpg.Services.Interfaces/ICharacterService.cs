@@ -19,7 +19,6 @@ namespace JoinRpg.Services.Interfaces
             bool isPublic,
             IReadOnlyCollection<int> parentCharacterGroupIds,
             bool isAcceptingClaims,
-            string contents,
             bool hidePlayerForCharacter,
             IReadOnlyDictionary<int, string> characterFields,
             bool isHot);

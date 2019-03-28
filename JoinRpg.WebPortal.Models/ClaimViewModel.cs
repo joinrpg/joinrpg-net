@@ -48,9 +48,6 @@ namespace JoinRpg.Web.Models
     public int OtherClaimsForThisCharacterCount { get; }
     public int OtherClaimsFromThisPlayerCount { get; }
 
-    [Display(Name = "Описание персонажа")]
-    public JoinHtmlString Description { get; set; }
-
     [ReadOnly(true), DisplayName("Входит в группы")]
     public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
@@ -167,7 +164,6 @@ namespace JoinRpg.Web.Models
                   claim.IsApproved || claim.Project.Details.EnableManyCharacters
                       ? 0
                       : claim.OtherPendingClaimsForThisPlayer().Count();
-          Description = claim.Character?.Description.ToHtmlString();
           Masters =
               claim.Project.GetMasterListViewModel()
                   .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});

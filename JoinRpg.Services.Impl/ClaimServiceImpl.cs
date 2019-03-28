@@ -390,10 +390,24 @@ namespace JoinRpg.Services.Impl
               throw  new InvalidOperationException();
           }
 
-          //TODO[Localize]
-          return claim.Project.Details.GenerateCharacterNamesFromPlayer
-              ? claim.Player.GetDisplayName()
-              : $"Новый персонаж в группе {claim.Group.CharacterGroupName}";
+          var fieldSettings = claim.Project.Details;
+
+          if (fieldSettings.CharacterNameLegacyMode)
+          {
+              //TODO[Localize]
+              //Actually, legacy mode will be probably removed before localization
+              return $"Новый персонаж в группе {claim.Group.CharacterGroupName}";
+          }
+
+          if (fieldSettings.CharacterNameField == null)
+          {
+              return claim.Player.GetDisplayName();
+          }
+          else
+          {
+              //TODO Get name from CharacterNameField
+              throw new NotImplementedException();
+          }
       }
 
 

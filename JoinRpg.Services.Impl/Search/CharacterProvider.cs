@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,13 +24,13 @@ namespace JoinRpg.Services.Impl.Search
         keysForPerfectMath,
         out matchByIdIsPerfect);
 
+      //TODO we don't search anymore by description
       var results =
         await
           UnitOfWork.GetDbSet<Character>()
             .Where(c =>
               (c.CharacterId == characterIdToFind
-              || c.CharacterName.Contains(searchString)
-              || (c.Description.Contents != null && c.Description.Contents.Contains(searchString)))
+              || c.CharacterName.Contains(searchString))
               && c.IsActive
             )
             .OrderByDescending(cg => cg.CharacterName.Contains(searchString))

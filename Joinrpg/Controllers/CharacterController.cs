@@ -69,7 +69,6 @@ namespace JoinRpg.Web.Controllers
             {
                 ProjectId = field.ProjectId,
                 CharacterId = field.CharacterId,
-                Description = field.Description.Contents,
                 IsPublic = field.IsPublic,
                 ProjectName = field.Project.ProjectName,
                 IsAcceptingClaims = field.IsAcceptingClaims,
@@ -101,8 +100,7 @@ namespace JoinRpg.Web.Controllers
                     viewModel.IsPublic,
                     viewModel.ParentCharacterGroupIds.GetUnprefixedGroups(),
                     viewModel.IsAcceptingClaims &&
-                    field.ApprovedClaim == null, //Force this field to false if has approved claim
-                    viewModel.Description,
+                    field.ApprovedClaim == null,
                     viewModel.HidePlayerForCharacter,
                     GetCustomFieldValuesFromPost(),
                     viewModel.IsHot);
@@ -144,7 +142,6 @@ namespace JoinRpg.Web.Controllers
                 await CharacterService.AddCharacter(new AddCharacterRequest()
                 {
                     ProjectId = viewModel.ProjectId,
-                    Description = viewModel.Description,
                     Name = viewModel.Name,
                     IsAcceptingClaims = viewModel.IsAcceptingClaims,
                     ParentCharacterGroupIds =

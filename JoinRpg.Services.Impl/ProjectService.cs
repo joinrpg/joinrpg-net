@@ -57,11 +57,16 @@ namespace JoinRpg.Services.Impl
             switch (request.ProjectType)
             {
                 case ProjectTypeDto.Larp:
+                    //TODO remove when non legacy mode is implemented
+                    project.Details.CharacterNameLegacyMode = true;
+                    //TODO generate fields for name and descr
                     break;
                 case ProjectTypeDto.Convention:
                     project.Details.AutoAcceptClaims = true;
                     project.Details.EnableAccommodation = true;
-                    project.Details.GenerateCharacterNamesFromPlayer = true;
+                    project.Details.CharacterNameLegacyMode = false;
+                    project.Details.CharacterNameField = null;
+                    project.Details.CharacterDescription = null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -303,7 +308,6 @@ namespace JoinRpg.Services.Impl
             project.ProjectName = Required(request.ProjectName);
             project.IsAcceptingClaims = request.IsAcceptingClaims && project.Active;
 
-            project.Details.GenerateCharacterNamesFromPlayer = request.GenerateCharacterNamesFromPlayer;
             project.Details.AutoAcceptClaims = request.AutoAcceptClaims;
             project.Details.EnableAccommodation = request.IsAccommodationEnabled;
 

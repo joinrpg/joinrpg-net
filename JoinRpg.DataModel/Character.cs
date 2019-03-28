@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -47,6 +47,9 @@ namespace JoinRpg.DataModel
 
     public bool IsActive { get; set; }
 
+    /// <summary>
+    /// This field used only in roles tree
+    /// </summary>
     public MarkdownString Description { get; set; } = new MarkdownString();
 
     public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);

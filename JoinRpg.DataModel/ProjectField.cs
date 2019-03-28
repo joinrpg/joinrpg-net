@@ -63,9 +63,8 @@ namespace JoinRpg.DataModel
     public string ValuesOrdering { get; set; }
 
     public virtual CharacterGroup CharacterGroup { get; set; }
-    public int CharacterGroupId { get; set; }
 
-      /// <summary>
+    /// <summary>
       /// External value for external IT systems
       /// </summary>
       public string ProgrammaticValue { get; set; }

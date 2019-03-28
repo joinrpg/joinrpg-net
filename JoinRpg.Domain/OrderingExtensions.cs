@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
@@ -35,6 +35,6 @@ namespace JoinRpg.Domain
 
     public static VirtualOrderContainer<ProjectField> GetFieldsContainer(
       this Project field)
-      => VirtualOrderContainerFacade.Create(field.ProjectFields, field.ProjectFieldsOrdering);
+      => VirtualOrderContainerFacade.Create(field.ProjectFields, field.Details.FieldsOrdering);
   }
 }

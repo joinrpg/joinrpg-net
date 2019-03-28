@@ -83,7 +83,6 @@ namespace JoinRpg.Web.Controllers
                 StrictlyOneCharacter = !project.Details.EnableManyCharacters,
                 Active = project.Active,
                 AutoAcceptClaims = project.Details.AutoAcceptClaims,
-                GenerateCharacterNamesFromPlayer = project.Details.GenerateCharacterNamesFromPlayer,
                 EnableAccomodation = project.Details.EnableAccommodation,
             });
         }
@@ -105,7 +104,6 @@ namespace JoinRpg.Web.Controllers
                         ProjectName = viewModel.ProjectName,
                         PublishPlot = viewModel.PublishPlot,
                         AutoAcceptClaims = viewModel.AutoAcceptClaims,
-                        GenerateCharacterNamesFromPlayer = viewModel.GenerateCharacterNamesFromPlayer,
                         IsAccommodationEnabled = viewModel.EnableAccomodation,
                     });
 

@@ -1,7 +1,6 @@
 ﻿@using System.Web.Mvc.Html
 @model JoinRpg.Web.Models.Print.PrintCharacterViewModel
 <h1 style="page-break-before: always">@Model.CharacterName</h1>
-@Html.DisplayFor(model => model.CharacterDescription)
 <h1>Группы</h1>
 <dl>
     @foreach (var group in Model.Groups)

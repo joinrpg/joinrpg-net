@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel.Finances;
@@ -41,8 +42,6 @@ namespace JoinRpg.DataModel
 
         public virtual ICollection<PlotFolder> PlotFolders { get; set; }
 
-        public string ProjectFieldsOrdering { get; set; }
-
         Project IProjectEntity.Project => this;
 
         public virtual ICollection<ProjectFeeSetting> ProjectFeeSettings { get; set; }
@@ -73,7 +72,6 @@ namespace JoinRpg.DataModel
 
         public bool EnableManyCharacters { get; set; }
         public bool PublishPlot { get; set; }
-        public int? AllrpgId { get; set; }
 
         public bool FinanceWarnOnOverPayment { get; set; } = true;
         public bool PreferentialFeeEnabled { get; set; } = false;
@@ -83,9 +81,28 @@ namespace JoinRpg.DataModel
         public bool CheckInProgress { get; set; } = false;
         public bool AllowSecondRoles { get; set; } = false;
         public bool AutoAcceptClaims { get; set; } = false;
-        public bool GenerateCharacterNamesFromPlayer { get; set; } = false;
         public bool EnableAccommodation { get; set; } = false;
-    }
 
-// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by Entity Framework
+        /// <summary>
+        /// If true, character name is separate property of character, not bound to any field
+        /// and could be edited only by master
+        /// </summary>
+        public bool CharacterNameLegacyMode { get; set; } = true;
+        /// <summary>
+        /// If legacy mode = true, always null
+        /// If legacy mode = false.
+        ///     Null = bound to player name
+        ///     Other value = bound to that field
+        /// </summary>
+        [CanBeNull]
+        public ProjectField CharacterNameField { get; set; }
+        /// <summary>
+        ///     Null = no character description
+        ///     Other value = bound to that field
+        /// </summary>
+        [CanBeNull]
+        public ProjectField CharacterDescription { get; set; }
+
+        public string FieldsOrdering { get; set; }
+    }
 }

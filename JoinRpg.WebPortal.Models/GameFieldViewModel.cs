@@ -308,9 +308,11 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Значение"), Required]
         public string Label { get; set; }
 
+        // ReSharper disable once Mvc.TemplateNotResolved
         [Display(Name = "Описание"), UIHint("MarkdownString")]
         public string Description { get; set; }
 
+        // ReSharper disable once Mvc.TemplateNotResolved
         [Display(Name = "Описание для мастеров"), UIHint("MarkdownString")]
         public string MasterDescription { get; set; }
 
