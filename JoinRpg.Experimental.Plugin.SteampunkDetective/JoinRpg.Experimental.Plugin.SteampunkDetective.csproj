@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Experimental.Plugin.SteampunkDetective</AssemblyTitle>
     <Product>JoinRpg.Experimental.Plugin.SteampunkDetective</Product>
+      <generatedocumentationfile>false</generatedocumentationfile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj" />

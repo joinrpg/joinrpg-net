@@ -3,6 +3,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyTitle>JoinRpg.Experimental.Plugin.DeusEx</AssemblyTitle>
     <Product>JoinRpg.Experimental.Plugin.DeusEx</Product>
+      <generatedocumentationfile>false</generatedocumentationfile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
