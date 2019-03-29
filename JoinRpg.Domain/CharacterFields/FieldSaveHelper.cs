@@ -7,6 +7,9 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain.CharacterFields
 {
+    /// <summary>
+    /// Saves fields either to character or to claim
+    /// </summary>
     //TODO That should be service with interface and costructed via DI container
     public static class FieldSaveHelper
     {
