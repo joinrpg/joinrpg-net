@@ -67,7 +67,7 @@ INSERT INTO [dbo].[ProjectFields]
 
 UPDATE ProjectDetails
 SET
-FieldsOrdering = CAST(PF.ProjectFieldId  AS VARCHAR) + ',' + P.ProjectFieldsOrdering,
+FieldsOrdering = CAST(PF.ProjectFieldId  AS VARCHAR) + ',' + ISNULL(P.ProjectFieldsOrdering, ''),
 CharacterNameLegacyMode = CASE WHEN GenerateCharacterNamesFromPlayer = 1 THEN 0 ELSE 1 END,
 CharacterDescription_ProjectFieldId = PF.ProjectFieldId
 FROM ProjectDetails PD

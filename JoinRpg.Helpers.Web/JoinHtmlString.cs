@@ -46,6 +46,12 @@ namespace JoinRpg.Helpers.Web
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder) => writer.Write(Value);
 
+        /// <inheritdoc />
         public override string ToString() => Value;
+
+        /// <summary>
+        /// Is null or whitespace
+        /// </summary>
+        public bool IsNullOrWhiteSpace() => string.IsNullOrWhiteSpace(Value);
     }
 }
