@@ -6,14 +6,14 @@
 @helper ShowDescription()
 {
     var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
-    if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+    if (!Model.Description.IsNullOrWhiteSpace())
     {
         <div class="help-block @hideClassName">
             @Model.Description
         </div>
     }
 
-    if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+    if (!Model.MasterDescription.IsNullOrWhiteSpace() && Model.HasMasterAccess)
     {
         <div class="help-block world-object-hidden">
             @Model.MasterDescription
@@ -59,14 +59,14 @@
                         @value.Label
                     }
                     </div>
-                        <div class="form-control-2-4">
-                            @value.DescriptionHtml
+                    <div class="form-control-2-4">
+                        @value.DescriptionHtml
 
-                            @if (Model.HasMasterAccess)
-                            {
-                                <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
-                            }
-                        </div>
+                        @if (!value.MasterDescriptionHtml.IsNullOrWhiteSpace() && Model.HasMasterAccess)
+                        {
+                        <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
+                        }
+                    </div>
                     @if (Model.ShowPrice)
                     {
                         <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
