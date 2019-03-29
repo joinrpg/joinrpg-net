@@ -68,11 +68,11 @@ INSERT INTO [dbo].[ProjectFields]
 UPDATE ProjectDetails
 SET
 FieldsOrdering = CAST(PF.ProjectFieldId  AS VARCHAR) + ',' + P.ProjectFieldsOrdering,
-CharacterNameLegacyMode = CASE WHEN GenerateCharacterNamesFromPlayer = THEN 0 ELSE 1 END,
+CharacterNameLegacyMode = CASE WHEN GenerateCharacterNamesFromPlayer = 1 THEN 0 ELSE 1 END,
 CharacterDescription_ProjectFieldId = PF.ProjectFieldId
 FROM ProjectDetails PD
 INNER JOIN Projects P ON P.ProjectId = PD.ProjectId
-INNER JOIN ProjectFields PF ON PF.ProjectId = C.ProjectId
+INNER JOIN ProjectFields PF ON PF.ProjectId = P.ProjectId
             WHERE PF.FieldName LIKE '$$$Description'
 
 
