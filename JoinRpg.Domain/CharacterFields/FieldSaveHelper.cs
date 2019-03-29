@@ -138,6 +138,11 @@ namespace JoinRpg.Domain.CharacterFields
                         Character.CharacterName = fields
                             .GetValueOrDefault(Project.Details.CharacterNameField.ProjectFieldId)
                             .Value;
+
+                        if (string.IsNullOrWhiteSpace(Character.CharacterName))
+                        {
+                            Character.CharacterName = "CHAR" + Character.CharacterId;
+                        }
                     }
                 }
             }
