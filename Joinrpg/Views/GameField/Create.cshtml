@@ -1,24 +1,24 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.GameFieldCreateViewModel
+@model JoinRpg.Web.Models.FieldSetup.GameFieldCreateViewModel
 @Scripts.Render("~/Scripts/createfield.js")
 
 @{
     ViewBag.Title = "Добавление нового поля";
 }
 
-<h2>@ViewBag.Title</h2>
+@Html.Partial("_FieldNavigation", Model.Navigation)
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
 
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new {@class = "control-label col-md-3"})
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -26,17 +26,17 @@
         <div class="form-group">
             @Html.LabelFor(model => model.FieldViewType, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.EditorFor(model => model.FieldViewType, new { @class = "form-control"})
+                @Html.EditorFor(model => model.FieldViewType, new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.FieldViewType, "", new { @class = "text-danger" })
             </div>
         </div>
 
 
         <div class="form-group">
-            @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new {@class = "control-label col-md-3"})
+            @Html.LabelFor(model => model.FieldBoundTo, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-7">
-                @Html.EditorFor(model => model.FieldBoundTo, new {@class = "form-control"})
-                @Html.ValidationMessageFor(model => model.FieldBoundTo, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.FieldBoundTo, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.FieldBoundTo, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.FieldBoundTo)
             </div>
         </div>
@@ -52,41 +52,41 @@
         <div class="form-group">
             @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                    @Html.EditorFor(model => model.IsPublic)
-                    @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.IsPublic)
+                @Html.ValidationMessageFor(model => model.IsPublic, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.CanPlayerView, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                    @Html.EditorFor(model => model.CanPlayerView)
-                    @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.CanPlayerView)
+                @Html.ValidationMessageFor(model => model.CanPlayerView, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.CanPlayerEdit, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                    @Html.EditorFor(model => model.CanPlayerEdit)
-                    @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
-                    @Html.DescriptionFor(model => model.CanPlayerEdit)
+                @Html.EditorFor(model => model.CanPlayerEdit)
+                @Html.ValidationMessageFor(model => model.CanPlayerEdit, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.CanPlayerEdit)
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.ShowForUnApprovedClaim, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                    @Html.EditorFor(model => model.ShowForUnApprovedClaim)
-                    @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.ShowForUnApprovedClaim)
+                @Html.ValidationMessageFor(model => model.ShowForUnApprovedClaim, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.DescriptionEditable, htmlAttributes: new {@class = "control-label col-md-3"})
+            @Html.LabelFor(model => model.DescriptionEditable, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
-                @Html.EditorFor(model => model.DescriptionEditable, new {htmlAttributes = new {@class = "form-control"}})
-                @Html.ValidationMessageFor(model => model.DescriptionEditable, "", new {@class = "text-danger"})
+                @Html.EditorFor(model => model.DescriptionEditable, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.DescriptionEditable, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -99,35 +99,35 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new {@class = "control-label col-md-3"})
+            @Html.LabelFor(model => model.ShowForGroups, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
                 @Html.MagicSelectBindGroups(model => model.ShowForGroups)
-                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new {@class = "text-danger"})
-              <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
+                @Html.ValidationMessageFor(model => model.ShowForGroups, "", new { @class = "text-danger" })
+                <div style="clear: left;">@Html.DescriptionFor(model => model.ShowForGroups)</div>
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new {@class = "control-label col-md-3"})
+            @Html.LabelFor(model => model.ValidForNpc, htmlAttributes: new { @class = "control-label col-md-3" })
             <div class="col-md-9">
                 @Html.EditorFor(model => model.ValidForNpc)
-                @Html.ValidationMessageFor(model => model.ValidForNpc, "", new {@class = "text-danger"})
+                @Html.ValidationMessageFor(model => model.ValidForNpc, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.ValidForNpc)
             </div>
         </div>
 
         <div id="priceBlock" class="form-group" style="display: none;">
-          @Html.LabelFor(model => model.Price, htmlAttributes: new {@class = "control-label col-md-3"})
-          <div class="col-md-9">
-            @Html.EditorFor(model => model.Price)
-            @Html.DescriptionFor(model => model.Price)
-          </div>
+            @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.Price)
+                @Html.DescriptionFor(model => model.Price)
+            </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-                <input type="submit" value="Добавить" class="btn btn-success"/>              
-                @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new {@class="btn btn-default"})
+                <input type="submit" value="Добавить" class="btn btn-success" />
+                @Html.ActionLink("Назад к списку полей", "Index", new { Model.ProjectId }, new { @class = "btn btn-default" })
             </div>
         </div>
     </div>

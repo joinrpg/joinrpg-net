@@ -20,7 +20,7 @@ using JoinRpg.Web.Models.Print;
 
 namespace JoinRpg.Web.Models
 {
-  public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
+    public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
   {
     public int ClaimId { get; set; }
     public int ProjectId { get; set; }

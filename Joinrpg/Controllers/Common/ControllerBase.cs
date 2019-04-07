@@ -119,5 +119,11 @@ namespace JoinRpg.Web.Controllers.Common
         }
 
         protected bool IsCurrentUserAdmin() => User.IsInRole(Security.AdminRoleName);
+
+        protected ActionResult ViewIfFound(string viewName, object model)
+            => model == null ? (ActionResult)HttpNotFound() : View(viewName, model);
+
+        protected ActionResult ViewIfFound(object model)
+            => ViewIfFound(null, model);
     }
 }

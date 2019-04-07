@@ -9,6 +9,9 @@ using JoinRpg.Web.Controllers.Common;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.FieldSetup;
+using JoinRpg.WebPortal.Managers;
+using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.Web.Controllers
 {
@@ -16,75 +19,67 @@ namespace JoinRpg.Web.Controllers
   public class GameFieldController : ControllerGameBase
   {
     private IFieldSetupService FieldSetupService { get; }
+        public FieldSetupManager Manager { get; }
+        private ICurrentProjectAccessor CurrentProjectAccessor { get; }
 
-        public GameFieldController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-          IProjectService projectService, IExportDataService exportDataService, IFieldSetupService fieldSetupService, IUserRepository userRepository)
+        public GameFieldController(
+            ApplicationUserManager userManager,
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IExportDataService exportDataService,
+            IFieldSetupService fieldSetupService,
+            IUserRepository userRepository,
+            FieldSetupManager manager,
+            ICurrentProjectAccessor currentProjectAccessor
+            )
           : base(userManager, projectRepository, projectService, exportDataService, userRepository)
         {
             FieldSetupService = fieldSetupService;
+            Manager = manager;
+            CurrentProjectAccessor = currentProjectAccessor;
         }
 
-        private ActionResult ReturnToIndex(int projectId)
-            => RedirectToAction("Index", new { projectId });
-
-        private ActionResult ReturnToIndex(Project project)
-            => ReturnToIndex(project.ProjectId);
-
-        private ActionResult ReturnToField(int projectId, int fieldId)
-            => RedirectToAction("Edit", new { projectId, projectFieldId = fieldId });
+        private ActionResult ReturnToIndex()
+            => RedirectToAction("Index", CurrentProjectAccessor.ProjectId);
 
         private ActionResult ReturnToField(ProjectField value)
-            => ReturnToField(value.ProjectId, value.ProjectFieldId);
+            => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
 
 
         [HttpGet, MasterAuthorize()]
         public async Task<ActionResult> Index(int projectId)
         {
-            var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
-            return project == null
-                ? (ActionResult) HttpNotFound()
-                : View(new GameFieldListViewModel(project, CurrentUserId));
+            var model = await Manager.GetActiveAsync();
+            return ViewIfFound(model);
         }
 
         [HttpGet, MasterAuthorize()]
         public async Task<ActionResult> DeletedList(int projectId)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            return project == null ? (ActionResult)HttpNotFound() : View(new GameFieldListViewModel(project, CurrentUserId));
+            var model = await Manager.GetInActiveAsync();
+            return ViewIfFound("Index", model);
         }
 
         [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Create(int projectId)
         {
-            var project = await ProjectRepository.GetProjectAsync(projectId);
-            return project == null ? (ActionResult)HttpNotFound() :
-                   View(FillFromProject(project, new GameFieldCreateViewModel()));
-        }
-
-        private static GameFieldCreateViewModel FillFromProject(Project project, GameFieldCreateViewModel viewModel)
-        {
-            viewModel.ProjectId = project.ProjectId;
-            return viewModel;
+            var model = await Manager.CreatePageAsync();
+            return ViewIfFound(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
         {
-            var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-            var error = AsMaster(project, pa => pa.CanChangeFields);
-            if (error != null)
-            {
-                return error;
-            }
             if (!ModelState.IsValid)
             {
-                return View(FillFromProject(project, viewModel));
+                return ViewIfFound(Manager.FillFailedModel(viewModel));
             }
             try
             {
                 var request = new CreateFieldRequest(
-                    project.ProjectId,
+                    viewModel.ProjectId,
                     (ProjectFieldType) viewModel.FieldViewType,
                     viewModel.Name,
                     viewModel.DescriptionEditable,
@@ -103,27 +98,20 @@ namespace JoinRpg.Web.Controllers
 
                 await FieldSetupService.AddField(request);
 
-                return ReturnToIndex(project);
+                return ReturnToIndex();
             }
             catch (Exception exception)
             {
                 ModelState.AddException(exception);
-                return View(FillFromProject(project, viewModel));
+                return View(Manager.FillFailedModel(viewModel));
             }
         }
 
         [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Edit(int projectId, int projectFieldId)
         {
-            if (projectFieldId < 0)
-                return await RedirectToProject(projectId);
-
-            var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-            if (field == null)
-            {
-                return HttpNotFound();
-            }
-            return View(new GameFieldEditViewModel(field, CurrentUserId));
+            var model = await Manager.EditPageAsync(projectFieldId);
+            return ViewIfFound(model);
         }
 
         [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
@@ -162,7 +150,7 @@ namespace JoinRpg.Web.Controllers
 
           await FieldSetupService.UpdateFieldParams(request);
 
-        return ReturnToIndex(project);
+        return ReturnToIndex();
       }
       catch (Exception exception)
       {
@@ -215,7 +203,7 @@ namespace JoinRpg.Web.Controllers
             HttpStatusCodeResult ar = await DeleteEx(projectId, projectFieldId) as HttpStatusCodeResult;
             if (ar != null && ar.StatusCode >= 300)
                 return ar;
-            return ReturnToIndex(projectId);
+            return ReturnToIndex();
         }
 
     [HttpPost]
@@ -235,7 +223,7 @@ namespace JoinRpg.Web.Controllers
       {
         await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
-        return ReturnToIndex(project);
+        return ReturnToIndex();
       }
       catch (Exception exception)
       {
@@ -375,11 +363,11 @@ namespace JoinRpg.Web.Controllers
       {
         await FieldSetupService.MoveField(projectid, listItemId, direction);
 
-        return ReturnToIndex(value.Project);
+        return ReturnToIndex();
       }
       catch
       {
-        return ReturnToIndex(value.Project);
+        return ReturnToIndex();
       }
     }
 
@@ -448,11 +436,11 @@ namespace JoinRpg.Web.Controllers
         await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
 
 
-        return ReturnToIndex(value.Project);
+        return ReturnToIndex();
       }
       catch
       {
-        return ReturnToIndex(value.Project);
+        return ReturnToIndex();
       }
     }
   }

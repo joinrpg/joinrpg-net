@@ -64,6 +64,9 @@ namespace JoinRpg.Web
             container.RegisterType<ICurrentUserAccessor, CurrentUserAccessor>(
                 new PerRequestLifetimeManager());
 
+            container.RegisterType<ICurrentProjectAccessor, CurrentProjectAccessor>(
+                new PerRequestLifetimeManager());
+
 
             ContainerConfig.InjectAll(container);
         }

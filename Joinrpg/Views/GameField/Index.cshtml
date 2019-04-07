@@ -1,23 +1,10 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Models.FieldSetup
 @model GameFieldListViewModel
 
 @{
     ViewBag.Title = "Поля персонажа / заявки";
 }
 
-<div>
-    <h2>@ViewBag.Title</h2>
-    <ul class="nav nav-tabs">
-        <li class="active"><a href="#">Активные</a></li>
-        <li><a title="Только поля, использованные хотя бы один раз" href="@Url.Action("DeletedList", new {Model.ProjectId})">Удаленные</a></li>
-    </ul>
-    <div style="padding-top: 1em;">
-        @if (Model.CanEditFields)
-        {
-            <a href="@Url.Action("Create", new {Model.ProjectId})"
-               class="btn btn-success"><i class="glyphicon glyphicon-plus"></i>Добавить новое поле</a>
-        }
-    </div>
-</div>
+@Html.Partial("_FieldNavigation", Model.Navigation)
 
-@Html.Partial("FieldList", Model.Items.Where(i => i.IsActive))
+@Html.Partial("FieldList", Model.Items)
