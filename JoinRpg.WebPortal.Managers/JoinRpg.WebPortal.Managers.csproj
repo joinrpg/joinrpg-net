@@ -4,6 +4,10 @@
     <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
+    <ItemGroup>
+        <Reference Include="System.ComponentModel.DataAnnotations" />
+    </ItemGroup>
+    
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>

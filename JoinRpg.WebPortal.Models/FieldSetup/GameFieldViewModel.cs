@@ -13,9 +13,13 @@ using JoinRpg.Web.Models.CommonTypes;
 namespace JoinRpg.Web.Models.FieldSetup
 {
 
+    public interface IFieldNavigationAware : IProjectIdAware
+    {
+        FieldNavigationModel Navigation { get; set; }
+        int ProjectId { get; set; }
+    }
 
-
-    public class GameFieldViewModelBase: IValidatableObject, IProjectIdAware
+    public class GameFieldViewModelBase: IValidatableObject, IFieldNavigationAware
     {
         public int ProjectId { get; set; }
 

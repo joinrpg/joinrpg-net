@@ -67,6 +67,13 @@ namespace JoinRpg.Web.Controllers
             return ViewIfFound(model);
         }
 
+        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        public async Task<ActionResult> Settings()
+        {
+            var model = await Manager.SettingsPagesAsync();
+            return ViewIfFound(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [MasterAuthorize(Permission.CanChangeFields)]

@@ -1,0 +1,38 @@
+﻿@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.App_Code
+@model FieldSettingsViewModel
+
+@{
+    ViewBag.Title = "Настройки полей";
+}
+
+@Html.Partial("_FieldNavigation", Model.Navigation)
+@if (Model.LegacyModelEnabled)
+{
+    @Html.Partial("_SwitchFromLegacyMode", Model)
+
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.LegacyModelEnabled)
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        @if (Model.LegacyModelEnabled)
+        {
+            @Html.HiddenFor(model => model.NameField)
+        }
+        else
+        {
+            @Html.JoinDropdownFor(model => model.NameField, Model.PossibleNameFields)
+        }
+
+        @Html.JoinDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
+
+        @Html.Partial("FormButtons")
+    </div>
+}
