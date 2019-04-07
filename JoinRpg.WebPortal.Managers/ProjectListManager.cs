@@ -8,11 +8,17 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.WebPortal.Managers
 {
+    /// <summary>
+    /// Shows project list
+    /// </summary>
     public class ProjectListManager
     {
         private ICurrentUserAccessor CurrentUser { get; }
         private readonly IProjectRepository _projectRepository;
 
+        /// <summary>
+        /// ctor
+        /// </summary>
         public ProjectListManager(IProjectRepository projectRepository, ICurrentUserAccessor currentUser)
         {
             CurrentUser = currentUser;
