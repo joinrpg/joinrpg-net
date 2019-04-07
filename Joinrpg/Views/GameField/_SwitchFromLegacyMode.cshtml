@@ -1,0 +1,30 @@
+﻿@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.App_Code
+@model FieldSettingsViewModel
+
+<div class="alert alert-warning">
+    Включен «классический» режим, при котором имя персонажа не привязано ни к какому полю, а редактируется отдельно, само по себе.
+    Рекомендуется привязать имя персонажа к полю, в этом случае редактирование имени персонажа будет более удобным, а настройки прав
+    доступа на это поле более гибкими. Внимание: после привязки поля вернуться в классический режим будет нельзя.
+</div>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(model => model.ProjectId)
+    @Html.HiddenFor(model => model.DescriptionField)
+
+    <div class="form-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        @Html.JoinDropdownFor(model => model.NameField, Model.PossibleNameFields)
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Привязать имя персонажа" class="btn btn-danger" />
+            </div>
+        </div>
+    </div>
+}

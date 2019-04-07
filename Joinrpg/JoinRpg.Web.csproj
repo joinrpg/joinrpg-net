@@ -68,6 +68,7 @@
   <ItemGroup>
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Content Include="App_Code\ConfirmDialog.cs" />
+    <Content Include="App_Code\JoinDropdownMvcHelper.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\UnityWebApiActivator.cs" />
@@ -591,6 +592,9 @@
     <Content Include="Views\Finances\_DeclineTransferDialog.cshtml" />
     <Content Include="Views\Account\_RegistrationRules.cshtml" />
     <Content Include="Views\GameField\_FieldNavigation.cshtml" />
+    <Content Include="Views\GameField\Settings.cshtml" />
+    <Content Include="Views\GameField\_SwitchFromLegacyMode.cshtml" />
+    <Content Include="Views\Shared\FormButtons.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

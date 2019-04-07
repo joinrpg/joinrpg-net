@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
@@ -85,6 +87,60 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(field.Project, model);
         }
 
+        /// <summary>
+        /// Page with field settings
+        /// </summary>
+        public async Task<FieldSettingsViewModel> SettingsPagesAsync()
+        {
+            var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+            if (project == null)
+            {
+                return null;
+            }
+            var fields = project.GetOrderedFields();
+            return FillFromProject(project, new FieldSettingsViewModel
+            {
+                NameField = project.Details.CharacterNameField?.ProjectFieldId ?? -1,
+                DescriptionField = project.Details.CharacterDescription?.ProjectFieldId ?? -1,
+                LegacyModelEnabled = project.Details.CharacterNameLegacyMode,
+                PossibleDescriptionFields =
+                    ToSelectListItems(
+                        fields.Where(f => f.FieldType == ProjectFieldType.Text),
+                        "Нет поля с описанием персонажа"
+                        ).SetSelected(project.Details.CharacterDescription?.ProjectFieldId),
+                PossibleNameFields =
+                    ToSelectListItems(
+                        fields.Where(f => f.FieldType == ProjectFieldType.String),
+                        "Имя персонажа берется из имени игрока"
+                        ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId),
+            });
+        }
+
+        private List<JoinSelectListItem> ToSelectListItems(
+            IEnumerable<ProjectField> enumerable,
+            string notSelectedName = null
+            )
+        {
+            var list =  enumerable.Select(field => new JoinSelectListItem()
+            {
+                Value = field.ProjectFieldId,
+                Text = field.FieldName,
+                
+            }).ToList();
+
+            if (notSelectedName != null)
+            {
+
+                list.Insert(0, new JoinSelectListItem()
+                {
+                    Value = -1,
+                    Text = notSelectedName,
+                });
+            }
+
+            return list;
+        }
+
         private async Task<GameFieldListViewModel> GetFieldsImpl(
             FieldNavigationPage page,
             Func<ProjectField, bool> predicate)
@@ -112,7 +168,7 @@ namespace JoinRpg.WebPortal.Managers
 
         private T FillFromProject<T>(
             Project project,
-            T viewModel) where T:GameFieldViewModelBase
+            T viewModel) where T: IFieldNavigationAware
         {
             FieldNavigationPage page;
             if (viewModel is GameFieldCreateViewModel)
@@ -122,6 +178,10 @@ namespace JoinRpg.WebPortal.Managers
             else if (viewModel is GameFieldEditViewModel)
             {
                 page = FieldNavigationPage.EditField;
+            }
+            else if (viewModel is FieldSettingsViewModel)
+            {
+                page = FieldNavigationPage.FieldSettings;
             }
             else
             {

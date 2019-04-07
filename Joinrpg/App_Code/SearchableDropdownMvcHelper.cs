@@ -65,7 +65,7 @@ namespace JoinRpg.Web
         }
     }
 
-
+    //TODO remove in lieu of JoinSelectListItem
     public class ImprovedSelectListItem : SelectListItem
     {
         public string ExtraSearch { get; set; }
