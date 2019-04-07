@@ -5,12 +5,12 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Controllers.Common;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Filter
 {
-
   public class MasterAuthorize : AuthorizeAttribute
   {
     public Permission Permission { get; set; }
@@ -23,16 +23,17 @@ namespace JoinRpg.Web.Filter
     {
       Permission = permission;
     }
-
-    private const string ProjectidKey = "projectId";
+    
     private const string ProjectrepositoryKey = "projectRepository";
 
     public override void OnAuthorization(AuthorizationContext filterContext)
     {
       var httpContextItems = filterContext.HttpContext.Items;
 
-      httpContextItems[ProjectidKey] = filterContext.Controller.ValueProvider.GetValue("ProjectId");
-      httpContextItems[ProjectrepositoryKey] = ((ControllerGameBase) filterContext.Controller).ProjectRepository;
+      httpContextItems[HttpContextItemHelpers.ProjectidKey] =
+                filterContext.Controller.ValueProvider.GetValue("ProjectId");
+      httpContextItems[ProjectrepositoryKey] =
+                ((ControllerGameBase) filterContext.Controller).ProjectRepository;
 
       base.OnAuthorization(filterContext);
     }
@@ -92,27 +93,10 @@ namespace JoinRpg.Web.Filter
     [CanBeNull]
     private static Project LoadProject(HttpContextBase httpContext)
     {
-      var projectId = GetProjectId(httpContext);
+      var projectId = httpContext.GetProjectId();
       var repository = (IProjectRepository) httpContext.Items[ProjectrepositoryKey];
       return repository.GetProjectAsync(projectId).GetAwaiter().GetResult();
     }
 
-    private static int GetProjectId(HttpContextBase httpContext)
-    {
-      var projectIdRawValue = GetRawValue(httpContext, ProjectidKey);
-      if (projectIdRawValue.GetType().IsArray)
-      {
-        return int.Parse(((string[]) projectIdRawValue)[0]);
-      }
-      else
-      {
-        return int.Parse((string)projectIdRawValue);
-      }
-    }
-
-    private static object GetRawValue(HttpContextBase httpContext, string key)
-    {
-      return ((ValueProviderResult) httpContext.Items[key]).RawValue;
-    }
   }
 }
