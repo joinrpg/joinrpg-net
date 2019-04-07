@@ -1,5 +1,7 @@
 ﻿@using JoinRpg.Web.App_Code
-@model JoinRpg.Web.Models.GameFieldDropdownValueEditViewModel
+@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.Models
+@model GameFieldDropdownValueEditViewModel
 @{
     ViewBag.Title = "Изменение значения поля «" + Model.FieldName + "»";
 }
@@ -28,7 +30,7 @@
             @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
         </div>
     </div>
-      
+
     <div class="form-group">
         @Html.LabelFor(model => model.MasterDescription, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
@@ -46,15 +48,15 @@
         </div>
     </div>
 
-   
+
     if (Model.CanPlayerEditField)
     {
 
         <div class="form-group">
-            @Html.LabelFor(model => model.PlayerSelectable, htmlAttributes: new {@class = "control-label col-md-2"})
+            @Html.LabelFor(model => model.PlayerSelectable, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.EditorFor(model => model.PlayerSelectable)
-                @Html.ValidationMessageFor(model => model.PlayerSelectable, "", new {@class = "text-danger"})
+                @Html.ValidationMessageFor(model => model.PlayerSelectable, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.PlayerSelectable)
             </div>
         </div>
@@ -77,7 +79,7 @@
         <hr />
         <div class="col-md-offset-2 col-md-10">
             <button type="submit" class="btn btn-success">@(Model.IsActive ? "Сохранить" : "Восстановить")</button>
-            @Html.ActionLink("Назад к списку значений", "Edit", new { Model.ProjectFieldId, Model.ProjectId }, new {@class = "btn btn-default"})
+            @Html.ActionLink("Назад к списку значений", "Edit", new { Model.ProjectFieldId, Model.ProjectId }, new { @class = "btn btn-default" })
         </div>
     </div>
 }
