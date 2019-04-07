@@ -35,6 +35,9 @@ namespace JoinRpg.Dal.Impl.Repositories
                     return c => c.ClaimStatus == Claim.Status.Approved && c.CheckInDate == null;
                 case ClaimStatusSpec.CheckedIn:
                     return c => c.ClaimStatus == Claim.Status.CheckedIn;
+                case ClaimStatusSpec.ActiveOrOnHold:
+                    return c => c.ClaimStatus != Claim.Status.DeclinedByMaster &&
+                                c.ClaimStatus != Claim.Status.DeclinedByUser;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, null);
             }
