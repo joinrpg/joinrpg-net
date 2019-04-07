@@ -13,6 +13,7 @@ namespace JoinRpg.Data.Interfaces
     OnHold, Approved,
     ReadyForCheckIn,
     CheckedIn,
+    ActiveOrOnHold,
   }
 
   public class ClaimCountByMaster

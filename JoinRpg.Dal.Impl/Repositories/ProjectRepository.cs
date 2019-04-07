@@ -23,7 +23,8 @@ namespace JoinRpg.Dal.Impl.Repositories
           int? userId)
       {
           var activeClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
-          var myClaim = userId == null ? claim => false : ClaimPredicates.GetMyClaim(userId.Value);
+            var activeOrOnHoldClaimPredicate = ClaimPredicates.GetClaimStatusPredicate(ClaimStatusSpec.Active);
+            var myClaim = userId == null ? claim => false : ClaimPredicates.GetMyClaim(userId.Value);
             return project => new ProjectWithClaimCount()
           {
               ProjectId = project.ProjectId,
@@ -32,7 +33,7 @@ namespace JoinRpg.Dal.Impl.Repositories
               ProjectName = project.ProjectName,
               IsAcceptingClaims = project.IsAcceptingClaims,
               ActiveClaimsCount = project.Claims.Count(claim => activeClaimPredicate.Invoke(claim)),
-              HasMyClaims = project.Claims.Any(claim => myClaim.Invoke(claim)),
+              HasMyClaims = project.Claims.Where(claim => activeOrOnHoldClaimPredicate.Invoke(claim)).Any(claim => myClaim.Invoke(claim)),
               HasMasterAccess = project.ProjectAcls.Any(acl => acl.UserId == userId),
           };
       }
