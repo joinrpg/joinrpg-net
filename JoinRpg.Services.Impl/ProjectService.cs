@@ -52,14 +52,50 @@ namespace JoinRpg.Services.Impl
                     ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
                 },
                 Details = new ProjectDetails(),
+                ProjectFields = new List<ProjectField>(),
             };
             MarkTreeModified(project);
             switch (request.ProjectType)
             {
                 case ProjectTypeDto.Larp:
-                    //TODO remove when non legacy mode is implemented
-                    project.Details.CharacterNameLegacyMode = true;
-                    //TODO generate fields for name and descr
+                    
+                    project.Details.CharacterNameLegacyMode = false;
+                    project.Details.CharacterNameField = new ProjectField()
+                    {
+                        CanPlayerEdit = false,
+                        CanPlayerView = true,
+                        FieldBoundTo = FieldBoundTo.Character,
+                        FieldName = "Имя персонажа", //TODO[Localize]
+                        FieldType = ProjectFieldType.String,
+                        IsActive = true,
+                        IsPublic = true,
+                        MandatoryStatus = MandatoryStatus.Required,
+                        IncludeInPrint = false,
+                        ValidForNpc = true,
+                        ProjectFieldId = -2,
+                        Description = new MarkdownString(""),
+                        MasterDescription = new MarkdownString(""),
+                    };
+                    project.Details.CharacterDescription = new ProjectField()
+                    {
+                        CanPlayerEdit = false,
+                        CanPlayerView = true,
+                        FieldBoundTo = FieldBoundTo.Character,
+                        FieldName = "Описание персонажа", //TODO[Localize]
+                        FieldType = ProjectFieldType.Text,
+                        IsActive = true,
+                        IsPublic = true,
+                        MandatoryStatus = MandatoryStatus.Optional,
+                        IncludeInPrint = false,
+                        ValidForNpc = true,
+                        ProjectFieldId = -1,
+                        Description = new MarkdownString(""),
+                        MasterDescription = new MarkdownString(""),
+                    };
+
+                    project.ProjectFields.Add(project.Details.CharacterNameField);
+
+                    project.ProjectFields.Add(project.Details.CharacterDescription);
                     break;
                 case ProjectTypeDto.Convention:
                     project.Details.AutoAcceptClaims = true;
