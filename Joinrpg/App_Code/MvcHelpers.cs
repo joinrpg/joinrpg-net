@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Mvc.Html;
 using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -16,6 +17,15 @@ namespace JoinRpg.Web.App_Code
 {
     public static class MvcHtmlHelpers
     {
+        //https://stackoverflow.com/a/17455541/408666
+        public static MvcHtmlString HiddenFor<TModel, TProperty>(this HtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, TProperty value)
+        {
+            string expressionText = ExpressionHelper.GetExpressionText(expression);
+            string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
+
+            return htmlHelper.Hidden(propertyName, value);
+        }
+
         public static string GetDescription<TModel, TValue>(this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {

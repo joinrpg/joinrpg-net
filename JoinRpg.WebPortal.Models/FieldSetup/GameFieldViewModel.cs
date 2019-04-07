@@ -15,11 +15,13 @@ namespace JoinRpg.Web.Models.FieldSetup
 
     public interface IFieldNavigationAware : IProjectIdAware
     {
-        FieldNavigationModel Navigation { get; set; }
+        FieldNavigationModel Navigation { get; }
         int ProjectId { get; set; }
+
+        void SetNavigation(FieldNavigationModel fieldNavigation);
     }
 
-    public class GameFieldViewModelBase: IValidatableObject, IFieldNavigationAware
+    public abstract class GameFieldViewModelBase: IValidatableObject, IFieldNavigationAware
     {
         public int ProjectId { get; set; }
 
@@ -60,6 +62,8 @@ namespace JoinRpg.Web.Models.FieldSetup
 
         public FieldNavigationModel Navigation { get; set; }
 
+        public abstract void SetNavigation(FieldNavigationModel navigationModel);
+        
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (IsPublic && !CanPlayerView)
@@ -184,6 +188,12 @@ namespace JoinRpg.Web.Models.FieldSetup
                     new ValidationResult("Нельзя скрыть от игрока поле, влияющее на размер взноса.");
             }
         }
+
+        public override void SetNavigation(FieldNavigationModel navigationModel)
+        {
+            navigationModel.Page = FieldNavigationPage.EditField;
+            Navigation = navigationModel;
+        }
     }
 
     public class GameFieldCreateViewModel: GameFieldViewModelBase
@@ -199,6 +209,12 @@ namespace JoinRpg.Web.Models.FieldSetup
 
         [Display(Name = "Привязано к")]
         public FieldBoundToViewModel FieldBoundTo { get; set; }
+
+        public override void SetNavigation(FieldNavigationModel navigationModel)
+        {
+            navigationModel.Page = FieldNavigationPage.AddField;
+            Navigation = navigationModel;
+        }
 
         protected override IEnumerable<ValidationResult> ValidateCore()
         {

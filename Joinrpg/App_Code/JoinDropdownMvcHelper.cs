@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
 using JoinRpg.Web.Models.CommonTypes;
@@ -11,7 +10,7 @@ namespace JoinRpg.Web.App_Code
 {
     public static class JoinDropdownMvcHelper
     {
-        public static MvcHtmlString JoinDropdownFor<TModel, TValue>(
+        public static MvcHtmlString JoinFormDropdownFor<TModel, TValue>(
             this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression,
             IEnumerable<JoinSelectListItem> items)

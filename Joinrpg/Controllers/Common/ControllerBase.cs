@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Controllers.Common
                 }
                 else
                 {
-                    return int.TryParse(userIdString, out var i) ? (int?) i : null;
+                    return int.TryParse(userIdString, out var i) ? (int?)i : null;
                 }
             }
         }
@@ -125,5 +125,11 @@ namespace JoinRpg.Web.Controllers.Common
 
         protected ActionResult ViewIfFound(object model)
             => ViewIfFound(null, model);
+
+        protected async Task<ActionResult> ViewIfFound<T>(Task<T> model)
+            => ViewIfFound(null, await model);
+
+        protected async Task<ActionResult> ViewIfFound<T>(string viewName, Task<T> model)
+            => ViewIfFound(viewName, await model);
     }
 }

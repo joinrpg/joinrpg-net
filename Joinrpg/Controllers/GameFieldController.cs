@@ -74,6 +74,26 @@ namespace JoinRpg.Web.Controllers
             return ViewIfFound(model);
         }
 
+        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+        public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return await ViewIfFound(Manager.FillFailedModel(viewModel));
+            }
+            try
+            {
+                await Manager.SettingsHandleAsync(viewModel);
+
+                return ReturnToIndex();
+            }
+            catch (Exception exception)
+            {
+                ModelState.AddException(exception);
+                return View(Manager.FillFailedModel(viewModel));
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [MasterAuthorize(Permission.CanChangeFields)]
@@ -81,7 +101,7 @@ namespace JoinRpg.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return ViewIfFound(Manager.FillFailedModel(viewModel));
+                return await ViewIfFound(Manager.FillFailedModel(viewModel));
             }
             try
             {
@@ -167,65 +187,14 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-        /// <summary>
-        /// Removes custom field by HTTP DELETE request
-        /// </summary>
-        /// <param name="projectId">Id of a project to delete field from</param>
-        /// <param name="projectFieldId">If of a field to delete</param>
-        /// <returns>
-        /// 200 -- if a field was successfully deleted
-        /// 250 -- if a field was marked as inactive
-        /// 500 -- if any exception occured
-        /// 401 -- if logged user is not authorized to delete fields
-        /// 404 -- if no field or project found
-        /// </returns>
-        [HttpDelete]        
-        public async Task<ActionResult> DeleteEx(int projectId, int projectFieldId)
-        {
-            try
-            {
-                ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-
-                if (field == null)
-                    return HttpNotFound();
-
-                if (AsMaster(field, pa => pa.CanChangeFields) != null)
-                    return new HttpUnauthorizedResult();
-
-                await FieldSetupService.DeleteField(field);
-                return field.IsActive
-                    ? new HttpStatusCodeResult(200)
-                    : new HttpStatusCodeResult(250);
-            }
-            catch(Exception)
-            {
-                // TODO: Implement exception logging here
-                return new HttpStatusCodeResult(500);
-            }
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> Delete(int projectId, int projectFieldId)
-        {
-            HttpStatusCodeResult ar = await DeleteEx(projectId, projectFieldId) as HttpStatusCodeResult;
-            if (ar != null && ar.StatusCode >= 300)
-                return ar;
-            return ReturnToIndex();
-        }
-
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanChangeFields)]
     // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int projectFieldId, FormCollection collection)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-      var error = AsMaster(field, pa => pa.CanChangeFields);
-      if (error != null)
-      {
-        return error;
-      }
-      var project = field.Project;
       try
       {
         await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
