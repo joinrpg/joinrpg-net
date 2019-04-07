@@ -14,12 +14,13 @@
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
     @Html.HiddenFor(model => model.DescriptionField)
+    @Html.HiddenFor(model => model.LegacyModelEnabled, false)
 
     <div class="form-horizontal">
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
 
-        @Html.JoinDropdownFor(model => model.NameField, Model.PossibleNameFields)
+        @Html.JoinFormDropdownFor(model => model.NameField, Model.PossibleNameFields)
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">

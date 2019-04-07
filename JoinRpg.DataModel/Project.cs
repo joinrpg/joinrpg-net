@@ -64,7 +64,7 @@ namespace JoinRpg.DataModel
         public virtual ICollection<MoneyTransfer> MoneyTransfers { get; set; }
     }
 
-    public class ProjectDetails
+    public class ProjectDetails : IValidatableObject
     {
         [Key] public int ProjectId { get; set; }
         public MarkdownString ClaimApplyRules { get; set; } = new MarkdownString();
@@ -104,5 +104,26 @@ namespace JoinRpg.DataModel
         public ProjectField CharacterDescription { get; set; }
 
         public string FieldsOrdering { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (CharacterNameField != null)
+            {
+                if (CharacterNameLegacyMode)
+
+                {
+                    yield return new ValidationResult("Legacy mode is enabled");
+                }
+                if (CharacterNameField.FieldType != ProjectFieldType.String || CharacterNameField.FieldBoundTo != FieldBoundTo.Character)
+                {
+                    yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterNameField) });
+                }
+            }
+            if (CharacterDescription.FieldType != ProjectFieldType.Text || CharacterDescription.FieldBoundTo != FieldBoundTo.Character)
+            {
+                yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterDescription) });
+            }
+
+        }
     }
 }

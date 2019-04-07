@@ -36,6 +36,16 @@ namespace JoinRpg.Services.Interfaces
             string valuesToAdd);
 
         Task MoveFieldAfter(int projectId, int projectFieldId, int? afterFieldId);
+
+        Task SetFieldSettingsAsync(FieldSettingsRequest request);
+    }
+
+    public class FieldSettingsRequest 
+    {
+        public int? NameField { get; set; }
+        public int? DescriptionField { get; set; }
+        public bool LegacyModelEnabled { get; set; }
+        public int ProjectId { get; set; }
     }
 
     public abstract class FieldRequestBase

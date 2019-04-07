@@ -28,10 +28,10 @@
         }
         else
         {
-            @Html.JoinDropdownFor(model => model.NameField, Model.PossibleNameFields)
+            @Html.JoinFormDropdownFor(model => model.NameField, Model.PossibleNameFields)
         }
 
-        @Html.JoinDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
+        @Html.JoinFormDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
 
         @Html.Partial("FormButtons")
     </div>

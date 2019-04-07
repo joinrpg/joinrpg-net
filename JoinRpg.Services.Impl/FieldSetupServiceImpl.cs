@@ -341,5 +341,18 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
         }
+
+        public async Task SetFieldSettingsAsync(FieldSettingsRequest request)
+        {
+            var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
+
+            project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+
+            project.Details.CharacterNameLegacyMode = request.LegacyModelEnabled;
+            project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField);
+            project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField);
+
+            await UnitOfWork.SaveChangesAsync();
+        }
     }
 }

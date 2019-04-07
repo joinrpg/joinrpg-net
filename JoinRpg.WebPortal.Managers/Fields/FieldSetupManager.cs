@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CommonTypes;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers.Interfaces;
@@ -19,6 +20,7 @@ namespace JoinRpg.WebPortal.Managers
         private ICurrentUserAccessor CurrentUser { get; }
         private IProjectRepository ProjectRepository { get; }
         private ICurrentProjectAccessor CurrentProject { get; }
+        private IFieldSetupService Service { get; }
 
         /// <summary>
         /// ctor
@@ -26,11 +28,14 @@ namespace JoinRpg.WebPortal.Managers
         public FieldSetupManager(
             ICurrentUserAccessor currentUser,
             IProjectRepository project,
-            ICurrentProjectAccessor currentProject)
+            ICurrentProjectAccessor currentProject,
+            IFieldSetupService service
+            )
         {
             CurrentUser = currentUser;
             ProjectRepository = project;
             CurrentProject = currentProject;
+            Service = service;
         }
 
         /// <summary>
@@ -62,7 +67,7 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, new GameFieldCreateViewModel());
         }
 
-        public async Task<T> FillFailedModel<T>(T model) where T: GameFieldViewModelBase
+        public async Task<T> FillFailedModel<T>(T model) where T:class, IFieldNavigationAware
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -105,14 +110,28 @@ namespace JoinRpg.WebPortal.Managers
                 LegacyModelEnabled = project.Details.CharacterNameLegacyMode,
                 PossibleDescriptionFields =
                     ToSelectListItems(
-                        fields.Where(f => f.FieldType == ProjectFieldType.Text),
+                        fields.Where(f => f.FieldType == ProjectFieldType.Text && f.FieldBoundTo == FieldBoundTo.Character),
                         "Нет поля с описанием персонажа"
                         ).SetSelected(project.Details.CharacterDescription?.ProjectFieldId),
                 PossibleNameFields =
                     ToSelectListItems(
-                        fields.Where(f => f.FieldType == ProjectFieldType.String),
+                        fields.Where(f => f.FieldType == ProjectFieldType.String && f.FieldBoundTo == FieldBoundTo.Character),
                         "Имя персонажа берется из имени игрока"
                         ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId),
+            });
+        }
+
+        /// <summary>
+        /// Set settings
+        /// </summary>
+        public async Task SettingsHandleAsync(FieldSettingsViewModel viewModel)
+        {
+            await Service.SetFieldSettingsAsync(new FieldSettingsRequest()
+            {
+                DescriptionField = viewModel.DescriptionField > 0 ?  viewModel.DescriptionField : (int ?)null,
+                NameField = viewModel.NameField > 0 ? viewModel.NameField : (int ?)null,
+                LegacyModelEnabled = viewModel.LegacyModelEnabled,
+                ProjectId = CurrentProject.ProjectId,
             });
         }
 
@@ -170,26 +189,8 @@ namespace JoinRpg.WebPortal.Managers
             Project project,
             T viewModel) where T: IFieldNavigationAware
         {
-            FieldNavigationPage page;
-            if (viewModel is GameFieldCreateViewModel)
-            {
-                page = FieldNavigationPage.AddField;
-            }
-            else if (viewModel is GameFieldEditViewModel)
-            {
-                page = FieldNavigationPage.EditField;
-            }
-            else if (viewModel is FieldSettingsViewModel)
-            {
-                page = FieldNavigationPage.FieldSettings;
-            }
-            else
-            {
-                page = FieldNavigationPage.Unknown;
-            }
-            FieldNavigationModel navigation = GetNavigation(page, project);
-            viewModel.ProjectId = navigation.ProjectId;
-            viewModel.Navigation = navigation;
+            viewModel.SetNavigation(GetNavigation(FieldNavigationPage.Unknown, project));
+            viewModel.ProjectId = project.ProjectId;
             return viewModel;
         }
     }

@@ -595,6 +595,7 @@
     <Content Include="Views\GameField\Settings.cshtml" />
     <Content Include="Views\GameField\_SwitchFromLegacyMode.cshtml" />
     <Content Include="Views\Shared\FormButtons.cshtml" />
+    <Content Include="Views\Shared\_DeleteEntityDlg.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
