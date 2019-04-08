@@ -37,6 +37,8 @@ namespace Joinrpg.Markdown
         {
             var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
             sanitizer.Tag("img").AllowAttributes("src");
+            sanitizer.Tag("img").AllowAttributes("height");
+            sanitizer.Tag("img").AllowAttributes("width");
             sanitizer.Tag("hr");
             sanitizer.Tag("blockquote");
             sanitizer.Tag("s");
