@@ -1,13 +1,14 @@
-﻿function JoinRpgRoles(elem, settings) {
+﻿function JoinRpgRoles(elem, settings, $) {
   this.$el = elem;
+  this.$ = $;
   this._Settings = settings;
   this.loadRoles(elem.attr('data-projectId'), elem.attr('data-locationId'));
 }
 
 JoinRpgRoles.prototype.loadRoles = function (projectId, locationId) {
-	var url = this._Settings.baseUrl  || 'https://joinrpg.ru/';	
-	url = url[url.length - 1] != '/' ? url + '/' : url;
-  $.ajax({
+  var url = this._Settings.baseUrl  || 'https://joinrpg.ru/'; 
+  url = url[url.length - 1] != '/' ? url + '/' : url;
+  this.$.ajax({
            url: url + projectId + '/roles/' + locationId + '/indexjson',
            dataType: 'json',
            type: 'GET',
@@ -39,7 +40,7 @@ JoinRpgRoles.prototype.parseData = function (data) {
 };
 
 JoinRpgRoles.prototype.drawRoles = function (roles) {
-  var table = $('<table class="joinrpg-roles-table"><tbody></tbody></table>');
+  var table = this.$('<table class="joinrpg-roles-table"><tbody></tbody></table>');
   this.$el.empty();
   this.$el.append(table);
   for (var i = 0; i < roles.length; i++) {
@@ -48,11 +49,11 @@ JoinRpgRoles.prototype.drawRoles = function (roles) {
 };
 
 JoinRpgRoles.prototype.appendGroup = function (block, group) {
-  var headerTemplate = $('<tr><td colspan="2" class="joinrpg-roles-location-header"></td><td class="joinrpg-roles-directclaim"></td></tr>'),
-      descrTemplate = $('<tr><td colspan="3" class="joinrpg-roles-location-description"></td></tr>'),
-	  header = headerTemplate.clone(),
-	  descr;
-	header.find('td.joinrpg-roles-location-header').html(group.Path.join(this._Settings.dash) + this._Settings.dash + group.Name);
+  var headerTemplate = this.$('<tr><td colspan="2" class="joinrpg-roles-location-header"></td><td class="joinrpg-roles-directclaim"></td></tr>'),
+      descrTemplate = this.$('<tr><td colspan="3" class="joinrpg-roles-location-description"></td></tr>'),
+      header = headerTemplate.clone(),
+      descr;
+    header.find('td.joinrpg-roles-location-header').html(group.Path.join(this._Settings.dash) + this._Settings.dash + group.Name);
     if (group.CanAddDirectClaim) {
       var text = this.getVacanciesText(group.DirectClaimsCount)+'<br/>';
       if (group.DirectClaimsCount != 0) {
@@ -74,7 +75,7 @@ JoinRpgRoles.prototype.appendGroup = function (block, group) {
 };
 
 JoinRpgRoles.prototype.appendCharacters = function (block, characters) {
-  var charTemplate = $('<tr><td class="joinrpg-role"></td><td class="joinrpg-description"></td><td class="joinrpg-application"></td></tr>');
+  var charTemplate = this.$('<tr><td class="joinrpg-role"></td><td class="joinrpg-description"></td><td class="joinrpg-application"></td></tr>');
   for (var i = 0; i < characters.length; i++) {
     var char = charTemplate.clone(),
         character = characters[i];
@@ -85,7 +86,7 @@ JoinRpgRoles.prototype.appendCharacters = function (block, characters) {
                   '<a href="' + character.PlayerLink + '">' + character.PlayerName + '</a> '
                   : ' ' +
             (character.ActiveClaimsCount > 0 ? '<span class="already-claimed">Подано заявок: ' + character.ActiveClaimsCount + '</span><br>' : '') + 
-			(!!character.ClaimLink ? ' <a href="' + character.ClaimLink + '" class="joinrpg-claim-btn">Заявиться</a>' : ''));
+                       (!!character.ClaimLink ? ' <a href="' + character.ClaimLink + '" class="joinrpg-claim-btn">Заявиться</a>' : ''));
     block.append(char);
   }
 };
@@ -124,7 +125,7 @@ JoinRpgRoles.prototype.getVacanciesText = function (number) {
                                 }, options);
 
         this.each(function () {
-          var control = new JoinRpgRoles($(this), settings);
+          var control = new JoinRpgRoles($(this), settings, $);
           $(this).data('control', control);
         });
       }
