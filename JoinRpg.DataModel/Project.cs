@@ -119,11 +119,11 @@ namespace JoinRpg.DataModel
                     yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterNameField) });
                 }
             }
-            if (CharacterDescription.FieldType != ProjectFieldType.Text || CharacterDescription.FieldBoundTo != FieldBoundTo.Character)
+            if (CharacterDescription != null &&
+                (CharacterDescription.FieldType != ProjectFieldType.Text || CharacterDescription.FieldBoundTo != FieldBoundTo.Character))
             {
                 yield return new ValidationResult("Incorrect type of field", new[] { nameof(CharacterDescription) });
             }
-
         }
     }
 }
