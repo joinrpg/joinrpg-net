@@ -7,10 +7,10 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.DI;
-using JoinRpg.WebPortal.Managers.Interfaces;
 using Microsoft.Practices.Unity;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Web
 {

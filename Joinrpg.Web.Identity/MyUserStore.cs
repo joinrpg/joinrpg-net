@@ -8,6 +8,7 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using Microsoft.AspNet.Identity;
 using DbUser = JoinRpg.DataModel.User;
+using Claim = System.Security.Claims.Claim;
 
 namespace Joinrpg.Web.Identity
 {
@@ -17,7 +18,8 @@ namespace Joinrpg.Web.Identity
         IUserTwoFactorStore<JoinIdentityUser, int>,
         IUserEmailStore<JoinIdentityUser, int>,
         IUserLoginStore<JoinIdentityUser, int>,
-        IUserRoleStore<JoinIdentityUser, int>
+        IUserRoleStore<JoinIdentityUser, int>,
+        IUserClaimStore<JoinIdentityUser, int>
     {
         private readonly MyDbContext _ctx;
         private readonly IDbSet<DbUser> UserSet;
@@ -253,5 +255,17 @@ namespace Joinrpg.Web.Identity
         [ItemCanBeNull]
         private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser) =>
             await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id);
+
+        async Task<IList<System.Security.Claims.Claim>> IUserClaimStore<JoinIdentityUser, int>.GetClaimsAsync(JoinIdentityUser user)
+        {
+            var dbUser = await LoadUser(user);
+            return dbUser.ToClaimsList();
+        }
+
+        Task IUserClaimStore<JoinIdentityUser, int>.AddClaimAsync(JoinIdentityUser user, Claim claim) =>
+            throw new NotImplementedException();
+
+        Task IUserClaimStore<JoinIdentityUser, int>.RemoveClaimAsync(JoinIdentityUser user, Claim claim) =>
+            throw new NotImplementedException();
     }
 }

@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using Microsoft.AspNet.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Web.Helpers;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -25,15 +26,16 @@ namespace JoinRpg.Web.Controllers.Common
             UserRepository = userRepository;
         }
 
+        //TODO move this to attribure
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
-            if (CurrentUserIdOrDefault != null)
+            //TODO inject this from DI
+            ICurrentUserAccessor accessor = new CurrentUserAccessor();
+            if (accessor.UserIdOrDefault != null)
             {
-                //TODO read this from claims to speed up everything
-                var currentUser = Task.Run(() => GetCurrentUserAsync()).GetAwaiter().GetResult();
-                ViewBag.UserDisplayName = currentUser.GetDisplayName();
-                ViewBag.GravatarHash = currentUser.Email.GravatarHash().Trim();
+                ViewBag.UserDisplayName = accessor.DisplayName;
+                ViewBag.GravatarHash = accessor.Email.GravatarHash().Trim();
             }
 
             base.OnActionExecuting(filterContext);

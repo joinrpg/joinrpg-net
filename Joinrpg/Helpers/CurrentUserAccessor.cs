@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
-using JoinRpg.WebPortal.Managers.Interfaces;
+using Joinrpg.Web.Identity;
+using JoinRpg.Interfaces;
 using Microsoft.AspNet.Identity;
 
 namespace JoinRpg.Web.Helpers
@@ -24,5 +26,11 @@ namespace JoinRpg.Web.Helpers
                 }
             }
         }
+
+        string ICurrentUserAccessor.DisplayName => ClaimsPrincipal.Current.Claims.First(c => c.Type == JoinClaimTypes.DisplayName)?.Value;
+
+        string ICurrentUserAccessor.Email => ClaimsPrincipal.Current.Identity.GetUserName();
+
+        bool ICurrentUserAccessor.IsAdmin => ClaimsPrincipal.Current.IsInRole(DataModel.Security.AdminRoleName);
     }
 }
