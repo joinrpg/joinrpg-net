@@ -1,10 +1,9 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.WebPortal.Managers
 {

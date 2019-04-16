@@ -850,6 +850,10 @@
       <Project>{011fe918-5653-4a6d-bf65-bb0e01dd74ac}</Project>
       <Name>JoinRpg.Helpers</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj">
+      <Project>{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}</Project>
+      <Name>JoinRpg.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj">
       <Project>{9e52df40-a040-47c2-91dc-2413270ff9b1}</Project>
       <Name>Joinrpg.Markdown</Name>
