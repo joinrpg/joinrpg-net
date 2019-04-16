@@ -222,7 +222,7 @@ namespace Joinrpg.Web.Identity
         {
             var dbUser = await LoadUser(user);
             List<string> list;
-            if (dbUser.Auth?.IsAdmin ?? false)
+            if (dbUser.Auth.IsAdmin)
             {
                 list = new List<string>() {Security.AdminRoleName};
             }

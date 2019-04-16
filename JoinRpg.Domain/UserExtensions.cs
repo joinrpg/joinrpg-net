@@ -33,7 +33,7 @@ namespace JoinRpg.Domain
       {
         return AccessReason.CoMaster;
       }
-      if (currentUser.Auth?.IsAdmin == true)
+      if (currentUser.Auth.IsAdmin == true)
       {
         return AccessReason.Administrator;
       }

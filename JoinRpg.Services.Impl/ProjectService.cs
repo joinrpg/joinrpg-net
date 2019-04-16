@@ -189,7 +189,7 @@ namespace JoinRpg.Services.Impl
             }
 
             if (!project.HasMasterAccess(user.UserId, acl => acl.CanChangeProjectProperties) &&
-                user.Auth?.IsAdmin != true)
+                !user.Auth.IsAdmin)
             {
                 throw new NoAccessToProjectException(project,
                     user.UserId,
@@ -316,7 +316,7 @@ namespace JoinRpg.Services.Impl
             if (!project.HasMasterAccess(CurrentUserId, a => a.CanGrantRights))
             {
                 var user = await UserRepository.GetById(CurrentUserId);
-                if (!user.Auth?.IsAdmin == true)
+                if (!user.Auth.IsAdmin)
                 {
                     project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
                 }
