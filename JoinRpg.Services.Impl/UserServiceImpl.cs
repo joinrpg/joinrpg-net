@@ -1,4 +1,4 @@
-﻿using System.Security.Permissions;
+using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -57,7 +57,6 @@ namespace JoinRpg.Services.Impl
     public async Task SetAdminFlag(int userId, bool administratorFlag)
     {
       var user = await UserRepository.GetById(userId);
-      user.Auth = user.Auth ?? new UserAuthDetails();
       user.Auth.IsAdmin = administratorFlag;
       //TODO: Send email
       await UnitOfWork.SaveChangesAsync();
