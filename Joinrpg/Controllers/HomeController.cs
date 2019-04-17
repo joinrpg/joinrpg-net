@@ -12,7 +12,7 @@ namespace JoinRpg.Web.Controllers
 
         public HomeController(ApplicationUserManager userManager,
             IUserRepository userRepository,
-            ProjectListManager projectListManager) : base(userManager, userRepository)
+            ProjectListManager projectListManager) : base(userRepository)
         {
             ProjectListManager = projectListManager;
         }

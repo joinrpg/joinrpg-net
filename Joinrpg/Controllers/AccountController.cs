@@ -16,14 +16,16 @@ namespace JoinRpg.Web.Controllers
     public class AccountController : Common.ControllerBase
     {
         private readonly IEmailService _emailService;
+        private ApplicationUserManager UserManager { get; }
 
         public AccountController(
             ApplicationUserManager userManager,
             ApplicationSignInManager signInManager,
             IEmailService emailService,
             IUserRepository userRepository
-        ) : base(userManager, userRepository)
+        ) : base(userRepository)
         {
+            UserManager = userManager;
             SignInManager = signInManager;
             _emailService = emailService;
         }

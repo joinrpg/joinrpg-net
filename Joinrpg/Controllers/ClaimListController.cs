@@ -29,7 +29,7 @@ namespace JoinRpg.Web.Controllers
             IUriService uriService,
             IAccommodationRepository accommodationRepository,
             IUserRepository userRepository)
-            : base(userManager, projectRepository, projectService, exportDataService, userRepository)
+            : base(projectRepository, projectService, exportDataService, userRepository)
         {
             ClaimsRepository = claimsRepository;
             UriService = uriService;

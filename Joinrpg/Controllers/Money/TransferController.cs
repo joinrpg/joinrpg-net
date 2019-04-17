@@ -22,11 +22,10 @@ namespace JoinRpg.Web.Controllers.Money
             IProjectService projectService,
             IExportDataService exportDataService,
             IFinanceService financeService,
-            IUserRepository userRepository) : base(userManager,
-            projectRepository,
-            projectService,
-            exportDataService,
-            userRepository)
+            IUserRepository userRepository) : base(projectRepository,
+                projectService,
+                exportDataService,
+                userRepository)
         {
             FinanceService = financeService;
         }

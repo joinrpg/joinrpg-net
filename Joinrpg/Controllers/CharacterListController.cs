@@ -72,8 +72,8 @@ namespace JoinRpg.Web.Controllers
         IPlotRepository plotRepository,
         IUriService uriService,
         ICharacterRepository characterRepository,
-        IUserRepository userRepository) : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-    {
+        IUserRepository userRepository) : base(projectRepository, projectService, exportDataService, userRepository)
+        {
       PlotRepository = plotRepository;
       UriService = uriService;
       CharacterRepository = characterRepository;

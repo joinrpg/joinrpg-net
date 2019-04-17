@@ -11,13 +11,14 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
     public class UsersController : Web.Controllers.Common.ControllerBase
     {
         private IUserService UserService { get; }
+        private ApplicationUserManager UserManager { get; }
 
         public UsersController(ApplicationUserManager userManager,
             IUserService userService,
             IUserRepository userRepository) : base(
-            userManager,
             userRepository)
         {
+            UserManager = userManager;
             UserService = userService;
         }
 

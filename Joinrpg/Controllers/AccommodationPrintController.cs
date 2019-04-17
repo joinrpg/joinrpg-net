@@ -23,10 +23,10 @@ namespace JoinRpg.Web.Controllers
             IExportDataService exportDataService,
             IUriService uriService,
             IAccommodationRepository accommodationRepository,
-            IUserRepository userRepository) : base(userManager,
-            projectRepository,
-            projectService,
-            exportDataService, userRepository)
+            IUserRepository userRepository) : base(projectRepository,
+                projectService,
+                exportDataService,
+                userRepository)
         {
             UriService = uriService;
             AccommodationRepository = accommodationRepository;

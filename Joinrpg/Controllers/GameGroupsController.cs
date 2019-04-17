@@ -24,8 +24,8 @@ namespace JoinRpg.Web.Controllers
 
       public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
           IProjectService projectService, IUserRepository userRepository, IExportDataService exportDataService)
-          : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-      {
+          : base(projectRepository, projectService, exportDataService, userRepository)
+        {
       }
 
       [HttpGet]

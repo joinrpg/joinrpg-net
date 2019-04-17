@@ -92,8 +92,8 @@ namespace JoinRpg.Web.Controllers
         IExportDataService exportDataService,
         IClaimsRepository claimRepository,
         IEmailService emailService,
-        IUserRepository userRepository) : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-    {
+        IUserRepository userRepository) : base(projectRepository, projectService, exportDataService, userRepository)
+        {
       ClaimRepository = claimRepository;
       EmailService = emailService;
     }

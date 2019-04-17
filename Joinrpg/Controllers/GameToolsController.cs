@@ -11,8 +11,8 @@ namespace JoinRpg.Web.Controllers
   {
     public GameToolsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
       IProjectService projectService, IExportDataService exportDataService, IUserRepository userRepository)
-      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-    {
+      : base(projectRepository, projectService, exportDataService, userRepository)
+        {
     }
 
     [HttpGet, MasterAuthorize()]
