@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         public UserController(ApplicationUserManager userManager, IUserRepository userRepository)
-            : base(userManager, userRepository)
+            : base(userRepository)
         {
         }
 

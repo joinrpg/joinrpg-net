@@ -38,8 +38,8 @@ namespace JoinRpg.Web.Controllers
         IClaimService claimService,
         ICharacterRepository characterRepository,
         IUserRepository userRepository) 
-      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-    {
+      : base(projectRepository, projectService, exportDataService, userRepository)
+        {
       ClaimsRepository = claimsRepository;
       PlotRepository = plotRepository;
       ClaimService = claimService;

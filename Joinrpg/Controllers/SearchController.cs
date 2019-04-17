@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Controllers
             ISearchService searchService,
             IProjectRepository projectRepository,
             IUriService uriService,
-            IUserRepository userRepository) : base(userManager, userRepository)
+            IUserRepository userRepository) : base(userRepository)
         {
             _searchService = searchService;
             _projectRepository = projectRepository;

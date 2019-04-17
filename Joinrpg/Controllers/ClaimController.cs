@@ -75,8 +75,8 @@ namespace JoinRpg.Web.Controllers
           IAccommodationInviteService accommodationInviteService,
           IAccommodationInviteRepository accommodationInviteRepository,
           IUserRepository userRepository)
-          : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-      {
+          : base(projectRepository, projectService, exportDataService, userRepository)
+        {
           _claimService = claimService;
           _plotRepository = plotRepository;
           _claimsRepository = claimsRepository;

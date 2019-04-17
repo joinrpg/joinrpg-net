@@ -30,9 +30,9 @@ namespace JoinRpg.Web.Controllers
           IPluginFactory pluginFactory,
           ICharacterRepository characterRepository,
           IUriService uriService,
-          IUserRepository userRepository) : base(userManager,
-      projectRepository, projectService, exportDataService, userRepository)
-    {
+          IUserRepository userRepository) : base(projectRepository,
+              projectService, exportDataService, userRepository)
+        {
       PlotRepository = plotRepository;
       PluginFactory = pluginFactory;
       CharacterRepository = characterRepository;

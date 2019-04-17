@@ -29,8 +29,8 @@ namespace JoinRpg.Web.Controllers
         IProjectService projectService,
         IExportDataService exportDataService,
         IUserRepository userRepository)
-      : base(userManager, projectRepository, projectService, exportDataService, userRepository)
-    {
+      : base(projectRepository, projectService, exportDataService, userRepository)
+        {
     }
   }
 }

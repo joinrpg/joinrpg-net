@@ -19,10 +19,12 @@ namespace JoinRpg.Web.Controllers
   {
     private readonly ApplicationSignInManager _signInManager;
       private readonly IUserService _userService;
+        private ApplicationUserManager UserManager { get; }
 
-    public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUserRepository userRepository, IUserService userService)
-      : base(userManager, userRepository)
-    {
+        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUserRepository userRepository, IUserService userService)
+      : base(userRepository)
+        {
+            UserManager = userManager;
       _signInManager = signInManager;
       _userService = userService;
     }

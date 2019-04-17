@@ -17,12 +17,11 @@ namespace JoinRpg.Web.Controllers.Common
     [ValidateInput(false)]
     public class ControllerBase : Controller
     {
-        protected readonly ApplicationUserManager UserManager;
+        
         protected readonly IUserRepository UserRepository;
 
-        protected ControllerBase(ApplicationUserManager userManager, IUserRepository userRepository)
+        protected ControllerBase(IUserRepository userRepository)
         {
-            UserManager = userManager;
             UserRepository = userRepository;
         }
 
