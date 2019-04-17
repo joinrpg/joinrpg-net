@@ -1,9 +1,11 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
@@ -16,7 +18,8 @@ namespace JoinRpg.Web.Controllers
   [Authorize]
   public class FinancesController : Common.ControllerGameBase
   {
-      private IFinanceService FinanceService { get; }
+        private IExportDataService ExportDataService { get; }
+        private IFinanceService FinanceService { get; }
       private IUriService UriService { get; }
       private IFinanceReportRepository FinanceReportRepository { get; }
 
@@ -30,16 +33,18 @@ namespace JoinRpg.Web.Controllers
           IUserRepository userRepository)
           : base(projectRepository, projectService, exportDataService, userRepository)
         {
-          FinanceService = financeService;
+            ExportDataService = exportDataService;
+            FinanceService = financeService;
           UriService = uriService;
           FinanceReportRepository = financeReportRepository;
       }
 
       [HttpGet]
+      [MasterAuthorize]
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return AsMaster(project) ?? View(new FinanceSetupViewModel(project, CurrentUserId));
+      return View(new FinanceSetupViewModel(project, CurrentUserId));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
@@ -48,28 +53,30 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Moderation(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
 
-    private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
-    {
-      var project = await ProjectRepository.GetProjectWithFinances(projectid);
-      var errorResult = AsMaster(project);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-      var viewModel = new FinOperationListViewModel(project, UriService,
-        project.FinanceOperations.Where(predicate).ToArray());
+        [MasterAuthorize]
+        private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
+        {
+            var project = await ProjectRepository.GetProjectWithFinances(projectid);
+            var viewModel = new FinOperationListViewModel(project, UriService,
+              project.FinanceOperations.Where(predicate).ToArray());
 
-      var exportType = GetExportTypeByName(export);
+            var exportType = GetExportTypeByName(export);
 
-      if (exportType == null)
-      {
-        return View("Operations", viewModel);
-      }
-      else
-      {
-        return await Export(viewModel.Items, "finance-export", exportType.Value);
-      }
-    }
+            if (exportType == null)
+            {
+                return View("Operations", viewModel);
+            }
+            else
+            {
+                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
+                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
+                return File(
+                    await generator.Generate(),
+                    generator.ContentType,
+                    Path.ChangeExtension("finance-export", generator.FileExtension)
+                   );
+            }
+        }
 
       [MasterAuthorize()]
       public async Task<ActionResult> MoneySummary(int projectId)
@@ -98,14 +105,10 @@ namespace JoinRpg.Web.Controllers
       }
 
     [HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> TogglePaymentType(int projectid, int paymentTypeId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
 
       try
       {
@@ -127,15 +130,9 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> CreatePaymentType(CreatePaymentTypeViewModel viewModel)
     {
-      var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
-      if (errorResult != null)
-      {
-        return errorResult;
-      }
-
       try
       {
         await FinanceService.CreateCustomPaymentType(viewModel.ProjectId, viewModel.Name, viewModel.UserId);
@@ -149,14 +146,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
+    [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(int projectid, int paymenttypeid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
       var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymenttypeid);
-      var errorResult = AsMaster(paymentType, acl => acl.CanManageMoney);
-      if (errorResult != null || paymentType == null)
+      if (paymentType == null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
       return
         View(new EditPaymentTypeViewModel()
@@ -168,14 +165,14 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost, ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> EditPaymentType(EditPaymentTypeViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == viewModel.PaymentTypeId);
-      var errorResult = AsMaster(paymentType, acl => acl.CanManageMoney);
-      if (errorResult != null)
+      if (paymentType == null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
 
       try
@@ -190,13 +187,13 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
+        [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
-      if (errorResult != null)
+      if (project == null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
 
       try
@@ -218,13 +215,13 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpPost,ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
-      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
-      if (errorResult != null)
+      if (project == null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
 
       try
@@ -269,13 +266,13 @@ namespace JoinRpg.Web.Controllers
                       project.ProjectName);
       }
 
+        [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
-      var errorResult = AsMaster(project, acl => acl.CanManageMoney);
-      if (errorResult != null)
+      if (project ==null)
       {
-        return errorResult;
+        return HttpNotFound();
       }
 
       try
