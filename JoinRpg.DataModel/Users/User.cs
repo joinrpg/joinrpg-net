@@ -6,8 +6,8 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
-  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-  public class User
+    // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
+    public class User
   {
     public int UserId { get; set; }
 
@@ -95,24 +95,6 @@ namespace JoinRpg.DataModel
     public override string ToString()
     {
       return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
-    }
-  }
-
-
-
-  public class UserAuthDetails
-  {
-    public int UserId { get; set; }
-
-    public bool EmailConfirmed { get; set; }
-
-    public DateTime RegisterDate { get; set; }
-
-    public bool IsAdmin { get; set; }
-
-    public override string ToString()
-    {
-      return $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
     }
   }
 

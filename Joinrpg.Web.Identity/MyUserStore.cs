@@ -19,7 +19,8 @@ namespace Joinrpg.Web.Identity
         IUserEmailStore<JoinIdentityUser, int>,
         IUserLoginStore<JoinIdentityUser, int>,
         IUserRoleStore<JoinIdentityUser, int>,
-        IUserClaimStore<JoinIdentityUser, int>
+        IUserClaimStore<JoinIdentityUser, int>,
+        IUserSecurityStampStore<JoinIdentityUser, int>
     {
         private readonly MyDbContext _ctx;
         private readonly IDbSet<DbUser> UserSet;
@@ -27,7 +28,7 @@ namespace Joinrpg.Web.Identity
         public MyUserStore(MyDbContext ctx)
         {
             _ctx = ctx;
-            UserSet = _ctx.Set<User>();
+            UserSet = _ctx.Set<DbUser>();
         }
 
         public void Dispose() => _ctx?.Dispose();
@@ -256,7 +257,7 @@ namespace Joinrpg.Web.Identity
         private async Task<DbUser> LoadUser(JoinIdentityUser joinIdentityUser) =>
             await _ctx.UserSet.Include(u => u.ExternalLogins).SingleOrDefaultAsync(user => user.UserId == joinIdentityUser.Id);
 
-        async Task<IList<System.Security.Claims.Claim>> IUserClaimStore<JoinIdentityUser, int>.GetClaimsAsync(JoinIdentityUser user)
+        async Task<IList<Claim>> IUserClaimStore<JoinIdentityUser, int>.GetClaimsAsync(JoinIdentityUser user)
         {
             var dbUser = await LoadUser(user);
             return dbUser.ToClaimsList();
@@ -267,5 +268,20 @@ namespace Joinrpg.Web.Identity
 
         Task IUserClaimStore<JoinIdentityUser, int>.RemoveClaimAsync(JoinIdentityUser user, Claim claim) =>
             throw new NotImplementedException();
+
+        async Task IUserSecurityStampStore<JoinIdentityUser, int>.SetSecurityStampAsync(JoinIdentityUser user, string stamp)
+        {
+            var dbUser = await LoadUser(user);
+            dbUser.Auth.AspNetSecurityStamp = stamp;
+            await _ctx.SaveChangesAsync();
+        }
+
+        async Task<string> IUserSecurityStampStore<JoinIdentityUser, int>.GetSecurityStampAsync(JoinIdentityUser user)
+        {
+            var dbUser = await LoadUser(user);
+            // if AspNetSecurityStamp setting random guid will make it refresh soonish
+            return dbUser.Auth.AspNetSecurityStamp ?? new Guid().ToString();
+            
+        }
     }
 }

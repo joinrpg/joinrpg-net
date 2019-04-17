@@ -73,11 +73,13 @@ namespace JoinRpg.Web
           // This is a security feature which is used when you change a password or add an external login to your account.  
           OnValidateIdentity = SecurityStampValidator
             .OnValidateIdentity<ApplicationUserManager, JoinIdentityUser, int>
-            (validateInterval: TimeSpan.FromDays(30),
+            (validateInterval: TimeSpan.FromMinutes(1),
               regenerateIdentityCallback: (manager, user) => user.GenerateUserIdentityAsync(manager,
                 DefaultAuthenticationTypes.ApplicationCookie),
               getUserIdCallback: claimsIdentity => claimsIdentity.GetUserId<int>()),
         },
+        ExpireTimeSpan = TimeSpan.FromDays(30),
+        SlidingExpiration = true,
       }); 
       app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
     }
