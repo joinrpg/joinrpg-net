@@ -209,15 +209,15 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet, Authorize]
+    [MasterAuthorize(Permission.CanEditRoles)]
     public async Task<ActionResult> Edit(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-      var error = AsMaster(group, pa => pa.CanEditRoles);
-      if (error != null)
-      {
-        return error;
-      }
+            if (group == null)
+            {
+                return HttpNotFound();
+            }
 
       if (group.IsSpecial)
       {
@@ -396,6 +396,7 @@ namespace JoinRpg.Web.Controllers
       return viewModel;
     }
 
+        [MasterAuthorize(Permission.CanEditRoles)]
     public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
     {
       return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
@@ -403,12 +404,6 @@ namespace JoinRpg.Web.Controllers
 
     private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
     {
-      var group = await ProjectRepository.GetGroupAsync(projectId, charactergroupId);
-      var error = AsMaster(group);
-      if (error != null)
-      {
-        return error;
-      }
 
       try
       {
@@ -423,7 +418,8 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
+        [MasterAuthorize(Permission.CanEditRoles)]
+        public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
     {
       return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
     }
@@ -432,10 +428,14 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> EditSubscribe(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+            if (group == null)
+            {
+                return HttpNotFound();
+            }
 
       var user = await UserRepository.GetWithSubscribe(CurrentUserId);
 
-      return AsMaster(group) ?? View(new SubscribeSettingsViewModel(user, group));
+      return View(new SubscribeSettingsViewModel(user, group));
     }
 
     [HttpPost, ValidateAntiForgeryToken, MasterAuthorize()]

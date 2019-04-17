@@ -105,57 +105,30 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    protected ActionResult WithCharacter(Character character)
-    {
-      if (character == null)
-      {
-        return HttpNotFound();
-      }
-      if (!character.HasAnyAccess(CurrentUserId))
-      {
-        return NoAccesToProjectView(character.Project);
-      }
-
-      return null;
-    }
-
       protected IReadOnlyDictionary<int, string> GetCustomFieldValuesFromPost() =>
           GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
 
-      protected ActionResult AsMaster<TEntity>(TEntity entity) where TEntity : IProjectEntity
-    {
-      return AsMaster(entity, acl => true);
-    }
-
-    [CanBeNull]
-    protected ActionResult AsMaster<TEntity>(TEntity entity, Expression<Func<ProjectAcl, bool>> requiredRights) where TEntity : IProjectEntity
-    {
-      return entity == null ? HttpNotFound() :
-             (entity.HasMasterAccess(CurrentUserId, requiredRights)
-               ? null
-               : NoAccesToProjectView(entity.Project));
-    }
-
+        [Obsolete]
     protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders)
     {
       return folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
     }
 
 
-    protected ActionResult RedirectToIndex(Project project)
-    {
-      return RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId);
-    }
+        protected ActionResult RedirectToIndex(Project project)
+        {
+            return RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
+        }
 
     protected ActionResult RedirectToIndex(int projectId, int characterGroupId, [AspMvcAction] string action = "Index")
     {
       return RedirectToAction(action, "GameGroups", new {projectId, characterGroupId, area = ""});
     }
 
-    protected async Task<ActionResult> RedirectToProject(int projectId, [AspMvcAction] string action = "Index")
+    protected async Task<ActionResult> RedirectToProject(int projectId)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
-      return project == null ? HttpNotFound() : RedirectToIndex(project.ProjectId, project.RootGroup.CharacterGroupId, action);
+      return project == null ? HttpNotFound() : RedirectToIndex(project);
     }
 
     protected static ExportType? GetExportTypeByName(string export)
@@ -168,13 +141,6 @@ namespace JoinRpg.Web.Controllers.Common
       }
     }
 
-    [Obsolete]
-    protected Task<FileContentResult> Export<T>(IEnumerable<T> select, string fileName, ExportType exportType = ExportType.Csv)
-    {
-      ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
-      var generator = ExportDataService.GetGenerator(exportType, select);
-      return  ReturnExportResult(fileName, generator);
-    }
 
     private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
     {

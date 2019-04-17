@@ -1,7 +1,9 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
@@ -100,15 +102,18 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
-      if (!pluginInstance.AllowPlayerAccess)
+            //TODO display correct errors
+            if (!pluginInstance.AllowPlayerAccess)
       {
-        
-        var error = AsMaster(project);
-        if (error != null) return error;
+                if (!project.HasMasterAccess(CurrentUserId))
+                {
+                    return new HttpUnauthorizedResult();
+                }
+
       }
       else
       {
-        //TODO display correct errors
+        
         if (characters.Any(c => !c.HasAnyAccess(CurrentUserId)))
         {
           return new  HttpUnauthorizedResult();
@@ -147,5 +152,20 @@ namespace JoinRpg.Web.Controllers
     {
       return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
     }
-  }
+
+        [Obsolete]
+        protected ActionResult WithCharacter(Character character)
+        {
+            if (character == null)
+            {
+                return HttpNotFound();
+            }
+            if (!character.HasAnyAccess(CurrentUserId))
+            {
+                return NoAccesToProjectView(character.Project);
+            }
+
+            return null;
+        }
+    }
 }

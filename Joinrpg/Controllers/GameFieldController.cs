@@ -208,28 +208,23 @@ namespace JoinRpg.Web.Controllers
     }
 
     [HttpGet]
+    [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> CreateValue(int projectId, int projectFieldId)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
-      return AsMaster(field, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueCreateViewModel(field));
+      return View(new GameFieldDropdownValueCreateViewModel(field));
     }
 
         [HttpPost, ValidateAntiForgeryToken]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
         {
-            var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
-
-            var error = AsMaster(field, pa => pa.CanChangeFields);
-            if (error != null)
-            {
-                return error;
-            }
             try
             {
                 await
                     FieldSetupService.CreateFieldValueVariant(
                         new CreateFieldValueVariantRequest(
-                            field.ProjectId,
+                            viewModel.ProjectId,
                             viewModel.Label,
                             viewModel.Description,
                             viewModel.ProjectFieldId,
@@ -247,28 +242,27 @@ namespace JoinRpg.Web.Controllers
         }
 
         [HttpGet]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
         {
             var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            return AsMaster(value, pa => pa.CanChangeFields) ?? View(new GameFieldDropdownValueEditViewModel(field, value));
+            if (value == null)
+            {
+                return HttpNotFound();
+            }
+            return View(new GameFieldDropdownValueEditViewModel(field, value));
         }
 
         [HttpPost, ValidateAntiForgeryToken]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> EditValue(GameFieldDropdownValueEditViewModel viewModel)
         {
-            var value = await ProjectRepository.GetFieldValue(viewModel.ProjectId, viewModel.ProjectFieldId, viewModel.ProjectFieldDropdownValueId);
-
-            var error = AsMaster(value, pa => pa.CanChangeFields);
-            if (error != null)
-            {
-                return error;
-            }
             try
             {
                 await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
-                    value.ProjectId,
-                    value.ProjectFieldDropdownValueId,
+                    viewModel.ProjectId,
+                    viewModel.ProjectFieldDropdownValueId,
                     viewModel.Label,
                     viewModel.Description,
                     viewModel.ProjectFieldId,
@@ -300,6 +294,7 @@ namespace JoinRpg.Web.Controllers
         /// 404 -- if no field or project found
         /// </returns>
         [HttpDelete]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {
             try
@@ -309,9 +304,6 @@ namespace JoinRpg.Web.Controllers
                 if (value == null)
                     return HttpNotFound();
                                 
-                if (AsMaster(value, pa => pa.CanChangeFields) != null)
-                    return new HttpUnauthorizedResult();
-
                 await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive
                     ? new HttpStatusCodeResult(200)
