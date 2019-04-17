@@ -365,7 +365,7 @@ namespace JoinRpg.Web.Controllers
                     if (result.Succeeded)
                     {
                         await SignInManager.SignInAsync(user,
-                            isPersistent: false,
+                            isPersistent: true,
                             rememberBrowser: false);
                         return RedirectToLocal(returnUrl);
                     }

@@ -25,6 +25,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
         public async Task<ActionResult> ChangeEmail(ChangeEmailModel model)
         {
             await UserService.ChangeEmail(model.UserId, model.NewEmail);
+            await UserManager.UpdateSecurityStampAsync(model.UserId);
             return RedirectToUserDetails(model.UserId);
         }
 
@@ -37,6 +38,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
         public async Task<ActionResult> GrantAmin(int userId)
         {
             await UserService.SetAdminFlag(userId, administratorFlag: true);
+            await UserManager.UpdateSecurityStampAsync(userId);
             return RedirectToUserDetails(userId);
         }
 
@@ -44,6 +46,7 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
         public async Task<ActionResult> RevokeAdmin(int userId)
         {
             await UserService.SetAdminFlag(userId, administratorFlag: false);
+            await UserManager.UpdateSecurityStampAsync(userId);
             return RedirectToUserDetails(userId);
         }
     }

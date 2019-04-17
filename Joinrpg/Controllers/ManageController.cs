@@ -243,7 +243,8 @@ namespace JoinRpg.Web.Controllers
           _userService.UpdateProfile(viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
             viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal, viewModel.Telegram);
-        if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
+                await UserManager.UpdateSecurityStampAsync(CurrentUserId);
+                if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
         {
           return RedirectToAction("SetupProfile");
         }
