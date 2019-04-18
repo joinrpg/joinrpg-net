@@ -63,14 +63,14 @@ namespace JoinRpg.Web.Controllers
             return await Export(list, exportType);
         }
 
-        public CharacterListController(ApplicationUserManager userManager,
+        public CharacterListController(
             IProjectRepository projectRepository,
             IProjectService projectService,
             IExportDataService exportDataService,
             IPlotRepository plotRepository,
             IUriService uriService,
-            ICharacterRepository characterRepository,
-            IUserRepository userRepository) : base(projectRepository, projectService, exportDataService, userRepository)
+            IUserRepository userRepository)
+         : base(projectRepository, projectService, userRepository)
         {
             PlotRepository = plotRepository;
             UriService = uriService;

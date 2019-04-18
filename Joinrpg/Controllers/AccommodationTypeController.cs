@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
@@ -20,16 +19,13 @@ namespace JoinRpg.Web.Controllers
         private IAccommodationRepository AccommodationRepository { get; }
         private readonly IAccommodationService _accommodationService;
 
-        public AccommodationTypeController(ApplicationUserManager userManager,
-            [NotNull]
+        public AccommodationTypeController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IExportDataService exportDataService,
             IAccommodationService accommodationService,
             IAccommodationRepository accommodationRepository,
             IUserRepository userRepository) : base(projectRepository,
                 projectService,
-                exportDataService,
                 userRepository)
         {
             AccommodationRepository = accommodationRepository;

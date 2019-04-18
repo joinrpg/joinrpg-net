@@ -26,7 +26,6 @@ namespace JoinRpg.Web.Controllers
     private readonly IClaimsRepository _claimsRepository;
     private readonly IAccommodationRequestRepository _accommodationRequestRepository;
     private readonly IAccommodationRepository _accommodationRepository;
-    private IAccommodationService AccommodationService { get; }
     private IAccommodationInviteService AccommodationInviteService { get; }
     private IFinanceService FinanceService { get; }
     private IPluginFactory PluginFactory { get; }
@@ -58,31 +57,28 @@ namespace JoinRpg.Web.Controllers
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
-      public ClaimController(ApplicationUserManager userManager,
+      public ClaimController(
           IProjectRepository projectRepository,
           IProjectService projectService,
           IClaimService claimService,
           IPlotRepository plotRepository,
           IClaimsRepository claimsRepository,
           IFinanceService financeService,
-          IExportDataService exportDataService,
           IPluginFactory pluginFactory,
           ICharacterRepository characterRepository,
           IUriService uriService,
           IAccommodationRequestRepository accommodationRequestRepository,
           IAccommodationRepository accommodationRepository,
-          IAccommodationService accommodationService,
           IAccommodationInviteService accommodationInviteService,
           IAccommodationInviteRepository accommodationInviteRepository,
           IUserRepository userRepository)
-          : base(projectRepository, projectService, exportDataService, userRepository)
+          : base(projectRepository, projectService, userRepository)
         {
           _claimService = claimService;
           _plotRepository = plotRepository;
           _claimsRepository = claimsRepository;
           _accommodationRequestRepository = accommodationRequestRepository;
           _accommodationRepository = accommodationRepository;
-          AccommodationService = accommodationService;
           AccommodationInviteService = accommodationInviteService;
           AccommodationInviteRepository = accommodationInviteRepository;
           FinanceService = financeService;

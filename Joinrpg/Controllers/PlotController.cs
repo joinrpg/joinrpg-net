@@ -93,16 +93,14 @@ namespace JoinRpg.Web.Controllers
                new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
     }
 
-      public PlotController(ApplicationUserManager userManager,
+      public PlotController(
           IProjectRepository projectRepository,
           IProjectService projectService,
           IPlotService plotService,
           IPlotRepository plotRepository,
-          IExportDataService exportDataService,
           IUriService uriService,
           IUserRepository userRepository) : base(projectRepository,
               projectService,
-              exportDataService,
               userRepository)
         {
           _plotService = plotService;

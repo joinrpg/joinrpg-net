@@ -48,14 +48,13 @@ namespace JoinRpg.Web.Controllers
             return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
         }
 
-        public AclController(ApplicationUserManager userManager,
+        public AclController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IExportDataService exportDataService,
             IClaimsRepository claimRepository,
             IUriService uriService,
             IUserRepository userRepository)
-            : base(projectRepository, projectService, exportDataService, userRepository)
+            : base(projectRepository, projectService, userRepository)
         {
             ClaimRepository = claimRepository;
             UriService = uriService;

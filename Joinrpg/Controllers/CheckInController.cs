@@ -28,17 +28,16 @@ namespace JoinRpg.Web.Controllers
     [ProvidesContext]
     private ICharacterRepository CharacterRepository { get; }
 
-    public CheckInController(ApplicationUserManager userManager,
+    public CheckInController(
         [NotNull]
         IProjectRepository projectRepository,
         IProjectService projectService,
-        IExportDataService exportDataService,
         IClaimsRepository claimsRepository,
         IPlotRepository plotRepository,
         IClaimService claimService,
         ICharacterRepository characterRepository,
         IUserRepository userRepository) 
-      : base(projectRepository, projectService, exportDataService, userRepository)
+      : base(projectRepository, projectService, userRepository)
         {
       ClaimsRepository = claimsRepository;
       PlotRepository = plotRepository;

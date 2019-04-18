@@ -86,13 +86,12 @@ namespace JoinRpg.Web.Controllers
     }
 
     #region constructor
-    public MassMailController(ApplicationUserManager userManager,
+    public MassMailController(
         IProjectRepository projectRepository,
         IProjectService projectService,
-        IExportDataService exportDataService,
         IClaimsRepository claimRepository,
         IEmailService emailService,
-        IUserRepository userRepository) : base(projectRepository, projectService, exportDataService, userRepository)
+        IUserRepository userRepository) : base(projectRepository, projectService, userRepository)
         {
       ClaimRepository = claimRepository;
       EmailService = emailService;

@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Controllers
                     UriService));
         }
 
-        public SearchController(ApplicationUserManager userManager,
+        public SearchController(
             ISearchService searchService,
             IProjectRepository projectRepository,
             IUriService uriService,

@@ -12,8 +12,10 @@ namespace JoinRpg.Web.Areas.Admin.Controllers
         private IProjectRepository ProjectRepository { get; }
         
 
-        public AdminHomeController(ApplicationUserManager userManager,
-            IUserRepository userRepository, IProjectRepository projectRepository) : base(userRepository)
+        public AdminHomeController(
+            IUserRepository userRepository,
+            IProjectRepository projectRepository
+        ) : base(userRepository)
         {
             ProjectRepository = projectRepository;
         }

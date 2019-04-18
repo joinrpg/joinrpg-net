@@ -22,11 +22,13 @@ namespace JoinRpg.Web.Controllers
   public class GameGroupsController : ControllerGameBase
   {
 
-      public GameGroupsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-          IProjectService projectService, IUserRepository userRepository, IExportDataService exportDataService)
-          : base(projectRepository, projectService, exportDataService, userRepository)
+        public GameGroupsController(
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IUserRepository userRepository)
+            : base(projectRepository, projectService, userRepository)
         {
-      }
+        }
 
       [HttpGet]
     public async Task<ActionResult> Index(int projectId, int? characterGroupId)

@@ -9,11 +9,11 @@ namespace JoinRpg.Web.Controllers
 {
   public class GameToolsController : Common.ControllerGameBase
   {
-    public GameToolsController(ApplicationUserManager userManager, IProjectRepository projectRepository,
-      IProjectService projectService, IExportDataService exportDataService, IUserRepository userRepository)
-      : base(projectRepository, projectService, exportDataService, userRepository)
+        public GameToolsController(IProjectRepository projectRepository,
+          IProjectService projectService, IUserRepository userRepository)
+          : base(projectRepository, projectService, userRepository)
         {
-    }
+        }
 
     [HttpGet, MasterAuthorize()]
     public async Task<ActionResult> Apis(int projectId)
