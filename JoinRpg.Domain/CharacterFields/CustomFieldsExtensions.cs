@@ -65,24 +65,32 @@ namespace JoinRpg.Domain
       }
     }
 
-    public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
-      [CanBeNull] IFieldContainter container)
-    {
-      if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
-      if (container == null)
-      {
-        return;
-      }
-      var data = container.DeserializeFieldValues();
-      foreach (var characterFieldValue in characterFieldValues)
-      {
-        var value = data.GetValueOrDefault(characterFieldValue.Field.ProjectFieldId);
-        if (value != null)
+        public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
+          [CanBeNull] IFieldContainter container)
         {
-          characterFieldValue.Value = value;
+            if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
+            if (container == null)
+            {
+                return;
+            }
+            var data = container.DeserializeFieldValues();
+            foreach (var characterFieldValue in characterFieldValues)
+            {
+                var value = data.GetValueOrDefault(characterFieldValue.Field.ProjectFieldId);
+                if (value != null)
+                {
+                    try
+                    {
+                        characterFieldValue.Value = value;
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception($"Problem parsing field value for field = {characterFieldValue.Field.ProjectFieldId}, Value = {value}", e);
+                    }
+
+                }
+            }
         }
-      }
-    }
 
     public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
       [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim,
