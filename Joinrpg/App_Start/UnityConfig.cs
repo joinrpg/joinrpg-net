@@ -11,6 +11,7 @@ using Microsoft.Practices.Unity;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin.Security;
 using JoinRpg.Interfaces;
+using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.Web
 {

@@ -419,10 +419,6 @@
     <Compile Include="Migrations\201903070953331_CharacterNames.Designer.cs">
       <DependentUpon>201903070953331_CharacterNames.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201904161204557_SecurityStamp.cs" />
-    <Compile Include="Migrations\201904161204557_SecurityStamp.Designer.cs">
-      <DependentUpon>201904161204557_SecurityStamp.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
@@ -747,9 +743,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903070953331_CharacterNames.resx">
       <DependentUpon>201903070953331_CharacterNames.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201904161204557_SecurityStamp.resx">
-      <DependentUpon>201904161204557_SecurityStamp.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
