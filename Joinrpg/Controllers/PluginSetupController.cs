@@ -15,13 +15,12 @@ namespace JoinRpg.Web.Controllers
   {
     private IPluginFactory PluginFactory { get; }
 
-    public PluginSetupController(ApplicationUserManager userManager,
+    public PluginSetupController(
         IPluginFactory pluginFactory,
         IProjectRepository projectRepository,
         IProjectService projectService,
-        IExportDataService exportDataService,
         IUserRepository userRepository)
-      : base(projectRepository, projectService, exportDataService, userRepository)
+      : base(projectRepository, projectService, userRepository)
         {
       PluginFactory = pluginFactory;
     }

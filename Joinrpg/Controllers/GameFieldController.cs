@@ -25,13 +25,12 @@ namespace JoinRpg.Web.Controllers
         public GameFieldController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IExportDataService exportDataService,
             IFieldSetupService fieldSetupService,
             IUserRepository userRepository,
             FieldSetupManager manager,
             ICurrentProjectAccessor currentProjectAccessor
             )
-          : base(projectRepository, projectService, exportDataService, userRepository)
+          : base(projectRepository, projectService, userRepository)
         {
             FieldSetupService = fieldSetupService;
             Manager = manager;

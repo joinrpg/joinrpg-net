@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Controllers
       private IUriService UriService { get; }
       private IFinanceReportRepository FinanceReportRepository { get; }
 
-      public FinancesController(ApplicationUserManager userManager,
+      public FinancesController(
           IProjectRepository projectRepository,
           IProjectService projectService,
           IExportDataService exportDataService,
@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Controllers
           IUriService uriService,
           IFinanceReportRepository financeReportRepository,
           IUserRepository userRepository)
-          : base(projectRepository, projectService, exportDataService, userRepository)
+          : base(projectRepository, projectService, userRepository)
         {
             ExportDataService = exportDataService;
             FinanceService = financeService;

@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Controllers
         private IAccommodationRepository AccommodationRepository { get; }
         private IUriService UriService { get; }
 
-        public ClaimListController(ApplicationUserManager userManager,
+        public ClaimListController(
             IProjectRepository projectRepository,
             IProjectService projectService,
             IExportDataService exportDataService,
@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Controllers
             IUriService uriService,
             IAccommodationRepository accommodationRepository,
             IUserRepository userRepository)
-            : base(projectRepository, projectService, exportDataService, userRepository)
+            : base(projectRepository, projectService, userRepository)
         {
             ExportDataService = exportDataService;
             ClaimsRepository = claimsRepository;

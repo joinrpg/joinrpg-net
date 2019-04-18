@@ -43,7 +43,7 @@ namespace JoinRpg.Web.Controllers
             return View(userProfileViewModel);
         }
 
-        public UserController(ApplicationUserManager userManager, IUserRepository userRepository)
+        public UserController(IUserRepository userRepository)
             : base(userRepository)
         {
         }

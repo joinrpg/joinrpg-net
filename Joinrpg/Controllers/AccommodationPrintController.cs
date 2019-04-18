@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
@@ -18,8 +17,7 @@ namespace JoinRpg.Web.Controllers
 
         private IExportDataService ExportDataService { get; }
 
-        public AccommodationPrintController(ApplicationUserManager userManager,
-            [NotNull]
+        public AccommodationPrintController(
             IProjectRepository projectRepository,
             IProjectService projectService,
             IExportDataService exportDataService,
@@ -27,7 +25,6 @@ namespace JoinRpg.Web.Controllers
             IAccommodationRepository accommodationRepository,
             IUserRepository userRepository) : base(projectRepository,
                 projectService,
-                exportDataService,
                 userRepository)
         {
             UriService = uriService;

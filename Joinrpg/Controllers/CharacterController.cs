@@ -22,16 +22,15 @@ namespace JoinRpg.Web.Controllers
         private IUriService UriService { get; }
         private ICharacterService CharacterService { get; }
 
-        public CharacterController(ApplicationUserManager userManager,
+        public CharacterController(
             IProjectRepository projectRepository,
             IProjectService projectService,
             IPlotRepository plotRepository,
-            IExportDataService exportDataService,
             ICharacterRepository characterRepository,
             IUriService uriService,
             IUserRepository userRepository,
             ICharacterService characterService)
-            : base(projectRepository, projectService, exportDataService, userRepository)
+            : base(projectRepository, projectService, userRepository)
         {
             PlotRepository = plotRepository;
             CharacterRepository = characterRepository;

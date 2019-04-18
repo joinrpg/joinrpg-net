@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Controllers.Common;
@@ -30,14 +29,11 @@ namespace JoinRpg.Web.Controllers
             return View(report2DResultViewModel);
         }
 
-        public ReportsController(ApplicationUserManager userManager,
-            [NotNull]
+        public ReportsController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IExportDataService exportDataService,
             IUserRepository userRepository) : base(projectRepository,
                 projectService,
-                exportDataService,
                 userRepository)
         {
         }
