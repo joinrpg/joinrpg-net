@@ -17,6 +17,7 @@ namespace JoinRpg.Web.Controllers
 {
     public class ClaimListController : Common.ControllerGameBase
     {
+        private IExportDataService ExportDataService { get; }
         private IClaimsRepository ClaimsRepository { get; }
         private IAccommodationRepository AccommodationRepository { get; }
         private IUriService UriService { get; }
@@ -31,6 +32,7 @@ namespace JoinRpg.Web.Controllers
             IUserRepository userRepository)
             : base(projectRepository, projectService, exportDataService, userRepository)
         {
+            ExportDataService = exportDataService;
             ClaimsRepository = claimsRepository;
             UriService = uriService;
             AccommodationRepository = accommodationRepository;
@@ -301,6 +303,14 @@ namespace JoinRpg.Web.Controllers
                 claims.Where(c => !c.GetFields().Single(f => f.Field.ProjectFieldId == projectfieldid).HasEditableValue)
                     .ToList()
             );
+        }
+        private Task<FileContentResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title,
+  ExportType exportType, IGeneratorFrontend frontend, string projectName)
+        {
+            var generator = ExportDataService.GetGenerator(exportType, viewModel,
+              frontend);
+
+            return ReturnExportResult(projectName + ": " + title, generator);
         }
     }
 }
