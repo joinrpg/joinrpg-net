@@ -257,13 +257,10 @@ namespace JoinRpg.Web.Controllers
           var summary =
               MasterBalanceBuilder.ToMasterBalanceViewModels(masterOperations, masterTransfers, projectId);
 
-          return
-              await
-                  ExportWithCustomFronend(summary,
-                      "money-summary",
-                      ExportType.Csv,
-                      new MoneySummaryByMasterExporter(UriService),
-                      project.ProjectName);
+            var generator = ExportDataService.GetGenerator(ExportType.Csv, summary,
+        new MoneySummaryByMasterExporter(UriService));
+
+            return await ReturnExportResult(project.ProjectName + ": " + "money-summary", generator);
       }
 
         [MasterAuthorize(Permission.CanManageMoney)]

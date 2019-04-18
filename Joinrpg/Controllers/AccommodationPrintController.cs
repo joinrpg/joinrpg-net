@@ -16,6 +16,8 @@ namespace JoinRpg.Web.Controllers
         private IAccommodationRepository AccommodationRepository { get; }
         private IUriService UriService { get; }
 
+        private IExportDataService ExportDataService { get; }
+
         public AccommodationPrintController(ApplicationUserManager userManager,
             [NotNull]
             IProjectRepository projectRepository,
@@ -30,6 +32,7 @@ namespace JoinRpg.Web.Controllers
         {
             UriService = uriService;
             AccommodationRepository = accommodationRepository;
+            ExportDataService = exportDataService;
         }
 
         [HttpGet]
@@ -63,11 +66,9 @@ namespace JoinRpg.Web.Controllers
             }
             else
             {
+                var generator = ExportDataService.GetGenerator(exportType.Value, accommodations, new AccomodationReportExporter(UriService));
 
-                return
-                    await
-                        ExportWithCustomFronend(accommodations, "Отчет по расселению", exportType.Value,
-                            new AccomodationReportExporter(UriService), project.ProjectName);
+                return await ReturnExportResult(project.ProjectName + ": " + "Отчет по расселению", generator);
             }
         }
 

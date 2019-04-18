@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
@@ -23,8 +22,6 @@ namespace JoinRpg.Web.Controllers.Common
     [ProvidesContext, NotNull]
     protected IProjectService ProjectService { get; }
     [ProvidesContext, NotNull]
-    private IExportDataService ExportDataService { get; }
-    [ProvidesContext, NotNull]
     public IProjectRepository ProjectRepository { get; }
 
     protected ControllerGameBase([NotNull] IProjectRepository projectRepository, IProjectService projectService,
@@ -33,7 +30,6 @@ namespace JoinRpg.Web.Controllers.Common
       if (projectRepository == null) throw new ArgumentNullException(nameof(projectRepository));
       ProjectRepository = projectRepository;
       ProjectService = projectService;
-      ExportDataService = exportDataService;
     }
 
     protected ActionResult NoAccesToProjectView(Project project)
@@ -142,19 +138,10 @@ namespace JoinRpg.Web.Controllers.Common
     }
 
 
-    private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
+    protected async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
     {
       return File(await generator.Generate(), generator.ContentType,
         Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
-    }
-
-    protected Task<FileContentResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title,
-      ExportType exportType, IGeneratorFrontend frontend, string projectName)
-    {
-      var generator = ExportDataService.GetGenerator(exportType, viewModel,
-        frontend);
-
-      return ReturnExportResult(projectName + ": " + title, generator);
     }
   }
 }
