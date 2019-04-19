@@ -1,15 +1,22 @@
 using System.Web.Http;
-using Microsoft.Practices.Unity.WebApi;
+using Autofac;
+using Autofac.Integration.WebApi;
 
 namespace JoinRpg.Web
 {
-  public static class WebApiConfig
-  {
-    public static void Register(HttpConfiguration config)
+    public static class WebApiConfig
     {
-      config.MapHttpAttributeRoutes();
-      var container = UnityConfig.GetConfiguredContainer();
-      config.DependencyResolver = new UnityDependencyResolver(container);
+        public static void Register(HttpConfiguration config)
+        {
+            config.MapHttpAttributeRoutes();
+            var builder = new ContainerBuilder();
+            builder.RegisterApiControllers(typeof(MvcApplication).Assembly);
+
+            builder.RegisterModule<App_Start.WebModule>();
+
+
+            var container = builder.Build();
+            config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+        }
     }
-  }
 }
