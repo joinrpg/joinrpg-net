@@ -107,6 +107,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PscbApi", "PscbApi\PscbApi.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.WebPortal.Models.Test", "JoinRpg.WebPortal.Models.Test\JoinRpg.WebPortal.Models.Test.csproj", "{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal", "JoinRpg.Portal\JoinRpg.Portal.csproj", "{BF0B9903-B260-4FBF-889F-00F93CF16D1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Joinrpg.AspNetCore.Helpers", "Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{B664B271-D508-4C7E-B3BB-7D7C062FB77C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -273,6 +277,14 @@ Global
 		{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF0B9903-B260-4FBF-889F-00F93CF16D1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B664B271-D508-4C7E-B3BB-7D7C062FB77C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
