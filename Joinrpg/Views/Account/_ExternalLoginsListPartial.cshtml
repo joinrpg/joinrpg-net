@@ -1,10 +1,9 @@
 ﻿@model JoinRpg.Web.Models.ExternalLoginListViewModel
-@using Microsoft.Owin.Security
 
 <h4>Cоциальные сети</h4>
 <hr />
 @{
-    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes().ToList();
+    var loginProviders = Model.ExternalLogins;
     if (!loginProviders.Any())
     {
         <div>
