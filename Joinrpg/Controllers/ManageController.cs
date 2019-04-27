@@ -145,42 +145,38 @@ namespace JoinRpg.Web.Controllers
     //
     // GET: /Manage/ManageLogins
     public async Task<ActionResult> ManageLogins(ManageMessageId? message)
-    {
-      ViewBag.StatusMessage =
-        message == ManageMessageId.RemoveLoginSuccess
-          ? "The external login was removed."
-          : message == ManageMessageId.Error
-            ? "An error has occurred."
-            : "";
-      var user = await UserManager.FindByIdAsync(CurrentUserId);
-      if (user == null)
-      {
-        return View("Error");
-      }
-      var userLogins = await UserManager.GetLoginsAsync(CurrentUserId);
-      var otherLogins =
-        AuthenticationManager.GetExternalAuthenticationTypes()
-          .Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider))
-          .ToList();
-      ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
-        return View(new ManageLoginsViewModel
         {
-            CurrentLogins = userLogins.Select(ul => new UserLoginInfoViewModel()
+            ViewBag.StatusMessage =
+              message == ManageMessageId.RemoveLoginSuccess
+                ? "The external login was removed."
+                : message == ManageMessageId.Error
+                  ? "An error has occurred."
+                  : "";
+            var user = await UserManager.FindByIdAsync(CurrentUserId);
+            if (user == null)
             {
-                LoginProvider = ul.LoginProvider,
-                ProviderKey = ul.ProviderKey
-            }).ToList(),
-            OtherLogins = otherLogins.Select(ol => new AuthenticationDescriptionViewModel()
+                return View("Error");
+            }
+            var userLogins = await UserManager.GetLoginsAsync(CurrentUserId);
+            var otherLogins =
+              AuthenticationManager.GetExternalAuthenticationTypes()
+                .Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider))
+                .ToList();
+            ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
+            return View(new ManageLoginsViewModel
             {
-                AuthenticationType = ol.AuthenticationType,
-                Caption = ol.Caption
-            }).ToList(),
-        });
-    }
+                CurrentLogins = userLogins.Select(ul => new UserLoginInfoViewModel()
+                {
+                    LoginProvider = ul.LoginProvider,
+                    ProviderKey = ul.ProviderKey
+                }).ToList(),
+                OtherLogins = otherLogins.Select(ol => ol.ToViewModel()).ToList(),
+            });
+        }
 
-    //
-    // POST: /Manage/LinkLogin
-    [HttpPost]
+        //
+        // POST: /Manage/LinkLogin
+        [HttpPost]
     [ValidateAntiForgeryToken]
     public ActionResult LinkLogin(string provider)
     {

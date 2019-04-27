@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
@@ -19,6 +20,13 @@ namespace JoinRpg.Web.Models
     public class ExternalLoginListViewModel
     {
         public string ReturnUrl { get; set; }
+        public List<AuthenticationDescriptionViewModel> ExternalLogins { get; set; }
+    }
+
+    public class LoginPageViewModel
+    {
+        public LoginViewModel Login { get; set; }
+        public ExternalLoginListViewModel External { get; set; }
     }
 
     public class LoginViewModel
@@ -32,6 +40,7 @@ namespace JoinRpg.Web.Models
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }
+        public string ReturnUrl { get; set; }
     }
 
     public class RegisterViewModel

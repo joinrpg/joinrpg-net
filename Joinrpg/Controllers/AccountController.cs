@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -32,13 +33,26 @@ namespace JoinRpg.Web.Controllers
 
         private ApplicationSignInManager SignInManager { get; }
 
-        //
-        // GET: /Account/Login
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
-            ViewBag.ReturnUrl = returnUrl;
-            return View();
+            return View(CreateLoginPageViewModel(returnUrl));
+        }
+
+        private LoginPageViewModel CreateLoginPageViewModel(string returnUrl)
+        {
+            return new LoginPageViewModel()
+            {
+                External = new ExternalLoginListViewModel
+                {
+                    ReturnUrl = returnUrl,
+                    ExternalLogins = AuthenticationManager.GetExternalAuthenticationTypes().Select(ol => ol.ToViewModel()).ToList(),
+                },
+                Login = new LoginViewModel
+                {
+                    ReturnUrl = returnUrl,
+                }
+            };
         }
 
         //
@@ -83,7 +97,9 @@ namespace JoinRpg.Web.Controllers
                 case SignInStatus.Failure:
                 default:
                     ModelState.AddModelError("", "Не найден логин или пароль");
-                    return View(model);
+                    var vm = CreateLoginPageViewModel(returnUrl);
+                    vm.Login.Email = model.Email;
+                    return View();
             }
         }
 
