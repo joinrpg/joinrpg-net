@@ -1,4 +1,5 @@
 using Autofac;
+using JoinRpg.Portal.Identity;
 
 namespace JoinRpg.Portal
 {
@@ -6,7 +7,10 @@ namespace JoinRpg.Portal
     {
         protected override void Load(ContainerBuilder builder)
         {
-            base.Load(builder);
+            builder.RegisterType<ApplicationUserManager>();
+            builder.RegisterType<ApplicationSignInManager>();
+            builder.RegisterType<Infrastructure.UriServiceImpl>().AsImplementedInterfaces();
+            builder.RegisterType<Infrastructure.ConfigurationAdapter>().AsImplementedInterfaces();
         }
     }
 }
