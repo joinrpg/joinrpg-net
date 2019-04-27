@@ -1,17 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
 using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.App_Code
 {
@@ -29,8 +27,7 @@ namespace JoinRpg.Web.App_Code
         public static string GetDescription<TModel, TValue>(this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-            return metadata.Description;
+            return self.GetMetadataFor(expression).Description;
         }
 
         private static string TryGetDescription<TModel, TValue>(this HtmlHelper<TModel> self,
@@ -45,7 +42,7 @@ namespace JoinRpg.Web.App_Code
 
             //Try to get enum description
 
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
+            var metadata = self.GetMetadataFor(expression);
             if (metadata.ModelType == typeof(Enum))
             {
                 var e = (Enum) metadata.Model;
@@ -78,7 +75,7 @@ namespace JoinRpg.Web.App_Code
         {
             string s = string.Empty;
             foreach (var kv in attrs)
-                s += s + @" " + kv.Key + @"=""" + self.AttributeEncode(kv.Value) + @"""";
+                s += s + @" " + kv.Key + @"=""" + WebUtility.HtmlEncode(kv.Value) + @"""";
             return self.Raw(s);
         }
 
@@ -131,8 +128,7 @@ namespace JoinRpg.Web.App_Code
         public static TValue GetValue<TModel, TValue>(this HtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-            return (TValue) metadata.Model;
+            return (TValue)self.GetMetadataFor(expression).Model;
         }
 
         public static TModel GetModel<TModel>(this HtmlHelper<TModel> self)
@@ -140,57 +136,12 @@ namespace JoinRpg.Web.App_Code
             return (TModel) ModelMetadata.FromLambdaExpression(m => m, self.ViewData).Model;
         }
 
-        public static MvcHtmlString MagicSelectParent<TModel>(this HtmlHelper<TModel> self,
-            Expression<Func<TModel, IEnumerable<string>>> expression)
-            where TModel : IProjectIdAware
+
+        public static ModelMetadata GetMetadataFor<TModel, TValue>(this HtmlHelper<TModel> self,
+            Expression<Func<TModel, TValue>> expression)
         {
-            var container = (IProjectIdAware) self.GetModel();
-
-            var value = self.GetValue(expression).ToList();
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-            return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
-                ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value, false);
+            return ModelMetadata.FromLambdaExpression(expression, self.ViewData);
         }
 
-        public static MvcHtmlString MagicSelectBindGroups<TModel>(this HtmlHelper<TModel> self,
-            Expression<Func<TModel, IEnumerable<string>>> expression)
-            where TModel : IProjectIdAware
-        {
-            var container = (IProjectIdAware) self.GetModel();
-
-            var value = self.GetValue(expression).ToList();
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-            return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
-                ShowImplicitGroups.Children, MagicControlStrategy.NonChanger, metadata.PropertyName, value, true);
-        }
-
-        public static MvcHtmlString MagicSelectGroupParent<TModel>(this HtmlHelper<TModel> self,
-            Expression<Func<TModel, IEnumerable<string>>> expression)
-            where TModel : EditCharacterGroupViewModel
-        {
-            var container = (EditCharacterGroupViewModel) self.GetModel();
-
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-            return MagicControlHelper.GetMagicSelect(container.ProjectId, false, ShowImplicitGroups.Parents,
-                MagicControlStrategy.Changer, metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups(),
-                false);
-        }
-
-        public static MvcHtmlString MagicSelectBind<TModel>(this HtmlHelper<TModel> self,
-            Expression<Func<TModel, IEnumerable<string>>> expression)
-            where TModel : IProjectIdAware
-        {
-            var container = self.GetModel();
-
-            var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-            var value = self.GetValue(expression);
-
-            return MagicControlHelper.GetMagicSelect(container.ProjectId, true, ShowImplicitGroups.Children,
-                MagicControlStrategy.NonChanger, metadata.PropertyName, value, true);
-        }
     }
 }
