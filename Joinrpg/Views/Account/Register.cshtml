@@ -13,7 +13,7 @@
 
     @Html.Partial("_RegistrationRules")
 
-    <p>@MvcHtmlHelpers.HelpLink("register", "Подробнее о регистрации")</p>
+    <p>@Html.HelpLink("register", "Подробнее о регистрации")</p>
     <hr/>
     @Html.ValidationSummary("", new {@class = "text-danger"})
     <div class="form-group">
