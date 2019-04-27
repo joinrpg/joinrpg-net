@@ -99,7 +99,7 @@ namespace JoinRpg.Web.Controllers
                     ModelState.AddModelError("", "Не найден логин или пароль");
                     var vm = CreateLoginPageViewModel(returnUrl);
                     vm.Login.Email = model.Email;
-                    return View();
+                    return View(vm);
             }
         }
 
