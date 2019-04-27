@@ -69,6 +69,7 @@
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Content Include="App_Code\ConfirmDialog.cs" />
     <Content Include="App_Code\JoinDropdownMvcHelper.cs" />
+    <Content Include="App_Code\MagicControlHtmlHelpers.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\PluginsModule.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
