@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Joinrpg.Web.Identity;
 using Autofac;
+using JoinRpg.DI;
 
 namespace JoinRpg.Portal
 {
@@ -29,7 +30,10 @@ namespace JoinRpg.Portal
                 .AddRoleStore<MyUserStore>()
                 ;
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services
+                .AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                ;
         }
 
         /// <summary>
@@ -37,6 +41,7 @@ namespace JoinRpg.Portal
         /// </summary>
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            builder.RegisterModule(new JoinrpgMainModule());
             builder.RegisterModule(new JoinRpgPortalModule());
         }
 
