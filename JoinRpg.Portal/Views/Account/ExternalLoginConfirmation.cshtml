@@ -1,0 +1,39 @@
+﻿@model JoinRpg.Web.Models.ExternalLoginConfirmationViewModel
+@{
+    ViewBag.Title = "Регистрация";
+}
+<h2>@ViewBag.Title.</h2>
+<h3>Завершение регистрации через @ViewBag.LoginProvider </h3>
+
+@using (Html.BeginForm("ExternalLoginConfirmation", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, antiforgery: true, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.Partial("_RegistrationRules")
+
+    <p class="text-info">
+        Вы успешно вошли через <strong>@ViewBag.LoginProvider</strong>.
+        Теперь вам нужно подвердить свою электронную почту и согласие с правилами.
+    </p>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
+        <div class="col-md-2">
+            @Html.EditorFor(m => m.RulesApproved)
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Зарегистрироваться" />
+        </div>
+    </div>
+}
