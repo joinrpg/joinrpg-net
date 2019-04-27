@@ -13,7 +13,7 @@ using Joinrpg.AspNetCore.Helpers;
 
 namespace JoinRpg.Portal.Controllers.Common
 {
-    public class ControllerBase : Controller
+    public abstract class ControllerBase : Controller
     {
 
         protected readonly IUserRepository UserRepository;

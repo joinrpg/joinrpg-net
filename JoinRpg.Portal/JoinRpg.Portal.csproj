@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj" />
+    <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
