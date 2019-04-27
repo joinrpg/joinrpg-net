@@ -4,6 +4,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using JoinRpg.DI;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace JoinRpg.Portal.Test.ContainterTest
 {
@@ -26,8 +27,11 @@ namespace JoinRpg.Portal.Test.ContainterTest
 
             startup.ConfigureServices(serviceCollection);
 
+            builder.RegisterInstance<IConfiguration>(new ConfigurationBuilder().Build());
+
             builder.Populate(serviceCollection);
 
+            //TODO why RegisterControllersAsServices is not working here?
             builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(Startup))).Where(type => typeof(Controller).IsAssignableFrom(type));
 
             Container = builder.Build();

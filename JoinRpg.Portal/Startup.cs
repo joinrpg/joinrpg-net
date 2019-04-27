@@ -30,6 +30,8 @@ namespace JoinRpg.Portal
                 .AddRoleStore<MyUserStore>()
                 ;
 
+            services.AddLogging();
+
             services
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
