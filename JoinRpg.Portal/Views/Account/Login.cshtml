@@ -1,0 +1,20 @@
+﻿@using JoinRpg.Web.Models
+@model LoginPageViewModel
+@{
+    ViewBag.Title = "Войти";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <section id="loginForm">
+            @Html.Partial("_PasswordLoginFormPartial", Model.Login)
+        </section>
+    </div>
+    <div class="col-md-4">
+        <section id="socialLoginForm">
+            @Html.Partial("_ExternalLoginsListPartial", Model.External)
+        </section>
+    </div>
+</div>

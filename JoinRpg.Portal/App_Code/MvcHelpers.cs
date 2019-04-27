@@ -120,7 +120,7 @@ namespace JoinRpg.Web.App_Code
             return string.Format(template ?? defaultPriceTemplate, price);
         }
 
-        public static IHtmlContent HelpLink(this HtmlHelper self, string link, string message)
+        public static IHtmlContent HelpLink(this IHtmlHelper self, string link, string message)
         {
             return new HtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
                                      "\">" + message + "</a>");
