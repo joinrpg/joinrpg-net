@@ -25,4 +25,8 @@
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+  </ItemGroup>
+
 </Project>
