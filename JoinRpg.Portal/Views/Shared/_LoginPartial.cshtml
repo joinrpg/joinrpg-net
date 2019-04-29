@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @using Joinrpg.Web.Identity
 
 @inject SignInManager<JoinIdentityUser> SignInManager
@@ -11,16 +11,30 @@
             <li>
                 <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
             </li>
-            <li>
-                <button type="submit" class="btn btn-link navbar-btn navbar-link">Logout</button>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <img src="https://www.gravatar.com/avatar/@ViewBag.GravatarHash?d=identicon&s=24" />&nbsp;@ViewBag.UserDisplayName
+                </a>
+
+                <ul class="dropdown-menu">
+                    <li class="dropdown-item">@Html.ActionLink("Профиль", "Me", "User", new { area = "" }, null)</li>
+                    <li class="dropdown-item">@Html.ActionLink("Аккаунт", "Index", "Manage", new { area = "" }, null)</li>
+                    <li class="dropdown-item"><a href="https://docs.joinrpg.ru"><span class="glyphicon glyphicon-question-sign"></span> Помощь</a></li>
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="dropdown-item">@Html.ActionLink("Панель администратора", "Index", "AdminHome", new { area = "Admin" }, null)</li>
+                    }
+                    <li class="dropdown-item"><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>
+                </ul>
             </li>
         </ul>
     </form>
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li><a asp-controller="Account" asp-action="Register">Register</a></li>
-        <li><a asp-controller="Account" asp-action="Login">Login</a></li>
-    </ul>
+<ul class="nav navbar-nav navbar-right">
+    <li><a asp-controller="Account" asp-action="Register">Регистрация</a></li>
+    <li><a asp-controller="Account" asp-action="Login">Войти</a></li>
+    <li><a href="https://docs.joinrpg.ru">Помощь</a></li>
+</ul>
 }
