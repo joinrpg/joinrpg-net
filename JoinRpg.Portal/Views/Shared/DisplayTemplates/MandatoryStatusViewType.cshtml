@@ -1,0 +1,16 @@
+﻿@using JoinRpg.Web.Models
+@model MandatoryStatusViewType
+@switch (Model)
+{
+    case MandatoryStatusViewType.Optional:
+        break;
+    case MandatoryStatusViewType.Recommended:
+    <span class="text-info" title="Рекомендуется заполнить это поле">*</span>
+        break;
+    case MandatoryStatusViewType.Required:
+    <span class="text-danger" title="Поле обязательно к заполнению">*</span>
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}
+

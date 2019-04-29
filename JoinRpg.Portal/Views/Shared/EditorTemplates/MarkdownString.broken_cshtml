@@ -1,0 +1,21 @@
+﻿@model string
+@{
+  var requiredMsg = new MvcHtmlString("");
+    var validation = false;
+  foreach (var attr in @Html.GetUnobtrusiveValidationAttributes(@ViewData.TemplateInfo.HtmlFieldPrefix, @ViewData.ModelMetadata))
+  {
+      if (attr.Key == "data-val-required")
+      {
+          requiredMsg = new MvcHtmlString("data-val-required='" + HttpUtility.HtmlAttributeEncode((string) attr.Value) + "'");
+          validation = true;
+      }
+  }
+}
+    <textarea
+        class="form-control"
+        cols="100"
+        id="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
+        name="@(ViewData.TemplateInfo.HtmlFieldPrefix)"
+        @requiredMsg @(validation ? "data-val=true" : "")
+        rows="4">@(Model == null ? "" : Model)</textarea>    
+<div class="help-block">Можно использовать <a href="http://commonmark.org/help/" target="_blank">MarkDown</a> (**<b>полужирный</b>**, _<i>курсив</i>_)</div>

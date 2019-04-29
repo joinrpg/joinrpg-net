@@ -1,0 +1,35 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotDisplayViewModel
+
+@using JetBrains.Annotations
+@functions{
+
+    [MustUseReturnValue]
+    public static string DisplayCount_OfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
+
+@if (Model != null && Model.Elements.Any())
+{
+    <div class="panel panel-default">
+        <div class="panel-heading" id="headingOne">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    @DisplayCount_OfX(Model.Elements.Count(), "загруз", "загруза", "загрузов")
+                </a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in" aria-labelledby="headingOne">
+            <div class="panel-body">
+                @foreach (var plot in Model.Elements)
+                {
+                    @Html.Partial("../Plot/ShowElementPartial", plot)
+                }
+            </div>
+        </div>
+    </div>
+}

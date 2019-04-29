@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using JoinRpg.Data.Interfaces;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +9,7 @@ namespace JoinRpg.Portal.Controllers
         private ProjectListManager ProjectListManager { get; }
         private const int ProjectsOnHomePage = 9;
 
-        public HomeController(
-            IUserRepository userRepository,
-            ProjectListManager projectListManager) : base(userRepository)
+        public HomeController(ProjectListManager projectListManager) 
         {
             ProjectListManager = projectListManager;
         }

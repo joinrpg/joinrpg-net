@@ -1,0 +1,38 @@
+﻿@using JoinRpg.Helpers.Web
+@model JoinRpg.Web.Models.IOperationsAwareView
+@if (ViewBag.HideOperations == true)
+{
+    return;
+}
+<div class="btn-group" style="padding: 1em">
+    @if (ViewBag.CountString != null)
+    {
+        <a href="#" class="disabled btn btn-default">@ViewBag.CountString</a>
+    }
+    <a href="?export=xlsx" class="btn btn-default"
+       title="Экспорт в Excel">
+        <span class="glyphicon glyphicon-download"></span>
+        Скачать в Excel
+    </a>
+    @if (Model.ClaimIds.Any() && Model.ProjectId != null)
+    {
+        
+        <a href="@Url.Action("ForClaims", "MassMail", new {Model.ProjectId, ClaimIds = Model.ClaimIds.CompressIdList()})"
+           class="btn btn-default">
+            <span class="glyphicon glyphicon-envelope"></span>
+            Написать всем
+        </a>
+    
+    }
+    @if (Model.CharacterIds.Any() && Model.ProjectId != null)
+    {
+        
+        <a class="btn btn-default"
+           href="@Url.Action("CharacterList", "Print", new {Model.ProjectId, CharacterIds = Model.CharacterIds.CompressIdList()})">
+            <span class="glyphicon glyphicon-print"></span>
+            Распечатать все
+        </a>
+    
+    }
+
+</div>

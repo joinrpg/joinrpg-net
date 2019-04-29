@@ -1,0 +1,10 @@
+﻿@model dynamic
+
+@{
+    var isActive = Model != null || Model.IsActive;
+}
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-10">
+        <input type="submit" value="@(isActive ? "Сохранить" : "Восстановить")" class="btn btn-success" />
+    </div>
+</div>
