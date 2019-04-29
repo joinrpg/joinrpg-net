@@ -1,0 +1,7 @@
+﻿@using JoinRpg.Helpers
+@model JoinRpg.Web.Models.GameObjectLinkViewModel
+
+@Model.Type.GetDisplayName()
+<a
+   style="@(Model.IsActive ? "" : "text-decoration: line-through");"
+   href="@Model.Uri"> @Model.DisplayName</a>

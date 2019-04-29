@@ -7,6 +7,32 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Shared\CharacterNavigation.broken_cshtml" />
+    <None Remove="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
+    <None Remove="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
+    <None Remove="Views\Shared\DisplayTemplates\ClaimFeeViewModel.broken_cshtml" />
+    <None Remove="Views\Shared\DisplayTemplates\FieldValueViewModel.broken_cshtml" />
+    <None Remove="Views\Shared\EditorTemplates\FieldValueViewModel.broken_cshtml" />
+    <None Remove="Views\Shared\EditorTemplates\MarkdownString.broken_cshtml" />
+    <None Remove="Views\Shared\EditorTemplates\_SelectOptionDefPartial.broken_cshtml" />
+    <None Remove="Views\Shared\EditorTemplates\_SelectOptionPartial.broken_cshtml" />
+    <None Remove="Views\Shared\_RoomInhabitant.broken_cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Views\Shared\CharacterNavigation.broken_cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.broken_cshtml" />
+    <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.broken_cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.broken_cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\MarkdownString.broken_cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\_SelectOptionDefPartial.broken_cshtml" />
+    <Content Include="Views\Shared\EditorTemplates\_SelectOptionPartial.broken_cshtml" />
+    <Content Include="Views\Shared\_RoomInhabitant.broken_cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />
@@ -14,6 +40,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.1.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="1.0.172" />
   </ItemGroup>
 

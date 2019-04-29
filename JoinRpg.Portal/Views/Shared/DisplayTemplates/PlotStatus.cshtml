@@ -1,0 +1,21 @@
+﻿@using JoinRpg.Web.Models.Plot
+@model PlotStatus
+@switch (Model)
+{
+    case PlotStatus.InWork:
+    <span class="label label-info">Разработка</span>
+        break;
+    case PlotStatus.HasNewVersion:
+        <span class="label label-info" title="Вводная была опубликована, но есть более новая, неопубликованная вресия">Доработка опубликованной</span>
+        break;
+    case PlotStatus.Completed:
+    <span class="label label-success">Готова</span>
+        break;
+    case PlotStatus.Deleted:
+    <del>
+        <span class="label label-default">Удалена</span>
+    </del>
+        break;
+    default:
+        throw new ArgumentOutOfRangeException();
+}

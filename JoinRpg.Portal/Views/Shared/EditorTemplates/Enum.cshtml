@@ -1,0 +1,22 @@
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.App_Code
+@model Enum
+@foreach (Enum value in Enum.GetValues(Model.GetType()))
+{
+    <div>
+        @{
+            var clientId = ViewData.TemplateInfo.HtmlFieldPrefix + "_" + value;
+            if (value.Equals(Model))
+            {
+                @Html.RadioButtonFor(m => m, value, new {id = clientId, @checked = "checked"})
+            }
+            else
+            {
+                @Html.RadioButtonFor(m => m, value, new {id = clientId})
+            }
+            <text>&nbsp;</text>
+            @Html.LabelFor(m => value, value.GetDisplayName(), new {@for = clientId})
+            @Html.DescriptionFor(m => value)
+        }
+    </div>
+}

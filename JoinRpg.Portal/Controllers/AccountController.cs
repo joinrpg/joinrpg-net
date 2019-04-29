@@ -17,21 +17,24 @@ namespace JoinRpg.Portal.Controllers
     {
         private readonly IEmailService _emailService;
         private ApplicationUserManager UserManager { get; }
+        private ApplicationSignInManager SignInManager { get; }
+        private IUserRepository UserRepository { get; }
+
 
         public AccountController(
             ApplicationUserManager userManager,
             ApplicationSignInManager signInManager,
             IEmailService emailService,
             IUserRepository userRepository
-        ) : base(userRepository)
+        )
         {
             UserManager = userManager;
             SignInManager = signInManager;
             _emailService = emailService;
+            UserRepository = userRepository;
         }
 
-        private ApplicationSignInManager SignInManager { get; }
-
+        
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {

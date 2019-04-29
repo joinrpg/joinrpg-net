@@ -1,0 +1,27 @@
+﻿@* That used in [MasterAuthorize]. R# can't detect it, so check manually on delete/rename*@
+@using JoinRpg.Web.Models
+@model ErrorNoAccessToProjectViewModel
+
+@{
+  ViewBag.Title = "Нет доступа к проекту " + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @if (Model.Permission == Permission.None)
+    {
+        <text>У вас нет доступа к проекту @Html.ActionLink(Model.ProjectName, "Details", "Game", new { Model.ProjectId }, null).</text>
+    }
+    else
+    {
+        <text>Для выполнения этого действия нужно иметь право на: @Html.DisplayFor(model => model.Permission).</text>
+    }
+    Следующие мастера могут проставить вам доступ:
+</p>
+<ul>
+    @foreach (var user in Model.CanGrantAccess)
+    {
+        <li>@Html.DisplayFor(u => user)</li>
+    }
+</ul>
