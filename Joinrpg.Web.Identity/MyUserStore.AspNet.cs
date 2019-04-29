@@ -98,18 +98,16 @@ namespace Joinrpg.Web.Identity
         }
 
         /// <inheritdoc />
-        public async Task<bool> GetEmailConfirmedAsync(JoinIdentityUser user)
+        public Task<bool> GetEmailConfirmedAsync(JoinIdentityUser user)
         {
-            var dbUser = await LoadUser(user);
-            return dbUser.Auth.EmailConfirmed;
+            return Task.FromResult(user.EmaiLConfirmed);
         }
 
         /// <inheritdoc />
-        public async Task SetEmailConfirmedAsync(JoinIdentityUser user, bool confirmed)
+        public Task SetEmailConfirmedAsync(JoinIdentityUser user, bool confirmed)
         {
-            var dbUser = await LoadUser(user);
-            dbUser.Auth.EmailConfirmed = confirmed;
-            await _ctx.SaveChangesAsync();
+            user.EmaiLConfirmed = confirmed;
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
