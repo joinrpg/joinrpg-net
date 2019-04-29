@@ -1,0 +1,75 @@
+﻿@{
+    ViewBag.Title = "JoinRpg.Ru — О Сайте";
+}
+<h2>@ViewBag.Title</h2>
+<h3>@ViewBag.Message</h3>
+
+@if (!ViewBag.IsProduction)
+{
+    <div class="alert alert-danger">
+        Это тестовая версия JoinRpg.ru.<br />Не используйте ее для реальной работы с игроками<br />
+        Если вы игрок, и забрели сюда случайно, вам <a href="https://joinrpg.ru">на основной сервер</a>
+    </div>
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">Команда сайта</div>
+    <div class="panel-body">
+        <b>#ЛеоЦарев</b> — создатель сайта, программист
+        <br /><b>#Шико</b> — программист
+        <br /><b>#Атана</b> — документация
+        <br /><b>#Айка</b> — техподдержка
+        <br /><a href="http://bastilia.ru/about/">#Бастилия</a>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Как помочь?</div>
+    <div class="panel-body">
+        В первую очередь нужны программисты. Пригодятся пожертвования деньгами. Подробности @Html.ActionLink("на отдельной странице", "HowToHelp").
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Благодарности</div>
+    <div class="panel-body">
+        <p>Человек, который популяризовал базы заявок и запустил первую популярную базу rpgdb.ru — Ростик</p>
+        <p>Создатель allrpg.info — <a href="http://cetb.ru/">&copy;etb</a>
+        </p>
+        <p>
+            Перезапуск смог состояться благодаря финансовой и моральной поддержке замечательных людей:
+            <ul>
+                <li>Адж</li>
+                <li>Айка</li>
+                <li>Борисыч</li>
+                <li>Верный ленинец</li>
+                <li>Глеб Дильман</li>
+                <li>Джеролл</li>
+                <li>ДоннаАнна</li>
+                <li>Йолаф</li>
+                <li>Корсар</li>
+                <li>Лев</li>
+                <li>Леноран</li>
+                <li>«Лестница в небо» (МГ)</li>
+                <li>Макси</li>
+                <li>Макс Тодоров</li>
+                <li>Медик</li>
+                <li>Михаил Лебедев</li>
+                <li>Мэрфи</li>
+                <li>Рингл</li>
+                <li>Фидель</li>
+            </ul>
+        </p>
+        <p>
+            Активно тестировали и обсуждали:
+            <ul>
+                <li>Верный ленинец</li>
+                <li>Кубела</li>
+                <li>Лулукошка</li>
+                <li>Скракан</li>
+                <li>Шико</li>
+                <li>Юся</li>
+            </ul>
+        </p>
+    </div>
+</div>
