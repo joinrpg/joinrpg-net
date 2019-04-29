@@ -8,7 +8,7 @@ using PscbApi;
 
 namespace JoinRpg.Web.App_Start
 {
-    public class WebModule : Autofac.Module
+    public class WebModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

@@ -27,7 +27,11 @@ namespace JoinRpg.DI
 
             builder.RegisterType<PluginFactoryImpl>().As<IPluginFactory>();
 
-            builder.RegisterType<MyDbContext>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
+            builder.RegisterType<MyDbContext>()
+                .AsSelf()
+                .AsImplementedInterfaces()
+                .InstancePerDependency()
+                .UsingConstructor(typeof(IJoinDbContextConfiguration));
 
             builder.RegisterType<VirtualUsersService>().As<IVirtualUsersService>().SingleInstance();
 

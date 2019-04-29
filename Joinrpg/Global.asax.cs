@@ -31,7 +31,7 @@ namespace JoinRpg.Web
       BundleConfig.RegisterBundles(BundleTable.Bundles);
 
       var migrator = new DbMigrator(new Dal.Impl.Migrations.Configuration());
-      migrator.Update();
+            migrator.Update();
     }
   }
 }
