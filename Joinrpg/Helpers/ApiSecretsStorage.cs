@@ -1,11 +1,12 @@
 using System.Configuration;
 using JetBrains.Annotations;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Helpers
 {
     [UsedImplicitly]
-    internal class ApiSecretsStorage : IMailGunConfig
+    internal class ApiSecretsStorage : IMailGunConfig, IJoinDbContextConfiguration
     {
         public string ApiDomain => ConfigurationManager.AppSettings["MailGunApiDomain"];
 
@@ -22,5 +23,7 @@ namespace JoinRpg.Web.Helpers
         internal static string VkClientSecret => ConfigurationManager.AppSettings["VkClientSecret"];
 
         internal static string XsrfKey => ConfigurationManager.AppSettings["XsrfKey"];
+
+        string IJoinDbContextConfiguration.ConnectionString => ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
     }
 }

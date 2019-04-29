@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EntityFrameworkExtensions.cs" />
+    <Compile Include="IJoinDbContextConfiguration.cs" />
     <Compile Include="Migrations\201507212237267_Initial.cs" />
     <Compile Include="Migrations\201507212237267_Initial.Designer.cs">
       <DependentUpon>201507212237267_Initial.cs</DependentUpon>
