@@ -35,7 +35,10 @@ namespace JoinRpg.Portal
             services.AddLogging();
 
             services
-                .AddMvc()
+                .AddMvc(options =>
+                {
+                    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 ;
         }
