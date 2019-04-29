@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using JoinRpg.Web.App_Code
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -20,7 +21,7 @@
 
 </head>
 <body>
-    
+
     <vc:main-menu>
     </vc:main-menu>
 
@@ -28,7 +29,10 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2019 - JoinRpg.Portal</p>
+            &copy; <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья. Поддержка: <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> <a href="mailto:support@joinrpg.ru">support@joinrpg.ru</a>
+            / <a href="https://vk.com/joinrpg"><img src="~/images/vk_icon.png" /></a>.
+            @Html.HelpLink("", "Помощь")
+            Версия проекта: @typeof(Startup).GetType().Assembly.GetName().Version
         </footer>
     </div>
 
