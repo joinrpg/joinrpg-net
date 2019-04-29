@@ -11,6 +11,9 @@ namespace JoinRpg.Portal
             builder.RegisterType<ApplicationSignInManager>();
             builder.RegisterType<Infrastructure.UriServiceImpl>().AsImplementedInterfaces();
             builder.RegisterType<Infrastructure.ConfigurationAdapter>().AsImplementedInterfaces();
+
+            builder.RegisterType<Web.Helpers.CurrentUserAccessor>().AsImplementedInterfaces();
+
         }
     }
 }

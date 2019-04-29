@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Joinrpg.Web.Identity;
 using Autofac;
 using JoinRpg.DI;
+using JoinRpg.Portal.Infrastructure;
 
 namespace JoinRpg.Portal
 {
@@ -34,10 +35,13 @@ namespace JoinRpg.Portal
 
             services.AddLogging();
 
+            services.AddHttpContextAccessor();
+
             services
                 .AddMvc(options =>
                 {
                     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                    options.Filters.Add(new SetIsProductionFilterAttribute());
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 ;

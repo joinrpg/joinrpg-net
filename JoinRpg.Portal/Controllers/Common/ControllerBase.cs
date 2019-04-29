@@ -26,7 +26,6 @@ namespace JoinRpg.Portal.Controllers.Common
         //TODO move this to attribure
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            //ViewBag.IsProduction = filterContext.HttpContext.Request.Url?.Host == "joinrpg.ru";
             ////TODO inject this from DI
             //ICurrentUserAccessor accessor = new CurrentUserAccessor();
             //if (accessor.UserIdOrDefault != null)
@@ -70,24 +69,24 @@ namespace JoinRpg.Portal.Controllers.Common
             }
         }
 
-        protected IReadOnlyDictionary<int, string> GetDynamicValuesFromPost(string prefix)
-        {
-            //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
-            var post = Request.Form.ToDictionary();
-            return post.Keys.UnprefixNumbers(prefix)
-                .ToDictionary(fieldClientId => fieldClientId,
-                    fieldClientId => post[prefix + fieldClientId]);
-        }
+        //protected IReadOnlyDictionary<int, string> GetDynamicValuesFromPost(string prefix)
+        //{
+        //    //Some other fields can be [AllowHtml] so we need to use Request.Unvalidated.Form, or validator will fail.
+        //    var post = Request.Form.ToDictionary();
+        //    return post.Keys.UnprefixNumbers(prefix)
+        //        .ToDictionary(fieldClientId => fieldClientId,
+        //            fieldClientId => post[prefix + fieldClientId]);
+        //}
 
-        private bool IsClientCached(DateTime contentModified)
-        {
-            string header = Request.Headers["If-Modified-Since"];
+        //private bool IsClientCached(DateTime contentModified)
+        //{
+        //    string header = Request.Headers["If-Modified-Since"];
 
-            if (header == null) return false;
+        //    if (header == null) return false;
 
-            return DateTime.TryParse(header, out var isModifiedSince) &&
-                   isModifiedSince.ToUniversalTime() > contentModified;
-        }
+        //    return DateTime.TryParse(header, out var isModifiedSince) &&
+        //           isModifiedSince.ToUniversalTime() > contentModified;
+        //}
 
         //protected bool CheckCache(DateTime characterTreeModifiedAt)
         //{
@@ -101,17 +100,17 @@ namespace JoinRpg.Portal.Controllers.Common
         //    return new HttpStatusCodeResult(304, "Page has not been modified");
         //}
 
-        protected string GetFullyQualifiedUri([AspMvcAction]
-            string actionName,
-            [AspMvcController]
-            string controllerName,
-            object routeValues)
-        {
-            return Request.Scheme + "://" + Request.Host +
-                   Url.Action(actionName, controllerName, routeValues);
-        }
+        //protected string GetFullyQualifiedUri([AspMvcAction]
+        //    string actionName,
+        //    [AspMvcController]
+        //    string controllerName,
+        //    object routeValues)
+        //{
+        //    return Request.Scheme + "://" + Request.Host +
+        //           Url.Action(actionName, controllerName, routeValues);
+        //}
 
-        protected bool IsCurrentUserAdmin() => User.IsInRole(Security.AdminRoleName);
+        //protected bool IsCurrentUserAdmin() => User.IsInRole(Security.AdminRoleName);
 
         protected ActionResult ViewIfFound(string viewName, object model)
             => model == null ? (ActionResult)NotFound() : View(viewName, model);
