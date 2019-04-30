@@ -30,5 +30,8 @@ namespace JoinRpg.Portal.Infrastructure
         string IJoinDbContextConfiguration.ConnectionString
             => configuration.GetConnectionString("DefaultConnection")
             .Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey)+"\\App_Data");
+
+        // TODO inject this
+        internal string XsrfKey => configuration.GetValue<string>("XsrfKey");
     }
 }
