@@ -137,7 +137,6 @@
     <Compile Include="Controllers\GameFieldController.cs" />
     <Compile Include="Controllers\GameGroupsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PlotController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
@@ -543,10 +542,6 @@
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
-    <Content Include="Views\Manage\ChangePassword.cshtml" />
-    <Content Include="Views\Manage\Index.cshtml" />
-    <Content Include="Views\Manage\ManageLogins.cshtml" />
-    <Content Include="Views\Manage\SetPassword.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Game\Create.cshtml" />
@@ -592,7 +587,6 @@
     <Content Include="Views\Shared\DisplayTemplates\Enum.cshtml" />
     <Content Include="Views\Plot\EditElementPartial.cshtml" />
     <Content Include="Views\Plot\ShowElementPartial.cshtml" />
-    <Content Include="Views\Manage\SetupProfile.cshtml" />
     <Content Include="Views\Acl\Index.cshtml" />
     <Content Include="Views\Acl\Delete.cshtml" />
     <Content Include="Views\Acl\Edit.cshtml" />

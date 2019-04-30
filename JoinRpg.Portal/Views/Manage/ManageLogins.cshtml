@@ -1,5 +1,4 @@
 ﻿@model JoinRpg.Web.Models.ManageLoginsViewModel
-@using Microsoft.Owin.Security
 @{
     ViewBag.Title = "Настройка соцсетей";
 }
@@ -8,8 +7,7 @@
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 @{
-    var loginProviders = Context.GetOwinContext().Authentication.GetExternalAuthenticationTypes();
-    if (!loginProviders.Any()) {
+    if (!Model.CurrentLogins.Any() && !Model.OtherLogins.Any()) {
         <div>
             <p>
                 There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=313242">this article</a>

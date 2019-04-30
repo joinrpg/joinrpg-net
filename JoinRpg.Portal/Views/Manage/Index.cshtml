@@ -3,6 +3,19 @@
     ViewBag.Title = "Мой аккаунт";
 }
 
+
+@using JetBrains.Annotations
+@functions{
+
+    [MustUseReturnValue]
+    public static string DisplayCount_OfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
+
 <h2>@ViewBag.Title</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
@@ -29,18 +42,18 @@
         </dd>
         <dt>Логин через соцсети:</dt>
         <dd>
-            @DisplayCount.OfX(Model.LoginsCount, "соцсеть", "соцсети", "соцсетей")
+            @DisplayCount_OfX(Model.LoginsCount, "соцсеть", "соцсети", "соцсетей")
             [@Html.ActionLink("Настроить", "ManageLogins") ]
         </dd>
         @*
             Phone Numbers can used as a second factor of verification in a two-factor authentication system.
-             
+
              See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
                 for details on setting up this ASP.NET application to support two-factor authentication using SMS.
-             
+
              Uncomment the following block after you have set up two-factor authentication
         *@
-        @*  
+        @*
             <dt>Phone Number:</dt>
             <dd>
                 @(Model.PhoneNumber ?? "None") [

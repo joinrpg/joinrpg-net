@@ -1,40 +1,48 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Mvc;
+
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
+using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Security;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
-  [Authorize]
+    [Authorize]
   public class ManageController : Common.ControllerBase
   {
-    private readonly ApplicationSignInManager _signInManager;
       private readonly IUserService _userService;
         private ApplicationUserManager UserManager { get; }
 
-        public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IUserRepository userRepository, IUserService userService)
-      : base(userRepository)
+        public ManageController(
+            ApplicationUserManager userManager,
+            ApplicationSignInManager signInManager,
+            IUserRepository userRepository,
+            IUserService userService,
+            ICurrentUserAccessor currentUserAccessor,
+            ConfigurationAdapter configurationAdapter)
         {
             UserManager = userManager;
-      _signInManager = signInManager;
-      _userService = userService;
-    }
+            SignInManager = signInManager;
+            UserRepository = userRepository;
+            _userService = userService;
+            CurrentUserAccessor = currentUserAccessor;
+            ConfigurationAdapter = configurationAdapter;
+        }
 
-    private ApplicationSignInManager SignInManager
-      => _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+    private ApplicationSignInManager SignInManager { get; }
+        public IUserRepository UserRepository { get; }
+        private ICurrentUserAccessor CurrentUserAccessor { get; }
+        private ConfigurationAdapter ConfigurationAdapter { get; }
 
-
-    [Authorize]
-    public async Task<ActionResult> Index(ManageMessageId? message)
+        public async Task<ActionResult> Index(ManageMessageId? message)
     {
       ViewBag.StatusMessage =
         message == ManageMessageId.ChangePasswordSuccess
@@ -45,12 +53,13 @@ namespace JoinRpg.Web.Controllers
               ? "An error has occurred."
               : "";
 
-      var userId = CurrentUserId;
+      var userId = CurrentUserAccessor.UserId;
+            var user = await UserManager.FindByIdAsync(userId.ToString());
       var model = new IndexViewModel
       {
-        HasPassword = HasPassword(),
-        Email = await UserManager.GetEmailAsync(userId),
-        LoginsCount = (await UserManager.GetLoginsAsync(userId)).Count,
+        HasPassword = user.HasPassword,
+        Email = CurrentUserAccessor.Email,
+        LoginsCount = (await UserManager.GetLoginsAsync(user)).Count,
       };
       return View(model);
     }
@@ -61,14 +70,15 @@ namespace JoinRpg.Web.Controllers
     [ValidateAntiForgeryToken]
     public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
     {
-      ManageMessageId? message;
-      var result = await UserManager.RemoveLoginAsync(CurrentUserId, new UserLoginInfo(loginProvider, providerKey));
+            var userId = CurrentUserAccessor.UserId;
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+            ManageMessageId? message;
+      var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
       if (result.Succeeded)
       {
-        var user = await UserManager.FindByIdAsync(CurrentUserId);
         if (user != null)
         {
-          await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+          await SignInManager.SignInAsync(user, isPersistent: true);
         }
         message = ManageMessageId.RemoveLoginSuccess;
       }
@@ -96,14 +106,12 @@ namespace JoinRpg.Web.Controllers
       {
         return View(model);
       }
-      var result = await UserManager.ChangePasswordAsync(CurrentUserId, model.OldPassword, model.NewPassword);
+            var userId = CurrentUserAccessor.UserId;
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+            var result = await UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
       if (result.Succeeded)
       {
-        var user = await UserManager.FindByIdAsync(CurrentUserId);
-        if (user != null)
-        {
-          await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-        }
+          await SignInManager.SignInAsync(user, isPersistent: false);
         return RedirectToAction("Index", new {Message = ManageMessageId.ChangePasswordSuccess});
       }
       ModelState.AddErrors(result);
@@ -125,14 +133,12 @@ namespace JoinRpg.Web.Controllers
     {
       if (ModelState.IsValid)
       {
-        var result = await UserManager.AddPasswordAsync(CurrentUserId, model.NewPassword);
+                var userId = CurrentUserAccessor.UserId;
+                var user = await UserManager.FindByIdAsync(userId.ToString());
+                var result = await UserManager.AddPasswordAsync(user, model.NewPassword);
         if (result.Succeeded)
         {
-          var user = await UserManager.FindByIdAsync(CurrentUserId);
-          if (user != null)
-          {
-            await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
-          }
+            await SignInManager.SignInAsync(user, isPersistent: false);
           return RedirectToAction("Index", new {Message = ManageMessageId.SetPasswordSuccess});
         }
         ModelState.AddErrors(result);
@@ -152,15 +158,16 @@ namespace JoinRpg.Web.Controllers
                 : message == ManageMessageId.Error
                   ? "An error has occurred."
                   : "";
-            var user = await UserManager.FindByIdAsync(CurrentUserId);
+            var userId = CurrentUserAccessor.UserId;
+            var user = await UserManager.FindByIdAsync(userId.ToString());
             if (user == null)
             {
                 return View("Error");
             }
-            var userLogins = await UserManager.GetLoginsAsync(CurrentUserId);
+            var userLogins = await UserManager.GetLoginsAsync(user);
             var otherLogins =
-              AuthenticationManager.GetExternalAuthenticationTypes()
-                .Where(auth => userLogins.All(ul => auth.AuthenticationType != ul.LoginProvider))
+              (await SignInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
             ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
             return View(new ManageLoginsViewModel
@@ -182,19 +189,23 @@ namespace JoinRpg.Web.Controllers
     {
       // Request a redirect to the external login provider to link a login for the current user
       return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"),
-        User.Identity.GetUserId());
+        CurrentUserAccessor.UserId.ToString());
     }
 
     //
     // GET: /Manage/LinkLoginCallback
     public async Task<ActionResult> LinkLoginCallback()
     {
-      var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(ApiSecretsStorage.XsrfKey, User.Identity.GetUserId());
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync(ConfigurationAdapter.XsrfKey);
       if (loginInfo == null)
       {
         return RedirectToAction("ManageLogins", new {Message = ManageMessageId.Error});
       }
-      var result = await UserManager.AddLoginAsync(CurrentUserId, loginInfo.Login);
+
+            var userId = CurrentUserAccessor.UserId;
+            var user = await UserManager.FindByIdAsync(userId.ToString());
+
+            var result = await UserManager.AddLoginAsync(user, loginInfo);
       return result.Succeeded
         ? RedirectToAction("ManageLogins")
         : RedirectToAction("ManageLogins", new {Message = ManageMessageId.Error});
@@ -203,7 +214,7 @@ namespace JoinRpg.Web.Controllers
     [HttpGet]
     public async Task<ActionResult> SetupProfile(bool checkContactsMessage = false)
     {
-      var user = await UserRepository.WithProfile(CurrentUserId);
+      var user = await UserRepository.WithProfile(CurrentUserAccessor.UserId);
       var lastClaim = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).FirstOrDefault() : null;
       var claimBeforeThat = checkContactsMessage ? user.Claims.OrderByDescending(c => c.CreateDate).Skip(1).FirstOrDefault() : null;
       if (claimBeforeThat != null && claimBeforeThat.CreateDate.AddMonths(3) > DateTime.Now && lastClaim != null)
@@ -242,7 +253,9 @@ namespace JoinRpg.Web.Controllers
           _userService.UpdateProfile(viewModel.UserId, viewModel.SurName, viewModel.FatherName,
             viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
             viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal, viewModel.Telegram);
-                await UserManager.UpdateSecurityStampAsync(CurrentUserId);
+                var userId = CurrentUserAccessor.UserId;
+                var user = await UserManager.FindByIdAsync(userId.ToString());
+                await UserManager.UpdateSecurityStampAsync(user);
                 if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
         {
           return RedirectToAction("SetupProfile");
@@ -255,19 +268,12 @@ namespace JoinRpg.Web.Controllers
       }
       catch (Exception e)
       {
-        ModelState.AddException(e);
+        //ModelState.AddException(e);
         return View(viewModel);
       }
     }
 
     #region Helpers
-    private IAuthenticationManager AuthenticationManager => HttpContext.GetOwinContext().Authentication;
-
-    private bool HasPassword()
-    {
-      var user = UserManager.FindById(CurrentUserId);
-      return user.HasPassword;
-    }
 
     public enum ManageMessageId
     {
