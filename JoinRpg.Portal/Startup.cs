@@ -10,6 +10,8 @@ using Joinrpg.Web.Identity;
 using Autofac;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal
 {
@@ -46,6 +48,15 @@ namespace JoinRpg.Portal
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 ;
+
+            services.AddAuthorization(options =>
+                {
+                    options.AddPolicyAsRequirement<AllowPublishRequirement>();
+                    options.AddPolicy("AllowAdmin", policy => policy.RequireAssertion(context => context.User.IsInRole("Admin")));
+                }
+            );
+
+            services.AddTransient<IAuthorizationPolicyProvider, AllowMasterPolicyProvider>();
         }
 
         /// <summary>

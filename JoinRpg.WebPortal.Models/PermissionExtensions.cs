@@ -5,7 +5,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Web.Filter
 {
-    internal static class PermissionExtensions
+    public static class PermissionExtensions
     {
         [Pure]
         public static Func<ProjectAcl, bool> GetPermssionExpression(this Permission permission)

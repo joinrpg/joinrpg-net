@@ -1,5 +1,7 @@
 using Autofac;
 using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal
 {
@@ -9,10 +11,14 @@ namespace JoinRpg.Portal
         {
             builder.RegisterType<ApplicationUserManager>();
             builder.RegisterType<ApplicationSignInManager>();
-            builder.RegisterType<Infrastructure.UriServiceImpl>().AsImplementedInterfaces();
-            builder.RegisterType<Infrastructure.ConfigurationAdapter>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<UriServiceImpl>().AsImplementedInterfaces();
+            builder.RegisterType<ConfigurationAdapter>().AsSelf().AsImplementedInterfaces();
 
             builder.RegisterType<Web.Helpers.CurrentUserAccessor>().AsImplementedInterfaces();
+            builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();
+
+            builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
+                .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();
 
         }
     }

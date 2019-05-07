@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,5 +18,8 @@ namespace JoinRpg.Portal.Controllers.Common
 
         protected async Task<ActionResult> ViewIfFound<T>(string viewName, Task<T> model)
             => ViewIfFound(viewName, await model);
+
+        [Obsolete("Call NotFound()")]
+        protected IActionResult HttpNotFound() => NotFound();
     }
 }
