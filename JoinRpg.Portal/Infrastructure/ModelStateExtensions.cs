@@ -1,13 +1,12 @@
 using System;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Web.Mvc;
 using JoinRpg.Domain;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace JoinRpg.Web.Helpers
+namespace JoinRpg.Portal.Infrastructure
 {
-    public static class ModelStateExtensions
+internal static class ModelStateExtensions
     {
         //TODO messages from resources
         public static void AddException(this ModelStateDictionary dict, Exception exception)

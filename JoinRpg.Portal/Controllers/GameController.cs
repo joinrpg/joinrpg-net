@@ -1,15 +1,18 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     public class GameController : Common.ControllerGameBase
     {
@@ -20,7 +23,7 @@ namespace JoinRpg.Web.Controllers
         {
         }
 
-        public async Task<ActionResult> Details(int projectId)
+        public async Task<IActionResult> Details(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null) return HttpNotFound();
@@ -28,7 +31,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         [Authorize]
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View(new ProjectCreateViewModel());
         }
@@ -37,7 +40,7 @@ namespace JoinRpg.Web.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(ProjectCreateViewModel model)
+        public async Task<IActionResult> Create(ProjectCreateViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -48,7 +51,7 @@ namespace JoinRpg.Web.Controllers
             {
                 var project = await ProjectService.AddProject(new CreateProjectRequest()
                 {
-                    ProjectType = (ProjectTypeDto) model.ProjectType,
+                    ProjectType = (ProjectTypeDto)model.ProjectType,
                     ProjectName = model.ProjectName
                 });
 
@@ -61,13 +64,13 @@ namespace JoinRpg.Web.Controllers
             }
         }
 
-        private ActionResult RedirectTo(Project project)
+        private IActionResult RedirectTo(Project project)
         {
-            return RedirectToAction("Details", new {project.ProjectId});
+            return RedirectToAction("Details", new { project.ProjectId });
         }
 
         [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
-        public async Task<ActionResult> Edit(int projectId)
+        public async Task<IActionResult> Edit(int projectId)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
             return View(new EditProjectViewModel
@@ -87,7 +90,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         [HttpPost, MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(EditProjectViewModel viewModel)
+        public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
         {
             var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
             try
@@ -117,7 +120,7 @@ namespace JoinRpg.Web.Controllers
 
         [HttpGet,
          MasterAuthorize(Permission = Permission.CanChangeProjectProperties, AllowAdmin = true)]
-        public async Task<ActionResult> Close(int projectid)
+        public async Task<IActionResult> Close(int projectid)
         {
             var project = await ProjectRepository.GetProjectAsync(projectid);
             var isMaster =
@@ -133,7 +136,7 @@ namespace JoinRpg.Web.Controllers
 
         [HttpPost,
          MasterAuthorize(AllowAdmin = true, Permission = Permission.CanChangeProjectProperties)]
-        public async Task<ActionResult> Close(CloseProjectViewModel viewModel)
+        public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {

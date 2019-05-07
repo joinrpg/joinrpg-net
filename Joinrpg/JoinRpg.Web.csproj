@@ -92,7 +92,6 @@
     <Compile Include="Controllers\XGameApi\ProjectScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
-    <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Helpers\AuthModelBuilers.cs" />
     <Compile Include="Helpers\BankSecretsProvider.cs" />
     <Compile Include="Helpers\Contacts.cs" />
@@ -110,7 +109,6 @@
     <Compile Include="Controllers\XGameApi\CharacterApiController.cs" />
     <Compile Include="Controllers\ForumController.cs" />
     <Compile Include="Controllers\CheckInController.cs" />
-    <Compile Include="Filter\JoinRpgExceptionHandler.cs" />
     <Compile Include="Filter\MasterAuthorize.cs" />
     <Compile Include="Helpers\AdminAuthorizeAttribute.cs" />
     <Compile Include="Areas\Admin\Controllers\UsersController.cs" />
@@ -133,7 +131,6 @@
     <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\Common\ControllerBase.cs" />
     <Compile Include="Controllers\Common\ControllerGameBase.cs" />
-    <Compile Include="Controllers\GameController.cs" />
     <Compile Include="Controllers\GameFieldController.cs" />
     <Compile Include="Controllers\GameGroupsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -145,7 +142,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\MagicControlHelper.cs" />
-    <Compile Include="Helpers\ModelStateExtensions.cs" />
     <Compile Include="Helpers\ApiSecretsStorage.cs" />
     <Compile Include="Helpers\UriServiceImpl.cs" />
     <Compile Include="Helpers\UserHelper.cs" />
@@ -544,8 +540,6 @@
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Game\Create.cshtml" />
-    <Content Include="Views\Game\Details.cshtml" />
     <Content Include="Views\GameField\Index.cshtml" />
     <Content Include="Views\GameField\Create.cshtml" />
     <Content Include="Views\GameField\Edit.cshtml" />
@@ -560,7 +554,6 @@
     <Content Include="Views\Comments\_AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
-    <Content Include="Views\Game\Edit.cshtml" />
     <Content Include="Views\User\Details.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.cshtml" />

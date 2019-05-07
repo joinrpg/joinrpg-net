@@ -3,7 +3,7 @@ using Autofac;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Portal.Test.ContainterTest
+namespace JoinRpg.Portal.Test.ContainerTest
 {
     /// <summary>
     /// Проверяет, что все контроллеры правильно зарегистрированы в Autofac и все их зависимости резолвятся
@@ -20,6 +20,13 @@ namespace JoinRpg.Portal.Test.ContainterTest
         [Theory]
         [ClassData(typeof(ControllerDataSource))]
         public void AutofacControllers(Type typeToEnsure)
+        {
+            container.Resolve(typeToEnsure).ShouldNotBeNull();
+        }
+
+        [Theory]
+        [ClassData(typeof(ViewComponentsDataSource))]
+        public void AutofacViewComponents(Type typeToEnsure)
         {
             container.Resolve(typeToEnsure).ShouldNotBeNull();
         }

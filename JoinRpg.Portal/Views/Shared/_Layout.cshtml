@@ -25,6 +25,12 @@
     <vc:main-menu>
     </vc:main-menu>
 
+    @if (ViewBag.ProjectId != null)
+    {
+        <vc:project-menu>
+        </vc:project-menu>
+    }
+
     <div class="container body-content">
         @RenderBody()
         <hr />
