@@ -13,7 +13,7 @@ namespace JoinRpg.Web
     [UsedImplicitly]
   public class ApplicationUserManager : UserManager<JoinIdentityUser, int>
   {
-    public ApplicationUserManager(IUserStore<JoinIdentityUser, int> store, IIdentityMessageService messageService)
+    public ApplicationUserManager(IUserStore<JoinIdentityUser, int> store, IIdentityMessageService messageService, IUserTokenProviderFactory userTokenProviderFactory)
       : base(store)
     {
       // Configure validation logic for usernames
@@ -40,11 +40,21 @@ namespace JoinRpg.Web
 
       EmailService = messageService;
 
-      UserTokenProvider =
-        new DataProtectorTokenProvider<JoinIdentityUser, int>(
-          Startup.DataProtectionProvider.Create("ASP.NET Identity"));
+      UserTokenProvider = userTokenProviderFactory.Create();
 
     }
+  }
+
+  public interface IUserTokenProviderFactory
+  {
+      DataProtectorTokenProvider<JoinIdentityUser, int> Create();
+  }
+
+  public class UserTokenProviderFactory : IUserTokenProviderFactory
+  {
+      public DataProtectorTokenProvider<JoinIdentityUser, int> Create() =>
+          new DataProtectorTokenProvider<JoinIdentityUser, int>(
+              Startup.DataProtectionProvider.Create("ASP.NET Identity"));
   }
 
   [UsedImplicitly]

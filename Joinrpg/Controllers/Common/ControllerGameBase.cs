@@ -17,7 +17,7 @@ using JoinRpg.Web.Models.Characters;
 namespace JoinRpg.Web.Controllers.Common
 {
   [JoinRpgExceptionHandler]
-  public class ControllerGameBase : ControllerBase
+  public abstract class ControllerGameBase : ControllerBase
   {
     [ProvidesContext, NotNull]
     protected IProjectService ProjectService { get; }

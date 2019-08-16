@@ -1,12 +1,5 @@
-using System.Data.Entity.Migrations;
 using System.Web;
-using System.Web.Http;
-using System.Web.Mvc;
-using System.Web.Optimization;
-using System.Web.Routing;
 using Autofac;
-using Autofac.Integration.Mvc;
-using Autofac.Integration.WebApi;
 using Joinrpg.Web.Identity;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
@@ -23,6 +16,9 @@ namespace JoinRpg.Web.App_Start
 
             builder.RegisterType<ApplicationUserManager>().InstancePerLifetimeScope();
             builder.RegisterType<ApplicationSignInManager>().InstancePerLifetimeScope();
+            builder.RegisterType<UserTokenProviderFactory>()
+                .AsImplementedInterfaces()
+                .InstancePerLifetimeScope();
 
             builder.RegisterType<EmailService>().AsImplementedInterfaces();
 
