@@ -15,7 +15,7 @@ using JoinRpg.Interfaces;
 namespace JoinRpg.Web.Controllers.Common
 {
     [ValidateInput(false)]
-    public class ControllerBase : Controller
+    public abstract class ControllerBase : Controller
     {
         
         protected readonly IUserRepository UserRepository;
