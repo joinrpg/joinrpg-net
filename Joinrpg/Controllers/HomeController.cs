@@ -10,8 +10,7 @@ namespace JoinRpg.Web.Controllers
         private ProjectListManager ProjectListManager { get; }
         private const int ProjectsOnHomePage = 9;
 
-        public HomeController(ApplicationUserManager userManager,
-            IUserRepository userRepository,
+        public HomeController(IUserRepository userRepository,
             ProjectListManager projectListManager) : base(userRepository)
         {
             ProjectListManager = projectListManager;
