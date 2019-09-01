@@ -14,6 +14,7 @@ using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers.Common
 {
@@ -131,15 +132,7 @@ namespace JoinRpg.Web.Controllers.Common
       return project == null ? HttpNotFound() : RedirectToIndex(project);
     }
 
-    protected static ExportType? GetExportTypeByName(string export)
-    {
-      switch (export)
-      {
-        case "csv": return ExportType.Csv;
-        case "xlsx": return ExportType.ExcelXml;
-        default: return null;
-      }
-    }
+    protected static ExportType? GetExportTypeByName(string export) => ExportTypeNameParserHelper.ToExportType(export);
 
 
     protected async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)
