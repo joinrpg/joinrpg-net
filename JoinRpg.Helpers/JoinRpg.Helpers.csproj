@@ -1,16 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers</AssemblyTitle>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-  </ItemGroup>
-  <ItemGroup>
+    <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
 </Project>
