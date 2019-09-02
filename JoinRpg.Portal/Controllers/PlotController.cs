@@ -58,7 +58,7 @@ namespace JoinRpg.Portal.Controllers
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       if (group == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       //TODO slow 
@@ -148,7 +148,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new EditPlotFolderViewModel(folder, CurrentUserIdOrDefault, UriService));
     }
@@ -178,7 +178,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new AddPlotElementViewModel()
       {
@@ -194,7 +194,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new AddPlotHandoutViewModel()
       {
@@ -218,7 +218,7 @@ namespace JoinRpg.Portal.Controllers
         var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
-          return HttpNotFound();
+          return NotFound();
         }
         return View(new AddPlotHandoutViewModel()
         {
@@ -245,7 +245,7 @@ namespace JoinRpg.Portal.Controllers
         var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
         if (folder == null)
         {
-          return HttpNotFound();
+          return NotFound();
         }
         return View(new AddPlotElementViewModel()
         {
@@ -288,7 +288,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new EditPlotFolderViewModel(folder, CurrentUserId, UriService));
     }
@@ -332,7 +332,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       var viewModel = new EditPlotElementViewModel(folder.Elements.Single(e => e.PlotElementId == plotelementid),
         folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots),
@@ -428,7 +428,7 @@ namespace JoinRpg.Portal.Controllers
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);
       if (folder == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new PlotElementListItemViewModel(folder.Elements.Single(e => e.PlotElementId == plotElementId),
         CurrentUserId,

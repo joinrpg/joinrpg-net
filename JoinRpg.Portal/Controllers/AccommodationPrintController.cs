@@ -42,7 +42,7 @@ namespace JoinRpg.Portal.Controllers
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId)
                 .ConfigureAwait(false);
 
-            if (project == null) return HttpNotFound();
+            if (project == null) return NotFound();
             if (!project.Details.EnableAccommodation) return RedirectToAction("Edit", "Game");
 
             var accommodations =
@@ -62,7 +62,7 @@ namespace JoinRpg.Portal.Controllers
             if (exportType == null)
             {
 
-                return HttpNotFound();
+                return NotFound();
             }
             else
             {

@@ -150,7 +150,7 @@ namespace JoinRpg.Portal.Controllers
 
       if (field == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       if (!ModelState.IsValid)
       {
@@ -255,7 +255,7 @@ namespace JoinRpg.Portal.Controllers
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
             if (value == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return View(new GameFieldDropdownValueEditViewModel(field, value));
         }
@@ -311,7 +311,7 @@ namespace JoinRpg.Portal.Controllers
                 var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
 
                 if (value == null)
-                    return HttpNotFound();
+                    return NotFound();
                                 
                 await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive
@@ -332,7 +332,7 @@ namespace JoinRpg.Portal.Controllers
       
       if (value == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -354,7 +354,7 @@ namespace JoinRpg.Portal.Controllers
 
       if (value == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -377,7 +377,7 @@ namespace JoinRpg.Portal.Controllers
 
       if (value == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -398,10 +398,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-            if (value == null)
-            {
-                return HttpNotFound();
-            }
+      if (value == null)
+      {
+        return NotFound();
+      }
 
             if (afterFieldId == -1)
             {

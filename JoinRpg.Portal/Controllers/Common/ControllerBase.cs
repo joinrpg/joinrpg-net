@@ -20,13 +20,6 @@ namespace JoinRpg.Portal.Controllers.Common
         protected async Task<ActionResult> ViewIfFound<T>(string viewName, Task<T> model)
             => ViewIfFound(viewName, await model);
 
-        [Obsolete("Call NotFound()")]
-        protected ActionResult HttpNotFound() => NotFound();
-
-        [Obsolete("Call NotFound()")]
-        protected ActionResult HttpNotFound(object value) => NotFound(value);
-
-
 
         protected ActionResult NotModified() => new StatusCodeResult((int)HttpStatusCode.NotModified);
     }

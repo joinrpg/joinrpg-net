@@ -36,7 +36,7 @@ namespace JoinRpg.Portal.Controllers.Money
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (project == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             var viewModel = new CreateMoneyTransferViewModel
@@ -55,7 +55,7 @@ namespace JoinRpg.Portal.Controllers.Money
             var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
             if (project == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
             Fill(viewModel, project);

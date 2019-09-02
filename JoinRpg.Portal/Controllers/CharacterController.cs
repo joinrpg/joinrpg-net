@@ -45,7 +45,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Details(int projectid, int characterid)
         {
             var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
-            return (field?.Project == null ? HttpNotFound() : null) ?? await ShowCharacter(field);
+            return (field?.Project == null ? NotFound() : null) ?? await ShowCharacter(field);
         }
 
         private async Task<ActionResult> ShowCharacter(Character character)
@@ -123,7 +123,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-            if (characterGroup == null) return HttpNotFound();
+            if (characterGroup == null) return NotFound();
 
             return View(new AddCharacterViewModel()
             {
@@ -190,7 +190,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Delete(int projectid, int characterid)
         {
             var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
-            if (field == null) return HttpNotFound();
+            if (field == null) return NotFound();
             return View(field);
         }
 
