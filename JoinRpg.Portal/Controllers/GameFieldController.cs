@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Portal.Controllers.Common;
@@ -13,6 +12,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Interfaces;
+using Microsoft.AspNetCore.Http;
 using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
 namespace JoinRpg.Portal.Controllers
