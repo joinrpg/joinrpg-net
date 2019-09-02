@@ -27,14 +27,15 @@ namespace JoinRpg.Web.Models
     public static List<CommentViewModel> ToCommentTreeViewModel(this CommentDiscussion discussion, int currentUserId)
     {
       return discussion.Comments.Where(comment => comment.ParentCommentId == null)
-        .Select(comment => new CommentViewModel(discussion, comment, currentUserId)).OrderBy(c => c.CreatedTime).ToList();
+        .Select(comment => new CommentViewModel(discussion, comment, currentUserId, 0)).OrderBy(c => c.CreatedTime).ToList();
     }
   }
 
   public class CommentViewModel
   {
-    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId)
+    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, int deepLevel)
     {
+        DeepLevel = deepLevel;
       IsVisibleToPlayer = comment.IsVisibleToPlayer;
       HasMasterAccess = comment.Project.HasMasterAccess(currentUserId);
       CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) ||
@@ -50,7 +51,7 @@ namespace JoinRpg.Web.Models
       IsRead = comment.IsReadByUser(currentUserId);
       ChildComments =
         parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
-          .Select(c => new CommentViewModel(parent, c, currentUserId))
+          .Select(c => new CommentViewModel(parent, c, currentUserId, deepLevel +1 ))
           .OrderBy(c => c.CreatedTime);
       ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
       IsVisible = comment.IsVisibleTo(currentUserId);
@@ -74,6 +75,7 @@ namespace JoinRpg.Web.Models
     public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
 
     public bool IsVisible { get; }
+        public int DeepLevel { get; }
   }
 
     public enum FinanceOperationActionView

@@ -1,0 +1,20 @@
+﻿@using JoinRpg.Web.Models.FieldSetup
+@model FieldNavigationModel
+
+<ul class="nav nav-tabs">
+    @*//TODO дисаблить поля, к которым нет доступа *@
+    <nav-link asp-controller="GameField" asp-action="Index">
+        <a asp-controller="GameField" asp-action="Index">Активные</a>
+    </nav-link>
+    <nav-link asp-controller="GameField" asp-action="DeletedList" title="Только поля, использованные хотя бы один раз">
+        <a asp-controller="GameField" asp-action="DeletedList">Удаленные</a>
+    </nav-link>
+    <nav-link asp-controller="GameField" asp-action="Settings">
+        <a asp-controller="GameField" asp-action="Settings">Настройки полей</a>
+    </nav-link>
+    <nav-link asp-controller="GameField" asp-action="Create">
+        <a asp-controller="GameField" asp-action="Create"><span class=\"glyphicon glyphicon-plus\"></span>Добавить новое поле</a>
+    </nav-link>
+</ul>
+
+<h3>@ViewBag.Title</h3>

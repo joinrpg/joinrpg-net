@@ -1,0 +1,72 @@
+﻿@using Joinrpg.Markdown
+@using JoinRpg.DataModel
+@model JoinRpg.Web.Models.Accommodation.ClaimAccommodationViewModel
+
+@functions
+{
+
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
+
+<div class="modal fade" id="changeAccommodationType" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        @using (Html.BeginForm("PostAccommodationRequest", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <div class="modal-content">
+                <div class="modal-header">
+                    Возможные варианты проживания
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @if (Model.AccommodationRequest != null)
+                    {
+                        if (Model.AccommodationRequest.Accommodation != null)
+                        {
+                            <div class="alert alert-warning">
+                                Вам уже назначена комната. Смена типа проживания выселит вас.
+                            </div>
+                        }
+                        else if (Model.AccommodationRequest.Subjects.Count > 1)
+                        {
+                            <div class="alert alert-warning">
+                                Смена типа проживания отменит существующие договоренности о совместном проживании.
+                            </div>
+                        }
+                    }
+                    @Html.AntiForgeryToken()
+                    @foreach (var accommodationType in Model.AvailableAccommodationTypes)
+                    {
+                        var checkedState = "";
+                        if (Model.AccommodationRequest != null && Model.AccommodationRequest.AccommodationType == accommodationType)
+                        {
+                            checkedState = "checked";
+                        }
+                        <div class="radio" style="margin-bottom: 2em;">
+                            <label>
+                                <input type="radio" name="AccommodationTypeId" id="accomodationType @accommodationType.Id" value="@accommodationType.Id" @checkedState>
+                                @accommodationType.Name
+                                <text>(@CountOfX(accommodationType.Capacity, "место",
+                                           "места", "мест") в номере, @accommodationType.Cost &#8381;)</text>
+                                <br />
+                                @accommodationType.Description.ToHtmlString()
+                            </label>
+                        </div>
+                    }
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" type="submit">Сохранить проживание</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
