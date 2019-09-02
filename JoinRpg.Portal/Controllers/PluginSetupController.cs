@@ -1,15 +1,15 @@
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using Joinrpg.Markdown;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
+using Joinrpg.Markdown;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Plugins;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   public class PluginSetupController : ControllerGameBase
   {
@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Controllers
       var pluginInstance = await PluginFactory.GetConfiguration(projectid, plugin);
       if (pluginInstance == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       ViewBag.Title = pluginInstance.Name;
@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Controllers
       var pluginInstance = PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(project, operation);
       if (pluginInstance == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       ViewBag.Title = pluginInstance.OperationName;

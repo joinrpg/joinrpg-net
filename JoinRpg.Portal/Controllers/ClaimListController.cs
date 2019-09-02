@@ -1,19 +1,21 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.Exporters;
-using JoinRpg.Helpers;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.Exporters;
+using Microsoft.AspNetCore.Authorization;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     public class ClaimListController : Common.ControllerGameBase
     {
@@ -45,7 +47,7 @@ namespace JoinRpg.Web.Controllers
         {
             var view = new ClaimListViewModel(CurrentUserId, claims, projectId);
 
-            var exportType = GetExportTypeByName(export);
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
@@ -59,7 +61,7 @@ namespace JoinRpg.Web.Controllers
 
                 return
                     await
-                        ExportWithCustomFronend(view.Items, title, exportType.Value,
+                        ExportWithCustomFrontend(view.Items, title, exportType.Value,
                             new ClaimListItemViewModelExporter(project, UriService), project.ProjectName);
             }
         }
@@ -71,7 +73,7 @@ namespace JoinRpg.Web.Controllers
 
             var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page);
 
-            var exportType = GetExportTypeByName(export);
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
@@ -83,7 +85,7 @@ namespace JoinRpg.Web.Controllers
             {
                 return
                     await
-                        ExportWithCustomFronend(view.Items, title, exportType.Value,
+                        ExportWithCustomFrontend(view.Items, title, exportType.Value,
                             new ClaimListItemViewModelExporter(characterGroup.Project, UriService),
                             characterGroup.Project.ProjectName);
             }
@@ -304,13 +306,17 @@ namespace JoinRpg.Web.Controllers
                     .ToList()
             );
         }
-        private Task<FileContentResult> ExportWithCustomFronend<T>(IEnumerable<T> viewModel, string title,
-  ExportType exportType, IGeneratorFrontend frontend, string projectName)
+        private async Task<FileContentResult> ExportWithCustomFrontend<T>(
+            IEnumerable<T> viewModel, string title,
+            ExportType exportType, IGeneratorFrontend frontend, string projectName)
         {
             var generator = ExportDataService.GetGenerator(exportType, viewModel,
               frontend);
 
-            return ReturnExportResult(projectName + ": " + title, generator);
+            var fileName = projectName + ": " + title;
+
+            return File(await generator.Generate(), generator.ContentType,
+                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
         }
     }
 }

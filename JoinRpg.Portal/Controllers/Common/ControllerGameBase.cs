@@ -14,6 +14,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -69,15 +70,11 @@ namespace JoinRpg.Portal.Controllers.Common
             return project == null ? NotFound() : RedirectToIndex(project);
         }
 
-        //protected static ExportType? GetExportTypeByName(string export)
-        //{
-        //    switch (export)
-        //    {
-        //        case "csv": return ExportType.Csv;
-        //        case "xlsx": return ExportType.ExcelXml;
-        //        default: return null;
-        //    }
-        //}
+        [Obsolete]
+        protected static ExportType? GetExportTypeByName(string export)
+        {
+            return ExportTypeNameParserHelper.ToExportType(export);
+        }
 
 
         //protected async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)

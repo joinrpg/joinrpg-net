@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,13 @@ namespace JoinRpg.Portal.Controllers.Common
             => ViewIfFound(viewName, await model);
 
         [Obsolete("Call NotFound()")]
-        protected IActionResult HttpNotFound() => NotFound();
+        protected ActionResult HttpNotFound() => NotFound();
+
+        [Obsolete("Call NotFound()")]
+        protected ActionResult HttpNotFound(object value) => NotFound(value);
+
+
+
+        protected ActionResult NotModified() => new StatusCodeResult((int)HttpStatusCode.NotModified);
     }
 }

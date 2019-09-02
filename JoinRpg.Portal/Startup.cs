@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Joinrpg.Web.Identity;
 using Autofac;
+using JoinRpg.DataModel;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -31,6 +32,7 @@ namespace JoinRpg.Portal
 
             services
                 .AddIdentity<JoinIdentityUser, string>()
+                .AddDefaultTokenProviders()
                 .AddUserStore<MyUserStore>()
                 .AddRoleStore<MyUserStore>()
                 ;
@@ -52,7 +54,7 @@ namespace JoinRpg.Portal
             services.AddAuthorization(options =>
                 {
                     options.AddPolicyAsRequirement<AllowPublishRequirement>();
-                    options.AddPolicy("AllowAdmin", policy => policy.RequireAssertion(context => context.User.IsInRole("Admin")));
+                    options.AddPolicy(PolicyConstants.AllowAdminPolicy, policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
                 }
             );
 

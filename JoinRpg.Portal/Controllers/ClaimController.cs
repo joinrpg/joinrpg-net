@@ -4,20 +4,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
+using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
+using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   public class ClaimController : ControllerGameBase
   {
@@ -33,7 +36,7 @@ namespace JoinRpg.Web.Controllers
     private IAccommodationInviteRepository AccommodationInviteRepository { get; }
     private IUriService UriService { get; }
 
-    [HttpGet]
+    [Microsoft.AspNetCore.Mvc.HttpGet]
     [Authorize]
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
@@ -42,7 +45,7 @@ namespace JoinRpg.Web.Controllers
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
-    [HttpGet]
+    [Microsoft.AspNetCore.Mvc.HttpGet]
     [Authorize]
     public async Task<ActionResult> AddForGroup(int projectid, int? characterGroupId)
     {
@@ -87,9 +90,9 @@ namespace JoinRpg.Web.Controllers
           UriService = uriService;
       }
 
-      [HttpPost]
+      [Microsoft.AspNetCore.Mvc.HttpPost]
     [Authorize]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
@@ -100,8 +103,8 @@ namespace JoinRpg.Web.Controllers
 
       try
       {
-        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText, 
-          GetCustomFieldValuesFromPost());
+        await _claimService.AddClaimFromUser(viewModel.ProjectId, viewModel.CharacterGroupId, viewModel.CharacterId, viewModel.ClaimText,
+            Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
 
         return RedirectToAction(
           "SetupProfile",
@@ -116,7 +119,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet, Authorize]
+    [Microsoft.AspNetCore.Mvc.HttpGet, Authorize]
     public async Task<ActionResult> Edit(int projectId, int claimId)
     {
       var claim = await _claimsRepository.GetClaimWithDetails(projectId, claimId).ConfigureAwait(false);
@@ -195,7 +198,7 @@ namespace JoinRpg.Web.Controllers
       return View("Edit", claimViewModel);
     }
 
-    [HttpPost, Authorize, ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost, Authorize, Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(int projectId, int claimId, [UsedImplicitly] string ignoreMe)
     {
       var claim = await _claimsRepository.GetClaim(projectId, claimId);
@@ -204,10 +207,10 @@ namespace JoinRpg.Web.Controllers
       {
         return error;
       }
-      try
+      try 
       {
         await
-          _claimService.SaveFieldsFromClaim(projectId, claimId, GetCustomFieldValuesFromPost());
+          _claimService.SaveFieldsFromClaim(projectId, claimId, Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix));
         return RedirectToAction("Edit", "Claim", new {projectId, claimId});
       }
       catch (Exception exception)
@@ -217,7 +220,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(), Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> ApproveByMaster(ClaimOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -240,7 +243,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(), Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> OnHoldByMaster(ClaimOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -263,9 +266,9 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
+    [Microsoft.AspNetCore.Mvc.HttpPost]
     [MasterAuthorize()]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByMaster(MasterDenialOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -298,9 +301,9 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
+    [Microsoft.AspNetCore.Mvc.HttpPost]
     [MasterAuthorize]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> RestoreByMaster(ClaimOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -327,9 +330,9 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
+    [Microsoft.AspNetCore.Mvc.HttpPost]
     [Authorize()]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> DeclineByPlayer(ClaimOperationViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -356,8 +359,8 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     [MasterAuthorize()]
     public async Task<ActionResult> ChangeResponsible(int projectId, int claimId, int responsibleMasterId)
     {
@@ -422,7 +425,7 @@ namespace JoinRpg.Web.Controllers
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
     }
 
-    [Authorize, HttpGet]
+    [Authorize, Microsoft.AspNetCore.Mvc.HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {
       var claims = await _claimsRepository.GetClaimsForPlayer(projectId, ClaimStatusSpec.Any, CurrentUserId);
@@ -538,7 +541,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(), Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> Subscribe(int projectid, int claimid)
     {
 
@@ -558,10 +561,10 @@ namespace JoinRpg.Web.Controllers
 
       var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-      return Json(tooltip, JsonRequestBehavior.AllowGet);
+      return Json(tooltip);
     }
 
-    [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(), Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> Unsubscribe(int projectid, int claimid)
     {
 
@@ -583,7 +586,7 @@ namespace JoinRpg.Web.Controllers
 
       var tooltip = claimViewModel.GetFullSubscriptionTooltip(parents, user.Subscriptions, claimViewModel.ClaimId);
 
-      return Json(tooltip, JsonRequestBehavior.AllowGet);
+      return Json(tooltip);
     }
 
     private ActionResult WithClaim(Claim claim)
@@ -600,7 +603,7 @@ namespace JoinRpg.Web.Controllers
       return null;
     }
 
-      [MasterAuthorize(Permission.CanManageMoney), ValidateAntiForgeryToken]
+      [MasterAuthorize(Permission.CanManageMoney), Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
       public async Task<ActionResult> MarkPreferential(int claimid,
           int projectid,
           bool preferential)
@@ -628,7 +631,7 @@ namespace JoinRpg.Web.Controllers
           }
       }
 
-        [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
         public async Task<ActionResult> RequestPreferentialFee(
             MarkMeAsPreferentialViewModel viewModel)
         {
@@ -669,8 +672,8 @@ namespace JoinRpg.Web.Controllers
             
         }
 
-       [ValidateAntiForgeryToken]
-       [HttpPost]
+       [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
+       [Microsoft.AspNetCore.Mvc.HttpPost]
        public async Task<ActionResult> PostAccommodationRequest(
           AccommodationRequestViewModel viewModel)
        {
@@ -704,8 +707,8 @@ namespace JoinRpg.Web.Controllers
          }
        }
 
-      [ValidateAntiForgeryToken]
-      [HttpPost]
+      [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
+      [Microsoft.AspNetCore.Mvc.HttpPost]
       public async Task<ActionResult> Invite(InviteRequestViewModel viewModel)
       {
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
@@ -728,8 +731,8 @@ namespace JoinRpg.Web.Controllers
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
 
-      [ValidateAntiForgeryToken]
-      [HttpPost]
+      [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
+      [Microsoft.AspNetCore.Mvc.HttpPost]
         public async Task<ActionResult> DeclineInvite(InviteRequestViewModel viewModel)
       {
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
@@ -748,8 +751,8 @@ namespace JoinRpg.Web.Controllers
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
 
-      [ValidateAntiForgeryToken]
-      [HttpPost]
+      [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
+      [Microsoft.AspNetCore.Mvc.HttpPost]
       public async Task<ActionResult> AcceptInvite(InviteRequestViewModel viewModel)
       {
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);

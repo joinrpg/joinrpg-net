@@ -6,8 +6,6 @@ using JoinRpg.Domain;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +21,7 @@ namespace JoinRpg.Portal.Controllers
         {
         }
 
+        [Route("{projectId}/home")]
         public async Task<IActionResult> Details(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);

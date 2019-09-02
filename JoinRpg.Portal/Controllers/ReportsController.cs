@@ -1,18 +1,18 @@
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Reports;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
     public class ReportsController : ControllerGameBase
     {
-        public async Task<ActionResult> Report2D(int projectId, int gameReport2DTemplateId)
+        public async Task<IActionResult> Report2D(int projectId, int gameReport2DTemplateId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
 

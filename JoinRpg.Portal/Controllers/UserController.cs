@@ -1,20 +1,25 @@
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     public class UserController : Common.ControllerBase
     {
+        public IUserRepository UserRepository { get; }
+        public ICurrentUserAccessor CurrentUserAccessor { get; }
+
         [HttpGet]
         public async Task<ActionResult> Details(int userId)
         {
             var user = await UserRepository.GetById(userId);
 
-            var currentUser = User.Identity.IsAuthenticated ? await GetCurrentUserAsync() : null;
+            var currentUser =  User.Identity.IsAuthenticated ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
 
             var accessReason = (AccessReason) user.GetProfileAccess(currentUser);
             var userProfileViewModel = new UserProfileViewModel()
@@ -42,15 +47,17 @@ namespace JoinRpg.Web.Controllers
             return View(userProfileViewModel);
         }
 
-        public UserController(IUserRepository userRepository)
-            : base(userRepository)
+        public UserController(IUserRepository userRepository, ICurrentUserAccessor currentUserAccessor)
+            : base()
         {
+            UserRepository = userRepository;
+            CurrentUserAccessor = currentUserAccessor;
         }
 
         [HttpGet, Authorize]
         public ActionResult Me()
         {
-            return RedirectToAction("Details", new {UserId = CurrentUserId});
+            return RedirectToAction("Details", new {UserId = CurrentUserAccessor.UserId });
         }
     }
 }

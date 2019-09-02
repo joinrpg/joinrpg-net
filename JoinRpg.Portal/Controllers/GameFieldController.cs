@@ -4,18 +4,20 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.FieldSetup;
 using JoinRpg.WebPortal.Managers;
 using JoinRpg.WebPortal.Managers.Interfaces;
+using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
-    [Authorize]
+  [Microsoft.AspNetCore.Authorization.Authorize]
   public class GameFieldController : ControllerGameBase
   {
     private IFieldSetupService FieldSetupService { get; }
@@ -44,35 +46,35 @@ namespace JoinRpg.Web.Controllers
             => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
 
 
-        [HttpGet, MasterAuthorize()]
+        [Microsoft.AspNetCore.Mvc.HttpGet, MasterAuthorize()]
         public async Task<ActionResult> Index(int projectId)
         {
             var model = await Manager.GetActiveAsync();
             return ViewIfFound(model);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [Microsoft.AspNetCore.Mvc.HttpGet, MasterAuthorize()]
         public async Task<ActionResult> DeletedList(int projectId)
         {
             var model = await Manager.GetInActiveAsync();
             return ViewIfFound("Index", model);
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        [Microsoft.AspNetCore.Mvc.HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Create(int projectId)
         {
             var model = await Manager.CreatePageAsync();
             return ViewIfFound(model);
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        [Microsoft.AspNetCore.Mvc.HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Settings()
         {
             var model = await Manager.SettingsPagesAsync();
             return ViewIfFound(model);
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+        [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
         {
             if (!ModelState.IsValid)
@@ -92,8 +94,8 @@ namespace JoinRpg.Web.Controllers
             }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.HttpPost]
+        [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Create(GameFieldCreateViewModel viewModel)
         {
@@ -132,15 +134,15 @@ namespace JoinRpg.Web.Controllers
             }
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        [Microsoft.AspNetCore.Mvc.HttpGet, MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Edit(int projectId, int projectFieldId)
         {
             var model = await Manager.EditPageAsync(projectFieldId);
             return ViewIfFound(model);
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
-    [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     public async Task<ActionResult> Edit(GameFieldEditViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
@@ -185,8 +187,8 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [Microsoft.AspNetCore.Mvc.HttpPost]
+    [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanChangeFields)]
     // ReSharper disable once UnusedParameter.Global
     public async Task<ActionResult> Delete(int projectId, int projectFieldId, FormCollection collection)
@@ -206,7 +208,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpGet]
+    [Microsoft.AspNetCore.Mvc.HttpGet]
     [MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> CreateValue(int projectId, int projectFieldId)
     {
@@ -214,7 +216,7 @@ namespace JoinRpg.Web.Controllers
       return View(new GameFieldDropdownValueCreateViewModel(field));
     }
 
-        [HttpPost, ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> CreateValue(GameFieldDropdownValueCreateViewModel viewModel)
         {
@@ -245,7 +247,7 @@ namespace JoinRpg.Web.Controllers
             }
         }
 
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> EditValue(int projectId, int projectFieldId, int valueId)
         {
@@ -258,7 +260,7 @@ namespace JoinRpg.Web.Controllers
             return View(new GameFieldDropdownValueEditViewModel(field, value));
         }
 
-        [HttpPost, ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.HttpPost, Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> EditValue(GameFieldDropdownValueEditViewModel viewModel)
         {
@@ -300,7 +302,7 @@ namespace JoinRpg.Web.Controllers
         /// 401 -- if logged user is not authorized to delete values
         /// 404 -- if no field or project found
         /// </returns>
-        [HttpDelete]
+        [Microsoft.AspNetCore.Mvc.HttpDelete]
         [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> DeleteValueEx(int projectId, int projectFieldId, int valueId)
         {
@@ -313,13 +315,13 @@ namespace JoinRpg.Web.Controllers
                                 
                 await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive
-                    ? new HttpStatusCodeResult(200)
-                    : new HttpStatusCodeResult(250);
+                    ? Ok()
+                    : StatusCode(250);
             }
             catch (Exception)
             {
                 // TODO: Implement exception logging here
-                return new HttpStatusCodeResult(500);
+                return StatusCode(500);
             }
         }
 
@@ -368,7 +370,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+    [Microsoft.AspNetCore.Mvc.HttpPost, MasterAuthorize(Permission.CanChangeFields)]
     public async Task<ActionResult> MassCreateValueVariants(int projectId, int projectFieldId, string valuesToAdd)
     {
       var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);

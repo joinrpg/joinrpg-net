@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   public class GameToolsController : Common.ControllerGameBase
   {

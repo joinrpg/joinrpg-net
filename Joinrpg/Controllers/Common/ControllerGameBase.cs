@@ -18,7 +18,7 @@ using JoinRpg.Web.Models.Exporters;
 
 namespace JoinRpg.Web.Controllers.Common
 {
-  [JoinRpgExceptionHandler]
+  //[JoinRpgExceptionHandler]
   public abstract class ControllerGameBase : ControllerBase
   {
     [ProvidesContext, NotNull]

@@ -1,13 +1,16 @@
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
-using JoinRpg.Web.Filter;
+using JoinRpg.Web.Models.Exporters;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
     public class AccommodationPrintController : Common.ControllerGameBase
@@ -54,7 +57,7 @@ namespace JoinRpg.Web.Controllers
                     Phone = row.User.Extra?.PhoneNumber,
                 });
             
-            var exportType = GetExportTypeByName(export);
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
@@ -68,6 +71,10 @@ namespace JoinRpg.Web.Controllers
                 return await ReturnExportResult(project.ProjectName + ": " + "Отчет по расселению", generator);
             }
         }
+
+        private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
+            File(await generator.Generate(), generator.ContentType,
+                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
 
     }
 }

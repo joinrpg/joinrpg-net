@@ -45,7 +45,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
                 {
                     return;
                 }
-                if (AllowAdmin && (await Authorization.AuthorizeAsync(user, "AllowAdmin")).Succeeded)
+                if (AllowAdmin && (await Authorization.AuthorizeAsync(user, PolicyConstants.AllowAdminPolicy)).Succeeded)
                 {
                     return;
                 }
