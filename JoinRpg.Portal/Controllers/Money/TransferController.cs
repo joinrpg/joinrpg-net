@@ -1,16 +1,17 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Money;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.Money
+namespace JoinRpg.Portal.Controllers.Money
 {
     [MasterAuthorize()]
     public class TransferController : Common.ControllerGameBase

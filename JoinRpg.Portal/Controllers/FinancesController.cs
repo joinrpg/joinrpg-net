@@ -5,17 +5,18 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Web.Controllers.Money
 {
@@ -73,7 +74,7 @@ namespace JoinRpg.Web.Controllers.Money
             var viewModel = new FinOperationListViewModel(project, UriService,
                 project.FinanceOperations.Where(predicate).ToArray());
 
-            var exportType = GetExportTypeByName(export);
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
@@ -280,7 +281,10 @@ namespace JoinRpg.Web.Controllers.Money
             var generator = ExportDataService.GetGenerator(ExportType.Csv, summary,
         new MoneySummaryByMasterExporter(UriService));
 
-            return await ReturnExportResult(project.ProjectName + ": " + "money-summary", generator);
+            string fileName = project.ProjectName + ": " + "money-summary";
+
+            return File(await generator.Generate(), generator.ContentType,
+                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
       }
 
         [MasterAuthorize(Permission.CanManageMoney)]
@@ -391,4 +395,9 @@ namespace JoinRpg.Web.Controllers.Money
           return RedirectToAction("Setup", new {projectId});
       }
   }
+
+      private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
+          File(await generator.Generate(), generator.ContentType,
+              Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+    }
 }

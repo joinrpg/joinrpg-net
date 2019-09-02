@@ -1,15 +1,15 @@
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
-    public class SearchController : Common.ControllerBase
+    public class SearchController : Common.LegacyJoinControllerBase
     {
         private readonly ISearchService _searchService;
         private readonly IProjectRepository _projectRepository;

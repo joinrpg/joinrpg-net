@@ -1,18 +1,19 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Exporters;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
   public class CharacterListController : ControllerGameBase
@@ -53,7 +54,7 @@ namespace JoinRpg.Web.Controllers
 
             var list = new CharacterListViewModel(CurrentUserId, title, characters, project);
 
-            var exportType = GetExportTypeByName(export);
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)
             {
@@ -98,7 +99,7 @@ namespace JoinRpg.Web.Controllers
       var list = new CharacterListByGroupViewModel(CurrentUserId,
         characters, characterGroup);
 
-      var exportType = GetExportTypeByName(export);
+      var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
       if (exportType == null)
       {
@@ -134,7 +135,11 @@ namespace JoinRpg.Web.Controllers
 
             return await ReturnExportResult(list.ProjectName + ": " + list.Title, generator);
         }
-    }
+
+        private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
+            File(await generator.Generate(), generator.ContentType,
+                Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
+  }
 
 
 }

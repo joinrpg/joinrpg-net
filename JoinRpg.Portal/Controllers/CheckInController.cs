@@ -1,17 +1,17 @@
 using System;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CheckIn;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   [MasterAuthorize()] //TODO specific permission
   public class CheckInController : ControllerGameBase

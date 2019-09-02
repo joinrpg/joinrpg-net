@@ -75,8 +75,6 @@
     <Compile Include="App_Start\PluginsModule.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebModule.cs" />
-    <Compile Include="Controllers\AccommodationPrintController.cs" />
-    <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
     <Compile Include="Controllers\Money\PaymentsController.cs" />
@@ -107,37 +105,17 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Models\ChangeEmailModel.cs" />
     <Compile Include="Controllers\XGameApi\CharacterApiController.cs" />
-    <Compile Include="Controllers\ForumController.cs" />
-    <Compile Include="Controllers\CheckInController.cs" />
     <Compile Include="Filter\MasterAuthorize.cs" />
     <Compile Include="Helpers\AdminAuthorizeAttribute.cs" />
     <Compile Include="Areas\Admin\Controllers\UsersController.cs" />
-    <Compile Include="Controllers\CharacterListController.cs" />
-    <Compile Include="Controllers\ClaimListController.cs" />
-    <Compile Include="Controllers\PluginSetupController.cs" />
-    <Compile Include="Controllers\PrintController.cs" />
-    <Compile Include="Controllers\FinancesController.cs" />
-    <Compile Include="Controllers\GameToolsController.cs" />
-    <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="Helpers\IndentityEmailService.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\AclController.cs" />
-    <Compile Include="Controllers\CharacterController.cs" />
-    <Compile Include="Controllers\ClaimController.cs" />
     <Compile Include="Controllers\Common\ControllerBase.cs" />
     <Compile Include="Controllers\Common\ControllerGameBase.cs" />
-    <Compile Include="Controllers\GameFieldController.cs" />
-    <Compile Include="Controllers\GameGroupsController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\MenuController.cs" />
-    <Compile Include="Controllers\PlotController.cs" />
-    <Compile Include="Controllers\SearchController.cs" />
-    <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

@@ -66,7 +66,7 @@ namespace JoinRpg.Portal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return View(new LoginPageViewModel() {Login = model});
             }
 
             // Require the user to have a confirmed email before they can log on.
@@ -131,7 +131,8 @@ namespace JoinRpg.Portal.Controllers
             {
                 ModelState.AddModelError("",
                     "Вы уже зарегистрировались. Если пароль не подходит, нажмите «Забыли пароль?»");
-                return View("Login", new LoginViewModel() { Email = model.Email });
+                return View("Login",
+                    new LoginPageViewModel() {Login = new LoginViewModel() {Email = model.Email}});
             }
 
             var user = new JoinIdentityUser { UserName = model.Email };

@@ -1,23 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using JoinRpg.AspNetLegacy.Helpers;
-using JoinRpg.Data.Interfaces; 
+using JetBrains.Annotations;
+using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Controllers.Common;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
+using JsonResult = Microsoft.AspNetCore.Mvc.JsonResult;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   public class GameGroupsController : ControllerGameBase
   {
@@ -95,7 +100,7 @@ namespace JoinRpg.Web.Controllers
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
-    [HttpGet, Compress]
+    [HttpGet]
     public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -130,7 +135,7 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    [HttpGet, Compress]
+    [HttpGet]
     public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -166,16 +171,17 @@ namespace JoinRpg.Web.Controllers
       });
     }
 
-    private ActionResult ReturnJson(object data)
+    private JsonResult ReturnJson(object data)
     {
-      ControllerContext.HttpContext.Response.AddHeader("Access-Control-Allow-Origin", "*");
-      return new JsonResult()
-      {
-        Data = data,
-        ContentEncoding = Encoding.UTF8,
-        JsonRequestBehavior = JsonRequestBehavior.AllowGet,
-        MaxJsonLength = int.MaxValue,
-      };
+      Response.Headers.Add("Access-Control-Allow-Origin", "*");
+
+      return Json(data);
+      //{
+      //  Data = data,
+      //  ContentEncoding = Encoding.UTF8,
+      //  JsonRequestBehavior = JsonRequestBehavior.AllowGet,
+      //  MaxJsonLength = int.MaxValue,
+      //};
     }
 
     private object ConvertCharacterToJson(CharacterViewModel ch)
@@ -475,7 +481,7 @@ namespace JoinRpg.Web.Controllers
 
     }
 
-    [HttpGet, AllowAnonymous]
+    [HttpGet, Microsoft.AspNetCore.Authorization.AllowAnonymous]
     public async Task<ActionResult> Details(int projectId, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -486,5 +492,42 @@ namespace JoinRpg.Web.Controllers
       var viewModel = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Home);
       return View(viewModel);
     }
-  }
+
+    protected string GetFullyQualifiedUri([AspMvcAction]
+        string actionName,
+        [AspMvcController]
+        string controllerName,
+        object routeValues)
+    {
+        var url = new Uri(Request.GetDisplayUrl());
+        if (url == null)
+        {
+            throw new InvalidOperationException("Request.Url is unexpectedly null");
+        }
+
+        return url.Scheme + "://" + url.Host +
+               (url.IsDefaultPort ? "" : $":{url.Port}") +
+               Url.Action(actionName, controllerName, routeValues);
+    }
+
+    private bool IsClientCached(DateTime contentModified)
+    {
+        string header = Request.Headers["If-Modified-Since"];
+
+        if (header == null) return false;
+
+        return DateTime.TryParse(header, out var isModifiedSince) &&
+               isModifiedSince.ToUniversalTime() > contentModified;
+    }
+
+    protected bool CheckCache(DateTime characterTreeModifiedAt)
+    {
+        if (IsClientCached(characterTreeModifiedAt)) return true;
+        Response.Headers.Add("Last-Modified", characterTreeModifiedAt.ToString("R"));
+        return false;
+    }
+
+    }
+
+
 }

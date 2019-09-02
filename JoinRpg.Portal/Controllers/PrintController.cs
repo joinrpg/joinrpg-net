@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -9,17 +8,18 @@ using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.PluginHost.Interfaces;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Controllers.Common;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Print;
+using Microsoft.AspNetCore.Mvc;
+using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
-  [Authorize]
-  public class PrintController : ControllerGameBase
-  {
-    private IPlotRepository PlotRepository { get; }
+  [Microsoft.AspNetCore.Authorization.Authorize]
+  public class PrintController : Common.ControllerGameBase
+    {
+        private IPlotRepository PlotRepository { get; }
     private IPluginFactory PluginFactory { get; }
     private ICharacterRepository CharacterRepository { get; }
       private IUriService UriService { get; }
@@ -31,17 +31,16 @@ namespace JoinRpg.Web.Controllers
           IPluginFactory pluginFactory,
           ICharacterRepository characterRepository,
           IUriService uriService,
-          IUserRepository userRepository) : base(projectRepository,
-              projectService, userRepository)
+          IUserRepository userRepository) : base(projectRepository, projectService, userRepository)
         {
-      PlotRepository = plotRepository;
+            PlotRepository = plotRepository;
       PluginFactory = pluginFactory;
       CharacterRepository = characterRepository;
         UriService = uriService;
     }
 
 
-    public async Task<ActionResult> Character(int projectid, int characterid)
+    public async Task<IActionResult> Character(int projectid, int characterid)
     {
       var character = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
       var error = WithCharacter(character);
@@ -91,7 +90,7 @@ namespace JoinRpg.Web.Controllers
       return View(new HandoutReportViewModel(plotElements, characters));
     }
 
-    public async Task<ActionResult> PrintCards(int projectid, string plugin, string characterIds)
+    public async Task<IActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
       var characters = await CharacterRepository.GetCharacters(projectid, characterIds.UnCompressIdList());
       var project = await GetProjectFromList(projectid, characters);
@@ -101,12 +100,12 @@ namespace JoinRpg.Web.Controllers
         return HttpNotFound();
       }
 
-            //TODO display correct errors
-            if (!pluginInstance.AllowPlayerAccess)
+      //TODO display correct errors
+      if (!pluginInstance.AllowPlayerAccess)
       {
                 if (!project.HasMasterAccess(CurrentUserId))
                 {
-                    return new HttpUnauthorizedResult();
+                    return Unauthorized();
                 }
 
       }
@@ -115,7 +114,7 @@ namespace JoinRpg.Web.Controllers
         
         if (characters.Any(c => !c.HasAnyAccess(CurrentUserId)))
         {
-          return new  HttpUnauthorizedResult();
+            return Unauthorized();
         }
       }
 
@@ -153,7 +152,7 @@ namespace JoinRpg.Web.Controllers
     }
 
         [Obsolete]
-        protected ActionResult WithCharacter(Character character)
+        protected IActionResult WithCharacter(Character character)
         {
             if (character == null)
             {

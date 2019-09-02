@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Models.Accommodation;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.Accommodation;
+using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
     public class AccommodationTypeController : Common.ControllerGameBase
@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Controllers
         /// <summary>
         /// Shows list of registered room types
         /// </summary>
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> Index(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -53,7 +53,7 @@ namespace JoinRpg.Web.Controllers
         /// Shows "Add room type" form
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> AddRoomType(int projectId)
         {
             return View(new RoomTypeViewModel(
@@ -63,13 +63,13 @@ namespace JoinRpg.Web.Controllers
         /// <summary>
         /// Shows "Edit room type" form
         /// </summary>
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
             if (entity == null || entity.ProjectId != projectId)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                return Forbid();
             }
 
             return View(new RoomTypeViewModel(entity, CurrentUserId));
@@ -79,13 +79,13 @@ namespace JoinRpg.Web.Controllers
         /// Shows "Edit room type" form
         /// </summary>
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId);
             if (entity == null || entity.ProjectId != projectId)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                return Forbid();
             }
 
             return View(new RoomTypeViewModel(entity, CurrentUserId));
@@ -97,8 +97,8 @@ namespace JoinRpg.Web.Controllers
         /// If not, returns to edit mode
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]        
+        [Microsoft.AspNetCore.Mvc.HttpPost]
+        [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]        
         public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
         {
             if (!ModelState.IsValid)
@@ -115,7 +115,7 @@ namespace JoinRpg.Web.Controllers
         /// Removes room type
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
         {
             await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpHead]
+        [Microsoft.AspNetCore.Mvc.HttpHead]
         public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, string reqId)
         {
             try
@@ -140,7 +140,7 @@ namespace JoinRpg.Web.Controllers
                         ProjectId = projectId,
                         RoomId = room,
                     });
-                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                    return Ok();
                 }
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -148,13 +148,14 @@ namespace JoinRpg.Web.Controllers
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+
+            return BadRequest();
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> OccupyAll(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -169,7 +170,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> UnOccupyAll(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -184,7 +185,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpHead]
+        [Microsoft.AspNetCore.Mvc.HttpHead]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, int room, int reqId)
         {
             try
@@ -194,20 +195,20 @@ namespace JoinRpg.Web.Controllers
                     ProjectId = projectId,
                     AccommodationRequestId = reqId,
                 });
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                return Ok();
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
             {
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId)
         {
             try
@@ -221,35 +222,35 @@ namespace JoinRpg.Web.Controllers
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         /// <summary>
         /// Removes room
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]        
-        [HttpDelete]
+        [Microsoft.AspNetCore.Mvc.HttpDelete]
         public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
         {
             try
             {
                 await _accommodationService.DeleteRoom(roomId, projectId, roomTypeId).ConfigureAwait(false);
-                return new HttpStatusCodeResult(HttpStatusCode.OK);
+                return Ok();
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
             {
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> AddRoom(int projectId, int roomTypeId, string name)
         {
             try
@@ -257,23 +258,23 @@ namespace JoinRpg.Web.Controllers
                 //TODO: Implement room names checking
                 //TODO: Implement new rooms HTML returning
                 await _accommodationService.AddRooms(projectId, roomTypeId, name);
-                return new HttpStatusCodeResult(HttpStatusCode.Created);
+                return StatusCode(201);
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
             {
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            return BadRequest();
         }
 
         /// <summary>
         /// Applies new name to a room or adds a new room(s)
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [HttpGet]
+        [Microsoft.AspNetCore.Mvc.HttpGet]
         public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
         {
             try
@@ -281,7 +282,7 @@ namespace JoinRpg.Web.Controllers
                 if (int.TryParse(room, out int roomId))
                 {
                     await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
-                    return new HttpStatusCodeResult(HttpStatusCode.OK);
+                    return Ok();
                 }
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
@@ -289,9 +290,9 @@ namespace JoinRpg.Web.Controllers
             }
             catch
             {
-                return new HttpStatusCodeResult(HttpStatusCode.InternalServerError);
+                return StatusCode(500);
             }
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            return BadRequest();
         }
     }
 }

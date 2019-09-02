@@ -2,18 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using JetBrains.Annotations;
+using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using Microsoft.AspNetCore.Http;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
     public class CharacterController : Common.ControllerGameBase
     {
@@ -101,7 +104,7 @@ namespace JoinRpg.Web.Controllers
                     viewModel.IsAcceptingClaims &&
                     field.ApprovedClaim == null,
                     viewModel.HidePlayerForCharacter,
-                    GetCustomFieldValuesFromPost(),
+                    Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
                     viewModel.IsHot);
 
                 return RedirectToAction("Details",
@@ -149,7 +152,7 @@ namespace JoinRpg.Web.Controllers
                     HidePlayerForCharacter = viewModel.HidePlayerForCharacter,
                     IsHot = viewModel.IsHot,
                     IsPublic = viewModel.IsPublic,
-                    FieldValues = GetCustomFieldValuesFromPost(),
+                    FieldValues = Request.GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix),
                 });
 
 

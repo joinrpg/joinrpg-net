@@ -1,19 +1,19 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using JoinRpg.Web.Filter;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Portal.Controllers
 {
   [MasterAuthorize()]
   public class MassMailController : Common.ControllerGameBase
