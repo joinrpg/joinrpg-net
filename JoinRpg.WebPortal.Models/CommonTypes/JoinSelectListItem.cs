@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,5 +27,15 @@ namespace JoinRpg.Web.Models.CommonTypes
             }
             return collection;
         }
+    }
+
+    [Obsolete("JoinSelectListItem")]
+    public class ImprovedSelectListItem 
+    {
+        public string ExtraSearch { get; set; }
+        public string Subtext { get; set; }
+
+        public string Text { get; set; }
+        public string Value { get; set; }
     }
 }

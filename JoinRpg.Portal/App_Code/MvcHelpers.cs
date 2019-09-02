@@ -91,7 +91,7 @@ namespace JoinRpg.Web.App_Code
         /// <summary>
         /// Renders specified number as a price to html tag
         /// </summary>
-        public static IHtmlContent RenderPriceElement(this HtmlHelper self, int price, string id = null)
+        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id = null)
         {
             return self.RenderPriceElement(price.ToString(), id);
         }
@@ -99,7 +99,7 @@ namespace JoinRpg.Web.App_Code
         /// <summary>
         /// Renders specified value as a price to html tag
         /// </summary>
-        public static IHtmlContent RenderPriceElement(this HtmlHelper self, string price, string id = null)
+        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, string price, string id = null)
         {
             //TODO[Localize]
             if (!string.IsNullOrWhiteSpace(id))
@@ -114,7 +114,7 @@ namespace JoinRpg.Web.App_Code
         /// <summary>
         /// Renders price to a string
         /// </summary>
-        public static string RenderPrice(this HtmlHelper self, int price, string template = null)
+        public static string RenderPrice(this IHtmlHelper self, int price, string template = null)
         {
             //TODO[Localize]
             return string.Format(template ?? defaultPriceTemplate, price);

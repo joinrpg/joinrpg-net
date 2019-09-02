@@ -93,6 +93,8 @@ namespace JoinRpg.Portal
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapAreaRoute("Admin_default", "Admin", "Admin/{controller}/{action}/{id?}");
             });
         }
     }

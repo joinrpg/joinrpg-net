@@ -1,0 +1,17 @@
+﻿@model Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression
+
+@if ((bool)Model.Model)
+{
+<span class="label label-success" title="@Model.Metadata.Description" data-toggle="tooltip">
+    <span class="glyphicon glyphicon-ok-sign"></span>
+    @Model.Metadata.DisplayName
+</span>
+}
+else
+{
+<span class="label label-default" title="@Model.Metadata.Description" data-toggle="tooltip">
+    <span class="glyphicon glyphicon-remove-sign"> </span>
+    @Model.Metadata.DisplayName
+</span>
+}
+<br />

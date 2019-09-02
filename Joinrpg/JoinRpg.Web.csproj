@@ -80,7 +80,6 @@
     <Compile Include="Controllers\Money\PaymentsController.cs" />
     <Compile Include="Controllers\Money\TransferController.cs" />
     <Compile Include="Controllers\Money\OnlinePaymentsController.cs" />
-    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\Schedule\ShowScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />

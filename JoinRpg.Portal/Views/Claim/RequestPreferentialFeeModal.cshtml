@@ -1,0 +1,41 @@
+﻿@using JoinRpg.Web.Models
+@model MarkMeAsPreferentialViewModel
+
+<div class="modal fade" id="requestPreferentialFeeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("RequestPreferentialFee", "Claim"))
+    {
+       
+
+        @Html.HiddenFor(model => model.ProjectId)
+        @Html.HiddenFor(model => model.ClaimId)
+        @Html.HiddenFor(model => model.OperationDate)
+        @Html.HiddenFor(model => model.CommentDiscussionId)
+        @Html.AntiForgeryToken()
+
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="deleteTitle">Запрос льготного взноса</h4>
+        </div>
+        <div class="modal-body">
+            <h4>
+                Условия льготного взноса
+            </h4>
+
+            @Model.PreferentialFeeConditions
+
+
+            @Html.EditorFor(model => model.CommentText, new { htmlAttributes = new { @class = "form-control" } })
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-success" id="submit-button">Запросить</button>
+        </div>
+}
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>

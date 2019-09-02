@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="App_Code\ConfirmDialog.cs" />
+    <Compile Remove="App_Code\SearchableDropdownMvcHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Views\Shared\CharacterNavigation.broken_cshtml" />
     <None Remove="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
     <None Remove="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
@@ -20,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="App_Code\ConfirmDialog.cs" />
+    <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
     <Content Include="Views\Shared\CharacterNavigation.broken_cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
@@ -49,6 +56,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.1.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.9" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="1.0.172" />
+    <PackageReference Include="TagHelperSamples.Bootstrap" Version="2.0.30" />
   </ItemGroup>
 
   <ItemGroup>
