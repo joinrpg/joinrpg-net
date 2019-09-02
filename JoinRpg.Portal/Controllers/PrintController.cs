@@ -97,7 +97,7 @@ namespace JoinRpg.Portal.Controllers
       var pluginInstance = PluginFactory.GetOperationInstance<IPrintCardPluginOperation>(project, plugin);
       if (pluginInstance == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       //TODO display correct errors
@@ -156,7 +156,7 @@ namespace JoinRpg.Portal.Controllers
         {
             if (character == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             if (!character.HasAnyAccess(CurrentUserId))
             {

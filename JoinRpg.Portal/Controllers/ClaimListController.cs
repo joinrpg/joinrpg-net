@@ -69,7 +69,7 @@ namespace JoinRpg.Portal.Controllers
         private async Task<ActionResult> ShowMasterClaimListForGroup(CharacterGroup characterGroup, string export,
             string title, IReadOnlyCollection<Claim> claims, GroupNavigationPage page)
         {
-            if (characterGroup == null) return HttpNotFound();
+            if (characterGroup == null) return NotFound();
 
             var view = new ClaimListForGroupViewModel(CurrentUserId, claims, characterGroup, page);
 

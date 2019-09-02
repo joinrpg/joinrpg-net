@@ -40,7 +40,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
-                return HttpNotFound($"Project {projectId} not found");
+                return NotFound($"Project {projectId} not found");
             if (!project.Details.EnableAccommodation)
                 return RedirectToAction("Edit", "Game");
 
@@ -160,7 +160,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
-                return HttpNotFound($"Project {projectId} not found");
+                return NotFound($"Project {projectId} not found");
             if (!project.Details.EnableAccommodation)
                 return RedirectToAction("Edit", "Game");
 
@@ -175,7 +175,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
-                return HttpNotFound($"Project {projectId} not found");
+                return NotFound($"Project {projectId} not found");
             if (!project.Details.EnableAccommodation)
                 return RedirectToAction("Edit", "Game");
 

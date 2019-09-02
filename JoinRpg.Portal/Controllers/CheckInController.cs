@@ -96,7 +96,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await ClaimsRepository.GetClaimWithDetails(projectId, claimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return await ShowCheckInForm(claim);
     }
@@ -115,7 +115,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       try
       {
@@ -146,7 +146,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await ClaimsRepository.GetClaim(projectId, claimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       if (claim.ClaimStatus != Claim.Status.CheckedIn)
       {
@@ -165,7 +165,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await ClaimsRepository.GetClaim(model.ProjectId, model.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       try
       {

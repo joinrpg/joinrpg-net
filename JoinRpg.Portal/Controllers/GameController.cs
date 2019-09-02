@@ -25,7 +25,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<IActionResult> Details(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-            if (project == null) return HttpNotFound();
+            if (project == null) return NotFound();
             return View(new ProjectDetailsViewModel(project));
         }
 

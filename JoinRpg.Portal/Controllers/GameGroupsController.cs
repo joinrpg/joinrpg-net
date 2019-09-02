@@ -40,7 +40,7 @@ namespace JoinRpg.Portal.Controllers
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
       
       return View(
         new GameRolesViewModel
@@ -59,7 +59,7 @@ namespace JoinRpg.Portal.Controllers
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
 
       return View(
         new GameRolesReportViewModel
@@ -75,7 +75,7 @@ namespace JoinRpg.Portal.Controllers
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
       return  View(GetHotCharacters(field));
     }
 
@@ -85,7 +85,7 @@ namespace JoinRpg.Portal.Controllers
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       var hotRoles = GetHotCharacters(field).Shuffle().Take(maxCount ?? int.MaxValue);
@@ -106,7 +106,7 @@ namespace JoinRpg.Portal.Controllers
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
       {
-        return HttpNotFound();
+        return NotFound();
 
       }
 
@@ -148,7 +148,7 @@ namespace JoinRpg.Portal.Controllers
       var field = await ProjectRepository.LoadGroupWithTreeSlimAsync(projectId);
       if (field == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return ReturnJson(new
       {
@@ -224,7 +224,7 @@ namespace JoinRpg.Portal.Controllers
 
             if (group == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
       if (group.IsSpecial)
@@ -282,7 +282,7 @@ namespace JoinRpg.Portal.Controllers
       var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
       if (group == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       if (!ModelState.IsValid && !group.IsRoot) //TODO: We can't actually validate root group — too many errors.
@@ -323,7 +323,7 @@ namespace JoinRpg.Portal.Controllers
     {
       var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
 
       return View(field);
     }
@@ -335,7 +335,7 @@ namespace JoinRpg.Portal.Controllers
     {
       var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
 
       var project = field.Project;
       try
@@ -356,7 +356,7 @@ namespace JoinRpg.Portal.Controllers
     {
       var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
 
       return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
       {
@@ -371,7 +371,7 @@ namespace JoinRpg.Portal.Controllers
     public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
     {
       var field = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
       if (!ModelState.IsValid)
       {
         return View(FillFromCharacterGroup(viewModel, field));
@@ -438,7 +438,7 @@ namespace JoinRpg.Portal.Controllers
       var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
             if (group == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
 
       var user = await UserRepository.GetWithSubscribe(CurrentUserId);
@@ -453,7 +453,7 @@ namespace JoinRpg.Portal.Controllers
       
       if (group == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
         var user = await UserRepository.GetWithSubscribe(CurrentUserId);
@@ -487,7 +487,7 @@ namespace JoinRpg.Portal.Controllers
       var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
       if (group == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       var viewModel = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Home);
       return View(viewModel);

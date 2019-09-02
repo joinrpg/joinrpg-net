@@ -98,7 +98,7 @@ namespace JoinRpg.Web.Controllers.Money
           var project = await ProjectRepository.GetProjectWithFinances(projectId);
           if (project == null)
           {
-              return HttpNotFound();
+              return NotFound();
           }
 
           var transfers =
@@ -174,7 +174,7 @@ namespace JoinRpg.Web.Controllers.Money
       var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == paymenttypeid);
       if (paymentType == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return
         View(new EditPaymentTypeViewModel()
@@ -193,7 +193,7 @@ namespace JoinRpg.Web.Controllers.Money
       var paymentType = project.PaymentTypes.SingleOrDefault(pt => pt.PaymentTypeId == viewModel.PaymentTypeId);
       if (paymentType == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -214,7 +214,7 @@ namespace JoinRpg.Web.Controllers.Money
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       if (project == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -242,7 +242,7 @@ namespace JoinRpg.Web.Controllers.Money
       var project = await ProjectRepository.GetProjectAsync(projectid);
       if (project == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -293,7 +293,7 @@ namespace JoinRpg.Web.Controllers.Money
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       if (project ==null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try

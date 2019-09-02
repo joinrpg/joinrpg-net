@@ -41,7 +41,7 @@ namespace JoinRpg.Portal.Controllers
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
       var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
-            if (field == null) return HttpNotFound();
+            if (field == null) return NotFound();
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
@@ -56,7 +56,7 @@ namespace JoinRpg.Portal.Controllers
                 new {project.ProjectId, project.RootGroup.CharacterGroupId});
         }
       var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
-      if (field == null) return HttpNotFound();
+      if (field == null) return NotFound();
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
@@ -98,7 +98,7 @@ namespace JoinRpg.Portal.Controllers
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
       if (project == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -226,7 +226,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -249,7 +249,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -274,7 +274,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -309,7 +309,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -338,7 +338,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       if (claim.PlayerUserId != CurrentUserId) return NoAccesToProjectView(claim.Project);
       try
@@ -367,7 +367,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(projectId, claimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       try
       {
@@ -390,7 +390,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       try
@@ -447,7 +447,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       var error = WithClaim(claim);
       if (error != null)
@@ -549,7 +549,7 @@ namespace JoinRpg.Portal.Controllers
       var claim = await _claimsRepository.GetClaim(projectid, claimid);
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
@@ -573,7 +573,7 @@ namespace JoinRpg.Portal.Controllers
 
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
 
       var claimViewModel = new ClaimViewModel(user, claim,
@@ -593,7 +593,7 @@ namespace JoinRpg.Portal.Controllers
     {
       if (claim == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       if (!claim.HasAccess(CurrentUserId, ExtraAccessReason.Player))
       {
@@ -638,7 +638,7 @@ namespace JoinRpg.Portal.Controllers
             var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
             if (claim == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             var error = WithClaim(claim);
             if (error != null)
@@ -680,7 +680,7 @@ namespace JoinRpg.Portal.Controllers
          var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             if (claim == null)
          {
-           return HttpNotFound();
+           return NotFound();
          }
          var error = WithClaim(claim);
          if (error != null)
@@ -714,7 +714,7 @@ namespace JoinRpg.Portal.Controllers
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
           if (project == null)
           {
-              return HttpNotFound();
+              return NotFound();
           }
 
           if (!ModelState.IsValid)
@@ -738,7 +738,7 @@ namespace JoinRpg.Portal.Controllers
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
           if (project == null)
           {
-              return HttpNotFound();
+              return NotFound();
           }
 
           if (!ModelState.IsValid)
@@ -758,7 +758,7 @@ namespace JoinRpg.Portal.Controllers
           var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId).ConfigureAwait(false);
           if (project == null)
           {
-              return HttpNotFound();
+              return NotFound();
           }
 
           if (!ModelState.IsValid)

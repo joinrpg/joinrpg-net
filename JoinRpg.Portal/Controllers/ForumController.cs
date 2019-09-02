@@ -50,7 +50,7 @@ namespace JoinRpg.Portal.Controllers
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, charactergroupid);
       if (characterGroup == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       return View(new CreateForumThreadViewModel(characterGroup.EnsureActive()));
     }
@@ -89,7 +89,7 @@ namespace JoinRpg.Portal.Controllers
     public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
     {
       var forumThread = await GetForumThread(projectid, forumThreadId);
-      if (forumThread == null) return HttpNotFound();
+      if (forumThread == null) return NotFound();
 
       var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
       return View(viewModel);
@@ -117,7 +117,7 @@ namespace JoinRpg.Portal.Controllers
       CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
       discussion.RequestAnyAccess(CurrentUserId);
 
-      if (discussion == null) return HttpNotFound();
+      if (discussion == null) return NotFound();
 
       try
 
@@ -180,7 +180,7 @@ namespace JoinRpg.Portal.Controllers
         var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, forumThread.ForumThreadId});
         return Redirect(actionLink + extra);
       }
-      return HttpNotFound();
+      return NotFound();
     }
 
       [Authorize]
@@ -200,7 +200,7 @@ namespace JoinRpg.Portal.Controllers
           }
           else
           {
-              return HttpNotFound();
+              return NotFound();
           }
 
           if (!discussion.HasAnyAccess(CurrentUserId))
@@ -217,7 +217,7 @@ namespace JoinRpg.Portal.Controllers
       var project = await ProjectRepository.GetProjectAsync(projectid);
       if (project == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
       IEnumerable<int> groupIds;
@@ -242,7 +242,7 @@ namespace JoinRpg.Portal.Controllers
       var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
       if (group == null)
       {
-        return HttpNotFound();
+        return NotFound();
       }
       var isMaster = group.HasMasterAccess(CurrentUserIdOrDefault);
       var threads = await ForumRepository.GetThreads(projectid, isMaster, new [] {characterGroupId});
