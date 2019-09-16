@@ -272,6 +272,10 @@ namespace Joinrpg.Web.Identity
         async Task IUserSecurityStampStore<JoinIdentityUser, int>.SetSecurityStampAsync(JoinIdentityUser user, string stamp)
         {
             var dbUser = await LoadUser(user);
+            if (dbUser == null)
+            {
+                return; // User not created yet, ignore
+            }
             dbUser.Auth.AspNetSecurityStamp = stamp;
             await _ctx.SaveChangesAsync();
         }
