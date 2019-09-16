@@ -1,0 +1,64 @@
+﻿@model JoinRpg.Web.Models.Schedules.SchedulePageViewModel
+
+@{
+    ViewBag.Title = "Расписание";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <table>
+        <thead>
+            <tr>
+                @foreach (var column in Model.Columns)
+                {
+                    <th data-toggle="tooltip" title="@column.Description.ToString()" data-html="true">
+                        @column.Name
+                    </th>
+                }
+            </tr>
+        </thead>
+        @for (var i = 0; i < Model.Rows.Count; i++)
+        {
+            <tr>
+                <th data-toggle="tooltip" title="@Model.Rows[i].Description.ToString()" data-html="true">
+                    @Model.Rows[i].Name
+                </th>
+                @foreach (var item in Model.Slots[i])
+                {
+                <td class="thumbnail">
+                    <div class="caption">
+                        <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
+                            <a href="@Url.Action("Details", "Character", new {item.ProjectId, item.Id, area = ""}, null)">@item.Name</a>
+                        </h4>
+                        <p>
+                            @foreach (var user in item.Users)
+                            {
+                                @Html.DisplayFor(modelItem => user)
+                            }
+                        </p>
+                    </div>
+                </td>
+                }
+            </tr>
+        }
+    </table>
+    @if (Model.ConflictedProgramItems.Any())
+    {
+        <h4>
+            Мероприятия с пересечениями
+        </h4>
+        <dl>
+            @foreach (var item in Model.ConflictedProgramItems)
+            {
+                <dt>
+                    @item.Name
+                </dt>
+                <dd>
+                    @item.Users
+                </dd>
+            }
+        </dl>
+    }
+    <h4></h4>
+</div>

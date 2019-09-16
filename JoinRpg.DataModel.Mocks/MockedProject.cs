@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JoinRpg.Domain;
 
 namespace JoinRpg.DataModel.Mocks
@@ -162,6 +163,24 @@ namespace JoinRpg.DataModel.Mocks
           Project.ProjectFields.Add(field);
           return field;
       }
+
+        public ProjectFieldDropdownValue CreateFieldVariant(ProjectField field, ProjectFieldDropdownValue variant = null)
+        {
+            variant = variant ?? new ProjectFieldDropdownValue();
+            variant.Project = Project;
+            variant.ProjectId = Project.ProjectId;
+            variant.ProjectFieldId = field.ProjectFieldId;
+            variant.ProjectField = field;
+
+            variant.ProjectFieldDropdownValueId = Project.ProjectFields.SelectMany(f => f.DropdownValues).GetNextId();
+
+            variant.IsActive = true;
+
+            variant.Label = variant.Label ?? "test_" + variant.ProjectFieldDropdownValueId;
+
+            field.DropdownValues.Add(variant);
+            return variant;
+        }
 
       public Claim CreateClaim(Character mockCharacter, User mockUser)
       {

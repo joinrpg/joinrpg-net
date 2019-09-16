@@ -43,6 +43,8 @@ namespace JoinRpg.DataModel
         [CanBeNull]
         public ProjectField CharacterDescription { get; set; }
 
+        public ProjectScheduleSettings ProjectScheduleSettings { get; set; } = new ProjectScheduleSettings();
+
         public string FieldsOrdering { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
