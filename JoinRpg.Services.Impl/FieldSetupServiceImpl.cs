@@ -319,7 +319,7 @@ namespace JoinRpg.Services.Impl
 
             foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
             {
-                CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(field.ProjectId, label, null, field.ProjectFieldId, null, null, 0, true), field);
+                CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(field.ProjectId, label, null, field.ProjectFieldId, null, null, 0, field.CanPlayerEdit), field);
             }
 
             await UnitOfWork.SaveChangesAsync();
