@@ -41,10 +41,12 @@ namespace JoinRpg.Dal.Impl
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             ConfigureProjectDetails(modelBuilder);
+
             modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
             modelBuilder.Entity<ProjectAcl>()
                 .Property(acl => acl.Token)
                 .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
+
             modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
 
 
@@ -181,6 +183,10 @@ namespace JoinRpg.Dal.Impl
         {
             modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
             modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
+            modelBuilder.Entity<ProjectScheduleSettings>().HasKey(pd => pd.ProjectId);
+            modelBuilder.Entity<ProjectScheduleSettings>().HasOptional(pss => pss.RoomField).WithOptionalDependent().WillCascadeOnDelete(false);
+            modelBuilder.Entity<ProjectScheduleSettings>().HasOptional(pss => pss.TimeSlotField).WithOptionalDependent().WillCascadeOnDelete(false);
+            modelBuilder.Entity<ProjectDetails>().HasOptional(pd => pd.ScheduleSettings).WithRequired();
         }
 
         private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)
