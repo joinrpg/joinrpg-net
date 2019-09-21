@@ -54,13 +54,13 @@ namespace JoinRpg.Web.Models
         public bool PublishPlot { get; set; }
 
         [Display(Name = "Автоматически принимать заявки",
-            Description ="Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
+            Description = "Сразу после подачи заявки joinrpg попытается автоматически принять ее, если это возможно. Удобно для конвентов.")]
         public bool AutoAcceptClaims { get; set; }
 
         [ReadOnly(true)]
         public string OriginalName { get; set; }
-    [Display(Name= "Включить систему проживания")]
-    public bool EnableAccomodation { get; set; }
+        [Display(Name = "Включить систему поселения")]
+        public bool EnableAccomodation { get; set; }
 
         public bool Active { get; set; }
     }
