@@ -49,6 +49,7 @@ namespace Joinrpg.Web.Identity
                 Auth = new UserAuthDetails()
                 {
                     RegisterDate = DateTime.UtcNow,
+                    AspNetSecurityStamp = "",
                 },
             };
 
