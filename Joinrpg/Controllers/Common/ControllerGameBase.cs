@@ -11,6 +11,7 @@ using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
 
@@ -50,58 +51,59 @@ namespace JoinRpg.Web.Controllers.Common
                 ? int.Parse(((string[]) projectIdRawValue)[0])
                 : int.Parse((string) projectIdRawValue);
 
-            var project = ProjectRepository.GetProjectAsync(projectId).Result;
+                filterContext.HttpContext.Items[HttpContextItemHelpers.ProjectidKey] = projectIdValue;
+
+                var project = ProjectRepository.GetProjectWithDetailsAsync(projectId).Result;
             RegisterProjectMenu(project);
         }
 
         base.OnActionExecuting(filterContext);
     }
 
-    private void RegisterProjectMenu(Project project)
-    {
-      ViewBag.ProjectId = project.ProjectId;
-
-      var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
-      
-      MenuViewModelBase menuModel;
-      if (acl != null)
-      {
-        menuModel = new MasterMenuViewModel()
+        private void RegisterProjectMenu(Project project)
         {
-          AccessToProject = acl,
-          CheckInModuleEnabled = project.Details.EnableCheckInModule,
-        };
-      }
-      else
-      {
-        menuModel = new PlayerMenuViewModel()
-        {
-          Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
-          PlotPublished = project.Details.PublishPlot,
-        };
-      }
-      menuModel.ProjectId = project.ProjectId;
-      menuModel.ProjectName = project.ProjectName;
-      //TODO[GroupsLoad]. If we not loaded groups already, that's slow
-      menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
-          cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserIdOrDefault))
-        .Select(cg => new CharacterGroupLinkViewModel(cg)).ToList();
-      menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
-      menuModel.IsActive = project.Active;
-      menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
-      menuModel.EnableAccommodation = project.Details.EnableAccommodation;
-      menuModel.IsAdmin = IsCurrentUserAdmin();
+            ViewBag.ProjectId = project.ProjectId;
 
+            var acl = project.ProjectAcls.FirstOrDefault(a => a.UserId == CurrentUserIdOrDefault);
 
-      if (acl != null)
-      {
-        ViewBag.MasterMenu = menuModel;
-      }
-      else
-      {
-        ViewBag.PlayerMenu = menuModel;
-      }
-    }
+            MenuViewModelBase menuModel;
+            if (acl != null)
+            {
+                menuModel = new MasterMenuViewModel()
+                {
+                    AccessToProject = acl,
+                    CheckInModuleEnabled = project.Details.EnableCheckInModule,
+                };
+            }
+            else
+            {
+                menuModel = new PlayerMenuViewModel()
+                {
+                    Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+                    PlotPublished = project.Details.PublishPlot,
+                };
+            }
+            menuModel.ProjectId = project.ProjectId;
+            menuModel.ProjectName = project.ProjectName;
+            //TODO[GroupsLoad]. If we not loaded groups already, that's slow
+            menuModel.BigGroups = project.RootGroup.ChildGroups.Where(
+                cg => !cg.IsSpecial && cg.IsActive && cg.IsVisible(CurrentUserIdOrDefault))
+              .Select(cg => new CharacterGroupLinkViewModel(cg)).ToList();
+            menuModel.IsAcceptingClaims = project.IsAcceptingClaims;
+            menuModel.IsActive = project.Active;
+            menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
+            menuModel.EnableAccommodation = project.Details.EnableAccommodation;
+            menuModel.IsAdmin = IsCurrentUserAdmin();
+
+            if (acl != null)
+            {
+                ViewBag.MasterMenu = menuModel;
+            }
+            else
+            {
+                ViewBag.PlayerMenu = menuModel;
+            }
+        }
 
       protected IReadOnlyDictionary<int, string> GetCustomFieldValuesFromPost() =>
           GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
