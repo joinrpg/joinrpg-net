@@ -73,7 +73,7 @@ namespace JoinRpg.Dal.Impl.Repositories
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
       => AllProjects
-        .Include(p => p.Details)
+        .Include(p => p.Details.ScheduleSettings)
         .Include(p => p.ProjectAcls.Select(a => a.User))
         .SingleOrDefaultAsync(p => p.ProjectId == project);
 
