@@ -326,17 +326,6 @@
 
       <div class="panel-heading">Отклонение заявки</div>
       <div class="panel-body">
-        @if (Model.Status.ClaimStatus == ClaimStatusView.AddedByUser || Model.Status.ClaimStatus == ClaimStatusView.Discussed)
-        {
-        <div class="alert alert-info">
-          При отклонении заявки важно объяснить игроку причины отказа. Возможно, игроку будет приятнее, если вы вместо отклонения заявки предложите ему альтернативную роль,
-          воспользовавшись функцией перевода заявки на другую роль/группу.
-        </div>
-        }
-        else
-        {
-        <div class="alert alert-info">Объясните причины отклонения заявки игроку.</div>
-        }
         @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
         {
         @Html.Partial("MasterDenialOperationPartial", new MasterDenialOperationViewModel
