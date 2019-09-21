@@ -17,15 +17,15 @@
 
                     <ul class="dropdown-menu">
                         <li>
-                            @Html.ActionLink("Персонажи", "Index", "GameGroups", new {Model.ProjectId}, null)
+                            @Html.ActionLink("Персонажи", "Index", "GameGroups", new { Model.ProjectId }, null)
                         </li>
                         <li>
-                            @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new {Model.ProjectId}, null)
+                            @Html.ActionLink("Горячие роли", "Hot", "GameGroups", new { Model.ProjectId }, null)
                         </li>
                         <li role="separator" class="dropdown-header">По группам:</li>
                         @foreach (var cg in Model.BigGroups)
                         {
-                            <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new {Model.ProjectId, cg.CharacterGroupId}, null)</li>
+                            <li>@Html.ActionLink(cg.Name, "Index", "GameGroups", new { Model.ProjectId, cg.CharacterGroupId }, null)</li>
                         }
                     </ul>
                 </li>
@@ -35,8 +35,8 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сюжеты <span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все", "Index", "Plot", new {Model.ProjectId}, null)</li>
-                            <li>@Html.ActionLink("Одним списком", "FlatList", "Plot", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Все", "Index", "Plot", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Одним списком", "FlatList", "Plot", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>
                 }
@@ -44,7 +44,7 @@
                 {
                     var claim = Model.Claims.Single();
                     <li>
-                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new {claim.ProjectId, claim.ClaimId}, null)
+                        @Html.ActionLink("Заявка: " + claim.Name, "Edit", "Claim", new { claim.ProjectId, claim.ClaimId }, null)
                     </li>
                 }
                 else if (Model.Claims.Count > 0)
@@ -55,7 +55,7 @@
                             @foreach (var claim in Model.Claims)
                             {
                                 <li>
-                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new {claim.ProjectId, claim.ClaimId}, null)
+                                    @Html.ActionLink(claim.Name, "Edit", "Claim", new { claim.ProjectId, claim.ClaimId }, null)
                                 </li>
                             }
                         </ul>
@@ -64,7 +64,7 @@
                 else if (Model.RootGroupId != null)
                 {
                     <li>
-                        @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId}, null)
+                        @Html.ActionLink("Заявиться", "AddForGroup", "Claim", new { Model.ProjectId, CharacterGroupId = Model.RootGroupId }, null)
                     </li>
                 }
 
@@ -74,9 +74,14 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Форумы<span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new {Model.ProjectId}, null)</li>
+                            <li>@Html.ActionLink("Все активные", "ListThreads", "Forum", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>
+                }
+
+                @if (Model.ShowSchedule)
+                {
+                    <li>@Html.ActionLink("Расписание", "Index", "ShowSchedule", new { Model.ProjectId }, null)</li>
                 }
 
 
@@ -89,11 +94,11 @@
                             @if (Model.IsActive)
                             {
                                 <li>
-                                    @Html.ActionLink("Закрыть проект", "Close", "Game", new {Model.ProjectId}, null)
+                                    @Html.ActionLink("Закрыть проект", "Close", "Game", new { Model.ProjectId }, null)
                                 </li>
                             }
                             <li>
-                                @Html.ActionLink("Поставить себе доступ", "ForceSet", "Acl", new {Model.ProjectId}, null)
+                                @Html.ActionLink("Поставить себе доступ", "ForceSet", "Acl", new { Model.ProjectId }, null)
                             </li>
                         </ul>
                     </li>

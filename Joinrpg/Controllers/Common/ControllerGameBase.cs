@@ -74,15 +74,26 @@ namespace JoinRpg.Web.Controllers.Common
                 {
                     AccessToProject = acl,
                     CheckInModuleEnabled = project.Details.EnableCheckInModule,
+                    ShowSchedule = project.Details.ScheduleSettings != null,
                 };
             }
             else
             {
+                var claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray();
                 menuModel = new PlayerMenuViewModel()
                 {
-                    Claims = project.Claims.OfUserActive(CurrentUserIdOrDefault).Select(c => new ClaimShortListItemViewModel(c)).ToArray(),
+                    Claims = claims,
                     PlotPublished = project.Details.PublishPlot,
                 };
+
+                if (claims.Any(c => c.IsApproved))
+                {
+                    menuModel.ShowSchedule = project.Details.ScheduleSettings != null && project.Details.ScheduleSettings.RoomField.CanPlayerView;
+                }
+                else
+                {
+                    menuModel.ShowSchedule = project.Details.ScheduleSettings != null && project.Details.ScheduleSettings.RoomField.IsPublic;
+                }
             }
             menuModel.ProjectId = project.ProjectId;
             menuModel.ProjectName = project.ProjectName;
