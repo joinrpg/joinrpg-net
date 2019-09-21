@@ -51,15 +51,26 @@ namespace JoinRpg.Services.Impl
                 {
                     ProjectAcl.CreateRootAcl(CurrentUserId, isOwner: true),
                 },
-                Details = new ProjectDetails(),
+                Details = new ProjectDetails()
+                {
+                    CharacterNameLegacyMode = false,
+                },
                 ProjectFields = new List<ProjectField>(),
             };
             MarkTreeModified(project);
-            switch (request.ProjectType)
+            ConfigureProjectDefaults(project, request.ProjectType);
+
+            UnitOfWork.GetDbSet<Project>().Add(project);
+            await UnitOfWork.SaveChangesAsync();
+            return project;
+        }
+
+        private static void ConfigureProjectDefaults(Project project, ProjectTypeDto projectType)
+        {
+            switch (projectType)
             {
                 case ProjectTypeDto.Larp:
-                    
-                    project.Details.CharacterNameLegacyMode = false;
+
                     project.Details.CharacterNameField = new ProjectField()
                     {
                         CanPlayerEdit = false,
@@ -100,18 +111,13 @@ namespace JoinRpg.Services.Impl
                 case ProjectTypeDto.Convention:
                     project.Details.AutoAcceptClaims = true;
                     project.Details.EnableAccommodation = true;
-                    project.Details.CharacterNameLegacyMode = false;
                     project.Details.CharacterNameField = null;
                     project.Details.CharacterDescription = null;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            UnitOfWork.GetDbSet<Project>().Add(project);
-            await UnitOfWork.SaveChangesAsync();
-            return project;
         }
-
 
         public async Task AddCharacterGroup(int projectId,
             string name,
