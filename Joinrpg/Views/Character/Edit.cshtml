@@ -33,6 +33,9 @@
                     </div>
                 </div>
 
+                @if (Model.LegacyNameMode)
+                {
+
                 <div class="form-group">
                     @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
                     <div class="col-md-10">
@@ -41,6 +44,7 @@
                         @Html.DescriptionFor(model => model.Name)
                     </div>
                 </div>
+                }
 
                 <div class="form-group">
                     @Html.LabelFor(model => model.IsPublic, htmlAttributes: new { @class = "control-label col-md-2" })

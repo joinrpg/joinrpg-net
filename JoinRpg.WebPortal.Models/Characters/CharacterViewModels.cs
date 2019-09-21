@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models.Characters
                 "Разрешает игрокам подавать заявки на этого персонажа. Снимите галочку для NPC.")]
         public bool IsAcceptingClaims { get; set; } = true;
 
-        [DisplayName("Имя персонажа"), Required]
+        [DisplayName("Имя персонажа")]
         public string Name { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -43,9 +43,12 @@ namespace JoinRpg.Web.Models.Characters
 
         public CustomFieldsViewModel Fields { get; set; }
 
+        public bool LegacyNameMode { get; protected set; }
+
         protected void FillFields(Character field, int currentUserId)
         {
             Fields = new CustomFieldsViewModel(currentUserId, field);
+            LegacyNameMode = field.Project.Details.CharacterNameLegacyMode;
         }
     }
 

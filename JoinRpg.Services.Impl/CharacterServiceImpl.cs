@@ -35,7 +35,6 @@ namespace JoinRpg.Services.Impl
 
             var character = new Character
             {
-                CharacterName = Required(addCharacterRequest.Name),
                 ParentCharacterGroupIds =
                     await ValidateCharacterGroupList(addCharacterRequest.ProjectId, Required(addCharacterRequest.ParentCharacterGroupIds)),
                 ProjectId = addCharacterRequest.ProjectId,
@@ -47,6 +46,12 @@ namespace JoinRpg.Services.Impl
             };
             Create(character);
             MarkTreeModified(project);
+
+            if (project.Details.CharacterNameLegacyMode)
+            {
+                character.CharacterName = Required(addCharacterRequest.Name);
+                // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
+            }
 
             // ReSharper disable once MustUseReturnValue
             //TODO we do not send message for creating character
@@ -76,9 +81,13 @@ namespace JoinRpg.Services.Impl
 
             var changedAttributes = new Dictionary<string, PreviousAndNewValue>();
 
-            changedAttributes.Add("Имя персонажа",
-                new PreviousAndNewValue(name, character.CharacterName.Trim()));
-            character.CharacterName = name.Trim();
+            if (character.Project.Details.CharacterNameLegacyMode)
+            {
+                changedAttributes.Add("Имя персонажа",
+                    new PreviousAndNewValue(name, character.CharacterName.Trim()));
+                character.CharacterName = name.Trim();
+                // If not legacy mode, character name will be updated inside SaveCharacterFields(..)
+            }
 
             character.IsAcceptingClaims = isAcceptingClaims;
             character.IsPublic = isPublic;
