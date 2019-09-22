@@ -78,6 +78,7 @@
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
+    <Compile Include="Controllers\Money\PaymentsController.cs" />
     <Compile Include="Controllers\Money\TransferController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
@@ -550,7 +551,7 @@
     <Content Include="Views\ClaimList\Index.cshtml" />
     <Content Include="Views\Claim\Edit.cshtml" />
     <Content Include="Views\Character\Details.cshtml" />
-    <Content Include="Views\Comments\AddCommentPartial.cshtml" />
+    <Content Include="Views\Comments\_AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
@@ -604,7 +605,7 @@
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.cshtml" />
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
-    <Content Include="Views\Claim\_ClaimFinancePartial.cshtml" />
+    <Content Include="Views\Finances\_SubmitPaymentDialog.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
     <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
@@ -686,7 +687,7 @@
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
-    <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
+    <Content Include="Views\Claim\_RequestPreferentialFeeDialog.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
     <Content Include="Views\AccommodationType\EditRoomType.cshtml" />
     <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
@@ -959,6 +960,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Account\_PasswordLoginFormPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_PayOnlineDialog.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Comments\_AddCommentFormPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Comments\_CommentTextEditorPartial.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

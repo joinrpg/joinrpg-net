@@ -37,7 +37,7 @@
             if (Model.PreferentialFeeEnabled)
             {
                 var label = Model.PreferentialFeeUser ? "Снять пометку льготника" : "Сделать льготником";
-                functions += "<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#markAsPreferential\">" + label + "&hellip;</button>";
+                functions += " <button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#markAsPreferential\">" + label + "&hellip;</button>";
             }
         }
         return MvcHtmlString.Create(functions);
@@ -54,11 +54,17 @@
 </script>
 <div id="feeInfo" class="collapse in">
     @Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
-<strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
-<span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
-<span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
-<strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
-<button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Подробный вид&hellip;</button>
+    <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
+    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
+    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
+    <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
+    <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
+    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+    @if (Model.PreferentialFeeEnabled && !Model.PreferentialFeeUser && Model.Status.IsActive())
+    {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
+    }
 </div>
 <div id="feeDetails" class="collapse">
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
@@ -112,7 +118,10 @@
                 </th>
                 <th class="price-table text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
                 <th class="price-table text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
-                <th>&nbsp;</th>
+                <th>
+                    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+                    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+                </th>
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)
             {

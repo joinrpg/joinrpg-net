@@ -214,7 +214,7 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [HttpPost,ValidateAntiForgeryToken]
+    [HttpPost, ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanManageMoney)]
     public async Task<ActionResult> DeleteFeeSetting(int projectid, int projectFeeSettingId)
     {

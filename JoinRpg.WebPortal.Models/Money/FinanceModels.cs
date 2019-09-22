@@ -60,27 +60,30 @@ namespace JoinRpg.Web.Models
 
     public class MarkMeAsPreferentialViewModel : FinanceViewModelBase
     {
+        public MarkMeAsPreferentialViewModel()
+        {
+            ShowLabel = false;
+        }
+
         public JoinHtmlString PreferentialFeeConditions { get; set; }
     }
 
-  public class FeeAcceptanceViewModel : FinanceViewModelBase
-  {
-    [Display(Name = "Внесено денег"), Required]
-    public int Money
-    { get; set; }
-    public int FeeChange
-    { get; set; }
+    public class PaymentViewModel : FinanceViewModelBase
+    {
+        [Display(Name = "Внесено денег"), Required]
+        public int Money { get; set; }
 
-    [Display(Name = "Кому и как оплачено"), Required]
-    public int PaymentTypeId
-    { get; set; }
+        public int FeeChange { get; set; }
 
-    [ReadOnly(true)]
-    public IEnumerable<PaymentType> PaymentTypes { get; set; }
+        [Display(Name = "Кому и как оплачено"), Required]
+        public int PaymentTypeId { get; set; }
 
-    [ReadOnly(true)]
-    public bool HasUnApprovedPayments { get; set; }
-  }
+        [ReadOnly(true)]
+        public IEnumerable<PaymentType> PaymentTypes { get; set; }
+
+        [ReadOnly(true)]
+        public bool HasUnApprovedPayments { get; set; }
+    }
 
   public abstract class PaymentTypeViewModelBase
   {

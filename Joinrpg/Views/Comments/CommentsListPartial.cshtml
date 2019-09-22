@@ -1,26 +1,37 @@
 ﻿@using JoinRpg.Web.Models
 @model IEntityWithCommentsViewModel
-<a data-toggle="collapse"
-   href="#answerComment0" class="btn btn-default">
-    Добавить комментарий
-</a> 
-<br />
-<br />
-<div id="answerComment0" class="collapse">
-    @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@{
+    AddCommentViewModel addCommentModelTop = new AddCommentViewModel(Model);
+    AddCommentViewModel addCommentModelBottom = new AddCommentViewModel(Model);
+}
+
+<script type="text/javascript">
+    const addCommentBtnIdPrefix = '@(AddCommentViewModel.AddButtonIdTemplate)';
+    const addCommentFormIdPrefix = '@(AddCommentViewModel.FormIdTemplate)';
+
+    let opened = [];
+
+    function toggleCommentEditor(formIndex, focus)
     {
-        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-   {
-       ProjectId = Model.ProjectId,
-       CommentDiscussionId = Model.CommentDiscussionId,
-       ParentCommentId = null,
-       EnableHideFromUser = Model.HasMasterAccess,
-       HideFromUser = false
-   })
+        $('#' + addCommentBtnIdPrefix + formIndex).collapse('toggle');
+        $('#' + addCommentFormIdPrefix + formIndex).collapse('toggle');
+        if (focus)
+        {
+            opened.forEach(i => toggleCommentEditor(i, false));
+            opened = [];
+            opened.push(formIndex);
+            $('#' + addCommentFormIdPrefix + formIndex).focus();
+        }
     }
+</script>
+<div id="@(addCommentModelTop.AddButtonId)" class="collapse in">
+    <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelTop.FormIndex), true)">Добавить комментарий</button>
+</div>
+<div id="@(addCommentModelTop.FormId)" class="collapse">
+    @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelTop)
 </div>
 
-<div class="media-list">
+<div class="media-list" style="margin-top: 1em;">
     @foreach (var comment in Model.RootComments)
     {
         @Html.Partial("..\\Comments\\_CommentPartial", comment)
@@ -29,21 +40,10 @@
 
 @if (Model.RootComments.Any())
 {
-    <a data-toggle="collapse"
-       href="#answerComment1" class="btn btn-default">
-        Добавить комментарий
-    </a>
-    <div id="answerComment1" class="collapse">
-        @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new {enctype = "multipart/form-data"}))
-        {
-            @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-            {
-                ProjectId = Model.ProjectId,
-                CommentDiscussionId = Model.CommentDiscussionId,
-                ParentCommentId = null,
-                EnableHideFromUser = Model.HasMasterAccess,
-                HideFromUser = false
-            })
-        }
+    <div id="@(addCommentModelBottom.AddButtonId)" class="collapse in">
+        <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelBottom.FormIndex), true)">Добавить комментарий</button>
+    </div>
+    <div id="@(addCommentModelBottom.FormId)" class="collapse">
+        @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelBottom)
     </div>
 }

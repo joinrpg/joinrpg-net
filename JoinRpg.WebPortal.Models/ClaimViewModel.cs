@@ -344,6 +344,8 @@ namespace JoinRpg.Web.Models
     {
         public ClaimFeeViewModel(Claim claim, ClaimViewModel model, int currentUserId)
         {
+            Status = model.Status;
+
             // Reading project fee info applicable for today            
             BaseFeeInfo = claim.CurrentFee == null ? claim.Project.ProjectFeeInfo() : null;
             // Reading base fee of a claim
@@ -383,6 +385,11 @@ namespace JoinRpg.Web.Models
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
         }
+
+        /// <summary>
+        /// Claim status taken from claim view model
+        /// </summary>
+        public ClaimFullStatusView Status { get; }
 
         /// <summary>
         /// Claim fee taken from project settings or defined manually

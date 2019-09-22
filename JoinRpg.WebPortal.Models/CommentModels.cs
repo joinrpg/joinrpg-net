@@ -85,38 +85,94 @@ namespace JoinRpg.Web.Models
         Decline,
     }
 
-    public class AddCommentViewModel : IValidatableObject
-  {
-    public int ProjectId { get; set; }
-    public int CommentDiscussionId { get; set; }
-    /// <summary>
-    /// Parent comment id
-    /// </summary>
-    public int? ParentCommentId { get; set; }
-
-    [Required (ErrorMessage="Заполните текст комментария"), DisplayName("Текст комментария"),UIHint("MarkdownString")] 
-    public string CommentText { get; set; }
-
-    [DisplayName("Только другим мастерам")]
-    public bool HideFromUser { get; set; }
-
-    public bool EnableHideFromUser { get; set; }
-
-    public bool EnableFinanceAction { get; set; }
-
-    public string ActionName { get; set; }
-
-    [Display(Name = "С финансовой операцией...")]
-    public FinanceOperationActionView FinanceAction { get; set; }
-
-    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    public class CommentTextViewModel
     {
-      if (HideFromUser && !EnableHideFromUser)
-      {
-        yield return new ValidationResult("Нельзя скрыть данный комментарий от игрока");
-      }
+
+        internal static int LastFormIndex = 0;
+
+        public CommentTextViewModel()
+        {
+            FormIndex = LastFormIndex;
+            LastFormIndex++;
+        }
+
+        [Required(ErrorMessage="Заполните текст комментария")]
+        [DisplayName("Текст комментария")]
+        [UIHint("MarkdownString")]
+        public string CommentText { get; set; }
+
+        public bool ShowLabel { get; set; } = true;
+
+        public int FormIndex { get; set; }
     }
-  }
+
+    public class AddCommentViewModel : CommentTextViewModel, IValidatableObject
+    {
+
+        public static readonly string AddButtonIdTemplate = @"addCommentBtn";
+
+        public static readonly string FormIdTemplate = @"addCommentForm";
+
+        public AddCommentViewModel()
+        {
+            AddButtonId = AddButtonIdTemplate + FormIndex;
+            FormId = FormIdTemplate + FormIndex;
+        }
+
+        public AddCommentViewModel(IEntityWithCommentsViewModel source) : this()
+        {
+            ProjectId = source.ProjectId;
+            CommentDiscussionId = source.CommentDiscussionId;
+            EnableHideFromUser = source.HasMasterAccess;
+            ParentCommentId = null;
+            HideFromUser = false;
+        }
+
+        public AddCommentViewModel(CommentViewModel source) : this()
+        {
+            ProjectId = source.ProjectId;
+            CommentDiscussionId = source.CommentDiscussionId;
+            ParentCommentId = source.CommentId;
+            EnableFinanceAction = source.ShowFinanceModeration;
+            EnableHideFromUser = source.HasMasterAccess;
+            HideFromUser = !source.IsVisibleToPlayer;
+        }
+
+
+        public int ProjectId { get; set; }
+
+        public int CommentDiscussionId { get; set; }
+        /// <summary>
+        /// Parent comment id
+        /// </summary>
+        public int? ParentCommentId { get; set; }
+
+        [DisplayName("Только другим мастерам")]
+        public bool HideFromUser { get; set; }
+
+        public bool EnableHideFromUser { get; set; }
+
+        public bool EnableFinanceAction { get; set; }
+
+        public string ActionName { get; set; }
+
+        public bool AllowCancel { get; set; } = true;
+
+        [Display(Name = "С финансовой операцией...")]
+        public FinanceOperationActionView FinanceAction { get; set; }
+
+        public string AddButtonId { get; }
+
+        public string FormId { get; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (HideFromUser && !EnableHideFromUser)
+            {
+                yield return new ValidationResult("Нельзя скрыть данный комментарий от игрока");
+            }
+        }
+    }
 
     public class ClaimOperationViewModel
     {
@@ -125,8 +181,9 @@ namespace JoinRpg.Web.Models
         public ClaimStatusView ClaimStatus { get; set; }
         public bool CharacterAutoCreated { get; set; }
 
-        [Required(ErrorMessage = "Заполните текст комментария"), DisplayName("Текст комментария"),
-         UIHint("MarkdownString")]
+        [Required(ErrorMessage = "Заполните текст комментария")]
+        [DisplayName("Текст комментария")]
+        [UIHint("MarkdownString")]
         public string CommentText { get; set; }
 
         public string ActionName { get; set; }

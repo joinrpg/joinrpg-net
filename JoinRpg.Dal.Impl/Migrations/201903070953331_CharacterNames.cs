@@ -18,7 +18,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
             AddForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
 
-            Sql(@"
+            /*Sql(@"
 
 INSERT INTO [dbo].[ProjectFields]
            ([FieldName]
@@ -89,7 +89,7 @@ UPDATE ProjectFields
 SET FieldName = 'Описание персонажа'
 WHERE FieldName LIKE '$$$Description'
 
-");
+");*/
             DropColumn("dbo.Projects", "ProjectFieldsOrdering");
             DropColumn("dbo.ProjectDetails", "AllrpgId");
             DropColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer");
