@@ -68,6 +68,7 @@ namespace JoinRpg.Services.Interfaces
     public enum ProjectTypeDto
     {
         Larp,
-        Convention
+        Convention,
+        ConventionProgram,
     }
 }
