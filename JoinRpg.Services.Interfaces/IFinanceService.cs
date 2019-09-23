@@ -64,6 +64,18 @@ namespace JoinRpg.Services.Interfaces
         public bool Approved { get; set; }
     }
 
+    /// <summary>
+    /// Payload for <see cref="IFinanceService.CreatePaymentType"/>
+    /// </summary>
+    public class CreatePaymentTypeRequest
+    {
+        public int ProjectId { get; set; }
+        public int? TargetMasterId { get; set; }
+        public PaymentTypeKind Kind { get; set; }
+        public string Name { get; set; }
+    }
+
+
     public interface IFinanceService
     {
         Task FeeAcceptedOperation(FeeAcceptedOperationRequest request);
@@ -71,11 +83,8 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Creates payment type for specified project
         /// </summary>
-        /// <param name="projectId">Database Id of a project to create payment type for</param>
-        /// <param name="kind">Payment type kind</param>
-        /// <param name="targetMasterId">Database Id of a target master (could be null if <paramref name="kind"/> = <see cref="PaymentTypeKind.Online"/></param>
-        /// <remarks>To create <see cref="PaymentTypeKind.CardToCard"/> payment, call <see cref="CreateCustomPaymentType"/></remarks>
-        Task CreatePaymentType(int projectId, PaymentTypeKind kind, int? targetMasterId);
+        /// <param name="request">Request payload</param>
+        Task CreatePaymentType(CreatePaymentTypeRequest request);
 
         /// <summary>
         /// Toggles state of a payment type. If payment type has to be deactivated, it will be
@@ -83,9 +92,8 @@ namespace JoinRpg.Services.Interfaces
         /// </summary>
         /// <param name="projectId">Database Id of a project</param>
         /// <param name="paymentTypeId">Database Id of a payment type to toggle state of</param>
-        Task TogglePaymentActivness(int projectId, int paymentTypeId);
+        Task TogglePaymentActiveness(int projectId, int paymentTypeId);
 
-        Task CreateCustomPaymentType(int projectId, string name, int targetMasterId);
         Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault);
         Task CreateFeeSetting(CreateFeeSettingRequest request);
         Task DeleteFeeSetting(int projectid, int projectFeeSettingId);

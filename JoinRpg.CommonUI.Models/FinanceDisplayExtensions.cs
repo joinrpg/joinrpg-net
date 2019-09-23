@@ -18,7 +18,7 @@ namespace JoinRpg.CommonUI.Models
         {
             switch (kind)
             {
-                case PaymentTypeKind.CardToCard:
+                case PaymentTypeKind.Custom:
                     return defaultName ?? kind.GetDisplayName();
                 case PaymentTypeKind.Cash:
                     return user != null ? $@"{kind.GetDisplayName()} — {user.GetDisplayName()}" : kind.GetDisplayName();

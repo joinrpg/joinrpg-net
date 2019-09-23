@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -92,8 +93,7 @@ namespace JoinRpg.Web.Models
 
         public CommentTextViewModel()
         {
-            FormIndex = LastFormIndex;
-            LastFormIndex++;
+            FormIndex = Interlocked.Increment(ref LastFormIndex);
         }
 
         [Required(ErrorMessage="Заполните текст комментария")]

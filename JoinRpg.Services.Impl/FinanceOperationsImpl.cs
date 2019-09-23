@@ -1,10 +1,8 @@
 using System;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.Remoting.Channels;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -19,6 +17,7 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
+
     [UsedImplicitly]
     public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
     {
@@ -54,57 +53,72 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public async Task CreatePaymentType(int projectId, PaymentTypeKind kind, int? targetMasterId)
+        public async Task CreatePaymentType(CreatePaymentTypeRequest request)
         {
-            var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-            
-            int? masterId;
-            switch (kind)
+            // Loading project
+            var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
+
+            // Checking access rights of the current user
+            if (!IsCurrentUserAdmin)
+                project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+
+            // Preparing master Id and checking if the same payment type already created
+            int masterId;
+            if (request.Kind != PaymentTypeKind.Online)
             {
-                case PaymentTypeKind.CardToCard:
-                    throw new ArgumentException($"Use {nameof(CreateCustomPaymentType)} to create {kind.GetDisplayName()} payment type", nameof(kind));
-                case PaymentTypeKind.Cash:
-                    project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-                    masterId = project.ProjectAcls.Single(a => a.UserId == targetMasterId)?.UserId;
-                    break;
-                case PaymentTypeKind.Online:
-                    masterId = _vpu.User.UserId;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+                if (request.TargetMasterId == null)
+                    throw new ArgumentNullException(nameof(request.TargetMasterId), $@"Target master must be specified");
+                project.RequestMasterAccess(request.TargetMasterId);
+                if (project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
+                    throw new JoinRpgInvalidUserException($@"Payment of type ${request.Kind.GetDisplayName()} is already created for user ${request.TargetMasterId}");
+                masterId = request.TargetMasterId.Value;
+            }
+            else
+            {
+                if (project.PaymentTypes.Any(pt => pt.Kind == PaymentTypeKind.Online))
+                    throw new DataException("Can't create more than one online payment type");
+                masterId = _vpu.User.Value.UserId;
             }
 
-            if (masterId == null)
-            {
-                if (targetMasterId == null)
-                    throw new ArgumentNullException(nameof(targetMasterId), $@"Target master not specified");
-                throw new ArgumentException($@"Target master ${targetMasterId} is not from project ${projectId}", nameof(targetMasterId));
-            }
+            // Checking custom payment type name
+            if (request.Kind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(request.Name))
+                throw new ArgumentNullException(nameof(request.Name), "Custom payment type name must be specified");
 
-            if (kind != PaymentTypeKind.Online)
-                project.RequestMasterAccess(masterId);
+            // Creating payment type
+            var result = new PaymentType(request.Kind, request.ProjectId, masterId);
 
-            if (project.PaymentTypes.FirstOrDefault(pt => pt.UserId == masterId) != null)
-                throw new JoinRpgInvalidUserException($@"Payment of type ${kind.GetDisplayName()} is already created for user ${masterId}");
+            // Configuring payment type
+            if (result.Kind == PaymentTypeKind.Custom)
+                result.Name = request.Name.Trim();
 
-            project.PaymentTypes.Add(new PaymentType(kind, masterId.Value));
-
+            // Saving
+            project.PaymentTypes.Add(result);
             await UnitOfWork.SaveChangesAsync();
         }
 
         /// <inheritdoc />
-        public async Task TogglePaymentActivness(int projectId, int paymentTypeId)
+        public async Task TogglePaymentActiveness(int projectId, int paymentTypeId)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
             var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
             switch (paymentType.Kind)
             {
-                case PaymentTypeKind.CardToCard:
+                case PaymentTypeKind.Custom:
                 case PaymentTypeKind.Cash:
-                    project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    if (!IsCurrentUserAdmin)
+                        project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
                     break;
                 case PaymentTypeKind.Online:
+                    if (!IsCurrentUserAdmin)
+                    {
+                        // Regular master with finance management permissions can disable online payments
+                        if (paymentType.IsActive)
+                            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                        // ...but to enable them back he must have admin permissions
+                        else 
+                            throw new MustBeAdminException();
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(paymentType.Kind), paymentType.Kind, null);
@@ -114,25 +128,6 @@ namespace JoinRpg.Services.Impl
                 SmartDelete(paymentType);
             else
                 paymentType.IsActive = true;
-
-            await UnitOfWork.SaveChangesAsync();
-        }
-
-        public async Task CreateCustomPaymentType(int projectId, string name, int targetMasterId)
-        {
-            var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
-            project.RequestMasterAccess(targetMasterId);
-
-            project.PaymentTypes.Add(new PaymentType()
-            {
-                IsActive = true,
-                Kind = PaymentTypeKind.CardToCard,
-                IsDefault = project.PaymentTypes.All(pt => !pt.IsDefault),
-                Name = Required(name),
-                UserId = targetMasterId,
-                ProjectId = projectId,
-            });
 
             await UnitOfWork.SaveChangesAsync();
         }

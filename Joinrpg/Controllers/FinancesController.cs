@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -50,7 +49,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualPaymentsUser.User));
+      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualPaymentsUser.User.Value));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
@@ -110,19 +109,22 @@ namespace JoinRpg.Web.Controllers
           return View(viewModel);
       }
 
-    [HttpPost, ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanManageMoney)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney, AllowAdmin = true)]
     public async Task<ActionResult> TogglePaymentType(TogglePaymentTypeViewModel data)
     {
-        if (data.Kind == PaymentTypeKind.Online && !IsCurrentUserAdmin())
-            throw new MustBeAdminException();
-
         try
         {
             if (data.PaymentTypeId > 0)
-                await FinanceService.TogglePaymentActivness(data.ProjectId, data.PaymentTypeId.Value);
+                await FinanceService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
             else
-                await FinanceService.CreatePaymentType(data.ProjectId, data.Kind.GetValueOrDefault(PaymentTypeKind.CardToCard), data.MasterId);
+                await FinanceService.CreatePaymentType(new CreatePaymentTypeRequest
+                {
+                    ProjectId = data.ProjectId,
+                    TargetMasterId = data.MasterId,
+                    Kind = data.Kind.GetValueOrDefault(PaymentTypeKind.Custom),
+                });
             return RedirectToAction("Setup", new { projectid = data.ProjectId });
         }
         catch
@@ -132,20 +134,27 @@ namespace JoinRpg.Web.Controllers
         }
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanManageMoney)]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [MasterAuthorize(Permission.CanManageMoney, AllowAdmin = true)]
     public async Task<ActionResult> CreatePaymentType(CreatePaymentTypeViewModel viewModel)
     {
-      try
-      {
-        await FinanceService.CreateCustomPaymentType(viewModel.ProjectId, viewModel.Name, viewModel.UserId);
-        return RedirectToAction("Setup", new { viewModel.ProjectId });
-      }
-      catch
-      {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Setup", new { viewModel.ProjectId });
-      }
+        try
+        {
+            await FinanceService.CreatePaymentType(new CreatePaymentTypeRequest
+            {
+                ProjectId = viewModel.ProjectId,
+                TargetMasterId = viewModel.UserId,
+                Kind = PaymentTypeKind.Custom,
+                Name = viewModel.Name,
+            });
+            return RedirectToAction("Setup", new { viewModel.ProjectId });
+        }
+        catch
+        {
+            //TODO: Message that comment is not added
+            return RedirectToAction("Setup", new { viewModel.ProjectId });
+        }
     }
 
     [HttpGet]

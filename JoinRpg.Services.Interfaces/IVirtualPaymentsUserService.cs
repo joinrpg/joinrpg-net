@@ -1,3 +1,4 @@
+using System;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
@@ -10,6 +11,6 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Data object of virtual payments manager user
         /// </summary>
-        User User { get; }
+        Lazy<User> User { get; }
     }
 }

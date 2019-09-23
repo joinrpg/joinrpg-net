@@ -63,8 +63,11 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
-    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
-    @if (Model.PreferentialFeeEnabled && !Model.PreferentialFeeUser && Model.Status.IsActive())
+    @if (Model.HasSubmittablePaymentTypes)
+    {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+    }
+    @if (Model.PreferentialFeeRequestEnabled)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
     }
@@ -126,7 +129,10 @@
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
-                    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+                    @if (Model.HasSubmittablePaymentTypes)
+                    {
+                        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
+                    }
                 </th>
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)

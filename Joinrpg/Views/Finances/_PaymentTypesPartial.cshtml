@@ -15,7 +15,7 @@
             Добавить метод оплаты&hellip;</button>
     </div>
 }
-<table class="table">
+<table class="table" style="margin-top: 1em;">
     <tr>
         <th>@Html.DisplayNameFor(model => paymentType.Name)</th>
         <th>@Html.DisplayNameFor(model => paymentType.Master)</th>
@@ -41,7 +41,7 @@
                 <td>
                     @if (item.IsActive)
                     {
-                        if (item.Kind == PaymentTypeKind.CardToCard)
+                        if (item.Kind == PaymentTypeKind.Custom)
                         {
                             <a href="@Url.Action("EditPaymentType", new {item.ProjectId, item.PaymentTypeId})" class="btn btn-default">Изменить</a>
                         }

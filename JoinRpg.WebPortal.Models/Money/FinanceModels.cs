@@ -37,7 +37,7 @@ namespace JoinRpg.Web.Models
             ShowLabel = false;
         }
 
-        public MarkMeAsPreferentialViewModel(ClaimViewModel claim)
+        public MarkMeAsPreferentialViewModel(ClaimViewModel claim) : this()
         {
             ProjectId = claim.ProjectId;
             ClaimId = claim.ClaimId;
@@ -93,6 +93,11 @@ namespace JoinRpg.Web.Models
         {
             ActionName = "Оплатить";
         }
+    }
+
+    public class OnlinePaymentViewModel : AddCommentViewModel
+    {
+
     }
 
     public class SubmitPaymentViewModel : PaymentViewModelBase
@@ -212,7 +217,7 @@ namespace JoinRpg.Web.Models
                   existedPaymentTypes.Union(potentialCashPaymentTypes)
                       .OrderBy(li => !li.IsActive)
                       .ThenBy(li => !li.IsDefault)
-                      .ThenBy(li => li.Kind != PaymentTypeKind.CardToCard)
+                      .ThenBy(li => li.Kind != PaymentTypeKind.Custom)
                       .ThenBy(li => li.Name))
                   .ToList();
 
@@ -285,7 +290,7 @@ namespace JoinRpg.Web.Models
       IsActive = paymentType.IsActive;
       IsDefault = paymentType.IsDefault;
       CanBePermanentlyDeleted = IsActive
-          && Kind == PaymentTypeKind.CardToCard
+          && Kind == PaymentTypeKind.Custom
           && paymentType.CanBePermanentlyDeleted;
     }
 

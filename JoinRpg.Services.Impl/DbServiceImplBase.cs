@@ -44,11 +44,20 @@ namespace JoinRpg.Services.Impl
 
         private int? _impersonatedUserId;
 
+        /// <summary>
+        /// Returns current user database Id
+        /// </summary>
         protected int CurrentUserId => _impersonatedUserId ??
                                        int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
 
         /// <summary>
-        /// Time of service creaton. Used to mark consistent time for all operations performed by service
+        /// Returns true if current user is admin
+        /// </summary>
+        protected bool IsCurrentUserAdmin =>
+            ClaimsPrincipal.Current.IsInRole(Security.AdminRoleName);
+        
+        /// <summary>
+        /// Time of service creation. Used to mark consistent time for all operations performed by service
         /// </summary>
         protected DateTime Now { get; }
 

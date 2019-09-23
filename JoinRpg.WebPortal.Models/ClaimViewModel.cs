@@ -373,10 +373,12 @@ namespace JoinRpg.Web.Models
 
             IsFeeAdmin = claim.HasAccess(currentUserId,
                 acl => acl.CanManageMoney);
+
             PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
             PreferentialFeeUser = claim.PreferentialFeeUser;
             PreferentialFeeConditions =
                 claim.Project.Details.PreferentialFeeConditions.ToHtmlString();
+            PreferentialFeeRequestEnabled = PreferentialFeeEnabled && !PreferentialFeeUser && Status.IsActive();
 
             ClaimId = claim.ClaimId;
             ProjectId = claim.ProjectId;
@@ -384,6 +386,7 @@ namespace JoinRpg.Web.Models
             FinanceOperations = claim.FinanceOperations;
 
             OnlinePaymentEnabled = model.PaymentTypes.OnlinePaymentsEnabled();
+            HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.Kind != PaymentTypeKind.Online);
 
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
@@ -489,11 +492,21 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public bool OnlinePaymentEnabled { get; }
 
+        /// <summary>
+        /// true if there is any payment type(s) except online
+        /// </summary>
+        public bool HasSubmittablePaymentTypes { get; }
+
         public bool IsFeeAdmin { get; }
 
         public bool PreferentialFeeEnabled { get; }
         public bool PreferentialFeeUser { get; }
         public JoinHtmlString PreferentialFeeConditions { get; }
+
+        /// <summary>
+        /// true if a user can request preferential fee
+        /// </summary>
+        public bool PreferentialFeeRequestEnabled { get; }
 
         public int ClaimId { get; }
         public int ProjectId { get; }

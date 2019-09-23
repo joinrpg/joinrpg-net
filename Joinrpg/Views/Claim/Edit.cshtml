@@ -390,14 +390,20 @@
         </div>
     </div>
 
-@Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
+@if (Model.ClaimFee.HasSubmittablePaymentTypes)
+{
+    @Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
+}
 
 @if (Model.ClaimFee.OnlinePaymentEnabled)
 {
     @Html.Partial("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
 }
 
-@Html.Partial("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))
+@if (Model.ClaimFee.PreferentialFeeRequestEnabled)
+{
+    @Html.Partial("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))
+}
 
     <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
         <div class="panel-heading">Отозвать заявку</div>
