@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
@@ -23,6 +24,8 @@ namespace JoinRpg.Web.Controllers
       private IUriService UriService { get; }
       private IFinanceReportRepository FinanceReportRepository { get; }
 
+      private IVirtualPaymentsUserService VirtualPaymentsUser { get; }
+
       public FinancesController(
           IProjectRepository projectRepository,
           IProjectService projectService,
@@ -30,21 +33,24 @@ namespace JoinRpg.Web.Controllers
           IFinanceService financeService,
           IUriService uriService,
           IFinanceReportRepository financeReportRepository,
-          IUserRepository userRepository)
+          IUserRepository userRepository,
+          IVirtualPaymentsUserService vpu
+          )
           : base(projectRepository, projectService, userRepository)
         {
             ExportDataService = exportDataService;
             FinanceService = financeService;
           UriService = uriService;
           FinanceReportRepository = financeReportRepository;
-      }
+          VirtualPaymentsUser = vpu;
+        }
 
       [HttpGet]
       [MasterAuthorize]
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return View(new FinanceSetupViewModel(project, CurrentUserId));
+      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualPaymentsUser.User));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
@@ -106,27 +112,24 @@ namespace JoinRpg.Web.Controllers
 
     [HttpPost, ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanManageMoney)]
-    public async Task<ActionResult> TogglePaymentType(int projectid, int paymentTypeId)
+    public async Task<ActionResult> TogglePaymentType(TogglePaymentTypeViewModel data)
     {
-      var project = await ProjectRepository.GetProjectAsync(projectid);
+        if (data.Kind == PaymentTypeKind.Online && !IsCurrentUserAdmin())
+            throw new MustBeAdminException();
 
-      try
-      {
-        if (paymentTypeId < 0)
+        try
         {
-          await FinanceService.CreateCashPaymentType(projectid, -paymentTypeId);
+            if (data.PaymentTypeId > 0)
+                await FinanceService.TogglePaymentActivness(data.ProjectId, data.PaymentTypeId.Value);
+            else
+                await FinanceService.CreatePaymentType(data.ProjectId, data.Kind.GetValueOrDefault(PaymentTypeKind.CardToCard), data.MasterId);
+            return RedirectToAction("Setup", new { projectid = data.ProjectId });
         }
-        else
+        catch
         {
-          await FinanceService.TogglePaymentActivness(projectid, paymentTypeId);
+            //TODO: Message that payment type was not created
+            return RedirectToAction("Setup", new { projectid = data.ProjectId });
         }
-        return RedirectToAction("Setup", new { projectid });
-      }
-      catch
-      {
-        //TODO: Message that comment is not added
-        return RedirectToAction("Setup", new { projectid });
-      }
     }
 
     [HttpPost, ValidateAntiForgeryToken]

@@ -1,10 +1,23 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
+
+    public enum PaymentTypeKind
+    {
+        CardToCard = 0,
+
+        [Display(Name = "Наличными")]
+        Cash = 1,
+
+        [Display(Name = "Онлайн")]
+        Online = 2
+    }
+
   // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
   public class PaymentType : IProjectEntity, IValidatableObject, IDeletableSubEntity
   {
@@ -17,7 +30,7 @@ namespace JoinRpg.DataModel
     public int UserId { get; set; }
     public virtual User User { get; set; }
 
-    public bool IsCash { get; set; }
+    public PaymentTypeKind Kind { get; set; }
 
     public bool IsActive { get; set; }
 
@@ -39,15 +52,14 @@ namespace JoinRpg.DataModel
       }
     }
 
-    public static PaymentType CreateCash(int user)
+    public PaymentType() {}
+
+    public PaymentType(PaymentTypeKind kind, int userId)
     {
-      return new PaymentType()
-      {
-        IsCash = true,
-        IsActive = true,
-        Name = "cash", 
-        UserId = user,
-      };
+        IsActive = true;
+        Kind = kind;
+        Name = kind.ToString().ToLowerInvariant();
+        UserId = userId;
     }
   }
 }

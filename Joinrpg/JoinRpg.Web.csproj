@@ -644,7 +644,7 @@
     <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
     <Content Include="Views\Plot\EditElement.cshtml" />
     <Content Include="Views\Game\Close.cshtml" />
-    <Content Include="Views\Finances\CreatePaymentTypePartial.cshtml" />
+    <Content Include="Views\Finances\_CreatePaymentTypePartial.cshtml" />
     <Content Include="Views\Finances\EditPaymentType.cshtml" />
     <Content Include="Views\Finances\CreateFeeSettingPartial.cshtml" />
     <Content Include="Views\Home\Funding2016.cshtml" />
@@ -969,6 +969,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Comments\_CommentTextEditorPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_TogglePaymentTypeDialog.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_PaymentTypesPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_AddPaymentTypeDialog.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -1,0 +1,26 @@
+﻿@using JoinRpg.Web.Models
+@model CreatePaymentTypeViewModel
+
+<div class="modal fade" id="addPaymentTypeDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("CreatePaymentType", "Finances", FormMethod.Post))
+            {
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">Добавление безналичного метода оплаты</h4>
+                </div>
+                <div class="modal-body">
+                    <div>Выберите название и ответственного за это мастера</div>
+
+                    @Html.Partial("_CreatePaymentTypePartial", Model)
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

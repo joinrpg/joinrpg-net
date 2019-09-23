@@ -1,0 +1,80 @@
+﻿@using JoinRpg.DataModel
+@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models
+@model FinanceSetupViewModel
+
+@{ var paymentType = Model.PaymentTypes.FirstOrDefault(); }
+
+@if (Model.HasEditAccess)
+{
+    <div>
+        <button type="button"
+                class="btn btn-success"
+                data-toggle="modal"
+                data-target="#addPaymentTypeDialog"><i class="glyphicon glyphicon-plus"></i>
+            Добавить метод оплаты&hellip;</button>
+    </div>
+}
+<table class="table">
+    <tr>
+        <th>@Html.DisplayNameFor(model => paymentType.Name)</th>
+        <th>@Html.DisplayNameFor(model => paymentType.Master)</th>
+        @if (Model.HasEditAccess)
+        {
+            <th></th>
+        }
+    </tr>
+
+    @foreach (var item in Model.PaymentTypes)
+    {
+        <tr>
+            <td class="@(item.IsActive ? "" : "deleted")">
+                @if (item.IsDefault)
+                {
+                    <span class="label label-default">@Html.DisplayNameFor(model => paymentType.IsDefault)</span>
+                }
+                @(item.Name)
+            </td>
+            <td>@Html.DisplayFor(modelItem => item.Master)</td>
+            @if (Model.HasEditAccess)
+            {
+                <td>
+                    @if (item.IsActive)
+                    {
+                        if (item.Kind == PaymentTypeKind.CardToCard)
+                        {
+                            <a href="@Url.Action("EditPaymentType", new {item.ProjectId, item.PaymentTypeId})" class="btn btn-default">Изменить</a>
+                        }
+                        if (item.Kind != PaymentTypeKind.Online || Model.IsAdmin)
+                        {
+                            var deleteActionName = item.CanBePermanentlyDeleted ? "Удалить" : "Выключить";
+                            <button type="button" class="btn btn-danger btn-xs"
+                                    data-toggle="modal"
+                                    data-target="#togglePaymentTypeDialog"
+                                    data-element="@item.PaymentTypeId"
+                                    data-name="@item.Name"
+                                    data-action="@deleteActionName">@deleteActionName</button>
+                            }
+                        }
+                        else if (item.Kind != PaymentTypeKind.Online || Model.IsAdmin)
+                        {
+                            <button type="button" class="btn btn-default btn-xs"
+                                    data-toggle="modal"
+                                    data-target="#togglePaymentTypeDialog"
+                                    data-element="@item.PaymentTypeId"
+                                    data-name="@item.Name"
+                                    data-kind="@item.Kind"
+                                    data-user="@item.Master.UserId"
+                                    data-action="Включить">Включить</button>
+                        }
+                        else if (item.Kind == PaymentTypeKind.Online)
+                        {
+                            <a type="button" class="btn btn-info btn-xs" target="_blank" href="http://docs.joinrpg.ru/ru/latest/online-payments">Узнать, как включить</a>
+                        }
+                </td>
+            }
+        </tr>
+    }
+
+</table>
+

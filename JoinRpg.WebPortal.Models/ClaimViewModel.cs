@@ -81,7 +81,7 @@ namespace JoinRpg.Web.Models
     public ClaimFeeViewModel ClaimFee { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<PaymentType> PaymentTypes { get; }
+    public IEnumerable<PaymentTypeViewModel> PaymentTypes { get; }
 
         /// <summary>
         /// Returns true if project is active and there are any payment method available
@@ -174,7 +174,6 @@ namespace JoinRpg.Web.Models
               CharacterNavigationViewModel.FromClaim(claim,
                   currentUser.UserId,
                   CharacterNavigationPage.Claim);
-          ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
           Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
           PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
               (AccessReason) claim.Player.GetProfileAccess(currentUser));
@@ -189,16 +188,18 @@ namespace JoinRpg.Web.Models
           if (claim.HasAccess(currentUser.UserId,
                   acl => acl.CanManageMoney, ExtraAccessReason.Player))
           {
-              //Finance admins can create any payment. User also can create any payment, but it will be moderated
-              PaymentTypes = claim.Project.ActivePaymentTypes;
+              // Finance admins can create any payment.
+              // User also can create any payment, but it will be moderated
+              PaymentTypes = claim.Project.ActivePaymentTypes.Select(pt => new PaymentTypeViewModel(pt));
           }
           else
           {
-              //All other master can create only payment from user to himself.
-              PaymentTypes =
-                  claim.Project.ActivePaymentTypes.Where(pt => pt.UserId == currentUser.UserId);
+              // All other masters can create payments only from a user to himself
+              PaymentTypes = claim.Project.ActivePaymentTypes
+                  .Where(pt => pt.UserId == currentUser.UserId)
+                  .Select(pt => new PaymentTypeViewModel(pt));
           }
-
+          ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
 
           if (claim.Character != null)
           {
@@ -382,6 +383,8 @@ namespace JoinRpg.Web.Models
             FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
             FinanceOperations = claim.FinanceOperations;
 
+            OnlinePaymentEnabled = model.PaymentTypes.OnlinePaymentsEnabled();
+
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);
         }
@@ -480,6 +483,11 @@ namespace JoinRpg.Web.Models
         /// List of associated payment operations
         /// </summary>
         public IEnumerable<FinanceOperation> FinanceOperations { get; }
+
+        /// <summary>
+        /// true if online payment enabled
+        /// </summary>
+        public bool OnlinePaymentEnabled { get; }
 
         public bool IsFeeAdmin { get; }
 

@@ -1,7 +1,7 @@
 ﻿@using JoinRpg.CommonUI.Models
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
-@model PaymentViewModel
+@model SubmitPaymentViewModel
 
 <div class="modal fade" id="submitPaymentDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
@@ -10,20 +10,20 @@
         {
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="deleteTitle">Отметить оплату</h4>
+                <h4 class="modal-title" id="deleteTitle">@(Model.ActionName)</h4>
             </div>
             <div class="modal-body">
                     @Html.HiddenFor(model => model.ClaimId)
                     @if (!Model.ClaimApproved)
                     {
-                        <div class="alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
                             Заявка не принята. Вы точно хотите отметить оплату взноса?
                         </div>
                     }
 
                     @if (Model.HasUnApprovedPayments)
                     {
-                        <div class="alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
                             Вы отмечаете новый платеж от игрока, а тем временем игрок уже отметил какой-то платеж самостоятельно.
                             Просмотрите платеж ниже в комментариях, и ответьте на него, чтобы обработать.
                         </div>
@@ -65,12 +65,8 @@
                             <div class="col-md-8">
                                 @Html.DropDownListFor(
                                     model => model.PaymentTypeId,
-                                    Model.PaymentTypes.Select(paymentType => new SelectListItem()
-                                    {
-                                        Text = paymentType.GetDisplayName(),
-                                        Value = paymentType.PaymentTypeId.ToString()
-                                    }).OrderBy(i => i.Text),
-                                    htmlAttributes: new {@class = "form-control"})
+                                    Model.PaymentTypes.PaymentTypesToSelectBoxItems().OrderBy(i => i.Text),
+                                    new {@class = "form-control"})
                             </div>
                         </div>
 
@@ -79,7 +75,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button class="btn btn-success" type="submit">Отметить оплату</button>
+                <button class="btn btn-success" type="submit">@(Model.ActionName)</button>
             </div>
         }
         </div>

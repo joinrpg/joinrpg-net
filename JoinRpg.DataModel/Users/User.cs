@@ -47,6 +47,18 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; } = new List<UserExternalLogin>();
 
+
+    public const string VirtualOnlinePaymentsManagerEmail = "payments@joinrpg.ru";
+
+    public static User CreateVirtualOnlinePaymentsManager()
+    {
+            return new User
+            {
+                UserName = "payments",
+                PrefferedName = "Online payments service",
+                Email = VirtualOnlinePaymentsManagerEmail
+            };
+    }
   }
 
   public enum Gender : byte

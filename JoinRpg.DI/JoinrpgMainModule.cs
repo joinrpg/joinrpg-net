@@ -6,6 +6,7 @@ using JoinRpg.PluginHost.Impl;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
+using JoinRpg.Services.Impl;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
@@ -27,6 +28,10 @@ namespace JoinRpg.DI
             builder.RegisterType<PluginFactoryImpl>().As<IPluginFactory>();
 
             builder.RegisterType<MyDbContext>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
+
+            builder.RegisterType<VirtualPaymentsUserService>()
+                .As<IVirtualPaymentsUserService>()
+                .SingleInstance();
 
             base.Load(builder);
         }

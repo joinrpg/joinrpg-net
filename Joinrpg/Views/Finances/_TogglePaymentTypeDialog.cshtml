@@ -1,0 +1,43 @@
+﻿@model JoinRpg.Web.Models.TogglePaymentTypeViewModel
+
+<div class="modal fade" id="togglePaymentTypeDialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm("TogglePaymentType", "Finances", new { Model.ProjectId }, FormMethod.Post))
+            {
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="dlgToggleTitle"></h4>
+                </div>
+
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.PaymentTypeId)
+                @Html.HiddenFor(model => model.Kind)
+                @Html.HiddenFor(model => model.MasterId)
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="dlgToggleSubmit"></button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" defer>
+    $('#togglePaymentTypeDialog')
+        .on('show.bs.modal',
+            function(event) {
+                var button = $(event.relatedTarget);
+                var modal = $(this);
+
+                modal.find('#PaymentTypeId').val(button.data('element'));
+                modal.find('#Kind').val(button.data('kind'));
+                modal.find('#MasterId').val(button.data('user'));
+
+                const actionName = button.data('action');
+                modal.find("#dlgToggleTitle").text(actionName + ' метод оплаты «' + button.data('name') + '»');
+                modal.find("#dlgToggleSubmit").text(actionName);
+            });
+</script>

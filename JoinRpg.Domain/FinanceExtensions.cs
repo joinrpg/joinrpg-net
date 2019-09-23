@@ -204,7 +204,7 @@ namespace JoinRpg.Domain
             int userId)
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
-            return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.IsCash);
+            return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.Kind == PaymentTypeKind.Cash);
         }
 
         public static bool CanAcceptCash([NotNull]

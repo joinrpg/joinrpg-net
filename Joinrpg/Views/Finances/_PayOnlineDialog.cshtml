@@ -10,17 +10,23 @@
             {
                 @Html.AntiForgeryToken()
 
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="deleteTitle">Оплата онлайн</h4>
-            </div>
-            <div class="modal-body">
-                @if (!Model.ClaimApproved)
-                {
-                    <div class="alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
-                        Заявка не принята. Вы точно хотите оплатить взнос?
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="deleteTitle">@(Model.ActionName)</h4>
+                </div>
+                <div class="modal-body">
+                    @if (!Model.ClaimApproved)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
+                            Заявка не принята. Вы точно хотите оплатить взнос?
+                        </div>
+                    }
+
+                    <div class="join alert alert-info"><i class="glyphicon glyphicon-info-sign"></i>
+                        После нажатия кнопки Оплатить вы будете перенаправлены на страницу банка ПСКБ для ввода
+                        данных банковской карты. После успешной оплаты она будет автоматически отмечена в базе,
+                        а вы получите на адрес электронной почты чек. Дополнительно отмечать оплату не требуется.
                     </div>
-                }
 
                     <div class="form-horizontal">
                         <div class="form-group">
@@ -32,13 +38,32 @@
                         </div>
 
                         @Html.Partial("..\\Comments\\_CommentTextEditorPartial", new CommentTextViewModel())
+
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                @Html.CheckBoxFor(model => model.AcceptContract, new { onchange = "dlgPayContractChange()" })
+                                <label for="@Html.IdFor(model => model.AcceptContract)">Я прочитал(а) <a href="http://docs.joinrpg.ru/ru/latest/online-payments-contract">договор-оферту</a> и согласен с условиями, в нем изложенными</label>
+                            </div>
+                        </div>
                     </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                <button type="submit" class="btn btn-success">Оплатить</button>
-            </div>
-        }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="dlgPayOnlineSubmit" disabled>@(Model.ActionName)</button>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+<script type="text/javascript" defer>
+    function dlgPayContractChange()
+    {                                       
+        const checkBox = document.getElementById('@Html.IdFor(model => model.AcceptContract)');
+        const submitBtn = document.getElementById('dlgPayOnlineSubmit');
+        if (checkBox.checked)
+            submitBtn.removeAttribute('disabled');
+        else
+            submitBtn.setAttribute('disabled', '');
+    }
+</script>

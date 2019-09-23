@@ -59,7 +59,10 @@
     <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
     <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
     <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
-    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+    @if (Model.OnlinePaymentEnabled)
+    {
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+    }
     <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
     @if (Model.PreferentialFeeEnabled && !Model.PreferentialFeeUser && Model.Status.IsActive())
     {
@@ -119,7 +122,10 @@
                 <th class="price-table text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
                 <th class="price-table text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
                 <th>
-                    <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+                    @if (Model.OnlinePaymentEnabled)
+                    {
+                        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
+                    }
                     <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
                 </th>
             </tr>

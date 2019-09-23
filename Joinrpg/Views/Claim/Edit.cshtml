@@ -400,36 +400,15 @@
             </div>
         </div>
     </div>
-    @{ var paymentModel = new PaymentViewModel
-        {
-            ProjectId = Model.ProjectId,
-            CommentDiscussionId = Model.ClaimId,
-            ClaimId = Model.ClaimId,
-            ParentCommentId = null,
-            EnableHideFromUser = false,
-            HideFromUser = false,
-            ActionName = "Отметить взнос",
-            OperationDate = DateTime.Today,
-            PaymentTypes = Model.PaymentTypes,
-            Money = Math.Max(Model.ClaimFee.CurrentFee - Model.ClaimFee.CurrentBalance, 0),
-            CommentText = "Сдан взнос",
-            ClaimApproved = Model.Status.IsAlreadyApproved(),
-            HasUnApprovedPayments = Model.HasMasterAccess && Model.RootComments.Any(c => c.ShowFinanceModeration)
-        };
-    }
 
-    @Html.Partial("..\\Finances\\_SubmitPaymentDialog", paymentModel)
+@Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
 
-    @Html.Partial("..\\Finances\\_PayOnlineDialog", paymentModel)
+@if (Model.ClaimFee.OnlinePaymentEnabled)
+{
+    @Html.Partial("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
+}
 
-    @Html.Partial("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel
-    {
-        ProjectId = Model.ProjectId,
-        ClaimId = Model.ClaimId,
-        OperationDate = DateTime.UtcNow,
-        CommentDiscussionId = Model.CommentDiscussionId,
-        PreferentialFeeConditions = Model.ClaimFee.PreferentialFeeConditions
-    })
+@Html.Partial("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))
 
     <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
         <div class="panel-heading">Отозвать заявку</div>

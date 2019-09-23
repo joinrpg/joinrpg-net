@@ -423,6 +423,14 @@
     <Compile Include="Migrations\201904181355184_SecurityStamp.Designer.cs">
       <DependentUpon>201904181355184_SecurityStamp.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909221853554_PaymentTypeKind.cs" />
+    <Compile Include="Migrations\201909221853554_PaymentTypeKind.Designer.cs">
+      <DependentUpon>201909221853554_PaymentTypeKind.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201909222127539_OnlinePaymentUser.cs" />
+    <Compile Include="Migrations\201909222127539_OnlinePaymentUser.Designer.cs">
+      <DependentUpon>201909222127539_OnlinePaymentUser.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
@@ -750,6 +758,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201904181355184_SecurityStamp.resx">
       <DependentUpon>201904181355184_SecurityStamp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909221853554_PaymentTypeKind.resx">
+      <DependentUpon>201909221853554_PaymentTypeKind.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909222127539_OnlinePaymentUser.resx">
+      <DependentUpon>201909222127539_OnlinePaymentUser.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
