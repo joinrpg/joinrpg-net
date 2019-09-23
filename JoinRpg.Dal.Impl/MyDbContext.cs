@@ -41,13 +41,11 @@ namespace JoinRpg.Dal.Impl
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ProjectAcl>().HasKey(c => new {c.UserId, c.ProjectId});
+            ConfigureProjectDetails(modelBuilder);
+            modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
             modelBuilder.Entity<ProjectAcl>()
                 .Property(acl => acl.Token)
                 .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
-
-            modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
-            modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
             modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
 
 
@@ -124,7 +122,7 @@ namespace JoinRpg.Dal.Impl
             modelBuilder.Entity<PlotElement>().HasMany(plotElement => plotElement.Texts)
                 .WithRequired(text => text.PlotElement);
             modelBuilder.Entity<PlotElementTexts>()
-                .HasKey(text => new {text.PlotElementId, text.Version});
+                .HasKey(text => new { text.PlotElementId, text.Version });
 
             modelBuilder.Entity<PlotElementTexts>()
                 .HasOptional(text => text.AuthorUser)
@@ -178,6 +176,12 @@ namespace JoinRpg.Dal.Impl
 
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        private static void ConfigureProjectDetails(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Project>().HasRequired(p => p.Details).WithRequiredPrincipal();
+            modelBuilder.Entity<ProjectDetails>().HasKey(pd => pd.ProjectId);
         }
 
         private static void ConfigureMoneyTransfer(DbModelBuilder modelBuilder)

@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Controllers
         }
 
         private ActionResult ReturnToIndex()
-            => RedirectToAction("Index", CurrentProjectAccessor.ProjectId);
+            => RedirectToAction("Index", new { CurrentProjectAccessor.ProjectId });
 
         private ActionResult ReturnToField(ProjectField value)
             => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
@@ -383,31 +383,32 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
-    {
-      var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+        public async Task<ActionResult> MoveFast(int projectId, int projectFieldId, int? afterFieldId)
+        {
+            var value = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-      if (value == null)
-      {
-        return HttpNotFound();
-      }
+            if (value == null)
+            {
+                return HttpNotFound();
+            }
 
-      if (afterFieldId == -1)
-      {
-        afterFieldId = null;
-      }
+            if (afterFieldId == -1)
+            {
+                afterFieldId = null;
+            }
 
-      try
-      {
-        await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
+            try
+            {
+                await FieldSetupService.MoveFieldAfter(projectId, projectFieldId, afterFieldId);
 
 
-        return ReturnToIndex();
-      }
-      catch
-      {
-        return ReturnToIndex();
-      }
-    }
+                return ReturnToIndex();
+            }
+            catch
+            {
+                return ReturnToIndex();
+            }
+        }
   }
 }
