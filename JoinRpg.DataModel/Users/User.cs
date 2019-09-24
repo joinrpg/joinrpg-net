@@ -36,6 +36,8 @@ namespace JoinRpg.DataModel
 
     public string PrefferedName { get; set; }
 
+        public bool VerifiedProfileFlag { get; set; }
+
     [NotNull]
     public virtual UserAuthDetails Auth { get; set; }
 
