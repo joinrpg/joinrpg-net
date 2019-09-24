@@ -5,18 +5,22 @@ using JoinRpg.Domain;
 
 namespace JoinRpg.CommonUI.Models
 {
-  public static class FinanceDisplayExtensions
-  {
-    public static string GetDisplayName([NotNull] this PaymentType paymentType)
+    public static class FinanceDisplayExtensions
     {
-      if (paymentType == null) throw new ArgumentNullException(nameof(paymentType));
-      return paymentType.IsCash ? paymentType.User.GetCashName() : paymentType.Name;
-    }
+        public static string GetDisplayName([NotNull] this PaymentType paymentType)
+        {
+            if (paymentType == null) throw new ArgumentNullException(nameof(paymentType));
+            switch (paymentType.TypeKind)
+            {
+                case PaymentTypeKind.Custom:
+                    return paymentType.Name;
+                case PaymentTypeKind.Cash:
+                    return paymentType.User.GetCashName();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(paymentType), paymentType, "Incorrect value");
+            }
+        }
 
-    public static string GetCashName(this User user)
-    {
-      return "Наличными — " + user.GetDisplayName();
+        public static string GetCashName(this User user) => "Наличными — " + user.GetDisplayName();
     }
-
-  }
 }
