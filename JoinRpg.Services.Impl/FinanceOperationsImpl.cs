@@ -91,7 +91,7 @@ namespace JoinRpg.Services.Impl
             project.PaymentTypes.Add(new PaymentType()
             {
                 IsActive = true,
-                IsCash = false,
+                TypeKind = PaymentTypeKind.Custom,
                 IsDefault = project.PaymentTypes.All(pt => !pt.IsDefault),
                 Name = Required(name),
                 UserId = targetMasterId,

@@ -128,8 +128,9 @@ namespace JoinRpg.Web.Models
       HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
 
       var potentialCashPaymentTypes =
-        project.ProjectAcls.Where(acl => project.PaymentTypes.Where(pt => pt.IsCash == true).All(pt => pt.UserId != acl.UserId))
-          .Select(acl => new PaymentTypeListItemViewModel(acl));
+        project.ProjectAcls
+            .Where(acl => project.PaymentTypes.Where(pt => pt.TypeKind == PaymentTypeKind.Cash).All(pt => pt.UserId != acl.UserId))
+            .Select(acl => new PaymentTypeListItemViewModel(acl));
 
       var createdPaymentTypes = project.PaymentTypes.Select(p => new PaymentTypeListItemViewModel(p));
 
@@ -179,7 +180,7 @@ namespace JoinRpg.Web.Models
       ProjectId = paymentType.ProjectId;
       Name = paymentType.GetDisplayName();
       Master = paymentType.User;
-      IsCash = paymentType.IsCash;
+      IsCash = paymentType.TypeKind == PaymentTypeKind.Cash;
       IsActive = paymentType.IsActive;
       IsDefault = paymentType.IsDefault;
       CanBePermanentlyDeleted = IsActive && !IsCash && paymentType.CanBePermanentlyDeleted;

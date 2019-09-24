@@ -17,7 +17,8 @@ namespace JoinRpg.DataModel
         public int UserId { get; set; }
         public virtual User User { get; set; }
 
-        public bool IsCash { get; set; }
+        /// <see cref="PaymentTypeKind"/>
+        public PaymentTypeKind TypeKind { get; set; }
 
         public bool IsActive { get; set; }
 
@@ -43,11 +44,32 @@ namespace JoinRpg.DataModel
         {
             return new PaymentType()
             {
-                IsCash = true,
+                TypeKind = PaymentTypeKind.Cash,
                 IsActive = true,
                 Name = "cash",
                 UserId = user,
             };
         }
+    }
+
+    /// <summary>
+    /// Payment type.
+    /// </summary>
+    public enum PaymentTypeKind
+    {
+        /// <summary>
+        /// Payment type w/o any specific logic.
+        /// </summary>
+        Custom = 0,
+
+        /// <summary>
+        /// Cash payment type. Can be easily enabled/disabled. Only 1 per master
+        /// </summary>
+        Cash = 1,
+
+        /// <summary>
+        /// Online payment through joinrpg.ru
+        /// </summary>
+        // Temporary disable until feature completed Online = 2,
     }
 }
