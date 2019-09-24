@@ -229,6 +229,7 @@ namespace JoinRpg.Web.Controllers
         Skype = user.Extra?.Skype,
         LastClaimId = lastClaim?.ClaimId,
         LastClaimProjectId = lastClaim?.ProjectId,
+        IsVerifiedFlag = user.VerifiedProfileFlag,
       });
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +34,9 @@ namespace JoinRpg.Web.Models
 
     [ReadOnly(true)]
     public bool IsAdmin { get; set;  }
+
+        [ReadOnly(true)]
+        public bool IsVerifiedUser => Details.IsVerifiedUser;
   }
 
   public class UserProfileDetailsViewModel
@@ -59,7 +62,10 @@ namespace JoinRpg.Web.Models
 
     public AccessReason Reason { get; }
 
-    public UserProfileDetailsViewModel ([NotNull] User user, AccessReason reason)
+        public bool IsVerifiedUser { get; }
+        public bool IsAdmin { get; }
+
+        public UserProfileDetailsViewModel ([NotNull] User user, AccessReason reason)
     {
       if (user == null) throw new ArgumentNullException(nameof(user));
       Email = user.Email;
@@ -72,9 +78,12 @@ namespace JoinRpg.Web.Models
       Vk = user.Extra?.Vk;
       PhoneNumber = user.Extra?.PhoneNumber ?? "";
       AllrpgId = user.Allrpg?.Sid;
+            IsVerifiedUser = user.VerifiedProfileFlag;
+            IsAdmin = user.Auth.IsAdmin;
     }
 
     public bool HasAccess => Reason != AccessReason.NoAccess;
+
   }
 
   public enum AccessReason

@@ -13,7 +13,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
     <div class="" style="clear: both" id="comment@(comment.CommentId)">
         <table>
             <tr>
-                <td class="hidden-xs" style="vertical-align: text-top">
+                <td class="hidden-xs" style="vertical-align: text-top;padding-right: 5px">
                     @Html.Partial("DisplayTemplates/UserAvatar", comment.Author)
                 </td>
                 <td>
