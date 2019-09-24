@@ -24,14 +24,21 @@ namespace JoinRpg.Services.Impl
       }
       var user = await UserRepository.WithProfile(userId);
 
-      user.SurName = surName;
-      user.FatherName = fatherName;
-      user.BornName = bornName;
+            if (!user.VerifiedProfileFlag)
+            {
+                user.SurName = surName;
+                user.FatherName = fatherName;
+                user.BornName = bornName;
+            }
       user.PrefferedName = prefferedName;
 
       user.Extra = user.Extra ?? new UserExtra();
       user.Extra.Gender = gender;
-      user.Extra.PhoneNumber = phoneNumber;
+
+            if (!user.VerifiedProfileFlag)
+            {
+                user.Extra.PhoneNumber = phoneNumber;
+            }
       user.Extra.Nicknames = nicknames;
       user.Extra.GroupNames = groupNames;
       user.Extra.Skype = skype;
@@ -61,5 +68,14 @@ namespace JoinRpg.Services.Impl
       //TODO: Send email
       await UnitOfWork.SaveChangesAsync();
     }
-  }
+
+        [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+        public async Task SetVerificationFlag(int userId, bool verificationFlag)
+        {
+            var user = await UserRepository.GetById(userId);
+            user.VerifiedProfileFlag = verificationFlag;
+            //TODO: Send email
+            await UnitOfWork.SaveChangesAsync();
+        }
+    }
 }

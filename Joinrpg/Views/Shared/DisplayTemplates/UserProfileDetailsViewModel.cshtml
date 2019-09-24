@@ -2,32 +2,42 @@
 @model UserProfileDetailsViewModel
 <table>
     <tr>
-        <td style="vertical-align: top">
+        <td style="vertical-align: top; padding-right: 5px">
             @Html.Partial("DisplayTemplates/UserAvatar", Model.User)
+            @if (Model.IsAdmin)
+            {
+                <div class="label label-primary" title="Администратор сайта" style="width:100%; display: block; margin-top:5px">Админ</div>
+
+            }
         </td>
         <td>
 @if (Model.HasAccess)
 {
   @Html.DisplayFor(model => model.User)
-if (!string.IsNullOrWhiteSpace(Model.FullName))
- {
+
+    if (!string.IsNullOrWhiteSpace(Model.FullName))
+    {
    <text><br/> @Model.FullName </text>
- }
+        if (Model.IsVerifiedUser)
+        {
+            <span class="label label-success" title="Администраторы сайта проверили ФИО пользователя">Данные подтверждены</span>
+        }
+    }
   <br/>
   @(new HtmlString(string.Join("<br>", new object[]
-    {
+        {
       Html.DisplayFor(model => model.Email),
       Html.DisplayFor(model => model.PhoneNumber),
       Html.DisplayFor(model => model.Telegram),
       Html.DisplayFor(model => model.Skype),
       Html.DisplayFor(model => model.Livejournal),
       Html.DisplayFor(model => model.Vk)
-    }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))))
-if (Model.AllrpgId != null && Model.AllrpgId != 0)
- {
+        }.Where(s => !string.IsNullOrWhiteSpace(s.ToString())))))
+    if (Model.AllrpgId != null && Model.AllrpgId != 0)
+    {
    <br/>
    <a href="https://www.allrpg.info/people/@Model.AllrpgId/">Профиль на allrpg</a>
- }
+    }
 }</td>
     </tr>    
 </table>

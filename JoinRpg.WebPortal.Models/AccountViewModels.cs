@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
@@ -149,6 +150,9 @@ namespace JoinRpg.Web.Models
 
         public int? LastClaimId { get; set; }
         public int? LastClaimProjectId { get; set; }
+
+        [ReadOnly(true)]
+        public bool IsVerifiedFlag { get; set; }
 
         /*[Display(Name="Дата рождения", Description = "Указание даты рождения подтверждает мастерам, что вы совершеннолетний"), Required]
         public DateTime? BirthDate { get; set; }*/
