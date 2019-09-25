@@ -64,14 +64,14 @@ namespace JoinRpg.Services.Impl
 
             // Preparing master Id and checking if the same payment type already created
             int masterId;
-            if (request.Kind != PaymentTypeKind.Online)
+            if (request.TypeKind != PaymentTypeKind.Online)
             {
                 if (request.TargetMasterId == null)
                     throw new ArgumentNullException(nameof(request.TargetMasterId), @"Target master must be specified");
                 project.RequestMasterAccess(request.TargetMasterId);
                 // Cash payment could be only one
-                if (request.Kind == PaymentTypeKind.Cash && project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
-                    throw new JoinRpgInvalidUserException($@"Payment of type ${request.Kind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
+                if (request.TypeKind == PaymentTypeKind.Cash && project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
+                    throw new JoinRpgInvalidUserException($@"Payment of type ${request.TypeKind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
                 masterId = request.TargetMasterId.Value;
             }
             else
@@ -82,11 +82,11 @@ namespace JoinRpg.Services.Impl
             }
 
             // Checking custom payment type name
-            if (request.Kind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(request.Name))
+            if (request.TypeKind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(request.Name))
                 throw new ArgumentNullException(nameof(request.Name), "Custom payment type name must be specified");
 
             // Creating payment type
-            var result = new PaymentType(request.Kind, request.ProjectId, masterId);
+            var result = new PaymentType(request.TypeKind, request.ProjectId, masterId);
 
             // Configuring payment type
             if (result.TypeKind == PaymentTypeKind.Custom)

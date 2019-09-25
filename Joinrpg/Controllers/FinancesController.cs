@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
                 {
                     ProjectId = data.ProjectId,
                     TargetMasterId = data.MasterId,
-                    Kind = (PaymentTypeKind) data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
+                    TypeKind = (PaymentTypeKind) data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
                 });
             return RedirectToAction("Setup", new { projectid = data.ProjectId });
         }
@@ -145,7 +145,7 @@ namespace JoinRpg.Web.Controllers
             {
                 ProjectId = viewModel.ProjectId,
                 TargetMasterId = viewModel.UserId,
-                Kind = PaymentTypeKind.Custom,
+                TypeKind = PaymentTypeKind.Custom,
                 Name = viewModel.Name,
             });
             return RedirectToAction("Setup", new { viewModel.ProjectId });

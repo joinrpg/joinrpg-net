@@ -49,10 +49,14 @@ namespace JoinRpg.Domain
       Administrator,
     }
 
-        [NotNull]
+    /// <summary>
+    /// Returns display name of a user
+    /// </summary>
+      [NotNull]
       public static string GetDisplayName([NotNull] this User user)
       {
-          if (user == null) throw new ArgumentNullException(nameof(user));
+          if (user == null)
+              throw new ArgumentNullException(nameof(user));
 
           if (!string.IsNullOrWhiteSpace(user.PrefferedName))
           {
@@ -63,6 +67,21 @@ namespace JoinRpg.Domain
               return user.FullName;
           }
           return user.Email.TakeWhile(ch => ch != '@').AsString();
+      }
+
+    /// <summary>
+    /// Returns hint for a user
+    /// </summary>
+      [NotNull]
+      public static string GetHint([NotNull] this User user)
+      {
+          if (user == null)
+              throw new ArgumentNullException(nameof(user));
+
+          var result = "";
+          if (user.VerifiedProfileFlag)
+              result += "Подтвержденный пользователь";
+          return result;
       }
   }
 }

@@ -5,4 +5,8 @@
     <span>нет</span>
     return;
 }
-<a class="join-user" href="@Url.Action("Details", "User", new {Model.UserId})"><i class="glyphicon glyphicon-user"></i>@Model.GetDisplayName().Trim()</a>
+@helper RenderVerifiedProfile()
+{
+    if (Model.VerifiedProfileFlag) {<i class="glyphicon glyphicon-check"></i>}
+}
+<a class="join-user" title="@Model.GetHint()" href="@Url.Action("Details", "User", new {Model.UserId})"><i class="glyphicon glyphicon-user"></i>@RenderVerifiedProfile()@Model.GetDisplayName().Trim()</a>

@@ -71,7 +71,7 @@ namespace JoinRpg.Services.Interfaces
     {
         public int ProjectId { get; set; }
         public int? TargetMasterId { get; set; }
-        public PaymentTypeKind Kind { get; set; }
+        public PaymentTypeKind TypeKind { get; set; }
         public string Name { get; set; }
     }
 
