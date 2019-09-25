@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Controllers
       private IUriService UriService { get; }
       private IFinanceReportRepository FinanceReportRepository { get; }
 
-      private IVirtualPaymentsUserService VirtualPaymentsUser { get; }
+      private IVirtualUsersService VirtualUsers { get; }
 
       public FinancesController(
           IProjectRepository projectRepository,
@@ -33,7 +33,7 @@ namespace JoinRpg.Web.Controllers
           IUriService uriService,
           IFinanceReportRepository financeReportRepository,
           IUserRepository userRepository,
-          IVirtualPaymentsUserService vpu
+          IVirtualUsersService vpu
           )
           : base(projectRepository, projectService, userRepository)
         {
@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Controllers
             FinanceService = financeService;
           UriService = uriService;
           FinanceReportRepository = financeReportRepository;
-          VirtualPaymentsUser = vpu;
+          VirtualUsers = vpu;
         }
 
       [HttpGet]
@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), await VirtualPaymentsUser.UserAsync));
+      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualUsers.PaymentsUser));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
@@ -123,7 +123,7 @@ namespace JoinRpg.Web.Controllers
                 {
                     ProjectId = data.ProjectId,
                     TargetMasterId = data.MasterId,
-                    Kind = data.Kind.GetValueOrDefault(PaymentTypeKind.Custom),
+                    Kind = (PaymentTypeKind) data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
                 });
             return RedirectToAction("Setup", new { projectid = data.ProjectId });
         }

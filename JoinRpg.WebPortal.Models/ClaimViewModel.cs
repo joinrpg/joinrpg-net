@@ -386,7 +386,7 @@ namespace JoinRpg.Web.Models
             FinanceOperations = claim.FinanceOperations;
 
             OnlinePaymentEnabled = model.PaymentTypes.OnlinePaymentsEnabled();
-            HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.Kind != PaymentTypeKindViewModel.Online);
+            HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
 
             // Determining payment status
             PaymentStatus = FinanceExtensions.GetClaimPaymentStatus(CurrentTotalFee, CurrentBalance);

@@ -19,7 +19,7 @@
             "destination": "Scripts/lib/jquery-validation-unobtrusive/"
         },
         {
-            "library": "twitter-bootstrap@3.4.1",
+            "library": "twitter-bootstrap@3.4.0",
             "destination": "Scripts/lib/twitter-bootstrap/"
         },
         {

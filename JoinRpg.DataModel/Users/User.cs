@@ -36,6 +36,8 @@ namespace JoinRpg.DataModel
 
     public string PrefferedName { get; set; }
 
+        public bool VerifiedProfileFlag { get; set; }
+
     [NotNull]
     public virtual UserAuthDetails Auth { get; set; }
 
@@ -47,18 +49,8 @@ namespace JoinRpg.DataModel
 
     public virtual ICollection<UserExternalLogin> ExternalLogins { get; set; } = new List<UserExternalLogin>();
 
+        public const string OnlinePaymentVirtualUser = "payments@joinrpg.ru";
 
-    public const string VirtualOnlinePaymentsManagerEmail = "payments@joinrpg.ru";
-
-    public static User CreateVirtualOnlinePaymentsManager()
-    {
-            return new User
-            {
-                UserName = "payments",
-                PrefferedName = "Online payments service",
-                Email = VirtualOnlinePaymentsManagerEmail
-            };
-    }
   }
 
   public enum Gender : byte

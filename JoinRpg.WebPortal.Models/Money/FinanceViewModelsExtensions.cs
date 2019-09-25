@@ -41,7 +41,7 @@ namespace JoinRpg.Web.Models {
         /// </summary>
         public static IEnumerable<PaymentTypeViewModel> GetUserSelectablePaymentTypes(
             this IEnumerable<PaymentTypeViewModel> source)
-            => source.Where(pt => pt.Kind != PaymentTypeKindViewModel.Online);
+            => source.Where(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
 
         /// <summary>
         /// Converts payment types to select box items
@@ -60,6 +60,6 @@ namespace JoinRpg.Web.Models {
         /// </summary>
         public static bool OnlinePaymentsEnabled(
             this IEnumerable<PaymentTypeViewModel> paymentTypes)
-            => paymentTypes.FirstOrDefault(pt => pt.Kind == PaymentTypeKindViewModel.Online) != null;
+            => paymentTypes.FirstOrDefault(pt => pt.TypeKind == PaymentTypeKindViewModel.Online) != null;
     }
 }

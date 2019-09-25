@@ -41,11 +41,11 @@
                 <td>
                     @if (item.IsActive)
                     {
-                        if (item.Kind == PaymentTypeKind.Custom)
+                        if (item.TypeKind == PaymentTypeKindViewModel.Custom)
                         {
                             <a href="@Url.Action("EditPaymentType", new {item.ProjectId, item.PaymentTypeId})" class="btn btn-default">Изменить</a>
                         }
-                        if (item.Kind != PaymentTypeKind.Online || Model.IsAdmin)
+                        if (item.TypeKind != PaymentTypeKindViewModel.Online || Model.IsAdmin)
                         {
                             var deleteActionName = item.CanBePermanentlyDeleted ? "Удалить" : "Выключить";
                             <button type="button" class="btn btn-danger btn-xs"
@@ -56,18 +56,18 @@
                                     data-action="@deleteActionName">@deleteActionName</button>
                             }
                         }
-                        else if (item.Kind != PaymentTypeKind.Online || Model.IsAdmin)
+                        else if (item.TypeKind != PaymentTypeKindViewModel.Online || Model.IsAdmin)
                         {
                             <button type="button" class="btn btn-default btn-xs"
                                     data-toggle="modal"
                                     data-target="#togglePaymentTypeDialog"
                                     data-element="@item.PaymentTypeId"
                                     data-name="@item.Name"
-                                    data-kind="@item.Kind"
+                                    data-kind="@item.TypeKind"
                                     data-user="@item.Master.UserId"
                                     data-action="Включить">Включить</button>
                         }
-                        else if (item.Kind == PaymentTypeKind.Online)
+                        else if (item.TypeKind == PaymentTypeKindViewModel.Online)
                         {
                             <a type="button" class="btn btn-info btn-xs" target="_blank" href="http://docs.joinrpg.ru/ru/latest/online-payments">Узнать, как включить</a>
                         }

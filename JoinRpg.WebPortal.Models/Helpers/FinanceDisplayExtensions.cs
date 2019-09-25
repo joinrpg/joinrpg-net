@@ -39,7 +39,7 @@ namespace JoinRpg.Web.Models
         {
             if (paymentType == null)
                 throw new ArgumentNullException(nameof(paymentType));
-            return paymentType.Kind.GetDisplayName(paymentType.User, paymentType.Name);
+            return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Models
         {
             if (paymentType == null)
                 throw new ArgumentNullException(nameof(paymentType));
-            return paymentType.Kind.GetDisplayName(paymentType.User, paymentType.Name);
+            return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
 
         }
         

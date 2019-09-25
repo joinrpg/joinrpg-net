@@ -22,13 +22,13 @@ namespace JoinRpg.Services.Impl
     public class FinanceOperationsImpl : ClaimImplBase, IFinanceService
     {
 
-        private IVirtualPaymentsUserService _vpu;
+        private IVirtualUsersService _vpu;
 
         public FinanceOperationsImpl(
             IUnitOfWork unitOfWork,
             IEmailService emailService,
             IFieldDefaultValueGenerator fieldDefaultValueGenerator,
-            IVirtualPaymentsUserService vpu
+            IVirtualUsersService vpu
             ) : base(unitOfWork, emailService, fieldDefaultValueGenerator)
         {
             _vpu = vpu;
@@ -76,9 +76,9 @@ namespace JoinRpg.Services.Impl
             }
             else
             {
-                if (project.PaymentTypes.Any(pt => pt.Kind == PaymentTypeKind.Online))
+                if (project.PaymentTypes.Any(pt => pt.TypeKind == PaymentTypeKind.Online))
                     throw new DataException("Can't create more than one online payment type");
-                masterId = (await _vpu.UserAsync).UserId;
+                masterId = _vpu.PaymentsUser.UserId;
             }
 
             // Checking custom payment type name
@@ -89,7 +89,7 @@ namespace JoinRpg.Services.Impl
             var result = new PaymentType(request.Kind, request.ProjectId, masterId);
 
             // Configuring payment type
-            if (result.Kind == PaymentTypeKind.Custom)
+            if (result.TypeKind == PaymentTypeKind.Custom)
                 result.Name = request.Name.Trim();
 
             // Saving
@@ -103,7 +103,7 @@ namespace JoinRpg.Services.Impl
             var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
             var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
-            switch (paymentType.Kind)
+            switch (paymentType.TypeKind)
             {
                 case PaymentTypeKind.Custom:
                 case PaymentTypeKind.Cash:
@@ -122,7 +122,7 @@ namespace JoinRpg.Services.Impl
                     }
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(paymentType.Kind), paymentType.Kind, null);
+                    throw new ArgumentOutOfRangeException(nameof(paymentType.TypeKind), paymentType.TypeKind, null);
             }
 
             if (paymentType.IsActive)

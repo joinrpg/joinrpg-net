@@ -11,7 +11,7 @@ namespace JoinRpg.DataModel
     public enum PaymentTypeKind
     {
         /// <summary>
-        /// Custom, user-defined payment type
+        /// Custom, non-specific user-defined payment type
         /// </summary>
         Custom = 0,
 
@@ -21,7 +21,7 @@ namespace JoinRpg.DataModel
         Cash = 1,
 
         /// <summary>
-        /// Online payment type (with bank card directly on site)
+        /// Online payment type through online payment gate
         /// </summary>
         Online = 2,
     }
@@ -41,7 +41,7 @@ namespace JoinRpg.DataModel
       /// <summary>
       /// Kind of payment type
       /// </summary>
-      public PaymentTypeKind Kind { get; set; }
+      public PaymentTypeKind TypeKind { get; set; }
 
       public bool IsActive { get; set; }
 
@@ -63,13 +63,19 @@ namespace JoinRpg.DataModel
           }
       }
 
+      /// <summary>
+      /// Default constructor
+      /// </summary>
       public PaymentType() {}
 
-      public PaymentType(PaymentTypeKind kind, int projectId, int userId)
+      /// <summary>
+      /// Creates payment type of specified kind for specified project and responsible user
+      /// </summary>
+      public PaymentType(PaymentTypeKind typeKind, int projectId, int userId)
       {
           IsActive = true;
-          Kind = kind;
-          Name = kind.ToString().ToLowerInvariant();
+          TypeKind = typeKind;
+          Name = typeKind.ToString().ToLowerInvariant();
           ProjectId = projectId;
           UserId = userId;
       }

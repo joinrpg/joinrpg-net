@@ -138,7 +138,7 @@ namespace JoinRpg.Web.Models
     {
         public int PaymentTypeId { get; set; }
         public bool IsDefault { get; set; }
-        public PaymentTypeKindViewModel Kind { get; set; }
+        public PaymentTypeKindViewModel TypeKind { get; set; }
         public int UserId { get; set; }
 
         [ReadOnly(true)]
@@ -150,7 +150,7 @@ namespace JoinRpg.Web.Models
         {
             PaymentTypeId = source.PaymentTypeId;
             IsDefault = source.IsDefault;
-            Kind = (PaymentTypeKindViewModel) source.Kind;
+            TypeKind = (PaymentTypeKindViewModel) source.TypeKind;
             Name = source.GetDisplayName();
             ProjectId = source.ProjectId;
             UserId = source.UserId;
@@ -210,19 +210,19 @@ namespace JoinRpg.Web.Models
               project.ProjectAcls
                   .Where(
                       acl => project.PaymentTypes
-                          .Where(pt => pt.Kind == PaymentTypeKind.Cash)
+                          .Where(pt => pt.TypeKind == PaymentTypeKind.Cash)
                           .All(pt => pt.UserId != acl.UserId))
                   .Select(acl => new PaymentTypeListItemViewModel(acl));
 
           var existedPaymentTypes =
               project.PaymentTypes
-                  .Where(pt => pt.Kind != PaymentTypeKind.Online)
+                  .Where(pt => pt.TypeKind != PaymentTypeKind.Online)
                   .Select(pt => new PaymentTypeListItemViewModel(pt));
 
           var onlinePaymentTypes = new []
           {
               project.PaymentTypes
-                  .Where(pt => pt.Kind == PaymentTypeKind.Online)
+                  .Where(pt => pt.TypeKind == PaymentTypeKind.Online)
                   .Select(pt => new PaymentTypeListItemViewModel(pt))
                   .DefaultIfEmpty(new PaymentTypeListItemViewModel(PaymentTypeKind.Online, virtualPaymentsUser, project.ProjectId))
                   .Single()
@@ -233,7 +233,7 @@ namespace JoinRpg.Web.Models
                   existedPaymentTypes.Union(potentialCashPaymentTypes)
                       .OrderBy(li => !li.IsActive)
                       .ThenBy(li => !li.IsDefault)
-                      .ThenBy(li => li.Kind != PaymentTypeKind.Custom)
+                      .ThenBy(li => li.TypeKind != PaymentTypeKindViewModel.Custom)
                       .ThenBy(li => li.Name))
                   .ToList();
 
@@ -262,16 +262,16 @@ namespace JoinRpg.Web.Models
 
       public int? PaymentTypeId { get; set; }
 
-      public PaymentTypeKind? Kind { get; set; }
+      public PaymentTypeKindViewModel? TypeKind { get; set; }
 
       public int? MasterId { get; set; }
 
       /// <inheritdoc />
       public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
       {
-          if (PaymentTypeId == null && (Kind == null || Kind != PaymentTypeKind.Online && MasterId == null))
+          if (PaymentTypeId == null && (TypeKind == null || TypeKind != PaymentTypeKindViewModel.Online && MasterId == null))
                 yield return new ValidationResult("Для новых методов оплаты должен быть указан тип и пользователь",
-                    new []{ nameof(PaymentTypeId), nameof(Kind), nameof(MasterId) });
+                    new []{ nameof(PaymentTypeId), nameof(TypeKind), nameof(MasterId) });
       }
   }
 
@@ -284,7 +284,7 @@ namespace JoinRpg.Web.Models
     [Display(Name="Название")]
     public string Name { get; }
 
-    public PaymentTypeKind Kind { get; }
+    public PaymentTypeKindViewModel TypeKind { get; }
 
     public bool IsActive { get; }
 
@@ -300,13 +300,13 @@ namespace JoinRpg.Web.Models
     {
       PaymentTypeId = paymentType.PaymentTypeId;
       ProjectId = paymentType.ProjectId;
-      Kind = paymentType.Kind;
+      TypeKind = (PaymentTypeKindViewModel) paymentType.TypeKind;
       Master = paymentType.User;
-      Name = Kind.GetDisplayName(null, paymentType.Name);
+      Name = TypeKind.GetDisplayName(null, paymentType.Name);
       IsActive = paymentType.IsActive;
       IsDefault = paymentType.IsDefault;
       CanBePermanentlyDeleted = IsActive
-          && Kind == PaymentTypeKind.Custom
+          && TypeKind == PaymentTypeKindViewModel.Custom
           && paymentType.CanBePermanentlyDeleted;
     }
 
@@ -315,20 +315,20 @@ namespace JoinRpg.Web.Models
       PaymentTypeId = null;
       ProjectId = acl.ProjectId;
       Name = PaymentTypeKind.Cash.GetDisplayName();
-      Kind = PaymentTypeKind.Cash;
+      TypeKind = PaymentTypeKindViewModel.Cash;
       Master = acl.User;
       IsActive = false;
       IsDefault = false;
       CanBePermanentlyDeleted = false;
     }
 
-    public PaymentTypeListItemViewModel(PaymentTypeKind kind, User user, int projectId)
+    public PaymentTypeListItemViewModel(PaymentTypeKind typeKind, User user, int projectId)
     {
-        Name = kind.GetDisplayName(user);
+        Name = typeKind.GetDisplayName(user);
         PaymentTypeId = null;
         ProjectId = projectId;
         Master = user;
-        Kind = kind;
+        TypeKind = (PaymentTypeKindViewModel) typeKind;
         CanBePermanentlyDeleted = false;
         IsDefault = false;
         IsActive = false;
