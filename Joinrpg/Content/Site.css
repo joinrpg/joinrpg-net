@@ -2,6 +2,10 @@
   font-family: 'Roboto', sans-serif;
 }
 
+p:last-child {
+    margin-bottom: 0;
+}
+
 blockquote {
   font-size: 14px;
 }
