@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
@@ -9,24 +10,24 @@ namespace JoinRpg.Services.Impl
     /// <inheritdoc />
     public class VirtualPaymentsUserService : IVirtualPaymentsUserService
     {
+        private readonly Lazy<Task<User>> _user;
+
         /// <inheritdoc />
-        public Lazy<User> User { get; protected set; }
+        public Task<User> UserAsync => _user.Value;
 
         /// <summary>
         /// Default constructor
         /// </summary>
         public VirtualPaymentsUserService(Func<IUnitOfWork> uowResolver)
         {
-            User = new Lazy<User>(() => LoadVirtualUser(uowResolver()), true);
+            _user = new Lazy<Task<User>>(() => LoadVirtualUserAsync(uowResolver()), true);
         }
 
-        private User LoadVirtualUser(IUnitOfWork uow)
+        private async Task<User> LoadVirtualUserAsync(IUnitOfWork uow)
         {
-            User result = uow
+            User result = await uow
                 .GetUsersRepository()
-                .GetByEmail(DataModel.User.VirtualOnlinePaymentsManagerEmail)
-                .GetAwaiter()
-                .GetResult();
+                .GetByEmail(User.VirtualOnlinePaymentsManagerEmail);
             if (result == null)
                 throw new DataException("Virtual payments manager user was not found");
             return result;

@@ -1,4 +1,4 @@
-using System;
+using System.Threading.Tasks;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
@@ -11,6 +11,6 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Data object of virtual payments manager user
         /// </summary>
-        Lazy<User> User { get; }
+        Task<User> UserAsync { get; }
     }
 }

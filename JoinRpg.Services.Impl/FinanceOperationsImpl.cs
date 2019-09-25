@@ -67,17 +67,18 @@ namespace JoinRpg.Services.Impl
             if (request.Kind != PaymentTypeKind.Online)
             {
                 if (request.TargetMasterId == null)
-                    throw new ArgumentNullException(nameof(request.TargetMasterId), $@"Target master must be specified");
+                    throw new ArgumentNullException(nameof(request.TargetMasterId), @"Target master must be specified");
                 project.RequestMasterAccess(request.TargetMasterId);
-                if (project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
-                    throw new JoinRpgInvalidUserException($@"Payment of type ${request.Kind.GetDisplayName()} is already created for user ${request.TargetMasterId}");
+                // Cash payment could be only one
+                if (request.Kind == PaymentTypeKind.Cash && project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
+                    throw new JoinRpgInvalidUserException($@"Payment of type ${request.Kind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
                 masterId = request.TargetMasterId.Value;
             }
             else
             {
                 if (project.PaymentTypes.Any(pt => pt.Kind == PaymentTypeKind.Online))
                     throw new DataException("Can't create more than one online payment type");
-                masterId = _vpu.User.Value.UserId;
+                masterId = (await _vpu.UserAsync).UserId;
             }
 
             // Checking custom payment type name

@@ -49,7 +49,7 @@ namespace JoinRpg.Web.Controllers
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualPaymentsUser.User.Value));
+      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), await VirtualPaymentsUser.UserAsync));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Web;
-using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -115,6 +113,20 @@ namespace JoinRpg.Web.Models
         }
     }
 
+    /// <summary>
+    /// Map of <see cref="PaymentTypeKind"/>
+    /// </summary>
+    public enum PaymentTypeKindViewModel
+    {
+        Custom = PaymentTypeKind.Custom,
+
+        [Display(Name = "Наличными")]
+        Cash = PaymentTypeKind.Cash,
+
+        [Display(Name = "Онлайн")]
+        Online = PaymentTypeKind.Online,
+    }
+
   public abstract class PaymentTypeViewModelBase
   {
     public int ProjectId { get; set; }
@@ -126,8 +138,11 @@ namespace JoinRpg.Web.Models
     {
         public int PaymentTypeId { get; set; }
         public bool IsDefault { get; set; }
-        public PaymentTypeKind Kind { get; set; }
+        public PaymentTypeKindViewModel Kind { get; set; }
         public int UserId { get; set; }
+
+        [ReadOnly(true)]
+        public User User { get; }
 
         public PaymentTypeViewModel() { }
 
@@ -135,10 +150,11 @@ namespace JoinRpg.Web.Models
         {
             PaymentTypeId = source.PaymentTypeId;
             IsDefault = source.IsDefault;
-            Kind = source.Kind;
+            Kind = (PaymentTypeKindViewModel) source.Kind;
             Name = source.GetDisplayName();
             ProjectId = source.ProjectId;
             UserId = source.UserId;
+            User = source.User;
         }
     }
 

@@ -4,30 +4,33 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 
-namespace JoinRpg.CommonUI.Models
+namespace JoinRpg.Web.Models
 {
     public static class FinanceDisplayExtensions
     {
         /// <summary>
         /// Returns display name of the payment type kind
         /// </summary>
-        /// <param name="kind"></param>
-        /// <param name="defaultName">Default name</param>
-        /// <param name="user">User data</param>
-        public static string GetDisplayName(this PaymentTypeKind kind, User user, string defaultName = null)
+        public static string GetDisplayName(this PaymentTypeKindViewModel kind, User user, string defaultName = null)
         {
             switch (kind)
             {
-                case PaymentTypeKind.Custom:
+                case PaymentTypeKindViewModel.Custom:
                     return defaultName ?? kind.GetDisplayName();
-                case PaymentTypeKind.Cash:
+                case PaymentTypeKindViewModel.Cash:
                     return user != null ? $@"{kind.GetDisplayName()} — {user.GetDisplayName()}" : kind.GetDisplayName();
-                case PaymentTypeKind.Online:
+                case PaymentTypeKindViewModel.Online:
                     return kind.GetDisplayName();
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
+
+        /// <summary>
+        /// Returns display name of the payment type kind
+        /// </summary>
+        public static string GetDisplayName(this PaymentTypeKind kind, User user, string defaultName = null)
+            => ((PaymentTypeKindViewModel)kind).GetDisplayName(user, defaultName);
 
         /// <summary>
         /// Returns display name for the payment type
@@ -38,5 +41,17 @@ namespace JoinRpg.CommonUI.Models
                 throw new ArgumentNullException(nameof(paymentType));
             return paymentType.Kind.GetDisplayName(paymentType.User, paymentType.Name);
         }
+
+        /// <summary>
+        /// Returns display name for the payment type view model
+        /// </summary>
+        public static string GetDisplayName([NotNull] this PaymentTypeViewModel paymentType)
+        {
+            if (paymentType == null)
+                throw new ArgumentNullException(nameof(paymentType));
+            return paymentType.Kind.GetDisplayName(paymentType.User, paymentType.Name);
+
+        }
+        
     }
 }
