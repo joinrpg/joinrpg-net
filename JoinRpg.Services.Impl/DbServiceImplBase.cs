@@ -49,6 +49,7 @@ namespace JoinRpg.Services.Impl
         /// </summary>
         protected int CurrentUserId => _impersonatedUserId ??
                                        int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+        // TODO: Fix impersonation
 
         /// <summary>
         /// Returns true if current user is admin
