@@ -29,9 +29,9 @@ namespace JoinRpg.DI
 
             builder.RegisterType<MyDbContext>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
 
-            builder.RegisterType<VirtualUsersService>()
-                .As<IVirtualUsersService>()
-                .SingleInstance();
+            builder.RegisterType<VirtualUsersService>().As<IVirtualUsersService>().SingleInstance();
+
+            builder.RegisterType<PaymentsService>().As<IPaymentsService>();
 
             base.Load(builder);
         }
