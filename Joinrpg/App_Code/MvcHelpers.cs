@@ -126,8 +126,7 @@ namespace JoinRpg.Web.App_Code
 
         public static MvcHtmlString HelpLink(this HtmlHelper self, string link, string message)
         {
-            return new MvcHtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
-                                     "\">" + message + "</a>");
+            return new MvcHtmlString(string.Format(@"<span class='glyphicon glyphicon-question-sign'></span><a href='{0}{1}'>{2}</a>", Contacts.Docs, link, message));
         }
 
         public static TValue GetValue<TModel, TValue>(this HtmlHelper<TModel> self,

@@ -7,7 +7,7 @@
     <div class="panel-body">
         <h2 style="margin: 0 0 1em 0;">@ViewBag.Title</h2>
         <div>
-            @if (!ViewBag.IsProduction)
+            @if (ViewBag.IsProduction)
             {
                 @Html.Partial("_IndexProdPartial")
             }

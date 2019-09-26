@@ -6,20 +6,25 @@
 
 @if (!ViewBag.IsProduction)
 {
-    <div class="alert alert-danger">
-        Это тестовая версия JoinRpg.ru.<br />Не используйте ее для реальной работы с игроками<br />
-        Если вы игрок, и забрели сюда случайно, вам <a href="https://joinrpg.ru">на основной сервер</a>
-    </div>
+    @Html.Partial("_DevAlertPartial")
 }
 
-<div class="panel panel-default">
-    <div class="panel-heading">Команда сайта</div>
-    <div class="panel-body">
-        <b>#ЛеоЦарев</b> — создатель сайта, программист
-        <br /><b>#Шико</b> — программист
-        <br /><b>#Атана</b> — документация
-        <br /><b>#Айка</b> — техподдержка
-        <br /><a href="http://bastilia.ru/about/">#Бастилия</a>
+<div style="display: flex; flex-direction: row; justify-content: space-between;">
+    <div class="panel panel-default" style="width: 49%;">
+        <div class="panel-heading">ООО «Джойн Регистрация»</div>
+        <div class="panel-body">
+            @Html.Partial("_CompanyInfo")
+        </div>
+    </div>
+    <div class="panel panel-default" style="width: 49%;">
+        <div class="panel-heading">Команда сайта</div>
+        <div class="panel-body">
+            <b>#ЛеоЦарев</b> — создатель сайта, программист
+            <br/><b>#Шико</b> — программист
+            <br/><b>#Атана</b> — документация
+            <br/><b>#Айка</b> — техподдержка
+            <br/><a href="http://bastilia.ru/about/">#Бастилия</a>
+        </div>
     </div>
 </div>
 

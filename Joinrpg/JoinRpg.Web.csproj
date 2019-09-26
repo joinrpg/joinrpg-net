@@ -89,6 +89,7 @@
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Helpers\AuthModelBuilers.cs" />
+    <Compile Include="Helpers\Contacts.cs" />
     <Compile Include="Helpers\CurrentProjectAccessor.cs" />
     <Compile Include="Helpers\CurrentUserAccessor.cs" />
     <Compile Include="Helpers\EnumExtensions.cs" />
@@ -150,8 +151,9 @@
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
     <Content Include="Content\Images\fee.jpg" />
+    <Content Include="Content\Images\logo-telegram.svg" />
+    <Content Include="Content\Images\logo-vk.svg" />
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
-    <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
     <Content Include="Content\Print.css" />
     <Content Include="external\joinrpg-api.css" />
@@ -565,7 +567,7 @@
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
+    <Content Include="Views\Shared\Layout\_MasterMenuPartial.cshtml" />
     <Content Include="Views\Plot\Index.cshtml" />
     <Content Include="Views\Plot\Create.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
@@ -626,7 +628,7 @@
     <Content Include="Views\Finances\MoneySummary.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
-    <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
+    <Content Include="Views\Shared\Layout\_PlayerMenuPartial.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
     <Content Include="Views\Home\FromAllrpgInfo.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MandatoryStatusViewType.cshtml" />
@@ -984,6 +986,27 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\_IndexDevPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Layout\_FooterPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Layout\_YandexPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Legal.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Support.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_DevAlertPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_CompanyInfo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Tariffs.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

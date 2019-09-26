@@ -20,8 +20,13 @@ namespace JoinRpg.Web.Controllers
         public async Task<ActionResult> Index() =>
             View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));
 
+        public ActionResult Legal() => View();
 
         public ActionResult About() => View();
+
+        public ActionResult Support() => View();
+
+        public ActionResult Tariffs() => View();
 
         public ActionResult Funding2016() => View();
 

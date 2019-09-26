@@ -1,0 +1,23 @@
+﻿@using JoinRpg.Web.App_Code
+
+<div style="display: flex; flex-direction: row; align-items: center">
+    <div>
+        <strong style="font-size: larger">JoinRpg версия @ViewContext.Controller.GetType().Assembly.GetName().Version</strong>
+    </div>
+    <div style="margin-left: auto; display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+        <a style="margin-left: 0.5em;" href="@Contacts.VkGroup"><img height="20px" src="~/Content/Images/logo-vk.svg" /></a>
+        <a style="margin-left: 0.5em;"  href="@Contacts.TelegramChat"><img height="20px" src="~/Content/Images/logo-telegram.svg" /></a>
+    </div>
+</div>
+<div style="margin-top: 1em; padding-top: 1em; border-top: 1px solid #eeeeee; display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+    @Html.ActionLink("О проекте", "About", "Home")
+    @Html.ActionLink("Документы", "Legal", "Home")
+    @Html.ActionLink("Тарифы", "Tariffs", "Home")
+    <a href="@Contacts.Docs">Руководство</a>
+    @Html.ActionLink("Как помочь?", "HowToHelp", "Home")
+    @Html.ActionLink("Поддержка", "Support", "Home")
+</div>
+<div style="margin-top: 1em; padding-top: 1em; border-top: 1px solid #eeeeee;">
+    <div>&copy; ООО «Джойн Регистрация», <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья.</div>
+    <div>Продолжая работу с нашим сайтом, вы соглашаетесь с @Html.ActionLink("правилами его использования", "Legal", "Home").</div>
+</div>
