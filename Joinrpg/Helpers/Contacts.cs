@@ -13,7 +13,7 @@ namespace JoinRpg.Web
 
         public const string PaymentsEmail = User.OnlinePaymentVirtualUser;
 
-        public const string TelegramChat = "https://t.me/xx.jj";
+        public const string TelegramChat = "https://t.me/joinchat/CbeyZEBmPZ5RNtPq0pyVxg";
 
         public const string VkGroup = "https://vk.com/joinrpg";
 

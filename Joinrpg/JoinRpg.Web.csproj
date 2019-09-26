@@ -92,6 +92,7 @@
     <Compile Include="Helpers\Contacts.cs" />
     <Compile Include="Helpers\CurrentProjectAccessor.cs" />
     <Compile Include="Helpers\CurrentUserAccessor.cs" />
+    <Compile Include="Helpers\Documents.cs" />
     <Compile Include="Helpers\EnumExtensions.cs" />
     <Compile Include="Helpers\HttpContextItemHelpers.cs" />
     <Compile Include="Helpers\InviteStateExtensions.cs" />
