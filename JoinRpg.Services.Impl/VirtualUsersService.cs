@@ -1,5 +1,7 @@
 using System;
 using System.Data;
+using System.Linq;
+using System.Data.Entity;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Services.Interfaces;
@@ -25,11 +27,11 @@ namespace JoinRpg.Services.Impl
         private User LoadPaymentsUser(IUnitOfWork uow)
         {
             User result = uow
-                .GetUsersRepository()
-                .GetByEmail(User.OnlinePaymentVirtualUser)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
+                .GetDbSet<User>()
+                .Include(u => u.Auth)
+                .Include(u => u.Allrpg)
+                .Include(u => u.Extra)
+                .SingleOrDefault(u => u.Email == User.OnlinePaymentVirtualUser);
             if (result == null)
                 throw new DataException("Virtual payments manager user was not found");
             return result;
