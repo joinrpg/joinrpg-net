@@ -11,13 +11,13 @@
 </div>
 <div style="margin-top: 1em; padding-top: 1em; border-top: 1px solid #eeeeee; display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
     @Html.ActionLink("О проекте", "About", "Home")
-    @Html.ActionLink("Документы", "Legal", "Home")
-    @Html.ActionLink("Тарифы", "Tariffs", "Home")
     <a href="@Contacts.Docs">Руководство</a>
     @Html.ActionLink("Как помочь?", "HowToHelp", "Home")
     @Html.ActionLink("Поддержка", "Support", "Home")
+    @Html.ActionLink("Прием платежей онлайн", "Legal", "Home")
+    @*@Html.ActionLink("Тарифы", "Tariffs", "Home")*@
 </div>
 <div style="margin-top: 1em; padding-top: 1em; border-top: 1px solid #eeeeee;">
-    <div>&copy; ООО «Джойн Регистрация», <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья.</div>
+    <div>&copy; @*ООО «Джойн Регистрация», *@<a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья.</div>
     <div>Продолжая работу с нашим сайтом, вы соглашаетесь с @Html.ActionLink("правилами его использования", "Legal", "Home").</div>
 </div>

@@ -9,14 +9,16 @@
     @Html.Partial("_DevAlertPartial")
 }
 
-<div style="display: flex; flex-direction: row; justify-content: space-between;">
+@*<div style="display: flex; flex-direction: row; justify-content: space-between;">*@
+    @*
     <div class="panel panel-default" style="width: 49%;">
         <div class="panel-heading">ООО «Джойн Регистрация»</div>
         <div class="panel-body">
             @Html.Partial("_CompanyInfo")
         </div>
     </div>
-    <div class="panel panel-default" style="width: 49%;">
+    *@
+    <div class="panel panel-default" @*style="width: 49%;"*@>
         <div class="panel-heading">Команда сайта</div>
         <div class="panel-body">
             <b>#ЛеоЦарев</b> — создатель сайта, программист
@@ -26,7 +28,7 @@
             <br/><a href="http://bastilia.ru/about/">#Бастилия</a>
         </div>
     </div>
-</div>
+@*</div>*@
 
 <div class="panel panel-default">
     <div class="panel-heading">Как помочь?</div>
