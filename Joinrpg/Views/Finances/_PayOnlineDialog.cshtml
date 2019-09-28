@@ -22,44 +22,14 @@
                         </div>
                     }
 
-                    <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-info-sign"></i>
-                        <div>
-                            <p>
-                                После нажатия кнопки Оплатить вы будете перенаправлены на страницу платежного сервиса
-                                «ПСКБ Онлайн» для ввода данных банковской карты системы Master Card, Visa или МИР.
-                                Для дополнительной идентификации держателя карты может использоваться технология 3D Secure.
-                                В случае использования 3D Secure произойдет перенаправление на страницу банка-эмитента
-                                для ввода дополнительного одноразового пароля.
-                            </p>
-                            <p>
-                                После успешной оплаты она будет автоматически отмечена в базе,
-                                а вы получите на адрес электронной почты чек. Дополнительно отмечать оплату не требуется.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="join alert alert-info">
-                        <i class="glyphicon glyphicon-alert"></i>
-                        <div>
-                            <p>
-                                Платежный сервис «ПСКБ Онлайн» производит обработку данных банковских карт в соответствии
-                                с требованиями международного стандарта безопасности PCI DSS 3.0. Передача информации происходит
-                                с применением технологии шифрования SSL.
-                            </p>
-                            <p>
-                                JoinRpg.Ru не осуществляет сбор, обработку и хранение данных банковских карт.
-                                Конфиденциальность информации гарантирует <a target="_blank" href="https://pscb.ru">АО&nbsp;Банк&nbsp;«ПСКБ»</a>.
-                            </p>
-                        </div>
-                    </div>
+                    @Html.Partial("..\\Finances\\_PaymentLegalInfoPartial")
 
                     <div class="form-horizontal">
                         <div class="form-group">
                             <label class="control-label col-md-4">Сумма к оплате:</label>
                             <div class="col-md-8">
                                 @Html.EditorFor(model => model.Money, new { htmlAttributes = new { @class = "form-control", style = "display: inline-block; max-width: 150px" } })
-                                @Html.RenderCurrencySign()
+                                ₽
                             </div>
                         </div>
 
