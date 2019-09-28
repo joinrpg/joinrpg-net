@@ -28,6 +28,7 @@ namespace JoinRpg.Services.Impl
         {
             User result = uow
                 .GetDbSet<User>()
+                .AsNoTracking()
                 .Include(u => u.Auth)
                 .Include(u => u.Allrpg)
                 .Include(u => u.Extra)
