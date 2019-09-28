@@ -314,7 +314,7 @@ namespace JoinRpg.Web.Models
     {
       PaymentTypeId = null;
       ProjectId = acl.ProjectId;
-      Name = PaymentTypeKind.Cash.GetDisplayName();
+      Name = PaymentTypeKindViewModel.Cash.GetDisplayName();
       TypeKind = PaymentTypeKindViewModel.Cash;
       Master = acl.User;
       IsActive = false;

@@ -26,14 +26,24 @@
     @foreach (var item in Model.PaymentTypes)
     {
         <tr>
-            <td class="@(item.IsActive ? "" : "deleted")">
-                @if (item.IsDefault)
-                {
-                    <span class="label label-default">@Html.DisplayNameFor(model => paymentType.IsDefault)</span>
-                }
-                @(item.Name)
+            <td>
+                <span style="display: inline-flex; align-items: center;">
+                    @if (item.IsDefault)
+                    {
+                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => paymentType.IsDefault)</span>
+                    }
+                    <span class="@(item.IsActive ? "" : "deleted")">@(item.Name)</span>
+                </span>
             </td>
-            <td>@Html.DisplayFor(modelItem => item.Master)</td>
+            <td>
+                <span style="display: inline-flex; align-items: center;">
+                    @if (item.Master.VerifiedProfileFlag)
+                    {
+                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => item.Master.VerifiedProfileFlag)</span>
+                    }
+                    @Html.DisplayFor(modelItem => item.Master)
+                </span>
+            </td>
             @if (Model.HasEditAccess)
             {
                 <td>
@@ -67,7 +77,7 @@
                         }
                         else if (item.TypeKind == PaymentTypeKindViewModel.Online)
                         {
-                            <a type="button" class="btn btn-info btn-xs" target="_blank" href="http://docs.joinrpg.ru/ru/latest/online-payments">Узнать, как включить</a>
+                            @Html.ActionLink("Узнать, как включить", "Legal", "Home", null, new { @class = "btn btn-info btn-xs", target = "_blank" })
                         }
                 </td>
             }

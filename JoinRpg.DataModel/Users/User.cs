@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.Helpers;
@@ -36,6 +37,7 @@ namespace JoinRpg.DataModel
 
     public string PrefferedName { get; set; }
 
+        [DisplayName("Подтвержденный профиль")]
         public bool VerifiedProfileFlag { get; set; }
 
     [NotNull]
