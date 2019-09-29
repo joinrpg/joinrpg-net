@@ -23,10 +23,9 @@ namespace JoinRpg.Web.Controllers
                 ThisUserProjects = user.ProjectAcls,
                 UserId = user.UserId,
                 Details = new UserProfileDetailsViewModel(user, accessReason),
-                HasAdminAccess = currentUser.Auth.IsAdmin,
-                IsAdmin = user.Auth?.IsAdmin ?? false,
+                HasAdminAccess = currentUser?.Auth.IsAdmin ?? false,
+                IsAdmin = user.Auth.IsAdmin,
             };
-
 
             if (currentUser != null)
             {
