@@ -13,7 +13,7 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 
-namespace JoinRpg.Web.Controllers
+namespace JoinRpg.Web.Controllers.Money
 {
   [Authorize]
   public class FinancesController : Common.ControllerGameBase

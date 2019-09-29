@@ -1,6 +1,4 @@
-﻿@using JoinRpg.Web.App_Code
-
-<div style="display: flex; flex-direction: row; align-items: center">
+﻿<div style="display: flex; flex-direction: row; align-items: center">
     <div>
         <strong style="font-size: larger">JoinRpg версия @ViewContext.Controller.GetType().Assembly.GetName().Version</strong>
     </div>
@@ -14,10 +12,9 @@
     <a href="@Contacts.Docs">Руководство</a>
     @Html.ActionLink("Как помочь?", "HowToHelp", "Home")
     @Html.ActionLink("Поддержка", "Support", "Home")
-    @Html.ActionLink("Прием платежей онлайн", "Legal", "Home")
-    @*@Html.ActionLink("Тарифы", "Tariffs", "Home")*@
+    @Html.ActionLink("Прием платежей онлайн", "Index", "OnlinePayments")
 </div>
 <div style="margin-top: 1em; padding-top: 1em; border-top: 1px solid #eeeeee;">
     <div>&copy; @*ООО «Джойн Регистрация», *@<a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья.</div>
-    <div>Продолжая работу с нашим сайтом, вы соглашаетесь с @Html.ActionLink("правилами его использования", "Legal", "Home").</div>
+    <div>Продолжая работу с нашим сайтом, вы соглашаетесь с @(Html.ActionLink("правилами его использования", "Terms", "Home")).</div>
 </div>

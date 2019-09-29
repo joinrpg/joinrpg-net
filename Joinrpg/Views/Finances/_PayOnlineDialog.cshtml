@@ -6,7 +6,7 @@
 <div class="modal fade" id="payOnlineDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("ClaimPayment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            @using (Html.BeginForm("claim-payment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
             {
                 @Html.AntiForgeryToken()
 
@@ -22,7 +22,12 @@
                         </div>
                     }
 
-                    @Html.Partial("..\\Finances\\_PaymentLegalInfoPartial")
+                    <div class="join alert alert-info">
+                        <i class="glyphicon glyphicon-info-sign"></i>
+                        <div style="font-size: smaller;">
+                            @Html.Partial("..\\Finances\\_PaymentLegalInfoPartial")
+                        </div>
+                    </div>
 
                     <div class="form-horizontal">
                         <div class="form-group">
@@ -38,7 +43,7 @@
                         <div class="form-group">
                             <div class="col-md-12">
                                 @Html.CheckBoxFor(model => model.AcceptContract, new { onchange = "dlgPayContractChange()" })
-                                <label for="@Html.IdFor(model => model.AcceptContract)">Я прочитал(а), понял(а) и принимаю условия <a href="@Documents.UserContract">оферты</a></label>
+                                <label for="@Html.IdFor(model => model.AcceptContract)">Я прочитал(а), понял(а) и принимаю условия @Html.ActionLink("оферты", "user-agreement", "OnlinePayments")</label>
                             </div>
                         </div>
                     </div>

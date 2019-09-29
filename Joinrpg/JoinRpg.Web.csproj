@@ -80,6 +80,7 @@
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
     <Compile Include="Controllers\Money\PaymentsController.cs" />
     <Compile Include="Controllers\Money\TransferController.cs" />
+    <Compile Include="Controllers\Money\OnlinePaymentsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />
@@ -113,7 +114,7 @@
     <Compile Include="Controllers\ClaimListController.cs" />
     <Compile Include="Controllers\PluginSetupController.cs" />
     <Compile Include="Controllers\PrintController.cs" />
-    <Compile Include="Controllers\FinancesController.cs" />
+    <Compile Include="Controllers\Money\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -995,9 +996,6 @@
     <Content Include="Views\Shared\Layout\_YandexPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Home\Legal.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Home\Support.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -1007,10 +1005,13 @@
     <Content Include="Views\Shared\_CompanyInfo.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Home\Tariffs.cshtml" />
+    <Content Include="Views\Finances\_PaymentLegalInfoPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Finances\_PaymentLegalInfoPartial.cshtml" />
+    <Content Include="Views\OnlinePayments\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Terms.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
