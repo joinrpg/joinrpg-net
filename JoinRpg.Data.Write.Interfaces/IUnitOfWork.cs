@@ -1,10 +1,11 @@
-﻿using System.Data.Entity;
+using System;
+using System.Data.Entity;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 
 namespace JoinRpg.Data.Write.Interfaces
 {
-  public interface IUnitOfWork
+  public interface IUnitOfWork : IDisposable
   {
     /// <summary>
     /// 

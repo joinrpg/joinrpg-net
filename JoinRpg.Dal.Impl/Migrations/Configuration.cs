@@ -21,6 +21,7 @@ namespace JoinRpg.Dal.Impl.Migrations
                     UserName = User.OnlinePaymentVirtualUser,
                     Email = User.OnlinePaymentVirtualUser,
                     PrefferedName = "Online payments",
+                    VerifiedProfileFlag = true,
                     Auth = new UserAuthDetails()
                     {
                         EmailConfirmed = true,

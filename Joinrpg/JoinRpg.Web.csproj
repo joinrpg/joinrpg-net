@@ -78,7 +78,9 @@
     <Compile Include="Controllers\AccommodationTypeController.cs" />
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
+    <Compile Include="Controllers\Money\PaymentsController.cs" />
     <Compile Include="Controllers\Money\TransferController.cs" />
+    <Compile Include="Controllers\Money\OnlinePaymentsController.cs" />
     <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />
@@ -88,8 +90,10 @@
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Helpers\AuthModelBuilers.cs" />
+    <Compile Include="Helpers\Contacts.cs" />
     <Compile Include="Helpers\CurrentProjectAccessor.cs" />
     <Compile Include="Helpers\CurrentUserAccessor.cs" />
+    <Compile Include="Helpers\Documents.cs" />
     <Compile Include="Helpers\EnumExtensions.cs" />
     <Compile Include="Helpers\HttpContextItemHelpers.cs" />
     <Compile Include="Helpers\InviteStateExtensions.cs" />
@@ -110,7 +114,7 @@
     <Compile Include="Controllers\ClaimListController.cs" />
     <Compile Include="Controllers\PluginSetupController.cs" />
     <Compile Include="Controllers\PrintController.cs" />
-    <Compile Include="Controllers\FinancesController.cs" />
+    <Compile Include="Controllers\Money\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -149,8 +153,9 @@
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
     <Content Include="Content\Images\fee.jpg" />
+    <Content Include="Content\Images\logo-telegram.svg" />
+    <Content Include="Content\Images\logo-vk.svg" />
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
-    <Content Include="Content\Images\vk_icon.png" />
     <Content Include="Content\multicontrol.css" />
     <Content Include="Content\Print.css" />
     <Content Include="external\joinrpg-api.css" />
@@ -550,7 +555,7 @@
     <Content Include="Views\ClaimList\Index.cshtml" />
     <Content Include="Views\Claim\Edit.cshtml" />
     <Content Include="Views\Character\Details.cshtml" />
-    <Content Include="Views\Comments\AddCommentPartial.cshtml" />
+    <Content Include="Views\Comments\_AddCommentPartial.cshtml" />
     <Content Include="Views\GameGroups\Edit.cshtml" />
     <Content Include="Views\GameGroups\Delete.cshtml" />
     <Content Include="Views\Game\Edit.cshtml" />
@@ -564,7 +569,7 @@
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Shared\_MasterMenuPartial.cshtml" />
+    <Content Include="Views\Shared\Layout\_MasterMenuPartial.cshtml" />
     <Content Include="Views\Plot\Index.cshtml" />
     <Content Include="Views\Plot\Create.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\GameObjectLinkViewModel.cshtml" />
@@ -604,7 +609,7 @@
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.cshtml" />
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
-    <Content Include="Views\Claim\_ClaimFinancePartial.cshtml" />
+    <Content Include="Views\Finances\_SubmitPaymentDialog.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
     <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
@@ -625,7 +630,7 @@
     <Content Include="Views\Finances\MoneySummary.cshtml" />
     <Content Include="Views\GameGroups\EditSubscribe.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\ProblemViewModel.cshtml" />
-    <Content Include="Views\Shared\_PlayerMenuPartial.cshtml" />
+    <Content Include="Views\Shared\Layout\_PlayerMenuPartial.cshtml" />
     <Content Include="Views\Home\HowToHelp.cshtml" />
     <Content Include="Views\Home\FromAllrpgInfo.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\MandatoryStatusViewType.cshtml" />
@@ -643,7 +648,7 @@
     <Content Include="Views\PluginSetup\ShowMarkdown.cshtml" />
     <Content Include="Views\Plot\EditElement.cshtml" />
     <Content Include="Views\Game\Close.cshtml" />
-    <Content Include="Views\Finances\CreatePaymentTypePartial.cshtml" />
+    <Content Include="Views\Finances\_CreatePaymentTypePartial.cshtml" />
     <Content Include="Views\Finances\EditPaymentType.cshtml" />
     <Content Include="Views\Finances\CreateFeeSettingPartial.cshtml" />
     <Content Include="Views\Home\Funding2016.cshtml" />
@@ -686,7 +691,7 @@
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
-    <Content Include="Views\Claim\RequestPreferentialFeeModal.cshtml" />
+    <Content Include="Views\Claim\_RequestPreferentialFeeDialog.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
     <Content Include="Views\AccommodationType\EditRoomType.cshtml" />
     <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
@@ -959,6 +964,54 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Account\_PasswordLoginFormPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_PayOnlineDialog.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Comments\_AddCommentFormPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Comments\_CommentTextEditorPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_TogglePaymentTypeDialog.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_PaymentTypesPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_AddPaymentTypeDialog.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\_IndexProdPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\_IndexDevPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Layout\_FooterPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Layout\_YandexPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Support.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_DevAlertPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\_CompanyInfo.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_PaymentLegalInfoPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\OnlinePayments\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Terms.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

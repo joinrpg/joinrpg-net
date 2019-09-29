@@ -1,0 +1,14 @@
+﻿<div style="font-size: larger">
+    <h3>JoinRpg — база заявок для мастеров, организаторов и участников ролевых игр, конвентов и конференций</h3>
+    <p>Помогаем готовиться к играм с 2015 года.</p>
+    <p>От создателей <a href="http://kogda-igra.ru">Kogda-Igra.Ru</a>.</p>
+</div>
+
+<div style="margin-top: 2em; display: flex; flex-direction: row; align-items: center;">
+    @Html.ActionLink("Создать базу заявок", "Create", "Game", null, new { @class = "btn btn-success", style = "font-size: 2em;" })
+    <div style="margin-left: auto; display: flex; flex-direction: column;">
+        @Html.ActionLink("О проекте", "About", null, new { @class = "btn" })
+        <a href="http://docs.joinrpg.ru" class="btn">Документация</a>
+        @Html.ActionLink("Как помочь?", "HowToHelp", null, new { @class = "btn" })
+    </div>
+</div>

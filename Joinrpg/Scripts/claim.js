@@ -142,15 +142,15 @@ function feeChanged(target, fee)
                 break;
         }
 
-        // Updating total amout to pay
+        // Updating total amount to pay
         feeTotalDisp.ch(oldFee, fee);
         feeTotal = feeTotalDisp.get();
         feeTotalDisp2.set(feeTotal);
 
-        // More to pay
+        // Overpaid
         feeOverpaidDisp.set(feeBalance - feeTotal);
         feeOverpaidDisp2.set(feeBalance - feeTotal);
-        // Overpaid
+        // More to pay
         feeMoreToPayDisp.set(feeTotal - feeBalance);
         feeMoreToPayDisp2.set(feeTotal - feeBalance);
 

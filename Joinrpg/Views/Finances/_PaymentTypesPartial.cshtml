@@ -1,0 +1,88 @@
+﻿@using JoinRpg.Web.Models
+@model FinanceSetupViewModel
+
+@{ var paymentType = Model.PaymentTypes.FirstOrDefault(); }
+
+@if (Model.HasEditAccess)
+{
+    <div>
+        <button type="button"
+                class="btn btn-success"
+                data-toggle="modal"
+                data-target="#addPaymentTypeDialog"><i class="glyphicon glyphicon-plus"></i>
+            Добавить метод оплаты&hellip;</button>
+    </div>
+}
+<table class="table" style="margin-top: 1em;">
+    <tr>
+        <th>@Html.DisplayNameFor(model => paymentType.Name)</th>
+        <th>@Html.DisplayNameFor(model => paymentType.Master)</th>
+        @if (Model.HasEditAccess)
+        {
+            <th></th>
+        }
+    </tr>
+
+    @foreach (var item in Model.PaymentTypes)
+    {
+        <tr>
+            <td>
+                <span style="display: inline-flex; align-items: center;">
+                    @if (item.IsDefault)
+                    {
+                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => paymentType.IsDefault)</span>
+                    }
+                    <span class="@(item.IsActive ? "" : "deleted")">@(item.Name)</span>
+                </span>
+            </td>
+            <td>
+                <span style="display: inline-flex; align-items: center;">
+                    @if (item.Master.VerifiedProfileFlag)
+                    {
+                        <span class="label label-default" style="margin-right: 0.5em">@Html.DisplayNameFor(model => item.Master.VerifiedProfileFlag)</span>
+                    }
+                    @Html.DisplayFor(modelItem => item.Master)
+                </span>
+            </td>
+            @if (Model.HasEditAccess)
+            {
+                <td>
+                    @if (item.IsActive)
+                    {
+                        if (item.TypeKind == PaymentTypeKindViewModel.Custom)
+                        {
+                            <a href="@Url.Action("EditPaymentType", new {item.ProjectId, item.PaymentTypeId})" class="btn btn-default">Изменить</a>
+                        }
+                        if (item.TypeKind != PaymentTypeKindViewModel.Online || Model.IsAdmin)
+                        {
+                            var deleteActionName = item.CanBePermanentlyDeleted ? "Удалить" : "Выключить";
+                            <button type="button" class="btn btn-danger btn-xs"
+                                    data-toggle="modal"
+                                    data-target="#togglePaymentTypeDialog"
+                                    data-element="@item.PaymentTypeId"
+                                    data-name="@item.Name"
+                                    data-action="@deleteActionName">@deleteActionName</button>
+                            }
+                        }
+                        else if (item.TypeKind != PaymentTypeKindViewModel.Online || Model.IsAdmin)
+                        {
+                            <button type="button" class="btn btn-default btn-xs"
+                                    data-toggle="modal"
+                                    data-target="#togglePaymentTypeDialog"
+                                    data-element="@item.PaymentTypeId"
+                                    data-name="@item.Name"
+                                    data-kind="@item.TypeKind"
+                                    data-user="@item.Master.UserId"
+                                    data-action="Включить">Включить</button>
+                        }
+                        else if (item.TypeKind == PaymentTypeKindViewModel.Online)
+                        {
+                            @Html.ActionLink("Узнать, как включить", "Legal", "Home", null, new { @class = "btn btn-info btn-xs", target = "_blank" })
+                        }
+                </td>
+            }
+        </tr>
+    }
+
+</table>
+

@@ -1,5 +1,4 @@
 ﻿@model JoinRpg.Web.Models.ProjectDetailsViewModel
-
 @{
     ViewBag.Title = "Игра «" + Model.ProjectName + "»";
 }
@@ -8,23 +7,23 @@
 
 <hr />
 
-<div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div>
+<div class="join alert alert-info"><i class="glyphicon glyphicon-calendar"></i><div>Дата создания: <strong>@Html.DisplayFor(model => model.CreatedDate)</strong></div></div>
 
 @if (Model.IsActive)
 {
-    <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Проект <strong>активен</strong></div>
+    <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Проект <strong>активен</strong></div></div>
     if (Model.IsAcceptingClaims)
     {
-        <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i>Прием заявок <strong>открыт</strong></div>
+        <div class="join alert alert-success"><i class="glyphicon glyphicon-ok-sign"></i><div>Прием заявок <strong>открыт</strong></div></div>
     }
     else
     {
-        <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i>Прием заявок <strong>закрыт</strong></div>
+        <div class="join alert alert-warning"><i class="glyphicon glyphicon-remove-sign"></i><div>Прием заявок <strong>закрыт</strong></div></div>
     }
 }
 else
 {
-    <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i>Проект <strong>закрыт</strong></div>
+    <div class="join alert alert-danger"><i class="glyphicon glyphicon-remove-sign"></i><div>Проект <strong>закрыт</strong></div></div>
 }
 
 <hr />

@@ -1,5 +1,4 @@
-﻿@using JoinRpg.CommonUI.Models
-@using JoinRpg.DataModel
+﻿@using JoinRpg.DataModel
 @using JoinRpg.Web.Models
 @model CommentViewModel
 
@@ -83,10 +82,7 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                             {
                                 if (comment.ShowFinanceModeration)
                                 {
-                                    <a data-toggle="collapse"
-                                       href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">
-                                        Подтвердить / отклонить
-                                    </a>
+                                    <a data-toggle="collapse" href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">Подтвердить / отклонить</a>
                                 }
                                 else
                                 {
@@ -102,23 +98,12 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
                         }
 
                         <div>@comment.CommentText</div>
-                        <a data-toggle="collapse"
-                           href="#answerComment@(comment.CommentId)">
-                            Ответить
-                        </a>
-                        <div id="answerComment@(comment.CommentId)" class="collapse">
-                            @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                            {
-                                @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
-                           {
-                               ProjectId = comment.ProjectId,
-                               CommentDiscussionId = comment.CommentDiscussionId,
-                               ParentCommentId = comment.CommentId,
-                               EnableFinanceAction = comment.ShowFinanceModeration,
-                               EnableHideFromUser = comment.HasMasterAccess,
-                               HideFromUser = !comment.IsVisibleToPlayer
-                           })
-                            }
+                        @{ AddCommentViewModel addCommentModel = new AddCommentViewModel(comment) { ActionName = "Ответить"}; }
+                        <div id="@(addCommentModel.AddButtonId)" class="collapse in">
+                            <button class="btn btn-default btn-sm" onclick="toggleCommentEditor(@(addCommentModel.FormIndex), true)">Ответить</button>
+                        </div>
+                        <div id="@(addCommentModel.FormId)" class="collapse">
+                            @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModel)
                         </div>
                     </div>
                 </td>

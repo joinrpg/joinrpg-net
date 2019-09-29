@@ -1,0 +1,19 @@
+﻿@using JoinRpg.Web.Models
+@model AddCommentViewModel
+@{ Model.ActionName = Model.ActionName ?? "Отправить"; }
+
+<div class="form-horizontal">
+    @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.Partial("..\\Comments\\_AddCommentPartial", Model)
+        <div class="form-group">
+            <div class="col-md-12">
+                @if (Model.AllowCancel)
+                {
+                    <button type="button" class="btn btn-default" onclick="toggleCommentEditor(@(Model.FormIndex), false)">Отмена</button>
+                }
+                <button type="submit" class="btn btn-success">@(Model.ActionName)</button>
+            </div>
+        </div>
+    }
+</div>

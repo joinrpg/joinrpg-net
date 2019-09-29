@@ -108,7 +108,12 @@ namespace JoinRpg.Web.App_Code
                 + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
-        public readonly static string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
+        public static string RenderCurrencySign(this HtmlHelper self)
+        {
+            return new string((char) 0x20BD, 1);
+        }
+
+        public static readonly string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
 
         /// <summary>
         /// Renders price to a string
@@ -121,8 +126,7 @@ namespace JoinRpg.Web.App_Code
 
         public static MvcHtmlString HelpLink(this HtmlHelper self, string link, string message)
         {
-            return new MvcHtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
-                                     "\">" + message + "</a>");
+            return new MvcHtmlString(string.Format(@"<span class='glyphicon glyphicon-question-sign'></span><a href='{0}{1}'>{2}</a>", Contacts.Docs, link, message));
         }
 
         public static TValue GetValue<TModel, TValue>(this HtmlHelper<TModel> self,

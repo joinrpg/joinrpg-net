@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -63,13 +64,36 @@ namespace JoinRpg.Services.Interfaces
         public bool Approved { get; set; }
     }
 
+    /// <summary>
+    /// Payload for <see cref="IFinanceService.CreatePaymentType"/>
+    /// </summary>
+    public class CreatePaymentTypeRequest
+    {
+        public int ProjectId { get; set; }
+        public int? TargetMasterId { get; set; }
+        public PaymentTypeKind TypeKind { get; set; }
+        public string Name { get; set; }
+    }
+
+
     public interface IFinanceService
     {
         Task FeeAcceptedOperation(FeeAcceptedOperationRequest request);
 
-        Task CreateCashPaymentType(int projectid, int targetUserId);
-        Task TogglePaymentActivness(int projectid, int paymentTypeId);
-        Task CreateCustomPaymentType(int projectId, string name, int targetMasterId);
+        /// <summary>
+        /// Creates payment type for specified project
+        /// </summary>
+        /// <param name="request">Request payload</param>
+        Task CreatePaymentType(CreatePaymentTypeRequest request);
+
+        /// <summary>
+        /// Toggles state of a payment type. If payment type has to be deactivated, it will be
+        /// deleted if no payments associated with it and it could be permanently deleted
+        /// </summary>
+        /// <param name="projectId">Database Id of a project</param>
+        /// <param name="paymentTypeId">Database Id of a payment type to toggle state of</param>
+        Task TogglePaymentActiveness(int projectId, int paymentTypeId);
+
         Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault);
         Task CreateFeeSetting(CreateFeeSettingRequest request);
         Task DeleteFeeSetting(int projectid, int projectFeeSettingId);

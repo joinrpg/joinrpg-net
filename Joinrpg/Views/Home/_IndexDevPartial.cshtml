@@ -1,0 +1,10 @@
+﻿@Html.Partial("_DevAlertPartial")
+
+<div style="margin-top: 2em; display: flex; flex-direction: row; align-items: center;">
+    @Html.ActionLink("Создать тестовую базу заявок", "Create", "Game", null, new { @class = "btn btn-success", style = "font-size: 2em;" })
+    <div style="margin-left: auto; display: flex; flex-direction: column;">
+        @Html.ActionLink("О проекте", "About", null, new { @class = "btn" })
+        <a href="http://docs.joinrpg.ru" class="btn">Документация</a>
+        <a href="http://joinrpg.ru" class="btn">Основной сервер</a>
+    </div>
+</div>

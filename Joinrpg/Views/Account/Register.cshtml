@@ -11,7 +11,9 @@
     @Html.AntiForgeryToken()
     <h4>Создать аккаунт</h4>
 
-    @Html.Partial("_RegistrationRules")
+    <div class="alert alert-info">
+        @Html.Partial("_RegistrationRules")
+    </div>
 
     <p>@Html.HelpLink("register", "Подробнее о регистрации")</p>
     <hr/>
@@ -38,7 +40,7 @@
     <div class="form-group">
         @Html.LabelFor(m => m.RulesApproved, new {@class = "col-md-2 control-label"})
         <div class="col-md-2">
-                @Html.EditorFor(m => m.RulesApproved)
+            @Html.EditorFor(m => m.RulesApproved)
         </div>
     </div>
     <div class="form-group">

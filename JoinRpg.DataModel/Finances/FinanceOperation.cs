@@ -42,7 +42,7 @@ namespace JoinRpg.DataModel
             }
             if (MoneyAmount != 0 && PaymentTypeId == null)
             {
-                yield return new ValidationResult("Payment type not specified for payment operatio");
+                yield return new ValidationResult("Payment type not specified for payment operation");
             }
         }
 
