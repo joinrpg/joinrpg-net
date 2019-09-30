@@ -91,11 +91,15 @@ namespace JoinRpg.Web.Models
         {
             ActionName = "Оплатить";
         }
-    }
 
-    public class OnlinePaymentViewModel : AddCommentViewModel
-    {
-
+        /// <inheritdoc />
+        public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            => base.Validate(validationContext)
+                .AppendIf(
+                    !AcceptContract,
+                    () => new ValidationResult(
+                        "Необходимо принять контракт для проведения оплаты",
+                        new []{ nameof(AcceptContract) }));
     }
 
     public class SubmitPaymentViewModel : PaymentViewModelBase

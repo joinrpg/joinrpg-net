@@ -165,7 +165,7 @@ namespace JoinRpg.Web.Models
 
         public string FormId { get; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (HideFromUser && !EnableHideFromUser)
             {
