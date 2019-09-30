@@ -12,6 +12,7 @@
         <WarningsNotAsErrors>${WarningsNotAsErrors};CS1591</WarningsNotAsErrors>
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <LangVersion>7.3</LangVersion>
 
     </PropertyGroup>
     <!--
