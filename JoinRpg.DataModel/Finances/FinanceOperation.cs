@@ -29,20 +29,94 @@ namespace JoinRpg.DataModel
 
         public FinanceOperationState State { get; set; }
 
-        public bool MarkMeAsPreferential { get; set; }
+        /// <summary>
+        /// Type of this finance operation
+        /// </summary>
+        public FinanceOperationType OperationType { get; set; }
 
+        /// <summary>
+        /// Source or destination claim Id (used if <see cref="OperationType"/>
+        /// is <see cref="FinanceOperationType.TransferTo"/>
+        /// or <see cref="FinanceOperationType.TransferFrom"/>
+        /// </summary>
+        public int? LinkedClaimId { get; set; }
+
+        /// <summary>
+        /// Source or destination claim (available if <see cref="OperationType"/>
+        /// is <see cref="FinanceOperationType.TransferTo"/>
+        /// or <see cref="FinanceOperationType.TransferFrom"/>
+        /// </summary>
+        public Claim LinkedClaim { get; set; }
 
         int IOrderableEntity.Id => ProjectId;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (MoneyAmount == 0 && PaymentTypeId != null)
+            // Checking payment type
+            switch (OperationType)
             {
-                yield return new ValidationResult("Payment type specified for not payment operation");
+                case FinanceOperationType.FeeChange:
+                case FinanceOperationType.PreferentialFeeRequest:
+                case FinanceOperationType.TransferTo:
+                case FinanceOperationType.TransferFrom:
+                    if (PaymentTypeId != null)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must not have payment type specified", new []{ nameof(PaymentTypeId) });
+                    }
+                    break;
+                case FinanceOperationType.Submit:
+                case FinanceOperationType.Online:
+                case FinanceOperationType.Refund:
+                    if (PaymentTypeId == null)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must have payment type specified", new []{ nameof(PaymentTypeId) });
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            if (MoneyAmount != 0 && PaymentTypeId == null)
+
+            // Checking money value
+            switch (OperationType)
             {
-                yield return new ValidationResult("Payment type not specified for payment operation");
+                case FinanceOperationType.FeeChange:
+                    if (MoneyAmount != 0)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount", new []{ nameof(MoneyAmount) });
+                    }
+                    if (FeeChange == 0)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must have fee change not equal to zero", new []{ nameof(FeeChange) });
+                    }
+                    break;
+                case FinanceOperationType.PreferentialFeeRequest:
+                    if (MoneyAmount != 0 || FeeChange != 0)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount or fee change", new []{ nameof(MoneyAmount), nameof(FeeChange) });
+                    }
+                    break;
+                case FinanceOperationType.Submit:
+                case FinanceOperationType.Online:
+                case FinanceOperationType.TransferFrom:
+                    if (MoneyAmount <= 0)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must have positive money amount", new []{ nameof(MoneyAmount) });
+                    }
+                    break;
+                case FinanceOperationType.Refund:
+                case FinanceOperationType.TransferTo:
+                    if (MoneyAmount >= 0)
+                    {
+                        yield return new ValidationResult($"Operation type {OperationType} must have negative money amount", new []{ nameof(MoneyAmount) });
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            if (LinkedClaimId == null && (OperationType == FinanceOperationType.TransferTo || OperationType == FinanceOperationType.TransferFrom))
+            {
+                yield return new ValidationResult($"Operation of type {OperationType} must be linked with another claim", new []{ nameof(LinkedClaimId) });
             }
         }
 
@@ -60,5 +134,47 @@ namespace JoinRpg.DataModel
         Approved,
         Proposed,
         Declined,
+    }
+
+    /// <summary>
+    /// Types of finance operations
+    /// </summary>
+    public enum FinanceOperationType
+    {
+        /// <summary>
+        /// Manual fee modification
+        /// </summary>
+        [Obsolete]
+        FeeChange = -1, // TODO: Remove or start use
+
+        /// <summary>
+        /// Request for preferential fee
+        /// </summary>
+        PreferentialFeeRequest = -2,
+
+        /// <summary>
+        /// Finance operation submits payment using cash or custom payment type
+        /// </summary>
+        Submit = 0,
+
+        /// <summary>
+        /// Online payment
+        /// </summary>
+        Online,
+
+        /// <summary>
+        /// Refund operation
+        /// </summary>
+        Refund,
+
+        /// <summary>
+        /// Money transfer to another claim
+        /// </summary>
+        TransferTo,
+
+        /// <summary>
+        /// Money transfer from another claim
+        /// </summary>
+        TransferFrom,
     }
 }
