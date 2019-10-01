@@ -86,6 +86,7 @@ namespace JoinRpg.Services.Impl
         State = state,
         ProjectId = claim.ProjectId,
         OperationDate = operationDate,
+        OperationType = FinanceOperationType.Submit,
       };
 
       comment.Finance = financeOperation;

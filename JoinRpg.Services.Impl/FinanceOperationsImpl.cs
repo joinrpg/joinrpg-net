@@ -269,7 +269,7 @@ namespace JoinRpg.Services.Impl
                 State = FinanceOperationState.Proposed,
                 ProjectId = claim.ProjectId,
                 OperationDate = request.OperationDate,
-                MarkMeAsPreferential = true,
+                OperationType = FinanceOperationType.PreferentialFeeRequest,
             };
 
             comment.Finance = financeOperation;
