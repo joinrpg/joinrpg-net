@@ -6,12 +6,12 @@ namespace PscbApi.Models
     /// <summary>
     /// Error information
     /// </summary>
-    public class ResponseInfo
+    public class BankResponseInfo
     {
 
 #pragma warning disable 1591
-        public const string PaymentsSystemCodeJsonName = "code";
-        public const string ProcessingCenterCodeJsonName = "subCode";
+        internal const string PaymentsSystemCodeJsonName = "code";
+        internal const string ProcessingCenterCodeJsonName = "subCode";
 #pragma warning restore 1591
 
         /// <summary>

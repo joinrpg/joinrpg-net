@@ -32,6 +32,6 @@ namespace PscbApi
         /// Returns identifier associated using <see cref="IdentifierAttribute"/> to enumeration value
         /// </summary>
         public static string GetIdentifier(this Enum self)
-            => self.GetCustomAttribute<IdentifierAttribute>()?.Identifier ?? self.ToString();
+            => self.GetCustomAttribute<IdentifierAttribute>()?.Identifier ?? Enum.GetName(self.GetType(), self);
     }
 }

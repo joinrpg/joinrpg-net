@@ -59,7 +59,7 @@ namespace PscbApi.Models {
         /// true to enable debug information in Payer' browser
         /// </summary>
         /// <remarks>
-        /// Field is automatically set inside <see cref="PscbApi"/>
+        /// Field is automatically set inside <see cref="BankApi"/>
         /// </remarks>
         [JsonProperty("debug", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool EnableDebugOutput { get; set; }

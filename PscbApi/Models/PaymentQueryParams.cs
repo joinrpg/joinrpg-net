@@ -1,28 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace PscbApi.Models
 {
-    internal class PaymentQueryParams
+    /// <summary>
+    /// Query params for payment using API
+    /// </summary>
+    public class PaymentQueryParams
     {
-        public string marketPlace;
+        public string marketPlace { get; set; }
 
-        public string message;
+        public string message { get; set; }
 
-        public string signature;
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var parts = new Dictionary<string, string>
-            {
-                {nameof(marketPlace), marketPlace},
-                {nameof(message), message},
-                {nameof(signature), signature}
-            };
-            return string.Join("&", parts.Select(kv => $"{kv.Key}={kv.Value}"));
-        }
+        public string signature { get; set; }
     }
 }

@@ -29,8 +29,7 @@ namespace PscbApi.Models {
         /// <summary>
         /// Order Id specified by store
         /// </summary>
-        [Required]
-        [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 up to 20 characters")]
+        [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 to 20 characters")]
         [JsonProperty("orderId")]
         public string OrderId { get; set; }
 
@@ -40,9 +39,16 @@ namespace PscbApi.Models {
         /// <remarks>
         /// If not set, value from <see cref="OrderId"/> used
         /// </remarks>
-        [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 up to 20 characters")]
+        [StringLength(20, MinimumLength = 4, ErrorMessage = "Length must be from 4 to 20 characters")]
         [JsonProperty("showOrderId", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string OrderIdDisplayValue { get; set; }
+
+        /// <summary>
+        /// Payments details, will be shown to Payer during payment process
+        /// </summary>
+        [MaxLength(2048)]
+        [JsonProperty("details", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public string Details { get; set; }
 
         /// <summary>
         /// Payment method. If not set, all payment methods will be used. User must to choose one

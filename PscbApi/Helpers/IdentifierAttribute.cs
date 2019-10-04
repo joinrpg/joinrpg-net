@@ -6,7 +6,7 @@ namespace PscbApi
     /// <summary>
     /// Allows to assign enum value with identifier
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class IdentifierAttribute : Attribute
     {
         /// <summary>

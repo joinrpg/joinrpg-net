@@ -69,4 +69,17 @@ namespace PscbApi.Models
         [Identifier("undef")]
         Undefined,
     }
+
+    /// <summary>
+    /// Payment sub-statuses
+    /// </summary>
+    [JsonConverter(typeof(IdentifiableEnumConverter))]
+    public enum PaymentSubStatus
+    {
+        /// <summary>
+        /// Hold status confirmed (before switching to <see cref="PaymentStatus.Paid"/>
+        /// </summary>
+        [Identifier("hold_confirmed")]
+        HoldConfirmed,
+    }
 }

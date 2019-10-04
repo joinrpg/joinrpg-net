@@ -17,10 +17,7 @@ namespace PscbApi
         {
             if (value != null)
             {
-                if (value.GetType().IsEnum)
-                    writer.WriteValue(value as Enum);
-                else
-                    writer.WriteValue(value.ToString());
+                writer.WriteValue(value.GetType().IsEnum ? (value as Enum).GetIdentifier() : value);
             }
             else
                 writer.WriteNull();

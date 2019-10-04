@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using PscbApi.Models;
 
-namespace PscbApi.Helpers
+namespace PscbApi
 {
     /// <summary>
     /// Helper functions for protocol objects and data
@@ -29,17 +29,17 @@ namespace PscbApi.Helpers
         /// </summary>
         /// <param name="description">Encoded description string</param>
         /// <returns>Parsed data</returns>
-        public static ResponseInfo ParseDescriptionString(string description)
+        public static BankResponseInfo ParseDescriptionString(string description)
         {
             var items = description?.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-            ResponseInfo result = new ResponseInfo();
+            BankResponseInfo result = new BankResponseInfo();
             if (items?.Length > 0)
             {
                 items.CheckItem(
-                    ResponseInfo.PaymentsSystemCodeJsonName,
+                    BankResponseInfo.PaymentsSystemCodeJsonName,
                     value => result.PaymentCode = (PaymentsSystemResponseCode?) (int.TryParse(value, out var parsed) ? parsed : (int?) null));
                 items.CheckItem(
-                    ResponseInfo.ProcessingCenterCodeJsonName,
+                    BankResponseInfo.ProcessingCenterCodeJsonName,
                     value => result.ProcessingCode = (ProcessingCenterResponseCode?) (int.TryParse(value, out var parsed) ? parsed : (int?) null));
                 result.Description = items.LastOrDefault();
             }
