@@ -22,11 +22,5 @@ namespace JoinRpg.Web.Helpers
         internal static string VkClientSecret => ConfigurationManager.AppSettings["VkClientSecret"];
 
         internal static string XsrfKey => ConfigurationManager.AppSettings["XsrfKey"];
-
-        internal static string BankMerchantId => ConfigurationManager.AppSettings["bankMerchantId"];
-
-        internal static string BankApiKey => ConfigurationManager.AppSettings["bankApiKey"];
-
-        internal static string BankApiDebugKey => ConfigurationManager.AppSettings["bankApiDebugKey"];
     }
 }
