@@ -122,7 +122,14 @@ namespace JoinRpg.DataModel
 
         #region helper properties
 
-        public bool RequireModeration => State == FinanceOperationState.Proposed;
+        /// <summary>
+        /// Moderation is required only for operations that require manual
+        /// actions from the master
+        /// </summary>
+        public bool RequireModeration =>
+            State == FinanceOperationState.Proposed
+            && (OperationType == FinanceOperationType.Submit
+                || OperationType == FinanceOperationType.PreferentialFeeRequest);
 
         public bool Approved => State == FinanceOperationState.Approved;
 

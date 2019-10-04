@@ -174,6 +174,37 @@ namespace JoinRpg.Web.Models
         }
     }
 
+    /// <summary>
+    /// Model used for comment finance operation output
+    /// </summary>
+    public class CommentFinanceOperationViewModel
+    {
+        /// <summary>
+        /// Reply form Id
+        /// </summary>
+        public int ReplyFormIndex { get; set; }
+
+        /// <summary>
+        /// true if moderation controls must be shown
+        /// </summary>
+        public bool ShowModerationControls { get; set; }
+
+        /// <summary>
+        /// Finance operation
+        /// </summary>
+        public FinanceOperation FinanceOperation { get; set; }
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public CommentFinanceOperationViewModel(CommentViewModel source, int replyFormIndex)
+        {
+            FinanceOperation = source.Finance;
+            ShowModerationControls = source.ShowFinanceModeration;
+            ReplyFormIndex = replyFormIndex;
+        }
+    }
+
     public class ClaimOperationViewModel
     {
         public int ProjectId { get; set; }

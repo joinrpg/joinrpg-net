@@ -9,7 +9,7 @@ namespace JoinRpg.CommonUI.Models
         [UsedImplicitly]
         ApproveFinance,
 
-        [Display(Name = "Финансовая операция отклонена", ShortName = "отмечено")] [UsedImplicitly]
+        [Display(Name = "Финансовая операция отклонена", ShortName = "отмечено")][UsedImplicitly]
         RejectFinance,
 
         [Display(Name = "Заявка одобрена мастером", ShortName = "одобрена")] [UsedImplicitly]

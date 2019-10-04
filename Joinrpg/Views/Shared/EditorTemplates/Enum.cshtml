@@ -1,22 +1,48 @@
 ﻿@using JoinRpg.Helpers
 @using JoinRpg.Web.App_Code
 @model Enum
-@foreach (Enum value in Enum.GetValues(Model.GetType()))
-{
-    <div>
-        @{
-            var clientId = ViewData.TemplateInfo.HtmlFieldPrefix + "_" + value;
-            if (value.Equals(Model))
-            {
-                @Html.RadioButtonFor(m => m, value, new {id = clientId, @checked = "checked"})
-            }
-            else
-            {
-                @Html.RadioButtonFor(m => m, value, new {id = clientId})
-            }
-            <text>&nbsp;</text>
-            @Html.LabelFor(m => value, value.GetDisplayName(), new {@for = clientId})
-            @Html.DescriptionFor(m => value)
-        }
-    </div>
+@{
+    object formIndex;
+    if (!ViewData.TryGetValue("formIndex", out formIndex))
+    {
+        formIndex = null;
+    }
+    var selected = Model;
+    object userValue;
+    if (ViewData.TryGetValue("value", out userValue) && userValue is bool)
+    {
+        selected = (Enum) userValue;
+    }
+    object disabled;
+    if (!(ViewData.TryGetValue("disabled", out disabled) && disabled is bool))
+    {
+        disabled = false;
+    }
+    object attrs;
+    if (!(ViewData.TryGetValue("htmlAttributes", out attrs) && attrs is Dictionary<string, string>))
+    {
+        attrs = null;
+    }
 }
+<div class="radio-group" @if (attrs != null) { @Html.RenderAttrs((Dictionary<string, string>) attrs) }>
+    @foreach (Enum value in Enum.GetValues(Model.GetType()))
+    {
+        var itemId = ViewData.TemplateInfo.HtmlFieldPrefix + "_" + value;
+        if (formIndex != null)
+        {
+            itemId = itemId + "_" + formIndex.ToString();
+        }
+        bool @checked = selected != null && selected.Equals(Model);
+        var description = value.GetDescription();
+        <div class="radio-group-item">
+            <input type="radio" id="@itemId" name="@ViewData.ModelMetadata.PropertyName" value="@value" @if (@checked) { <text>checked</text> } @if ((bool) disabled) { <text>disabled</text> }/>
+            <div class="radio-group-item-label">
+                <label for="@itemId">@value.GetDisplayName()</label>
+                @if (!string.IsNullOrWhiteSpace(description))
+                {
+                    <div class="radio-group-item-description">@(description.Trim())</div>
+                }
+            </div>
+        </div>
+    }
+</div>

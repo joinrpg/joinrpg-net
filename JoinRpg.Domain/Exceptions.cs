@@ -29,15 +29,22 @@ namespace JoinRpg.Domain
     }
   }
 
-  public abstract class JoinRpgProjectEntityException : JoinRpgBaseException
+  public class JoinRpgProjectException : JoinRpgBaseException
   {
-    protected JoinRpgProjectEntityException(IProjectEntity entity, string message) : base(message)
-    {
-      Project = entity.Project;
-    }
+      [PublicAPI]
+      public Project Project { get; }
 
-    [PublicAPI]
-    public Project Project { get; }
+      public JoinRpgProjectException(Project project, string message) : base(message)
+      {
+          Project = project;
+      }
+  }
+
+  public abstract class JoinRpgProjectEntityException : JoinRpgProjectException
+  {
+      protected JoinRpgProjectEntityException(IProjectEntity entity, string message)
+          : base(entity.Project, message)
+      {}
   }
 
   public class JoinRpgEntityNotFoundException : JoinRpgBaseException
@@ -80,10 +87,41 @@ namespace JoinRpg.Domain
         }
     }
 
+    public class OnlinePaymentException : JoinRpgProjectException
+    {
+        public OnlinePaymentException(Project project, string message)
+            : base(project, message) { }
+    }
+
+    public class OnlinePaymentUnexpectedStateException : OnlinePaymentException
+    {
+        public FinanceOperation FinanceOperation { get; }
+
+        public FinanceOperationState DesiredState { get; }
+
+        public OnlinePaymentUnexpectedStateException(
+            FinanceOperation financeOperation,
+            FinanceOperationState desiredState)
+            : base(
+                financeOperation.Project,
+                $"Unexpected finance operation {financeOperation.CommentId} state. {desiredState} expected, but {financeOperation.State} found")
+        {
+            FinanceOperation = financeOperation;
+            DesiredState = desiredState;
+        }
+    }
+
+    public class OnlinePaymentsNotAvailable : OnlinePaymentException
+    {
+        public OnlinePaymentsNotAvailable(Project project)
+            : base(project, $"Online payments are not available for project {project.ProjectName}")
+        {}
+    }
+
 
     public class ProjectEntityDeactivedException : JoinRpgProjectEntityException
   {
-    public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity.")
+    public ProjectEntityDeactivedException(IProjectEntity entity) : base(entity, $"This operation can't be performed on deactivated entity")
     {
       
     }

@@ -1,0 +1,36 @@
+﻿@using JoinRpg.Web.App_Code
+@model Boolean
+@{
+    var itemId = ViewData.TemplateInfo.HtmlFieldPrefix + "_" + ViewData.ModelMetadata.PropertyName;
+    object formIndex;
+    if (ViewData.TryGetValue("formIndex", out formIndex))
+    {
+        itemId = itemId + "_" + formIndex.ToString();
+    }
+    var value = Model;
+    object userValue;
+    if (ViewData.TryGetValue("value", out userValue) && userValue is bool)
+    {
+        value = (bool) userValue;
+    }
+    object disabled;
+    if (!(ViewData.TryGetValue("disabled", out disabled) && disabled is bool))
+    {
+        disabled = false;
+    }
+    object attrs;
+    if (!(ViewData.TryGetValue("htmlAttributes", out attrs) && attrs is Dictionary<string, string>))
+    {
+        attrs = null;
+    }
+}
+<div class="check-box" @if (attrs != null) { Html.RenderAttrs((Dictionary<string, string>) attrs); }>
+    <input type="checkbox" id="@itemId" name="@ViewData.ModelMetadata.PropertyName" @if (value) { <text>checked</text> } @if ((bool) disabled) { <text>disabled</text> } />
+    <div class="check-box-label">
+        <label for="@itemId">@ViewData.ModelMetadata.DisplayName</label>
+        @if (!string.IsNullOrWhiteSpace(ViewData.ModelMetadata.Description))
+        {
+            <div class="check-box-description">@ViewData.ModelMetadata.Description</div>
+        }
+    </div>
+</div>
