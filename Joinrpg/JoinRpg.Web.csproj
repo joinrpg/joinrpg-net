@@ -115,7 +115,7 @@
     <Compile Include="Controllers\ClaimListController.cs" />
     <Compile Include="Controllers\PluginSetupController.cs" />
     <Compile Include="Controllers\PrintController.cs" />
-    <Compile Include="Controllers\Money\FinancesController.cs" />
+    <Compile Include="Controllers\FinancesController.cs" />
     <Compile Include="Controllers\GameToolsController.cs" />
     <Compile Include="Controllers\MassMailController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
