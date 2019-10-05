@@ -165,6 +165,7 @@ namespace JoinRpg.Web.Models
             Claims = claims
                 .Where(c => c.ClaimId != ClaimId)
                 .Select(c => new RecipientClaimViewModel(c))
+                .OrderBy(c => c.Text)
                 .ToArray();
         }
     }

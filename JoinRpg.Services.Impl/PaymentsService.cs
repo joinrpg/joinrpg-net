@@ -190,12 +190,69 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
+        public async Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
         {
-            throw new NotImplementedException();
+            // Loading claim
+            var claim = await GetClaimAsync(projectId, claimId);
+
+            // Checking access rights
+            if (!(claim.HasAccess(CurrentUserId, ExtraAccessReason.Player)
+                || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
+                || IsCurrentUserAdmin))
+                throw new NoAccessToProjectException(claim.Project, CurrentUserId);
+
+            // Finance operation
+            FinanceOperation fo = claim.FinanceOperations.SingleOrDefault(f => f.CommentId == orderId);
+            if (fo == null)
+                throw new JoinRpgEntityNotFoundException(orderId, nameof(FinanceOperation));
+            if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
+                throw new PaymentException(fo.Project, "Finance operation is not online payment");
+
+            if (fo.State == FinanceOperationState.Proposed)
+            {
+                // Asking bank
+                PaymentInfo paymentInfo = await GetApi(projectId, claimId)
+                    .GetPaymentInfoAsync(new PaymentInfoQuery {OrderId = orderId.ToString()});
+
+                // If payment was not found marking it as declined
+                if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                {
+                    fo.State = FinanceOperationState.Declined;
+                    fo.Changed = Now;
+                }
+                else
+                    // Processing result
+                    switch (paymentInfo.Payment.Status)
+                    {
+                        // Do nothing
+                        case PaymentStatus.New:
+                        case PaymentStatus.AwaitingForPayment:
+                        case PaymentStatus.Refunded:
+                        case PaymentStatus.Hold:
+                        case PaymentStatus.Undefined:
+                            break;
+                        // All ok
+                        case PaymentStatus.Paid:
+                            fo.State = FinanceOperationState.Approved;
+                            fo.Changed = Now;
+                            break;
+                        // Something wrong
+                        case PaymentStatus.Expired:
+                        case PaymentStatus.Cancelled:
+                        case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
+                        case PaymentStatus.Rejected:
+                            fo.State = FinanceOperationState.Declined;
+                            fo.Changed = Now;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                if (fo.State != FinanceOperationState.Proposed)
+                    await UnitOfWork.SaveChangesAsync();
+            }
         }
-
-
+        
         private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
             CommentDiscussion discussionFrom,
             CommentDiscussion discussionTo,
@@ -254,6 +311,11 @@ namespace JoinRpg.Services.Impl
         {
             var claimFrom = await GetClaimAsync(request.ProjectId, request.ClaimId);
             var claimTo = await GetClaimAsync(request.ProjectId, request.ToClaimId);
+
+            // Checking access rights
+            if (!(claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
+                || IsCurrentUserAdmin))
+                throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
 
             // Checking money amount
             var availableMoney = claimFrom.GetPaymentSum();

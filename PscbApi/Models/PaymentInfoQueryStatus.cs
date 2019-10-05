@@ -24,6 +24,6 @@ namespace PscbApi.Models {
         /// Error occured
         /// </summary>
         [Identifier("STATUS_FAILURE")]
-        Failure = Fail,
+        Failure,
     }
 }

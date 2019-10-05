@@ -18,7 +18,7 @@ namespace PscbApi.Models
         /// Error code
         /// </summary>
         [JsonProperty("errorCode")]
-        public string ErrorCode { get; set; }
+        public ApiErrorCode? ErrorCode { get; set; }
 
         /// <summary>
         /// Error description

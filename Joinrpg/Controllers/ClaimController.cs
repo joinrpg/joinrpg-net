@@ -747,10 +747,10 @@ namespace JoinRpg.Web.Controllers
           }
 
 
-          var claims = (await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
+          IReadOnlyCollection<Claim> claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
               claim.ProjectId,
-              ClaimStatusSpec.ActiveOrOnHold)).ToArray();
-          if (claims.Length == 0 || claims.Length == 1 && claims[0].ClaimId == claimId)
+              ClaimStatusSpec.ActiveOrOnHold);
+          if (claims.Count == 0 || claims.Count == 1 && claims.First().ClaimId == claimId)
           {
               return View("..\\Payments\\Error", new ErrorViewModel
               {
@@ -763,7 +763,5 @@ namespace JoinRpg.Web.Controllers
 
           return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
       }
-
-
     }
 }
