@@ -1,18 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
 namespace JoinRpg.Web.Models.Money
 {
     public enum FinanceOperationStateViewModel
     {
-        [Display(Name = "Подтверждено")]
+        [Display(Name = "Подтверждено", ShortName = "Проведено")]
         Approved,
-        [Display(Name = "Ожидает подтверждения")]
+        [Display(Name = "Ожидает подтверждения", ShortName = "Оплата")]
         Proposed,
-        [Display(Name = "Отклонено")]
+        [Display(Name = "Отклонено", ShortName = "Отклонено")]
         Declined,
     }
 

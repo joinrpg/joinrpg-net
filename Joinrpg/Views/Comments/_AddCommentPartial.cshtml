@@ -16,13 +16,14 @@
             <div class="col-md-12">
                 @if (Model.HideFromUser)
                 {
-                    @Html.EditorFor(model => model.HideFromUser, new { formIndex = Model.FormIndex, disabled = true, value = true })
+                    <input type="checkbox" disabled checked />
                     @Html.HiddenFor(model => model.HideFromUser)
                 }
                 else
                 {
-                    @Html.EditorFor(model => model.HideFromUser, new { formIndex = Model.FormIndex })
+                    <input type="checkbox" id="@Html.IdFor(model => model.HideFromUser)_@Model.FormIndex" name="@Html.NameFor(model => model.HideFromUser)" value="true" />
                 }
+                @Html.LabelFor(model => model.HideFromUser, new { @for = Html.IdFor(model => model.HideFromUser) + "_" + Model.FormIndex })
             </div>
         </div>
     }

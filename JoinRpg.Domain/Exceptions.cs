@@ -87,13 +87,13 @@ namespace JoinRpg.Domain
         }
     }
 
-    public class OnlinePaymentException : JoinRpgProjectException
+    public class PaymentException : JoinRpgProjectException
     {
-        public OnlinePaymentException(Project project, string message)
+        public PaymentException(Project project, string message)
             : base(project, message) { }
     }
 
-    public class OnlinePaymentUnexpectedStateException : OnlinePaymentException
+    public class OnlinePaymentUnexpectedStateException : PaymentException
     {
         public FinanceOperation FinanceOperation { get; }
 
@@ -111,7 +111,7 @@ namespace JoinRpg.Domain
         }
     }
 
-    public class OnlinePaymentsNotAvailable : OnlinePaymentException
+    public class OnlinePaymentsNotAvailable : PaymentException
     {
         public OnlinePaymentsNotAvailable(Project project)
             : base(project, $"Online payments are not available for project {project.ProjectName}")

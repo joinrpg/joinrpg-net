@@ -1,0 +1,12 @@
+﻿@using JoinRpg.Web.Models.Money
+@model JoinRpg.Web.Models.FinOperationListItemViewModel
+<tr>
+    <td class="price-table">@Model.FinanceOperationId</td>
+    <td>@Model.Description</td>
+    <td class="price-table">@if (Model.Money != 0) {@Html.Partial("Money", new Money(Model.Money))}</td>
+    <td class="price-table">@Model.OperationDate.ToShortDateString()</td>
+    <td>@Html.DisplayFor(model => model.PaymentMaster)</td>
+    <td>@Html.DisplayFor(model => model.MarkingMaster)</td>
+    <td>@Html.DisplayFor(model => model.Player)</td>
+    <td><a href="@Model.ClaimLink">@Model.Claim</a></td>
+</tr>

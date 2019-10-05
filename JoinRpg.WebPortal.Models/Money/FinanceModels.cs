@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Web.Mvc;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -116,6 +117,82 @@ namespace JoinRpg.Web.Models
             CommentText = "Сдан взнос";
         }
     }
+
+    public class PaymentTransferViewModel : AddCommentViewModel
+    {
+        [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
+        public DateTime OperationDate { get; set; }
+
+        [Required]
+        public int ClaimId { get; set; }
+        
+        [Display(Name = "Исходная заявка")]
+        public string ClaimName { get; }
+
+        /// <summary>
+        /// Id of a claim to transfer money to
+        /// </summary>
+        [Required]
+        [Display(Name = "Заявка для перевода взноса")]
+        public int RecipientClaimId { get; set; }
+
+        [Required]
+        [Display(Name = "Перевести средства")]
+        public int Money { get; set; }
+
+        /// <summary>
+        /// Max value allowed to transfer from this claim
+        /// </summary>
+        [Display(Name = "Доступно средств")]
+        public int MaxMoney { get; }
+
+        /// <summary>
+        /// List of claims to select recipient claim from
+        /// </summary>
+        public IReadOnlyCollection<RecipientClaimViewModel> Claims { get; set; }
+
+        public PaymentTransferViewModel() {}
+
+        public PaymentTransferViewModel(Claim claim, IEnumerable<Claim> claims) : base()
+        {
+            OperationDate = DateTime.UtcNow;
+            ActionName = "Перевести";
+            ClaimId = claim.ClaimId;
+            ClaimName = claim.Name;
+            ProjectId = claim.ProjectId;
+            CommentDiscussionId = claim.CommentDiscussionId;
+            MaxMoney = claim.GetPaymentSum();
+            Claims = claims
+                .Where(c => c.ClaimId != ClaimId)
+                .Select(c => new RecipientClaimViewModel(c))
+                .ToArray();
+        }
+    }
+    
+
+
+    public class RecipientClaimViewModel : SelectListItem
+    {
+        public int ClaimId { get; }
+
+        public string Name { get; }
+
+        public User Player { get; }
+
+        public string Status { get; }
+
+        public RecipientClaimViewModel(Claim source)
+        {
+            ClaimId = source.ClaimId;
+            Name = source.Name;
+            Player = source.Player;
+            Status = ((ClaimStatusView) source.ClaimStatus).GetDisplayName();
+
+            Text = $"{Name} ({Status}" + (Player != null ? $", {Player.GetDisplayName()}" : "") + ")";
+            Value = ClaimId.ToString();
+        }
+    }
+
 
     /// <summary>
     /// Map of <see cref="PaymentTypeKind"/>

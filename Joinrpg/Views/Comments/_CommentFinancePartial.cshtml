@@ -19,11 +19,11 @@
         break;
     case FinanceOperationType.TransferTo:
         <div><b>Передача денег на другую заявку:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
-        <div><b>Получатель:</b> @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { @class = "btn btn-default", target = "_blank" })</div>
+        <div><b>Получатель:</b> @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { target = "_blank" })</div>
         break;
     case FinanceOperationType.TransferFrom:
         <div><b>Получение денег от другой заявки:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
-        <div><b>Источник:</b> @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { @class = "btn btn-default", target = "_blank" })</div>
+        <div><b>Источник:</b> @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { target = "_blank" })</div>
         break;
     default:
         throw new ArgumentOutOfRangeException();

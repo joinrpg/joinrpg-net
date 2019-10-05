@@ -9,7 +9,7 @@ namespace JoinRpg.Web
 
         public const string SupportEmail = "support@joinrpg.ru";
 
-        public const string SupportPhone = "+7-921-899-79-57";
+        public const string SupportPhone = "+7-925-635-47-05";
 
         public const string PaymentsEmail = User.OnlinePaymentVirtualUser;
 

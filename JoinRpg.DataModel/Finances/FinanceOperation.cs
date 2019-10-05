@@ -131,7 +131,26 @@ namespace JoinRpg.DataModel
             && (OperationType == FinanceOperationType.Submit
                 || OperationType == FinanceOperationType.PreferentialFeeRequest);
 
+        /// <summary>
+        /// true if operation was approved
+        /// </summary>
         public bool Approved => State == FinanceOperationState.Approved;
+
+        /// <summary>
+        /// Returns true if operation is money flow operation (where field <see cref="MoneyAmount"/> is not zero)
+        /// </summary>
+        public bool MoneyFlowOperation => OperationType >= FinanceOperationType.Submit;
+
+        /// <summary>
+        /// Returns true if operation is income operation
+        /// </summary>
+        public bool IncomeOperation => OperationType == FinanceOperationType.Online
+            || OperationType == FinanceOperationType.Submit;
+
+        /// <summary>
+        /// Returns true if operation is refund operation
+        /// </summary>
+        public bool RefundOperation => OperationType == FinanceOperationType.Refund;
 
         #endregion
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
@@ -49,15 +50,20 @@ namespace JoinRpg.Services.Impl
         private BankApi GetApi(int projectId, int claimId)
             => new BankApi(GetApiConfiguration(projectId, claimId));
 
+        private async Task<Claim> GetClaimAsync(int projectId, int claimId)
+        {
+            Claim claim = await UnitOfWork.GetClaimsRepository()
+                .GetClaim(projectId, claimId);
+            if (claim == null)
+                throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
+            return claim;
+        }
 
         /// <inheritdoc />
         public async Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request)
         {
             // Loading claim
-            Claim claim = await UnitOfWork.GetClaimsRepository()
-                .GetClaim(request.ProjectId, request.ClaimId);
-            if (claim == null)
-                throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
+            var claim = await GetClaimAsync(request.ProjectId, request.ClaimId);
 
             // Checking access rights
             if (!(claim.HasAccess(CurrentUserId, ExtraAccessReason.Player)
@@ -72,13 +78,14 @@ namespace JoinRpg.Services.Impl
                 throw new OnlinePaymentsNotAvailable(claim.Project);
 
             if (request.Money <= 0)
-                throw new OnlinePaymentException(claim.Project, $"Money amount must be positive integer");
+                throw new PaymentException(claim.Project, $"Money amount must be positive integer");
 
             User user = await GetCurrentUser();
 
             var message = new PaymentMessage
             {
                 Amount = request.Money,
+                Details = $"Билет (организационный взнос) участника на «{claim.Project.ProjectName}»",
                 CustomerAccount = CurrentUserId.ToString(),
                 CustomerEmail = user.Email,
                 CustomerPhone = user.Extra?.PhoneNumber,
@@ -113,7 +120,7 @@ namespace JoinRpg.Services.Impl
                 .BuildPaymentRequestAsync(
                     message,
 //                    () => Task.FromResult(new Random().Next().ToString())
-                    async () => (await AddCommentAsync(claim.CommentDiscussion, onlinePaymentType, request))
+                    async () => (await AddPaymentCommentAsync(claim.CommentDiscussion, onlinePaymentType, request))
                         .CommentId
                         .ToString()
                         .PadLeft(10, '0')
@@ -126,7 +133,7 @@ namespace JoinRpg.Services.Impl
             };
         }
 
-        private async Task<Comment> AddCommentAsync(
+        private async Task<Comment> AddPaymentCommentAsync(
             CommentDiscussion discussion,
             PaymentType paymentType,
             ClaimPaymentRequest request)
@@ -169,7 +176,7 @@ namespace JoinRpg.Services.Impl
             if (fo.ProjectId != result.ProjectId)
                 throw new JoinRpgEntityNotFoundException(result.ProjectId, nameof(Project));
             if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
-                throw new OnlinePaymentException(fo.Project, "Finance operation is not online payment");
+                throw new PaymentException(fo.Project, "Finance operation is not online payment");
             if (fo.State != FinanceOperationState.Proposed)
                 throw new OnlinePaymentUnexpectedStateException(fo, FinanceOperationState.Proposed);
 
@@ -180,6 +187,84 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
 
             // TODO: Probably need to send some notifications?
+        }
+
+        /// <inheritdoc />
+        public Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
+            CommentDiscussion discussionFrom,
+            CommentDiscussion discussionTo,
+            ClaimPaymentTransferRequest request)
+        {
+            // Comment to source claim
+            Comment commentFrom = CommentHelper.CreateCommentForDiscussion(
+                discussionFrom,
+                CurrentUserId,
+                Now,
+                request.CommentText ?? "",
+                true,
+                null);
+            commentFrom.Finance = new FinanceOperation
+            {
+                OperationType = FinanceOperationType.TransferTo,
+                MoneyAmount = -request.Money,
+                OperationDate = request.OperationDate,
+                ProjectId = request.ProjectId,
+                ClaimId = request.ClaimId,
+                LinkedClaimId = request.ToClaimId,
+                Created = Now,
+                Changed = Now,
+                State = FinanceOperationState.Approved,
+            };
+            UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
+
+            // Comment to destination claim
+            Comment commentTo = CommentHelper.CreateCommentForDiscussion(
+                discussionTo,
+                CurrentUserId,
+                Now,
+                "",
+                true,
+                null);
+            commentTo.Finance = new FinanceOperation
+            {
+                OperationType = FinanceOperationType.TransferFrom,
+                MoneyAmount = request.Money,
+                OperationDate = request.OperationDate,
+                ProjectId = request.ProjectId,
+                ClaimId = request.ToClaimId,
+                LinkedClaimId = request.ClaimId,
+                Created = Now,
+                Changed = Now,
+                State = FinanceOperationState.Approved,
+            };
+
+            await UnitOfWork.SaveChangesAsync();
+
+            return Tuple.Create(commentFrom, commentTo);
+        }
+
+        /// <inheritdoc />
+        public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
+        {
+            var claimFrom = await GetClaimAsync(request.ProjectId, request.ClaimId);
+            var claimTo = await GetClaimAsync(request.ProjectId, request.ToClaimId);
+
+            // Checking money amount
+            var availableMoney = claimFrom.GetPaymentSum();
+            if (availableMoney < request.Money)
+                throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Name} to perform transfer");
+
+            // Adding comments
+            await AddTransferCommentsAsync(
+                claimFrom.CommentDiscussion,
+                claimTo.CommentDiscussion,
+                request);
         }
 
 

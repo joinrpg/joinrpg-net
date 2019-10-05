@@ -1,22 +1,28 @@
 ﻿@using JoinRpg.Web.Models
+@using Newtonsoft.Json
 @model ErrorViewModel
 
-<h1>Ошибка онлайн-оплаты</h1>
+<h1>@Model.Title</h1>
 
 <div class="join alert alert-danger">
     <i class="glyphicon glyphicon-exclamation-sign"></i>
     <div>
-        <h4>@Model.Message</h4>
+        <h4 style="margin: 0;">@Model.Message</h4>
         @if (!string.IsNullOrWhiteSpace(Model.Description))
         {
-            <div style="margin-top: 0.5em;">@Model.Description</div>
+            <div style="margin-top: 1em;">@Model.Description</div>
         }
     </div>
 </div>
 
+@if (Model.Data != null)
+{
+<pre style="width: 100%; height: 300px; overflow: scroll;">
+    @if (Model.Data is Exception) { @Model.Data.ToString() }
+</pre>
+}
+
 @if (!string.IsNullOrWhiteSpace(Model.ReturnLink))
 {
-    <h4>
-        <a href="@Model.ReturnLink">@(string.IsNullOrWhiteSpace(Model.ReturnText) ? Model.ReturnLink : Model.ReturnText)</a>
-    </h4>
+    <a class="btn btn-default" href="@Model.ReturnLink">@(string.IsNullOrWhiteSpace(Model.ReturnText) ? Model.ReturnLink : Model.ReturnText)</a>
 }

@@ -12,16 +12,13 @@ namespace JoinRpg.Web.Controllers.Money
 {
     public class PaymentsController : Common.ControllerBase
     {
-        private readonly IClaimsRepository _claims;
         private readonly IPaymentsService _payments;
 
         public PaymentsController(
             IUserRepository userRepository,
-            IClaimsRepository claims,
             IPaymentsService payments)
             : base(userRepository)
         {
-            _claims = claims;
             _payments = payments;
         }
 
@@ -54,7 +51,7 @@ namespace JoinRpg.Web.Controllers.Money
                         ReturnText = "Вернуться к заявке"
                     });
             }
-            
+
             try
             {
                 ClaimPaymentContext paymentContext = await _payments.InitiateClaimPaymentAsync(
@@ -72,18 +69,24 @@ namespace JoinRpg.Web.Controllers.Money
             }
             catch (Exception e)
             {
-                return Error(new ErrorViewModel
-                {
-                    Message = "Ошибка создания платежа: " + e.Message,
-                    ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
-                    ReturnText = "Вернуться к заявке"
-                });
+                return Error(
+                    new ErrorViewModel
+                    {
+                        Message = "Ошибка создания платежа: " + e.Message,
+                        ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                        ReturnText = "Вернуться к заявке"
+                    });
             }
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, string orderId, [CanBeNull] string description)
+        public async Task<ActionResult> ClaimPaymentSuccess(
+            int projectId,
+            int claimId,
+            string orderId,
+            [CanBeNull]
+            string description)
         {
             if (int.TryParse(orderId, out var financeOperationId))
             {
@@ -102,27 +105,35 @@ namespace JoinRpg.Web.Controllers.Money
                 }
                 catch (Exception e)
                 {
-                    return Error(new ErrorViewModel
-                    {
-                        Message = $"Ошибка обработки успешного платежа {orderId}",
-                        Description = e.Message,
-                        Data = e,
-                        ReturnLink = GetClaimUrl(projectId, claimId),
-                        ReturnText = "Вернуться к заявке",
-                    });
+                    return Error(
+                        new ErrorViewModel
+                        {
+                            Message = $"Ошибка обработки успешного платежа {orderId}",
+                            Description = e.Message,
+                            Data = e,
+                            ReturnLink = GetClaimUrl(projectId, claimId),
+                            ReturnText = "Вернуться к заявке",
+                        });
                 }
             }
 
-            return Error(new ErrorViewModel {
-                Message = $"Неверный идентификатор платежа: {orderId}",
-                ReturnLink = GetClaimUrl(projectId, claimId),
-                ReturnText = "Вернуться к заявке",
-            });
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Неверный идентификатор платежа: {orderId}",
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке",
+                });
         }
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, string orderId, [CanBeNull] string description)
+        public async Task<ActionResult> ClaimPaymentFail(
+            int projectId,
+            int claimId,
+            string orderId,
+            [CanBeNull]
+            string description)
         {
             if (int.TryParse(orderId, out var financeOperationId))
             {
@@ -155,31 +166,96 @@ namespace JoinRpg.Web.Controllers.Money
                 {
                     await _payments.SetClaimPaymentResultAsync(resultContext);
 
-                    return Error(new ErrorViewModel
-                    {
-                        Message = "Ошибка выполнения платежа" + message,
-                        ReturnLink = GetClaimUrl(projectId, claimId),
-                        ReturnText = "Вернуться к заявке"
-                    });
+                    return Error(
+                        new ErrorViewModel
+                        {
+                            Message = "Ошибка выполнения платежа" + message,
+                            ReturnLink = GetClaimUrl(projectId, claimId),
+                            ReturnText = "Вернуться к заявке"
+                        });
                 }
                 catch (Exception e)
                 {
-                    return Error(new ErrorViewModel
+                    return Error(
+                        new ErrorViewModel
+                        {
+                            Message =
+                                $"Ошибка обработки неудавшегося платежа ({orderId}): {message}",
+                            Description = e.Message,
+                            Data = e,
+                            ReturnLink = GetClaimUrl(projectId, claimId),
+                            ReturnText = "Вернуться к заявке"
+                        });
+                }
+            }
+
+            return Error(
+                new ErrorViewModel
+                {
+                    Message = $"Неверный идентификатор платежа: {orderId}",
+                    ReturnLink = GetClaimUrl(projectId, claimId),
+                    ReturnText = "Вернуться к заявке",
+                });
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> UpdateClaimPayment(int projectId, int claimId, int orderId)
+        {
+            try
+            {
+                await _payments.UpdateClaimPaymentAsync(projectId, claimId, orderId);
+                return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+            }
+            catch (Exception e)
+            {
+                return Error(
+                    new ErrorViewModel
                     {
-                        Message = $"Ошибка обработки неудавшегося платежа ({orderId}): {message}",
+                        Message = $"Ошибка обновления статуса платежа ({orderId})",
                         Description = e.Message,
                         Data = e,
                         ReturnLink = GetClaimUrl(projectId, claimId),
                         ReturnText = "Вернуться к заявке"
                     });
-                }
             }
+        }
 
-            return Error(new ErrorViewModel {
-                Message = $"Неверный идентификатор платежа: {orderId}",
-                ReturnLink = GetClaimUrl(projectId, claimId),
-                ReturnText = "Вернуться к заявке",
-            });
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> TransferClaimPayment(PaymentTransferViewModel data)
+        {
+            try
+            {
+                await _payments.TransferPaymentAsync(
+                    new ClaimPaymentTransferRequest
+                    {
+                        ProjectId = data.ProjectId,
+                        ClaimId = data.ClaimId,
+                        ToClaimId = data.RecipientClaimId,
+                        CommentText = data.CommentText,
+                        OperationDate = data.OperationDate,
+                        Money = data.Money,
+                    });
+                return RedirectToAction(
+                    "Edit",
+                    "Claim",
+                    new {projectId = data.ProjectId, claimId = data.ClaimId});
+            }
+            catch (Exception e)
+            {
+                return Error(
+                    new ErrorViewModel
+                    {
+                        Message = $"Ошибка выполнения перевода {data.Money} от заявки {data.ClaimId} к заявке {data.RecipientClaimId}",
+                        Description = e.Message,
+                        Data = e,
+                        ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
+                        ReturnText = "Вернуться к заявке"
+                    });
+            }
         }
     }
 }

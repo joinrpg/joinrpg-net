@@ -25,6 +25,13 @@
                         </div>
                     }
 
+                    @if (Model.Money == 0)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-question-sign"></i>
+                            Вы уже вносили деньги. Вы точно хотите оплатить еще?
+                        </div>
+                    }
+
                     <div class="join alert alert-info">
                         <i class="glyphicon glyphicon-info-sign"></i>
                         <div style="font-size: smaller;">
@@ -41,7 +48,7 @@
                             </div>
                         </div>
 
-                        @Html.Partial("..\\Comments\\_CommentTextEditorPartial", new CommentTextViewModel())
+                        @Html.Partial("..\\Comments\\_CommentTextEditorPartial", Model)
 
                         <div class="form-group">
                             <div class="col-md-12">

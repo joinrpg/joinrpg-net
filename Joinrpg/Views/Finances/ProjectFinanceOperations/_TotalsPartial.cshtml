@@ -1,0 +1,20 @@
+﻿@using JoinRpg.Web.Models.Money
+@model JoinRpg.Web.Models.OperationsTotalsViewModel
+@if (Model.Refunds != 0)
+{
+    <tr>
+        <th></th>
+        <th>@Html.DisplayNameFor(model => model.Income)</th>
+        <th class="price-table">@Html.Partial("Money", new Money(Model.Income))</th>
+    </tr>
+    <tr>
+        <th></th>
+        <th>@Html.DisplayNameFor(model => model.Refunds)</th>
+        <th class="price-table">@Html.Partial("Money", new Money(Model.Refunds))</th>
+    </tr>
+}
+<tr>
+    <th></th>
+    <th>@Html.DisplayNameFor(model => model.Balance)</th>
+    <th class="price-table">@Html.Partial("Money", new Money(Model.Balance))</th>
+</tr>

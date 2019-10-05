@@ -100,6 +100,14 @@ namespace JoinRpg.Domain
             => GetClaimPaymentStatus(claim.ClaimTotalFee(), claim.ClaimBalance());
 
         /// <summary>
+        /// Returns total sum of all money flow operations
+        /// </summary>
+        public static int GetPaymentSum(this Claim claim)
+            => claim.FinanceOperations
+                .Where(fo => fo.Approved && fo.MoneyFlowOperation)
+                .Sum(fo => fo.MoneyAmount);
+
+        /// <summary>
         /// Returns current fee of a field with value
         /// </summary>
         public static int GetCurrentFee(this FieldWithValue self)

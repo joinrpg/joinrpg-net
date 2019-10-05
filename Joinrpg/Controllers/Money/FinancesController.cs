@@ -53,34 +53,38 @@ namespace JoinRpg.Web.Controllers.Money
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
-      => await GetFinanceOperationsList(projectid, export, fo => fo.Approved);
+      => await GetFinanceOperationsList(projectid, export, fo => fo.MoneyFlowOperation && fo.Approved);
 
     public async Task<ActionResult> Moderation(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
 
         [MasterAuthorize]
-        private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
+        private async Task<ActionResult> GetFinanceOperationsList(int projectId, string export, Func<FinanceOperation, bool> predicate)
         {
-            var project = await ProjectRepository.GetProjectWithFinances(projectid);
-            var viewModel = new FinOperationListViewModel(project, UriService,
-              project.FinanceOperations.Where(predicate).ToArray());
+            // TODO: Load project and finance operations separately
+            // TODO: Load finance operations without tracking
+            var project = await ProjectRepository.GetProjectWithFinances(projectId);
+            var viewModel = new FinOperationListViewModel(
+                UriService,
+                project,
+                project
+                    .FinanceOperations
+                    .Where(predicate));
 
             var exportType = GetExportTypeByName(export);
 
             if (exportType == null)
             {
-                return View("Operations", viewModel);
+                return View("ProjectFinanceOperations/ProjectFinanceOperations", viewModel);
             }
-            else
-            {
-                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
-                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
-                return File(
-                    await generator.Generate(),
-                    generator.ContentType,
-                    Path.ChangeExtension("finance-export", generator.FileExtension)
-                   );
-            }
+
+            ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
+            var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
+            return File(
+                await generator.Generate(),
+                generator.ContentType,
+                Path.ChangeExtension("finance-export", generator.FileExtension)
+            );
         }
 
       [MasterAuthorize()]

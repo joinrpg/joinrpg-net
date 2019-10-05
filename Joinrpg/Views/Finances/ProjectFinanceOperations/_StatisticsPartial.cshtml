@@ -1,0 +1,33 @@
+﻿@model JoinRpg.Web.Models.OperationsStatisticsViewModel
+@if (Model.PaymentsCount > 0)
+{
+    <tr>
+        <td></td>
+        <td>@Html.DisplayNameFor(model => model.PaymentsCount)</td>
+        <td class="price-table">@Model.PaymentsCount</td>
+    </tr>
+}
+@if (Model.RefundsCount > 0)
+{
+    <tr>
+        <td></td>
+        <td>@Html.DisplayNameFor(model => model.RefundsCount)</td>
+        <td class="price-table">@Model.RefundsCount</td>
+    </tr>
+}
+@if (Model.TransfersCount > 0)
+{
+    <tr>
+        <td></td>
+        <td>@Html.DisplayNameFor(model => model.TransfersCount)</td>
+        <td class="price-table">@Model.TransfersCount</td>
+    </tr>
+}
+@if (Model.PreferentialRequestsCount > 0)
+{
+    <tr>
+        <td></td>
+        <td>@Html.DisplayNameFor(model => model.PreferentialRequestsCount)</td>
+        <td class="price-table">@Model.PreferentialRequestsCount</td>
+    </tr>
+}

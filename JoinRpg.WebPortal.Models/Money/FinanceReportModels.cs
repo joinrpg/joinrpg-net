@@ -7,6 +7,7 @@ using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
@@ -110,7 +111,7 @@ namespace JoinRpg.Web.Models
             ProjectId = project.ProjectId;
             UserDetails = new UserProfileDetailsViewModel(master, AccessReason.CoMaster);
 
-            Operations = new FinOperationListViewModel(project, urlHelper, operations);
+            Operations = new FinOperationListViewModel(urlHelper, project, operations);
 
             Balance = new MasterBalanceViewModel(master, project.ProjectId, operations, transfers);
 
@@ -118,46 +119,140 @@ namespace JoinRpg.Web.Models
         }
     }
 
+
+    public class OperationsTotalsViewModel
+    {
+        /// <summary>
+        /// Income, positive value
+        /// </summary>
+        [Display(Name = "Получено")]
+        public int Income { get; set; }
+
+        /// <summary>
+        /// Refunds, negative value
+        /// </summary>
+        [Display(Name = "Возвращено")]
+        public int Refunds { get; set; }
+
+        /// <summary>
+        /// Balance
+        /// </summary>
+        [Display(Name = "Итого")]
+        public int Balance => Income + Refunds;
+    }
+
+    public class OperationsStatisticsViewModel
+    {
+        /// <summary>
+        /// Количество платежей
+        /// </summary>
+        [Display(Name = "Количество платежей, шт")]
+        public int PaymentsCount { get; set; }
+
+        /// <summary>
+        /// Количество возвратов
+        /// </summary>
+        [Display(Name = "Количество возвратов, шт")]
+        public int RefundsCount { get; set; }
+
+        /// <summary>
+        /// Количество переводов
+        /// </summary>
+        [Display(Name = "Количество переводов, шт")]
+        public int TransfersCount { get; set; }
+
+        /// <summary>
+        /// Количество запросов льгот
+        /// </summary>
+        [Display(Name = "Количество запросов льгот, шт")]
+        public int PreferentialRequestsCount { get; set; }
+    }
+
     public class FinOperationListViewModel : IOperationsAwareView
     {
         public IReadOnlyCollection<FinOperationListItemViewModel> Items { get; }
 
         public int? ProjectId { get; }
+        
+        /// <summary>
+        /// Статистика
+        /// </summary>
+        [Display(Name = "Статистика")]
+        public OperationsStatisticsViewModel Statistics { get; } = new OperationsStatisticsViewModel();
+
+        /// <summary>
+        /// Суммы
+        /// </summary>
+        [Display(Name = "Суммы")]
+        public OperationsTotalsViewModel Totals { get; set; } = new OperationsTotalsViewModel();
 
         public IReadOnlyCollection<int> ClaimIds { get; }
+
         public IReadOnlyCollection<int> CharacterIds => new int[] { };
 
-        public FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations)
+        public FinOperationListViewModel(IUriService urlHelper, Project project, IEnumerable<FinanceOperation> operations)
         {
+            var claimIds = new List<int>(project.FinanceOperations.Count);
+            
             Items = operations
-              .OrderBy(f => f.CommentId)
-              .Select(f => new FinOperationListItemViewModel(f, urlHelper)).ToArray();
+              .OrderBy(fo => fo.CommentId)
+              .Select(fo =>
+              {
+                  if (!claimIds.Contains(fo.ClaimId))
+                      claimIds.Add(fo.ClaimId);
+
+                  if (fo.IncomeOperation)
+                  {
+                      Totals.Income += fo.MoneyAmount;
+                      Statistics.PaymentsCount++;
+                  }
+                  else if (fo.RefundOperation)
+                  {
+                      Totals.Refunds += fo.MoneyAmount;
+                      Statistics.RefundsCount++;
+                  }
+                  else if (fo.OperationType == FinanceOperationType.TransferTo)
+                  {
+                      Statistics.TransfersCount++;
+                  }
+                  else if (fo.OperationType == FinanceOperationType.PreferentialFeeRequest)
+                  {
+                      Statistics.PreferentialRequestsCount++;
+                  }
+
+                  return new FinOperationListItemViewModel(fo, urlHelper);
+              })
+              .ToArray();
+
             ProjectId = project.ProjectId;
-            ClaimIds = operations.Select(c => c.ClaimId).Distinct().ToArray();
+            ClaimIds = claimIds;
         }
     }
 
     public class FinOperationListItemViewModel
     {
-        [Display(Name = "# операции")]
+        [Display(Name = "#")]
         public int FinanceOperationId { get; }
 
-        [Display(Name = "Внесено денег"), Required]
-        public int Money { get; }
-
-        [Display(Name = "Изменение взноса"), Required]
-        public int FeeChange { get; }
-
-        [Display(Name = "Оплачено мастеру")]
-        public User PaymentMaster { get; }
+        [Display(Name = "Операция")]
+        public string OperationTypeName { get; set; }
 
         [Display(Name = "Способ оплаты"), Required]
         public string PaymentTypeName { get; }
 
+        [Display(Name = "Тип операции или способ оплаты")]
+        public string Description { get; }
+
+        [Display(Name = "Сумма")]
+        public int Money { get; }
+
+        [Display(Name = "Получатель")]
+        public User PaymentMaster { get; }
+
         [Display(Name = "Отметил"), Required]
         public User MarkingMaster { get; }
 
-        [Display(Name = "Дата внесения"), Required, DateShouldBeInPast]
+        [Display(Name = "Дата"), Required, DateShouldBeInPast]
         public DateTime OperationDate { get; }
 
         [Display(Name = "Заявка"), Required]
@@ -174,13 +269,15 @@ namespace JoinRpg.Web.Models
             PaymentTypeName = fo.PaymentType?.GetDisplayName();
             PaymentMaster = fo.PaymentType?.User;
             Claim = fo.Claim.Name;
-            FeeChange = fo.FeeChange;
             Money = fo.MoneyAmount;
             OperationDate = fo.OperationDate;
+            OperationTypeName = ((FinanceOperationTypeViewModel) fo.OperationType).GetDisplayName();
             FinanceOperationId = fo.CommentId;
             MarkingMaster = fo.Comment.Author;
             Player = fo.Claim.Player;
             ClaimLink = uriService.Get(fo.Claim);
+
+            Description = fo.IncomeOperation ? PaymentTypeName : OperationTypeName;
         }
     }
 
@@ -287,7 +384,7 @@ namespace JoinRpg.Web.Models
 
             ProjectId = project.ProjectId;
 
-            Operations = new FinOperationListViewModel(project, urlHelper, operations);
+            Operations = new FinOperationListViewModel(urlHelper, project, operations);
 
             Balance = MasterBalanceBuilder.ToMasterBalanceViewModels(operations, transfers, project.ProjectId);
 

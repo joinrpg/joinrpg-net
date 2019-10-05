@@ -729,5 +729,41 @@ namespace JoinRpg.Web.Controllers
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
       }
+
+
+      [HttpGet]
+      [Authorize]
+      public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId)
+      {
+          var claim = await _claimsRepository.GetClaim(projectId, claimId);
+          if (claim == null)
+          {
+              return HttpNotFound();
+          }
+          var error = WithClaim(claim);
+          if (error != null)
+          {
+              return error;
+          }
+
+
+          var claims = (await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
+              claim.ProjectId,
+              ClaimStatusSpec.ActiveOrOnHold)).ToArray();
+          if (claims.Length == 0 || claims.Length == 1 && claims[0].ClaimId == claimId)
+          {
+              return View("..\\Payments\\Error", new ErrorViewModel
+              {
+                  Title = "Ошибка",
+                  Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
+                  ReturnLink = Url.Action("Edit", "Claim", new {projectId, claimId}),
+                  ReturnText = "Вернуться к заявке"
+              });
+          }
+
+          return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
+      }
+
+
     }
 }

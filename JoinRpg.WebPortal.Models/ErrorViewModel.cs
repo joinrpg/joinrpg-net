@@ -4,6 +4,8 @@ namespace JoinRpg.Web.Models
     public class ErrorViewModel
     {
 
+        public string Title { get; set; } = "Ошибка онлайн-оплаты";
+
         public string Message { get; set; }
 
         public string Description { get; set; }
@@ -12,7 +14,15 @@ namespace JoinRpg.Web.Models
 
         public string ReturnText { get; set; }
 
+        #if DEBUG
         public object Data { get; set; }
+        #else
+        public object Data
+        {
+            get { return null; }
+            set { value = null; }
+        }
+        #endif
 
     }
 
