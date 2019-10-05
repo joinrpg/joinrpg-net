@@ -36,21 +36,25 @@ namespace PscbApi
                 nullable = actualType != null;
             }
 
+            var value = reader.Value;
             if (actualType != null)
             {
-                if (existingValue != null)
+                if (value != null)
                 {
-                    object result = Enum.GetValues(actualType)
-                        .Cast<Enum>()
-                        .FirstOrDefault(v => v.GetIdentifier().Equals(existingValue));
-                    if (result != null)
-                        return result;
+                    if (value is string sValue)
+                    {
+                        object result = Enum.GetValues(actualType)
+                            .Cast<Enum>()
+                            .FirstOrDefault(v => v.GetIdentifier().Equals(sValue, StringComparison.InvariantCultureIgnoreCase));
+                        if (result != null)
+                            return result;
+                    }
                 }
                 else if (nullable)
                     return null;
             }
 
-            throw new InvalidCastException($"\"{existingValue}\" could not be converted to {actualType}");
+            throw new InvalidCastException($"\"{value}\" could not be converted to {actualType?.Name ?? objectType.Name}");
         }
 
         /// <inheritdoc />
