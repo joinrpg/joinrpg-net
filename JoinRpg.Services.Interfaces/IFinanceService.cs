@@ -75,6 +75,18 @@ namespace JoinRpg.Services.Interfaces
         public string Name { get; set; }
     }
 
+    /// <summary>
+    /// Payload for <see cref="IFinanceService.TransferPaymentAsync"/>
+    /// </summary>
+    public class ClaimPaymentTransferRequest : ClaimPaymentRequest, IClaimOperationRequest
+    {
+        /// <summary>
+        /// Claim to transfer money to
+        /// </summary>
+        public int ToClaimId { get; set; }
+    }
+
+
 
     public interface IFinanceService
     {
@@ -93,6 +105,13 @@ namespace JoinRpg.Services.Interfaces
         /// <param name="projectId">Database Id of a project</param>
         /// <param name="paymentTypeId">Database Id of a payment type to toggle state of</param>
         Task TogglePaymentActiveness(int projectId, int paymentTypeId);
+
+        /// <summary>
+        /// Transfers money from one claim to another
+        /// </summary>
+        /// <param name="request">Request data</param>
+        Task TransferPaymentAsync(ClaimPaymentTransferRequest request);
+
 
         Task EditCustomPaymentType(int projectId, int paymentTypeId, string name, bool isDefault);
         Task CreateFeeSetting(CreateFeeSettingRequest request);

@@ -108,18 +108,6 @@ namespace JoinRpg.Services.Interfaces
     }
 
     /// <summary>
-    /// Claim payment transfer request
-    /// </summary>
-    public class ClaimPaymentTransferRequest : ClaimPaymentRequest
-    {
-        /// <summary>
-        /// Claim to transfer money to
-        /// </summary>
-        public int ToClaimId { get; set; }
-    }
-
-
-    /// <summary>
     /// Payments service
     /// </summary>
     public interface IPaymentsService
@@ -143,11 +131,5 @@ namespace JoinRpg.Services.Interfaces
         /// <param name="claimId">Database Id of a claim</param>
         /// <param name="orderId">Finance operation Id</param>
         Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId);
-
-        /// <summary>
-        /// Transfers money from one claim to another
-        /// </summary>
-        /// <param name="request">Request data</param>
-        Task TransferPaymentAsync(ClaimPaymentTransferRequest request);
     }
 }

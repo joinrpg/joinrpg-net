@@ -29,7 +29,12 @@ namespace JoinRpg.Web.Controllers.Money
         /// Returns payment error view
         /// </summary>
         public ActionResult Error(ErrorViewModel model)
-            => View("Error", model);
+        {
+            model.Title = string.IsNullOrWhiteSpace(model.Title)
+                ? "Ошибка онлайн-оплаты"
+                : model.Title.Trim();
+            return View("Error", model);
+        }
 
         /// <summary>
         /// Handles claim payment request
@@ -218,43 +223,6 @@ namespace JoinRpg.Web.Controllers.Money
                         Description = e.Message,
                         Data = e,
                         ReturnLink = GetClaimUrl(projectId, claimId),
-                        ReturnText = "Вернуться к заявке"
-                    });
-            }
-        }
-
-
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> TransferClaimPayment(PaymentTransferViewModel data)
-        {
-            try
-            {
-                await _payments.TransferPaymentAsync(
-                    new ClaimPaymentTransferRequest
-                    {
-                        ProjectId = data.ProjectId,
-                        ClaimId = data.ClaimId,
-                        ToClaimId = data.RecipientClaimId,
-                        CommentText = data.CommentText,
-                        OperationDate = data.OperationDate,
-                        Money = data.Money,
-                    });
-                return RedirectToAction(
-                    "Edit",
-                    "Claim",
-                    new {projectId = data.ProjectId, claimId = data.ClaimId});
-            }
-            catch (Exception e)
-            {
-                return Error(
-                    new ErrorViewModel
-                    {
-                        Message = $"Ошибка выполнения перевода {data.Money} от заявки {data.ClaimId} к заявке {data.RecipientClaimId}",
-                        Description = e.Message,
-                        Data = e,
-                        ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
                         ReturnText = "Вернуться к заявке"
                     });
             }

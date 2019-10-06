@@ -14,7 +14,7 @@
         @Html.LabelFor(model => model.MaxMoney, new { @class = "col-md-3 control-label" })
         <div class="col-md-6"><strong>@Html.Partial("Money", new Money(Model.MaxMoney))</strong></div>
     </div>
-    @using (Html.BeginForm("TransferClaimPayment", "Payments", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    @using (Html.BeginForm("TransferClaimPayment", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
         @Html.AntiForgeryToken();
         @Html.HiddenFor(model => model.ProjectId)

@@ -479,7 +479,45 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> TransferClaimPayment(PaymentTransferViewModel data)
+    {
+        try
+        {
+            await FinanceService.TransferPaymentAsync(
+                new ClaimPaymentTransferRequest
+                {
+                    ProjectId = data.ProjectId,
+                    ClaimId = data.ClaimId,
+                    ToClaimId = data.RecipientClaimId,
+                    CommentText = data.CommentText,
+                    OperationDate = data.OperationDate,
+                    Money = data.Money,
+                });
+            return RedirectToAction(
+                "Edit",
+                "Claim",
+                new { projectId = data.ProjectId, claimId = data.ClaimId });
+        }
+        catch (Exception e)
+        {
+            return View("..\\Payments\\Error",
+                new ErrorViewModel
+                {
+                    Title = "Перевод между заявками",
+                    Message = $"Ошибка выполнения перевода {data.Money} от заявки {data.ClaimId} к заявке {data.RecipientClaimId}",
+                    Description = e.Message,
+                    Data = e,
+                    ReturnLink = Url.Action("Edit", "Claim", new { projectId = data.ProjectId, claimId = data.ClaimId }),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+
+        [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
     {
       try

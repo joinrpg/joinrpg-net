@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Helpers;
 using PscbApi;
 using PscbApi.Models;
 
@@ -119,7 +117,6 @@ namespace JoinRpg.Services.Impl
             PaymentRequestDescriptor result = await GetApi(request.ProjectId, request.ClaimId)
                 .BuildPaymentRequestAsync(
                     message,
-//                    () => Task.FromResult(new Random().Next().ToString())
                     async () => (await AddPaymentCommentAsync(claim.CommentDiscussion, onlinePaymentType, request))
                         .CommentId
                         .ToString()
@@ -266,83 +263,6 @@ namespace JoinRpg.Services.Impl
             }
         }
         
-        private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
-            CommentDiscussion discussionFrom,
-            CommentDiscussion discussionTo,
-            ClaimPaymentTransferRequest request)
-        {
-            // Comment to source claim
-            Comment commentFrom = CommentHelper.CreateCommentForDiscussion(
-                discussionFrom,
-                CurrentUserId,
-                Now,
-                request.CommentText,
-                true,
-                null);
-            commentFrom.Finance = new FinanceOperation
-            {
-                OperationType = FinanceOperationType.TransferTo,
-                MoneyAmount = -request.Money,
-                OperationDate = request.OperationDate,
-                ProjectId = request.ProjectId,
-                ClaimId = request.ClaimId,
-                LinkedClaimId = request.ToClaimId,
-                Created = Now,
-                Changed = Now,
-                State = FinanceOperationState.Approved,
-            };
-            UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
-
-            // Comment to destination claim
-            Comment commentTo = CommentHelper.CreateCommentForDiscussion(
-                discussionTo,
-                CurrentUserId,
-                Now,
-                request.CommentText,
-                true,
-                null);
-            commentTo.Finance = new FinanceOperation
-            {
-                OperationType = FinanceOperationType.TransferFrom,
-                MoneyAmount = request.Money,
-                OperationDate = request.OperationDate,
-                ProjectId = request.ProjectId,
-                ClaimId = request.ToClaimId,
-                LinkedClaimId = request.ClaimId,
-                Created = Now,
-                Changed = Now,
-                State = FinanceOperationState.Approved,
-            };
-
-            await UnitOfWork.SaveChangesAsync();
-
-            return Tuple.Create(commentFrom, commentTo);
-        }
-
-        /// <inheritdoc />
-        public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
-        {
-            var claimFrom = await GetClaimAsync(request.ProjectId, request.ClaimId);
-            var claimTo = await GetClaimAsync(request.ProjectId, request.ToClaimId);
-
-            // Checking access rights
-            if (!(claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
-                || IsCurrentUserAdmin))
-                throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
-
-            // Checking money amount
-            var availableMoney = claimFrom.GetPaymentSum();
-            if (availableMoney < request.Money)
-                throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Name} to perform transfer");
-
-            // Adding comments
-            await AddTransferCommentsAsync(
-                claimFrom.CommentDiscussion,
-                claimTo.CommentDiscussion,
-                request);
-        }
-
-
         private abstract class PaymentRedirectUrl : ILinkable
         {
             /// <inheritdoc />

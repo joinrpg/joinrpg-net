@@ -52,6 +52,8 @@ namespace JoinRpg.Services.Impl
             await EmailService.Email(email);
         }
 
+        #region Payment type
+
         /// <inheritdoc />
         public async Task CreatePaymentType(CreatePaymentTypeRequest request)
         {
@@ -159,6 +161,10 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
+        #endregion
+
+        #region Fee options
+
         public async Task CreateFeeSetting(CreateFeeSettingRequest request)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
@@ -224,6 +230,10 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
+        #endregion
+
+        #region Finance settings
+
         public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
@@ -236,6 +246,10 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
         }
+
+        #endregion
+
+        #region Finance Operations
 
         public async Task MarkPreferential(MarkPreferentialRequest request)
         {
@@ -288,6 +302,86 @@ namespace JoinRpg.Services.Impl
 
             await EmailService.Email(email);
         }
+
+        private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
+            CommentDiscussion discussionFrom,
+            CommentDiscussion discussionTo,
+            ClaimPaymentTransferRequest request)
+        {
+            // Comment to source claim
+            Comment commentFrom = CommentHelper.CreateCommentForDiscussion(
+                discussionFrom,
+                CurrentUserId,
+                Now,
+                request.CommentText,
+                true,
+                null);
+            commentFrom.Finance = new FinanceOperation
+            {
+                OperationType = FinanceOperationType.TransferTo,
+                MoneyAmount = -request.Money,
+                OperationDate = request.OperationDate,
+                ProjectId = request.ProjectId,
+                ClaimId = request.ClaimId,
+                LinkedClaimId = request.ToClaimId,
+                Created = Now,
+                Changed = Now,
+                State = FinanceOperationState.Approved,
+            };
+            UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
+
+            // Comment to destination claim
+            Comment commentTo = CommentHelper.CreateCommentForDiscussion(
+                discussionTo,
+                CurrentUserId,
+                Now,
+                request.CommentText,
+                true,
+                null);
+            commentTo.Finance = new FinanceOperation
+            {
+                OperationType = FinanceOperationType.TransferFrom,
+                MoneyAmount = request.Money,
+                OperationDate = request.OperationDate,
+                ProjectId = request.ProjectId,
+                ClaimId = request.ToClaimId,
+                LinkedClaimId = request.ClaimId,
+                Created = Now,
+                Changed = Now,
+                State = FinanceOperationState.Approved,
+            };
+
+            await UnitOfWork.SaveChangesAsync();
+
+            return Tuple.Create(commentFrom, commentTo);
+        }
+
+        /// <inheritdoc />
+        public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
+        {
+            var claimFrom = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+            var claimTo = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
+
+            // Checking access rights
+            if (!(claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
+                  || IsCurrentUserAdmin))
+                throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
+
+            // Checking money amount
+            var availableMoney = claimFrom.GetPaymentSum();
+            if (availableMoney < request.Money)
+                throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Name} to perform transfer");
+
+            // Adding comments
+            await AddTransferCommentsAsync(
+                claimFrom.CommentDiscussion,
+                claimTo.CommentDiscussion,
+                request);
+        }
+
+        #endregion
+
+        #region Master money management
 
         public async Task CreateTransfer(CreateTransferRequest request)
         {
@@ -397,5 +491,7 @@ namespace JoinRpg.Services.Impl
 
             await UnitOfWork.SaveChangesAsync();
         }
+
+        #endregion
     }
 }
