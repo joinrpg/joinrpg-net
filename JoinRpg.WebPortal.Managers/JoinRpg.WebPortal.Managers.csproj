@@ -12,5 +12,9 @@
     <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
+    
+  <ItemGroup>
+    <Folder Include="Schedule\" />
+  </ItemGroup>
 
 </Project>
