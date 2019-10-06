@@ -62,8 +62,7 @@
                 case FinanceOperationState.Proposed:
                     if (Model.ShowModerationControls)
                     {
-                        <span>Требуется действие:</span>
-                        <button class="btn btn-warning btn-xs" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Одобрить / Отклонить</button>
+                        <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Одобрить / Отклонить</button>
                     }
                     else
                     {
@@ -84,7 +83,6 @@
                 case FinanceOperationState.Proposed:
                     if (Model.ShowModerationControls)
                     {
-                        <span>Требуется действие:</span>
                         <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Подтвердить / Отклонить</button>
                     }
                     else
