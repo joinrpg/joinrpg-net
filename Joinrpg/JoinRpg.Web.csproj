@@ -1061,9 +1061,6 @@
     <Content Include="Views\Finances\ProjectFinanceOperations\_TotalsPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Finances\_PaymentTransferDialog.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Claim\PaymentTransfer.cshtml" />
   </ItemGroup>
   <PropertyGroup>
