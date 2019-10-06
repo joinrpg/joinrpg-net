@@ -59,32 +59,28 @@ namespace JoinRpg.Web.Controllers.Money
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
 
         [MasterAuthorize]
-        private async Task<ActionResult> GetFinanceOperationsList(int projectId, string export, Func<FinanceOperation, bool> predicate)
+        private async Task<ActionResult> GetFinanceOperationsList(int projectid, string export, Func<FinanceOperation, bool> predicate)
         {
-            // TODO: Load project and finance operations separately
-            // TODO: Load finance operations without tracking
-            var project = await ProjectRepository.GetProjectWithFinances(projectId);
-            var viewModel = new FinOperationListViewModel(
-                UriService,
-                project,
-                project
-                    .FinanceOperations
-                    .Where(predicate));
+            var project = await ProjectRepository.GetProjectWithFinances(projectid);
+            var viewModel = new FinOperationListViewModel(project, UriService,
+                project.FinanceOperations.Where(predicate).ToArray());
 
             var exportType = GetExportTypeByName(export);
 
             if (exportType == null)
             {
-                return View("ProjectFinanceOperations/ProjectFinanceOperations", viewModel);
+                return View("Operations", viewModel);
             }
-
-            ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
-            var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
-            return File(
-                await generator.Generate(),
-                generator.ContentType,
-                Path.ChangeExtension("finance-export", generator.FileExtension)
-            );
+            else
+            {
+                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
+                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
+                return File(
+                    await generator.Generate(),
+                    generator.ContentType,
+                    Path.ChangeExtension("finance-export", generator.FileExtension)
+                );
+            }
         }
 
       [MasterAuthorize()]

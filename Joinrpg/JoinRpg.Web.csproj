@@ -615,7 +615,6 @@
     <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
     <Content Include="Views\Finances\Setup.cshtml" />
-    <Content Include="Views\Finances\ProjectFinanceOperations\ProjectFinanceOperations.cshtml" />
     <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
     <Content Include="Views\Comments\_CommentPartial.cshtml" />
     <Content Include="Views\GameTools\Apis.cshtml" />
@@ -724,7 +723,6 @@
     <Content Include="Views\Shared\DisplayTemplates\ClaimFullStatusView.cshtml" />
     <Content Include="Views\Finances\_Transfers.cshtml" />
     <Content Include="Views\Finances\ByMaster.cshtml" />
-    <Content Include="Views\Finances\ProjectFinanceOperations\_FinanceOperationsPartial.cshtml" />
     <Content Include="Views\Finances\_MasterBalance.cshtml" />
     <Content Include="Views\Finances\_PaymentTypes.cshtml" />
     <Content Include="Views\Transfer\Create.cshtml" />
@@ -1049,19 +1047,13 @@
     <Content Include="Views\Shared\Money.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Finances\ProjectFinanceOperations\_HeaderPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Finances\ProjectFinanceOperations\_RowPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Finances\ProjectFinanceOperations\_StatisticsPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Finances\ProjectFinanceOperations\_TotalsPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Claim\PaymentTransfer.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\Operations.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_Operations.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
