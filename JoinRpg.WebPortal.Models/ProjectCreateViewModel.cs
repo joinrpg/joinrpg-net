@@ -34,8 +34,9 @@ namespace JoinRpg.Web.Models
             Description = "")]
         Convention,
 
-        [Display(Name = "Конвент - мероприятия",
-            Description = "Включает экспериментальную фичу «расписание»")]
-        ConventionProgram,
+        // When uncomment, fix unit test
+        //[Display(Name = "Конвент - мероприятия",
+        //    Description = "Включает экспериментальную фичу «расписание»")]
+        //ConventionProgram,
     }
 }
