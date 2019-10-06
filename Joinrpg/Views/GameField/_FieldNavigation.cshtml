@@ -1,4 +1,5 @@
 ﻿@using JoinRpg.Web.Models.FieldSetup
+@using JoinRpg.Web.App_Code
 @using JetBrains.Annotations
 @model FieldNavigationModel
 
@@ -43,7 +44,7 @@
         "Удаленные",
         "DeletedList",
         "GameField",
-        title:"Только поля, использованные хотя бы один раз")
+        title: "Только поля, использованные хотя бы один раз")
     @NavigationItem(FieldNavigationPage.FieldSettings,
         "Настройки полей",
         "Settings",
@@ -57,3 +58,4 @@
 </ul>
 
 <h3>@ViewBag.Title</h3>
+@Html.HelpLink("fields", "Справка по настройке полей")
