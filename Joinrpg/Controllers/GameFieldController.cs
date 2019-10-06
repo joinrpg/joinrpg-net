@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return await ViewIfFound(Manager.FillFailedModel(viewModel));
+                return await ViewIfFound(Manager.FillFailedSettingsModel(viewModel));
             }
             try
             {
@@ -88,7 +88,7 @@ namespace JoinRpg.Web.Controllers
             catch (Exception exception)
             {
                 ModelState.AddException(exception);
-                return View(Manager.FillFailedModel(viewModel));
+                return View(Manager.FillFailedSettingsModel(viewModel));
             }
         }
 
