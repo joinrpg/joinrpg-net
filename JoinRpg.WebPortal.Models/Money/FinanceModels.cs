@@ -136,7 +136,11 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Заявка для перевода взноса")]
         public int RecipientClaimId { get; set; }
 
-        [Required]
+        /// <summary>
+        /// Money to transfer
+        /// </summary>
+        [Required(ErrorMessage = "Необходимо указать сумму перевода")]
+        [Range(1, 50000, ErrorMessage = "Сумма перевода должна быть от 1 до 50000")]
         [Display(Name = "Перевести средства")]
         public int Money { get; set; }
 
@@ -145,6 +149,19 @@ namespace JoinRpg.Web.Models
         /// </summary>
         [Display(Name = "Доступно средств")]
         public int MaxMoney { get; }
+
+        /// <summary>
+        /// Comment text
+        /// </summary>
+        [Required(ErrorMessage = "Заполните текст комментария")]
+        [DisplayName("Причина перевода")]
+        [Description("Опишите вкратце причину перевода — например, оплата была сделана за несколько людей, или перезачет взноса")]
+        [UIHint("MarkdownString")]
+        public new string CommentText
+        {
+            get { return base.CommentText; }
+            set { base.CommentText = value; }
+        }
 
         /// <summary>
         /// List of claims to select recipient claim from
