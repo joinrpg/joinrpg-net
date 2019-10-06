@@ -91,6 +91,7 @@
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
     <Compile Include="Helpers\AuthModelBuilers.cs" />
+    <Compile Include="Helpers\BankSecretsProvider.cs" />
     <Compile Include="Helpers\Contacts.cs" />
     <Compile Include="Helpers\CurrentProjectAccessor.cs" />
     <Compile Include="Helpers\CurrentUserAccessor.cs" />
@@ -611,11 +612,10 @@
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
     <Content Include="Views\Finances\_SubmitPaymentDialog.cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.cshtml" />
+    <Content Include="Views\Finances\ClaimFinanceOperations\ClaimFinanceOperations.cshtml" />
     <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
     <Content Include="Views\Finances\Setup.cshtml" />
-    <Content Include="Views\Finances\Operations.cshtml" />
     <Content Include="Views\Shared\_ListOperationsDropdown.cshtml" />
     <Content Include="Views\Comments\_CommentPartial.cshtml" />
     <Content Include="Views\GameTools\Apis.cshtml" />
@@ -724,7 +724,6 @@
     <Content Include="Views\Shared\DisplayTemplates\ClaimFullStatusView.cshtml" />
     <Content Include="Views\Finances\_Transfers.cshtml" />
     <Content Include="Views\Finances\ByMaster.cshtml" />
-    <Content Include="Views\Finances\_Operations.cshtml" />
     <Content Include="Views\Finances\_MasterBalance.cshtml" />
     <Content Include="Views\Finances\_PaymentTypes.cshtml" />
     <Content Include="Views\Transfer\Create.cshtml" />
@@ -888,6 +887,10 @@
       <Project>{232A3943-E85F-47AB-8FDB-B50BD8971738}</Project>
       <Name>JoinRpg.WebPortal.Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PscbApi\PscbApi.csproj">
+      <Project>{0453A789-D5AF-4E74-BE0B-9593AE524E6D}</Project>
+      <Name>PscbApi</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
@@ -1013,6 +1016,42 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Terms.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Payments\Error.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Payments\RedirectToBank.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Payments\_RedirectFormPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Payments\_RedirectContentPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Comments\_CommentFinancePartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\ClaimFinanceOperations\_FinanceOperationRowPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\ClaimFinanceOperations\_RowPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\ClaimFinanceOperations\_AdminFunctionsPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Money.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Claim\PaymentTransfer.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\Operations.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Finances\_Operations.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\ShowSchedule\Index.cshtml" />

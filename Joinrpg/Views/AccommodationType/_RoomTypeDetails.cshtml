@@ -1,5 +1,6 @@
 ﻿@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models.Accommodation
+@using JoinRpg.Web.Models.Money
 @model RoomTypeListItemViewModel
 
 @helper OrInifinte(int capacity)
@@ -16,7 +17,7 @@
 <tr>
     <td>@Model.Name</td>
     <td class="visible-lg">@Model.DescriptionView</td>
-    <td class="price-value">@Html.RenderPriceElement(Model.Cost)</td>
+    <td class="price-value">@Html.Partial("Money", new Money(Model.Cost))</td>
     <td class="price-value">@Model.Capacity &#x2715; @OrInifinte(Model.RoomsCount) = @OrInifinte(Model.TotalCapacity)</td>
     <td class="price-value">@(Model.TotalCapacity - Model.Occupied)</td>
     <td class="price-value">@(Model.ApprovedClaims - Model.Occupied) / @(Model.Occupied)

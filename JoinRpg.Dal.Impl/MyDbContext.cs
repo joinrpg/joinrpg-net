@@ -91,6 +91,11 @@ namespace JoinRpg.Dal.Impl
                 .WithMany()
                 .HasForeignKey(c => c.ResponsibleMasterUserId);
 
+            modelBuilder.Entity<Claim>()
+                .HasMany(c => c.FinanceOperations)
+                .WithRequired(fo => fo.Claim)
+                .HasForeignKey(fo => fo.ClaimId);
+
             modelBuilder.Entity<AccommodationRequest>().HasMany(c => c.Subjects)
                 .WithOptional(c => c.AccommodationRequest);
 
@@ -108,6 +113,11 @@ namespace JoinRpg.Dal.Impl
                 .WithRequiredPrincipal(fo => fo.Comment);
 
             modelBuilder.Entity<FinanceOperation>().HasKey(fo => fo.CommentId);
+
+            modelBuilder.Entity<FinanceOperation>()
+                .HasOptional(fo => fo.LinkedClaim)
+                .WithMany()
+                .HasForeignKey(fo => fo.LinkedClaimId);
 
             modelBuilder.Entity<PlotFolder>().HasMany(pf => pf.RelatedGroups)
                 .WithMany(cg => cg.DirectlyRelatedPlotFolders);

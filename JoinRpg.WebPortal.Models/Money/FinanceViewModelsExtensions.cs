@@ -3,19 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
-using JoinRpg.Web.Models.Money;
 
 namespace JoinRpg.Web.Models {
 
     public static class FinanceViewModelsExtensions
     {
-
-        /// <summary>
-        /// Returns title of operation state
-        /// </summary>
-        public static string ToTitleString(this FinanceOperationState self)
-            => ((FinanceOperationStateViewModel)self).GetDisplayName();
 
         /// <summary>
         /// Returns row class for detailed payments view

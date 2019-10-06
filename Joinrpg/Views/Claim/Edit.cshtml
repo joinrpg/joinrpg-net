@@ -39,13 +39,14 @@
         <div class="panel-body">
             @if (Model.HasMasterAccess && Model.Problems.Any())
             {
-                <div class="alert-warning alert">
-                    <b>Проблемы</b>:
-                    @foreach (var pr in Model.Problems)
-                    {
-                        @Html.DisplayFor(modelItem => pr)
-                    }
-
+                <div class="join alert alert-warning">
+                    <b>Проблемы:</b>
+                    <div style="margin-left: 0.5em;">
+                        @foreach (var pr in Model.Problems)
+                        {
+                            @Html.DisplayFor(modelItem => pr)
+                        }
+                    </div>
                 </div>
             }
 
@@ -95,7 +96,7 @@
                 @if (Model.IsPaymentsEnabled && Model.ClaimFee.ShowFee)
                 {
                     <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
-                    <dd>@Html.DisplayFor(model => model.ClaimFee)</dd>
+                    <dd>@Html.Partial("..\\Finances\\ClaimFinanceOperations\\ClaimFinanceOperations", Model.ClaimFee)</dd>
                 }
                 <dt>
                     @Html.DisplayNameFor(model => model.ResponsibleMasterId)
@@ -395,7 +396,7 @@
     @Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
 }
 
-@if (Model.ClaimFee.OnlinePaymentEnabled)
+@if (Model.ClaimFee.ShowOnlinePaymentControls)
 {
     @Html.Partial("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
 }

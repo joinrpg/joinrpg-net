@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 
 namespace JoinRpg.DataModel
 {
@@ -12,6 +12,8 @@ namespace JoinRpg.DataModel
     Comment,
     Project,
     CommentDiscussion,
+    PaymentSuccess,
+    PaymentFail,
   }
 
   public interface ILinkable

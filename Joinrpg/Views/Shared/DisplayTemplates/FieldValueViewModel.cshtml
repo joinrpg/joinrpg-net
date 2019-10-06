@@ -1,6 +1,7 @@
 ﻿@using System.ComponentModel
 @using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models
+@using JoinRpg.Web.Models.Money
 @model FieldValueViewModel
 
 @helper ShowDescription()
@@ -69,7 +70,7 @@
                     </div>
                     @if (Model.ShowPrice)
                     {
-                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
+                        <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.Partial("Money", new Money(value.Price))</div>
                     }                    
                     </div>
                 }
@@ -82,7 +83,7 @@
                     </label>
                     @if (Model.ShowPrice)
                     {
-                        <span class="form-control-right price-base">Цена: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                        <span class="form-control-right price-base">Цена: @Html.Partial("Money", new Money(Model.Price, Model.FieldClientId + "_baseprice"))</span>
                     }
                 </div>
                 break;
@@ -91,7 +92,7 @@
                     <div class="form-control-left">@Model.DisplayString</div>
                     @if (Model.ShowPrice)
                     {
-                        <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.RenderPriceElement(Model.Price, Model.FieldClientId + "_baseprice")</span>
+                        <span class="form-control-right price-base">Цена за 1 единицу измерения: @Html.Partial("Money", new Money(Model.Price, Model.FieldClientId + "_baseprice"))</span>
                     }
                 </div>
                 break;
@@ -112,7 +113,7 @@
     <div class="col-md-2 price-table">
         @if (Model.ShowPrice)
         {
-            @Html.RenderPriceElement(Model.Fee, Model.FieldClientId + "_disp");
+            @Html.Partial("Money", new Money(Model.Fee, Model.FieldClientId + "_disp"))
         }
     </div>
 </div>

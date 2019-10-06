@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using PscbApi.Models;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -22,6 +24,11 @@ namespace JoinRpg.Services.Interfaces
         /// Comment added by payer
         /// </summary>
         public string CommentText { get; set; }
+
+        /// <summary>
+        /// Date and time of the operation
+        /// </summary>
+        public DateTime OperationDate { get; set; }
     }
 
     /// <summary>
@@ -51,15 +58,17 @@ namespace JoinRpg.Services.Interfaces
         public bool Accepted { get; set; }
 
         /// <summary>
-        /// Payment system URL to redirect to process payment
+        /// Payment request description built by bank API
         /// </summary>
-        public string RedirectUrl { get; set; }
+        public PaymentRequestDescriptor RequestDescriptor { get; set; }
     }
 
     /// <summary>
     /// Result of claim payment
     /// </summary>
-    public class ClaimPaymentContext : PaymentContext { }
+    public class ClaimPaymentContext : PaymentContext
+    {
+    }
 
     /// <summary>
     /// Base class for payment results
@@ -74,24 +83,12 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Database Id of a finance operation
         /// </summary>
-        public int PaymentId { get; set; }
-
-    }
-
-    /// <summary>
-    /// Claim payment result 
-    /// </summary>
-    public class ClaimPaymentResultContext : PaymentResultContext
-    {
-        /// <summary>
-        /// Database Id of a project
-        /// </summary>
-        public int ProjectId { get; set; }
+        public int OrderId { get; set; }
 
         /// <summary>
-        /// Database Id of a claim
+        /// Bank response info
         /// </summary>
-        public int ClaimId { get; set; }
+        public BankResponseInfo BankResponse { get; set; }
     }
 
     /// <summary>
@@ -103,13 +100,14 @@ namespace JoinRpg.Services.Interfaces
         /// Creates finance operation and returns payment context
         /// </summary>
         /// <param name="request">Payment request</param>
-        Task<ClaimPaymentContext> InitiateClaimPayment(ClaimPaymentRequest request);
+        Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request);
 
         /// <summary>
-        /// Sets payment result and returns payment context
+        /// Updates status of the payment (only if it is not already approved)
         /// </summary>
-        /// <param name="paymentId">Database Id of a payment</param>
-        /// <param name="succeeded">true if payment was succeeded</param>
-        Task<ClaimPaymentResultContext> SetClaimPaymentResult(int paymentId, bool succeeded);
+        /// <param name="projectId">Database Id of a project</param>
+        /// <param name="claimId">Database Id of a claim</param>
+        /// <param name="orderId">Finance operation Id</param>
+        Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId);
     }
 }

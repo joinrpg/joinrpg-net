@@ -281,7 +281,7 @@ namespace JoinRpg.Services.Impl
         {
             case FinanceOperationAction.Approve:
                 finance.State = FinanceOperationState.Approved;
-                if (finance.MarkMeAsPreferential)
+                if (finance.OperationType == FinanceOperationType.PreferentialFeeRequest)
                 {
                     claim.PreferentialFeeUser = true;
                 }

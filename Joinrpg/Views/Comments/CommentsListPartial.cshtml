@@ -9,23 +9,14 @@
     const addCommentBtnIdPrefix = '@(AddCommentViewModel.AddButtonIdTemplate)';
     const addCommentFormIdPrefix = '@(AddCommentViewModel.FormIdTemplate)';
 
-    let opened = [];
-
-    function toggleCommentEditor(formIndex, focus)
+    function toggleCommentEditor(formIndex)
     {
         $('#' + addCommentBtnIdPrefix + formIndex).collapse('toggle');
         $('#' + addCommentFormIdPrefix + formIndex).collapse('toggle');
-        if (focus)
-        {
-            opened.forEach(i => toggleCommentEditor(i, false));
-            opened = [];
-            opened.push(formIndex);
-            $('#' + addCommentFormIdPrefix + formIndex).focus();
-        }
     }
 </script>
 <div id="@(addCommentModelTop.AddButtonId)" class="collapse in">
-    <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelTop.FormIndex), true)">Добавить комментарий</button>
+    <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelTop.FormIndex))">Добавить комментарий</button>
 </div>
 <div id="@(addCommentModelTop.FormId)" class="collapse">
     @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelTop)
@@ -41,7 +32,7 @@
 @if (Model.RootComments.Any())
 {
     <div id="@(addCommentModelBottom.AddButtonId)" class="collapse in">
-        <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelBottom.FormIndex), true)">Добавить комментарий</button>
+        <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelBottom.FormIndex))">Добавить комментарий</button>
     </div>
     <div id="@(addCommentModelBottom.FormId)" class="collapse">
         @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelBottom)

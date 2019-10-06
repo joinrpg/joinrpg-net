@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using JetBrains.Annotations;
@@ -37,6 +38,19 @@ namespace JoinRpg.Helpers
             if (propertyInfo == null) throw new ArgumentNullException(nameof(propertyInfo));
 
             return propertyInfo.GetCustomAttribute<DisplayAttribute>()?.Name ?? propertyInfo.Name;
+        }
+
+        /// <summary>
+        /// Returns description for enum value
+        /// </summary>
+        public static string GetDescription(this Enum enumValue)
+        {
+            if (enumValue == null)
+                throw new ArgumentNullException(nameof(enumValue));
+            return enumValue.GetAttribute<DisplayAttribute>()
+                    ?.Description
+                ?? enumValue.GetAttribute<DescriptionAttribute>()
+                    ?.Description;
         }
     }
 }

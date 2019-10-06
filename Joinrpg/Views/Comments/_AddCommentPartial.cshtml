@@ -10,25 +10,30 @@
 
 @if (Model.EnableHideFromUser || Model.EnableFinanceAction)
 {
-    <div class="form-group">
-        @if (Model.EnableHideFromUser)
-        {
+    if (Model.EnableHideFromUser)
+    {
+        <div class="form-group">
             <div class="col-md-12">
                 @if (Model.HideFromUser)
                 {
-                    @Html.CheckBoxFor(model => model.HideFromUser, new {enabled = false, value = true})
+                    <input type="checkbox" disabled checked />
                     @Html.HiddenFor(model => model.HideFromUser)
                 }
                 else
                 {
-                    @Html.CheckBoxFor(model => model.HideFromUser)
+                    <input type="checkbox" id="@Html.IdFor(model => model.HideFromUser)_@Model.FormIndex" name="@Html.NameFor(model => model.HideFromUser)" value="true" />
                 }
-                @Html.LabelFor(model => model.HideFromUser, new {@class = "control-label"})
+                @Html.LabelFor(model => model.HideFromUser, new { @for = Html.IdFor(model => model.HideFromUser) + "_" + Model.FormIndex })
             </div>
-        }
-        @if (Model.EnableFinanceAction)
-        {
-            @Html.LabelFor(model => model.FinanceAction, new { @class = "control-label" })
-            @Html.EditorFor(model => model.FinanceAction, new { htmlAttributes = new { @class = "form-control" } })}
-    </div>
+        </div>
+    }
+    if (Model.EnableFinanceAction)
+    {
+        <div class="form-group">
+            <div class="col-md-12">
+                @Html.LabelFor(model => model.FinanceAction, new { @class = "control-label" })
+                @Html.EditorFor(model => model.FinanceAction, new { htmlAttributes = new { @class = "form-control" }, formIndex = Model.FormIndex })
+            </div>
+        </div>
+    }
 }

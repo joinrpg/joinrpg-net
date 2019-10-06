@@ -6,9 +6,12 @@
 <div class="modal fade" id="payOnlineDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("claim-payment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
+            @using (Html.BeginForm("ClaimPayment", "Payments", FormMethod.Post, new {enctype = "multipart/form-data"}))
             {
                 @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.HiddenFor(model => model.OperationDate)
 
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -19,6 +22,13 @@
                     {
                         <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-warning-sign"></i>
                             Заявка не принята. Вы точно хотите оплатить взнос?
+                        </div>
+                    }
+
+                    @if (Model.Money == 0)
+                    {
+                        <div class="join alert alert-warning" role="alert"><i class="glyphicon glyphicon-question-sign"></i>
+                            Вы уже вносили деньги. Вы точно хотите оплатить еще?
                         </div>
                     }
 
@@ -38,7 +48,7 @@
                             </div>
                         </div>
 
-                        @Html.Partial("..\\Comments\\_CommentTextEditorPartial", new CommentTextViewModel())
+                        @Html.Partial("..\\Comments\\_CommentTextEditorPartial", Model)
 
                         <div class="form-group">
                             <div class="col-md-12">

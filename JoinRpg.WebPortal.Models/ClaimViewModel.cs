@@ -14,6 +14,7 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
 using JoinRpg.Web.Models.Print;
 
@@ -339,6 +340,111 @@ namespace JoinRpg.Web.Models
   }
 
 
+    /// <summary>
+    /// Map of <see cref="FinanceOperationType"/> enum
+    /// </summary>
+    /// <remarks>
+    /// Description template parameters:
+    /// 0 -- operation type name
+    /// 1 -- payment type name (or null)
+    /// </remarks>
+    public enum FinanceOperationTypeViewModel
+    {
+        [Display(Name = "Изменение взноса")]
+        FeeChange = FinanceOperationType.FeeChange,
+
+        [Display(Name = "Запрос льготы")]
+        PreferentialFeeRequest = FinanceOperationType.PreferentialFeeRequest,
+
+        [Display(Name = "Оплата", Description = "{0}: {1}")]
+        Submit = FinanceOperationType.Submit,
+
+        [Display(Name = "Оплата онлайн", Description = "{0}")]
+        Online = FinanceOperationType.Online,
+
+        [Display(Name = "Возврат", Description = "{0}")]
+        Refund = FinanceOperationType.Refund,
+
+        [Display(Name = "Исходящий перевод", Description = "{0} к ")]
+        TransferTo = FinanceOperationType.TransferTo,
+
+        [Display(Name = "Входящий перевод", Description = "{0} от ")]
+        TransferFrom = FinanceOperationType.TransferFrom,
+    }
+
+
+    public class FinanceOperationViewModel
+    {
+
+        public int Id { get; }
+
+        public int ClaimId { get; }
+
+        public string RowCssClass { get; }
+
+        public string Title { get; }
+
+        public int Money { get; }
+
+        public string Description { get; } = "";
+
+        public FinanceOperationTypeViewModel OperationType { get; }
+
+        public FinanceOperationStateViewModel OperationState { get; }
+
+        public string Date { get; }
+
+        public int ProjectId { get; }
+
+        public int? LinkedClaimId { get; }
+
+        public string LinkedClaimName { get; }
+
+        public bool CheckPaymentState { get; }
+
+        public User LinkedClaimUser { get; }
+
+        public bool ShowLinkedClaimLinkIfTransfer { get; }
+
+        public FinanceOperationViewModel(FinanceOperation source, bool isMaster)
+        {
+            Id = source.CommentId;
+            ClaimId = source.ClaimId;
+            ProjectId = source.ProjectId;
+            Money = source.MoneyAmount;
+            LinkedClaimId = source.LinkedClaimId;
+            LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : null;
+            LinkedClaimUser = source.LinkedClaim?.Player;
+            OperationType = (FinanceOperationTypeViewModel) source.OperationType;
+            OperationState = (FinanceOperationStateViewModel) source.State;
+            RowCssClass = source.State.ToRowClass();
+            Date = source.OperationDate.ToShortDateString();
+            ShowLinkedClaimLinkIfTransfer = isMaster;
+
+            Title = OperationType.GetDescription();
+            if (string.IsNullOrWhiteSpace(Title))
+                Title = OperationType.GetDisplayName();
+            else
+                Title = string.Format(
+                    Title,
+                    OperationType.GetDisplayName(),
+                    source.PaymentType?.GetDisplayName());
+            
+            switch (OperationType)
+            {
+                case FinanceOperationTypeViewModel.Submit when source.Approved:
+                case FinanceOperationTypeViewModel.Submit when source.State == FinanceOperationState.Proposed:
+                    Description = OperationState.GetDisplayName();
+                    break;
+                case FinanceOperationTypeViewModel.Online when source.Approved:
+                    Description = OperationState.GetShortNameOrDefault();
+                    break;
+                case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
+                    CheckPaymentState = true;
+                    break;
+            }
+        }
+    }
 
 
     public class ClaimFeeViewModel
@@ -371,8 +477,8 @@ namespace JoinRpg.Web.Models
             foreach (var fo in claim.FinanceOperations)
                 Balance[fo.State] += fo.MoneyAmount;
 
-            IsFeeAdmin = claim.HasAccess(currentUserId,
-                acl => acl.CanManageMoney);
+            HasMasterAccess = claim.HasMasterAccess(currentUserId);
+            HasFeeAdminAccess = claim.HasAccess(currentUserId, acl => acl.CanManageMoney);
 
             PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
             PreferentialFeeUser = claim.PreferentialFeeUser;
@@ -382,10 +488,17 @@ namespace JoinRpg.Web.Models
 
             ClaimId = claim.ClaimId;
             ProjectId = claim.ProjectId;
-            FeeVariants = claim.Project.ProjectFeeSettings.Select(f => f.Fee).Union(CurrentFee).OrderBy(x => x).ToList();
-            FinanceOperations = claim.FinanceOperations;
+            FeeVariants = claim.Project.ProjectFeeSettings
+                .Select(f => f.Fee)
+                .Union(CurrentFee)
+                .OrderBy(x => x)
+                .ToList();
+            FinanceOperations = claim.FinanceOperations.Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
+            VisibleFinanceOperations = FinanceOperations.Where(
+                fo => fo.OperationType != FinanceOperationTypeViewModel.FeeChange
+                    && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
 
-            OnlinePaymentEnabled = model.PaymentTypes.OnlinePaymentsEnabled();
+            ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
 
             // Determining payment status
@@ -485,19 +598,26 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// List of associated payment operations
         /// </summary>
-        public IEnumerable<FinanceOperation> FinanceOperations { get; }
+        public IEnumerable<FinanceOperationViewModel> FinanceOperations { get; }
+
+        /// <summary>
+        /// List of finance operations to be displayed in payments list
+        /// </summary>
+        public IEnumerable<FinanceOperationViewModel> VisibleFinanceOperations { get; }
 
         /// <summary>
         /// true if online payment enabled
         /// </summary>
-        public bool OnlinePaymentEnabled { get; }
+        public bool ShowOnlinePaymentControls { get; }
 
         /// <summary>
         /// true if there is any payment type(s) except online
         /// </summary>
         public bool HasSubmittablePaymentTypes { get; }
 
-        public bool IsFeeAdmin { get; }
+        public bool HasMasterAccess { get; }
+
+        public bool HasFeeAdminAccess { get; }
 
         public bool PreferentialFeeEnabled { get; }
         public bool PreferentialFeeUser { get; }
@@ -512,4 +632,42 @@ namespace JoinRpg.Web.Models
         public int ProjectId { get; }
         public IEnumerable<int> FeeVariants { get; }
     }
+
+
+    public class FinanceOperationAdminFunctionsViewModel
+    {
+        public bool Allowed { get; }
+
+        public bool PreferentialFeeEnabled { get; }
+
+        public bool PreferentialFeeUser { get; }
+
+        public FinanceOperationAdminFunctionsViewModel(ClaimFeeViewModel source)
+        {
+            Allowed = source.HasFeeAdminAccess;
+            PreferentialFeeEnabled = source.PreferentialFeeEnabled;
+            PreferentialFeeUser = source.PreferentialFeeUser;
+        }
+    }
+
+
+    public class FinanceOperationsRowViewModel
+    {
+
+        public string HtmlId { get; set; }
+
+        public bool Visible { get; set; }
+
+        public string Title { get; set; }
+
+        public int? Fee { get; set; }
+
+        public string FeeHtmlId { get; set; }
+
+        public int? Payment { get; set; }
+
+        public object AdminFunctions { get; set; }
+
+    }
+
 }

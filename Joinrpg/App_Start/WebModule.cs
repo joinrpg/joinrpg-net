@@ -4,6 +4,7 @@ using Joinrpg.Web.Identity;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using Microsoft.Owin.Security;
+using PscbApi;
 
 namespace JoinRpg.Web.App_Start
 {
@@ -23,6 +24,10 @@ namespace JoinRpg.Web.App_Start
             builder.RegisterType<EmailService>().AsImplementedInterfaces();
 
             builder.RegisterType<ApiSecretsStorage>().AsImplementedInterfaces();
+
+            builder.RegisterType<BankSecretsProvider>()
+                .As<IBankSecretsProvider>()
+                .SingleInstance();
 
             builder.RegisterType<CurrentUserAccessor>().AsImplementedInterfaces();
             builder.RegisterType<CurrentProjectAccessor>().AsImplementedInterfaces();

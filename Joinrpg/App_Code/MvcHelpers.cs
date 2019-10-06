@@ -108,21 +108,8 @@ namespace JoinRpg.Web.App_Code
                 + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
-        public static string RenderCurrencySign(this HtmlHelper self)
-        {
-            return new string((char) 0x20BD, 1);
-        }
-
         public static readonly string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
 
-        /// <summary>
-        /// Renders price to a string
-        /// </summary>
-        public static string RenderPrice(this HtmlHelper self, int price, string template = null)
-        {
-            //TODO[Localize]
-            return string.Format(template ?? defaultPriceTemplate, price);
-        }        
 
         public static MvcHtmlString HelpLink(this HtmlHelper self, string link, string message)
         {

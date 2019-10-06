@@ -53,7 +53,7 @@ namespace JoinRpg.Web.Controllers.Money
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
-      => await GetFinanceOperationsList(projectid, export, fo => fo.Approved);
+      => await GetFinanceOperationsList(projectid, export, fo => fo.MoneyFlowOperation && fo.Approved);
 
     public async Task<ActionResult> Moderation(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Controllers.Money
         {
             var project = await ProjectRepository.GetProjectWithFinances(projectid);
             var viewModel = new FinOperationListViewModel(project, UriService,
-              project.FinanceOperations.Where(predicate).ToArray());
+                project.FinanceOperations.Where(predicate).ToArray());
 
             var exportType = GetExportTypeByName(export);
 
@@ -79,7 +79,7 @@ namespace JoinRpg.Web.Controllers.Money
                     await generator.Generate(),
                     generator.ContentType,
                     Path.ChangeExtension("finance-export", generator.FileExtension)
-                   );
+                );
             }
         }
 

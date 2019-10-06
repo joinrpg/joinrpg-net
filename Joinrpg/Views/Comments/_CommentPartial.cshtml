@@ -44,63 +44,27 @@ var hideClassName = !comment.IsVisibleToPlayer ? "world-object-hidden" : "";
 
                             @if (comment.HasMasterAccess && !comment.ChildComments.Any() && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
                             {
-                            <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
+                                <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
                             }
 
                         </div>
+
+                        @{ AddCommentViewModel addCommentModel = new AddCommentViewModel(comment) { ActionName = "Ответить" }; }
+
                         @if (comment.Finance != null)
                         {
-                            if (Model.Finance.FeeChange != 0)
-                            {
-                                <span><b>Изменение взноса</b>: @Model.Finance.FeeChange &#8381;</span>
-                                <br/>
-                            }
-                            if (Model.Finance.MoneyAmount > 0)
-                            {
-                                <span><b>Оплата денег игроком</b>: @Model.Finance.MoneyAmount &#8381;</span>
-                                <br/>
-                            }
-                            else if (Model.Finance.MoneyAmount < 0)
-                            {
-                                <span><b>Возврат денег игроку</b>: @Model.Finance.MoneyAmount &#8381;</span>
-                                <br/>
-                            }
-                            <span><b>Дата операции</b>: @Model.Finance.OperationDate.ToShortDateString()</span>
-                            <br/>
-                            if (Model.Finance.PaymentType != null)
-                            {
-                                <span><b>Способ оплаты</b>: @Model.Finance.PaymentType.GetDisplayName()</span>
-                                <br/>
-                            }
-
-                            if (Model.Finance.State == FinanceOperationState.Declined)
-                            {
-                                <span class="label label-warning">Мастер не подтверждает оплату</span>
-                                <br/>
-                            }
-                            else if (Model.Finance.State == FinanceOperationState.Proposed)
-                            {
-                                if (comment.ShowFinanceModeration)
-                                {
-                                    <a data-toggle="collapse" href="#answerComment@( comment.CommentId)" class="btn btn-warning btn-xs">Подтвердить / отклонить</a>
-                                }
-                                else
-                                {
-                                    <span class="label label-default">Ждет одобрения мастером</span>
-                                    <br/>
-                                }
-                            }
+                            @Html.Partial("..\\Comments\\_CommentFinancePartial", new CommentFinanceOperationViewModel(comment, addCommentModel.FormIndex))
                         }
 
-                        @if (comment.ExtraAction != null)
+                        @if (comment.ExtraAction != null && comment.Finance == null)
                         {
-                        <b>@Html.DisplayFor(model => comment.ExtraAction)</b>
+                            <b>@Html.DisplayFor(model => comment.ExtraAction)</b>
                         }
 
                         <div>@comment.CommentText</div>
-                        @{ AddCommentViewModel addCommentModel = new AddCommentViewModel(comment) { ActionName = "Ответить"}; }
+
                         <div id="@(addCommentModel.AddButtonId)" class="collapse in">
-                            <button class="btn btn-default btn-sm" onclick="toggleCommentEditor(@(addCommentModel.FormIndex), true)">Ответить</button>
+                            <button class="btn btn-default btn-sm" onclick="toggleCommentEditor(@(addCommentModel.FormIndex))">Ответить</button>
                         </div>
                         <div id="@(addCommentModel.FormId)" class="collapse">
                             @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModel)

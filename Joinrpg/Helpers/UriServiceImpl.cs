@@ -56,6 +56,18 @@ namespace JoinRpg.Web.Helpers
                         urlScheme);
                 case LinkType.Project:
                     return urlHelper.Action("Details", "Game", new {link.ProjectId}, urlScheme);
+                case LinkType.PaymentSuccess:
+                    return urlHelper.Action(
+                        "ClaimPaymentSuccess",
+                        "Payments",
+                        new {projectId = link.ProjectId, claimId = link.Identification},
+                        urlScheme);
+                case LinkType.PaymentFail:
+                    return urlHelper.Action(
+                        "ClaimPaymentFail",
+                        "Payments",
+                        new {projectId = link.ProjectId, claimId = link.Identification},
+                        urlScheme);
                 default:
                     throw new ArgumentOutOfRangeException();
             }

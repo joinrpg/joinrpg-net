@@ -165,12 +165,50 @@ namespace JoinRpg.Web.Models
 
         public string FormId { get; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public virtual IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (HideFromUser && !EnableHideFromUser)
             {
                 yield return new ValidationResult("Нельзя скрыть данный комментарий от игрока");
             }
+        }
+    }
+
+    /// <summary>
+    /// Model used for comment finance operation output
+    /// </summary>
+    public class CommentFinanceOperationViewModel
+    {
+        /// <summary>
+        /// Reply form Id
+        /// </summary>
+        public int ReplyFormIndex { get; set; }
+
+        /// <summary>
+        /// true if moderation controls must be shown
+        /// </summary>
+        public bool ShowModerationControls { get; set; }
+
+        /// <summary>
+        /// true if link to claim has to be shown for transfer payments
+        /// (if false, link to user will be shown)
+        /// </summary>
+        public bool ShowLinkToClaimIfTransfer { get; set; }
+
+        /// <summary>
+        /// Finance operation
+        /// </summary>
+        public FinanceOperation FinanceOperation { get; set; }
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public CommentFinanceOperationViewModel(CommentViewModel source, int replyFormIndex)
+        {
+            ShowLinkToClaimIfTransfer = source.HasMasterAccess;
+            FinanceOperation = source.Finance;
+            ShowModerationControls = source.ShowFinanceModeration;
+            ReplyFormIndex = replyFormIndex;
         }
     }
 

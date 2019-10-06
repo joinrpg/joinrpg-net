@@ -1,50 +1,9 @@
 ﻿@using JoinRpg.Web.App_Code;
 @using JoinRpg.Web.Models;
 @using JoinRpg.DataModel;
+@using JoinRpg.Helpers
+@using JoinRpg.Web.Models.Money
 @model ClaimFeeViewModel
-
-@helper RenderRow(string id, bool visible, string title, IHtmlString fee, IHtmlString payment, IHtmlString ex = null)
-    {
-    var style = visible ? "" : "display: none;";
-    <tr @((id != null ? " id=\"" + id + "\"" : @"")) style="@style">
-        <td>@title</td><td class="price-table">@(fee ?? MvcHtmlString.Empty)</td><td class="price-table">@(payment ?? MvcHtmlString.Empty)</td><td>@(ex ?? MvcHtmlString.Empty)</td>
-    </tr>
-}
-
-@helper RenderPaymentRow(FinanceOperation fo)
-    {
-    if (fo.PaymentType == null)
-    {
-        return;
-    }
-    <tr class="@fo.State.ToRowClass()">
-        <td>Оплата: @fo.PaymentType.Name (отмечено @fo.OperationDate.ToShortDateString())</td>
-        <td></td>
-        <td class="price-table">@Html.RenderPriceElement(fo.MoneyAmount)</td>
-        <td>@( fo.Approved ? "" : fo.State.ToTitleString())</td>
-    </tr>
-}
-
-@functions
-{
-
-    MvcHtmlString AdminFunctions()
-    {
-        var functions = "";
-        if (Model.IsFeeAdmin)
-        {
-            functions += "<button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#changeFeeModal\">Изменить вручную&hellip;</button>";
-            if (Model.PreferentialFeeEnabled)
-            {
-                var label = Model.PreferentialFeeUser ? "Снять пометку льготника" : "Сделать льготником";
-                functions += " <button type=\"button\" class=\"btn btn-default btn-xs\" data-toggle=\"modal\" data-target=\"#markAsPreferential\">" + label + "&hellip;</button>";
-            }
-        }
-        return MvcHtmlString.Create(functions);
-    }
-
-}
-
 @* All variables below are declared in claim.js *@
 <script type="text/javascript">
     paymentStatus = @((int) Model.PaymentStatus);
@@ -53,13 +12,17 @@
     feeBase = @(Model.BaseFee);
 </script>
 <div id="feeInfo" class="collapse in">
-    @Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp2")
+    @Html.Partial("Money", new Money(Model.CurrentFee, "feeTotalDisp2"))
     <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
-    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2")</strong>)</span>
-    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.RenderPriceElement(Model.CurrentBalance)</strong>, осталось оплатить <strong class="text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2")</strong>)</span>
+    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2"))</strong>)</span>
+    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.Partial("Money", new Money(Model.CurrentBalance))</strong>, осталось оплатить <strong class="text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2"))</strong>)</span>
     <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
     <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
-    @if (Model.OnlinePaymentEnabled)
+    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
+    {
+        <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
+    }
+    @if (Model.ShowOnlinePaymentControls)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
@@ -67,7 +30,7 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
     }
-    @if (Model.PreferentialFeeRequestEnabled)
+    @if (Model.PreferentialFeeRequestEnabled && !Model.HasMasterAccess)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
     }
@@ -76,43 +39,54 @@
     <button type="button" class="btn btn-default btn-xs" onclick="toggleFeeBlock();">Свернуть в компактный вид&hellip;</button>
     <table class="table table-condensed">
         <thead>
-            <tr><th>Операция</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
+            <tr><th>Операция</th><th>Дата</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
         </thead>
         <tbody>
-            @RenderRow("rowBaseFee",
-                     Model.HasBaseFee || Model.IsFeeAdmin,
-                     "Взнос"
-                         + (Model.PreferentialFeeUser ? " (льготник)" : "")
-                        + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
-                     Html.RenderPriceElement(Model.BaseFee),
-                     null,
-                     AdminFunctions()
-                     )
-            @RenderRow("rowAccommodationFee",
-                     Model.HasAccommodationFee,
-                     "Проживание (" + Model.RoomType + (Model.RoomName != null ? ", комната " + Model.RoomName : "") + ")",
-                     Html.RenderPriceElement(Model.AccommodationFee, "feeAccommodationDisp"),
-                     null)
-            @RenderRow("rowClaimFee",
-                     Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
-                     "Опции заявки",
-                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Claim], "feeClaimFieldsDisp"),
-                     null)
-            @RenderRow("rowCharacterFee",
-                     Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
-                     "Опции персонажа",
-                     Html.RenderPriceElement(Model.FieldsFee[FieldBoundToViewModel.Character], "feeCharacterFieldsDisp"),
-                     null)
-            @foreach (var fo in Model.FinanceOperations)
-            {
-                @RenderPaymentRow(fo)
-            }
+        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        {
+            HtmlId = "rowBaseFee",
+            Visible = Model.HasBaseFee || Model.HasFeeAdminAccess,
+            Title = "Взнос"
+                + (Model.PreferentialFeeUser ? " (льготник)" : "")
+                + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
+            Fee = Model.BaseFee,
+            AdminFunctions = new FinanceOperationAdminFunctionsViewModel(Model)
+        })
+        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        {
+            HtmlId = "rowAccommodationFee",
+            Visible = Model.HasAccommodationFee,
+            Title = "Проживание (" + Model.RoomType + (Model.RoomName != null ? ", комната " + Model.RoomName : "") + ")",
+            Fee = Model.AccommodationFee,
+            FeeHtmlId = "feeAccommodationDisp",
+        })
+        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        {
+            HtmlId = "rowClaimFee",
+            Visible = Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
+            Title = "Опции заявки",
+            Fee = Model.FieldsFee[FieldBoundToViewModel.Claim],
+            FeeHtmlId = "feeClaimFieldsDisp",
+        })
+        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        {
+            HtmlId = "rowCharacterFee",
+            Visible = Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
+            Title = "Опции персонажа",
+            Fee = Model.FieldsFee[FieldBoundToViewModel.Character],
+            FeeHtmlId = "feeCharacterFieldsDisp",
+        })
+        @foreach (var fo in Model.VisibleFinanceOperations)
+        {
+            @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_FinanceOperationRowPartial", fo)
+        }
         </tbody>
         <tfoot>
             <tr>
                 <th>Итого</th>
-                <th class="price-table">@Html.RenderPriceElement(Model.CurrentFee, "feeTotalDisp")</th>
-                <th class="price-table">@Html.RenderPriceElement(Model.CurrentBalance, "feeBalance")</th>
+                <th></th>
+                <th class="price-table">@Html.Partial("Money", new Money(Model.CurrentFee, "feeTotalDisp"))</th>
+                <th class="price-table">@Html.Partial("Money", new Money(Model.CurrentBalance, "feeBalance"))</th>
                 <th></th>
             </tr>
             <tr id="rowPaymentStatus">
@@ -122,10 +96,15 @@
                     <span id="feeStatus2" style="display: none;">Осталось оплатить</span>
                     <span id="feeStatus3" style="display: none;">Осталось оплатить</span>
                 </th>
-                <th class="price-table text-danger">@Html.RenderPriceElement(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp")</th>
-                <th class="price-table text-success">@Html.RenderPriceElement(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp")</th>
+                <th></th>
+                <th class="price-table text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp"))</th>
+                <th class="price-table text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp"))</th>
                 <th>
-                    @if (Model.OnlinePaymentEnabled)
+                    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
+                    {
+                        <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
+                    }
+                    @if (Model.ShowOnlinePaymentControls)
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
@@ -137,11 +116,11 @@
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)
             {
-                <tr><th>@FinanceOperationState.Proposed.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Proposed])</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Proposed.GetDisplayName()</th><th></th><th></th><th class="price-table">@Html.Partial("Money", new Money(Model.Balance[FinanceOperationState.Proposed]))</th><th></th></tr>
             }
             @if (Model.Balance[FinanceOperationState.Declined] > 0)
             {
-                <tr><th>@FinanceOperationState.Declined.ToTitleString()</th><th></th><th class="price-table">@Html.RenderPriceElement(Model.Balance[FinanceOperationState.Declined])</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Declined.GetDisplayName()</th><th></th><th></th><th class="price-table">@Html.Partial("Money", new Money(Model.Balance[FinanceOperationState.Declined]))</th><th></th></tr>
             }
         </tfoot>
     </table>
@@ -224,7 +203,6 @@
                     {
                         <button type="submit" class="btn btn-success">Пометить льготником</button>
                     }
-
                 </div>
             }
         </div>

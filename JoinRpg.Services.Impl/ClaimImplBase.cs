@@ -87,6 +87,13 @@ namespace JoinRpg.Services.Impl
         ProjectId = claim.ProjectId,
         OperationDate = operationDate,
       };
+      // TODO: Remove when complete Refunds be available
+      if (money > 0)
+          financeOperation.OperationType = FinanceOperationType.Submit;
+      else if (money < 0)
+          financeOperation.OperationType = FinanceOperationType.Refund;
+      else
+          throw new PaymentException(claim.Project, "Submit or Refund sum could not be 0");
 
       comment.Finance = financeOperation;
 

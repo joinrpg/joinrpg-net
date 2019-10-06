@@ -1,4 +1,6 @@
-﻿@using JoinRpg.Web.App_Code
+﻿﻿@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.App_Code
+@using JoinRpg.Web.Models.Money
 @model IEnumerable<JoinRpg.Web.Models.FinOperationListItemViewModel>
 
 <table class="table">
@@ -9,10 +11,6 @@
         <th>
             @Html.DisplayNameFor(model => model.Money)
         </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FeeChange)
-        </th>
-
         <th>
             @Html.DisplayNameFor(model => model.PaymentMaster)
         </th>
@@ -33,36 +31,34 @@
         </th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.FinanceOperationId)
-        </td>
-        <td>
-            @Html.RenderPriceElement(item.Money)
-        </td>
-        <td>
-            @Html.RenderPriceElement(item.FeeChange)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PaymentMaster)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PaymentTypeName)
-        </td>
-        <td>
-            <a href="@item.ClaimLink">@item.Claim</a>
-        </td>
-        <td>
-            @Html.DisplayFor(model => item.Player)
-        </td>
-        <td>
-            @item.OperationDate.ToShortDateString()
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MarkingMaster)
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FinanceOperationId)
+            </td>
+            <td>
+                @Html.Partial("Money", new Money(item.Money))
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PaymentMaster)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PaymentTypeName)
+            </td>
+            <td>
+                <a href="@item.ClaimLink">@item.Claim</a>
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Player)
+            </td>
+            <td>
+                @item.OperationDate.ToShortDateString()
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MarkingMaster)
+            </td>
+        </tr>
+    }
 
 </table>

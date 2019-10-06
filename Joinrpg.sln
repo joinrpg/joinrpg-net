@@ -103,7 +103,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebPortalShared", "WebPorta
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Managers", "JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj", "{A5275764-EB9F-49DA-9FEC-5BD8E67D758F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.Interfaces", "JoinRpg.Interfaces\JoinRpg.Interfaces.csproj", "{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Interfaces", "JoinRpg.Interfaces\JoinRpg.Interfaces.csproj", "{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PscbApi", "PscbApi\PscbApi.csproj", "{0453A789-D5AF-4E74-BE0B-9593AE524E6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -267,6 +269,10 @@ Global
 		{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0453A789-D5AF-4E74-BE0B-9593AE524E6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0453A789-D5AF-4E74-BE0B-9593AE524E6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0453A789-D5AF-4E74-BE0B-9593AE524E6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0453A789-D5AF-4E74-BE0B-9593AE524E6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -303,6 +309,7 @@ Global
 		{E4D7A0E5-7C93-4D5B-97E1-99F1A6C2300B} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 		{232A3943-E85F-47AB-8FDB-B50BD8971738} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
 		{A5275764-EB9F-49DA-9FEC-5BD8E67D758F} = {B3BB8906-62C8-44A0-822C-566A144C05AE}
+		{0453A789-D5AF-4E74-BE0B-9593AE524E6D} = {4D578A76-DAE7-463A-9ABE-268E4D8488DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}

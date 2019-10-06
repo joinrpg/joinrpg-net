@@ -435,6 +435,10 @@
     <Compile Include="Migrations\201909241700107_VerifiedProfileFlag.Designer.cs">
       <DependentUpon>201909241700107_VerifiedProfileFlag.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201909302020012_FinanceOperation.cs" />
+    <Compile Include="Migrations\201909302020012_FinanceOperation.Designer.cs">
+      <DependentUpon>201909302020012_FinanceOperation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="RepositoriesRegistraton.cs" />
@@ -771,6 +775,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909241700107_VerifiedProfileFlag.resx">
       <DependentUpon>201909241700107_VerifiedProfileFlag.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201909302020012_FinanceOperation.resx">
+      <DependentUpon>201909302020012_FinanceOperation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

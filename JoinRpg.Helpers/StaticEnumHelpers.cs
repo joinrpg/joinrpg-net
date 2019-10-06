@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,8 +13,7 @@ namespace JoinRpg.Helpers
             where TAttribute : Attribute
         {
             return enumValue.GetType()
-                .GetMember(enumValue.ToString())
-                .First()
+                .GetField(enumValue.ToString())?
                 .GetCustomAttribute<TAttribute>();
         }
 

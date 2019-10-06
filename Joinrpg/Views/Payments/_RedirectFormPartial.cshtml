@@ -1,0 +1,14 @@
+﻿@model PscbApi.Models.PaymentRequestDescriptor
+
+<form id="pay" action="@Model.Url" method="post">
+    @Html.Partial("_RedirectContentPartial", Model.QueryParams)
+    <button type="submit">Перейти к оплате</button>
+</form>
+
+<script type="text/javascript">
+    setTimeout(() =>
+    {
+        const form = document.getElementById("pay");
+        form.submit();
+    }, 100);
+</script>

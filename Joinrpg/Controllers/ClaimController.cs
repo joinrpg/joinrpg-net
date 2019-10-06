@@ -439,7 +439,7 @@ namespace JoinRpg.Web.Controllers
     }
 
     [Authorize, HttpPost, ValidateAntiForgeryToken]
-    public async Task<ActionResult> FinanceOperation(PaymentViewModel viewModel)
+    public async Task<ActionResult> FinanceOperation(SubmitPaymentViewModel viewModel)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
       if (claim == null)
@@ -479,7 +479,45 @@ namespace JoinRpg.Web.Controllers
       }
     }
 
-    [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<ActionResult> TransferClaimPayment(PaymentTransferViewModel data)
+    {
+        try
+        {
+            await FinanceService.TransferPaymentAsync(
+                new ClaimPaymentTransferRequest
+                {
+                    ProjectId = data.ProjectId,
+                    ClaimId = data.ClaimId,
+                    ToClaimId = data.RecipientClaimId,
+                    CommentText = data.CommentText,
+                    OperationDate = data.OperationDate,
+                    Money = data.Money,
+                });
+            return RedirectToAction(
+                "Edit",
+                "Claim",
+                new { projectId = data.ProjectId, claimId = data.ClaimId });
+        }
+        catch (Exception e)
+        {
+            return View("..\\Payments\\Error",
+                new ErrorViewModel
+                {
+                    Title = "Перевод между заявками",
+                    Message = $"Ошибка выполнения перевода {data.Money} от заявки {data.ClaimId} к заявке {data.RecipientClaimId}",
+                    Description = e.Message,
+                    Data = e,
+                    ReturnLink = Url.Action("Edit", "Claim", new { projectId = data.ProjectId, claimId = data.ClaimId }),
+                    ReturnText = "Вернуться к заявке"
+                });
+        }
+    }
+
+
+        [MasterAuthorize(Permission.CanManageMoney), HttpPost, ValidateAntiForgeryToken]
     public async Task<ActionResult> ChangeFee(int claimid, int projectid, int feeValue)
     {
       try
@@ -728,6 +766,40 @@ namespace JoinRpg.Web.Controllers
           await AccommodationInviteService.AcceptAccommodationInvite(viewModel.ProjectId, viewModel.InviteId).ConfigureAwait(false);
 
           return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
+      }
+
+
+      [HttpGet]
+      [Authorize]
+      public async Task<ActionResult> TransferClaimPayment(int projectId, int claimId)
+      {
+          var claim = await _claimsRepository.GetClaim(projectId, claimId);
+          if (claim == null)
+          {
+              return HttpNotFound();
+          }
+          var error = WithClaim(claim);
+          if (error != null)
+          {
+              return error;
+          }
+
+
+          IReadOnlyCollection<Claim> claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
+              claim.ProjectId,
+              ClaimStatusSpec.ActiveOrOnHold);
+          if (claims.Count == 0 || claims.Count == 1 && claims.First().ClaimId == claimId)
+          {
+              return View("..\\Payments\\Error", new ErrorViewModel
+              {
+                  Title = "Ошибка",
+                  Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
+                  ReturnLink = Url.Action("Edit", "Claim", new {projectId, claimId}),
+                  ReturnText = "Вернуться к заявке"
+              });
+          }
+
+          return View("PaymentTransfer", new PaymentTransferViewModel(claim, claims));
       }
     }
 }
