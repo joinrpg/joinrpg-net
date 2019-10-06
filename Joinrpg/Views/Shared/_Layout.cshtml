@@ -70,13 +70,10 @@
 <div class="body-content">
     <div class="container">
         @RenderBody()
-    </div>
-</div>
-<footer>
-    <div class="container">
         @Html.Partial("Layout/_FooterPartial")
     </div>
-</footer>
+</div>
+    
 
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
