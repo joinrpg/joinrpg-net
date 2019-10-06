@@ -166,13 +166,15 @@ namespace JoinRpg.Web.Controllers.Money
                 {
                     await _payments.SetClaimPaymentResultAsync(resultContext);
 
-                    return Error(
-                        new ErrorViewModel
-                        {
-                            Message = "Ошибка выполнения платежа" + message,
-                            ReturnLink = GetClaimUrl(projectId, claimId),
-                            ReturnText = "Вернуться к заявке"
-                        });
+                    if (IsCurrentUserAdmin())
+                        return Error(
+                            new ErrorViewModel
+                            {
+                                Message = "Ошибка выполнения платежа" + message,
+                                ReturnLink = GetClaimUrl(projectId, claimId),
+                                ReturnText = "Вернуться к заявке"
+                            });
+                    return RedirectToAction("Edit", "Claim", new {projectId, claimId});
                 }
                 catch (Exception e)
                 {

@@ -181,12 +181,50 @@ namespace JoinRpg.Services.Impl
                 throw new OnlinePaymentUnexpectedStateException(fo, FinanceOperationState.Proposed);
 
             // Applying new state
-            fo.State = result.Succeeded ? FinanceOperationState.Approved : FinanceOperationState.Declined;
-            fo.Changed = Now;
+            var paymenInfo = await GetApi(result.ProjectId, result.ClaimId)
+                .GetPaymentInfoAsync(new PaymentInfoQuery
+                {
+                    OrderId = result.OrderId.ToString().PadLeft(10, '0')
+                });
 
-            await UnitOfWork.SaveChangesAsync();
+            if (paymenInfo.Status == PaymentInfoQueryStatus.Success)
+                UpdateFinanceOperationStatus(fo, paymenInfo.Payment);
+            else if (IsCurrentUserAdmin)
+                throw new PaymentException(fo.Project, $"Payment status check failed: {paymenInfo.ErrorDescription}");
+
+            if (fo.State != FinanceOperationState.Proposed)
+                await UnitOfWork.SaveChangesAsync();
 
             // TODO: Probably need to send some notifications?
+        }
+
+        private void UpdateFinanceOperationStatus(FinanceOperation fo, PaymentData paymentData)
+        {
+            switch (paymentData.Status)
+            {
+                // Do nothing
+                case PaymentStatus.New:
+                case PaymentStatus.AwaitingForPayment:
+                case PaymentStatus.Refunded:
+                case PaymentStatus.Hold:
+                case PaymentStatus.Undefined:
+                    break;
+                // All ok
+                case PaymentStatus.Paid:
+                    fo.State = FinanceOperationState.Approved;
+                    fo.Changed = Now;
+                    break;
+                // Something wrong
+                case PaymentStatus.Expired:
+                case PaymentStatus.Cancelled:
+                case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
+                case PaymentStatus.Rejected:
+                    fo.State = FinanceOperationState.Declined;
+                    fo.Changed = Now;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         /// <inheritdoc />
@@ -212,7 +250,7 @@ namespace JoinRpg.Services.Impl
             {
                 // Asking bank
                 PaymentInfo paymentInfo = await GetApi(projectId, claimId)
-                    .GetPaymentInfoAsync(new PaymentInfoQuery {OrderId = orderId.ToString()});
+                    .GetPaymentInfoAsync(new PaymentInfoQuery {OrderId = orderId.ToString().PadLeft(10, '0') });
 
                 // If payment was not found marking it as declined
                 if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
@@ -221,32 +259,7 @@ namespace JoinRpg.Services.Impl
                     fo.Changed = Now;
                 }
                 else
-                    // Processing result
-                    switch (paymentInfo.Payment.Status)
-                    {
-                        // Do nothing
-                        case PaymentStatus.New:
-                        case PaymentStatus.AwaitingForPayment:
-                        case PaymentStatus.Refunded:
-                        case PaymentStatus.Hold:
-                        case PaymentStatus.Undefined:
-                            break;
-                        // All ok
-                        case PaymentStatus.Paid:
-                            fo.State = FinanceOperationState.Approved;
-                            fo.Changed = Now;
-                            break;
-                        // Something wrong
-                        case PaymentStatus.Expired:
-                        case PaymentStatus.Cancelled:
-                        case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
-                        case PaymentStatus.Rejected:
-                            fo.State = FinanceOperationState.Declined;
-                            fo.Changed = Now;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
 
                 if (fo.State != FinanceOperationState.Proposed)
                     await UnitOfWork.SaveChangesAsync();
@@ -263,7 +276,7 @@ namespace JoinRpg.Services.Impl
                 discussionFrom,
                 CurrentUserId,
                 Now,
-                request.CommentText ?? "",
+                request.CommentText,
                 true,
                 null);
             commentFrom.Finance = new FinanceOperation
@@ -285,7 +298,7 @@ namespace JoinRpg.Services.Impl
                 discussionTo,
                 CurrentUserId,
                 Now,
-                "",
+                request.CommentText,
                 true,
                 null);
             commentTo.Finance = new FinanceOperation
