@@ -237,7 +237,7 @@ tr.unapprovedPayment td:last-child {
 }
 
 .join.alert .glyphicon::before {
-    font-size: 2em;
+    font-size: 1.5em;
 }
 
 .join-ellipsis {
