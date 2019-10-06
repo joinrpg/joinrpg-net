@@ -432,15 +432,15 @@ namespace JoinRpg.Web.Models
             
             switch (OperationType)
             {
-                case FinanceOperationTypeViewModel.Submit:
-                    if (source.Approved)
-                        Description = OperationState.GetDisplayName();
+                case FinanceOperationTypeViewModel.Submit when source.Approved:
+                case FinanceOperationTypeViewModel.Submit when source.State == FinanceOperationState.Proposed:
+                    Description = OperationState.GetDisplayName();
                     break;
-                case FinanceOperationTypeViewModel.Online:
-                    if (source.Approved)
-                        Description = OperationState.GetShortNameOrDefault();
-                    else if (source.State == FinanceOperationState.Proposed)
-                        CheckPaymentState = true;
+                case FinanceOperationTypeViewModel.Online when source.Approved:
+                    Description = OperationState.GetShortNameOrDefault();
+                    break;
+                case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
+                    CheckPaymentState = true;
                     break;
             }
         }
