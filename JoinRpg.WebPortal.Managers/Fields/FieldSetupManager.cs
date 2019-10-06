@@ -78,6 +78,16 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, model);
         }
 
+        public async Task<FieldSettingsViewModel> FillFailedSettingsModel(FieldSettingsViewModel model) 
+        {
+            var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
+            if (project == null)
+            {
+                return null;
+            }
+            return FillSettingsModel(project, model);
+        }
+
         /// <summary>
         /// Get field edit page
         /// </summary>
@@ -103,23 +113,33 @@ namespace JoinRpg.WebPortal.Managers
             {
                 return null;
             }
-            var fields = project.GetOrderedFields();
-            return FillFromProject(project, new FieldSettingsViewModel
+            
+            var viewModel = new FieldSettingsViewModel
             {
                 NameField = project.Details.CharacterNameField?.ProjectFieldId ?? -1,
                 DescriptionField = project.Details.CharacterDescription?.ProjectFieldId ?? -1,
                 LegacyModelEnabled = project.Details.CharacterNameLegacyMode,
-                PossibleDescriptionFields =
+            };
+            return FillSettingsModel(project, viewModel);
+        }
+
+        private FieldSettingsViewModel FillSettingsModel(Project project, FieldSettingsViewModel viewModel)
+        {
+            var fields = project.GetOrderedFields();
+            viewModel.PossibleDescriptionFields =
                     ToSelectListItems(
                         fields.Where(f => f.FieldType == ProjectFieldType.Text && f.FieldBoundTo == FieldBoundTo.Character),
                         "Нет поля с описанием персонажа"
-                        ).SetSelected(project.Details.CharacterDescription?.ProjectFieldId),
-                PossibleNameFields =
+                        ).SetSelected(project.Details.CharacterDescription?.ProjectFieldId);
+            viewModel.PossibleNameFields =
                     ToSelectListItems(
                         fields.Where(f => f.FieldType == ProjectFieldType.String && f.FieldBoundTo == FieldBoundTo.Character),
                         "Имя персонажа берется из имени игрока"
-                        ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId),
-            });
+                        ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId);
+
+            // cast needed to call correct method
+            var _ = FillFromProject(project, viewModel);
+            return viewModel;
         }
 
         /// <summary>
