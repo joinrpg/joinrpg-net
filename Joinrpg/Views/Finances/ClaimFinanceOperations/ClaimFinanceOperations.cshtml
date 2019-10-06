@@ -22,7 +22,7 @@
     {
         <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
     }
-    @if (Model.OnlinePaymentEnabled && !Model.HasMasterAccess)
+    @if (Model.ShowOnlinePaymentControls)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
@@ -100,17 +100,17 @@
                 <th class="price-table text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp"))</th>
                 <th class="price-table text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp"))</th>
                 <th>
-                    @if (Model.OnlinePaymentEnabled && !Model.HasMasterAccess)
+                    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
+                    {
+                        <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
+                    }
+                    @if (Model.ShowOnlinePaymentControls)
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
                     @if (Model.HasSubmittablePaymentTypes)
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
-                    }
-                    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
-                    {
-                        <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
                     }
                 </th>
             </tr>

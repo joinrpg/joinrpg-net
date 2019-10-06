@@ -1032,9 +1032,6 @@
     <Content Include="Views\Comments\_CommentFinancePartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Shared\DisplayTemplates\EnumEx.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Finances\ClaimFinanceOperations\_FinanceOperationRowPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>

@@ -396,7 +396,7 @@
     @Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
 }
 
-@if (Model.ClaimFee.OnlinePaymentEnabled)
+@if (Model.ClaimFee.ShowOnlinePaymentControls)
 {
     @Html.Partial("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
 }

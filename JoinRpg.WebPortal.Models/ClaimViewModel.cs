@@ -498,7 +498,7 @@ namespace JoinRpg.Web.Models
                 fo => fo.OperationType != FinanceOperationTypeViewModel.FeeChange
                     && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
 
-            OnlinePaymentEnabled = model.PaymentTypes.OnlinePaymentsEnabled();
+            ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);
 
             // Determining payment status
@@ -608,7 +608,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// true if online payment enabled
         /// </summary>
-        public bool OnlinePaymentEnabled { get; }
+        public bool ShowOnlinePaymentControls { get; }
 
         /// <summary>
         /// true if there is any payment type(s) except online

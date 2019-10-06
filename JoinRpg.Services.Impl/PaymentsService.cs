@@ -157,40 +157,22 @@ namespace JoinRpg.Services.Impl
 
             return comment;
         }
-                                                    
-        /// <inheritdoc />
-        public async Task SetClaimPaymentResultAsync(ClaimPaymentResultContext result)
+
+        private async Task<FinanceOperation> LoadFinanceOperationAsync(int projectId, int claimId, int operationId)
         {
             // Loading finance operation
-            FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>().FindAsync(result.OrderId);
+            FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>().FindAsync(operationId);
 
             if (fo == null)
-                throw new JoinRpgEntityNotFoundException(result.OrderId, nameof(FinanceOperation));
-            if (fo.ClaimId != result.ClaimId)
-                throw new JoinRpgEntityNotFoundException(result.ClaimId, nameof(Claim));
-            if (fo.ProjectId != result.ProjectId)
-                throw new JoinRpgEntityNotFoundException(result.ProjectId, nameof(Project));
+                throw new JoinRpgEntityNotFoundException(operationId, nameof(FinanceOperation));
+            if (fo.ClaimId != claimId)
+                throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
+            if (fo.ProjectId != projectId)
+                throw new JoinRpgEntityNotFoundException(projectId, nameof(Project));
             if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
                 throw new PaymentException(fo.Project, "Finance operation is not online payment");
-            if (fo.State != FinanceOperationState.Proposed)
-                throw new OnlinePaymentUnexpectedStateException(fo, FinanceOperationState.Proposed);
 
-            // Applying new state
-            var paymenInfo = await GetApi(result.ProjectId, result.ClaimId)
-                .GetPaymentInfoAsync(new PaymentInfoQuery
-                {
-                    OrderId = result.OrderId.ToString().PadLeft(10, '0')
-                });
-
-            if (paymenInfo.Status == PaymentInfoQueryStatus.Success)
-                UpdateFinanceOperationStatus(fo, paymenInfo.Payment);
-            else if (IsCurrentUserAdmin)
-                throw new PaymentException(fo.Project, $"Payment status check failed: {paymenInfo.ErrorDescription}");
-
-            if (fo.State != FinanceOperationState.Proposed)
-                await UnitOfWork.SaveChangesAsync();
-
-            // TODO: Probably need to send some notifications?
+            return fo;
         }
 
         private void UpdateFinanceOperationStatus(FinanceOperation fo, PaymentData paymentData)
@@ -225,39 +207,38 @@ namespace JoinRpg.Services.Impl
         /// <inheritdoc />
         public async Task UpdateClaimPaymentAsync(int projectId, int claimId, int orderId)
         {
-            // Loading claim
-            var claim = await GetClaimAsync(projectId, claimId);
-
-            // Checking access rights
-            if (!(claim.HasAccess(CurrentUserId, ExtraAccessReason.Player)
-                || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
-                || IsCurrentUserAdmin))
-                throw new NoAccessToProjectException(claim.Project, CurrentUserId);
-
-            // Finance operation
-            FinanceOperation fo = claim.FinanceOperations.SingleOrDefault(f => f.CommentId == orderId);
-            if (fo == null)
-                throw new JoinRpgEntityNotFoundException(orderId, nameof(FinanceOperation));
-            if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
-                throw new PaymentException(fo.Project, "Finance operation is not online payment");
+            var fo = await LoadFinanceOperationAsync(projectId, claimId, orderId);
 
             if (fo.State == FinanceOperationState.Proposed)
             {
                 // Asking bank
                 PaymentInfo paymentInfo = await GetApi(projectId, claimId)
-                    .GetPaymentInfoAsync(new PaymentInfoQuery {OrderId = orderId.ToString().PadLeft(10, '0') });
+                    .GetPaymentInfoAsync(new PaymentInfoQuery
+                    {
+                        OrderId = orderId.ToString().PadLeft(10, '0')
+                    });
 
-                // If payment was not found marking it as declined
-                if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                // Updating status
+                if (paymentInfo.Status == PaymentInfoQueryStatus.Success)
                 {
-                    fo.State = FinanceOperationState.Declined;
-                    fo.Changed = Now;
+                    if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                    {
+                        fo.State = FinanceOperationState.Declined;
+                        fo.Changed = Now;
+                    }
+                    else if (paymentInfo.ErrorCode == null)
+                    {
+                        UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
+                    }
                 }
-                else
-                    UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
+                else if (IsCurrentUserAdmin)
+                    throw new PaymentException(fo.Project, $"Payment status check failed: {paymentInfo.ErrorDescription}");
 
+                // Saving if status was updated
                 if (fo.State != FinanceOperationState.Proposed)
                     await UnitOfWork.SaveChangesAsync();
+
+                // TODO: Probably need to send some notifications?
             }
         }
         

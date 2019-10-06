@@ -92,22 +92,6 @@ namespace JoinRpg.Services.Interfaces
     }
 
     /// <summary>
-    /// Claim payment result 
-    /// </summary>
-    public class ClaimPaymentResultContext : PaymentResultContext
-    {
-        /// <summary>
-        /// Database Id of a project
-        /// </summary>
-        public int ProjectId { get; set; }
-
-        /// <summary>
-        /// Database Id of a claim
-        /// </summary>
-        public int ClaimId { get; set; }
-    }
-
-    /// <summary>
     /// Payments service
     /// </summary>
     public interface IPaymentsService
@@ -117,12 +101,6 @@ namespace JoinRpg.Services.Interfaces
         /// </summary>
         /// <param name="request">Payment request</param>
         Task<ClaimPaymentContext> InitiateClaimPaymentAsync(ClaimPaymentRequest request);
-
-        /// <summary>
-        /// Sets payment result and returns payment context
-        /// </summary>
-        /// <param name="result">Payment result context</param>
-        Task SetClaimPaymentResultAsync(ClaimPaymentResultContext result);
 
         /// <summary>
         /// Updates status of the payment (only if it is not already approved)

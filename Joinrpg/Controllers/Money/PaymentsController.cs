@@ -84,36 +84,21 @@ namespace JoinRpg.Web.Controllers.Money
             }
         }
 
-        [HttpGet]
-        [Authorize]
-        public async Task<ActionResult> ClaimPaymentSuccess(
-            int projectId,
-            int claimId,
-            string orderId,
-            [CanBeNull]
-            string description)
+        private async Task<ActionResult> HandleClaimPaymentRedirect(int projectId, int claimId, string orderId, string description, string errorMessage)
         {
             if (int.TryParse(orderId, out var financeOperationId))
             {
-                var resultContext = new ClaimPaymentResultContext
-                {
-                    ProjectId = projectId,
-                    ClaimId = claimId,
-                    OrderId = financeOperationId,
-                    Succeeded = true,
-                    BankResponse = ProtocolHelper.ParseDescriptionString(description)
-                };
                 try
                 {
-                    await _payments.SetClaimPaymentResultAsync(resultContext);
-                    return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+                    await _payments.UpdateClaimPaymentAsync(projectId, claimId, financeOperationId);
+                    return RedirectToAction("Edit", "Claim", new { projectId, claimId });
                 }
                 catch (Exception e)
                 {
                     return Error(
                         new ErrorViewModel
                         {
-                            Message = $"Ошибка обработки успешного платежа {orderId}",
+                            Message = $"{errorMessage} {financeOperationId}",
                             Description = e.Message,
                             Data = e,
                             ReturnLink = GetClaimUrl(projectId, claimId),
@@ -133,77 +118,27 @@ namespace JoinRpg.Web.Controllers.Money
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult> ClaimPaymentFail(
-            int projectId,
+        public async Task<ActionResult> ClaimPaymentSuccess(int projectId,
+            int claimId,
+            string orderId)
+            => await HandleClaimPaymentRedirect(projectId,
+                claimId,
+                orderId,
+                "",
+                "Ошибка обработки успешного платежа");
+
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult> ClaimPaymentFail(int projectId,
             int claimId,
             string orderId,
             [CanBeNull]
             string description)
-        {
-            if (int.TryParse(orderId, out var financeOperationId))
-            {
-                // Creating result context
-                var resultContext = new ClaimPaymentResultContext
-                {
-                    ProjectId = projectId,
-                    ClaimId = claimId,
-                    OrderId = financeOperationId,
-                    Succeeded = false,
-                    BankResponse = ProtocolHelper.ParseDescriptionString(description)
-                };
-                // Creating message
-                var message = "";
-                if (!string.IsNullOrWhiteSpace(resultContext.BankResponse.Description))
-                    message += ": " + resultContext.BankResponse.Description;
-                string codes = string.Join(
-                    ", ",
-                    new string[]
-                        {
-                            resultContext.BankResponse.PaymentCode?.ToString(),
-                            resultContext.BankResponse.ProcessingCode?.ToString()
-                        }.Where(s => !string.IsNullOrWhiteSpace(s))
-                        .ToArray());
-                if (!string.IsNullOrWhiteSpace(codes))
-                    message += $" ({codes})";
-
-                // Processing result
-                try
-                {
-                    await _payments.SetClaimPaymentResultAsync(resultContext);
-
-                    if (IsCurrentUserAdmin())
-                        return Error(
-                            new ErrorViewModel
-                            {
-                                Message = "Ошибка выполнения платежа" + message,
-                                ReturnLink = GetClaimUrl(projectId, claimId),
-                                ReturnText = "Вернуться к заявке"
-                            });
-                    return RedirectToAction("Edit", "Claim", new {projectId, claimId});
-                }
-                catch (Exception e)
-                {
-                    return Error(
-                        new ErrorViewModel
-                        {
-                            Message =
-                                $"Ошибка обработки неудавшегося платежа ({orderId}): {message}",
-                            Description = e.Message,
-                            Data = e,
-                            ReturnLink = GetClaimUrl(projectId, claimId),
-                            ReturnText = "Вернуться к заявке"
-                        });
-                }
-            }
-
-            return Error(
-                new ErrorViewModel
-                {
-                    Message = $"Неверный идентификатор платежа: {orderId}",
-                    ReturnLink = GetClaimUrl(projectId, claimId),
-                    ReturnText = "Вернуться к заявке",
-                });
-        }
+            => await HandleClaimPaymentRedirect(projectId,
+                claimId,
+                orderId,
+                description,
+                "Ошибка обработки неудавшегося платежа");
 
         [HttpGet]
         [Authorize]
