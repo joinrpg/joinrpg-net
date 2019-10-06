@@ -141,8 +141,6 @@
 
         @if (Model.CanSendClaim)
         {
-            ViewBag.HideCharacterClaimFieldsIcon = true;
-
             @Html.Partial("_EditFieldsPartial", Model.Fields)
 
             if (Model.Fields.Fields.Any(f => f.HasPrice))

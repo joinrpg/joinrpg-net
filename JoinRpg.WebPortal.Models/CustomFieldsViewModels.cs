@@ -47,10 +47,23 @@ namespace JoinRpg.Web.Models
 
         public bool Selected { get; }
   }
+
+    public enum FieldSpecialLabelView
+    {
+        ForClaim,
+        Name,
+        Description,
+        ScheduleTime,
+        SchedulePlace,
+        HasPlugin,
+    }
+
   //Actually most of this logic should be moved to Domain
   public class FieldValueViewModel
   {
     public int ProjectFieldId { get; }
+
+        public List<FieldSpecialLabelView> Labels { get; } = new List<FieldSpecialLabelView>();
 
     public ProjectFieldViewType FieldViewType { get; }
     public bool CanView { get; }
@@ -103,69 +116,94 @@ namespace JoinRpg.Web.Models
           CustomFieldsViewModel model,
           [NotNull] FieldWithValue ch,
           ILinkRenderer renderer)
-      {
-          if (ch == null) throw new ArgumentNullException(nameof(ch));
+        {
+            if (ch == null) throw new ArgumentNullException(nameof(ch));
 
-          Value = ch.Value;
+            Value = ch.Value;
 
-          DisplayString = ch.Field.SupportsMarkdown()
-              ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
-              : ch.DisplayString.SanitizeHtml();
-          FieldViewType = (ProjectFieldViewType) ch.Field.FieldType;
-          FieldName = ch.Field.FieldName;
+            DisplayString = ch.Field.SupportsMarkdown()
+                ? new MarkdownString(ch.DisplayString).ToHtmlString(renderer)
+                : ch.DisplayString.SanitizeHtml();
+            FieldViewType = (ProjectFieldViewType)ch.Field.FieldType;
+            FieldName = ch.Field.FieldName;
 
-          HasMasterAccess = model.AccessArguments.MasterAccess;
-          Description = ch.Field.Description.ToHtmlString();
+            HasMasterAccess = model.AccessArguments.MasterAccess;
+            Description = ch.Field.Description.ToHtmlString();
 
-          MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : "".MarkAsHtmlString();
+            MasterDescription = HasMasterAccess ? ch.Field.MasterDescription.ToHtmlString() : "".MarkAsHtmlString();
 
-          IsPlayerVisible = ch.Field.CanPlayerView;
-          IsDeleted = !ch.Field.IsActive;
+            IsPlayerVisible = ch.Field.CanPlayerView;
+            IsDeleted = !ch.Field.IsActive;
 
-          HasValue = ch.HasViewableValue;
+            HasValue = ch.HasViewableValue;
 
-          CanView = ch.HasViewableValue
-                    && ch.HasViewAccess(model.AccessArguments)
-                    && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+            CanView = ch.HasViewableValue
+                      && ch.HasViewAccess(model.AccessArguments)
+                      && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
-          CanEdit = model.EditAllowed
-                    && ch.HasEditAccess(model.AccessArguments)
-                    && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
+            CanEdit = model.EditAllowed
+                      && ch.HasEditAccess(model.AccessArguments)
+                      && (ch.HasEditableValue || ch.Field.IsAvailableForTarget(model.Target));
 
 
-          // Detecting if field (or its values) has a price or not
-          HasPrice = ch.SupportsPricing();
+            // Detecting if field (or its values) has a price or not
+            HasPrice = ch.SupportsPricing();
 
-          //if not "HasValues" types, will be empty
-          ValueList = ch.GetDropdownValues()
-              .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
-          PossibleValueList = ch.GetPossibleValues(model.AccessArguments).Select(v => new FieldPossibleValueViewModel(v,
-                  HasPrice,
-                  ValueList.Any(sv =>
-                      sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
-              .ToArray();
+            //if not "HasValues" types, will be empty
+            ValueList = ch.GetDropdownValues()
+                .Select(v => new FieldPossibleValueViewModel(v, HasPrice, true)).ToList();
+            PossibleValueList = ch.GetPossibleValues(model.AccessArguments).Select(v => new FieldPossibleValueViewModel(v,
+                    HasPrice,
+                    ValueList.Any(sv =>
+                        sv.ProjectFieldDropdownValueId == v.ProjectFieldDropdownValueId)))
+                .ToArray();
 
-          if (HasPrice)
-          {
-              if (FieldViewType.SupportsPricingOnField())
-                  Price = ch.Field.Price;
-              Fee = ch.GetCurrentFee();
-          }
+            if (HasPrice)
+            {
+                if (FieldViewType.SupportsPricingOnField())
+                    Price = ch.Field.Price;
+                Fee = ch.GetCurrentFee();
+            }
 
-          ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
+            ShowPrice = HasPrice && model.AccessArguments.AnyAccessToClaim;
 
-          ProjectFieldId = ch.Field.ProjectFieldId;
+            ProjectFieldId = ch.Field.ProjectFieldId;
 
-          FieldBound = (FieldBoundToViewModel) ch.Field.FieldBoundTo;
-          MandatoryStatus = IsDeleted
-              ? MandatoryStatusViewType.Optional
-              : (MandatoryStatusViewType) ch.Field.MandatoryStatus;
+            FieldBound = (FieldBoundToViewModel)ch.Field.FieldBoundTo;
+            MandatoryStatus = IsDeleted
+                ? MandatoryStatusViewType.Optional
+                : (MandatoryStatusViewType)ch.Field.MandatoryStatus;
 
-          ProjectId = ch.Field.ProjectId;
+            ProjectId = ch.Field.ProjectId;
 
-      }
+            SetFieldLabels(ch);
 
-      public MandatoryStatusViewType MandatoryStatus { get; }
+        }
+
+        private void SetFieldLabels(FieldWithValue ch)
+        {
+            void AddLabelIf(FieldSpecialLabelView label, bool predicate)
+            {
+                if (predicate)
+                {
+                    Labels.Add(label);
+                }
+            }
+
+            void AddLabelIfField(FieldSpecialLabelView label, ProjectField field) =>
+                AddLabelIf(label, field == ch.Field);
+
+            AddLabelIf(FieldSpecialLabelView.ForClaim, ch.Field.FieldBoundTo == FieldBoundTo.Claim);
+
+            ProjectDetails details = ch.Field.Project.Details;
+            AddLabelIfField(FieldSpecialLabelView.Name, details.CharacterNameField);
+            AddLabelIfField(FieldSpecialLabelView.Description, details.CharacterDescription);
+            AddLabelIfField(FieldSpecialLabelView.ScheduleTime, details.ScheduleSettings?.TimeSlotField);
+            AddLabelIfField(FieldSpecialLabelView.SchedulePlace, details.ScheduleSettings?.RoomField);
+            AddLabelIf(FieldSpecialLabelView.HasPlugin, ch.Field.Mappings.Any());
+        }
+
+        public MandatoryStatusViewType MandatoryStatus { get; }
 
     public FieldBoundToViewModel FieldBound { get; }
     public int ProjectId { get; }

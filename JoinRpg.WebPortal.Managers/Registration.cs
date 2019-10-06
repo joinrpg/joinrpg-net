@@ -9,6 +9,7 @@ namespace JoinRpg.WebPortal.Managers
         {
             yield return typeof(ProjectListManager);
             yield return typeof(FieldSetupManager);
+            yield return typeof(Schedule.SchedulePageManager);
         }
     }
 }

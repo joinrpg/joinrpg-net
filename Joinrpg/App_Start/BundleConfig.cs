@@ -15,9 +15,9 @@ namespace JoinRpg.Web
 
             bundles.Add(
                 new ScriptBundle("~/bundles/jqueryval")
-                    .Include("~/Scripts/lib/jquery-validate/jquery.validate.js")
-                    .Include("~/Scripts/lib/jquery-validate/localization/messages_ru.js")
-                    .Include("~/Scripts/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js")
+                .Include("~/Scripts/lib/jquery-validate/jquery.validate.js")
+                .Include("~/Scripts/lib/jquery-validate/localization/messages_ru.js")
+                .Include("~/Scripts/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js")
                 );
 
             // Use the development version of Modernizr to develop with and learn from. Then, when you're

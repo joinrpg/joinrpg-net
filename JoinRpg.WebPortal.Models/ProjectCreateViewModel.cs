@@ -30,8 +30,13 @@ namespace JoinRpg.Web.Models
         [Display(Name="Ролевая игра",
             Description = "")]
         Larp,
-        [Display(Name = "Конвент",
+        [Display(Name = "Конвент - участники",
             Description = "")]
-        Convention
+        Convention,
+
+        // When uncomment, fix unit test
+        //[Display(Name = "Конвент - мероприятия",
+        //    Description = "Включает экспериментальную фичу «расписание»")]
+        //ConventionProgram,
     }
 }

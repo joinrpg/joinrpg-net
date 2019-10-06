@@ -4,17 +4,18 @@ using JoinRpg.Web.Models.Characters;
 
 namespace JoinRpg.Web.Models
 {
-  public class MenuViewModelBase
-  {
-    public int ProjectId { get; set; }
-    public string ProjectName { get; set; }
-    public bool IsActive { get; set; }
-    public bool IsAcceptingClaims { get; set; }
-    public bool EnableAccommodation { get; set; }
-    public int? RootGroupId { get; set; }
-    public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
-    public bool IsAdmin { get; set; }
-  }
+    public class MenuViewModelBase
+    {
+        public int ProjectId { get; set; }
+        public string ProjectName { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsAcceptingClaims { get; set; }
+        public bool EnableAccommodation { get; set; }
+        public int? RootGroupId { get; set; }
+        public IEnumerable<CharacterGroupLinkViewModel> BigGroups { get; set; }
+        public bool IsAdmin { get; set; }
+        public bool ShowSchedule { get; set; }
+    }
 
   public class PlayerMenuViewModel : MenuViewModelBase
   {

@@ -55,22 +55,49 @@
         }
 
         @Html.DisplayFor(model => model.MandatoryStatus)
-        @if (ViewBag.HideCharacterClaimFieldsIcon != true)
-        {<text>&nbsp;</text>
-        if (Model.FieldBound == FieldBoundToViewModel.Claim)
+
+        @if (Model.HasMasterAccess)
         {
-            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+            foreach (var label in Model.Labels)
+            {
+                switch (label)
+                {
+                    case FieldSpecialLabelView.ForClaim:
+                        <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+                        break;
+                    case FieldSpecialLabelView.Name:
+
+                        <span class="glyphicon glyphicon-info-sign"
+                              title="Это поле считается именем персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
+                        break;
+                    case FieldSpecialLabelView.Description:
+
+                        <span class="glyphicon glyphicon-info-sign"
+                              title="Это поле считается описанием персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
+                        break;
+                    case FieldSpecialLabelView.SchedulePlace:
+
+                        <span class="glyphicon glyphicon-info-sign"
+                              title="Это поле считается местом проведения мероприятия. Это можно изменить в настройках"></span>
+                        break;
+                    case FieldSpecialLabelView.ScheduleTime:
+
+                        <span class="glyphicon glyphicon-info-sign"
+                              title="Это поле считается временем проведения мероприятия. Это можно изменить в настройках"></span>
+                        break;
+                    case FieldSpecialLabelView.HasPlugin:
+
+                        <span class="glyphicon glyphicon-info-sign"
+                              title="К этому полю привязан плагин, который обрабатывает его специальным образом"></span>
+                        break;
+                }
+            }
         }
-        if (Model.FieldBound == FieldBoundToViewModel.Character)
-        {
-            <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока">П</span>
-        }
-    }
     </label>
     <div class="col-md-8">
         @{
             bool isEmpty = string.IsNullOrWhiteSpace(Model.Value);
-            Dictionary<string, string> attrs = new Dictionary<string, string>()
+                Dictionary<string, string> attrs = new Dictionary<string, string>()
             {
                 { "id", Model.FieldClientId },
                 { "name", Model.FieldClientId },
@@ -86,7 +113,7 @@
                     attrs["class"] += " price";
                     attrs["min"] = "0";
                 }
-            }
+        }
 
             switch (Model.FieldViewType)
             {

@@ -1,0 +1,120 @@
+﻿@model JoinRpg.Web.Models.Schedules.SchedulePageViewModel
+
+@{
+    ViewBag.Title = "Расписание";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>&nbsp;</th>
+                @foreach (var column in Model.Columns)
+                {
+                    <th data-toggle="tooltip" title="@column.Description.ToString()" data-html="true" style="min-width:10em;">
+                        @column.Name
+                    </th>
+                }
+            </tr>
+        </thead>
+        @for (var i = 0; i < Model.Rows.Count; i++)
+        {
+            <tr>
+                <th data-toggle="tooltip" title="@Model.Rows[i].Description.ToString()" data-html="true">
+                    @Model.Rows[i].Name
+                </th>
+                @foreach (var item in Model.Slots[i])
+                {
+                    if (item.RowSpan == 0 || item.ColSpan == 0)
+                    {
+                        continue;
+                    }
+                    <td rowspan="@item.RowSpan" colspan="@item.ColSpan">
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                @if (item.IsEmpty)
+                                {
+                                    <text>(свободно)</text>
+                                }
+                                else
+                                {
+                                    <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
+                                        <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
+                                    </h4>
+                                    <p>
+                                        @foreach (var user in item.Users)
+                                        {
+                                            @Html.DisplayFor(modelItem => user)
+                                        }
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+    @if (Model.ConflictedProgramItems.Any())
+    {
+        <h4>
+            Мероприятия с пересечениями
+        </h4>
+            foreach (var item in Model.ConflictedProgramItems)
+            {
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        @if (item.IsEmpty)
+                        {
+                            <text>(свободно)</text>
+                        }
+                        else
+                        {
+                            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
+                                <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
+                            </h4>
+                            <p>
+                                @foreach (var user in item.Users)
+                                {
+                                    @Html.DisplayFor(modelItem => user)
+                                }
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+    }
+
+    @if (Model.NotScheduledProgramItems.Any())
+    {
+        <h4>
+            Мероприятия без места в программе
+        </h4>
+            foreach (var item in Model.NotScheduledProgramItems)
+            {
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        @if (item.IsEmpty)
+                        {
+                            <text>(свободно)</text>
+                        }
+                        else
+                        {
+                            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
+                                <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
+                            </h4>
+                            <p>
+                                @foreach (var user in item.Users)
+                                {
+                                    @Html.DisplayFor(modelItem => user)
+                                }
+                            </p>
+                        }
+                    </div>
+                </div>
+            }
+    }
+    <h4></h4>
+</div>

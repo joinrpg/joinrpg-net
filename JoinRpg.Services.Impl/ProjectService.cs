@@ -67,46 +67,37 @@ namespace JoinRpg.Services.Impl
 
         private static void ConfigureProjectDefaults(Project project, ProjectTypeDto projectType)
         {
+            var initialFieldId = -1000;
+            ProjectField CreateField(string name, ProjectFieldType type)
+            {
+                var field = new ProjectField()
+                {
+                    CanPlayerEdit = false,
+                    CanPlayerView = true,
+                    FieldBoundTo = FieldBoundTo.Character,
+                    FieldName = name,
+                    FieldType = type,
+                    IsActive = true,
+                    IsPublic = true,
+                    MandatoryStatus = MandatoryStatus.Optional,
+                    IncludeInPrint = false,
+                    ValidForNpc = true,
+                    ProjectFieldId = initialFieldId,
+                    Description = new MarkdownString(""),
+                    MasterDescription = new MarkdownString(""),
+                };
+                project.ProjectFields.Add(field);
+                initialFieldId++;
+                return field;
+            }
+
             switch (projectType)
             {
                 case ProjectTypeDto.Larp:
+                    project.Details.CharacterNameField = CreateField("Имя персонажа", ProjectFieldType.String);
+                    project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
 
-                    project.Details.CharacterNameField = new ProjectField()
-                    {
-                        CanPlayerEdit = false,
-                        CanPlayerView = true,
-                        FieldBoundTo = FieldBoundTo.Character,
-                        FieldName = "Имя персонажа", //TODO[Localize]
-                        FieldType = ProjectFieldType.String,
-                        IsActive = true,
-                        IsPublic = true,
-                        MandatoryStatus = MandatoryStatus.Required,
-                        IncludeInPrint = false,
-                        ValidForNpc = true,
-                        ProjectFieldId = -2,
-                        Description = new MarkdownString(""),
-                        MasterDescription = new MarkdownString(""),
-                    };
-                    project.Details.CharacterDescription = new ProjectField()
-                    {
-                        CanPlayerEdit = false,
-                        CanPlayerView = true,
-                        FieldBoundTo = FieldBoundTo.Character,
-                        FieldName = "Описание персонажа", //TODO[Localize]
-                        FieldType = ProjectFieldType.Text,
-                        IsActive = true,
-                        IsPublic = true,
-                        MandatoryStatus = MandatoryStatus.Optional,
-                        IncludeInPrint = false,
-                        ValidForNpc = true,
-                        ProjectFieldId = -1,
-                        Description = new MarkdownString(""),
-                        MasterDescription = new MarkdownString(""),
-                    };
-
-                    project.ProjectFields.Add(project.Details.CharacterNameField);
-
-                    project.ProjectFields.Add(project.Details.CharacterDescription);
+                    project.Details.CharacterDescription = CreateField("Описание персонажа", ProjectFieldType.Text);
                     break;
                 case ProjectTypeDto.Convention:
                     project.Details.AutoAcceptClaims = true;
@@ -114,11 +105,34 @@ namespace JoinRpg.Services.Impl
                     project.Details.CharacterNameField = null;
                     project.Details.CharacterDescription = null;
                     break;
+                case ProjectTypeDto.ConventionProgram:
+                    project.Details.EnableManyCharacters = true;
+
+                    project.Details.CharacterNameField = CreateField("Название мероприятия", ProjectFieldType.String);
+                    project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
+                    project.Details.CharacterNameField.CanPlayerEdit = true;
+
+                    project.Details.CharacterDescription = CreateField("Описание мероприятия", ProjectFieldType.Text);
+                    project.Details.CharacterDescription.CanPlayerEdit = true;
+
+                    var timeField = CreateField("Время проведения мероприятия", ProjectFieldType.MultiSelect);
+                    timeField.MasterDescription = new MarkdownString("Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
+
+                    var roomField = CreateField("Место проведения мероприятия", ProjectFieldType.MultiSelect);
+                    roomField.MasterDescription = new MarkdownString("Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля возможное время проведения");
+
+                    project.Details.ScheduleSettings = new ProjectScheduleSettings
+                    {
+                        RoomField = roomField,
+                        TimeSlotField = timeField,
+                    };
+
+                    break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(projectType));
             }
         }
-
+        
         public async Task AddCharacterGroup(int projectId,
             string name,
             bool isPublic,
@@ -511,7 +525,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-       
+
     }
 }
 
