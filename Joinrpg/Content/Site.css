@@ -24,12 +24,6 @@ body {
     padding-bottom: 20px;
 }
 
-footer {
-    margin-top: 2em;
-    border-top: 1px solid #dedede;
-    padding-top: 2em;
-}
-
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
