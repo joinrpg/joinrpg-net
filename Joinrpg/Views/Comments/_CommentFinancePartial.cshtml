@@ -12,13 +12,13 @@
         break;
     case FinanceOperationType.Submit:
     case FinanceOperationType.Online:
-        <div><b>Внесение денег:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
+        <div><b>Оплата взноса:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
         break;
     case FinanceOperationType.Refund:
-        <div><b>Возврат денег:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
+        <div><b>Возврат денег игроку:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
         break;
     case FinanceOperationType.TransferTo:
-        <div><b>Передача денег на другую заявку:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
+        <div><b>Перевод денег на другую заявку:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
         <div><b>Получатель:</b> @if (Model.ShowLinkToClaimIfTransfer)
                                 {
                                     @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { target = "_blank" })
@@ -30,7 +30,7 @@
         </div>
         break;
     case FinanceOperationType.TransferFrom:
-        <div><b>Получение денег от другой заявки:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
+        <div><b>Перевод денег от другой заявки:</b> @Model.FinanceOperation.MoneyAmount &#8381;</div>
         <div><b>Источник:</b> @if (Model.ShowLinkToClaimIfTransfer)
                               {
                                   @Html.ActionLink(Model.FinanceOperation.LinkedClaim.Name, "Edit", "Claim", new { projectId = Model.FinanceOperation.LinkedClaim.ProjectId, claimId = Model.FinanceOperation.LinkedClaimId }, new { target = "_blank" })
@@ -67,7 +67,7 @@
                     }
                     else
                     {
-                        <span class="label label-default">Запрос в обработке</span>
+                        <span class="label label-default">Ожидание одобрения мастером</span>
                     }
                     break;
                 case FinanceOperationState.Declined:
@@ -89,11 +89,11 @@
                     }
                     else
                     {
-                        <span class="label label-default">Ожидание подтверждения</span>
+                        <span class="label label-default">Ожидание подтверждения мастером</span>
                     }
                     break;
                 case FinanceOperationState.Declined:
-                    <span class="label label-danger">Получение не подтверждено</span>
+                    <span class="label label-danger">Платеж не подтвержден мастером</span>
                     break;
             }
             break;
