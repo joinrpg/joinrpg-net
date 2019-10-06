@@ -64,9 +64,7 @@ namespace JoinRpg.Services.Impl
             var claim = await GetClaimAsync(request.ProjectId, request.ClaimId);
 
             // Checking access rights
-            if (!(claim.HasAccess(CurrentUserId, ExtraAccessReason.Player)
-                || claim.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
-                || IsCurrentUserAdmin))
+            if (claim.PlayerUserId != CurrentUserId)
                 throw new NoAccessToProjectException(claim.Project, CurrentUserId);
 
             PaymentType onlinePaymentType =

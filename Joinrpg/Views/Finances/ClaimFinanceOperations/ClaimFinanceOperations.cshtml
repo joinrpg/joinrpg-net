@@ -18,11 +18,11 @@
     <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.Partial("Money", new Money(Model.CurrentBalance))</strong>, осталось оплатить <strong class="text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2"))</strong>)</span>
     <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
     <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
-    @if (Model.IsFeeAdmin && Model.CurrentBalance > 0)
+    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
     {
         <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
     }
-    @if (Model.OnlinePaymentEnabled)
+    @if (Model.OnlinePaymentEnabled && !Model.HasMasterAccess)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
     }
@@ -30,7 +30,7 @@
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
     }
-    @if (Model.PreferentialFeeRequestEnabled)
+    @if (Model.PreferentialFeeRequestEnabled && !Model.HasMasterAccess)
     {
         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#requestPreferentialFeeDialog">Запросить льготу&hellip;</button>
     }
@@ -45,7 +45,7 @@
         @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowBaseFee",
-            Visible = Model.HasBaseFee || Model.IsFeeAdmin,
+            Visible = Model.HasBaseFee || Model.HasFeeAdminAccess,
             Title = "Взнос"
                 + (Model.PreferentialFeeUser ? " (льготник)" : "")
                 + (Model.BaseFeeInfo != null ? " (действует с " + Model.BaseFeeInfo.StartDate.ToShortDateString() + ")" : ""),
@@ -100,7 +100,7 @@
                 <th class="price-table text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp"))</th>
                 <th class="price-table text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp"))</th>
                 <th>
-                    @if (Model.OnlinePaymentEnabled)
+                    @if (Model.OnlinePaymentEnabled && !Model.HasMasterAccess)
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#payOnlineDialog">Оплатить онлайн&hellip;</button>
                     }
@@ -108,7 +108,7 @@
                     {
                         <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#submitPaymentDialog">Отметить оплату&hellip;</button>
                     }
-                    @if (Model.IsFeeAdmin && Model.CurrentBalance > 0)
+                    @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
                     {
                         <a class="btn btn-default btn-xs" href="@Url.Action("TransferClaimPayment", "Claim", new { projectId = Model.ProjectId, claimId = Model.ClaimId})">Перевести&hellip;</a>
                     }

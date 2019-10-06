@@ -477,8 +477,8 @@ namespace JoinRpg.Web.Models
             foreach (var fo in claim.FinanceOperations)
                 Balance[fo.State] += fo.MoneyAmount;
 
-            IsFeeAdmin = claim.HasAccess(currentUserId,
-                acl => acl.CanManageMoney);
+            HasMasterAccess = claim.HasMasterAccess(currentUserId);
+            HasFeeAdminAccess = claim.HasAccess(currentUserId, acl => acl.CanManageMoney);
 
             PreferentialFeeEnabled = claim.Project.Details.PreferentialFeeEnabled;
             PreferentialFeeUser = claim.PreferentialFeeUser;
@@ -615,7 +615,9 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public bool HasSubmittablePaymentTypes { get; }
 
-        public bool IsFeeAdmin { get; }
+        public bool HasMasterAccess { get; }
+
+        public bool HasFeeAdminAccess { get; }
 
         public bool PreferentialFeeEnabled { get; }
         public bool PreferentialFeeUser { get; }
@@ -642,7 +644,7 @@ namespace JoinRpg.Web.Models
 
         public FinanceOperationAdminFunctionsViewModel(ClaimFeeViewModel source)
         {
-            Allowed = source.IsFeeAdmin;
+            Allowed = source.HasFeeAdminAccess;
             PreferentialFeeEnabled = source.PreferentialFeeEnabled;
             PreferentialFeeUser = source.PreferentialFeeUser;
         }
