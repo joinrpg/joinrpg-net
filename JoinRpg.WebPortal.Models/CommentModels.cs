@@ -190,6 +190,12 @@ namespace JoinRpg.Web.Models
         public bool ShowModerationControls { get; set; }
 
         /// <summary>
+        /// true if link to claim has to be shown for transfer payments
+        /// (if false, link to user will be shown)
+        /// </summary>
+        public bool ShowLinkToClaimIfTransfer { get; set; }
+
+        /// <summary>
         /// Finance operation
         /// </summary>
         public FinanceOperation FinanceOperation { get; set; }
@@ -199,6 +205,7 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public CommentFinanceOperationViewModel(CommentViewModel source, int replyFormIndex)
         {
+            ShowLinkToClaimIfTransfer = source.HasMasterAccess;
             FinanceOperation = source.Finance;
             ShowModerationControls = source.ShowFinanceModeration;
             ReplyFormIndex = replyFormIndex;

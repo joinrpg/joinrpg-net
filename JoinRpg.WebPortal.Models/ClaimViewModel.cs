@@ -402,7 +402,11 @@ namespace JoinRpg.Web.Models
 
         public bool CheckPaymentState { get; }
 
-        public FinanceOperationViewModel(FinanceOperation source)
+        public User LinkedClaimUser { get; }
+
+        public bool ShowLinkedClaimLinkIfTransfer { get; }
+
+        public FinanceOperationViewModel(FinanceOperation source, bool isMaster)
         {
             Id = source.CommentId;
             ClaimId = source.ClaimId;
@@ -410,10 +414,12 @@ namespace JoinRpg.Web.Models
             Money = source.MoneyAmount;
             LinkedClaimId = source.LinkedClaimId;
             LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : null;
+            LinkedClaimUser = source.LinkedClaim?.Player;
             OperationType = (FinanceOperationTypeViewModel) source.OperationType;
             OperationState = (FinanceOperationStateViewModel) source.State;
             RowCssClass = source.State.ToRowClass();
             Date = source.OperationDate.ToShortDateString();
+            ShowLinkedClaimLinkIfTransfer = isMaster;
 
             Title = OperationType.GetDescription();
             if (string.IsNullOrWhiteSpace(Title))
@@ -487,7 +493,7 @@ namespace JoinRpg.Web.Models
                 .Union(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
-            FinanceOperations = claim.FinanceOperations.Select(fo => new FinanceOperationViewModel(fo));
+            FinanceOperations = claim.FinanceOperations.Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
             VisibleFinanceOperations = FinanceOperations.Where(
                 fo => fo.OperationType != FinanceOperationTypeViewModel.FeeChange
                     && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);

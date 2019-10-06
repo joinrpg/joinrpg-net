@@ -7,14 +7,22 @@
         @Model.Title
         @if (Model.LinkedClaimId.HasValue)
         {
-            @Html.ActionLink(Model.LinkedClaimName, "Edit", "Claim", new {projectId = Model.ProjectId, claimId = Model.LinkedClaimId}, null)
+            if (Model.ShowLinkedClaimLinkIfTransfer)
+            {
+                @Html.ActionLink(Model.LinkedClaimName, "Edit", "Claim", new {projectId = Model.ProjectId, claimId = Model.LinkedClaimId}, null)
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.LinkedClaimUser)
+            }
         }
     </td>
     <td>@Model.Date</td>
     <td></td>
     <td class="price-table">@Html.Partial("Money", new Money(Model.Money))</td>
     <td>
-        @if (Model.OperationType == FinanceOperationTypeViewModel.Online && Model.OperationState == FinanceOperationStateViewModel.Proposed)
+        @if (Model.OperationType == FinanceOperationTypeViewModel.Online
+             && Model.OperationState == FinanceOperationStateViewModel.Proposed)
         {
             @Html.ActionLink("Обновить статус", "UpdateClaimPayment", "Payments", new {projectId = Model.ProjectId, claimId = Model.ClaimId, orderId = Model.Id}, new {@class = "btn btn-default btn-xs "})
         }
