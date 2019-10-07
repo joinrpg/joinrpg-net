@@ -10,6 +10,7 @@ namespace JoinRpg.Dal.Impl.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
+            CommandTimeout = 60 * 60; // 1 hour
         }
 
         protected override void Seed(MyDbContext context)
