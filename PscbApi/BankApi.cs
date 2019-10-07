@@ -47,10 +47,7 @@ namespace PscbApi
         public BankApi(ApiConfiguration configuration)
         {
             _configuration = configuration;
-            _keyAsUtf8 = Encoding.Convert(
-                Encoding.Default,
-                Encoding.UTF8,
-                Encoding.Default.GetBytes(ActualApiKey));
+            _keyAsUtf8 = ActualApiKey.ToUtf8Bytes();
         }
 
         /// <summary>
@@ -69,14 +66,9 @@ namespace PscbApi
             System.Diagnostics.Debug.WriteLineIf(Debug, JsonConvert.SerializeObject(request, Formatting.Indented));
 
             var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
-            byte[] requestAsJsonUtf8 = Encoding.Convert(
-                Encoding.Default,
-                Encoding.UTF8,
-                Encoding.Default.GetBytes(requestAsJson));
-
-            byte[] requestWithSignature = requestAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
-
-            var signature = requestWithSignature.Sha256Encode().ToHexString();
+            byte[] requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
+            byte[] requestWithKey = requestAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
+            var signature = requestWithKey.Sha256Encode().ToHexString();
 
             using (var httpClient = new HttpClient())
             {
@@ -129,13 +121,8 @@ namespace PscbApi
                 JsonConvert.SerializeObject(message, Formatting.Indented));
 
             var messageAsJson = JsonConvert.SerializeObject(message, Formatting.None);
-
-            byte[] messageAsJsonUtf8 = Encoding.Convert(
-                Encoding.Default,
-                Encoding.UTF8,
-                Encoding.Default.GetBytes(messageAsJson));
-
-            byte[] messageWithSignature = messageAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
+            byte[] messageAsJsonUtf8 = messageAsJson.ToUtf8Bytes();
+            byte[] messageWithKey = messageAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
 
             var result = new PaymentRequestDescriptor
             {
@@ -145,7 +132,7 @@ namespace PscbApi
                 {
                     marketPlace = _configuration.MerchantId,
                     message = Convert.ToBase64String(messageAsJsonUtf8),
-                    signature = messageWithSignature.Sha256Encode().ToHexString()
+                    signature = messageWithKey.Sha256Encode().ToHexString()
                 }
             };
             System.Diagnostics.Debug.WriteLineIf(Debug, result.Url);
