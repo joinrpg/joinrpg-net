@@ -94,12 +94,13 @@ namespace JoinRpg.Services.Impl
                     Receipt = new Receipt
                     {
                         CompanyEmail = User.OnlinePaymentVirtualUser,
+                        TaxSystem = TaxSystemType.SimplifiedIncomeOutcome,
                         Items = new List<ReceiptItem>
                         {
                             new ReceiptItem
                             {
-                                ObjectType = PaymentObjectType.Commodity,
-                                PaymentType = ItemPaymentType.Advance,
+                                ObjectType = PaymentObjectType.Service,
+                                PaymentType = ItemPaymentType.FullPayment,
                                 Price = request.Money,
                                 Quantity = 1,
                                 TotalPrice = request.Money,
