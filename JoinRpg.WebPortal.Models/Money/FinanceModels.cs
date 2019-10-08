@@ -82,8 +82,25 @@ namespace JoinRpg.Web.Models
 
     public class PaymentViewModel : PaymentViewModelBase
     {
+        /// <summary>
+        /// For online payments, comment text is not actually required
+        /// </summary>
+        [DisplayName("Комментарий к платежу")]
+        public new string CommentText
+        {
+            get { return base.CommentText; }
+            set { base.CommentText = value; }
+        }
 
+        [Range(1, 100000, ErrorMessage = "Сумма оплаты должна быть от 1 до 100000")]
         [Required]
+        [DisplayName("Сумма к оплате")]
+        public new int Money
+        {
+            get { return base.Money; }
+            set { base.Money = value; }
+        }
+
         public bool AcceptContract { get; set; }
 
         public PaymentViewModel() { }
@@ -99,7 +116,7 @@ namespace JoinRpg.Web.Models
                 .AppendIf(
                     !AcceptContract,
                     () => new ValidationResult(
-                        "Необходимо принять контракт для проведения оплаты",
+                        "Необходимо принять соглашение для проведения оплаты",
                         new []{ nameof(AcceptContract) }));
     }
 
