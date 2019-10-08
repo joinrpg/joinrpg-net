@@ -1,14 +1,20 @@
 ﻿@model PscbApi.Models.PaymentRequestDescriptor
 
+@if (Model.Debug)
+{
+    <h3 class="danger">Отладочный режим</h3>
+}
+
 <form id="pay" action="@Model.Url" method="post">
     @Html.Partial("_RedirectContentPartial", Model.QueryParams)
     <button type="submit">Перейти к оплате</button>
 </form>
 
 <script type="text/javascript">
+    const redirectTimeout = @(Model.Debug ? 60000 : 100);
     setTimeout(() =>
     {
         const form = document.getElementById("pay");
         form.submit();
-    }, 100);
+    }, redirectTimeout);
 </script>

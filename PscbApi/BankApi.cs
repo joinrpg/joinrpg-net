@@ -99,6 +99,8 @@ namespace PscbApi
             [NotNull] Func<Task<string>> getOrderId,
             Func<string, string> getOrderIdDisplayValue = null)
         {
+            if (Debug)
+                message.Details = "[Debug mode] " + message.Details;
             message.CheckStringPropertyLength(m => m.Details);
             message.CheckStringPropertyLength(m => m.CustomerComment);
             message.CheckStringPropertyLength(m => m.OrderIdDisplayValue);
