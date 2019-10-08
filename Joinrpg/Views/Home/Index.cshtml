@@ -27,7 +27,7 @@
     {
         @Html.Partial("ProjectCard", project)
     }
-        @if (!Model.HasMoreProjects)
+        @if (Model.HasMoreProjects)
         {
             <div class="col-sm-12" style="text-align: center">
                 @Html.ActionLink("Еще игры...", "BrowseGames", "Home", new { @class = "btn" })
