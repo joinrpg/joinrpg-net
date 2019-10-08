@@ -1,12 +1,10 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
-using PscbApi;
 
 namespace JoinRpg.Web.Controllers.Money
 {
@@ -116,28 +114,34 @@ namespace JoinRpg.Web.Controllers.Money
                 });
         }
 
-        [HttpGet, HttpPost]
+        [HttpGet]
         [Authorize]
-        public async Task<ActionResult> ClaimPaymentSuccess(int projectId,
-            int claimId,
-            string orderId)
-            => await HandleClaimPaymentRedirect(projectId,
-                claimId,
-                orderId,
-                "",
+        [ActionName(nameof(ClaimPaymentSuccess))]
+        public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
+            => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
+                "Ошибка обработки успешного платежа");
+        
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ClaimPaymentSuccess(int projectId, int claimId, string orderId)
+            => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
                 "Ошибка обработки успешного платежа");
 
-        [HttpGet, HttpPost]
+
+        [HttpGet]
         [Authorize]
-        public async Task<ActionResult> ClaimPaymentFail(int projectId,
-            int claimId,
-            string orderId,
-            [CanBeNull]
-            string description)
-            => await HandleClaimPaymentRedirect(projectId,
-                claimId,
-                orderId,
-                description,
+        [ActionName(nameof(ClaimPaymentFail))]
+        public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, string orderId,
+            [CanBeNull] string description)
+            => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
+                "Ошибка обработки неудавшегося платежа");
+
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult> ClaimPaymentFail(int projectId, int claimId, string orderId,
+            [CanBeNull] string description)
+            => await HandleClaimPaymentRedirect(projectId, claimId, orderId, description,
                 "Ошибка обработки неудавшегося платежа");
 
         [HttpGet]
