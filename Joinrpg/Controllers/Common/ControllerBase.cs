@@ -124,13 +124,15 @@ namespace JoinRpg.Web.Controllers.Common
         protected ActionResult ViewIfFound(string viewName, object model)
             => model == null ? (ActionResult)HttpNotFound() : View(viewName, model);
 
+        [AspMvcView]
         protected ActionResult ViewIfFound(object model)
             => ViewIfFound(null, model);
 
+        [AspMvcView]
         protected async Task<ActionResult> ViewIfFound<T>(Task<T> model)
             => ViewIfFound(null, await model);
 
-        protected async Task<ActionResult> ViewIfFound<T>(string viewName, Task<T> model)
+        protected async Task<ActionResult> ViewIfFound<T>([AspMvcView] string viewName, Task<T> model)
             => ViewIfFound(viewName, await model);
     }
 }

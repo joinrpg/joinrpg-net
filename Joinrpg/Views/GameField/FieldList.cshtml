@@ -117,12 +117,15 @@
                     {
                         <a title="Изменить" href="@Url.Action("Edit", new { item.ProjectFieldId, item.ProjectId })"
                            class="btn btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
-                        <a title="Удалить"
-                           data-toggle="modal"
-                           data-target="#deleteEntityModal"
-                           data-element="@item.ProjectFieldId"
-                           data-action-url="@Url.Action("Delete", new { item.ProjectFieldId, item.ProjectId })"
-                           class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
+                         if (item.CanDeleteField)
+                         {
+                             <a title="Удалить"
+                                data-toggle="modal"
+                                data-target="#deleteEntityModal"
+                                data-element="@item.ProjectFieldId"
+                                data-action-url="@Url.Action("Delete", new {item.ProjectFieldId, item.ProjectId})"
+                                class="btn btn-warning"><i class="glyphicon glyphicon-trash"></i></a>
+                         }
                     }
                     else
                     {

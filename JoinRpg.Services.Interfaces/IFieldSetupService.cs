@@ -11,8 +11,6 @@ namespace JoinRpg.Services.Interfaces
 
         Task<ProjectField> DeleteField(int projectId, int projectFieldId);
 
-        Task DeleteField(ProjectField field);
-
         Task AddField(CreateFieldRequest request);
 
         Task CreateFieldValueVariant(CreateFieldValueVariantRequest request);

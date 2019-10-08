@@ -209,7 +209,7 @@ namespace JoinRpg.Services.Impl
             };
         }
 
-
+        /// <inheritdoc />
         public async Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
             int inviteId)
         {
@@ -244,8 +244,7 @@ namespace JoinRpg.Services.Impl
 
             if (receiverAccommodationRequest != null)
             {
-                // ReSharper disable once PossibleNullReferenceException
-                foreach (var claim in receiverAccommodationRequest?.Subjects)
+                foreach (var claim in receiverAccommodationRequest?.Subjects.ToList())
                 {
                     await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
                     senderAccommodationRequest.Subjects.Add(claim);
