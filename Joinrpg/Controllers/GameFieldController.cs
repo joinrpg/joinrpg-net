@@ -88,7 +88,7 @@ namespace JoinRpg.Web.Controllers
             catch (Exception exception)
             {
                 ModelState.AddException(exception);
-                return View(Manager.FillFailedSettingsModel(viewModel));
+                return View(await Manager.FillFailedSettingsModel(viewModel));
             }
         }
 
@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Controllers
             catch (Exception exception)
             {
                 ModelState.AddException(exception);
-                return View(Manager.FillFailedModel(viewModel));
+                return View(await Manager.FillFailedModel(viewModel));
             }
         }
 
