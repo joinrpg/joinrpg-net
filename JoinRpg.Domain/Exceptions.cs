@@ -47,6 +47,24 @@ namespace JoinRpg.Domain
       {}
   }
 
+  public class JoinRpgNameFieldDeleteException : JoinRpgProjectEntityException
+  {
+      public JoinRpgNameFieldDeleteException(ProjectField field)
+      :base(field, "Can't delete field, because character name bound to it")
+      {
+          
+      }
+  }
+
+  public class JoinFieldScheduleUseException : JoinRpgProjectEntityException
+  {
+      public JoinFieldScheduleUseException(ProjectField field)
+      :base(field, "Can't delete field, because schedule bound to it")
+      {
+          
+      }
+  }
+
   public class JoinRpgEntityNotFoundException : JoinRpgBaseException
   {
     public JoinRpgEntityNotFoundException(IEnumerable<int> ids, string typeName) : base($"Can't found entities of type {typeName} by ids {string.Join(", ", ids)}")

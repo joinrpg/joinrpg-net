@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace JoinRpg.Services.Impl
         public async Task<ProjectField> DeleteField(int projectId, int projectFieldId)
         {
             ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
+
             await DeleteField(field);
             return field;
         }
@@ -87,9 +89,24 @@ namespace JoinRpg.Services.Impl
         /// Deletes field by its object. We assume here that field represents really existed field in really existed project
         /// </summary>
         /// <param name="field">Field to delete</param>
-        public async Task DeleteField(ProjectField field)
+        private async Task DeleteField(ProjectField field)
         {
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            var projectDetails = field.Project.Details;
+            if (projectDetails.CharacterNameField == field)
+            {
+                throw new JoinRpgNameFieldDeleteException(field);
+            }
+
+            if (projectDetails.CharacterDescription == field)
+            {
+                projectDetails.CharacterDescription = null;
+            }
+
+            if (projectDetails.ScheduleSettings?.RoomField == field || projectDetails.ScheduleSettings?.TimeSlotField == field)
+            {
+                throw new JoinFieldScheduleUseException(field);
+            }
 
             foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
             {
