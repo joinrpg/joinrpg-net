@@ -32,7 +32,7 @@
         {
             itemId = itemId + "_" + formIndex.ToString();
         }
-        bool @checked = selected != null && selected.Equals(Model);
+        bool @checked = selected != null && selected.Equals(value);
         var description = value.GetDescription();
         <div class="radio-group-item">
             <input type="radio" id="@itemId" name="@ViewData.ModelMetadata.PropertyName" value="@value" @if (@checked) { <text>checked</text> } @if ((bool) disabled) { <text>disabled</text> }/>

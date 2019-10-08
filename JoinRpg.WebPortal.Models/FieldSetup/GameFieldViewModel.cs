@@ -146,6 +146,10 @@ namespace JoinRpg.Web.Models.FieldSetup
             HasValueList = field.HasValueList();
             WasEverUsed = field.WasEverUsed;
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
+            CanDeleteField = CanEditFields
+                             && field != field.Project.Details.CharacterNameField
+                && field != field.Project.Details.ScheduleSettings?.RoomField
+                && field != field.Project.Details.ScheduleSettings?.TimeSlotField;
         }
 
         public GameFieldEditViewModel()
@@ -170,7 +174,7 @@ namespace JoinRpg.Web.Models.FieldSetup
         int IMovableListItem.ItemId => ProjectFieldId;
 
         public bool CanEditFields { get; private set; }
-
+        public bool CanDeleteField { get; private set; }
         [Display(Name = "Включать в распечатки")]
         public bool IncludeInPrint { get; set; } = true;
 
