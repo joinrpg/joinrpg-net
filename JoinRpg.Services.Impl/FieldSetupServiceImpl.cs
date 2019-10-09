@@ -92,18 +92,17 @@ namespace JoinRpg.Services.Impl
         private async Task DeleteField(ProjectField field)
         {
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
-            var projectDetails = field.Project.Details;
-            if (projectDetails.CharacterNameField == field)
+            if (field.IsName())
             {
                 throw new JoinRpgNameFieldDeleteException(field);
             }
 
-            if (projectDetails.CharacterDescription == field)
+            if (field.IsDescription())
             {
-                projectDetails.CharacterDescription = null;
+                field.Project.Details.CharacterDescription = null;
             }
 
-            if (projectDetails.ScheduleSettings?.RoomField == field || projectDetails.ScheduleSettings?.TimeSlotField == field)
+            if (field.IsRoomSlot() || field.IsTimeSlot())
             {
                 throw new JoinFieldScheduleUseException(field);
             }

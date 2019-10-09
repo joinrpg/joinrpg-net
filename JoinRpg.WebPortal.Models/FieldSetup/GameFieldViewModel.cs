@@ -146,10 +146,7 @@ namespace JoinRpg.Web.Models.FieldSetup
             HasValueList = field.HasValueList();
             WasEverUsed = field.WasEverUsed;
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
-            CanDeleteField = CanEditFields
-                             && field != field.Project.Details.CharacterNameField
-                && field != field.Project.Details.ScheduleSettings?.RoomField
-                && field != field.Project.Details.ScheduleSettings?.TimeSlotField;
+            CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
         }
 
         public GameFieldEditViewModel()

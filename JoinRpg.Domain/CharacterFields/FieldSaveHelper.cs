@@ -108,10 +108,10 @@ namespace JoinRpg.Domain.CharacterFields
                 switch (field.Field.FieldBoundTo)
                 {
                     case FieldBoundTo.Character:
-                        newValue = Generator.CreateDefaultValue(Character, field.Field);
+                        newValue = Generator.CreateDefaultValue(Character, field);
                         break;
                     case FieldBoundTo.Claim:
-                        newValue = Generator.CreateDefaultValue(Claim, field.Field);
+                        newValue = Generator.CreateDefaultValue(Claim, field);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

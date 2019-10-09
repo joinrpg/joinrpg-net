@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+using JetBrains.Annotations;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.CharacterFields
@@ -6,8 +6,8 @@ namespace JoinRpg.Domain.CharacterFields
   public interface IFieldDefaultValueGenerator
   {
     [CanBeNull]
-    string CreateDefaultValue([CanBeNull] Claim claim, [NotNull] ProjectField feld);
+    string CreateDefaultValue([CanBeNull] Claim claim, [NotNull] FieldWithValue field);
     [CanBeNull]
-    string CreateDefaultValue([CanBeNull] Character character, [NotNull] ProjectField field);
+    string CreateDefaultValue([CanBeNull] Character character, [NotNull] FieldWithValue field);
   }
 }
