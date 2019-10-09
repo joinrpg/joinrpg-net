@@ -114,7 +114,7 @@ namespace JoinRpg.Web.Controllers.Money
                 });
         }
 
-        [HttpGet, HttpPost]
+        [HttpGet]
         [Authorize]
         [ActionName(nameof(ClaimPaymentSuccess))]
         public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
@@ -129,7 +129,7 @@ namespace JoinRpg.Web.Controllers.Money
                 "Ошибка обработки успешного платежа");
 
 
-        [HttpGet, HttpPost]
+        [HttpGet]
         [Authorize]
         [ActionName(nameof(ClaimPaymentFail))]
         public async Task<ActionResult> ClaimPaymentFailGet(int projectId, int claimId, string orderId,
