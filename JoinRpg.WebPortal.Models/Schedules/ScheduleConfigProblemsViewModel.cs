@@ -11,5 +11,10 @@ namespace JoinRpg.Web.Models.Schedules
         InconsistentVisibility,
         [Description("У вас нет доступа к расписанию данного проекта")]
         NoAccess,
+
+        [Description("Не настроено ни одного помещения")]
+        NoRooms,
+        [Description("Не настроено ни одного тайм-слота")]
+        NoTimeSlots,
     }
 }
