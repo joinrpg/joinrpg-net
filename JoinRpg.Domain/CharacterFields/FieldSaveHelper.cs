@@ -335,6 +335,11 @@ namespace JoinRpg.Domain.CharacterFields
 
                 var normalizedValue = NormalizeValueBeforeAssign(field, keyValuePair.Value);
 
+                if (normalizedValue is null && field.Field.MandatoryStatus == MandatoryStatus.Required) 
+                {
+                    throw new FieldRequiredException(field.Field.FieldName);
+                }
+
                 strategy.AssignFieldValue(field, normalizedValue);
             }
         }
