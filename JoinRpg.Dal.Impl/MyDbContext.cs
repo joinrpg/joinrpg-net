@@ -14,7 +14,18 @@ namespace JoinRpg.Dal.Impl
     [UsedImplicitly]
     public class MyDbContext : DbContext, IUnitOfWork
     {
+        /// <summary>
+        /// Constructor for migrations
+        /// </summary>
         public MyDbContext() : base("DefaultConnection")
+        {
+            Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
+        }
+
+        /// <summary>
+        /// Main constructor
+        /// </summary>
+        public MyDbContext(IJoinDbContextConfiguration configuration) : base(configuration.ConnectionString)
         {
             Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
         }

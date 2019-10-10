@@ -93,7 +93,7 @@
                         }
                     </dd>
                 }
-                @if (Model.IsPaymentsEnabled && Model.ClaimFee.ShowFee)
+                @if (Model.ClaimFee.ShowFee)
                 {
                     <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
                     <dd>@Html.Partial("..\\Finances\\ClaimFinanceOperations\\ClaimFinanceOperations", Model.ClaimFee)</dd>
