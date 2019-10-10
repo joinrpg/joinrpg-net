@@ -12,6 +12,7 @@ using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
+using MoreLinq;
 
 namespace JoinRpg.Web.Models
 {
@@ -74,7 +75,7 @@ namespace JoinRpg.Web.Models
             var masters = masterOperations.Select(fo => fo.PaymentType?.User).Where(m => m != null)
                 .Union(masterTransfers.Select(mt => mt.Receiver))
                 .Union(masterTransfers.Select(mt => mt.Sender))
-                .Distinct();
+                .DistinctBy(master => master.UserId);
 
 
             var summary = masters.Select(master =>
