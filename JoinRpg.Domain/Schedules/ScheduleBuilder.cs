@@ -126,13 +126,18 @@ namespace JoinRpg.Domain.Schedules
             var seqId = 0;
             foreach (var variant in readOnlyList)
             {
-                yield return new T()
+                var item = new T()
                 {
                     Id = variant.ProjectFieldDropdownValueId,
                     Name = variant.Label,
                     Description = variant.Description,
                     SeqId = seqId,
                 };
+                if (item is TimeSlot timeSlot)
+                {
+                    timeSlot.Options = variant.GetTimeSlotOptions();
+                }
+                yield return item;
                 seqId++;
             }
         }
