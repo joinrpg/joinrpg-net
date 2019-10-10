@@ -22,7 +22,10 @@ namespace JoinRpg.Domain.Schedules
 
     public class ScheduleRoom : ScheduleItemAttribute { }
 
-    public class TimeSlot : ScheduleItemAttribute { }
+    public class TimeSlot : ScheduleItemAttribute
+    {
+        public TimeSlotOptions Options { get; internal set; }
+    }
 
     public class ScheduleResult
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Joinrpg.Markdown;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.Schedules;
 
 namespace JoinRpg.WebPortal.Managers.Schedule
@@ -32,7 +33,20 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         }
 
         public static TableHeaderViewModel ToViewModel(this ScheduleItemAttribute room)
-            => new TableHeaderViewModel() { Name = room.Name, Description = room.Description.ToHtmlString() };
+        {
+            if (room is TimeSlot timeSlot)
+            {
+                return new TableHeaderViewModel()
+                {
+                    Name = room.Name,
+                    Description =
+                        $"Начало: {timeSlot.Options.StartTime:D}, Продолжительность: {timeSlot.Options.TimeSlotInMinutes} минут<br />"
+                            .MarkAsHtmlString() + room.Description.ToHtmlString(),
+                };
+            }
+            return new TableHeaderViewModel()
+                {Name = room.Name, Description = room.Description.ToHtmlString()};
+        }
 
         // Inspired by https://stackoverflow.com/a/48290430/408666
         public static List<List<R>> Select2DList<T, R>(this List<List<T>> items, Func<T, R> action)

@@ -13,18 +13,18 @@
                 <th>&nbsp;</th>
                 @foreach (var column in Model.Columns)
                 {
-                    <th data-toggle="tooltip" title="@column.Description.ToString()" data-html="true" style="min-width:10em;">
-                        @column.Name
-                    </th>
+            <th style="min-width:10em;">
+                <span title="@column.Description.ToString()" data-toggle="tooltip" data-html="true">@column.Name</span>
+            </th>
                 }
             </tr>
         </thead>
         @for (var i = 0; i < Model.Rows.Count; i++)
         {
             <tr>
-                <th data-toggle="tooltip" title="@Model.Rows[i].Description.ToString()" data-html="true">
-                    @Model.Rows[i].Name
-                </th>
+                <th>
+                    <span title="@Model.Rows[i].Description.ToString()"  data-toggle="tooltip" data-html="true">@Model.Rows[i].Name</span>
+                    </th>
                 @foreach (var item in Model.Slots[i])
                 {
                     if (item.RowSpan == 0 || item.ColSpan == 0)
