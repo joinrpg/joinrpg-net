@@ -69,6 +69,10 @@ namespace JoinRpg.Dal.Impl.Repositories
     public async Task<IEnumerable<Project>> GetMyActiveProjectsAsync(int userInfoId) => await
       ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
 
+    public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
+        => await ActiveProjects.Where(project => project.Details.ScheduleSettings != null)
+            .ToListAsync();
+
     public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
     public Task<Project> GetProjectWithDetailsAsync(int project)
