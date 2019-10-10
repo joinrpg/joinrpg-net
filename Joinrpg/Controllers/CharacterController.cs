@@ -136,6 +136,7 @@ namespace JoinRpg.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
         {
+            var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().FirstOrDefault();
             try
             {
                 await CharacterService.AddCharacter(new AddCharacterRequest()
@@ -151,7 +152,7 @@ namespace JoinRpg.Web.Controllers
                     FieldValues = GetCustomFieldValuesFromPost(),
                 });
 
-                var characterGroupId = viewModel.ParentCharacterGroupIds.GetUnprefixedGroups().First();
+
 
                 if (viewModel.ContinueCreating)
                 {
@@ -159,12 +160,26 @@ namespace JoinRpg.Web.Controllers
                         new {viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating});
                 }
 
-                
+
                 return RedirectToIndex(viewModel.ProjectId, characterGroupId);
             }
-            catch
+            catch (Exception exception)
             {
-                return View(viewModel);
+                ModelState.AddException(exception);
+                CharacterGroup characterGroup;
+                if (characterGroupId == 0)
+                {
+                    characterGroup = (await ProjectRepository.GetProjectAsync(viewModel.ProjectId))
+                        .RootGroup;
+                }
+                else
+                {
+                    characterGroup =
+                        await ProjectRepository.GetGroupAsync(viewModel.ProjectId,
+                            characterGroupId);
+                }
+
+                return View(viewModel.Fill(characterGroup, CurrentUserId));
             }
         }
 
