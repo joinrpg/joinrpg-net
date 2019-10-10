@@ -49,87 +49,88 @@
     <div><b>Способ оплаты:</b> @Model.FinanceOperation.PaymentType.GetDisplayName()</div>
 }
 <div><b>Дата операции:</b> @Model.FinanceOperation.OperationDate.ToShortDateString()</div>
-<div>
-    <b>Состояние: </b>
-    @switch (Model.FinanceOperation.OperationType)
-    {
-        case FinanceOperationType.PreferentialFeeRequest:
-            switch (Model.FinanceOperation.State)
-            {
-                case FinanceOperationState.Approved:
-                    <span class="label label-success">Запрос одобрен</span>
-                    break;
-                case FinanceOperationState.Proposed:
-                    if (Model.ShowModerationControls)
-                    {
-                        <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Одобрить / Отклонить</button>
-                    }
-                    else
-                    {
-                        <span class="label label-default">Ожидание одобрения мастером</span>
-                    }
-                    break;
-                case FinanceOperationState.Declined:
-                    <span class="label label-danger">Запрос льготы отклонен</span>
-                    break;
-            }
-            break;
-        case FinanceOperationType.Submit:
-            switch (Model.FinanceOperation.State)
-            {
-                case FinanceOperationState.Approved:
-                    <span class="label label-success">Платеж принят</span>
-                    break;
-                case FinanceOperationState.Proposed:
-                    if (Model.ShowModerationControls)
-                    {
-                        <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Подтвердить / Отклонить</button>
-                    }
-                    else
-                    {
-                        <span class="label label-default">Ожидание подтверждения мастером</span>
-                    }
-                    break;
-                case FinanceOperationState.Declined:
-                    <span class="label label-danger">Платеж не подтвержден мастером</span>
-                    break;
-            }
-            break;
-        case FinanceOperationType.Online:
-            switch (Model.FinanceOperation.State)
-            {
-                case FinanceOperationState.Approved:
-                    <span class="label label-success">Платеж проведен</span>
-                    break;
-                case FinanceOperationState.Proposed:
-                    <span class="label label-default">Платеж обрабатывается</span>
-                    break;
-                case FinanceOperationState.Declined:
-                    <span class="label label-danger">Банк отклонил платеж</span>
-                    break;
-            }
-            break;
-        case FinanceOperationType.Refund:
-            switch (Model.FinanceOperation.State)
-            {
-                case FinanceOperationState.Approved:
-                    <span class="label label-success">Возврат выполнен</span>
-                    break;
-                case FinanceOperationState.Proposed:
-                    <span class="label label-default">Возврат обрабатывается</span>
-                    break;
-                case FinanceOperationState.Declined:
-                    <span class="label label-danger">Возврат не успешен</span>
-                    break;
-            }
-            break;
-        case FinanceOperationType.TransferTo:
-            break;
-        case FinanceOperationType.TransferFrom:
-            break;
-        case FinanceOperationType.FeeChange:
-            break;
-        default:
-            throw new ArgumentOutOfRangeException();
-    }
-</div>
+@if (Model.ShowStatus)
+{
+    <div>
+        <b>Состояние: </b>
+        @switch (Model.FinanceOperation.OperationType)
+        {
+            case FinanceOperationType.PreferentialFeeRequest:
+                switch (Model.FinanceOperation.State)
+                {
+                    case FinanceOperationState.Approved:
+                        <span class="label label-success">Запрос одобрен</span>
+                        break;
+                    case FinanceOperationState.Proposed:
+                        if (Model.ShowModerationControls)
+                        {
+                            <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Одобрить / Отклонить</button>
+                        }
+                        else
+                        {
+                            <span class="label label-default">Ожидание одобрения мастером</span>
+                        }
+                        break;
+                    case FinanceOperationState.Declined:
+                        <span class="label label-danger">Запрос льготы отклонен</span>
+                        break;
+                }
+                break;
+            case FinanceOperationType.Submit:
+                switch (Model.FinanceOperation.State)
+                {
+                    case FinanceOperationState.Approved:
+                        <span class="label label-success">Платеж принят</span>
+                        break;
+                    case FinanceOperationState.Proposed:
+                        if (Model.ShowModerationControls)
+                        {
+                            <button class="btn btn-warning btn-sm" onclick="toggleCommentEditor(@Model.ReplyFormIndex)">Подтвердить / Отклонить</button>
+                        }
+                        else
+                        {
+                            <span class="label label-default">Ожидание подтверждения мастером</span>
+                        }
+                        break;
+                    case FinanceOperationState.Declined:
+                        <span class="label label-danger">Платеж не подтвержден мастером</span>
+                        break;
+                }
+                break;
+            case FinanceOperationType.Online:
+                switch (Model.FinanceOperation.State)
+                {
+                    case FinanceOperationState.Approved:
+                        <span class="label label-success">Платеж проведен</span>
+                        break;
+                    case FinanceOperationState.Proposed:
+                        <span class="label label-default">Платеж обрабатывается</span>
+                        break;
+                    case FinanceOperationState.Declined:
+                        <span class="label label-danger">Банк отклонил платеж</span>
+                        break;
+                }
+                break;
+            case FinanceOperationType.Refund:
+                switch (Model.FinanceOperation.State)
+                {
+                    case FinanceOperationState.Approved:
+                        <span class="label label-success">Возврат выполнен</span>
+                        break;
+                    case FinanceOperationState.Proposed:
+                        <span class="label label-default">Возврат обрабатывается</span>
+                        break;
+                    case FinanceOperationState.Declined:
+                        <span class="label label-danger">Возврат не успешен</span>
+                        break;
+                }
+                break;
+            case FinanceOperationType.TransferTo:
+            case FinanceOperationType.TransferFrom:
+            case FinanceOperationType.FeeChange:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    </div>
+}

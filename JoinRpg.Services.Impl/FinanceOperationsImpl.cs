@@ -304,13 +304,13 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<Tuple<Comment, Comment>> AddTransferCommentsAsync(
-            CommentDiscussion discussionFrom,
-            CommentDiscussion discussionTo,
+            Claim claimFrom,
+            Claim claimTo,
             ClaimPaymentTransferRequest request)
         {
             // Comment to source claim
             Comment commentFrom = CommentHelper.CreateCommentForDiscussion(
-                discussionFrom,
+                claimFrom.CommentDiscussion,
                 CurrentUserId,
                 Now,
                 request.CommentText,
@@ -332,7 +332,7 @@ namespace JoinRpg.Services.Impl
 
             // Comment to destination claim
             Comment commentTo = CommentHelper.CreateCommentForDiscussion(
-                discussionTo,
+                claimTo.CommentDiscussion,
                 CurrentUserId,
                 Now,
                 request.CommentText,
@@ -359,13 +359,18 @@ namespace JoinRpg.Services.Impl
         /// <inheritdoc />
         public async Task TransferPaymentAsync(ClaimPaymentTransferRequest request)
         {
-            var claimFrom = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
-            var claimTo = await LoadClaimAsMaster(request, acl => acl.CanManageMoney);
-
-            // Checking access rights
+            // Loading source claim
+            Claim claimFrom = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
+            if (claimFrom == null)
+                throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
             if (!(claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
-                  || IsCurrentUserAdmin))
+                || IsCurrentUserAdmin))
                 throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
+
+            // Loading destination claim
+            Claim claimTo = await ClaimsRepository.GetClaim(request.ProjectId, request.ToClaimId);
+            if (claimTo == null)
+                throw new JoinRpgEntityNotFoundException(request.ToClaimId, nameof(Claim));
 
             // Checking money amount
             var availableMoney = claimFrom.GetPaymentSum();
@@ -374,8 +379,8 @@ namespace JoinRpg.Services.Impl
 
             // Adding comments
             await AddTransferCommentsAsync(
-                claimFrom.CommentDiscussion,
-                claimTo.CommentDiscussion,
+                claimFrom,
+                claimTo,
                 request);
         }
 
