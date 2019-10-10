@@ -25,6 +25,8 @@ namespace JoinRpg.Domain.Schedules
         /// Length of time slot
         /// </summary>
         public TimeSpan TimeSlotLength => TimeSpan.FromMinutes(TimeSlotInMinutes);
+
+        public DateTimeOffset EndTime => StartTime.Add(TimeSlotLength);
     }
 
     /// <summary>

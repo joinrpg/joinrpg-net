@@ -1,25 +1,35 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
 
 namespace JoinRpg.Domain.Schedules
 {
+    /// <summary>
+    /// Builds schedule from program item data
+    /// </summary>
     public class ScheduleBuilder
     {
-        private ICollection<Character> characters;
-        private ProjectField TimeSlotField;
-        private ProjectField RoomField;
+        private readonly ICollection<Character> characters;
+        private ProjectField TimeSlotField { get; }
+
+        private ProjectField RoomField { get; }
 
         public ScheduleBuilder(Project project, ICollection<Character> characters)
         {
             this.characters = characters;
-            TimeSlotField = project.Details.ScheduleSettings.TimeSlotField;
-            RoomField = project.Details.ScheduleSettings.RoomField;
+            var scheduleSettings = project.Details.ScheduleSettings;
+            if (scheduleSettings is null)
+            {
+                throw  new Exception("Schedule not enabled");
+            }
+            TimeSlotField = scheduleSettings.TimeSlotField;
+            RoomField = scheduleSettings.RoomField;
         }
 
         private List<ProgramItem> NotScheduled { get; } = new List<ProgramItem>();
 
-        private class ProgramItemSlot
+        public class ProgramItemSlot
         {
             public ProgramItemSlot(TimeSlot slot, ScheduleRoom room)
             {
@@ -44,11 +54,17 @@ namespace JoinRpg.Domain.Schedules
             TimeSlots = InitializeList<TimeSlot>(TimeSlotField.GetOrderedValues()).ToList();
             Slots = InitializeSlots(TimeSlots, Rooms);
 
+            var allItems = new List<ProgramItemPlaced>();
+
             foreach (var character in characters)
             {
                 var programItem = ConvertToProgramItem(character);
                 var slots = SelectSlots(character);
                 PutItem(programItem, slots);
+                if (slots.Any())
+                {
+                    allItems.Add(new ProgramItemPlaced(programItem, slots));
+                }
             }
             return new ScheduleResult()
             {
@@ -57,6 +73,7 @@ namespace JoinRpg.Domain.Schedules
                 Rooms = Rooms,
                 TimeSlots = TimeSlots,
                 Slots = Slots.Select(row => row.Select(r => r.ProgramItem).ToList()).ToList(),
+                AllItems = allItems,
             };
         }
 
