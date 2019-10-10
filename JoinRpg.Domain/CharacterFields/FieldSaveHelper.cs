@@ -290,6 +290,21 @@ namespace JoinRpg.Domain.CharacterFields
         {
             if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
 
+            var strategy = CreateStrategy(currentUserId, character, claim, generator);
+
+            var fields = strategy.LoadFields();
+
+            AssignValues(newFieldValue, fields, strategy);
+
+            GenerateDefaultValues(character, fields, strategy);
+
+            strategy.Save(fields);
+            return strategy.GetUpdatedFields();
+        }
+
+        private static FieldSaveStrategyBase CreateStrategy(int currentUserId, Character character,
+            Claim claim, IFieldDefaultValueGenerator generator)
+        {
             FieldSaveStrategyBase strategy;
             if (claim == null)
             {
@@ -306,8 +321,12 @@ namespace JoinRpg.Domain.CharacterFields
                     new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator);
             }
 
-            var fields = strategy.LoadFields();
+            return strategy;
+        }
 
+        private static void AssignValues(IReadOnlyDictionary<int, string> newFieldValue, Dictionary<int, FieldWithValue> fields,
+            FieldSaveStrategyBase strategy)
+        {
             foreach (var keyValuePair in newFieldValue)
             {
                 var field = fields[keyValuePair.Key];
@@ -318,7 +337,11 @@ namespace JoinRpg.Domain.CharacterFields
 
                 strategy.AssignFieldValue(field, normalizedValue);
             }
+        }
 
+        private static void GenerateDefaultValues(Character character, Dictionary<int, FieldWithValue> fields,
+            FieldSaveStrategyBase strategy)
+        {
             foreach (var field in fields.Values.Where(
                 f => !f.HasEditableValue && f.Field.CanHaveValue() &&
                      f.Field.IsAvailableForTarget(character)))
@@ -329,9 +352,6 @@ namespace JoinRpg.Domain.CharacterFields
 
                 strategy.AssignFieldValue(field, normalizedValue);
             }
-
-            strategy.Save(fields);
-            return strategy.GetUpdatedFields();
         }
 
         private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)
