@@ -7,6 +7,7 @@ using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
@@ -181,6 +182,13 @@ namespace JoinRpg.Web.Models
             MarkingMaster = fo.Comment.Author;
             Player = fo.Claim.Player;
             ClaimLink = uriService.Get(fo.Claim);
+
+            if (fo.OperationType == FinanceOperationType.TransferFrom ||
+                fo.OperationType == FinanceOperationType.TransferTo)
+            {
+                PaymentTypeName =
+                    ((FinanceOperationTypeViewModel) fo.OperationType).GetDisplayName();
+            }
         }
     }
 
