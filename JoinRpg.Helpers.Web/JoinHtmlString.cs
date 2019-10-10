@@ -1,5 +1,7 @@
 using System.IO;
 using System.Text.Encodings.Web;
+using System.Web;
+using Microsoft.AspNetCore.Html;
 using CoreHtmlString = Microsoft.AspNetCore.Html.HtmlString;
 using WebHtmlString = System.Web.HtmlString;
 
@@ -11,7 +13,7 @@ namespace JoinRpg.Helpers.Web
     /// Proxy class that allows conversion from System.Web style strings to Microsoft.AspNetCore versions
     /// Will be removed after porting to ASP.NET Core
     /// </summary>
-    public sealed class JoinHtmlString : System.Web.IHtmlString, Microsoft.AspNetCore.Html.IHtmlContent
+    public sealed class JoinHtmlString : IHtmlString, IHtmlContent
     {
         private string Value { get; }
 
@@ -39,6 +41,11 @@ namespace JoinRpg.Helpers.Web
         {
             return new JoinHtmlString(content.ToHtmlString());
         }
+
+        /// <summary>
+        /// concat operator 
+        /// </summary>
+        public static JoinHtmlString operator +(JoinHtmlString left, JoinHtmlString right) => new JoinHtmlString(left.ToString() + right);
 
         /// <inheritdoc />
         public string ToHtmlString() => Value;
