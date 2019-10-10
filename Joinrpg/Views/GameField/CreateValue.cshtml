@@ -1,7 +1,7 @@
 ﻿@using JoinRpg.Web.App_Code
 @model JoinRpg.Web.Models.FieldSetup.GameFieldDropdownValueCreateViewModel
 @{
-  ViewBag.Title = "Новое значение поля «" + Model.FieldName + "»";
+    ViewBag.Title = "Новое значение поля «" + Model.FieldName + "»";
 }
 <h2>@ViewBag.Title</h2>
 <hr />
@@ -27,7 +27,7 @@
             @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
         </div>
     </div>
-      
+
     <div class="form-group">
         @Html.LabelFor(model => model.MasterDescription, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
@@ -46,38 +46,62 @@
     </div>
 
     if (Model.CanPlayerEditField)
-     {
+    {
 
-         <div class="form-group">
-             @Html.LabelFor(model => model.PlayerSelectable, htmlAttributes: new {@class = "control-label col-md-2"})
-             <div class="col-md-10">
-                 <div class="checkbox">
-                     @Html.EditorFor(model => model.PlayerSelectable)
-                     @Html.ValidationMessageFor(model => model.PlayerSelectable, "", new {@class = "text-danger"})
-                 </div>
-                 @Html.DescriptionFor(model => model.PlayerSelectable)
-             </div>
-         </div>
-    }
-     else
-     {
-        @Html.HiddenFor(model => model.PlayerSelectable)
-     }
-
-    <div class="form-group">
-        @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.ProgrammaticValue, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.ProgrammaticValue, "", new { @class = "text-danger" })
-            @Html.DescriptionFor(model => model.ProgrammaticValue)
+        <div class="form-group">
+            @Html.LabelFor(model => model.PlayerSelectable, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.PlayerSelectable)
+                    @Html.ValidationMessageFor(model => model.PlayerSelectable, "", new { @class = "text-danger" })
+                </div>
+                @Html.DescriptionFor(model => model.PlayerSelectable)
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        @Html.HiddenFor(model => model.PlayerSelectable)
+    }
+
+    if (Model.IsTimeField)
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.TimeSlotStartTime, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.TimeSlotStartTime, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.DescriptionFor(model => model.TimeSlotStartTime)
+                @Html.ValidationMessageFor(model => model.TimeSlotStartTime, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TimeSlotInMinutes, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.TimeSlotInMinutes, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.DescriptionFor(model => model.TimeSlotInMinutes)
+                @Html.ValidationMessageFor(model => model.TimeSlotInMinutes, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    }
+    else
+    {
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProgrammaticValue, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProgrammaticValue, "", new { @class = "text-danger" })
+                @Html.DescriptionFor(model => model.ProgrammaticValue)
+            </div>
+        </div>
+    }
 
     <div class="form-group">
         <hr />
         <div class="col-md-offset-2 col-md-10">
             <button type="submit" class="btn btn-success">Добавить</button>
-            @Html.ActionLink("Назад к списку значений", "Edit", new { Model.ProjectFieldId, Model.ProjectId }, new {@class = "btn btn-default"})
+            @Html.ActionLink("Назад к списку значений", "Edit", new { Model.ProjectFieldId, Model.ProjectId }, new { @class = "btn btn-default" })
         </div>
     </div>
 }
