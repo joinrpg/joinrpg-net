@@ -144,7 +144,7 @@ namespace JoinRpg.Domain.Schedules
                 Id = character.CharacterId,
                 Name = character.CharacterName,
                 Description = character.Description,
-                Authors = new[] { character.ApprovedClaim.Player },
+                Authors = new[] { character.ApprovedClaim?.Player }.Where(x => ! (x is null)).ToArray(),
                 ProjectId = character.ProjectId,
             };
         }
