@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -6,6 +7,7 @@ using JetBrains.Annotations;
 using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models.CommonTypes;
@@ -108,6 +110,9 @@ namespace JoinRpg.Web.Models.FieldSetup
         [ReadOnly(true)]
         public bool WasEverUsed { get; set; }
 
+        [ReadOnly(true)]
+        public bool IsTimeField { get; set; }
+
         public GameFieldEditViewModel(ProjectField field, int currentUserId)
         {
             CanPlayerView = field.CanPlayerView;
@@ -147,6 +152,8 @@ namespace JoinRpg.Web.Models.FieldSetup
             WasEverUsed = field.WasEverUsed;
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
             CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
+            IsTimeField = field.IsTimeSlot();
+            
         }
 
         public GameFieldEditViewModel()
@@ -278,15 +285,41 @@ namespace JoinRpg.Web.Models.FieldSetup
         public bool CanPlayerEditField { get; }
 
 
+        [Display(Name = "Длина тайм-слота (в минутах")]
+        public int TimeSlotInMinutes { get; set; }
+
+        [Display(Name = "Начало тайм-слота", Description = "В формате ГГГГ-ММ-ДДTЧЧ:ММ+03:00. Если таймзона не указывается, подразумевается московское.")]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mmK}", ApplyFormatInEditMode = true)]
+        public DateTimeOffset TimeSlotStartTime { get; set; }
+
+        [ReadOnly(true)]
+        public bool IsTimeField { get; set; }
+
+
         public GameFieldDropdownValueViewModelBase(ProjectField field)
         {
             FieldName = field.FieldName;
             ProjectId = field.ProjectId;
             ProjectFieldId = field.ProjectFieldId;
             PlayerSelectable = CanPlayerEditField = field.CanPlayerEdit;
+            IsTimeField = field.IsTimeSlot();
         }
 
         public GameFieldDropdownValueViewModelBase() { }
+
+        public TimeSlotOptions GetTimeSlotRequest(ProjectField field, string value)
+        {
+            return field.IsTimeSlot()
+                ? new TimeSlotOptions
+                {
+                    StartTime = DateTimeOffset.ParseExact(
+                        value,
+                        "yyyy-MM-ddTHH:mmK",
+                        System.Globalization.CultureInfo.InvariantCulture),
+                    TimeSlotInMinutes = TimeSlotInMinutes
+                }
+                : null;
+        }
     }
 
     /// <summary>
@@ -353,6 +386,12 @@ namespace JoinRpg.Web.Models.FieldSetup
             ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
             PlayerSelectable = value.PlayerSelectable;
             ProgrammaticValue = value.ProgrammaticValue;
+            if (field.IsTimeSlot())
+            {
+                var options = value.GetTimeSlotOptions();
+                TimeSlotInMinutes = options.TimeSlotInMinutes;
+                TimeSlotStartTime = options.StartTime;
+            }
         }
 
         public GameFieldDropdownValueEditViewModel() { }//For binding
@@ -366,6 +405,12 @@ namespace JoinRpg.Web.Models.FieldSetup
         public GameFieldDropdownValueCreateViewModel(ProjectField field) : base(field)
         {
             Label = $"Вариант {field.DropdownValues.Count + 1}";
+            if (field.IsTimeSlot())
+            {
+                var options = field.GetDefaultTimeSlotOptions();
+                TimeSlotInMinutes = options.TimeSlotInMinutes;
+                TimeSlotStartTime = options.StartTime;
+            }
         }
 
         public GameFieldDropdownValueCreateViewModel() { }//For binding
