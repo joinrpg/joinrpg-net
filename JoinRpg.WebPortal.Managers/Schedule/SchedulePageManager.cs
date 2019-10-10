@@ -89,7 +89,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         /// Контролирует настройку конфигурации расписания
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
+        public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
         {
             var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
 
@@ -133,7 +133,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                 }
             }
 
-            return Impl();
+            return Impl().ToList();
         }
 
         public IProjectRepository Project { get; }
