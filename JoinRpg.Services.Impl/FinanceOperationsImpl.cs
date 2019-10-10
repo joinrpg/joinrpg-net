@@ -363,8 +363,7 @@ namespace JoinRpg.Services.Impl
             Claim claimFrom = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
             if (claimFrom == null)
                 throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
-            if (!(claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney)
-                || IsCurrentUserAdmin))
+            if (!claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
                 throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
 
             // Loading destination claim
