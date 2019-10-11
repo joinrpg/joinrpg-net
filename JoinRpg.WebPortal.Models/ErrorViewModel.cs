@@ -1,6 +1,5 @@
 namespace JoinRpg.Web.Models
 {
-
     public class ErrorViewModel
     {
 
@@ -14,16 +13,15 @@ namespace JoinRpg.Web.Models
 
         public string ReturnText { get; set; }
 
-        #if DEBUG
+        public bool Debug { get; set; }
+
         public object Data { get; set; }
-        #else
-        public object Data
+
+        public ErrorViewModel()
         {
-            get { return null; }
-            set { value = null; }
+            #if DEBUG
+            Debug = true;
+            #endif
         }
-        #endif
-
     }
-
 }
