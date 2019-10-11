@@ -84,7 +84,6 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         CharacterId = slot.Id,
                         Users = slot.Users,
                     });
-                    j++;
                 }
             }
 
