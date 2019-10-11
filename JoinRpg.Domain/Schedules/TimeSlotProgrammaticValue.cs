@@ -61,7 +61,7 @@ namespace JoinRpg.Domain.Schedules
             {
                 return new TimeSlotOptions()
                 {
-                    StartTime = new DateTimeOffset(DateTime.Now, TimeSpan.FromHours(3)),
+                    StartTime = new DateTimeOffset(DateTime.UtcNow, TimeSpan.FromHours(3)),
                     TimeSlotInMinutes = 50,
                 };
             }
