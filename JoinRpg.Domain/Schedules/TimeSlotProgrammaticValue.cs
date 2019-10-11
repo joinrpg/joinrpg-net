@@ -26,6 +26,9 @@ namespace JoinRpg.Domain.Schedules
         /// </summary>
         public TimeSpan TimeSlotLength => TimeSpan.FromMinutes(TimeSlotInMinutes);
 
+        /// <summary>
+        /// End of program item (with TZ)
+        /// </summary>
         public DateTimeOffset EndTime => StartTime.Add(TimeSlotLength);
     }
 
@@ -34,6 +37,9 @@ namespace JoinRpg.Domain.Schedules
     /// </summary>
     public static class TimeSlotOptionsEncoder
     {
+        /// <summary>
+        /// Extract Time Slot options from programmatic value
+        /// </summary>
         public static TimeSlotOptions GetTimeSlotOptions(this ProjectFieldDropdownValue self)
         {
             if (!self.ProjectField.IsTimeSlot())
@@ -49,19 +55,36 @@ namespace JoinRpg.Domain.Schedules
             return GetDefaultTimeSlotOptions(self.ProjectField, self);
         }
 
+        /// <summary>
+        /// Get default time zone options (usable when you are creating field)
+        /// </summary>
         public static TimeSlotOptions GetDefaultTimeSlotOptions(this ProjectField field)
             => GetDefaultTimeSlotOptions(field, variant: null);
 
         private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectField field,
             ProjectFieldDropdownValue variant)
         {
+            DateTimeOffset GetDefaultStartTime()
+            {
+                try
+                {
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+                    var startTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+                    return startTime;
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    return DateTimeOffset.UtcNow;
+                }
+            }
+
             var prev = field.GetPreviousVariant(variant);
 
             if (prev?.ProgrammaticValue is null)
             {
                 return new TimeSlotOptions()
                 {
-                    StartTime = new DateTimeOffset(DateTime.Now, TimeSpan.FromHours(3)),
+                    StartTime = GetDefaultStartTime(),
                     TimeSlotInMinutes = 50,
                 };
             }
@@ -88,6 +111,9 @@ namespace JoinRpg.Domain.Schedules
             return prevPosition < 0 ? null : variants[prevPosition];
         }
 
+        /// <summary>
+        /// Save time slot options to variant
+        /// </summary>
         public static void SetTimeSlotOptions(this ProjectFieldDropdownValue self, TimeSlotOptions timeSlotOptions)
         {
             if (!self.ProjectField.IsTimeSlot())
