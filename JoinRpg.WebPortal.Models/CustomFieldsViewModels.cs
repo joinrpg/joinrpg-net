@@ -190,16 +190,12 @@ namespace JoinRpg.Web.Models
                 }
             }
 
-            void AddLabelIfField(FieldSpecialLabelView label, ProjectField field) =>
-                AddLabelIf(label, field == ch.Field);
-
             AddLabelIf(FieldSpecialLabelView.ForClaim, ch.Field.FieldBoundTo == FieldBoundTo.Claim);
 
-            ProjectDetails details = ch.Field.Project.Details;
-            AddLabelIfField(FieldSpecialLabelView.Name, details.CharacterNameField);
-            AddLabelIfField(FieldSpecialLabelView.Description, details.CharacterDescription);
-            AddLabelIfField(FieldSpecialLabelView.ScheduleTime, details.ScheduleSettings?.TimeSlotField);
-            AddLabelIfField(FieldSpecialLabelView.SchedulePlace, details.ScheduleSettings?.RoomField);
+            AddLabelIf(FieldSpecialLabelView.Name, ch.IsName);
+            AddLabelIf(FieldSpecialLabelView.Description, ch.IsDescription);
+            AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.IsTimeSlot);
+            AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.IsRoomSlot);
             AddLabelIf(FieldSpecialLabelView.HasPlugin, ch.Field.Mappings.Any());
         }
 

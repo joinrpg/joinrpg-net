@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.PluginHost.Interfaces;
 
@@ -14,11 +15,11 @@ namespace JoinRpg.Services.Impl
         }
 
         private IPluginFactory PluginFactory { get; }
-        public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
+        public string CreateDefaultValue(Claim claim, FieldWithValue field) => null;
 
-        public string CreateDefaultValue(Character character, ProjectField field)
+        public string CreateDefaultValue(Character character, FieldWithValue field)
         {
-            if (field == field.Project.Details.CharacterNameField && character != null)
+            if (field.IsName && character != null)
             {
                 return character.CharacterName;
                 // It helps battle akward situations where names was re-bound to some new field
@@ -26,7 +27,7 @@ namespace JoinRpg.Services.Impl
             }
             return character != null
               ? PluginFactory
-                .GenerateDefaultCharacterFieldValue(character, field)
+                .GenerateDefaultCharacterFieldValue(character, field.Field)
               : null;
         }
     }

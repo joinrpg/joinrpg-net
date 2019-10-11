@@ -66,14 +66,39 @@
         @Html.HiddenFor(model => model.PlayerSelectable)
     }
 
-    <div class="form-group">
-        @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.ProgrammaticValue, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.ProgrammaticValue, "", new { @class = "text-danger" })
-            @Html.DescriptionFor(model => model.ProgrammaticValue)
+    
+    if (Model.IsTimeField)
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.TimeSlotStartTime, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.TimeSlotStartTime, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.DescriptionFor(model => model.TimeSlotStartTime)
+                @Html.ValidationMessageFor(model => model.TimeSlotStartTime, "", new {@class = "text-danger"})
+            </div>
         </div>
-    </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.TimeSlotInMinutes, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-9">
+                @Html.EditorFor(model => model.TimeSlotInMinutes, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.DescriptionFor(model => model.TimeSlotInMinutes)
+                @Html.ValidationMessageFor(model => model.TimeSlotInMinutes, "", new {@class = "text-danger"})
+            </div>
+        </div>
+    }
+    else
+    {
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProgrammaticValue, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProgrammaticValue, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.ProgrammaticValue, "", new {@class = "text-danger"})
+                @Html.DescriptionFor(model => model.ProgrammaticValue)
+            </div>
+        </div>
+    }
 
     <div class="form-group">
         <hr />

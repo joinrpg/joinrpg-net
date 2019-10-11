@@ -15,7 +15,7 @@ using JoinRpg.WebPortal.Managers.Interfaces;
 
 namespace JoinRpg.Web.Controllers
 {
-  [Authorize]
+    [Authorize]
   public class GameFieldController : ControllerGameBase
   {
     private IFieldSetupService FieldSetupService { get; }
@@ -220,6 +220,10 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
+                var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
+
+                var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form.GetValues("TimeSlotStartTime")?[0]);
+
                 await
                     FieldSetupService.CreateFieldValueVariant(
                         new CreateFieldValueVariantRequest(
@@ -230,7 +234,8 @@ namespace JoinRpg.Web.Controllers
                             viewModel.MasterDescription,
                             viewModel.ProgrammaticValue,
                             viewModel.Price,
-                            viewModel.PlayerSelectable));
+                            viewModel.PlayerSelectable,
+                            timeSlotOptions));
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
             }
@@ -259,6 +264,7 @@ namespace JoinRpg.Web.Controllers
         {
             try
             {
+                var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
                 await FieldSetupService.UpdateFieldValueVariant(new UpdateFieldValueVariantRequest(
                     viewModel.ProjectId,
                     viewModel.ProjectFieldDropdownValueId,
@@ -268,7 +274,9 @@ namespace JoinRpg.Web.Controllers
                     viewModel.MasterDescription,
                     viewModel.ProgrammaticValue,
                     viewModel.Price,
-                    viewModel.PlayerSelectable));
+                    viewModel.PlayerSelectable,
+                    viewModel.GetTimeSlotRequest(field, Request.Form.GetValues("TimeSlotStartTime")?[0])
+                    ));
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
             }

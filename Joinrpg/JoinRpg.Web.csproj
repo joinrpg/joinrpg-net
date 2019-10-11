@@ -85,8 +85,10 @@
     <Compile Include="Controllers\Schedule\ShowScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />
+    <Compile Include="Controllers\XGameApi\GlobalScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
     <Compile Include="Controllers\XGameApi\MyProfileController.cs" />
+    <Compile Include="Controllers\XGameApi\ProjectScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
@@ -1055,6 +1057,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\ShowSchedule\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\ScheduleFailed.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain.Schedules;
 
 namespace JoinRpg.Services.Interfaces
 {
@@ -185,6 +186,7 @@ namespace JoinRpg.Services.Interfaces
         public string ProgrammaticValue { get; }
         public int Price { get; }
         public bool PlayerSelectable { get; }
+        public TimeSlotOptions TimeSlotOptions { get; }
 
         protected FieldValueVariantRequestBase(int projectId,
             string label,
@@ -193,7 +195,8 @@ namespace JoinRpg.Services.Interfaces
             string masterDescription,
             string programmaticValue,
             int price,
-            bool playerSelectable)
+            bool playerSelectable,
+            TimeSlotOptions timeSlotOptions)
         {
             ProjectId = projectId;
             Label = label;
@@ -203,6 +206,7 @@ namespace JoinRpg.Services.Interfaces
             ProgrammaticValue = programmaticValue;
             Price = price;
             PlayerSelectable = playerSelectable;
+            TimeSlotOptions = timeSlotOptions;
         }
     }
 
@@ -216,7 +220,8 @@ namespace JoinRpg.Services.Interfaces
             string masterDescription,
             string programmaticValue,
             int price,
-            bool playerSelectable)
+            bool playerSelectable,
+            TimeSlotOptions timeSlotOptions)
             : base(projectId,
                 label,
                 description,
@@ -224,7 +229,8 @@ namespace JoinRpg.Services.Interfaces
                 masterDescription,
                 programmaticValue,
                 price,
-                playerSelectable)
+                playerSelectable,
+                timeSlotOptions)
         {
             ProjectFieldDropdownValueId = projectFieldDropdownValueId;
         }
@@ -241,7 +247,8 @@ namespace JoinRpg.Services.Interfaces
             string masterDescription,
             string programmaticValue,
             int price,
-            bool playerSelectable)
+            bool playerSelectable,
+            Domain.Schedules.TimeSlotOptions timeSlotOptions)
             : base(projectId,
                 label,
                 description,
@@ -249,7 +256,8 @@ namespace JoinRpg.Services.Interfaces
                 masterDescription,
                 programmaticValue,
                 price,
-                playerSelectable)
+                playerSelectable,
+                timeSlotOptions)
         {
         }
     }

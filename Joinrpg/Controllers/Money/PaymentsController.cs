@@ -28,6 +28,7 @@ namespace JoinRpg.Web.Controllers.Money
         /// </summary>
         public ActionResult Error(ErrorViewModel model)
         {
+            model.Debug = model.Debug || IsCurrentUserAdmin();
             model.Title = string.IsNullOrWhiteSpace(model.Title)
                 ? "Ошибка онлайн-оплаты"
                 : model.Title.Trim();

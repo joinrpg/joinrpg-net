@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
+      <NoWarn>${NoWarn};1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

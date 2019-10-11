@@ -35,8 +35,8 @@ namespace JoinRpg.Web.Helpers
                     return;
 
                 case FieldRequiredException required:
-                    dict.AddModelError("", required.FieldName + "is required");
-                    dict.AddModelError(required.FieldName, "required");
+                    dict.AddModelError("", required.FieldName + " is required");
+                    dict.AddModelError(required.FieldName, " required");
                     return;
                 case ClaimWrongStatusException _:
                 case ProjectDeactivedException _:

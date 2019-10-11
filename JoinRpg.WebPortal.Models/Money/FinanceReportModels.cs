@@ -7,10 +7,12 @@ using Joinrpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
 using JoinRpg.Domain;
+using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Money;
+using MoreLinq;
 
 namespace JoinRpg.Web.Models
 {
@@ -73,7 +75,7 @@ namespace JoinRpg.Web.Models
             var masters = masterOperations.Select(fo => fo.PaymentType?.User).Where(m => m != null)
                 .Union(masterTransfers.Select(mt => mt.Receiver))
                 .Union(masterTransfers.Select(mt => mt.Sender))
-                .Distinct();
+                .DistinctBy(master => master.UserId);
 
 
             var summary = masters.Select(master =>
@@ -181,6 +183,13 @@ namespace JoinRpg.Web.Models
             MarkingMaster = fo.Comment.Author;
             Player = fo.Claim.Player;
             ClaimLink = uriService.Get(fo.Claim);
+
+            if (fo.OperationType == FinanceOperationType.TransferFrom ||
+                fo.OperationType == FinanceOperationType.TransferTo)
+            {
+                PaymentTypeName =
+                    ((FinanceOperationTypeViewModel) fo.OperationType).GetDisplayName();
+            }
         }
     }
 

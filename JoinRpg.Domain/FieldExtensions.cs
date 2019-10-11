@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -57,5 +57,23 @@ namespace JoinRpg.Domain
       return group.Project.ProjectFields.SelectMany(pf => pf.DropdownValues)
               .SingleOrDefault(pfv => pfv.CharacterGroup == group);
     }
-  }
+
+    /// <summary>
+    /// Special field - character name
+    /// </summary>
+    public static bool IsName(this ProjectField field) => field.Project.Details.CharacterNameField == field;
+
+    /// <summary>
+    /// Special field - character description
+    /// </summary>
+    public static bool IsDescription(this ProjectField field) => field.Project.Details.CharacterDescription == field;
+    /// <summary>
+    /// Special field - schedule time slot
+    /// </summary>
+    public static bool IsTimeSlot(this ProjectField field) => field.Project.Details.ScheduleSettings?.TimeSlotField == field;
+    /// <summary>
+    /// Special field - schedule room slot
+    /// </summary>
+    public static bool IsRoomSlot(this ProjectField field) => field.Project.Details.ScheduleSettings?.RoomField == field;
+    }
 }

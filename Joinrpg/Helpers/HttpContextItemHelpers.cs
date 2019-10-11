@@ -12,7 +12,12 @@ namespace JoinRpg.Web.Helpers
 
         public static int GetProjectId(this HttpContextBase httpContext)
         {
-            var projectIdRawValue = httpContext.GetRawValue(ProjectidKey);
+            var item = httpContext.Items[ProjectidKey];
+            if (item is int i)
+            {
+                return i;
+            }
+            var projectIdRawValue = ((ValueProviderResult)item).RawValue;
             if (projectIdRawValue.GetType().IsArray)
             {
                 return int.Parse(((string[])projectIdRawValue)[0]);
@@ -21,11 +26,6 @@ namespace JoinRpg.Web.Helpers
             {
                 return int.Parse((string)projectIdRawValue);
             }
-        }
-
-        private static object GetRawValue(this HttpContextBase httpContext, string key)
-        {
-            return ((ValueProviderResult)httpContext.Items[key]).RawValue;
         }
     }
 }

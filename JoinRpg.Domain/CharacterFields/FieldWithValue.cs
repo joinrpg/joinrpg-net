@@ -131,5 +131,23 @@ namespace JoinRpg.Domain
                     || (!Field.FieldType.SupportsPricingOnField() &&
                         Field.DropdownValues.Any(v => v.Price != 0)));
         }
+
+        /// <summary>
+        /// Special field - character name
+        /// </summary>
+        public bool IsName => Field.IsName();
+
+        /// <summary>
+        /// Special field - character description
+        /// </summary>
+        public bool IsDescription => Field.IsDescription();
+        /// <summary>
+        /// Special field - schedule time slot
+        /// </summary>
+        public bool IsTimeSlot => Field.IsTimeSlot();
+        /// <summary>
+        /// Special field - schedule room slot
+        /// </summary>
+        public bool IsRoomSlot => Field.IsRoomSlot();
     }
 }

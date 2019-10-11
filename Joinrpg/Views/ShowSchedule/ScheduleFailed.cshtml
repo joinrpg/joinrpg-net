@@ -1,0 +1,13 @@
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.App_Code
+@model IEnumerable<JoinRpg.Web.Models.Schedules.ScheduleConfigProblemsViewModel>
+@{
+    ViewBag.Title = "ScheduleFailed";
+}
+
+<h2>Не удалось показать расписание</h2>
+@foreach (var problem in Model)
+{
+    @problem.GetDescription() <br />
+}
+

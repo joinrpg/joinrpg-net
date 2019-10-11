@@ -85,21 +85,25 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             }
         }
 
-        public async Task<IEnumerable<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
+        /// <summary>
+        /// Контролирует настройку конфигурации расписания
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IReadOnlyCollection<ScheduleConfigProblemsViewModel>> CheckScheduleConfiguration()
         {
             var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
 
             IEnumerable<ScheduleConfigProblemsViewModel> Impl()
             {
                 var settings = project.Details.ScheduleSettings;
-                var roomField = new ProjectField();//settings.RoomField;
-                var timeSlotField = new ProjectField();//settings.TimeSlotField;
-                if (roomField == null || timeSlotField == null)
+                if (settings == null)
                 {
                     yield return ScheduleConfigProblemsViewModel.FieldsNotSet;
                 }
                 else
                 {
+                    var roomField = settings.RoomField;
+                    var timeSlotField = settings.TimeSlotField;
                     if (roomField.IsPublic != timeSlotField.IsPublic || roomField.CanPlayerView != timeSlotField.CanPlayerView)
                     {
                         yield return ScheduleConfigProblemsViewModel.InconsistentVisibility;
@@ -116,10 +120,20 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                             yield return ScheduleConfigProblemsViewModel.NoAccess;
                         }
                     }
+
+                    if (!timeSlotField.DropdownValues.Any())
+                    {
+                        yield return ScheduleConfigProblemsViewModel.NoTimeSlots;
+                    }
+
+                    if (!roomField.DropdownValues.Any())
+                    {
+                        yield return ScheduleConfigProblemsViewModel.NoRooms;
+                    }
                 }
             }
 
-            return Impl();
+            return Impl().ToList();
         }
 
         public IProjectRepository Project { get; }

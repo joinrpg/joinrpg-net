@@ -239,11 +239,80 @@ namespace JoinRpg.Domain.Test
                     },
                     _generator));
         }
+
+        [Fact]
+        public void TryToSkipMandatoryField()
+        {
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            mock.CharacterField.MandatoryStatus = MandatoryStatus.Required;
+
+            var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+
+            var exception = Should.Throw<FieldRequiredException>(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    claim,
+                    new Dictionary<int, string>()
+                    {
+                        {mock.CharacterField.ProjectFieldId, ""},
+                    },
+                    _generator));
+
+            exception.FieldName.ShouldBe(mock.CharacterField.FieldName);
+        }
+
+        [Fact]
+        public void SetMandatoryField()
+        {
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            mock.CharacterField.MandatoryStatus = MandatoryStatus.Required;
+
+            var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+
+            var exception = Should.NotThrow(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    claim,
+                    new Dictionary<int, string>()
+                    {
+                        {mock.CharacterField.ProjectFieldId, "test"},
+                    },
+                    _generator));
+
+            mock.Character.JsonData.ShouldBe($"{{\"{mock.CharacterField.ProjectFieldId}\":\"test\"}}");
+        }
+
+        [Fact]
+        public void SkipOptionalField()
+        {
+            _original = new MockedProject();
+            _generator = new MockedFieldDefaultValueGenerator();
+            var mock = new MockedProject();
+            mock.CharacterField.MandatoryStatus = MandatoryStatus.Optional;
+
+            var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
+
+            var exception = Should.NotThrow(() =>
+                FieldSaveHelper.SaveCharacterFields(
+                    mock.Player.UserId,
+                    claim,
+                    new Dictionary<int, string>()
+                    {
+                        {mock.CharacterField.ProjectFieldId, ""},
+                    },
+                    _generator));
+
+            mock.Character.JsonData.ShouldBe("{}");
+        }
     }
 
     public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
     {
-        public string CreateDefaultValue(Claim claim, ProjectField feld) => null;
-        public string CreateDefaultValue(Character character, ProjectField field) => null;
+        public string CreateDefaultValue(Claim claim, FieldWithValue feld) => null;
+        public string CreateDefaultValue(Character character, FieldWithValue field) => null;
     }
 }

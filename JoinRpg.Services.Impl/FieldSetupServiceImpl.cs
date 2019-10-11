@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Domain.Schedules;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -92,18 +93,17 @@ namespace JoinRpg.Services.Impl
         private async Task DeleteField(ProjectField field)
         {
             field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
-            var projectDetails = field.Project.Details;
-            if (projectDetails.CharacterNameField == field)
+            if (field.IsName())
             {
                 throw new JoinRpgNameFieldDeleteException(field);
             }
 
-            if (projectDetails.CharacterDescription == field)
+            if (field.IsDescription())
             {
-                projectDetails.CharacterDescription = null;
+                field.Project.Details.CharacterDescription = null;
             }
 
-            if (projectDetails.ScheduleSettings?.RoomField == field || projectDetails.ScheduleSettings?.TimeSlotField == field)
+            if (field.IsRoomSlot() || field.IsTimeSlot())
             {
                 throw new JoinFieldScheduleUseException(field);
             }
@@ -155,17 +155,27 @@ namespace JoinRpg.Services.Impl
         }
 
         private void SetFieldVariantPropsFromRequest(FieldValueVariantRequestBase request,
-            ProjectFieldDropdownValue field)
+            ProjectFieldDropdownValue variant)
         {
-            field.Description = new MarkdownString(request.Description);
-            field.Label = request.Label;
-            field.IsActive = true;
-            field.MasterDescription = new MarkdownString(request.MasterDescription);
-            field.ProgrammaticValue = request.ProgrammaticValue;
-            field.Price = request.Price;
-            field.PlayerSelectable = request.PlayerSelectable;
+            variant.Description = new MarkdownString(request.Description);
+            variant.Label = request.Label;
+            variant.IsActive = true;
+            variant.MasterDescription = new MarkdownString(request.MasterDescription);
+            
+            variant.Price = request.Price;
+            variant.PlayerSelectable = request.PlayerSelectable;
+            if (variant.ProjectField.IsTimeSlot())
+            {
+                variant.SetTimeSlotOptions(request.TimeSlotOptions);
+            }
 
-            CreateOrUpdateSpecialGroup(field);
+            else
+            {
+                variant.ProgrammaticValue = request.ProgrammaticValue;
+            }
+            
+
+            CreateOrUpdateSpecialGroup(variant);
         }
 
         private void CreateFieldValueVariantImpl(CreateFieldValueVariantRequest request, ProjectField field)
@@ -336,7 +346,16 @@ namespace JoinRpg.Services.Impl
 
             foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
             {
-                CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(field.ProjectId, label, null, field.ProjectFieldId, null, null, 0, field.CanPlayerEdit), field);
+                CreateFieldValueVariantImpl(new CreateFieldValueVariantRequest(field.ProjectId,
+                        label,
+                        null,
+                        field.ProjectFieldId,
+                        null,
+                        null,
+                        0,
+                        field.CanPlayerEdit,
+                        timeSlotOptions: null),
+                    field);
             }
 
             await UnitOfWork.SaveChangesAsync();
