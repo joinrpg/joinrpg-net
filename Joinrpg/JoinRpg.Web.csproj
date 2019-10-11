@@ -85,10 +85,8 @@
     <Compile Include="Controllers\Schedule\ShowScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />
-    <Compile Include="Controllers\XGameApi\GlobalScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\MetaDataApicontroller.cs" />
     <Compile Include="Controllers\XGameApi\MyProfileController.cs" />
-    <Compile Include="Controllers\XGameApi\ProjectScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\XGameApiController.cs" />
     <Compile Include="Filter\XGameMasterAuthorize.cs" />
     <Compile Include="Filter\PermissionExtensions.cs" />
@@ -155,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
+    <Content Include="Content\FullScreen.css" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
     <Content Include="Content\Images\fee.jpg" />
     <Content Include="Content\Images\logo-telegram.svg" />
@@ -162,6 +161,7 @@
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\multicontrol.css" />
     <Content Include="Content\Print.css" />
+    <Content Include="Content\Scheduler.css" />
     <Content Include="external\joinrpg-api.css" />
     <Content Include="external\joinrpg-api.js" />
     <Content Include="external\roles-1.js" />
@@ -1059,7 +1059,28 @@
     <Content Include="Views\ShowSchedule\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\ShowSchedule\ScheduleFailed.cshtml" />
+    <Content Include="Views\ShowSchedule\FullScreen.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\_FullScreenLayout.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\_FullScreenFooter.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\_FullScreenHeader.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\Scheduler.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\Notallocated.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\_AppointmentPartial.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\Intersections.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

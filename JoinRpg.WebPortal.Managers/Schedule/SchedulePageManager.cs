@@ -32,6 +32,8 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             var result = scheduleBuilder.Build();
             var viewModel = new SchedulePageViewModel()
             {
+                ProjectId = CurrentProject.ProjectId,
+                DisplayName = project.ProjectName,
                 NotScheduledProgramItems = result.NotScheduled.ToViewModel(),
                 Columns = result.Rooms.ToViewModel(),
                 Rows = result.TimeSlots.ToViewModel(),
@@ -40,13 +42,100 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             };
 
             MergeSlots (viewModel);
+            BuildAppointments(viewModel);
+
             return viewModel;
+        }
+
+        private void BuildAppointments(SchedulePageViewModel viewModel)
+        {
+            List<AppointmentViewModel> result = new List<AppointmentViewModel>(64);
+
+            for (var i = 0; i < viewModel.Rows.Count; i++)
+            {
+                var row = viewModel.Slots[i];
+                for (var j = 0; j < row.Count; j++)
+                {
+                    var slot = row[j];
+                    if (slot.IsEmpty || slot.ColSpan == 0 || slot.RowSpan == 0)
+                        continue;
+
+                    var rowIndex = i;
+                    var colIndex = j;
+                    result.Add(new AppointmentViewModel(() => new Rect
+                    {
+                        Left = colIndex * viewModel.ColumnWidth,
+                        Top = rowIndex * viewModel.RowHeight,
+                        Width = slot.ColSpan * viewModel.ColumnWidth,
+                        Height = slot.RowSpan * viewModel.RowHeight
+                    })
+                    {
+                        ErrorType = viewModel.ConflictedProgramItems.FirstOrDefault(pi => pi.Id == slot.Id) != null
+                            ? AppointmentErrorType.Intersection
+                            : (AppointmentErrorType?) null,
+                        AllRooms = slot.ColSpan == viewModel.Columns.Count,
+                        RoomIndex = colIndex,
+                        RoomCount = slot.ColSpan,
+                        TimeSlotIndex = rowIndex,
+                        TimeSlotsCount = slot.RowSpan,
+                        DisplayName = slot.Name,
+                        Description = slot.Description,
+                        ProjectId = slot.ProjectId,
+                        CharacterId = slot.Id,
+                        Users = slot.Users,
+                    });
+                    j++;
+                }
+            }
+
+            viewModel.Appointments = result;
+
+            viewModel.Intersections = viewModel.ConflictedProgramItems
+                .Select(
+                    source => new AppointmentViewModel(
+                        () => new Rect
+                        {
+                            Left = 0,
+                            Top = 0,
+                            Width = viewModel.ColumnWidth,
+                            Height = viewModel.RowHeight
+                        })
+                    {
+                        ErrorMode = true,
+                        ErrorType = AppointmentErrorType.Intersection,
+                        DisplayName = source.Name,
+                        Description = source.Description,
+                        ProjectId = source.ProjectId,
+                        CharacterId = source.Id,
+                        Users = source.Users
+                    })
+                .ToList();
+
+            viewModel.NotAllocated = viewModel.NotScheduledProgramItems
+                .Select(
+                    source => new AppointmentViewModel(
+                        () => new Rect
+                        {
+                            Left = 0,
+                            Top = 0,
+                            Width = viewModel.ColumnWidth,
+                            Height = viewModel.RowHeight
+                        })
+                    {
+                        ErrorMode = true,
+                        ErrorType = AppointmentErrorType.NotLocated,
+                        AllRooms = source.ColSpan == viewModel.Columns.Count,
+                        DisplayName = source.Name,
+                        Description = source.Description,
+                        ProjectId = source.ProjectId,
+                        CharacterId = source.Id,
+                        Users = source.Users
+                    })
+                .ToList();
         }
 
         private void MergeSlots(SchedulePageViewModel viewModel)
         {
-            
-
             for (var rowIndex = 0; rowIndex < viewModel.Slots.Count; rowIndex++)
             {
                 var slotRow = viewModel.Slots[rowIndex];

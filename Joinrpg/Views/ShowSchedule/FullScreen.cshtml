@@ -1,0 +1,42 @@
+﻿@model JoinRpg.Web.Models.Schedules.SchedulePageViewModel
+@{
+    Layout = "_FullScreenLayout.cshtml";
+    ViewBag.Title = "Расписание";
+    ViewData["Header"] = Model;
+    ViewData["Footer"] = Model;
+}
+
+<h1 class="page-title">@Html.ActionLink(Model.DisplayName, "Details", "Game", new { projectId = Model.ProjectId }, new {})</h1>
+
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#scheduler">Расписание</a></li>
+    @if (Model.Intersections.Count > 0)
+    {
+        <li><a data-toggle="tab" href="#intersections">Пересечения</a></li>
+    }
+    @if (Model.NotAllocated.Count > 0)
+    {
+        <li><a data-toggle="tab" href="#notallocated">Не размещенные</a></li>
+    }
+</ul>
+<div class="tab-content">
+    <section id="scheduler" class="scheduler-container tab-pane in active">
+        @Html.Partial("Scheduler", Model)
+    </section>
+    @if (Model.Intersections.Count > 0)
+    {
+        <section id="intersections" class="scheduler-container tab-pane">
+            @Html.Partial("Intersections", Model)
+        </section>
+    }
+    @if (Model.NotAllocated.Count > 0)
+    {
+        <section id="notallocated" class="scheduler-container tab-pane">
+            @Html.Partial("Notallocated", Model)
+        </section>
+    }
+</div>
+
+@section styles {
+    <link rel="stylesheet" href="~/Content/Scheduler.css" />
+}

@@ -6,115 +6,45 @@
 
 <h2>@ViewBag.Title</h2>
 
-<div>
-    <table>
-        <thead>
-            <tr>
-                <th>&nbsp;</th>
-                @foreach (var column in Model.Columns)
-                {
-            <th style="min-width:10em;">
-                <span title="@column.Description.ToString()" data-toggle="tooltip" data-html="true">@column.Name</span>
-            </th>
-                }
-            </tr>
-        </thead>
-        @for (var i = 0; i < Model.Rows.Count; i++)
-        {
-            <tr>
-                <th>
-                    <span title="@Model.Rows[i].Description.ToString()"  data-toggle="tooltip" data-html="true">@Model.Rows[i].Name</span>
-                    </th>
-                @foreach (var item in Model.Slots[i])
-                {
-                    if (item.RowSpan == 0 || item.ColSpan == 0)
-                    {
-                        continue;
-                    }
-                    <td rowspan="@item.RowSpan" colspan="@item.ColSpan">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                @if (item.IsEmpty)
-                                {
-                                    <text>(свободно)</text>
-                                }
-                                else
-                                {
-                                    <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
-                                        <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
-                                    </h4>
-                                    <p>
-                                        @foreach (var user in item.Users)
-                                        {
-                                            @Html.DisplayFor(modelItem => user)
-                                        }
-                                    </p>
-                                }
-                            </div>
-                        </div>
-                    </td>
-                }
-            </tr>
-        }
-    </table>
-    @if (Model.ConflictedProgramItems.Any())
-    {
-        <h4>
-            Мероприятия с пересечениями
-        </h4>
-            foreach (var item in Model.ConflictedProgramItems)
-            {
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        @if (item.IsEmpty)
-                        {
-                            <text>(свободно)</text>
-                        }
-                        else
-                        {
-                            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
-                                <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
-                            </h4>
-                            <p>
-                                @foreach (var user in item.Users)
-                                {
-                                    @Html.DisplayFor(modelItem => user)
-                                }
-                            </p>
-                        }
-                    </div>
-                </div>
-            }
-    }
+@Html.ActionLink("Открыть во весь экран", "FullScreen", "ShowSchedule", new { projectId = Model.ProjectId }, new { @class = "btn btn-default" })
 
-    @if (Model.NotScheduledProgramItems.Any())
-    {
-        <h4>
-            Мероприятия без места в программе
-        </h4>
-            foreach (var item in Model.NotScheduledProgramItems)
-            {
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        @if (item.IsEmpty)
-                        {
-                            <text>(свободно)</text>
-                        }
-                        else
-                        {
-                            <h4 style="text-overflow: ellipsis; white-space: nowrap; overflow-x: hidden;overflow-y:hidden" title="@item.Name">
-                                <a href="@Url.Action("Details", "Character", new { item.ProjectId, CharacterId = item.Id, area = "" }, null)">@item.Name</a>
-                            </h4>
-                            <p>
-                                @foreach (var user in item.Users)
-                                {
-                                    @Html.DisplayFor(modelItem => user)
-                                }
-                            </p>
-                        }
-                    </div>
-                </div>
+<section class="scheduler-container">
+    @Html.Partial("Scheduler", Model)
+</section>
+
+@if (Model.Intersections.Count > 0)
+{
+    <h3>Мероприятия, пересекающиеся друг с другом</h3>
+    <section>
+        @Html.Partial("Intersections", Model)
+    </section>
+}
+@if (Model.NotAllocated.Count > 0)
+{
+    <h3>Мероприятия, не размещенные в сетке</h3>
+    <section>
+        @Html.Partial("Notallocated", Model)
+    </section>
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/Content/Scheduler.css" />
+    <style type="text/css">
+        .scheduler-container {
+            display: block;
+            width: 100%;
+            height: 600px;
+            overflow: hidden;
+            margin-top: 1em;
+        }
+
+            .scheduler-container .scheduler-header {
+                border-left: 1px solid silver;
+                border-right: 1px solid silver;
             }
-    }
-    <h4></h4>
-</div>
+
+            .scheduler-container .scheduler-content {
+                border: 1px solid silver;
+            }
+    </style>
+}
