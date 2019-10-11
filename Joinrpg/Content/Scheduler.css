@@ -1,0 +1,176 @@
+﻿div.scheduler {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    border-top: 1px solid silver;
+}
+
+div.scheduler-header {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    align-items: stretch;
+}
+
+div.scheduler-left-top {
+    flex-shrink: 0;
+    border-right: 1px solid silver;
+}
+
+div.scheduler-header-scrollable {
+    display: block;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+table.scheduler-header-columns {
+    position: relative;
+    border-collapse: collapse;
+    empty-cells: show;
+}
+
+table.scheduler-header-columns th.scheduler-header-column {
+    border-right: 1px solid silver;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.5em;
+}
+
+div.scheduler-content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    border-top: 1px solid silver;
+}
+
+div.scheduler-header-rows {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-right: 1px solid silver;
+}
+
+div.scheduler-header-rows-scrollable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+div.scheduler-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-bottom: 1px solid silver;
+    text-align: right;
+    padding: 0.5em;
+    font-weight: bold;
+}
+
+div.scheduler-scrollable {
+    overflow: auto;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+}
+
+table.scheduler-grid {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    border-collapse: collapse;
+    empty-cells: show;
+}
+
+table.scheduler-grid td {
+    border-right: 1px solid silver;
+    border-bottom: 1px solid silver;
+}
+
+div.scheduler-appointments {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+div.scheduler-appointment {
+    display: block;
+    padding: 3px;
+}
+
+div.scheduler-appointments div.scheduler-appointment {
+    position: absolute;
+}
+
+div.scheduler-appointment-interior {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 0.5em;
+    background-color: cornsilk;
+    border: 1px solid burlywood;
+    border-radius: 5px;
+}
+
+div.appointment-all-rooms div.scheduler-appointment-interior {
+    background-color: aliceblue;
+    border: 1px solid lightblue;
+    align-items: center;
+    justify-content: center;
+}
+
+div.appointment-intersection .scheduler-appointment-interior {
+    border: 1px dashed red;
+}
+
+div.appointment-header {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-align: left;
+    font-weight: bold;
+}
+
+div.appointment-users {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    align-items: flex-end;
+}
+
+div.appointment-all-rooms .appointment-users {
+    display: none;
+}
+
+div.appointment-all-rooms .appointment-header {
+    text-align: center;
+    font-size: 1.5em;
+}
+
+div.scheduler-intersections {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+div.scheduler-notallocated {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+    flex-direction: row;
+}

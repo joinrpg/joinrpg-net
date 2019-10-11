@@ -1,0 +1,75 @@
+﻿@model JoinRpg.Web.Models.Schedules.SchedulePageViewModel
+<div id="scheduler" class="scheduler">
+
+    <div class="scheduler-header">
+        <div class="scheduler-left-top" style="width: @(Model.LeftBarWidth)px"></div>
+        <div id="scheduler-header-scrollable" class="scheduler-header-scrollable">
+            <table class="scheduler-header-columns">
+                <thead>
+                <tr>
+                    @foreach (var col in Model.Columns)
+                    {
+                        <th class="scheduler-header-column" title="@col.Description" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
+                    }
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <div class="scheduler-content">
+
+        <div class="scheduler-header-rows" style="width: @(Model.LeftBarWidth)px; min-width: @(Model.LeftBarWidth)px;">
+            <div id="scheduler-header-rows-scrollable" class="scheduler-header-rows-scrollable">
+                @foreach (var row in Model.Rows)
+                {
+                    <div class="scheduler-header-row" title="@row.Description" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
+                }
+            </div>
+        </div>
+
+        <div class="scheduler-scrollable" onscroll="handleScroll(event)">
+
+            <table class="scheduler-grid">
+                <tbody>
+                @for (int row = 0; row < Model.Rows.Count; row++)
+                {
+                    <tr>
+                        @for (int i = 0; i < Model.Columns.Count; i++)
+                        {
+                            <td style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px; height: @(Model.RowHeight)px;"></td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <div class="scheduler-appointments">
+                @foreach (var appointment in Model.Appointments)
+                {
+                    @Html.Partial("_AppointmentPartial", appointment)
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    const colHeaderScrollable = document.getElementById("scheduler-header-scrollable");
+    const rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
+    function handleScroll(ev)
+    {
+        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollLeftMax);
+        colHeaderScrollable.scrollLeft = scrollLeft;
+        ev.target.scrollLeft = scrollLeft;
+        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollTopMax);
+        rowHeaderScrollable.scrollTop = scrollTop;
+        ev.target.scrollTop = scrollTop;
+    }
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip({
+            html: true,
+            container: 'body'
+        });
+    });
+</script>
