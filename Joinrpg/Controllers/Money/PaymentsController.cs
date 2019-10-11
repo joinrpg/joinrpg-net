@@ -78,7 +78,8 @@ namespace JoinRpg.Web.Controllers.Money
                     {
                         Message = "Ошибка создания платежа: " + e.Message,
                         ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
-                        ReturnText = "Вернуться к заявке"
+                        ReturnText = "Вернуться к заявке",
+                        Data = e,
                     });
             }
         }
