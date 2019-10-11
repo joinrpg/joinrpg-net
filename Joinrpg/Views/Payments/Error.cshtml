@@ -1,6 +1,7 @@
 ﻿@using JoinRpg.Web.Models
 @using Newtonsoft.Json
 @model ErrorViewModel
+@{ string errorDetailsDisplay = Model.Debug ? "block" : "none"; }
 
 <h1>@Model.Title</h1>
 
@@ -17,9 +18,9 @@
 
 @if (Model.Data != null)
 {
-<pre style="width: 100%; height: 300px; overflow: scroll;">
-    @if (Model.Data is Exception) { @Model.Data.ToString() }
-</pre>
+    <pre style="width: 100%; height: 300px; overflow: scroll; display: @errorDetailsDisplay;">
+        @Model.Data.ToString()
+    </pre>
 }
 
 @if (!string.IsNullOrWhiteSpace(Model.ReturnLink))

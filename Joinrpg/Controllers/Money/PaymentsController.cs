@@ -28,6 +28,7 @@ namespace JoinRpg.Web.Controllers.Money
         /// </summary>
         public ActionResult Error(ErrorViewModel model)
         {
+            model.Debug = model.Debug || IsCurrentUserAdmin();
             model.Title = string.IsNullOrWhiteSpace(model.Title)
                 ? "Ошибка онлайн-оплаты"
                 : model.Title.Trim();
@@ -77,7 +78,8 @@ namespace JoinRpg.Web.Controllers.Money
                     {
                         Message = "Ошибка создания платежа: " + e.Message,
                         ReturnLink = GetClaimUrl(data.ProjectId, data.ClaimId),
-                        ReturnText = "Вернуться к заявке"
+                        ReturnText = "Вернуться к заявке",
+                        Data = e,
                     });
             }
         }
