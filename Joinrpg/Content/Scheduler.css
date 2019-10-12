@@ -150,10 +150,6 @@ div.appointment-users {
     align-items: flex-end;
 }
 
-div.appointment-all-rooms .appointment-users {
-    display: none;
-}
-
 div.appointment-all-rooms .appointment-header {
     text-align: center;
     font-size: 1.5em;
