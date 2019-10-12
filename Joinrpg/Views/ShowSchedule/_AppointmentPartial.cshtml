@@ -2,23 +2,20 @@
 @model AppointmentViewModel
 @{
     string title = Model.DisplayName;
+    string classNames = "scheduler-appointment";
     if (Model.ErrorType == AppointmentErrorType.Intersection)
     {
         title += " (имеются пересечения)";
+        classNames += " appointment-intersection";
     }
-    string classNames = "scheduler-appointment";
     if (Model.AllRooms)
     {
         classNames += " appointment-all-rooms";
     }
-    if (Model.ErrorType == AppointmentErrorType.Intersection)
-    {
-        classNames += " appointment-intersection";
-    }
-    string url = Url.Action(Model.ErrorType.HasValue ? "Edit" : "Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId }); 
+    string url = Url.Action(Model.ErrorType.HasValue ? "Edit" : "Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId });
     string style = Model.ErrorMode
         ? string.Format("max-width: {0}px; height: {1}px;", Model.Width * 2, Model.Height)
-        : string.Format("left: {0}px; top: {1}px; width: {2}px; height: {3}px", Model.Left, Model.Top, Model.Width, Model.Height);
+        : string.Format("left: {0}px; top: {1}px; width: {2}px; height: {3}px", Model.Left, Model.Top, Model.Width - 1, Model.Height - 1);
     string target = Model.ErrorType.HasValue ? "_blank" : "_self";
 }
 <div class="@classNames" style="@style">

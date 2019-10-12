@@ -29,7 +29,7 @@ div.scheduler-header-scrollable {
 
 table.scheduler-header-columns {
     position: relative;
-    border-collapse: collapse;
+    border-collapse: separate;
     empty-cells: show;
 }
 
@@ -88,7 +88,7 @@ table.scheduler-grid {
     left: 0;
     top: 0;
     z-index: 0;
-    border-collapse: collapse;
+    border-collapse: separate;
     empty-cells: show;
 }
 
@@ -169,4 +169,10 @@ div.scheduler-notallocated {
     height: 100%;
     flex-wrap: wrap;
     flex-direction: row;
+}
+
+.scheduler-fullscreen .scheduler-intersections,
+.scheduler-fullscreen .scheduler-notallocated {
+    overflow-x: hidden;
+    overflow-y: auto;
 }
