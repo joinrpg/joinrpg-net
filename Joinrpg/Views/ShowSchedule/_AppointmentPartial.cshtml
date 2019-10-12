@@ -12,6 +12,7 @@
     {
         classNames += " appointment-all-rooms";
     }
+    classNames += Model.Users.Count == 0 ? " appointment-no-users" : " appointment-has-users";
     string url = Url.Action(Model.ErrorType.HasValue ? "Edit" : "Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId });
     string style = Model.ErrorMode
         ? string.Format("max-width: {0}px; height: {1}px;", Model.Width * 2, Model.Height)
@@ -19,7 +20,7 @@
     string target = Model.ErrorType.HasValue ? "_blank" : "_self";
 }
 <div class="@classNames" style="@style">
-    <div class="scheduler-appointment-interior" title="@title">
+    <div class="appointment-interior" title="@title">
         <div class="appointment-header"><a href="@url" target="@target">@Model.DisplayName</a></div>
         <div class="appointment-users">
             @foreach (var user in Model.Users)

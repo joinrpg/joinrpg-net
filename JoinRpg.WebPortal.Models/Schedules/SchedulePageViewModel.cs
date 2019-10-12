@@ -18,9 +18,9 @@ namespace JoinRpg.Web.Models.Schedules
         public IReadOnlyList<AppointmentViewModel> NotAllocated { get; set; }
         public IReadOnlyList<AppointmentViewModel> Intersections { get; set; }
 
-        public int ColumnWidth { get; set; } = 200;
+        public int ColumnWidth { get; set; } = 225;
         public int LeftBarWidth { get; set; } = 100;
-        public int RowHeight { get; set; } = 75;
+        public int RowHeight { get; set; } = 90;
 
         public int GridWidth => ColumnWidth * Columns.Count;
         public int GridHeight => RowHeight * Rows.Count;
