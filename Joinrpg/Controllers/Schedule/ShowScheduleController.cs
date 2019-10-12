@@ -11,6 +11,7 @@ using JoinRpg.WebPortal.Managers.Schedule;
 
 namespace JoinRpg.Web.Controllers.Schedule
 {
+    [AllowAnonymous] // Access to schedule checked by scheduleManager
     public class ShowScheduleController : Common.ControllerGameBase
     {
         public ShowScheduleController(
@@ -35,7 +36,6 @@ namespace JoinRpg.Web.Controllers.Schedule
             });
         }
 
-        [Authorize]
         public async Task<ActionResult> Index(int projectId)
         {
             var errors = await Manager.CheckScheduleConfiguration();
@@ -47,7 +47,6 @@ namespace JoinRpg.Web.Controllers.Schedule
             return View(schedule);
         }
         
-        [Authorize]
         public async Task<ActionResult> FullScreen(int projectId)
         {
             var errors = await Manager.CheckScheduleConfiguration();
