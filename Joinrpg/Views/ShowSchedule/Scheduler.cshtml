@@ -59,10 +59,10 @@
     const rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
     function handleScroll(ev)
     {
-        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollLeftMax);
+        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollWidth - colHeaderScrollable.clientLeft);
         colHeaderScrollable.scrollLeft = scrollLeft;
         ev.target.scrollLeft = scrollLeft;
-        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollTopMax);
+        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollHeight - rowHeaderScrollable.clientTop);
         rowHeaderScrollable.scrollTop = scrollTop;
         ev.target.scrollTop = scrollTop;
     }
