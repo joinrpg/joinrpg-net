@@ -181,6 +181,23 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         {
             var project = await Project.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
 
+            bool HasAccess(ProjectField roomField)
+            {
+                if (CurrentUserAccessor.UserIdOrDefault is null)
+                {
+                    return roomField.IsPublic;
+                }
+                if (project.HasMasterAccess(CurrentUserAccessor.UserId))
+                {
+                    return true;
+                }
+                if (project.Claims.OfUserApproved(CurrentUserAccessor.UserId).Any())
+                {
+                    return roomField.CanPlayerView;
+                }
+                return false;
+            }
+
             IEnumerable<ScheduleConfigProblemsViewModel> Impl()
             {
                 var settings = project.Details.ScheduleSettings;
@@ -197,16 +214,9 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         yield return ScheduleConfigProblemsViewModel.InconsistentVisibility;
                     }
 
-                    if (!project.HasMasterAccess(CurrentUserAccessor.UserId))
+                    if (!HasAccess(roomField))
                     {
-                        if (!roomField.CanPlayerView)
-                        {
-                            yield return ScheduleConfigProblemsViewModel.NoAccess;
-                        }
-                        else if (!roomField.IsPublic && !project.Claims.OfUserApproved(CurrentUserAccessor.UserId).Any())
-                        {
-                            yield return ScheduleConfigProblemsViewModel.NoAccess;
-                        }
+                        yield return ScheduleConfigProblemsViewModel.NoAccess;
                     }
 
                     if (!timeSlotField.DropdownValues.Any())
