@@ -35,6 +35,7 @@ article {
 }
 
 h1.page-title {
+    flex-shrink: 0;
     font-size: 1.5em;
     font-weight: bold;
     width: 100%;
@@ -49,7 +50,7 @@ section {
 
 div.tab-content {
     flex-grow: 1;
-    flex-shrink: 0;
+    flex-shrink: 1;
     overflow: hidden;
     padding-top: 0.5em;
 }

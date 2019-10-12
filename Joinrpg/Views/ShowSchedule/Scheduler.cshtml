@@ -55,14 +55,14 @@
 </div>
 
 <script type="text/javascript">
-    const colHeaderScrollable = document.getElementById("scheduler-header-scrollable");
-    const rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
+    let colHeaderScrollable;
+    let rowHeaderScrollable;
     function handleScroll(ev)
     {
-        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollWidth - colHeaderScrollable.clientLeft);
+        const scrollLeft = Math.min(ev.target.scrollLeft, colHeaderScrollable.scrollWidth - colHeaderScrollable.clientWidth);
         colHeaderScrollable.scrollLeft = scrollLeft;
         ev.target.scrollLeft = scrollLeft;
-        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollHeight - rowHeaderScrollable.clientTop);
+        const scrollTop = Math.min(ev.target.scrollTop, rowHeaderScrollable.scrollHeight - rowHeaderScrollable.clientHeight);
         rowHeaderScrollable.scrollTop = scrollTop;
         ev.target.scrollTop = scrollTop;
     }
@@ -71,5 +71,7 @@
             html: true,
             container: 'body'
         });
+        colHeaderScrollable = document.getElementById("scheduler-header-scrollable");
+        rowHeaderScrollable = document.getElementById("scheduler-header-rows-scrollable");
     });
 </script>
