@@ -183,9 +183,13 @@ namespace JoinRpg.WebPortal.Managers.Schedule
 
             bool HasAccess(ProjectField roomField)
             {
+                if (roomField.IsPublic)
+                {
+                    return true;
+                }
                 if (CurrentUserAccessor.UserIdOrDefault is null)
                 {
-                    return roomField.IsPublic;
+                    return false;
                 }
                 if (project.HasMasterAccess(CurrentUserAccessor.UserId))
                 {
