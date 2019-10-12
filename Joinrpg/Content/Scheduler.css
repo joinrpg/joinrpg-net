@@ -1,4 +1,4 @@
-﻿div.scheduler {
+﻿.scheduler {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -6,7 +6,7 @@
     border-top: 1px solid silver;
 }
 
-div.scheduler-header {
+.scheduler-header {
     display: flex;
     flex-direction: row;
     position: relative;
@@ -15,12 +15,12 @@ div.scheduler-header {
     align-items: stretch;
 }
 
-div.scheduler-left-top {
+.scheduler-left-top {
     flex-shrink: 0;
     border-right: 1px solid silver;
 }
 
-div.scheduler-header-scrollable {
+.scheduler-header-scrollable {
     display: block;
     height: 100%;
     position: relative;
@@ -40,7 +40,7 @@ table.scheduler-header-columns th.scheduler-header-column {
     padding: 0.5em;
 }
 
-div.scheduler-content {
+.scheduler-content {
     display: flex;
     flex-direction: row;
     flex-grow: 1;
@@ -49,14 +49,14 @@ div.scheduler-content {
     border-top: 1px solid silver;
 }
 
-div.scheduler-header-rows {
+.scheduler-header-rows {
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
     border-right: 1px solid silver;
 }
 
-div.scheduler-header-rows-scrollable {
+.scheduler-header-rows-scrollable {
     position: absolute;
     left: 0;
     top: 0;
@@ -65,7 +65,7 @@ div.scheduler-header-rows-scrollable {
     overflow: hidden;
 }
 
-div.scheduler-header-row {
+.scheduler-header-row {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -75,7 +75,7 @@ div.scheduler-header-row {
     font-weight: bold;
 }
 
-div.scheduler-scrollable {
+.scheduler-scrollable {
     overflow: auto;
     position: relative;
     width: 100%;
@@ -97,65 +97,106 @@ table.scheduler-grid td {
     border-bottom: 1px solid silver;
 }
 
-div.scheduler-appointments {
+.scheduler-appointments {
     position: absolute;
     left: 0;
     top: 0;
     z-index: 1;
 }
 
-div.scheduler-appointment {
+.scheduler-appointment {
     display: block;
     padding: 3px;
 }
 
-div.scheduler-appointments div.scheduler-appointment {
+.scheduler-appointments .scheduler-appointment {
     position: absolute;
 }
 
-div.scheduler-appointment-interior {
+.appointment-interior {
     display: flex;
     flex-direction: column;
+    position: relative;
     width: 100%;
     height: 100%;
     padding: 0.5em;
+    overflow: hidden;
     background-color: cornsilk;
     border: 1px solid burlywood;
     border-radius: 5px;
 }
 
-div.appointment-all-rooms div.scheduler-appointment-interior {
+.appointment-all-rooms .appointment-interior {
+    background-color: mintcream;
+    border: 1px solid mediumaquamarine;
+}
+
+.appointment-all-rooms .appointment-interior {
+    justify-content: center;
+}
+
+.appointment-no-users .appointment-interior {
     background-color: aliceblue;
     border: 1px solid lightblue;
     align-items: center;
     justify-content: center;
 }
 
-div.appointment-intersection .scheduler-appointment-interior {
+.appointment-intersection .appointment-interior {
     border: 1px dashed red;
 }
 
-div.appointment-header {
+.appointment-header {
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: left;
     font-weight: bold;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-align: left;
 }
 
-div.appointment-users {
+.appointment-users {
     display: flex;
+    overflow: hidden;
     flex-direction: row;
     flex-grow: 1;
+    flex-wrap: wrap;
     align-items: flex-end;
 }
 
-div.appointment-all-rooms .appointment-header {
-    text-align: center;
-    font-size: 1.5em;
+.appointment-no-users .appointment-users {
+    display: none;
 }
 
-div.scheduler-intersections {
+.appointment-no-users .appointment-header {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.appointment-all-rooms .appointment-header {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.appointment-no-users .appointment-interior {
+    padding: 0.4em;
+}
+
+.appointment-no-users .appointment-header {
+    -webkit-line-clamp: 3;
+}
+
+.appointment-all-rooms.appointment-has-users .appointment-header {
+    -webkit-line-clamp: 1;
+}
+
+.appointment-all-rooms.appointment-has-users .appointment-users {
+    justify-content: center;
+    flex-grow: 0;
+    margin-top: 0.5em;
+}
+
+.scheduler-intersections {
     display: flex;
     width: 100%;
     height: 100%;
@@ -163,7 +204,7 @@ div.scheduler-intersections {
     flex-direction: row;
 }
 
-div.scheduler-notallocated {
+.scheduler-notallocated {
     display: flex;
     width: 100%;
     height: 100%;
