@@ -166,6 +166,13 @@ table.scheduler-grid td {
     align-items: flex-end;
 }
 
+.appointment-slots,
+.appointment-rooms {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .appointment-no-users .appointment-users {
     display: none;
 }
