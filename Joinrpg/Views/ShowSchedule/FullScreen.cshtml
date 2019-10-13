@@ -98,8 +98,8 @@
             schedulerDetails.setAttribute('error-mode', appointmentElement.getAttribute('error-mode'));
 
             detailsForm.title.innerHTML = appointmentElement.getAttribute('display-name');
-
-            detailsForm.description.innerHTML = appointmentElement.getAttribute('description');
+            
+            detailsForm.description.innerHTML = document.getElementById(id + '-description').innerHTML.trim();
             hideIfNoContent(detailsForm.description, 'no-info');
 
             detailsForm.problems.innerHTML = appointmentElement.getAttribute('errors');

@@ -24,7 +24,6 @@
      class="@classNames"
      style="@style"
      display-name="@Model.DisplayName"
-     description="@Model.Description"
      details-url="@url"
      no-users="@((Model.Users.Count == 0).ToString())"
      rooms="@(string.Join(", ", Model.Rooms.Select(r => r.Name)))"
@@ -42,4 +41,5 @@
         </div>
     </div>
     <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
+    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Model.Description</div>
 </div>
