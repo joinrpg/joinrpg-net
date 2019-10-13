@@ -65,6 +65,7 @@
     line-height: 0;
     margin: 0;
     padding: 0.75em;
+    align-self: flex-start;
 }
 
 .appointment-details-footer {
