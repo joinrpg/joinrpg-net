@@ -22,6 +22,11 @@
 <div class="tab-content scheduler-fullscreen">
     <section id="scheduler" class="scheduler-container tab-pane in active">
         @Html.Partial("Scheduler", Model)
+        <div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
+            <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
+                @Html.Partial("_AppointmentDetailsPartial")
+            </div>
+        </div>
     </section>
     @if (Model.Intersections.Count > 0)
     {
@@ -37,6 +42,90 @@
     }
 </div>
 
+<script type="text/javascript">
+    let schedulerOverlay;
+    let schedulerDetails;
+
+    function hideDetails()
+    {
+        schedulerOverlay.style.display = 'none';
+    }
+
+    function overlayClickHandler(ev) 
+    {
+        if (ev.target.id !== schedulerOverlay.id)
+            return;
+        hideDetails();
+    }
+    function overlayWheelHandler(ev)
+    {
+        return;
+    }
+
+    function hideIfNoContent(element, className)
+    {
+        className = 'details-' + className;
+        if (element.innerHTML.length === 0)
+            schedulerDetails.classList.add(className);
+        else
+            schedulerDetails.classList.remove(className);
+    }
+
+    $(document).ready(function()
+    {
+        schedulerOverlay = document.getElementById('scheduler-overlay');
+
+        schedulerDetails = document.getElementById('scheduler-details');
+
+        const detailsForm = {
+            title: document.getElementById('details-title'),
+            problems: document.getElementById('details-problems'),
+            users: document.getElementById('details-users'),
+            rooms: document.getElementById('details-rooms'),
+            slots: document.getElementById('details-slots'),
+            description: document.getElementById('details-info'),
+            link: document.getElementById('details-link')
+        };
+
+        // Installing appointment click handler
+        appointmentClickHandler = (characterId) =>
+        {
+            const id = `appointment${characterId}`;
+            const appointmentElement = document.getElementById(id);
+
+            schedulerDetails.setAttribute('no-users', appointmentElement.getAttribute('no-users'));
+            schedulerDetails.setAttribute('all-rooms', appointmentElement.getAttribute('all-rooms'));
+            schedulerDetails.setAttribute('error-mode', appointmentElement.getAttribute('error-mode'));
+
+            detailsForm.title.innerHTML = appointmentElement.getAttribute('display-name');
+
+            detailsForm.description.innerHTML = appointmentElement.getAttribute('description');
+            hideIfNoContent(detailsForm.description, 'no-info');
+
+            detailsForm.problems.innerHTML = appointmentElement.getAttribute('errors');
+            hideIfNoContent(detailsForm.problems, 'no-problems');
+
+            detailsForm.users.innerHTML = document.getElementById(id + '-users').innerHTML.trim();
+            hideIfNoContent(detailsForm.users, 'no-users');
+
+            detailsForm.rooms.innerHTML = appointmentElement.getAttribute('rooms');
+            hideIfNoContent(detailsForm.rooms, 'no-rooms');
+
+            detailsForm.slots.innerHTML = appointmentElement.getAttribute('slots');
+            hideIfNoContent(detailsForm.slots, 'no-slots');
+
+            detailsForm.link.href = appointmentElement.getAttribute('details-url');
+
+            schedulerOverlay.style.display = 'flex';
+        }
+    });
+
+    function closeDetailsClickHandler()
+    {
+        hideDetails();
+    }
+</script>
 @section styles {
     <link rel="stylesheet" href="~/Content/Scheduler.css" />
+    <link rel="stylesheet" href="~/Content/AppointmentDetails.css"/>
 }

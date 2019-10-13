@@ -32,20 +32,29 @@ namespace JoinRpg.WebPortal.Managers.Schedule
             };
         }
 
-        public static TableHeaderViewModel ToViewModel(this ScheduleItemAttribute room)
+        public static TableHeaderViewModel ToViewModel(this ScheduleItemAttribute scheduleItem)
         {
-            if (room is TimeSlot timeSlot)
+            if (scheduleItem is TimeSlot slot)
             {
                 return new TableHeaderViewModel()
                 {
-                    Name = room.Name,
+                    Id = slot.Id,
+                    Name = slot.Name,
                     Description =
-                        $"Начало: {timeSlot.Options.StartTime:D}, Продолжительность: {timeSlot.Options.TimeSlotInMinutes} минут<br />"
-                            .MarkAsHtmlString() + room.Description.ToHtmlString(),
+                        $"Начало: {slot.Options.StartTime:D}, Продолжительность: {slot.Options.TimeSlotInMinutes} минут<br />"
+                            .MarkAsHtmlString() + scheduleItem.Description.ToHtmlString(),
                 };
             }
-            return new TableHeaderViewModel()
-                {Name = room.Name, Description = room.Description.ToHtmlString()};
+            if (scheduleItem is ScheduleRoom room)
+            {
+                return new TableHeaderViewModel()
+                {
+                    Id = room.Id,
+                    Name = room.Name,
+                    Description = room.Description.ToHtmlString()
+                };
+            }
+            throw new NotImplementedException();
         }
 
         // Inspired by https://stackoverflow.com/a/48290430/408666

@@ -38,6 +38,7 @@ table.scheduler-header-columns th.scheduler-header-column {
     text-align: center;
     vertical-align: middle;
     padding: 0.5em;
+    cursor: default;
 }
 
 .scheduler-content {
@@ -73,6 +74,7 @@ table.scheduler-header-columns th.scheduler-header-column {
     text-align: right;
     padding: 0.5em;
     font-weight: bold;
+    cursor: default;
 }
 
 .scheduler-scrollable {
@@ -194,6 +196,21 @@ table.scheduler-grid td {
     justify-content: center;
     flex-grow: 0;
     margin-top: 0.5em;
+}
+
+.appointment-click-overlay {
+    display: none;
+}
+
+.scheduler-fullscreen .scheduler .appointment-click-overlay {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: pointer;
 }
 
 .scheduler-intersections {
