@@ -152,6 +152,7 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\AppointmentDetails.css" />
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
     <Content Include="Content\FullScreen.css" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
@@ -1081,6 +1082,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\ShowSchedule\Intersections.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\ShowSchedule\_AppointmentDetailsPartial.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

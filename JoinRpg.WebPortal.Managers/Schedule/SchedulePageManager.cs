@@ -6,6 +6,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
+using Joinrpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Interfaces;
 
@@ -62,7 +63,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
 
                     var rowIndex = i;
                     var colIndex = j;
-                    result.Add(new AppointmentViewModel(() => new Rect
+                    var appointment = new AppointmentViewModel(() => new Rect
                     {
                         Left = colIndex * viewModel.ColumnWidth,
                         Top = rowIndex * viewModel.RowHeight,
@@ -79,11 +80,20 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         TimeSlotIndex = rowIndex,
                         TimeSlotsCount = slot.RowSpan,
                         DisplayName = slot.Name,
-                        Description = slot.Description,
+                        Description = slot.Description.ToHtmlString(),
                         ProjectId = slot.ProjectId,
                         CharacterId = slot.Id,
                         Users = slot.Users,
-                    });
+                    };
+                    appointment.Rooms = viewModel.Columns
+                        .SkipWhile((v, index) => index < colIndex)
+                        .Take(slot.ColSpan)
+                        .ToArray();
+                    appointment.Slots = viewModel.Rows
+                        .SkipWhile((v, index) => index < rowIndex)
+                        .Take(slot.RowSpan)
+                        .ToArray();
+                    result.Add(appointment);
                 }
             }
 
@@ -103,7 +113,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         ErrorMode = true,
                         ErrorType = AppointmentErrorType.Intersection,
                         DisplayName = source.Name,
-                        Description = source.Description,
+                        Description = source.Description.ToHtmlString(),
                         ProjectId = source.ProjectId,
                         CharacterId = source.Id,
                         Users = source.Users
@@ -125,7 +135,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                         ErrorType = AppointmentErrorType.NotLocated,
                         AllRooms = source.ColSpan == viewModel.Columns.Count,
                         DisplayName = source.Name,
-                        Description = source.Description,
+                        Description = source.Description.ToHtmlString(),
                         ProjectId = source.ProjectId,
                         CharacterId = source.Id,
                         Users = source.Users

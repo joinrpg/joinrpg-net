@@ -1,4 +1,5 @@
-﻿@using JoinRpg.Web.Models.Schedules
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Models.Schedules
 @model AppointmentViewModel
 @{
     string title = Model.DisplayName;
@@ -19,14 +20,26 @@
         : string.Format("left: {0}px; top: {1}px; width: {2}px; height: {3}px", Model.Left, Model.Top, Model.Width - 1, Model.Height - 1);
     string target = Model.ErrorType.HasValue ? "_blank" : "_self";
 }
-<div class="@classNames" style="@style">
+<div id="appointment@(Model.CharacterId)"
+     class="@classNames"
+     style="@style"
+     display-name="@Model.DisplayName"
+     description="@Model.Description"
+     details-url="@url"
+     no-users="@((Model.Users.Count == 0).ToString())"
+     rooms="@(string.Join(", ", Model.Rooms.Select(r => r.Name)))"
+     slots="@(string.Join(", ", Model.Slots.Select(s => s.Name)))"
+     all-rooms="@(Model.AllRooms.ToString())"
+     error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
+     errors="@(Model.ErrorType.HasValue ? Model.ErrorType.GetDisplayName() : "")">
     <div class="appointment-interior" title="@title">
         <div class="appointment-header"><a href="@url" target="@target">@Model.DisplayName</a></div>
-        <div class="appointment-users">
+        <div id="appointment@(Model.CharacterId)-users" class="appointment-users">
             @foreach (var user in Model.Users)
             {
                 @Html.DisplayFor(m => user)
             }
         </div>
     </div>
+    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
 </div>

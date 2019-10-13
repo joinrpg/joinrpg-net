@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models.Schedules
 {
     public enum AppointmentErrorType
     {
         NotLocated,
+
+        [Display(Name = "Пересечение с другими мероприятиями")]
         Intersection,
     }
 
@@ -24,7 +28,7 @@ namespace JoinRpg.Web.Models.Schedules
         public int ProjectId { get; set; }
         public int CharacterId { get; set; }
         public IReadOnlyCollection<User> Users { get; set; }
-        public MarkdownString Description { get; set; }
+        public JoinHtmlString Description { get; set; }
     }
 
     public class AppointmentViewModel : AppointmentBaseViewModel
@@ -36,6 +40,9 @@ namespace JoinRpg.Web.Models.Schedules
         public bool AllRooms { get; set; }
         public bool ErrorMode { get; set; }
         public AppointmentErrorType? ErrorType { get; set; }
+
+        public IReadOnlyCollection<TableHeaderViewModel> Rooms { get; set; } = new TableHeaderViewModel[] { };
+        public IReadOnlyCollection<TableHeaderViewModel> Slots { get; set; } = new TableHeaderViewModel[] { };
 
         private readonly Lazy<Rect> _bounds;
 

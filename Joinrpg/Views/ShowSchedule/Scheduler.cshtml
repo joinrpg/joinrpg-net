@@ -9,7 +9,7 @@
                 <tr>
                     @foreach (var col in Model.Columns)
                     {
-                        <th class="scheduler-header-column" title="@col.Description" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
+                        <th id="project-room@(col.Id)" class="scheduler-header-column" title="@col.Description" data-toggle="tooltip" data-placement="bottom" style="width: @(Model.ColumnWidth)px; min-width: @(Model.ColumnWidth)px">@col.Name</th>
                     }
                 </tr>
                 </thead>
@@ -23,7 +23,7 @@
             <div id="scheduler-header-rows-scrollable" class="scheduler-header-rows-scrollable">
                 @foreach (var row in Model.Rows)
                 {
-                    <div class="scheduler-header-row" title="@row.Description" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
+                    <div id="project-slot@(row.Id)" class="scheduler-header-row" title="@row.Description" data-toggle="tooltip" data-placement="right" style="height: @(Model.RowHeight)px">@row.Name</div>
                 }
             </div>
         </div>
@@ -55,6 +55,7 @@
 </div>
 
 <script type="text/javascript">
+    let appointmentClickHandler = () => {};
     let colHeaderScrollable;
     let rowHeaderScrollable;
     function handleScroll(ev)
