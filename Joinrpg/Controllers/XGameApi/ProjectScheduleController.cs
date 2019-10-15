@@ -1,19 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
+using JoinRpg.Helpers;
 using Joinrpg.Markdown;
 using JoinRpg.Web.Filter;
+using JoinRpg.Web.Models.Schedules;
 using JoinRpg.Web.XGameApi.Contract.Schedule;
 using JoinRpg.WebPortal.Managers.Schedule;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-    [RoutePrefix("x-game-api/{projectId}/schedule"), XGameMasterAuthorize()]
+    [RoutePrefix("x-game-api/{projectId}/schedule")]
     public class ProjectScheduleController : XGameApiController
     {
         private SchedulePageManager Manager { get; }
@@ -29,9 +32,13 @@ namespace JoinRpg.Web.Controllers.XGameApi
             int projectId)
         {
             var check = await Manager.CheckScheduleConfiguration();
+            if (check.Contains(ScheduleConfigProblemsViewModel.NoAccess))
+            {
+                throw new HttpResponseException(HttpStatusCode.Forbidden);
+            }
             if (check.Any())
             {
-                throw new Exception("Error");
+                throw new Exception($"Error {check.Select(x => x.ToString()).JoinStrings(" ,")}");
             }
 
             var project = await ProjectRepository.GetProjectWithFieldsAsync(projectId);
