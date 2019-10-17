@@ -17,7 +17,7 @@ namespace JoinRpg.Domain.Schedules
 
         public ScheduleBuilder(Project project, ICollection<Character> characters)
         {
-            this.characters = characters;
+            this.characters = characters.Where(ch => ch.IsActive).ToList();
             var scheduleSettings = project.Details.ScheduleSettings;
             if (scheduleSettings is null)
             {
