@@ -27,7 +27,7 @@ namespace JoinRpg.Domain.Schedules
             RoomField = scheduleSettings.RoomField;
         }
 
-        private List<ProgramItem> NotScheduled { get; } = new List<ProgramItem>();
+        private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();
 
         public class ProgramItemSlot
         {
@@ -59,7 +59,7 @@ namespace JoinRpg.Domain.Schedules
             foreach (var character in characters)
             {
                 var programItem = ConvertToProgramItem(character);
-                var slots = SelectSlots(character);
+                var slots = SelectSlots(programItem, character);
                 PutItem(programItem, slots);
                 if (slots.Any())
                 {
@@ -106,18 +106,24 @@ namespace JoinRpg.Domain.Schedules
             }
         }
 
-        private List<ProgramItemSlot> SelectSlots(Character character)
+        private List<ProgramItemSlot> SelectSlots(ProgramItem programItem, Character character)
         {
             var fields = character.GetFields();
 
-            IEnumerable<int> GetSlotIndexes(ProjectField field, IEnumerable<ScheduleItemAttribute> Items)
+            List<int> GetSlotIndexes(ProjectField field, IEnumerable<ScheduleItemAttribute> items)
             {
                 var variantIds = fields
                     .Single(f => f.Field.ProjectFieldId == field.ProjectFieldId)
                     .GetDropdownValues()
                     .Select(variant => variant.ProjectFieldDropdownValueId)
                     .ToList();
-                return from item in Items where variantIds.Contains(item.Id) select item.SeqId;
+                var indexes = (from item in items where variantIds.Contains(item.Id) select item.SeqId).ToList();
+                if (indexes.Count < variantIds.Count) // Some variants not found, probably deleted
+                {
+                    NotScheduled.Add(programItem);
+                }
+
+                return indexes;
             }
 
             var slots = from timeSeqId in GetSlotIndexes(TimeSlotField, TimeSlots)
@@ -128,20 +134,13 @@ namespace JoinRpg.Domain.Schedules
         }
 
         private List<List<ProgramItemSlot>> InitializeSlots(List<TimeSlot> timeSlots, List<ScheduleRoom> rooms)
-        {
-            var x = new List<List<ProgramItemSlot>>();
-            foreach (var time in timeSlots)
-            {
-                x.Add(rooms.Select(room => new ProgramItemSlot(time, room)).ToList());
-            }
-            return x;
-        }
+            => timeSlots.Select(time => rooms.Select(room => new ProgramItemSlot(time, room)).ToList()).ToList();
 
         private IEnumerable<T> InitializeList<T>(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
             where T: ScheduleItemAttribute, new ()
         {
             var seqId = 0;
-            foreach (var variant in readOnlyList)
+            foreach (var variant in readOnlyList.Where(x => x.IsActive))
             {
                 var item = new T()
                 {
