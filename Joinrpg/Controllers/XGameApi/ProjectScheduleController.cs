@@ -61,7 +61,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
                         RoomId = room.Id,
                         Name = room.Name
                     }),
-                    Description = slot.ProgramItem.Description.ToHtmlString().ToString()
+                    Description = slot.ProgramItem.Description.ToPlainText().ToString(),
+                    DescriptionHtml = slot.ProgramItem.Description.ToHtmlString().ToString(),
+                    DescriptionMarkdown = slot.ProgramItem.Description.Contents,
                 }).ToList();
             return result;
         }

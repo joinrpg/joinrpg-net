@@ -28,8 +28,9 @@ namespace JoinRpg.Web.XGameApi.Contract.Schedule
         /// Information about used rooms
         /// </summary>
         public IEnumerable<RoomInfoApi> Rooms { get; set; }
+
         /// <summary>
-        /// Description of program item (HTML)
+        /// Description of program item (plain text)
         /// </summary>
         public string Description { get; set; }
 
@@ -37,5 +38,19 @@ namespace JoinRpg.Web.XGameApi.Contract.Schedule
         /// Id of program item. Stable, never changes. Ids for different projects can't overlap.
         /// </summary>
         public int ProgramItemId { get; set; }
+
+        /// <summary>
+        /// Description of program item (HTML).
+        /// Html is passed through sanitizer on server side and PROBABLY safe.
+        /// But your requirements could vary, so it may be wise to sanitize again.
+        /// </summary>
+        public string DescriptionHtml { get; set; }
+
+        /// <summary>
+        /// Description of program item (Markdown). 
+        /// Beware: this is user input and should be treated as untrusted.
+        /// If you will render this to HTML, you have to sanitize AFTER rendering.
+        /// </summary>
+        public string DescriptionMarkdown { get; set; }
     }
 }
