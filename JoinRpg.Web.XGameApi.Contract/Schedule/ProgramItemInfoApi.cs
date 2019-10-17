@@ -32,5 +32,10 @@ namespace JoinRpg.Web.XGameApi.Contract.Schedule
         /// Description of program item (HTML)
         /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Id of program item. Stable, never changes. Ids for different projects can't overlap.
+        /// </summary>
+        public int ProgramItemId { get; set; }
     }
 }

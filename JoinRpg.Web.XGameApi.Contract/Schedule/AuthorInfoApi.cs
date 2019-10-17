@@ -9,5 +9,10 @@ namespace JoinRpg.Web.XGameApi.Contract.Schedule
         /// Display name (plain text)
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Id of user which represents author in joinrpg. Stable, never changes. 
+        /// </summary>
+        public int UserId { get; set; }
     }
 }

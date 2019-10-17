@@ -9,7 +9,6 @@ using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers;
 using Joinrpg.Markdown;
-using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.Web.XGameApi.Contract.Schedule;
 using JoinRpg.WebPortal.Managers.Schedule;
@@ -47,12 +46,21 @@ namespace JoinRpg.Web.Controllers.XGameApi
             var result = scheduleBuilder.Build().AllItems.Select(slot =>
                 new ProgramItemInfoApi
                 {
+                    ProgramItemId = slot.ProgramItem.Id,
                     Name = slot.ProgramItem.Name,
                     Authors = slot.ProgramItem.Authors.Select(author =>
-                        new AuthorInfoApi {Name = author.GetDisplayName()}),
+                        new AuthorInfoApi
+                        {
+                            UserId = author.UserId,
+                            Name = author.GetDisplayName()
+                        }),
                     StartTime = slot.StartTime,
                     EndTime = slot.EndTime,
-                    Rooms = slot.Rooms.Select(room => new RoomInfoApi {Name = room.Name}),
+                    Rooms = slot.Rooms.Select(room => new RoomInfoApi
+                    {
+                        RoomId = room.Id,
+                        Name = room.Name
+                    }),
                     Description = slot.ProgramItem.Description.ToHtmlString().ToString()
                 }).ToList();
             return result;
