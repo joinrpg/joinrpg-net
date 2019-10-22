@@ -2,6 +2,7 @@ using System;
 using System.Data.Entity.Validation;
 using System.Linq;
 using JoinRpg.Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace JoinRpg.Portal.Infrastructure
@@ -51,15 +52,6 @@ internal static class ModelStateExtensions
                 default:
                     dict.AddModelError("", exception.ToString());
                     break;
-            }
-        }
-
-        public static void AddErrors(this ModelStateDictionary modelStateDictionary,
-            IdentityResult result)
-        {
-            foreach (var error in result.Errors)
-            {
-                modelStateDictionary.AddModelError("", error);
             }
         }
     }

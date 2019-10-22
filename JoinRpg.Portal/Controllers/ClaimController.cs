@@ -779,7 +779,7 @@ namespace JoinRpg.Portal.Controllers
           var claim = await _claimsRepository.GetClaim(projectId, claimId);
           if (claim == null)
           {
-              return HttpNotFound();
+              return NotFound();
           }
           var error = WithClaim(claim);
           if (error != null)
