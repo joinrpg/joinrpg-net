@@ -1,22 +1,12 @@
 ﻿@model ClaimViewModel
 
-@Scripts.Render("~/Scripts/claim.js")
-
-
-@helper OtherClaimsForThisCharacterLink()
-    {
-        @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                     new { Model.CharacterId, Model.ProjectId }, null)
+@section Scripts {
+    <script src="~/Scripts/claim.js"></script>
 }
-@helper OtherClaimsForThisPlayerLink()
-    {
-        @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                     new { Model.ProjectId, Model.Player.UserId }, null)
-}
+
 
 @using JoinRpg.Web.Models
 @using JoinRpg.Helpers.Web
-@using JoinRpg.Web.App_Code
 @using JoinRpg.Web.Models.Accommodation
 
 @{
@@ -34,7 +24,7 @@
     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
     <div class="panel panel-default">
         <div class="panel-heading">
-            @Html.Partial("CharacterNavigation", Model.Navigation)
+         @*   @Html.Partial("CharacterNavigation", Model.Navigation) *@
         </div>
         <div class="panel-body">
             @if (Model.HasMasterAccess && Model.Problems.Any())
@@ -250,7 +240,8 @@
                 @if (Model.OtherClaimsForThisCharacterCount > 0)
                 {
                     <div class="alert alert-danger">
-                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @OtherClaimsForThisCharacterLink()
+                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните         @Html.ActionLink("заявки от других игроков", "Details", "Character",
+                                                                                                                              new { Model.CharacterId, Model.ProjectId }, null)
                         или переведите их на другого персонажа или в группу.
                     </div>
                 }
@@ -259,7 +250,8 @@
                     if (Model.OtherClaimsFromThisPlayerCount > 0)
                     {
                         <div class="alert alert-warning">
-                            Также этим же игроком подано на этот проект еще @OtherClaimsForThisPlayerLink().
+                            Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+                                                                                  new { Model.ProjectId, Model.Player.UserId }, null).
                             Если принять эту заявку, другие автоматически будут отклонены.
                         </div>
                     }
@@ -357,7 +349,8 @@
                 @if (Model.OtherClaimsFromThisPlayerCount > 0)
                 {
                     <div class="alert alert-danger">
-                        Этим же игроком подано на этот проект еще @OtherClaimsForThisPlayerLink().
+                        Этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+                                                                       new { Model.ProjectId, Model.Player.UserId }, null)
                         Отклоните другие заявки, прежде чем восстанавливать эту.
                     </div>
                 }
@@ -367,10 +360,11 @@
                     {
                         if (Model.HasOtherApprovedClaim)
                         {
-                            <div class="alert alert-warning">
-                                На этого персонажа есть другие утвержденные @OtherClaimsForThisCharacterLink().
-                                При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
-                            </div>
+            <div class="alert alert-warning">
+                На этого персонажа есть утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
+                                                                        new { Model.CharacterId, Model.ProjectId }, null)
+                При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
+            </div>
                         }
                         if (Model.CharacterActive == false)
                         {

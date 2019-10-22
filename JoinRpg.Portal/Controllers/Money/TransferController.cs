@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -14,14 +14,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.Money
 {
     [MasterAuthorize()]
-    public class TransferController : Common.ControllerGameBase
+    public class TransferController : ControllerGameBase
     {
         private IFinanceService FinanceService { get; }
 
-        public TransferController(ApplicationUserManager userManager,
+        public TransferController(
             IProjectRepository projectRepository,
             IProjectService projectService,
-            IExportDataService exportDataService,
             IFinanceService financeService,
             IUserRepository userRepository) : base(projectRepository,
                 projectService,
@@ -31,7 +30,7 @@ namespace JoinRpg.Portal.Controllers.Money
         }
 
         [HttpGet]
-        public async Task<ActionResult> Create(int projectId)
+        public async Task<IActionResult> Create(int projectId)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (project == null)
@@ -41,7 +40,8 @@ namespace JoinRpg.Portal.Controllers.Money
 
             var viewModel = new CreateMoneyTransferViewModel
             {
-                ProjectId = projectId, Receiver = CurrentUserId,
+                ProjectId = projectId,
+                Receiver = CurrentUserId,
             };
 
             Fill(viewModel, project);
@@ -85,7 +85,7 @@ namespace JoinRpg.Portal.Controllers.Money
                 return View(viewModel);
             }
 
-            return RedirectToAction("MoneySummary", "Finances", new {viewModel.ProjectId});
+            return RedirectToAction("MoneySummary", "Finances", new { viewModel.ProjectId });
         }
 
 
@@ -121,10 +121,10 @@ namespace JoinRpg.Portal.Controllers.Money
             catch
             {
                 //TODO handle error
-                return RedirectToAction("MoneySummary", "Finances", new {request.ProjectId});
+                return RedirectToAction("MoneySummary", "Finances", new { request.ProjectId });
             }
 
-            return RedirectToAction("MoneySummary", "Finances", new {request.ProjectId});
+            return RedirectToAction("MoneySummary", "Finances", new { request.ProjectId });
         }
     }
 }

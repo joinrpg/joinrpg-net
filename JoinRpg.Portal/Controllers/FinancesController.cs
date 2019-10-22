@@ -5,20 +5,21 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Web.Controllers.Money
+namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
   public class FinancesController : Common.ControllerGameBase
@@ -29,6 +30,7 @@ namespace JoinRpg.Web.Controllers.Money
       private IFinanceReportRepository FinanceReportRepository { get; }
 
       private IVirtualUsersService VirtualUsers { get; }
+      public ICurrentUserAccessor CurrentUserAccessor { get; }
 
       private IUnitOfWork UnitOfWork { get; }
 
@@ -41,7 +43,8 @@ namespace JoinRpg.Web.Controllers.Money
           IUriService uriService,
           IFinanceReportRepository financeReportRepository,
           IUserRepository userRepository,
-          IVirtualUsersService vpu
+          IVirtualUsersService vpu,
+          ICurrentUserAccessor currentUserAccessor
           )
           : base(projectRepository, projectService, userRepository)
         {
@@ -51,6 +54,7 @@ namespace JoinRpg.Web.Controllers.Money
           FinanceReportRepository = financeReportRepository;
           VirtualUsers = vpu;
           UnitOfWork = uow;
+          CurrentUserAccessor = currentUserAccessor;
         }
 
       [HttpGet]
@@ -58,7 +62,7 @@ namespace JoinRpg.Web.Controllers.Money
     public async Task<ActionResult> Setup(int projectid)
     {
       var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-      return View(new FinanceSetupViewModel(project, CurrentUserId, IsCurrentUserAdmin(), VirtualUsers.PaymentsUser));
+      return View(new FinanceSetupViewModel(project, CurrentUserId, CurrentUserAccessor.IsAdmin, VirtualUsers.PaymentsUser));
     }
 
     public async Task<ActionResult> Operations(int projectid, string export)
