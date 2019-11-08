@@ -1,6 +1,9 @@
-﻿@using JoinRpg.Web.App_Code
+﻿
 @model JoinRpg.Web.Models.FieldSetup.GameFieldCreateViewModel
-@Scripts.Render("~/Scripts/createfield.js")
+
+@section Scripts {
+<script src="~/Scripts/createfield.js"></script>
+}
 
 @{
     ViewBag.Title = "Добавление нового поля";

@@ -1,32 +1,26 @@
 ﻿@using System.ComponentModel
-@using JoinRpg.Web.App_Code
+
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
-
-@helper ShowDescription()
-{
-    var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
-    if (!Model.Description.IsNullOrWhiteSpace())
-    {
-        <div class="help-block @hideClassName">
-            @Model.Description
-        </div>
-    }
-
-    if (!Model.MasterDescription.IsNullOrWhiteSpace() && Model.HasMasterAccess)
-    {
-        <div class="help-block world-object-hidden">
-            @Model.MasterDescription
-        </div>
-    }
-}
 
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 
   @if (Model.FieldViewType == ProjectFieldViewType.Header)
   {
       <h4 class="@hideClassName">@Model.FieldName</h4>
-      @ShowDescription()
+      if (!Model.Description.IsNullOrWhiteSpace())
+      {
+          <div class="help-block @hideClassName">
+              @Model.Description
+          </div>
+      }
+
+      if (!Model.MasterDescription.IsNullOrWhiteSpace() && Model.HasMasterAccess)
+      {
+          <div class="help-block world-object-hidden">
+              @Model.MasterDescription
+          </div>
+      }
       return;
   }
 
@@ -106,7 +100,19 @@
         }
         @if (Model.FieldViewType != ProjectFieldViewType.Checkbox)
         {
-            @ShowDescription()
+            if (!Model.Description.IsNullOrWhiteSpace())
+            {
+                <div class="help-block @hideClassName">
+                    @Model.Description
+                </div>
+            }
+
+            if (!Model.MasterDescription.IsNullOrWhiteSpace() && Model.HasMasterAccess)
+            {
+                <div class="help-block world-object-hidden">
+                    @Model.MasterDescription
+                </div>
+            }
         }
     </div>
     <div class="col-md-2 price-table">

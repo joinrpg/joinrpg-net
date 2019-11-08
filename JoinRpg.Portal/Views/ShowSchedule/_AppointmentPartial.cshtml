@@ -1,0 +1,52 @@
+﻿@using JoinRpg.Helpers
+@using JoinRpg.Web.Models.Schedules
+@model AppointmentViewModel
+@{
+    string title = Model.DisplayName;
+    string classNames = "scheduler-appointment";
+    if (Model.ErrorType == AppointmentErrorType.Intersection)
+    {
+        title += " (имеются пересечения)";
+        classNames += " appointment-intersection";
+    }
+    if (Model.AllRooms)
+    {
+        classNames += " appointment-all-rooms";
+    }
+    classNames += Model.Users.Count == 0 ? " appointment-no-users" : " appointment-has-users";
+    string url = Url.Action(Model.ErrorType.HasValue ? "Edit" : "Details", "Character", new { projectId = Model.ProjectId, characterId = Model.CharacterId });
+    string style = Model.ErrorMode
+        ? string.Format("max-width: {0}px; height: {1}px;", Model.Width * 2, Model.ErrorType == AppointmentErrorType.NotLocated ? Model.Height + Model.Height / 2 : Model.Height)
+        : string.Format("left: {0}px; top: {1}px; width: {2}px; height: {3}px", Model.Left, Model.Top, Model.Width - 1, Model.Height - 1);
+    string target = Model.ErrorType.HasValue ? "_blank" : "_self";
+    string rooms = string.Join(", ", Model.Rooms.Select(r => r.Name));
+    string slots = string.Join(", ", Model.Slots.Select(s => s.Name));
+}
+<div id="appointment@(Model.CharacterId)"
+     class="@classNames"
+     style="@style"
+     display-name="@Model.DisplayName"
+     details-url="@url"
+     no-users="@((Model.Users.Count == 0).ToString())"
+     rooms="@rooms"
+     slots="@slots"
+     all-rooms="@(Model.AllRooms.ToString())"
+     error-mode="@((Model.ErrorType == AppointmentErrorType.Intersection).ToString())"
+     errors="@(Model.ErrorType.HasValue ? Model.ErrorType.GetDisplayName() : "")">
+    <div class="appointment-interior" title="@title">
+        <div class="appointment-header"><a href="@url" target="@target">@Model.DisplayName</a></div>
+        @if (Model.ErrorType == AppointmentErrorType.NotLocated)
+        {
+            <div class="appointment-rooms"><b>Комнаты:</b> @if (Model.Rooms.Count > 0) { @(Model.AllRooms ? "все" : rooms) } else { <b class="text-danger">нет</b> }</div>
+            <div class="appointment-slots"><b>Слоты:</b> @if (Model.Slots.Count > 0) { @(slots) } else { <b class="text-danger">нет</b> }</div>
+        }
+        <div id="appointment@(Model.CharacterId)-users" class="appointment-users">
+            @foreach (var user in Model.Users)
+            {
+                @Html.DisplayFor(m => user)
+            }
+        </div>
+    </div>
+    <div class="appointment-click-overlay" onclick="appointmentClickHandler(@Model.CharacterId)"></div>
+    <div id="appointment@(Model.CharacterId)-description" style="display: none;">@Model.Description</div>
+</div>

@@ -1,22 +1,35 @@
-﻿@model JoinRpg.Web.Models.Characters.CharacterViewModel
+﻿@using JetBrains.Annotations
+@model JoinRpg.Web.Models.Characters.CharacterViewModel
 
 @{
     var hideClassName = Model.IsPublic ? "" : "world-object-hidden";
 }
+
+@functions
+{
+
+    [MustUseReturnValue]
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
 <div class="@hideClassName">
-    <strong>@Html.ActionLink(Model.CharacterName, "Details", "Character", new {Model.ProjectId, Model.CharacterId}, null) </strong>
+    <strong>@Html.ActionLink(Model.CharacterName, "Details", "Character", new { Model.ProjectId, Model.CharacterId }, null) </strong>
     @if (Model.Player != null)
     {
         @Html.DisplayFor(model => model, "IPlayerCharacter")
     }
     else if (Model.ActiveClaimsCount > 0)
     {
-        @DisplayCount.OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
+        @CountOfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
     }
 
     @if (Model.IsAvailable)
     {
-        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId}, new { @class = "btn btn-default btn-xs" })
+        @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, new { @class = "btn btn-default btn-xs" })
         if (Model.IsHot)
         {
             <span class="label label-warning">Горячая роль</span>

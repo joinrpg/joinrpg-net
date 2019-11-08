@@ -24,6 +24,8 @@ namespace JoinRpg.Portal.Controllers
 
         public ActionResult HowToHelp() => View();
 
+        public ActionResult Support() => View();
+
         public ActionResult FromAllrpgInfo() => View();
 
         public async Task<ActionResult> BrowseGames() => View(await ProjectListManager.LoadModel());

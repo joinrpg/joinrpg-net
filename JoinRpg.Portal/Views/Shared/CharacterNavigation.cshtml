@@ -1,29 +1,5 @@
-﻿@using JetBrains.Annotations
-@using JoinRpg.Domain
-@using JoinRpg.Web.Models.Characters
-@model CharacterNavigationViewModel
+﻿@using JoinRpg.Web.Models.Characters
 
-@helper NavigationItem(CharacterNavigationPage page, string linkText, [AspMvcAction] string actionName, [AspMvcController] string controllerName, object args, bool enabled = true)
-{
-    if (Model.Page == page)
-    {
-        <li role="presentation" class="active">
-            <a>@linkText</a>
-        </li>
-    }
-    else if (enabled)
-    {
-        <li role="presentation">
-            @Html.ActionLink(linkText, actionName, controllerName, args, null)
-        </li>
-}
-else
-{
-    <li role="presentation" class="disabled">
-        <a>@linkText</a>
-    </li>
-}
-}
 
 @{
   ViewBag.Title = Model.Name;
@@ -36,19 +12,44 @@ else
         </li>
         @if (Model.CharacterId != null)
         {
-            @NavigationItem(CharacterNavigationPage.Character, "Персонаж", "Details", "Character", new {Model.ProjectId, Model.CharacterId})
+            <nav-link
+                asp-action="Details"
+                asp-controller="Character"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-characterid="@Model.CharacterId">
+                Персонаж
+            </nav-link>
+
             if (Model.HasMasterAccess)
             {
-                @NavigationItem(CharacterNavigationPage.Editing, "Редактировать", "Edit", "Character", new {Model.ProjectId, Model.CharacterId}, Model.CanEditRoles)
+                <nav-link
+                    asp-action="Edit"
+                    asp-controller="Character"
+                    asp-route-projectid="@Model.ProjectId"
+                    asp-route-characterid="@Model.CharacterId">
+                    Редактировать
+                </nav-link>
             }
         }
         @if (Model.ClaimId != null)
         {
-            @NavigationItem(CharacterNavigationPage.Claim, "Заявка", "Edit", "Claim", new {Model.ProjectId, Model.ClaimId})
+            <nav-link
+                asp-action="Edit"
+                asp-controller="Claim"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-claimId="@Model.ClaimId">
+                Заявка
+            </nav-link>
         }
         else if (Model.CanAddClaim)
         {
-            @NavigationItem(CharacterNavigationPage.AddClaim, "Подать заявку", "AddForCharacter", "Claim", new {Model.ProjectId, Model.CharacterId})
+            <nav-link
+                asp-action="AddForCharacter"
+                asp-controller="Claim"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-characterid="@Model.CharacterId">
+                Подать заявку
+            </nav-link>
         }
         else
         {
@@ -65,7 +66,13 @@ else
                 <ul class="dropdown-menu">
                     @foreach (var claim in Model.DiscussedClaims)
                     {
-                        @NavigationItem(CharacterNavigationPage.None, claim.Player.GetDisplayName(), "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                        <nav-link
+                            asp-action="Edit"
+                            asp-controller="Claim"
+                            asp-route-projectid="@Model.ProjectId"
+                            asp-route-claimId="@claim.ClaimId">
+                            @claim.Player.GetDisplayName()
+                        </nav-link>
                     }
                 </ul>
             </li>
@@ -81,7 +88,13 @@ else
                 <ul class="dropdown-menu">
                     @foreach (var claim in Model.RejectedClaims)
                     {
-                        @NavigationItem(CharacterNavigationPage.None, claim.Player.GetDisplayName(), "Edit", "Claim", new {Model.ProjectId, claim.ClaimId})
+                        <nav-link
+                            asp-action="Edit"
+                            asp-controller="Claim"
+                            asp-route-projectid="@Model.ProjectId"
+                            asp-route-claimId="@claim.ClaimId">
+                            @claim.Player.GetDisplayName()
+                        </nav-link>
                     }
                 </ul>
             </li>

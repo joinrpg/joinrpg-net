@@ -4,37 +4,11 @@
     <TargetFramework>net472</TargetFramework>
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
+      <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="App_Code\ConfirmDialog.cs" />
-    <Compile Remove="App_Code\MagicControlHtmlHelpers.cs" />
-    <Compile Remove="App_Code\SearchableDropdownMvcHelper.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
-    <None Remove="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
-    <None Remove="Views\Shared\DisplayTemplates\ClaimFeeViewModel.broken_cshtml" />
-    <None Remove="Views\Shared\DisplayTemplates\FieldValueViewModel.broken_cshtml" />
-    <None Remove="Views\Shared\EditorTemplates\FieldValueViewModel.broken_cshtml" />
-    <None Remove="Views\Shared\EditorTemplates\MarkdownString.broken_cshtml" />
-    <None Remove="Views\Shared\EditorTemplates\_SelectOptionDefPartial.broken_cshtml" />
-    <None Remove="Views\Shared\EditorTemplates\_SelectOptionPartial.broken_cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="App_Code\ConfirmDialog.cs" />
-    <Content Include="App_Code\MagicControlHtmlHelpers.cs" />
-    <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
-    <Content Include="Views\Shared\DisplayTemplates\CharacterGroupDetailsViewModel.broken_cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.broken_cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\ClaimFeeViewModel.broken_cshtml" />
-    <Content Include="Views\Shared\DisplayTemplates\FieldValueViewModel.broken_cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\FieldValueViewModel.broken_cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\MarkdownString.broken_cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\_SelectOptionDefPartial.broken_cshtml" />
-    <Content Include="Views\Shared\EditorTemplates\_SelectOptionPartial.broken_cshtml" />
+    <Content Include="App_Code\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

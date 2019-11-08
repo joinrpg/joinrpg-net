@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web.Mvc;
-using System.Web.Mvc.Html;
 using JoinRpg.Web.Models.CommonTypes;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace JoinRpg.Web.App_Code
+namespace JoinRpg.Portal
 {
     public static class JoinDropdownMvcHelper
     {
-        public static MvcHtmlString JoinFormDropdownFor<TModel, TValue>(
-            this HtmlHelper<TModel> self,
+        public static IHtmlContent JoinFormDropdownFor<TModel, TValue>(
+            this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression,
             IEnumerable<JoinSelectListItem> items)
         {
@@ -22,16 +22,16 @@ namespace JoinRpg.Web.App_Code
                 Selected = item.Selected,
             });
 
-            return MvcHtmlString.Create(
+            return new HtmlString(
                 string.Concat(
-                    new MvcHtmlString("<div class=\"form-group\">"),
+                    new HtmlString("<div class=\"form-group\">"),
                     self.LabelFor(expression, htmlAttributes: new { @class = "control-label col-md-2" }),
-                    new MvcHtmlString("<div class=\"col-md-10\">"),
+                    new HtmlString("<div class=\"col-md-10\">"),
                     self.DropDownListFor(expression, select, htmlAttributes: new { @class = "form-control" } ),
                     self.DescriptionFor(expression),
                     self.ValidationMessageFor(expression, "", new { @class = "text-danger" }),
-                    new MvcHtmlString("</div>"),
-                    new MvcHtmlString("</div>")
+                    new HtmlString("</div>"),
+                    new HtmlString("</div>")
                 ));
         }
     }

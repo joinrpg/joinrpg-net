@@ -1,44 +1,27 @@
 ﻿@using System.ComponentModel
-@using JoinRpg.Web.App_Code
+
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
-
-@helper ShowOptions()
-    {
-        foreach (var val in Model.PossibleValueList)
-        {
-            Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
-        }
-}
-@helper ValidationMessage()
-    {
-            <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
-}
-
-@helper ShowDescription()
-    {
-        var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : "";
-        if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
-        {
-            <div class="help-block @hideClassName">
-                @Model.Description
-            </div>
-        }
-
-        if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
-        {
-            <div class="help-block world-object-hidden">
-                @Model.MasterDescription
-            </div>
-        }
-}
 
 @{ var hideClassName = !Model.IsPlayerVisible ? "world-object-hidden" : ""; }
 
 @if (Model.FieldViewType == ProjectFieldViewType.Header)
 {
     <h4 class="@hideClassName">@Model.FieldName</h4>
-    @ShowDescription()
+    
+    if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+    {
+        <div class="help-block @hideClassName">
+            @Model.Description
+        </div>
+    }
+
+    if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+    {
+        <div class="help-block world-object-hidden">
+            @Model.MasterDescription
+        </div>
+    }
     return;
 }
 
@@ -87,23 +70,6 @@
                 }
             }
 
-            switch (Model.FieldViewType)
-            {
-                case ProjectFieldViewType.Text:
-                    attrs["rows"] = "4";
-                    attrs["cols"] = "100";
-                    break;
-                case ProjectFieldViewType.MultiSelect:
-                    attrs["multiple"] = "true";
-                    break;
-                case ProjectFieldViewType.Checkbox:
-                    attrs.Remove("class");
-                    if (Model.IsCheckboxSet())
-                    {
-                        attrs["checked"] = "true";
-                    }
-                    break;
-            }
 
             switch (Model.MandatoryStatus)
             {
@@ -124,6 +90,8 @@
         @switch (Model.FieldViewType)
         {
             case ProjectFieldViewType.Text:
+                attrs["rows"] = "4";
+                attrs["cols"] = "100";
                 <textarea @Html.RenderAttrs(attrs)>@(Model == null ? "" : Model.Value)</textarea>
                 break;
             case ProjectFieldViewType.Dropdown:
@@ -132,7 +100,10 @@
                     {
                         Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
                     }
-                    @ShowOptions()
+                    @foreach (var val in Model.PossibleValueList)
+                    {
+                    Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
+                    }
                 </select>
                 break;
             case ProjectFieldViewType.String:
@@ -154,6 +125,11 @@
                 break;
 
             case ProjectFieldViewType.Checkbox:
+                attrs.Remove("class");
+                if (Model.IsCheckboxSet())
+                {
+                    attrs["checked"] = "true";
+                }
                 <div class="form-control-complex">
                     <label for="@Model.FieldClientId" class="form-control-left">
                         <input type="checkbox" onchange="checkChanged(event)" @Html.RenderAttrs(attrs) />
@@ -168,19 +144,25 @@
                 break;
 
             case ProjectFieldViewType.MultiSelect:
+                attrs["multiple"] = "true";
                 <select onchange="multiChanged(event)" @Html.RenderAttrs(attrs)>
                     @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
                     {
                         Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
                     }
-                    @ShowOptions()
+                    @foreach (var val in Model.PossibleValueList)
+                    {
+                        Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
+                    }
                 </select>
                 <p class="help-block">Используйте Ctrl, чтобы выбрать несколько значений.</p>
                 break;
+            case ProjectFieldViewType.Header:
+                throw new InvalidOperationException("Should be handled earlier");
             default:
                 throw new InvalidEnumArgumentException("Unknown field type name");
         }
-        @ValidationMessage()
+        <span class="field-validation-valid text-danger" data-valmsg-for="@Model.FieldClientId" data-valmsg-replace="true"></span>
         @if (Model.HasMasterAccess)
         {
             @Html.Raw(
@@ -191,7 +173,19 @@
         }
         @if (Model.FieldViewType != ProjectFieldViewType.Checkbox)
         {
-            @ShowDescription()
+            if (!string.IsNullOrWhiteSpace(Model.Description.ToString()))
+            {
+                <div class="help-block @hideClassName">
+                    @Model.Description
+                </div>
+            }
+
+            if (!string.IsNullOrWhiteSpace(Model.MasterDescription.ToString()))
+            {
+                <div class="help-block world-object-hidden">
+                    @Model.MasterDescription
+                </div>
+            }
         }
         @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
     </div>

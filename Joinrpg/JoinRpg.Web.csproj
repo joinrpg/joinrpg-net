@@ -68,9 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Code\SearchableDropdownMvcHelper.cs" />
-    <Content Include="App_Code\ConfirmDialog.cs" />
-    <Content Include="App_Code\JoinDropdownMvcHelper.cs" />
-    <Content Include="App_Code\MagicControlHtmlHelpers.cs" />
     <Compile Include="App_Start\ApiSignInProvider.cs" />
     <Compile Include="App_Start\PluginsModule.cs" />
     <Compile Include="App_Start\SwaggerConfig.cs" />
@@ -78,9 +75,6 @@
     <Compile Include="Areas\Admin\Controllers\AdminHomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProjectListController.cs" />
     <Compile Include="Controllers\Money\PaymentsController.cs" />
-    <Compile Include="Controllers\Money\TransferController.cs" />
-    <Compile Include="Controllers\Money\OnlinePaymentsController.cs" />
-    <Compile Include="Controllers\Schedule\ShowScheduleController.cs" />
     <Compile Include="Controllers\XGameApi\CheckInController.cs" />
     <Compile Include="Controllers\XGameApi\AntiSpamServiceController.cs" />
     <Compile Include="Controllers\XGameApi\GlobalScheduleController.cs" />
@@ -99,8 +93,6 @@
     <Compile Include="Helpers\InviteStateExtensions.cs" />
     <Compile Include="WebApiConfig.cs" />
     <Content Include="App_Code\MvcIntrinsics.cs" />
-    <Content Include="App_Code\MvcHelpers.cs" />
-    <Content Include="App_Code\MoveControlHtmlHelper.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Models\ChangeEmailModel.cs" />
     <Compile Include="Controllers\XGameApi\CharacterApiController.cs" />
@@ -160,9 +152,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Areas\Admin\Views\AdminHome\StaleGames.cshtml" />
     <Content Include="libman.json" />
-    <Content Include="Scripts\claim.js" />
     <Content Include="Scripts\edit-funcs.js" />
-    <Content Include="Scripts\createfield.js" />
     <Content Include="Scripts\editfieldvalues.js" />
     <Content Include="Scripts\jquery.popconfirm.js" />
     <Content Include="Scripts\keyhandler.js" />
@@ -524,7 +514,6 @@
     <Content Include="Views\GameGroups\Index.cshtml" />
     <Content Include="Views\GameGroups\AddGroup.cshtml" />
     <Content Include="Views\Character\Create.cshtml" />
-    <Content Include="Views\Claim\Add.cshtml" />
     <Content Include="Views\ClaimList\Index.cshtml" />
     <Content Include="Views\Claim\Edit.cshtml" />
     <Content Include="Views\Character\Details.cshtml" />
@@ -762,6 +751,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Controllers\Schedule\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.AspNetLegacy.Helpers\JoinRpg.AspNetLegacy.Helpers.csproj">

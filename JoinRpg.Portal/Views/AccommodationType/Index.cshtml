@@ -1,10 +1,13 @@
-﻿@using JoinRpg.Web.App_Code
+﻿
 @using JoinRpg.Web.Models.Accommodation
 @model AccommodationListViewModel
 @{
     ViewBag.Title = "Поселение на игре «" + Model.ProjectName + "»";
 }
-@Scripts.Render("~/Scripts/roomsMessages.js")
+
+@section Scripts {
+    <script src="~/Scripts/roomsMessages.js"></script>
+}
 
 <h2>@ViewBag.Title</h2>
 
@@ -12,18 +15,21 @@
     @if (Model.CanManageRooms)
     {
         <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId })" class="btn btn-success">
-            <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения</a>
+            <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения
+        </a>
     }
     @if (Model.CanAssignRooms)
     {
         @*<a href="@Url.Action("OccupyAll", "AccommodationType", new {ProjectId = Model.ProjectId })" class="btn btn-default" onclick="return ConfirmPlaceAll()">
             <i class="glyphicon glyphicon-bed"></i> Заселить всех</a>*@
         <a href="@Url.Action("UnOccupyAll", "AccommodationType", new {Model.ProjectId})" class="btn btn-default" onclick="return ConfirmKickAll()">
-            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех</a>
+            <i class="glyphicon glyphicon-fullscreen"></i> Выселить всех
+        </a>
     }
-    <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})"  class="btn btn-default">Игроки без поселения...</a>
+    <a href="@Url.Action("ListForRoomType", "ClaimList", new {Model.ProjectId})" class="btn btn-default">Игроки без поселения...</a>
     <a href="@Url.Action("MainReport", "AccommodationPrint", new { Export = "xlsx", Model.ProjectId})" class="btn btn-default">
-        <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)</a>
+        <i class="glyphicon glyphicon-download"></i> Список расселения (Excel)
+    </a>
 </div>
 
 <div class="table-responsive" style="margin-top: 1em;">

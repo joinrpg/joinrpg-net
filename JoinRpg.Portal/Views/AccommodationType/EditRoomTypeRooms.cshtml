@@ -4,15 +4,17 @@
 @{
     ViewBag.Title = Model.Project.ProjectName + ": тип поселения «" + Model.Name + "»";
 }
+
+@section Scripts {
+    <script src="~/Scripts/roomsMessages.js"></script>
+    <script src="~/Scripts/rooms.js"></script>
+}
 <h2>@ViewBag.Title</h2>
 <ul class="nav nav-tabs">
     <li><a href="@Url.Action("Index", "AccommodationType")"><i class="glyphicon glyphicon-arrow-left"></i> Список типов поселения</a></li>
-    <li><a href="@Url.Action("EditRoomType", "AccommodationType", new {ProjectId = Model.ProjectId, RoomTypeId = Model.Id})">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
+    <li><a href="@Url.Action("EditRoomType", "AccommodationType", new {Model.ProjectId, RoomTypeId = Model.Id})">@(Model.CanManageRooms ? "Параметры" : "Информация")</a></li>
     <li class="active"><a href="#">Комнаты</a></li>
 </ul>
-
-@Scripts.Render("~/Scripts/roomsMessages.js")
-@Scripts.Render("~/Scripts/rooms.js")
 <script type="text/javascript">
     @* following variables are declared in rooms.js *@
     projectId = @Model.ProjectId;
@@ -48,10 +50,10 @@
     <h4>Нерасселенные участники</h4>
     <div id="availRequestsList" class="list-group">
         <div id="availRequestsListContainer">
-        @foreach (var req in Model.UnassignedRequests)
-        {
-            @Html.Partial("_RoomInhabitant", req)
-        }
+            @foreach (var req in Model.UnassignedRequests)
+            {
+                @Html.Partial("_RoomInhabitant", req)
+            }
         </div>
     </div>
 </div>
