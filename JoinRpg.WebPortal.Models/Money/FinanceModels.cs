@@ -10,6 +10,7 @@ using JoinRpg.Helpers;
 using JoinRpg.Helpers.Validation;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.CharacterGroups;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -206,7 +207,7 @@ namespace JoinRpg.Web.Models
     
 
 
-    public class RecipientClaimViewModel : SelectListItem
+    public class RecipientClaimViewModel : JoinSelectListItem
     {
         public int ClaimId { get; }
 
@@ -224,7 +225,7 @@ namespace JoinRpg.Web.Models
             Status = ((ClaimStatusView) source.ClaimStatus).GetDisplayName();
 
             Text = $"{Name} ({Status}" + (Player != null ? $", {Player.GetDisplayName()}" : "") + ")";
-            Value = ClaimId.ToString();
+            Value = ClaimId;
         }
     }
 

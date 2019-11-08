@@ -120,7 +120,6 @@
   <ItemGroup>
     <Content Include="Content\AppointmentDetails.css" />
     <Content Include="Content\fonts\LigatureSymbols\LigatureSymbols-2.11-1aafc4bd.svg" />
-    <Content Include="Content\FullScreen.css" />
     <Content Include="Content\Images\ajax-loader-879d35b3.gif" />
     <Content Include="Content\Images\fee.jpg" />
     <Content Include="Content\Images\logo-telegram.svg" />
@@ -128,7 +127,6 @@
     <Content Include="Content\Images\shut-up-and-take-my-money.png" />
     <Content Include="Content\multicontrol.css" />
     <Content Include="Content\Print.css" />
-    <Content Include="Content\Scheduler.css" />
     <Content Include="external\joinrpg-api.css" />
     <Content Include="external\joinrpg-api.js" />
     <Content Include="external\roles-1.js" />
@@ -569,7 +567,6 @@
     <Content Include="Views\Shared\DisplayTemplates\CharacterParentGroupsViewModel.cshtml" />
     <Content Include="Views\Shared\_PlotForCharacterPartial.cshtml" />
     <Content Include="Views\Shared\CharacterNavigation.cshtml" />
-    <Content Include="Views\Finances\_SubmitPaymentDialog.cshtml" />
     <Content Include="Views\Finances\ClaimFinanceOperations\ClaimFinanceOperations.cshtml" />
     <Content Include="Views\Shared\ProjectCard.cshtml" />
     <Content Include="Views\Home\BrowseGames.cshtml" />
@@ -650,7 +647,6 @@
     <Content Include="Views\Character\_CharacterFieldsSubtotal.cshtml" />
     <Content Include="Views\Acl\ForceSet.cshtml" />
     <Content Include="Views\Shared\DisplayTemplates\UserAvatar.cshtml" />
-    <Content Include="Views\Claim\_RequestPreferentialFeeDialog.cshtml" />
     <Content Include="Views\AccommodationType\Index.cshtml" />
     <Content Include="Views\AccommodationType\EditRoomType.cshtml" />
     <Content Include="Views\AccommodationType\_RoomsList.cshtml" />
@@ -928,16 +924,7 @@
     <Content Include="Views\Account\_PasswordLoginFormPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Finances\_PayOnlineDialog.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Comments\_AddCommentFormPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Comments\_CommentTextEditorPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Finances\_TogglePaymentTypeDialog.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Finances\_PaymentTypesPartial.cshtml" />
@@ -958,9 +945,6 @@
     <Content Include="Views\Shared\Layout\_YandexPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Home\Support.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Shared\_DevAlertPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -974,18 +958,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Terms.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Payments\Error.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Payments\RedirectToBank.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Payments\_RedirectFormPartial.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Payments\_RedirectContentPartial.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Comments\_CommentFinancePartial.cshtml" />

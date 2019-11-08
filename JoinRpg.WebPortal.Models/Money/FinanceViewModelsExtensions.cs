@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models {
 
@@ -38,13 +38,13 @@ namespace JoinRpg.Web.Models {
         /// <summary>
         /// Converts payment types to select box items
         /// </summary>
-        public static IEnumerable<SelectListItem> PaymentTypesToSelectBoxItems(
+        public static IEnumerable<JoinSelectListItem> PaymentTypesToSelectBoxItems(
             this IEnumerable<PaymentTypeViewModel> source)
             => source.Select(
-                pt => new SelectListItem
+                pt => new JoinSelectListItem
                 {
                     Text = pt.Name,
-                    Value = pt.PaymentTypeId.ToString()
+                    Value = pt.PaymentTypeId
                 });
 
         /// <summary>

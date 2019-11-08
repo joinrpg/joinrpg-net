@@ -113,7 +113,7 @@
                     <div id="answerComment@(comment.CommentId)" class="collapse">
                         @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
                             {
-                        @Html.Partial("..\\Comments\\AddCommentPartial", new AddCommentViewModel
+                        @Html.Partial("~Views/Comments/_AddCommentPartial", new AddCommentViewModel
                    {
                        ProjectId = comment.ProjectId,
                        CommentDiscussionId = comment.CommentDiscussionId,
