@@ -1,23 +1,22 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
-using System.Web.Mvc;
-using System.Web.Mvc.Html;
 using JetBrains.Annotations;
+using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CommonTypes;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace JoinRpg.Web.App_Code
+namespace JoinRpg.Portal
 {
   public static class MoveControlHtmlHelper
   {
 
-    public static MvcHtmlString MoveControl<TModel, TValue>(this HtmlHelper<TModel> self,
+    public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
       Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName,
       [AspMvcController] string controllerName, int? parentObjectId = null)
     {
-      var metadata = ModelMetadata.FromLambdaExpression(expression, self.ViewData);
-
-      var item = (IMovableListItem) metadata.Model;
+      var item = (IMovableListItem) self.GetValue(expression);
 
       var paramters = new MoveControlParametersViewModel()
       {
@@ -32,7 +31,7 @@ namespace JoinRpg.Web.App_Code
       return self.Partial("_MoveControlPartial", paramters);
     }
 
-    public static MvcHtmlString MoveControl<TModel, TValue>(this HtmlHelper<TModel> self,
+    public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
       [InstantHandle] Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName)
     {
       var rd = self.ViewContext.RouteData;

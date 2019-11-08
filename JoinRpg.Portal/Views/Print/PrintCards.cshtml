@@ -1,4 +1,5 @@
 ﻿@using Joinrpg.Markdown
+@using HtmlString = Microsoft.AspNetCore.Html.HtmlString
 @model IEnumerable<JoinRpg.Experimental.Plugin.Interfaces.HtmlCardPrintResult>
 
 @{
@@ -63,7 +64,7 @@
         var background = card.BackgroundUrl != null ? new HtmlString("style=\"background-image:url(" + card.BackgroundUrl + "); background-position: center; background-size: contain; background-repeat: no-repeat;\"") : new HtmlString("");
           <div class="a7card" @background>
             <div class="card-content">
-              @(ViewBag.CardSanitizeDisable == true ? new MvcHtmlString(card.Html.UnValidatedValue) : card.Html.SanitizeHtml())
+              @(ViewBag.CardSanitizeDisable == true ? new HtmlString(card.Html.UnValidatedValue) : card.Html.SanitizeHtml())
             </div>
             <div class="card-footer">
               создано при помощи joinrpg.ru

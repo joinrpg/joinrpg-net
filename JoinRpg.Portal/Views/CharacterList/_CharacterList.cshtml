@@ -1,16 +1,32 @@
 ﻿@using System.Diagnostics
+@using JetBrains.Annotations
 @using JoinRpg.DataModel
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
+
+@functions
+
+{
+
+    [MustUseReturnValue]
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
+
+
 @{
-  ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
+    ViewBag.CountString = CountOfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
 }
 
 @Html.Partial("_ListOperationsDropdown", Model)
 
 @{
-  var firstItem = Model.Items.FirstOrDefault();
+    var firstItem = Model.Items.FirstOrDefault();
 }
 
 <table class="table">
@@ -38,10 +54,10 @@
                 case ProjectFieldType.Checkbox:
                 case ProjectFieldType.MultiSelect:
                 case ProjectFieldType.Login:
-            <th>@field.FieldName</th>
+                    <th>@field.FieldName</th>
                     break;
                 case ProjectFieldType.Header:
-            <th>&nbsp;</th>
+                    <th>&nbsp;</th>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -52,99 +68,99 @@
 
     @foreach (var item in Model.Items.OrderBy(c => c.BusyStatus).ThenBy(c => c.Name))
     {
-    <tr>
-        <td>
-            <a href="@Url.Action(Model.HasEditAccess ? "Edit" : "Details", "Character", new {Model.ProjectId, item.CharacterId}, null)">
-                @item.Name
-            </a>
-        </td>
-        <td>
-            @switch (item.BusyStatus)
-            {
-                case CharacterBusyStatusView.HasPlayer:
-                    <text>
-                        @Html.DisplayFor(modelItem => item.Player) (@Html.ActionLink("заявка", "Edit", "Claim", new {Model.ProjectId, ClaimId = item.ApprovedClaimId}, null))
-                    </text>
-                    break;
-                case CharacterBusyStatusView.Discussed:
-                case CharacterBusyStatusView.NoClaims:
-                case CharacterBusyStatusView.Npc:
-                @Html.DisplayFor(modelItem => item.BusyStatus)
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        </td>
-        <td>
-            @Html.DisplayFor(model => item.Groups)
-        </td>
-        <td>
-            @foreach (var pr in item.Problems)
-            {
-
-                string style;
-                switch (pr.Severity)
+        <tr>
+            <td>
+                <a href="@Url.Action(Model.HasEditAccess ? "Edit" : "Details", "Character", new {Model.ProjectId, item.CharacterId}, null)">
+                    @item.Name
+                </a>
+            </td>
+            <td>
+                @switch (item.BusyStatus)
                 {
-                    case ProblemSeverity.Hint:
-                        style = "label-info";
+                    case CharacterBusyStatusView.HasPlayer:
+                        <text>
+                            @Html.DisplayFor(modelItem => item.Player) (@Html.ActionLink("заявка", "Edit", "Claim", new { Model.ProjectId, ClaimId = item.ApprovedClaimId }, null))
+                        </text>
                         break;
-                    case ProblemSeverity.Warning:
-                        style = "label-warning";
-                        break;
-                    case ProblemSeverity.Error:
-                    case ProblemSeverity.Fatal:
-                        style = "label-danger";
+                    case CharacterBusyStatusView.Discussed:
+                    case CharacterBusyStatusView.NoClaims:
+                    case CharacterBusyStatusView.Npc:
+                        @Html.DisplayFor(modelItem => item.BusyStatus)
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+            </td>
+            <td>
+                @Html.DisplayFor(model => item.Groups)
+            </td>
+            <td>
+                @foreach (var pr in item.Problems)
+                {
 
-            <div class="label @style">
-                @if (pr.Severity == ProblemSeverity.Fatal)
-                {
-                <span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
-                }
-                @Html.DisplayFor(modelItem => pr.ProblemType)
-                @if (pr.ProblemTime != null)
-                {
-                @Html.DisplayFor(modelItem => pr.ProblemTime, "EventTime")
-                }
-                @if (!string.IsNullOrWhiteSpace(pr.Extra))
-                {
-                <text>: @pr.Extra</text>
-                }
-            </div>
+                    string style;
+                    switch (pr.Severity)
+                    {
+                        case ProblemSeverity.Hint:
+                            style = "label-info";
+                            break;
+                        case ProblemSeverity.Warning:
+                            style = "label-warning";
+                            break;
+                        case ProblemSeverity.Error:
+                        case ProblemSeverity.Fatal:
+                            style = "label-danger";
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+
+                    <div class="label @style">
+                        @if (pr.Severity == ProblemSeverity.Fatal)
+                        {
+                            <span class="glyphicon glyphicon-exclamation-sign" title="Обратитесь в поддержку сайта"></span>
+                        }
+                        @Html.DisplayFor(modelItem => pr.ProblemType)
+                        @if (pr.ProblemTime != null)
+                        {
+                            @Html.DisplayFor(modelItem => pr.ProblemTime, "EventTime")
+                        }
+                        @if (!string.IsNullOrWhiteSpace(pr.Extra))
+                        {
+                            <text>: @pr.Extra</text>
+                        }
+                    </div>
                     <br />
-            }
-        </td>
-
-        @foreach (var field in Model.Fields)
-        {
-            var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
-            switch (field.FieldType)
-            {
-                case ProjectFieldType.Text:
-                    continue;
-                case ProjectFieldType.String:
-                case ProjectFieldType.Number:
-                case ProjectFieldType.Dropdown:
-                case ProjectFieldType.Checkbox:
-                case ProjectFieldType.MultiSelect:
-                case ProjectFieldType.Login:
-              <td>
-                @if (fieldValueViewModel != null)
-                {
-                  @fieldValueViewModel.DisplayString
                 }
-              </td>
-                    break;
-                case ProjectFieldType.Header:
-            <td>*</td>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+            </td>
+
+            @foreach (var field in Model.Fields)
+            {
+                var fieldValueViewModel = item.Fields.SingleOrDefault(f => f.Field.ProjectFieldId == field.ProjectFieldId);
+                switch (field.FieldType)
+                {
+                    case ProjectFieldType.Text:
+                        continue;
+                    case ProjectFieldType.String:
+                    case ProjectFieldType.Number:
+                    case ProjectFieldType.Dropdown:
+                    case ProjectFieldType.Checkbox:
+                    case ProjectFieldType.MultiSelect:
+                    case ProjectFieldType.Login:
+                        <td>
+                            @if (fieldValueViewModel != null)
+                            {
+                                @fieldValueViewModel.DisplayString
+                            }
+                        </td>
+                        break;
+                    case ProjectFieldType.Header:
+                        <td>*</td>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-        }
-    </tr>
+        </tr>
     }
 </table>

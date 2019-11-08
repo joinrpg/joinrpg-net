@@ -1,5 +1,5 @@
 ﻿@using JoinRpg.DataModel
-@using JoinRpg.Web.App_Code
+
 @using JoinRpg.Web.Models
 @model FinanceSetupViewModel
 
@@ -206,7 +206,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                 В любой ячейке (например, А1), введите
                 <br/>
                 <code>
-                    =IMPORTDATA("@(RouteHelper.GetFullHostName() + Url.Action("SummaryByMaster", new { token = Model.CurrentUserToken, Model.ProjectId }))")
+                    =IMPORTDATA("@Url.Action("SummaryByMaster",  "Finances", new { token = Model.CurrentUserToken, Model.ProjectId }, this.Context.Request.Scheme)")
                 </code>.
                 <br/>
                 Учтите, что обновление происходит с некоторой задержкой (раз в несколько часов). Подробности можно узнать в <a href="https://support.google.com/docs/answer/3093335?hl=ru">справке Google Таблиц</a>.

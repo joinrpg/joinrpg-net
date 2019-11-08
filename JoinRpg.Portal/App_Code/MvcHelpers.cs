@@ -9,11 +9,21 @@ using JoinRpg.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
-namespace JoinRpg.Web.App_Code
+namespace JoinRpg.Portal
 {
+
+
+    public static class DisplayCount
+    {
+        [MustUseReturnValue]
+        public static IHtmlContent OfX(int count, string single, string multi1, string multi2)
+        {
+            var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+            return new HtmlString(count + " " + selected);
+        }
+    }
     public static class MvcHtmlHelpers
     {
         //https://stackoverflow.com/a/17455541/408666
@@ -72,7 +82,7 @@ namespace JoinRpg.Web.App_Code
         /// <summary>
         /// Renders dictionary to attributes
         /// </summary>
-        public static IHtmlContent RenderAttrs(this HtmlHelper self, Dictionary<string, string> attrs)
+        public static IHtmlContent RenderAttrs(this IHtmlHelper self, Dictionary<string, string> attrs)
         {
             string s = string.Empty;
             foreach (var kv in attrs)
@@ -137,7 +147,7 @@ namespace JoinRpg.Web.App_Code
             return self.GetValue(m => m);
         }
 
-        private static Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
+        public static Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
         {
             return ExpressionMetadataProvider.FromLambdaExpression(expression, self.ViewData, self.MetadataProvider).Metadata;
         }

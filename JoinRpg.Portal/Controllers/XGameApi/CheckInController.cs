@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
         }
 
 
-        [System.Web.Mvc.Route("stat")]
+        [Route("stat")]
         public async Task<CheckInStats> GetCheckInStat(int projectId)
         {
             return new CheckInStats()

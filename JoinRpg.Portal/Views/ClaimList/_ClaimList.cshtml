@@ -1,15 +1,29 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using JetBrains.Annotations
+@using Microsoft.AspNet.Identity
 @model JoinRpg.Web.Models.ClaimListViewModel
+
+@functions
+
+{
+
+    [MustUseReturnValue]
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
 
 @if (Model.ShowCount)
 {
-    ViewBag.CountString = DisplayCount.OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
+    ViewBag.CountString = CountOfX(Model.Items.Count(), "заявка", "заявки", "заявок");
 }
 
 @Html.Partial("_ListOperationsDropdown", Model)
 
 @{
-  var firstItem = Model.Items.FirstOrDefault();
+    var firstItem = Model.Items.FirstOrDefault();
 }
 
 <table class="table">
@@ -19,15 +33,15 @@
         </th>
         @if (Model.ShowUserColumn)
         {
-        <th>
-            @Html.DisplayNameFor(model => firstItem.Player)
-        </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.Player)
+            </th>
         }
         @if (Model.ProjectId == null) //We need to differentiate by project
         {
-        <th>
-            @Html.DisplayNameFor(model => firstItem.ProjectName)
-        </th>
+            <th>
+                @Html.DisplayNameFor(model => firstItem.ProjectName)
+            </th>
         }
         <th>
             @Html.DisplayNameFor(model => firstItem.ClaimFullStatusView)
@@ -37,75 +51,75 @@
         </th>
         @if (ViewBag.MasterAccessColumn == true)
         {
-        <th>@Html.DisplayNameFor(model => firstItem.Responsible)</th>
+            <th>@Html.DisplayNameFor(model => firstItem.Responsible)</th>
             <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
         }
     </tr>
 
     @foreach (var item in Model.Items.OrderByDescending(c => c.UpdateDate))
     {
-    <tr>
-        <td>
-            <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
-                @item.Name
-                @if (item.UnreadCommentsCount > 0)
-                {
-                <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
-                }
-            </a>
-        </td>
-        @if (Model.ShowUserColumn)
-        {
-        <td>
-            @Html.DisplayFor(modelItem => item.Player)
-            @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
-            {<text><br /> @item.Player.FullName </text>
-            }
-        </td>
-        }
-        @if (Model.ProjectId == null)
-        {
-        <td>
-            @Html.DisplayFor(modelItem => item.ProjectName)
-        </td>
-        }
-        <td>
-            @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UpdateDate)
-            @if (item.LastModifiedBy != null)
+        <tr>
+            <td>
+                <a href="@Url.Action("Edit", "Claim", new {item.ProjectId, item.ClaimId}, null)">
+                    @item.Name
+                    @if (item.UnreadCommentsCount > 0)
+                    {
+                        <span class="badge" title="Непрочитанные комментарии">@item.UnreadCommentsCount</span>
+                    }
+                </a>
+            </td>
+            @if (Model.ShowUserColumn)
             {
-                if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
-                {
-                <text>мной</text>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Player)
+                    @if (item.Player != null && !string.IsNullOrWhiteSpace(item.Player.FullName))
+                    {<text><br /> @item.Player.FullName </text>
                 }
-                else if (item.LastModifiedBy == item.Player)
-                {
-                <text>игроком</text>
-                }
-                else if (item.LastModifiedBy == item.Responsible)
-                {
-                <text>отв. мастером</text>
-                }
-                else
-                {
-                @Html.DisplayFor(modelItem => item.LastModifiedBy)
-                }
+                </td>
             }
-        </td>
-        @if (ViewBag.MasterAccessColumn == true)
-        {
-        <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
+            @if (Model.ProjectId == null)
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectName)
+                </td>
+            }
+            <td>
+                @Html.DisplayFor(modelItem => item.ClaimFullStatusView)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdateDate)
+                @if (item.LastModifiedBy != null)
+                {
+                    if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
+                    {
+                        <text>мной</text>
+                    }
+                    else if (item.LastModifiedBy == item.Player)
+                    {
+                        <text>игроком</text>
+                    }
+                    else if (item.LastModifiedBy == item.Responsible)
+                    {
+                        <text>отв. мастером</text>
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => item.LastModifiedBy)
+                    }
+                }
+            </td>
+            @if (ViewBag.MasterAccessColumn == true)
+            {
+                <td>@Html.DisplayFor(modelItem => item.Responsible)</td>
                 <td>
                     @foreach (var pr in item.Problems)
                     {
-                    @Html.DisplayFor(modelItem => pr)
+                        @Html.DisplayFor(modelItem => pr)
                     }
                 </td>
-        }
+            }
 
-    </tr>
+        </tr>
     }
 
 </table>

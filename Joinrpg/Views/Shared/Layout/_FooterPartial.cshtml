@@ -1,10 +1,17 @@
-﻿@using JoinRpg.Web.App_Code
+﻿@using JoinRpg.Web
+@using JoinRpg.Web.App_Code
     <footer>
         <hr />
         &copy; <a href="http://bastilia.ru">#</a>ЛеоЦарев и друзья.
-        @Html.ActionLink("Поддержка", "Support", "Home"):
+        <a asp-controller="Home"
+           asp-action="Support">
+            Поддержка
+        </a>:
         <a href="mailto:support@joinrpg.ru"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></a>
         <a href="https://vk.com/joinrpg">ВК</a> @Html.HelpLink("", "").
-        Информация о @Html.ActionLink("приеме платежей", "Index", "OnlinePayments").
-        <!-- Версия @ViewContext.Controller.GetType().Assembly.GetName().Version -->
+        Информация о <a asp-controller="OnlinePayments"
+                        asp-action="Index">
+            приеме платежей
+        </a> .
+        <!-- Версия проекта: @typeof(Startup).Assembly.GetName().Version -->
     </footer>

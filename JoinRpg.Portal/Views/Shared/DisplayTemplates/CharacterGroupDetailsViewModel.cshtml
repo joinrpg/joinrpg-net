@@ -1,0 +1,90 @@
+﻿@using JoinRpg.Web.Models.CharacterGroups
+@model CharacterGroupDetailsViewModel
+
+@{
+  
+      string strikeStyleOfName = Model.IsActive ? "" : "text-decoration: line-through";
+}
+<div style="margin-bottom: 1em">
+    <ul class="nav nav-pills">
+        <li class="disabled">
+            <a href="#" style="cursor: default; @strikeStyleOfName"><span class="h3">@Model.Name</span></a>
+        </li>
+        @if (Model.HasMasterAccess || !Model.IsRootGroup)
+        {
+            <nav-link
+                asp-controller="GameGroups"
+                asp-action="Details"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-charactergroupid="@Model.CharacterGroupId">
+                Группа
+            </nav-link>
+            <nav-link
+                asp-controller="GameGroups"
+                asp-action="Index"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-charactergroupid="@Model.CharacterGroupId">
+                Сетка ролей
+            </nav-link>
+        }
+        @if (Model.HasMasterAccess)
+        {
+            <nav-link
+                asp-controller="ClaimList"
+                asp-action="ListForGroup"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-charactergroupid="@Model.CharacterGroupId">
+                Заявки
+            </nav-link>
+            if (!Model.IsSpecial)
+            {
+                <nav-link
+                    asp-controller="ClaimList"
+                    asp-action="DiscussingForGroup"
+                    asp-route-projectid="@Model.ProjectId"
+                    asp-route-charactergroupid="@Model.CharacterGroupId">
+                    Обсуждаемые
+                </nav-link>
+                <nav-link
+                    asp-controller="ClaimList"
+                    asp-action="ListForGroupDirect"
+                    asp-route-projectid="@Model.ProjectId"
+                    asp-route-charactergroupid="@Model.CharacterGroupId">
+                    Заявки в группу
+                </nav-link>
+            }
+            <nav-link
+                asp-controller="CharacterList"
+                asp-action="ByGroup"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-charactergroupid="@Model.CharacterGroupId">
+                Персонажи
+            </nav-link>
+            <nav-link
+                asp-controller="GameGroups"
+                asp-action="Report"
+                asp-route-projectid="@Model.ProjectId"
+                asp-route-charactergroupid="@Model.CharacterGroupId">
+                Сводный отчет
+            </nav-link>
+            if (!Model.IsRootGroup)
+            {
+                <nav-link
+                    asp-controller="Plot"
+                    asp-action="ForGroup"
+                    asp-route-projectid="@Model.ProjectId"
+                    asp-route-charactergroupid="@Model.CharacterGroupId">
+                    Сюжеты
+                </nav-link>
+            }
+        }
+        <nav-link
+            asp-controller="Forum"
+            asp-action="ListThreadsByGroup"
+            asp-route-projectid="@Model.ProjectId"
+            asp-route-charactergroupid="@Model.CharacterGroupId">
+            Сюжеты
+        </nav-link>
+    </ul>
+
+</div>

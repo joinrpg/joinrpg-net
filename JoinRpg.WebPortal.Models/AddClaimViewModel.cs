@@ -10,7 +10,7 @@ using JoinRpg.Helpers.Web;
 
 namespace JoinRpg.Web.Models
 {
-    public class AddClaimViewModel
+    public class AddClaimViewModel : IProjectIdAware
     {
         public int ProjectId { get; set; }
 

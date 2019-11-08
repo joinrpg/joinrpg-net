@@ -1,0 +1,22 @@
+﻿@using JoinRpg.Web.Models.Characters
+@model CharacterParentGroupsViewModel
+
+@{ 
+      var sep = "";
+      foreach (var gr in Model.ParentGroups.Where(g => Model.HasMasterAccess || (g.IsPublic && g.IsActive)))
+      {
+          @sep
+          sep = " • ";
+          var hideCLass = gr.IsPublic ? "" : "world-object-hidden";
+          if (gr.IsActive)
+          {
+              @Html.ActionLink(gr.Name, "Details", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId},
+                  new {@class = hideCLass})
+              }
+          else
+          {
+            <s>    @Html.ActionLink(gr.Name, "Details", "GameGroups", new {gr.CharacterGroupId, gr.ProjectId},
+                       new {@class = hideCLass})</s>
+          }
+      }
+  }

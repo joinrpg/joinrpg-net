@@ -1,5 +1,19 @@
-﻿@using JoinRpg.Web.Models
+﻿@using JetBrains.Annotations
+@using JoinRpg.Helpers.Web
+@using JoinRpg.Web.Models
 @model GameRolesViewModel
+
+@functions
+{
+
+    [MustUseReturnValue]
+    public static string CountOfX(int count, string single, string multi1, string multi2)
+    {
+        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+        return count + " " + @selected;
+    }
+
+}
 
 @if (!Model.Data.Any())
 {
@@ -9,100 +23,110 @@
 
 @{
     ViewBag.Title = "Сетка ролей " + Model.ProjectName + ": " + Model.Data.Single(g => g.DeepLevel == 0).Name;
+    ViewData["ShowEditControls"] = Model.ShowEditControls;
 }
 @Html.DisplayFor(model => model.Details)
-    @foreach (var item in Model.Data)
+@foreach (var item in Model.Data)
+{
+    var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
+    <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
+
+        @{
+            var groupLink = Html.ActionLink(item.Name, "Details", new { Model.ProjectId, item.CharacterGroupId }, null);
+            var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
+        }
+        <div>
+            @switch (item.DeepLevel)
+            {
+                case 2:
+                    <span class="h3" title="@pathString">@groupLink</span>
+                    @if (Model.HasMasterAccess)
+                    {
+                        @Html.Partial("_GroupEditControls", item, new ViewDataDictionary(ViewData))
+                    }
+                    break;
+                case 1:
+                    <span class="h2" title="@pathString">@groupLink</span>
+                    @if (Model.HasMasterAccess)
+                    {
+                        @Html.Partial("_GroupEditControls", item, new ViewDataDictionary(ViewData))
+                    }
+                    break;
+                case 0:
+                    break;
+                default:
+                    <span class="h4" title="@pathString">@groupLink</span>
+                    @if (Model.HasMasterAccess)
+                    {
+                        @Html.Partial("_GroupEditControls", item, new ViewDataDictionary(ViewData))
+                    }
+                    break;
+            }
+        @if (item.IsSpecial)
+        {
+            <span class="label label-default" title="Эта группа автоматически заполняется в зависимости от полей персонажа. @item.BoundExpression">Спецгруппа</span>
+        }
+    </div>
+
+    @if (!item.FirstCopy)
     {
-        var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
-        <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
+        <span>см. выше</span>
+    }
 
-            @{
-                var groupLink = Html.ActionLink(item.Name, "Details", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary() {{"ShowEditControls", Model.ShowEditControls}}) : MvcHtmlString.Empty;
-                var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
-            }
-            <div>@switch (item.DeepLevel)
-                 {
-                     case 2:
-                         <span class="h3" title="@pathString">@groupLink</span>
-                         @editControls
-                         break;
-                     case 1:
-                         <span class="h2" title="@pathString">@groupLink</span>
-                         @editControls
-                         break;
-                     case 0:
-                         break;
-                     default:
-                         <span class="h4" title="@pathString">@groupLink</span>
-                         @editControls
-                         break;
-                 }
-            @if (item.IsSpecial)
-            {
-                <span class="label label-default" title="Эта группа автоматически заполняется в зависимости от полей персонажа. @item.BoundExpression">Спецгруппа</span>
-            }
-            </div>
+    @if (item.FirstCopy)
+    {
+        <div>
+            @item.Description
+            <ul>
+                @foreach (var character in item.ActiveCharacters)
+                {
+                    <li>
+                        @Html.Partial("_CharacterPartial", character)
+                    </li>
+                }
+                @if (item.AvaiableDirectSlots != 0 || item.ActiveClaimsCount > 0)
+                {
+                    <li>
+                        @if (item.AvaiableDirectSlots > 0)
+                        {
+                            <strong>+@CountOfX(item.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
+                        }
+                        else if (item.AvaiableDirectSlots < 0)
+                        {
+                            <strong>есть вакансии / </strong>
+                        }
 
-            @if (!item.FirstCopy)
-            {
-                <span>см. выше</span>
-            }
-
-            @if (item.FirstCopy)
-            {
-            <div>
-                @item.Description
-                <ul>
-                    @foreach (var character in item.ActiveCharacters)
-                    {
-                        <li>
-                            @Html.Partial("_CharacterPartial", character)
-                        </li>
-                    }
-                    @if (item.AvaiableDirectSlots != 0 || item.ActiveClaimsCount > 0)
-                    {
-                        <li>
-                            @if (item.AvaiableDirectSlots > 0)
+                        @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
+                        {
+                            if (Model.HasMasterAccess && item.ActiveClaimsCount > 0)
                             {
-                                <strong>+@DisplayCount.OfX(item.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
+                                <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
+                                    @Html.ActionLink(
+                                        CountOfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"),
+                                        "ListForGroupDirect",
+                                        "ClaimList",
+                                        new { Model.ProjectId, item.CharacterGroupId },
+                                        null)
+                                </strong>
                             }
-                            else if (item.AvaiableDirectSlots < 0)
+                            else
                             {
-                                <strong>есть вакансии / </strong>
+                                @CountOfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
                             }
-
-                            @if (item.ActiveClaimsCount > 0 || item.AvaiableDirectSlots != 0)
-                            {
-                                if (Model.HasMasterAccess && item.ActiveClaimsCount > 0)
-                                {
-                                    <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
-                                        @Html.ActionLink(
-                                            DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок"),
-                                            "ListForGroupDirect",
-                                            "ClaimList",
-                                            new {Model.ProjectId, item.CharacterGroupId},
-                                            null)
-                                    </strong>
-                                }
-                                else
-                                {
-                                    @DisplayCount.OfX(item.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                                }
-                            }
-                            @if (item.IsAcceptingClaims)
-                            {
-                                @Html.ActionLink(
-                                    "заявиться",
-                                    "AddForGroup",
-                                    "Claim",
-                                    new {Model.ProjectId, item.CharacterGroupId},
-                                    new {@class = "btn btn-default btn-xs"})
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
-            }
+                        }
+                        @if (item.IsAcceptingClaims)
+                        {
+                            @Html.ActionLink(
+                                "заявиться",
+                                "AddForGroup",
+                                "Claim",
+                                new { Model.ProjectId, item.CharacterGroupId },
+                                new { @class = "btn btn-default btn-xs" })
+                        }
+                    </li>
+                }
+            </ul>
         </div>
     }
+</div>
+}

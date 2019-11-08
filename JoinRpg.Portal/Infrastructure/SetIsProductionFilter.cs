@@ -13,7 +13,9 @@ namespace JoinRpg.Portal.Infrastructure
         public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             var controller = context.Controller as Controller;
-            controller.ViewBag.IsProduction = context.HttpContext.Request.Host.Host == "joinrpg.ru";
+            var hostHost = context.HttpContext.Request.Host.Host;
+            controller.ViewBag.IsProduction = hostHost == "joinrpg.ru";
+            controller.ViewBag.FullHostName = context.HttpContext.Request.Scheme + hostHost;
             return base.OnResultExecutionAsync(context, next);
         }
     }

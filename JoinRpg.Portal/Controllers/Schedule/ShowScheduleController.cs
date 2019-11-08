@@ -29,7 +29,7 @@ namespace JoinRpg.Portal.Controllers.Schedule
 
         private ActionResult Error(int projectId, IEnumerable<ScheduleConfigProblemsViewModel> errors)
         {
-            return View("..\\Payments\\Error", new ErrorViewModel
+            return View("Error", new ErrorViewModel
             {
                 Message = "Ошибка открытия расписания",
                 Description = string.Join(", ", errors.Select(e => e.GetDisplayName())),

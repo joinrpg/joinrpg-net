@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.App_Code
+﻿
 @model JoinRpg.Web.Areas.Admin.Models.ChangeEmailModel
 
 @Html.AntiForgeryToken()
@@ -16,4 +16,7 @@
 
 </div>
 
-@Scripts.Render("~/Scripts/keyhandler.js")
+@section Scripts
+{
+    <script src="~/Scripts/keyhandler.js"></script>
+}
