@@ -11,7 +11,7 @@
     <Content Include="App_Code\*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />

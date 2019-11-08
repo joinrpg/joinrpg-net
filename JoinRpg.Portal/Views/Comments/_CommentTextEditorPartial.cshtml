@@ -1,0 +1,23 @@
+﻿@model JoinRpg.Web.Models.CommentTextViewModel
+
+<div class="form-group">
+    <div class="col-md-12">
+        @if (Model.ShowLabel)
+        {
+            @Html.LabelFor(model => model.CommentText, new
+            {
+                @class = "control-label",
+                @for = Html.IdFor(model => model.CommentText) + Model.FormIndex.ToString()
+            })
+        }
+        @Html.EditorFor(model => model.CommentText, new
+        {
+            htmlAttributes = new
+            {
+                id = Html.IdFor(model => model.CommentText) + Model.FormIndex.ToString(),
+                @class = "form-control"
+            }
+        })
+    </div>
+</div>
+

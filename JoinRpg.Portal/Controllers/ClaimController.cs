@@ -506,7 +506,7 @@ namespace JoinRpg.Portal.Controllers
         }
         catch (Exception e)
         {
-            return View("..\\Payments\\Error",
+            return View("Error",
                 new ErrorViewModel
                 {
                     Title = "Перевод между заявками",
@@ -793,7 +793,7 @@ namespace JoinRpg.Portal.Controllers
               ClaimStatusSpec.ActiveOrOnHold);
           if (claims.Count == 0 || claims.Count == 1 && claims.First().ClaimId == claimId)
           {
-              return View("..\\Payments\\Error", new ErrorViewModel
+              return View("Error", new ErrorViewModel
               {
                   Title = "Ошибка",
                   Message = "Невозможно выполнить перевод, так как нет активных или отложенных заявок",
