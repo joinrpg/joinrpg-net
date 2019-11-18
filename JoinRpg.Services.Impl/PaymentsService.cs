@@ -230,6 +230,11 @@ namespace JoinRpg.Services.Impl
                     else if (paymentInfo.ErrorCode == null)
                     {
                         UpdateFinanceOperationStatus(fo, paymentInfo.Payment);
+                        if (fo.State == FinanceOperationState.Approved)
+                        {
+                            Claim claim = await GetClaimAsync(projectId, claimId);
+                            claim.UpdateClaimFeeIfRequired(Now);
+                        }
                     }
                 }
                 else if (IsCurrentUserAdmin)
