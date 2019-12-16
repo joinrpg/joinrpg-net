@@ -80,7 +80,9 @@ namespace JoinRpg.Web.Controllers.XGameApi
                             DisplayString = field.DisplayString,
                         }),
                     PlayerUserId = character.ApprovedClaim?.PlayerUserId,
+#pragma warning disable 612 
                     CharacterDescription = character.Description,
+#pragma warning restore 612
                     CharacterName = character.Name,
                 };
         }

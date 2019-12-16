@@ -29,8 +29,13 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// </summary>
         public bool InGame { get; set; }
 
+        //Need to duplicate here because of swagger limitation
         /// <summary>
-        /// Has player or not
+        /// Has player or not.
+        /// 0 = Has Player,
+        /// 1 = Discussed (has some some claims, but nothing approved)
+        /// 2 = No Active Claims
+        /// 3 = NPC
         /// </summary>
         public CharacterBusyStatus BusyStatus { get; set; }
 
@@ -63,11 +68,12 @@ namespace JoinRpg.Web.XGameApi.Contract
         /// Description.
         /// This is legacy field, in future will be removed in favor of just using Fields
         /// </summary>
+        [Obsolete]
         public string CharacterDescription { get; set; }
     }
 
     /// <summary>
-    /// Has player or not
+    /// Has player or not.
     /// </summary>
     public enum CharacterBusyStatus
     {
