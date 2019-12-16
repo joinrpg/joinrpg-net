@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Web.XGameApi.Contract
+namespace JoinRpg.Web.XGameApi.Contract
 {
   /// <summary>
   /// Field value for character
@@ -6,7 +6,8 @@
   public class FieldValue
   {
     /// <summary>
-    /// Field id
+    /// Field id.
+    /// Use metadata API to get metadata about fields (i.e. programatical value, label...)
     /// </summary>
     public int ProjectFieldId { get; set; }
     /// <summary>

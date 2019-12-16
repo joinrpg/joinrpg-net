@@ -1,4 +1,4 @@
-﻿using System.Web.Http;
+using System.Web.Http;
 using WebActivatorEx;
 using JoinRpg.Web;
 using Swashbuckle.Application;
@@ -104,11 +104,8 @@ namespace JoinRpg.Web
                         // those comments into the generated docs and UI. You can enable this by providing the path to one or
                         // more Xml comment files.
                         //
-                        var dir = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin"));
-                        foreach (var fi in dir.EnumerateFiles("*.xml"))
-                        {
-                            c.IncludeXmlComments(fi.FullName);
-                        }
+                        c.IncludeXmlComments(AppDomain.CurrentDomain.BaseDirectory + "\\bin\\JoinRpg.Web.XGameApi.Contract.xml");
+                        c.IncludeXmlComments(AppDomain.CurrentDomain.BaseDirectory + "\\bin\\JoinRpg.Web.xml");
 
                         // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                         // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -141,9 +138,7 @@ namespace JoinRpg.Web
                         //
                         //c.SchemaId(t => t.FullName.Contains('`') ? t.FullName.Substring(0, t.FullName.IndexOf('`')) : t.FullName);
 
-                        // Set this flag to omit schema property descriptions for any type properties decorated with the
-                        // Obsolete attribute
-                        //c.IgnoreObsoleteProperties();
+                        c.IgnoreObsoleteProperties();
 
                         // In accordance with the built in JsonSerializer, Swashbuckle will, by default, describe enums as integers.
                         // You can change the serializer behavior by configuring the StringToEnumConverter globally or for a given
