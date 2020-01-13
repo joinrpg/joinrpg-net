@@ -23,6 +23,14 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
     </div>
 }
 
+@if (Model.IsAdmin)
+{
+<div style="display: flex; flex-direction: row; margin: 1em 0;">
+    @Html.ActionLink("View unfixed claims", "unfixed-list", new { projectId = Model.ProjectId }, new { @class = "btn btn-warning" })
+    @Html.ActionLink("Fix unfixed claims", "unfixed-fix", new { projectId = Model.ProjectId }, new { @class = "btn btn-danger", style = "margin-left: auto;" })
+</div>
+}
+
 <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
         <div class="panel-heading">

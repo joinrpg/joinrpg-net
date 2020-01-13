@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -25,7 +29,10 @@ namespace JoinRpg.Web.Controllers.Money
 
       private IVirtualUsersService VirtualUsers { get; }
 
+      private IUnitOfWork UnitOfWork { get; }
+
       public FinancesController(
+          IUnitOfWork uow,
           IProjectRepository projectRepository,
           IProjectService projectService,
           IExportDataService exportDataService,
@@ -42,6 +49,7 @@ namespace JoinRpg.Web.Controllers.Money
           UriService = uriService;
           FinanceReportRepository = financeReportRepository;
           VirtualUsers = vpu;
+          UnitOfWork = uow;
         }
 
       [HttpGet]
@@ -327,6 +335,60 @@ namespace JoinRpg.Web.Controllers.Money
               payments,
               CurrentUserId);
           return View(viewModel);
+      }
+
+      [HttpGet]
+      [AdminAuthorize]
+      [ActionName("unfixed-list")]
+      public async Task<ActionResult> ListUnfixedPayments(int projectId)
+      {
+          Project project = await UnitOfWork.GetDbSet<Project>()
+              .Include(p => p.ProjectFeeSettings)
+              .Include(p => p.ProjectFields)
+              .Include(p => p.FinanceOperations)
+              .SingleAsync(p => p.ProjectId == projectId);
+          ICollection<Claim> claims = await UnitOfWork.GetDbSet<Claim>()
+              .Where(c => c.ProjectId == projectId && c.CurrentFee == null)
+              .Include(c => c.AccommodationRequest)
+              .ToArrayAsync();
+
+          StringBuilder s = new StringBuilder();
+          s.AppendLine($"{"Id".PadLeft(10, ' ')} {"Paid".PadLeft(10, ' ')} {"Fee".PadLeft(10, ' ')}");
+
+          foreach (Claim claim in claims)
+          {
+              s.AppendLine($"{claim.ClaimId.ToString().PadLeft(10, ' ')}" +
+                  $" {claim.ClaimBalance().ToString().PadLeft(10, ' ')}" +
+                  $" {claim.ClaimTotalFee().ToString().PadLeft(10, ' ')}");
+          }
+
+          return Content(s.ToString(), "text/plain", Encoding.ASCII);
+      }
+
+      [HttpGet]
+      [AdminAuthorize]
+      [ActionName("unfixed-fix")]
+      public async Task<ActionResult> FixUnfixedPayments(int projectId)
+      {
+          Project project = await UnitOfWork.GetDbSet<Project>()
+              .Include(p => p.ProjectFeeSettings)
+              .Include(p => p.ProjectFields)
+              .Include(p => p.FinanceOperations)
+              .SingleAsync(p => p.ProjectId == projectId);
+          ICollection<Claim> claims = await UnitOfWork.GetDbSet<Claim>()
+              .Where(c => c.ProjectId == projectId && c.CurrentFee == null)
+              .Include(c => c.AccommodationRequest)
+              .ToArrayAsync();
+
+          DateTime now = DateTime.UtcNow;
+          foreach (Claim claim in claims)
+          {
+              claim.UpdateClaimFeeIfRequired(now);
+          }
+
+          await UnitOfWork.SaveChangesAsync();
+
+          return RedirectToAction("Setup", new {projectId});
       }
   }
 }
