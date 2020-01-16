@@ -64,7 +64,9 @@ namespace JoinRpg.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                var returnModel = CreateLoginPageViewModel(returnUrl);
+                returnModel.Login = model;
+                return View(returnModel);
             }
 
             // Require the user to have a confirmed email before they can log on.
