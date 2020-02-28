@@ -381,6 +381,10 @@ namespace JoinRpg.Services.Impl
                 claimFrom,
                 claimTo,
                 request);
+
+            // Trying to fix fee in destination claim
+            claimTo.UpdateClaimFeeIfRequired(Now);
+            await UnitOfWork.SaveChangesAsync();
         }
 
         #endregion
