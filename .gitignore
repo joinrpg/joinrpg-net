@@ -8,6 +8,7 @@
 
 # Visual studio folder
 .vs/
+.idea/
 
 # Build results
 [Dd]ebug/
