@@ -1,4 +1,4 @@
-﻿function ConfirmKickAllFromRoom(name)
+﻿﻿function ConfirmKickAllFromRoom(name)
 {
     return confirm("Выселить всех из комнаты '" + name + "'?");
 }
