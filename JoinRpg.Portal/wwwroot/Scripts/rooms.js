@@ -1,4 +1,4 @@
-﻿var projectId = null;
+﻿﻿var projectId = null;
 var roomTypeId = null;
 var roomsCount = 0;
 var roomCapacity = 0;
