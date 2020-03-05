@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using JetBrains.Annotations;
@@ -31,7 +32,8 @@ namespace JoinRpg.Portal
     public static class MvcHtmlHelpers
     {
         //https://stackoverflow.com/a/17455541/408666
-        public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, TProperty value)
+        public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper,
+            Expression<Func<TModel, TProperty>> expression, TProperty value)
         {
             string expressionText = htmlHelper.GetExpressionText(expression);
             string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
@@ -60,7 +62,7 @@ namespace JoinRpg.Portal
             var metadata = self.GetMetadataFor(expression);
             if (metadata.ModelType == typeof(Enum))
             {
-                var e = (Enum)self.GetUntypedModelFor(expression);
+                var e = (Enum) self.GetUntypedModelFor(expression);
                 var dispAttr = e.GetAttribute<DisplayAttribute>();
 
                 return dispAttr == null ? null : dispAttr.Description;
@@ -79,6 +81,7 @@ namespace JoinRpg.Portal
             {
                 return HtmlString.Empty;
             }
+
             // ReSharper disable once UseStringInterpolation we are inside Razor
             return new HtmlString(string.Format(@"<div class=""help-block"">{0}</div>", description));
         }
@@ -119,11 +122,11 @@ namespace JoinRpg.Portal
             if (!string.IsNullOrWhiteSpace(id))
                 id = id.Trim();
             return new HtmlString("<span "
-                + (string.IsNullOrWhiteSpace(id) ? "" : @"id=" + id)
-                + @" class=""price-value price-RUR"">" + price + "</span>");
+                                  + (string.IsNullOrWhiteSpace(id) ? "" : @"id=" + id)
+                                  + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
-        public readonly static string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
+        public readonly static string defaultPriceTemplate = @"{0}" + (char) 0x00A0 + (char) 0x20BD;
 
         /// <summary>
         /// Renders price to a string
@@ -136,14 +139,16 @@ namespace JoinRpg.Portal
 
         public static IHtmlContent HelpLink(this IHtmlHelper self, string link, string message)
         {
-            return new HtmlString("<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" + link +
-                                     "\">" + message + "</a>");
+            return new HtmlString(
+                "<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" +
+                link +
+                "\">" + message + "</a>");
         }
 
         public static TValue GetValue<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
-            return (TValue)self.GetUntypedModelFor(expression);
+            return (TValue) self.GetUntypedModelFor(expression);
         }
 
         public static TModel GetModel<TModel>(this IHtmlHelper<TModel> self)
@@ -153,16 +158,32 @@ namespace JoinRpg.Portal
 
         //https://stackoverflow.com/questions/38645157/asp-net-mvchtmlstring-and-modelmetadata-fromlambdaexpression-to-aspnetcore#answer-59799094
         //наверное можно сделать static resolver как в MVC  
-        private static ModelExpressionProvider GetModelExpressionProvider(this IHtmlHelper self) =>  self.ViewContext.HttpContext.RequestServices.GetRequiredService<ModelExpressionProvider>();
+        private static ModelExpressionProvider GetModelExpressionProvider(this IHtmlHelper self) =>
+            self.ViewContext.HttpContext.RequestServices.GetRequiredService<ModelExpressionProvider>();
 
-        private static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
+        private static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self,
+            Expression<Func<TModel, TValue>> expression)
         {
             return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Metadata;
         }
 
-        private static object GetUntypedModelFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
+        private static object GetUntypedModelFor<TModel, TValue>(this IHtmlHelper<TModel> self,
+            Expression<Func<TModel, TValue>> expression)
         {
             return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Model;
+        }
+
+        public static HtmlString MagicSelectParent<TModel>(this HtmlHelper<TModel> self,
+            Expression<Func<TModel, IEnumerable<string>>> expression)
+            where TModel : IProjectIdAware
+        {
+            var container = (IProjectIdAware) self.GetModel();
+
+            var value = self.GetValue(expression).ToList();
+            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression;
+
+            return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
+                ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value, false);
         }
     }
 }
