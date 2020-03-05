@@ -1,6 +1,5 @@
-using System;
-using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Common
@@ -21,6 +20,6 @@ namespace JoinRpg.Portal.Controllers.Common
             => ViewIfFound(viewName, await model);
 
 
-        protected ActionResult NotModified() => new StatusCodeResult((int)HttpStatusCode.NotModified);
+        protected ActionResult NotModified() => new StatusCodeResult(StatusCodes.Status304NotModified);
     }
 }

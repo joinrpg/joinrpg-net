@@ -6,9 +6,13 @@ using System.Net;
 using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Portal.Tools;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace JoinRpg.Portal
@@ -29,7 +33,7 @@ namespace JoinRpg.Portal
         //https://stackoverflow.com/a/17455541/408666
         public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper, Expression<Func<TModel, TProperty>> expression, TProperty value)
         {
-            string expressionText = ExpressionHelper.GetExpressionText(expression);
+            string expressionText = htmlHelper.GetExpressionText(expression);
             string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
 
             return htmlHelper.Hidden(propertyName, value, new { });
@@ -147,14 +151,18 @@ namespace JoinRpg.Portal
             return self.GetValue(m => m);
         }
 
-        public static Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
+        //https://stackoverflow.com/questions/38645157/asp-net-mvchtmlstring-and-modelmetadata-fromlambdaexpression-to-aspnetcore#answer-59799094
+        //наверное можно сделать static resolver как в MVC  
+        private static ModelExpressionProvider GetModelExpressionProvider(this IHtmlHelper self) =>  self.ViewContext.HttpContext.RequestServices.GetRequiredService<ModelExpressionProvider>();
+
+        private static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
         {
-            return ExpressionMetadataProvider.FromLambdaExpression(expression, self.ViewData, self.MetadataProvider).Metadata;
+            return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Metadata;
         }
 
         private static object GetUntypedModelFor<TModel, TValue>(this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
         {
-            return ExpressionMetadataProvider.FromLambdaExpression(expression, self.ViewData, self.MetadataProvider).Model;
+            return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Model;
         }
     }
 }

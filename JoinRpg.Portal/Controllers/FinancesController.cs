@@ -11,6 +11,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -22,7 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
-  public class FinancesController : Common.ControllerGameBase
+  public class FinancesController : ControllerGameBase
   {
         private IExportDataService ExportDataService { get; }
         private IFinanceService FinanceService { get; }

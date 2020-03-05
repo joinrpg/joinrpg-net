@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="1.0.172" />
     <PackageReference Include="TagHelperSamples.Bootstrap" Version="2.0.30" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj" />
     <ProjectReference Include="..\JoinRpg.DI\JoinRpg.DI.csproj" />
@@ -33,9 +32,7 @@
     <ProjectReference Include="..\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
-
 </Project>
