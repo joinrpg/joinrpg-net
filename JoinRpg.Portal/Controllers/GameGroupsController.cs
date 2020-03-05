@@ -19,8 +19,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
-using JsonResult = Microsoft.AspNetCore.Mvc.JsonResult;
 
 namespace JoinRpg.Portal.Controllers
 {
