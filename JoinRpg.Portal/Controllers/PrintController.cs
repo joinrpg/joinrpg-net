@@ -12,7 +12,6 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Print;
 using Microsoft.AspNetCore.Mvc;
-using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
 namespace JoinRpg.Portal.Controllers
 {

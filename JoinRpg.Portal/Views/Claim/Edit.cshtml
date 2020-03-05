@@ -240,8 +240,7 @@
                 @if (Model.OtherClaimsForThisCharacterCount > 0)
                 {
                     <div class="alert alert-danger">
-                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните         @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                                                                                                                              new { Model.CharacterId, Model.ProjectId }, null)
+                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @{OtherClaimsForThisCharacterLink();}
                         или переведите их на другого персонажа или в группу.
                     </div>
                 }
@@ -250,8 +249,7 @@
                     if (Model.OtherClaimsFromThisPlayerCount > 0)
                     {
                         <div class="alert alert-warning">
-                            Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                                                                                  new { Model.ProjectId, Model.Player.UserId }, null).
+                            Также этим же игроком подано на этот проект еще @{OtherClaimsForThisPlayerLink();}.
                             Если принять эту заявку, другие автоматически будут отклонены.
                         </div>
                     }
@@ -349,8 +347,7 @@
                 @if (Model.OtherClaimsFromThisPlayerCount > 0)
                 {
                     <div class="alert alert-danger">
-                        Этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                                                                       new { Model.ProjectId, Model.Player.UserId }, null)
+                        Этим же игроком подано на этот проект еще @{OtherClaimsForThisPlayerLink();}.
                         Отклоните другие заявки, прежде чем восстанавливать эту.
                     </div>
                 }
@@ -360,11 +357,10 @@
                     {
                         if (Model.HasOtherApprovedClaim)
                         {
-            <div class="alert alert-warning">
-                На этого персонажа есть утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                                                                        new { Model.CharacterId, Model.ProjectId }, null)
-                При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
-            </div>
+                            <div class="alert alert-warning">
+                                На этого персонажа есть другие утвержденные @{OtherClaimsForThisCharacterLink();}.
+                                При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
+                            </div>
                         }
                         if (Model.CharacterActive == false)
                         {

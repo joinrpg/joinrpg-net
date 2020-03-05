@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
@@ -10,7 +9,6 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
 using Microsoft.AspNetCore.Mvc;
-using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -36,7 +34,7 @@ namespace JoinRpg.Portal.Controllers
         /// <summary>
         /// Shows list of registered room types
         /// </summary>
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> Index(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -54,7 +52,7 @@ namespace JoinRpg.Portal.Controllers
         /// Shows "Add room type" form
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> AddRoomType(int projectId)
         {
             return View(new RoomTypeViewModel(
@@ -64,7 +62,7 @@ namespace JoinRpg.Portal.Controllers
         /// <summary>
         /// Shows "Edit room type" form
         /// </summary>
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> EditRoomType(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId).ConfigureAwait(false);
@@ -80,7 +78,7 @@ namespace JoinRpg.Portal.Controllers
         /// Shows "Edit room type" form
         /// </summary>
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> EditRoomTypeRooms(int projectId, int roomTypeId)
         {
             var entity = await _accommodationService.GetRoomTypeAsync(roomTypeId);
@@ -116,7 +114,7 @@ namespace JoinRpg.Portal.Controllers
         /// Removes room type
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> DeleteRoomType(int roomTypeId, int projectId)
         {
             await _accommodationService.RemoveRoomType(roomTypeId).ConfigureAwait(false);
@@ -124,7 +122,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpHead]
+        [HttpHead]
         public async Task<ActionResult> OccupyRoom(int projectId, int roomTypeId, int room, string reqId)
         {
             try
@@ -156,7 +154,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> OccupyAll(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -171,7 +169,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> UnOccupyAll(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -186,7 +184,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpHead]
+        [HttpHead]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId, int room, int reqId)
         {
             try
@@ -209,7 +207,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanSetPlayersAccommodations)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> UnOccupyRoom(int projectId, int roomTypeId)
         {
             try
@@ -232,7 +230,7 @@ namespace JoinRpg.Portal.Controllers
         /// Removes room
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]        
-        [Microsoft.AspNetCore.Mvc.HttpDelete]
+        [HttpDelete]
         public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
         {
             try
@@ -251,7 +249,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> AddRoom(int projectId, int roomTypeId, string name)
         {
             try
@@ -275,7 +273,7 @@ namespace JoinRpg.Portal.Controllers
         /// Applies new name to a room or adds a new room(s)
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        [HttpGet]
         public async Task<ActionResult> EditRoom(int projectId, int roomTypeId, string room, string name)
         {
             try
