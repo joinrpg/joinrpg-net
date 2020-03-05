@@ -21,6 +21,8 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
         // to be embedded in the policy names. This is abstracted away from developers
         // by the more strongly-typed attributes derived from AuthorizeAttribute
         // (like [MinimumAgeAuthorize()] in this sample)
+        public Task<AuthorizationPolicy> GetFallbackPolicyAsync()  => FallbackPolicyProvider.GetDefaultPolicyAsync();
+
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
             if (policyName.StartsWith(PolicyConstants.AllowMasterPolicyPrefix, StringComparison.OrdinalIgnoreCase) &&

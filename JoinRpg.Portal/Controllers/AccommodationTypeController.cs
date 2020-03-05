@@ -9,6 +9,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Accommodation;
+using Microsoft.AspNetCore.Mvc;
 using ActionResult = Microsoft.AspNetCore.Mvc.ActionResult;
 
 namespace JoinRpg.Portal.Controllers
@@ -97,8 +98,8 @@ namespace JoinRpg.Portal.Controllers
         /// If not, returns to edit mode
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
-        [Microsoft.AspNetCore.Mvc.HttpPost]
-        [Microsoft.AspNetCore.Mvc.ValidateAntiForgeryToken]        
+        [HttpPost]
+        [ValidateAntiForgeryToken]        
         public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
         {
             if (!ModelState.IsValid)
