@@ -1,5 +1,28 @@
-﻿@using JoinRpg.Web.Models.Characters
+﻿@using JoinRpg.Domain
+@using JoinRpg.Web.Models.Characters
+@using Microsoft.AspNetCore.Html
+@model CharacterNavigationViewModel
 
+@{
+    Func<dynamic, IHtmlContent> NavigationItem(CharacterNavigationPage page, string linkText,  string actionName,  string controllerName, object args, bool enabled = true)
+    {
+        if (Model.Page == page)
+        {
+           return @<li role="presentation" class="active">
+                <a>@linkText</a>
+            </li>;
+        }
+        if (enabled)
+        {
+            return  @<li role="presentation">;
+                        @Html.ActionLink(linkText, actionName, controllerName, args, null)
+                    </li>;
+        }
+        return @<li role="presentation" class="disabled">
+                   <a>@linkText</a>
+               </li>;
+    }
+}
 
 @{
   ViewBag.Title = Model.Name;

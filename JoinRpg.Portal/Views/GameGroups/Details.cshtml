@@ -78,42 +78,42 @@
                 @if (Model.AvaiableDirectSlots != 0 || Model.ActiveClaimsCount > 0)
                 {
 
-                    if (Model.AvaiableDirectSlots > 0)
-                    {
-                        <strong>+@CountOfX(Model.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
-                    }
-                    else if (Model.AvaiableDirectSlots < 0)
-                    {
-                        <strong>есть вакансии / </strong>
-                    }
+                if (Model.AvaiableDirectSlots > 0)
+                {
+                <strong>+@Html.DisplayCount_OfX(Model.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий") / </strong>
+                }
+                else if (Model.AvaiableDirectSlots < 0)
+                {
+                <strong>есть вакансии / </strong>
+                }
 
-                    if (Model.ActiveClaimsCount > 0 || Model.AvaiableDirectSlots != 0)
+                if (Model.ActiveClaimsCount > 0 || Model.AvaiableDirectSlots != 0)
+                {
+                    if (Model.HasMasterAccess)
                     {
-                        if (Model.HasMasterAccess)
-                        {
-                            <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
-                                @Html.ActionLink(
-                                                CountOfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок"),
-                                                "ListForGroupDirect",
-                                                "ClaimList",
-                                                new { Model.ProjectId, Model.CharacterGroupId },
-                                                null)
-                            </strong>
-                        }
-                        else
-                        {
-                            @CountOfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
-                        }
-                    }
-                    if (Model.IsAcceptingClaims)
-                    {
-                        @Html.ActionLink(
-                                    "заявиться",
-                                    "AddForGroup",
-                                    "Claim",
+                <strong title="Только обсуждаемые заявки «напрямую» в группу (без прописанных персонажей)">
+                    @Html.ActionLink(
+                                    Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок"),
+                                    "ListForGroupDirect",
+                                    "ClaimList",
                                     new { Model.ProjectId, Model.CharacterGroupId },
-                                    new { @class = "btn btn-default btn-xs" })
+                                    null)
+                </strong>
                     }
+                    else
+                    {
+                @Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
+                    }
+                }
+                if (Model.IsAcceptingClaims)
+                {
+                @Html.ActionLink(
+                            "заявиться",
+                            "AddForGroup",
+                            "Claim",
+                            new { Model.ProjectId, Model.CharacterGroupId },
+                            new { @class = "btn btn-default btn-xs" })
+                }
 
                 }
             </div>

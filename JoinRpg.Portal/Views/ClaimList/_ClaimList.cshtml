@@ -1,23 +1,9 @@
-﻿@using JetBrains.Annotations
-@using Microsoft.AspNet.Identity
+﻿@using Microsoft.AspNet.Identity
 @model JoinRpg.Web.Models.ClaimListViewModel
-
-@functions
-
-{
-
-    [MustUseReturnValue]
-    public static string CountOfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
-
-}
 
 @if (Model.ShowCount)
 {
-    ViewBag.CountString = CountOfX(Model.Items.Count(), "заявка", "заявки", "заявок");
+    ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
 }
 
 @Html.Partial("_ListOperationsDropdown", Model)

@@ -5,7 +5,7 @@
     {
     <span class="badge" title="Непрочитанные ответы">@Model.UnreadCount</span>
     }
-    <span class="h4">
+    <span class="h4" title="@Html.DisplayCount_OfX(Model.TotalCount, "ответ", "ответа", "ответов")">
          <a href="@Url.Action("ViewThread", new {Model.ProjectId, Model.ForumThreadId})">@Model.Header</a>
     </span>
     

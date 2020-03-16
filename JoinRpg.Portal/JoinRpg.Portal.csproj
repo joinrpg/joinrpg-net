@@ -32,4 +32,7 @@
     <ProjectReference Include="..\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj" />
     <ProjectReference Include="..\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Code" />
+  </ItemGroup>
 </Project>

@@ -10,7 +10,9 @@ using JoinRpg.Helpers;
 using JoinRpg.Portal.Tools;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.CharacterGroups;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -162,7 +164,7 @@ namespace JoinRpg.Portal
         private static ModelExpressionProvider GetModelExpressionProvider(this IHtmlHelper self) =>
             self.ViewContext.HttpContext.RequestServices.GetRequiredService<ModelExpressionProvider>();
 
-        private static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self,
+        public static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
             return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Metadata;
@@ -174,7 +176,7 @@ namespace JoinRpg.Portal
             return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Model;
         }
 
-        public static HtmlString MagicSelectParent<TModel>(this HtmlHelper<TModel> self,
+        public static HtmlString MagicSelectParent<TModel>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, IEnumerable<string>>> expression)
             where TModel : IProjectIdAware
         {
@@ -182,9 +184,60 @@ namespace JoinRpg.Portal
 
             var value = self.GetValue(expression).ToList();
             var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
-            
+
             return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
                 ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.Metadata.PropertyName, value, false);
         }
-    }
+        
+        public static HtmlString MagicSelectBindGroups<TModel>(this IHtmlHelper<TModel> self,
+            Expression<Func<TModel, IEnumerable<string>>> expression)
+            where TModel : IProjectIdAware
+        {
+            var container = (IProjectIdAware) self.GetModel();
+
+            var value = self.GetValue(expression).ToList();
+            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
+
+            return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
+                ShowImplicitGroups.Children, MagicControlStrategy.NonChanger, metadata.Metadata.PropertyName, value, true);
+        }
+
+        public static HtmlString MagicSelectGroupParent<TModel>(this IHtmlHelper<TModel> self,
+            Expression<Func<TModel, IEnumerable<string>>> expression)
+            where TModel : EditCharacterGroupViewModel
+        {
+            var container = (EditCharacterGroupViewModel) self.GetModel();
+
+            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
+
+            return MagicControlHelper.GetMagicSelect(container.ProjectId, false, ShowImplicitGroups.Parents,
+                MagicControlStrategy.Changer, metadata.Metadata.PropertyName, container.CharacterGroupId.PrefixAsGroups(),
+                false);
+        }
+
+        public static HtmlString MagicSelectBind<TModel>(this IHtmlHelper<TModel> self,
+            Expression<Func<TModel, IEnumerable<string>>> expression)
+            where TModel : IProjectIdAware
+        {
+            var container = self.GetModel();
+
+            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
+
+            var value = self.GetValue(expression);
+
+            return MagicControlHelper.GetMagicSelect(container.ProjectId, true, ShowImplicitGroups.Children,
+                MagicControlStrategy.NonChanger, metadata.Metadata.PropertyName, value, true);
+        }
+
+        [MustUseReturnValue]
+        public static string DisplayCount_OfX<TModel>(this IHtmlHelper<TModel> self, int count, string single, string multi1, string multi2)
+        {
+            var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
+            return count + " " + @selected;
+        }
+        
+        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request)
+        {
+            return new HtmlString(request.Scheme + "://" + request.Host);}
+        }
 }

@@ -5,7 +5,7 @@
 @functions {
   private static string GetName(CharacterTreeItem gr)
   {
-      return gr.Name; //* + (gr.AvaiableDirectSlots > 0 ? (" " + DisplayCount.OfX(gr.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий")) : "");*@
+      return gr.Name; //* + (gr.AvaiableDirectSlots > 0 ? (" " + Html.DisplayCount_OfX(gr.AvaiableDirectSlots, "вакансия", "вакансии", "вакансий")) : "");*@
   }
 
 }

@@ -167,9 +167,7 @@
 
 @if (Model.HasValueList)
 {
-@section Scripts {
-    <script src="Scripts/editfieldvalues.js"></script>
-}
+    <script src="~/Scripts/editfieldvalues.js"></script>;
     <hr />
     <div>
         <a href="@Url.Action("CreateValue", new {Model.ProjectId, Model.ProjectFieldId})"

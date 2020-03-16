@@ -181,7 +181,7 @@
             }
             <div class="@hideClassName">
                 @Model.Content
-                @if (string.IsNullOrWhiteSpace(Model.Content.ToHtmlString()))
+                @if (string.IsNullOrWhiteSpace(Model.Content.Value))
                 {
                     <i>Вводная пуста</i>
                 }

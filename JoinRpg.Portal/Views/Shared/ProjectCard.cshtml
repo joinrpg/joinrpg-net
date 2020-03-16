@@ -38,7 +38,6 @@
                      Материалы
                 </a>
                 }
-
                 @if (!Model.IsMaster && !Model.HasMyClaims && Model.IsAcceptingClaims)
                 {
                     <a href="@Url.Action("AddForGroup", "Claim", new {Model.ProjectId, area = ""}, null)"

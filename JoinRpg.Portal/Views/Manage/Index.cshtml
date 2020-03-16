@@ -4,18 +4,6 @@
 }
 
 
-@using JetBrains.Annotations
-@functions{
-
-    [MustUseReturnValue]
-    public static string DisplayCount_OfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
-
-}
-
 <h2>@ViewBag.Title</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
@@ -42,7 +30,7 @@
         </dd>
         <dt>Логин через соцсети:</dt>
         <dd>
-            @DisplayCount_OfX(Model.LoginsCount, "соцсеть", "соцсети", "соцсетей")
+            @Html.DisplayCount_OfX(Model.LoginsCount, "соцсеть", "соцсети", "соцсетей")
             [@Html.ActionLink("Настроить", "ManageLogins") ]
         </dd>
         @*

@@ -1,16 +1,8 @@
 ﻿@model JoinRpg.Web.Models.FinOperationListViewModel
 
-
-
 @{
-    string CountOfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
     ViewBag.Title = "Список финансовых операций";
-    ViewBag.CountString = CountOfX(Model.Items.Count(), "операция", "операции", "операций");
-
+    ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "операция", "операции", "операций");
 }
 
 <h2>@ViewBag.Title</h2>
