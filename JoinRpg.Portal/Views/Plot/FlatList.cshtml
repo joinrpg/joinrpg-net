@@ -15,7 +15,7 @@
     }
     <div style="page-break-inside: avoid">
         <h2>@item.PlotFolderMasterTitle</h2>
-        <p>@DisplayCount.OfX(item.ElementsCount, "вводная", "вводные", "вводных")</p>
+        <p>@Html.DisplayCount_OfX(item.ElementsCount, "вводная", "вводные", "вводных")</p>
         @if (!string.IsNullOrWhiteSpace(item.TodoField) && item.HasEditAccess)
         {
         <p><b>Доделать</b>: @item.TodoField</p>

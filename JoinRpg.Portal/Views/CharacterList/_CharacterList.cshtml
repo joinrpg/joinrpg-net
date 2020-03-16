@@ -4,23 +4,8 @@
 @using JoinRpg.Domain
 @using JoinRpg.Web.Models.Characters
 @model CharacterListViewModel
-
-@functions
-
-{
-
-    [MustUseReturnValue]
-    public static string CountOfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
-
-}
-
-
 @{
-    ViewBag.CountString = CountOfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
+  ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "персонаж", "персонажа", "персонажей");
 }
 
 @Html.Partial("_ListOperationsDropdown", Model)

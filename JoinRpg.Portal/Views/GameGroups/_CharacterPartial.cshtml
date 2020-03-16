@@ -24,7 +24,7 @@
     }
     else if (Model.ActiveClaimsCount > 0)
     {
-        @CountOfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
+        @Html.DisplayCount_OfX(Model.ActiveClaimsCount, "заявка", "заявки", "заявок")
     }
 
     @if (Model.IsAvailable)

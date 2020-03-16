@@ -1,17 +1,4 @@
 ﻿@model DateTime?
-
-@using JetBrains.Annotations
-@functions{
-
-    [MustUseReturnValue]
-    public static string DisplayCount_OfX(int count, string single, string multi1, string multi2)
-    {
-        var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
-        return count + " " + @selected;
-    }
-
-}
-
 @{
     if (Model == null)
     {
@@ -40,7 +27,7 @@
     }
     else if (span.Days > 1)
     {
-        <text>@DisplayCount_OfX(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
+        <text>@Html.DisplayCount_OfX(span.Days, "день", "дня", "дней") назад @*(@val.ToString("dddd"))*@ </text>
     }
     else if (span.Days == 1)
     {
@@ -52,11 +39,11 @@
     }
     else if (span.Hours > 0)
     {
-        @DisplayCount_OfX(span.Hours, "час", "часа", "часов")<text> назад</text>
+        @Html.DisplayCount_OfX(span.Hours, "час", "часа", "часов")<text> назад</text>
     }
     else if (span.Minutes > 0)
     {
-        @DisplayCount_OfX(span.Minutes, "минуту", "минуты", "минут")<text> назад</text>
+        @Html.DisplayCount_OfX(span.Minutes, "минуту", "минуты", "минут")<text> назад</text>
     }
     else if (span.Seconds > 20)
     {
