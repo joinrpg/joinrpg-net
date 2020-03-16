@@ -1,5 +1,0 @@
-﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models
-@using JoinRpg.Web.Models.Money
-@model FieldPossibleValueViewModel
-<option value="@Model.ProjectFieldDropdownValueId" @(Model.Selected ? "selected=true" : "") title="@Model.DescriptionPlainText" price="@Model.Price">@Model.Label @if (Model.HasPrice) {<text> (</text>@Html.Partial("Money", new Money(Model.Price))<text>)</text>}</option>

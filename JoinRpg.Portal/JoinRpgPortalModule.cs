@@ -1,7 +1,9 @@
 using Autofac;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Web.Helpers;
 using Microsoft.AspNetCore.Authorization;
+using CurrentProjectAccessor = JoinRpg.Portal.Infrastructure.CurrentProjectAccessor;
 
 namespace JoinRpg.Portal
 {

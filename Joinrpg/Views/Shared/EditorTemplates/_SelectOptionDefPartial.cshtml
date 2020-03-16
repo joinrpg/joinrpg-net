@@ -1,5 +1,0 @@
-﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models
-@using JoinRpg.Web.Models.Money
-@model FieldValueViewModel
-<option value="" @(string.IsNullOrWhiteSpace(Model.Value) ? "selected=true" : "") price="@Model.Price">( ничего не выбрано )@if (Model.HasPrice) { <text> (</text>@Html.Partial("Money", new Money(Model.Price))<text>)</text>}</option>
