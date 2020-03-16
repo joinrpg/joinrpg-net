@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Portal.Tools;
+using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -180,10 +181,10 @@ namespace JoinRpg.Portal
             var container = (IProjectIdAware) self.GetModel();
 
             var value = self.GetValue(expression).ToList();
-            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression;
-
+            var metadata = self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
+            
             return MagicControlHelper.GetMagicSelect(container.ProjectId, false,
-                ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.PropertyName, value, false);
+                ShowImplicitGroups.Parents, MagicControlStrategy.NonChanger, metadata.Metadata.PropertyName, value, false);
         }
     }
 }

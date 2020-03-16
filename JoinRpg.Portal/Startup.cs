@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Joinrpg.Web.Identity;
 using Autofac;
 using JoinRpg.DataModel;
@@ -13,6 +12,8 @@ using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace JoinRpg.Portal
 {
@@ -34,12 +35,12 @@ namespace JoinRpg.Portal
                 .AddIdentity<JoinIdentityUser, string>()
                 .AddDefaultTokenProviders()
                 .AddUserStore<MyUserStore>()
-                .AddRoleStore<MyUserStore>()
-                ;
+                .AddRoleStore<MyUserStore>();
 
             services.AddLogging();
 
             services.AddHttpContextAccessor();
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services
                 .AddMvc(options =>
@@ -48,13 +49,13 @@ namespace JoinRpg.Portal
                     options.Filters.Add(new SetIsProductionFilterAttribute());
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                ;
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddAuthorization(options =>
                 {
                     options.AddPolicyAsRequirement<AllowPublishRequirement>();
-                    options.AddPolicy(PolicyConstants.AllowAdminPolicy, policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
+                    options.AddPolicy(PolicyConstants.AllowAdminPolicy,
+                        policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
                 }
             );
 
