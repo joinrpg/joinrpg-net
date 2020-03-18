@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using JetBrains.Annotations;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CharacterGroups;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
