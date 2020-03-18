@@ -1,29 +1,32 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace JoinRpg.Helpers.Web
 {
-    public class BooleanRequired : RequiredAttribute, IClientValidatable
+    public class BooleanRequired : RequiredAttribute, IClientModelValidator
     {
+        /// <inheritdoc />
         public override bool IsValid(object value)
         {
             return value != null && (bool) value;
         }
 
-        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ModelMetadata metadata,
-            ControllerContext context)
+        private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
         {
-            return new ModelClientValidationRule[]
+            if (attributes.ContainsKey(key))
             {
-                new ModelClientValidationRule()
-                    {ValidationType = "brequired", ErrorMessage = this.ErrorMessage}
-            };
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
+        }
+
+        public void AddValidation(ClientModelValidationContext context)
+        {
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-brequired", ErrorMessage);
         }
     }
 }
