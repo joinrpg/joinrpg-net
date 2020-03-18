@@ -1,5 +1,4 @@
-﻿@using JoinRpg.Web.App_Code
-@using JoinRpg.Web.Models
+﻿@using JoinRpg.Web.Models
 @model JoinRpg.Web.Models.FieldSetup.GameFieldEditViewModel
 
 @{
@@ -138,7 +137,7 @@
                 <a title="Переместить" href="#" data-toggle="modal" data-target="#fastMoveModal" data-element="@item.ProjectFieldId"
                    class="btn btn-default"><i class="glyphicon glyphicon-sort"></i></a>
             </div>
-            @Html.MoveControl(item, "Move");
+            @Html.MoveControl(model => item, "Move");
             }
         </td>
     </tr>

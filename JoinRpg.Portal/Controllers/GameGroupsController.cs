@@ -122,7 +122,7 @@ namespace JoinRpg.Portal.Controllers
                   g.Name,
                   g.DeepLevel,
                   g.FirstCopy,
-                  Description = g.Description?.Value,
+                  Description = g.Description?.ToHtmlString(),
                   Path = g.Path.Select(gr => gr.Name),
                   PathIds = g.Path.Select(gr => gr.CharacterGroupId),
                   Characters = g.PublicCharacters.Select(ConvertCharacterToJson),
@@ -191,7 +191,7 @@ namespace JoinRpg.Portal.Controllers
         ch.IsAvailable,
         ch.IsFirstCopy,
         ch.CharacterName,
-        Description = ch.Description?.Value,
+        Description = ch.Description?.ToHtmlString(),
         PlayerName = ch.HidePlayer ? "скрыто" : ch.Player?.GetDisplayName(),
         PlayerId = ch.HidePlayer ? null : ch.Player?.UserId, //TODO Remove
         PlayerLink = (ch.HidePlayer || ch.Player == null) ? null : GetFullyQualifiedUri("Details", "User", new {ch.Player?.UserId }),
