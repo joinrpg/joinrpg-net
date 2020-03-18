@@ -1,4 +1,4 @@
-﻿@using JoinRpg.Web.App_Code
+﻿@using JoinRpg.Web
 @using JoinRpg.Web.Models.Plot
 @model PlotElementViewModel
 
@@ -43,7 +43,7 @@
 
                     @if (Model.CharacterId != null)
                     {
-                        @Html.MoveControl(Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
+                        @Html.MoveControl(model => Model, "MoveElementForCharacter", "Plot", Model.CharacterId)
                     }
                 </span>
             }

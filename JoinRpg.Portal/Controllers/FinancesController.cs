@@ -399,8 +399,7 @@ namespace JoinRpg.Portal.Controllers
 
           return RedirectToAction("Setup", new {projectId});
       }
-  }
-
+  
       private async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator) =>
           File(await generator.Generate(), generator.ContentType,
               Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));

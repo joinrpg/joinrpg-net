@@ -121,7 +121,7 @@
 
 
 
-    @if (!string.IsNullOrWhiteSpace(Model.Description.Value))
+    @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
     {
         <div class="form-group">
