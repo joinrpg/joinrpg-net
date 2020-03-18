@@ -34,7 +34,7 @@
 
             @{
                 var groupLink = Html.ActionLink(item.Name, "Details", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary {{"ShowEditControls", Model.ShowEditControls}}) : HtmlString.Empty;
+                var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary(ViewData) {{"ShowEditControls", Model.ShowEditControls}}) : HtmlString.Empty;
                 var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
             <div>@switch (item.DeepLevel)
