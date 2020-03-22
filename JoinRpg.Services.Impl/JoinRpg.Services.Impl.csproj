@@ -15,6 +15,7 @@
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
+    <ProjectReference Include="..\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\PscbApi\PscbApi.csproj" />

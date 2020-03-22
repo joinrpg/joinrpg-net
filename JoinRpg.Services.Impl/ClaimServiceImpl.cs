@@ -12,7 +12,7 @@ using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Helpers;
-
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
@@ -809,8 +809,10 @@ namespace JoinRpg.Services.Impl
       private readonly IAccommodationInviteService _accommodationInviteService;
     public ClaimServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService,
       IFieldDefaultValueGenerator fieldDefaultValueGenerator,
-        IAccommodationInviteService accommodationInviteService) : base(unitOfWork, emailService,
-      fieldDefaultValueGenerator)
+        IAccommodationInviteService accommodationInviteService,
+        ICurrentUserAccessor currentUserAccessor
+        ) : base(unitOfWork, emailService,
+      fieldDefaultValueGenerator, currentUserAccessor)
     {
         this._accommodationInviteService = accommodationInviteService;
     }

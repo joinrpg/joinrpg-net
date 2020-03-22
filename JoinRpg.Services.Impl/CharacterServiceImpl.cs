@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -17,7 +18,9 @@ namespace JoinRpg.Services.Impl
         public CharacterServiceImpl(
             IUnitOfWork unitOfWork,
             IEmailService emailService,
-            IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
+            IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+            ICurrentUserAccessor currentUserAccessor
+            ) : base(unitOfWork, currentUserAccessor)
         {
             EmailService = emailService;
             FieldDefaultValueGenerator = fieldDefaultValueGenerator;

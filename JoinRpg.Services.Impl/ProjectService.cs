@@ -10,6 +10,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -19,7 +20,7 @@ namespace JoinRpg.Services.Impl
     {
 
 
-        public ProjectService(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public ProjectService(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
         }
 

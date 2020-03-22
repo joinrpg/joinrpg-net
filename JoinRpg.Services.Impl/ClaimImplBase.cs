@@ -8,6 +8,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.CharacterFields;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -19,7 +20,8 @@ namespace JoinRpg.Services.Impl
     protected IFieldDefaultValueGenerator FieldDefaultValueGenerator { get; }
 
     protected ClaimImplBase(IUnitOfWork unitOfWork, IEmailService emailService,
-      IFieldDefaultValueGenerator fieldDefaultValueGenerator) : base(unitOfWork)
+      IFieldDefaultValueGenerator fieldDefaultValueGenerator,
+      ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
       EmailService = emailService;
       FieldDefaultValueGenerator = fieldDefaultValueGenerator;

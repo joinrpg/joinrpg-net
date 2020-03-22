@@ -7,8 +7,8 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
-using JoinRpg.Services.Interfaces.Email;
 using JoinRpg.Services.Interfaces.Notification;
 using Microsoft.Practices.ServiceLocation;
 
@@ -302,7 +302,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
+        public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
             EmailService = emailService;
         }
