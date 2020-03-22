@@ -192,7 +192,7 @@ namespace JoinRpg.Portal.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
-            return View();
+            return View(new ForgotPasswordViewModel());
         }
 
         //
@@ -243,9 +243,14 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ResetPassword
         [AllowAnonymous]
-        public ActionResult ResetPassword(string code)
+        public async Task<ActionResult> ResetPassword(int userId, string code)
         {
-            return code == null ? View("Error") : View();
+            if (userId == 0 || code is null)
+            {
+                return View("Error");
+            }
+
+            return View(new ResetPasswordViewModel() { Code = code, Email = "" });
         }
 
         //
@@ -277,7 +282,7 @@ namespace JoinRpg.Portal.Controllers
             ModelState.AddModelError("",
                 "Что-то пошло не так, скорее всего ссылка истекла. Попробуйте запросить ее снова, если не удастся — напишите в техподдержку");
             ModelState.AddErrors(result);
-            return View();
+            return View(model);
         }
 
         //
