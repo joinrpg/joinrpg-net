@@ -155,23 +155,20 @@ namespace JoinRpg.Portal
             return self.GetValue(m => m);
         }
 
-        //https://stackoverflow.com/questions/38645157/asp-net-mvchtmlstring-and-modelmetadata-fromlambdaexpression-to-aspnetcore#answer-59799094
-        //наверное можно сделать static resolver как в MVC  
-        private static ModelExpressionProvider GetModelExpressionProvider(this IHtmlHelper self) =>
-            self.ViewContext.HttpContext.RequestServices.GetRequiredService<ModelExpressionProvider>();
+        //https://stackoverflow.com/questions/59000215/asp-net-core-3-0-shortname-in-the-display-attribute-dataannotations
+        //TODO[Core3] пофиксить при переходе на .NET Core 3.0
+        private static ModelExplorer GetModelExplorer<TModel, TValue>(
+            this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression) =>
+            ExpressionMetadataProvider.FromLambdaExpression(expression, self.ViewData, self.MetadataProvider);
 
-        public static ModelMetadata GetMetadataFor<TModel, TValue>(this IHtmlHelper<TModel> self,
-            Expression<Func<TModel, TValue>> expression)
-        {
-            return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Metadata;
-        }
+        public static ModelMetadata GetMetadataFor<TModel, TValue>(
+            this IHtmlHelper<TModel> self,Expression<Func<TModel, TValue>> expression)
+            => self.GetModelExplorer(expression).Metadata;
 
-        private static object GetUntypedModelFor<TModel, TValue>(this IHtmlHelper<TModel> self,
-            Expression<Func<TModel, TValue>> expression)
-        {
-            return self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression).Model;
-        }
-        
+        private static object GetUntypedModelFor<TModel, TValue>(
+            this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
+            => self.GetModelExplorer(expression).Model;
+
         [MustUseReturnValue]
         public static string DisplayCount_OfX<TModel>(this IHtmlHelper<TModel> self, int count, string single, string multi1, string multi2)
         {
