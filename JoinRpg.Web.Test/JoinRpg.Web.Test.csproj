@@ -17,7 +17,6 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
-    <ProjectReference Include="..\Joinrpg\JoinRpg.Web.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Shouldly" Version="2.8.3" />
