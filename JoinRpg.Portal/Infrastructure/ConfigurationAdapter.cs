@@ -3,13 +3,14 @@ using JoinRpg.Dal.Impl;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using PscbApi;
 
 namespace JoinRpg.Portal.Infrastructure
 {
     /// <summary>
     /// Read configuration
     /// </summary>
-    public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration
+    public class ConfigurationAdapter : IMailGunConfig, IJoinDbContextConfiguration, IBankSecretsProvider
     {
         private readonly IConfiguration configuration;
 
@@ -33,5 +34,11 @@ namespace JoinRpg.Portal.Infrastructure
 
         // TODO inject this
         internal string XsrfKey => configuration.GetValue<string>("XsrfKey");
+
+        string IBankSecretsProvider.MerchantId => configuration.GetValue<string>("PaymentProviders:Pscb:bankMerchantId");
+
+        string IBankSecretsProvider.ApiKey => configuration.GetValue<string>("PaymentProviders:Pscb:bankApiKey");
+
+        string IBankSecretsProvider.ApiDebugKey => configuration.GetValue<string>("PaymentProviders:Pscb:bankApiDebugKey");
     }
 }
