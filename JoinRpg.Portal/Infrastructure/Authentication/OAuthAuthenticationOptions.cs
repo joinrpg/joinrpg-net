@@ -2,7 +2,7 @@ using System;
 
 namespace JoinRpg.Portal.Infrastructure
 {
-    public class GoogleAuthenticationOptions
+    public class OAuthAuthenticationOptions
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
