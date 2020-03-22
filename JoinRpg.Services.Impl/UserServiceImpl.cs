@@ -1,4 +1,3 @@
-using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
@@ -10,7 +9,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
-  [UsedImplicitly]
+    [UsedImplicitly]
   public class UserServiceImpl : DbServiceImplBase, IUserService
   {
     public UserServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
@@ -52,7 +51,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+    //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
     public async Task ChangeEmail(int userId, string newEmail)
     {
       var user = await UserRepository.GetById(userId);
@@ -61,8 +60,8 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-    [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
-    public async Task SetAdminFlag(int userId, bool administratorFlag)
+        //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+        public async Task SetAdminFlag(int userId, bool administratorFlag)
     {
       var user = await UserRepository.GetById(userId);
       user.Auth.IsAdmin = administratorFlag;
@@ -70,7 +69,7 @@ namespace JoinRpg.Services.Impl
       await UnitOfWork.SaveChangesAsync();
     }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
+        //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetVerificationFlag(int userId, bool verificationFlag)
         {
             var user = await UserRepository.GetById(userId);
