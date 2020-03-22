@@ -91,11 +91,10 @@ namespace JoinRpg.Portal
 
             app.UseMvc(routes =>
             {
+                routes.MapAreaRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapAreaRoute("Admin_default", "Admin", "Admin/{controller}/{action}/{id?}");
             });
         }
     }

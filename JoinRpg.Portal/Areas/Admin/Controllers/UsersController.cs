@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Areas.Admin.Controllers
 {
     [AdminAuthorize]
+    [Area("Admin")]
     public class UsersController : JoinRpg.Portal.Controllers.Common.ControllerBase
     {
         private IUserService UserService { get; }

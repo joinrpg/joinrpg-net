@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Areas.Admin.Controllers
 {
     [AdminAuthorize]
+    [Area("Admin")]
     public class AdminHomeController : JoinRpg.Portal.Controllers.Common.ControllerBase
     {
         private IProjectRepository ProjectRepository { get; }
