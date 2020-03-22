@@ -32,7 +32,7 @@
       Because this projects is using packages.config, they should not receive PackageReference from directory.build.props
       If they got at least once PackageReference, packages.config will be ignored
       -->
-        <When Condition="'$(MSBuildProjectName)' != 'JoinRpg.Dal.Impl' AND '$(MSBuildProjectName)' != 'JoinRpg.Web'">
+        <When Condition="'$(MSBuildProjectName)' != 'JoinRpg.Web'">
             <ItemGroup>
             </ItemGroup>
         </When>
