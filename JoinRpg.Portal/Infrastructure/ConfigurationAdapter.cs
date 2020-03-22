@@ -29,8 +29,19 @@ namespace JoinRpg.Portal.Infrastructure
         string IMailGunConfig.ServiceEmail => "support@" + configuration.GetValue<string>("MailGunApiDomain");
 
         string IJoinDbContextConfiguration.ConnectionString
-            => System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
-                ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey)+"\\App_Data") ?? "_";
+        {
+            get
+            {
+
+                var connString = configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrWhiteSpace(connString))
+                {
+                    return System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
+                        ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey) + "\\App_Data") ?? "_";
+                }
+                return connString;
+            }
+            }
 
         // TODO inject this
         internal string XsrfKey => configuration.GetValue<string>("XsrfKey");
