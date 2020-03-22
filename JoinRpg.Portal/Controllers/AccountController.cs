@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
@@ -7,7 +9,9 @@ using JoinRpg.Portal.Identity;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
@@ -36,19 +40,24 @@ namespace JoinRpg.Portal.Controllers
 
         
         [AllowAnonymous]
-        public ActionResult Login(string returnUrl)
+        public async Task<ActionResult> Login(string returnUrl)
         {
-            return View(CreateLoginPageViewModel(returnUrl));
+            return View(await CreateLoginPageViewModelAsync(returnUrl));
         }
 
-        private LoginPageViewModel CreateLoginPageViewModel(string returnUrl)
+        private async Task<LoginPageViewModel> CreateLoginPageViewModelAsync(string returnUrl)
         {
             return new LoginPageViewModel()
             {
                 External = new ExternalLoginListViewModel
                 {
                     ReturnUrl = returnUrl,
-                    ExternalLogins = new List<AuthenticationDescriptionViewModel> { } // AuthenticationManager.GetExternalAuthenticationTypes().Select(ol => ol.ToViewModel()).ToList(),
+                    ExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync())
+                        .Select(exLogin => new AuthenticationDescriptionViewModel
+                        {
+                            AuthenticationType = exLogin.Name,
+                            Caption = exLogin.DisplayName,
+                        }).ToList(),
                 },
                 Login = new LoginViewModel
                 {
@@ -100,7 +109,7 @@ namespace JoinRpg.Portal.Controllers
             }
 
             ModelState.AddModelError("", "Не найден логин или пароль");
-            var vm = CreateLoginPageViewModel(returnUrl);
+            var vm = await CreateLoginPageViewModelAsync(returnUrl);
             vm.Login.Email = model.Email;
             return View(vm);
         }
@@ -300,9 +309,12 @@ namespace JoinRpg.Portal.Controllers
         
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+
+            var authenticationProperties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(authenticationProperties, provider);
             // Request a redirect to the external login provider
-            return new ChallengeResult(provider,
-                Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
+            //return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
         //
@@ -310,45 +322,53 @@ namespace JoinRpg.Portal.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
-            //var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
-            //if (loginInfo == null)
-            //{
-            //    return RedirectToAction("Login");
-            //}
+            var auth = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
-            //// Sign in the user with this external login provider if the user already has a login
-            //var result = await SignInManager.ExternalLoginSignInAsync(loginInfo, isPersistent: true);
+            var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
+            if (loginInfo == null)
+            {
+                return RedirectToAction("Login");
+            }
 
-            throw new NotImplementedException();
+            // Sign in the user with this external login provider if the user already has a login
+            var result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
 
-            //// If sign in failed, may be we have user with same email. Let's bind.
-            //if (result.Success == SignInStatus.Failure && !string.IsNullOrWhiteSpace(loginInfo.Email))
-            //{
-            //    var user = await UserManager.FindByEmailAsync(loginInfo.Email);
-            //    if (user != null)
-            //    {
-            //        await UserManager.AddLoginAsync(user.UserId, loginInfo.Login);
-            //        result = await SignInManager.ExternalLoginSignInAsync(loginInfo, isPersistent: true);
-            //    }
-            //}
+            var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
 
-            //switch (result)
-            //{
-            //    case SignInStatus.Success:
-            //        return RedirectToLocal(returnUrl);
-            //    case SignInStatus.LockedOut:
-            //        return View("Lockout");
-            //    case SignInStatus.RequiresVerification:
-            //        //return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = false });
-            //        throw new NotImplementedException();
-            //    case SignInStatus.Failure:
-            //    default:
-            //        // If the user does not have an account, then prompt the user to create an account
-            //        ViewBag.ReturnUrl = returnUrl;
-            //        ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-            //        return View("ExternalLoginConfirmation",
-            //            new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
-            //}
+
+
+            // If sign in failed, may be we have user with same email. Let's bind.
+            if (!result.Succeeded && !string.IsNullOrWhiteSpace(email))
+            {
+                var user = await UserManager.FindByEmailAsync(email);
+                if (user != null)
+                {
+                    await UserManager.AddLoginAsync(user, loginInfo);
+                    result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
+                }
+            }
+
+            if (result.Succeeded)
+            {
+                return RedirectToLocal(returnUrl);
+            }
+
+            if (result.IsLockedOut)
+            {
+                return View("Lockout");
+            }
+
+            if (result.RequiresTwoFactor)
+            {
+                throw new NotImplementedException();
+            }
+
+            // If the user does not have an account, then prompt the user to create an account
+            ViewBag.ReturnUrl = returnUrl;
+            ViewBag.LoginProvider = loginInfo.LoginProvider;
+            return View("ExternalLoginConfirmation",
+                new ExternalLoginConfirmationViewModel { Email = email });
+
         }
 
         //
@@ -419,33 +439,6 @@ namespace JoinRpg.Portal.Controllers
             }
 
             return RedirectToAction("Index", "Home");
-        }
-
-        internal class ChallengeResult : UnauthorizedResult
-        {
-            public ChallengeResult(string provider, string redirectUri, string userId = null)
-            {
-                LoginProvider = provider;
-                RedirectUri = redirectUri;
-                UserId = userId;
-            }
-
-            public string LoginProvider { get; set; }
-            public string RedirectUri { get; set; }
-            public string UserId { get; set; }
-
-            public override void ExecuteResult(ActionContext context)
-            {
-                throw new NotImplementedException();
-                //var properties = new AuthenticationProperties { RedirectUri = RedirectUri };
-                //if (UserId != null)
-                //{
-                //    properties.Dictionary[ApiSecretsStorage.XsrfKey] = UserId;
-                //}
-
-                //context.HttpContext.GetOwinContext().Authentication
-                //    .Challenge(properties, LoginProvider);
-            }
         }
 
         #endregion

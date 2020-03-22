@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
@@ -10,6 +9,7 @@ using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -184,13 +184,15 @@ namespace JoinRpg.Portal.Controllers
         //
         // POST: /Manage/LinkLogin
         [HttpPost]
-    [ValidateAntiForgeryToken]
-    public ActionResult LinkLogin(string provider)
-    {
-      // Request a redirect to the external login provider to link a login for the current user
-      return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"),
-        CurrentUserAccessor.UserId.ToString());
-    }
+        [ValidateAntiForgeryToken]
+        public ActionResult LinkLogin(string provider)
+        {
+            var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
+
+            var authenticationProperties =
+                SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, CurrentUserAccessor.UserId.ToString());
+            return Challenge(authenticationProperties, provider);
+        }
 
     //
     // GET: /Manage/LinkLoginCallback
