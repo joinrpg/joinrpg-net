@@ -28,7 +28,7 @@ namespace JoinRpg.Portal.Infrastructure
         string IMailGunConfig.ServiceEmail => "support@" + configuration.GetValue<string>("MailGunApiDomain");
 
         string IJoinDbContextConfiguration.ConnectionString
-            => configuration.GetConnectionString("DefaultConnection")
+            => System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString
                 ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey)+"\\App_Data");
 
         // TODO inject this
