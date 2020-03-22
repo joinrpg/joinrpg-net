@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,15 +51,21 @@ namespace JoinRpg.Portal
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddAuthorization(options =>
-                {
-                    options.AddPolicyAsRequirement<AllowPublishRequirement>();
-                    options.AddPolicy(PolicyConstants.AllowAdminPolicy,
-                        policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
-                }
+            {
+                options.AddPolicyAsRequirement<AllowPublishRequirement>();
+                options.AddPolicy(PolicyConstants.AllowAdminPolicy,
+                    policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
+            }
             );
 
             services.AddTransient<IAuthorizationPolicyProvider, AllowMasterPolicyProvider>();
+
+            services
+                .AddAuthentication()
+                .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
         }
+
+     
 
         /// <summary>
         /// Runs after ConfigureServices
