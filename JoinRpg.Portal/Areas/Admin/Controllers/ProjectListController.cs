@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Areas.Admin.Controllers
 {
     [AdminAuthorize]
+    [Area("Admin")]
     public class ProjectListController : JoinRpg.Portal.Controllers.Common.ControllerBase
     {
         public ICurrentUserAccessor CurrentUserAccessor { get; }

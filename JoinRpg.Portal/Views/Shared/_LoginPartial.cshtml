@@ -19,7 +19,9 @@
                     <li class="dropdown-item"><a href="https://docs.joinrpg.ru"><span class="glyphicon glyphicon-question-sign"></span> Помощь</a></li>
                     @if (User.IsInRole("admin"))
                     {
-                        <li class="dropdown-item">@Html.ActionLink("Панель администратора", "Index", "AdminHome", new { area = "Admin" }, null)</li>
+                        <li class="dropdown-item">
+                            <a asp-action="Index" asp-controller="AdminHome" asp-area="Admin">Панель Администратора</a>
+                        </li>
                     }
                     <li class="dropdown-item"><a href="javascript:document.getElementById('logoutForm').submit()">Выйти</a></li>
                 </ul>

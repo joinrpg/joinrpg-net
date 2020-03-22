@@ -56,8 +56,8 @@ namespace JoinRpg.Services.Impl
     {
       var user = await UserRepository.GetById(userId);
       user.Email = newEmail;
-      //TODO: Send email
-      await UnitOfWork.SaveChangesAsync();
+            //TODO: Send email
+            await UnitOfWork.SaveChangesAsync();
     }
 
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
