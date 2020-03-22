@@ -9,7 +9,7 @@ namespace JoinRpg.Portal.Infrastructure
     {
         public static void ConfigureJoinExternalLogins(this AuthenticationBuilder authBuilder, IConfigurationSection configSection)
         {
-            var googleConfig = configSection.GetSection("Google").Get<GoogleAuthenticationOptions>();
+            var googleConfig = configSection.GetSection("Google").Get<OAuthAuthenticationOptions>();
 
             if (googleConfig is object)
             {
@@ -18,6 +18,18 @@ namespace JoinRpg.Portal.Infrastructure
                     options.SignInScheme = IdentityConstants.ExternalScheme;
 
                     (options.ClientId, options.ClientSecret) = googleConfig;
+                });
+            }
+
+            var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
+
+            if (vkConfig is object)
+            {
+                authBuilder.AddVkontakte(options =>
+                {
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+
+                    (options.ClientId, options.ClientSecret) = vkConfig;
                 });
             }
         }
