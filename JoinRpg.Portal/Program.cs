@@ -1,6 +1,7 @@
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal
 {
@@ -15,6 +16,8 @@ namespace JoinRpg.Portal
             WebHost
                 .CreateDefaultBuilder(args)
                 .ConfigureServices(services => services.AddAutofac())
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .ConfigureLogging(logging => logging.AddEventSourceLogger())
+            ;
     }
 }
