@@ -3,7 +3,6 @@ using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Experimental.Plugin.DeusEx;
 using JoinRpg.Experimental.Plugin.HelloWorld;
 using JoinRpg.Experimental.Plugin.PlayerIdCard;
-using JoinRpg.Experimental.Plugin.SteampunkDetective;
 
 namespace JoinRpg.Web.App_Start
 {
@@ -11,7 +10,7 @@ namespace JoinRpg.Web.App_Start
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterTypes(typeof(DeusExPlugin), typeof(HelloWorldPlugin), typeof(PlayerIdCardPlugin), typeof(DetectivePlugin)).As<IPlugin>();
+            builder.RegisterTypes(typeof(DeusExPlugin), typeof(HelloWorldPlugin), typeof(PlayerIdCardPlugin)).As<IPlugin>();
 
             base.Load(builder);
         }
