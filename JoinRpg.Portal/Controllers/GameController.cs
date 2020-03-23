@@ -21,6 +21,7 @@ namespace JoinRpg.Portal.Controllers
         {
         }
 
+        [HttpGet]
         [Route("{projectId}/home")]
         public async Task<IActionResult> Details(int projectId)
         {
@@ -30,6 +31,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [Authorize]
+        [HttpGet]
         public IActionResult Create()
         {
             return View(new ProjectCreateViewModel());
