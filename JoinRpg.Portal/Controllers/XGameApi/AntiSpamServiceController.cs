@@ -18,6 +18,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
         }
 
         [Route("islarper")]
+        [HttpGet]
         public Task<bool> IsLarper(IsLarperRequestModel model)
         {
             return Service.IsLarper(new IsLarperRequest()
