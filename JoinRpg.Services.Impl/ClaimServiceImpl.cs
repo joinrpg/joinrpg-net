@@ -407,7 +407,7 @@ namespace JoinRpg.Services.Impl
             var roomEmail = await CommonClaimDecline(claim);
             if (deleteCharacter && statusWasApproved)
             {
-                await DeleteCharacter(claim.Character, CurrentUserId);
+                DeleteCharacter(claim.Character, CurrentUserId);
             }
 
             await _accommodationInviteService.DeclineAllClaimInvites(claimId).ConfigureAwait(false);
@@ -428,8 +428,8 @@ namespace JoinRpg.Services.Impl
                 await EmailService.Email(roomEmail);
             }
         }
-      
-        private async Task DeleteCharacter(Character character, int currentUserId)
+
+        private void DeleteCharacter(Character character, int currentUserId)
         {
 
             character.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);

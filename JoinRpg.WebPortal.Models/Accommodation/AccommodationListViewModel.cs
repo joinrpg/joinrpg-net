@@ -36,9 +36,6 @@ namespace JoinRpg.Web.Models.Accommodation
 
     public class RoomTypeListItemViewModel : RoomTypeViewModelBase
     {
-        private RoomTypeInfoRow rt;
-        private int userId;
-
         [DisplayName("Проживает")]
         public int Occupied { get; }
 
