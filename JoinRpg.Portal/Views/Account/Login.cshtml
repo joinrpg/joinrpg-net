@@ -9,12 +9,16 @@
 <div class="row">
     <div class="col-md-8">
         <section id="loginForm">
-            @Html.Partial("_PasswordLoginFormPartial", Model.Login)
+            <partial name="_PasswordLoginFormPartial" model="@Model.Login" />
         </section>
     </div>
     <div class="col-md-4">
         <section id="socialLoginForm">
-            @Html.Partial("_ExternalLoginsListPartial", Model.External)
+            <partial name="_ExternalLoginsListPartial" model="@Model.External" />
         </section>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/keyhandler.js"></script>
+}
