@@ -72,13 +72,15 @@ namespace JoinRpg.Portal.Infrastructure
                 foreach (var item in swaggerDoc.Paths.ToList())
                 {
                     var key = item.Key.ToLower();
-                    if (!(key.Contains("x-api") || key.Contains("x-game-api")))
+                    if (!key.IsApiPath())
                     {
                         swaggerDoc.Paths.Remove(item.Key);
                     }
                 }
 
             }
+
+            
         }
     }
 }
