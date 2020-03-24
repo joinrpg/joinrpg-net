@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Web.Controllers.XGameApi
 {
     [DiscoverProjectFilter]
+    [ApiController]
   public class XGameApiController : ControllerBase
     {
     public XGameApiController(IProjectRepository projectRepository)
