@@ -1,4 +1,7 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +35,26 @@ namespace JoinRpg.Portal.Infrastructure
                     (options.ClientId, options.ClientSecret) = vkConfig;
                 });
             }
+        }
+
+        public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
+        {
+            options.Events.OnRedirectToAccessDenied =
+               options.Events.OnRedirectToLogin = OnCookieRedirect;
+        };
+
+        private static Task OnCookieRedirect(RedirectContext<CookieAuthenticationOptions> context)
+        {
+            if (context.Request.Path.Value.IsApiPath())
+            {
+                context.Response.StatusCode = 401;
+            }
+            else
+            {
+                context.Response.Redirect(context.RedirectUri);
+
+            }
+            return Task.CompletedTask;
         }
     }
 }
