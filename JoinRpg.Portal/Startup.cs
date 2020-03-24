@@ -63,6 +63,8 @@ namespace JoinRpg.Portal
             services
                 .AddAuthentication()
                 .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
+
+            services.AddSwaggerGen(Swagger.ConfigureSwagger);
         }
 
      
@@ -88,6 +90,9 @@ namespace JoinRpg.Portal
                 //app.UseExceptionHandler("/Home/Error");
                 //app.UseHsts();
             }
+
+            app.UseSwagger(Swagger.Configure);
+            app.UseSwaggerUI(Swagger.ConfigureUI);
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
