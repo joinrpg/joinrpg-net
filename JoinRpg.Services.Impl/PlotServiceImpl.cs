@@ -9,6 +9,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
 
@@ -20,7 +21,7 @@ namespace JoinRpg.Services.Impl
 
         private readonly IEmailService _email;
 
-        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email) : base(unitOfWork)
+        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
             _email = email;
         }

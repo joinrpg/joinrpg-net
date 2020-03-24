@@ -8,6 +8,7 @@ using JoinRpg.Domain;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Notification;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
@@ -15,7 +16,7 @@ namespace JoinRpg.Services.Impl
   internal class ForumServiceImpl : DbServiceImplBase, IForumService
   {
     private IEmailService EmailService { get; }
-    public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService) : base(unitOfWork)
+    public ForumServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
       EmailService = emailService;
     }

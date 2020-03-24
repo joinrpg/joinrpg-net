@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 
@@ -12,7 +13,7 @@ namespace JoinRpg.Services.Impl.Search
   [UsedImplicitly]
   public class SearchServiceImpl : DbServiceImplBase, ISearchService
   {
-    public SearchServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+    public SearchServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
     {
     }
 

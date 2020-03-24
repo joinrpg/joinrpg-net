@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -26,7 +27,7 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public AntiSpamServiceImpl(IUnitOfWork unitOfWork) : base(unitOfWork)
+        public AntiSpamServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
         {
         }
     }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -11,7 +10,7 @@ using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
-using Microsoft.AspNet.Identity;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Services.Impl
 {
@@ -19,6 +18,8 @@ namespace JoinRpg.Services.Impl
     public class DbServiceImplBase
     {
         protected readonly IUnitOfWork UnitOfWork;
+        private readonly ICurrentUserAccessor currentUserAccessor;
+
         protected IUserRepository UserRepository => _userRepository.Value;
 
         private readonly Lazy<IUserRepository> _userRepository;
@@ -47,24 +48,23 @@ namespace JoinRpg.Services.Impl
         /// <summary>
         /// Returns current user database Id
         /// </summary>
-        protected int CurrentUserId => _impersonatedUserId ??
-                                       int.Parse(ClaimsPrincipal.Current.Identity.GetUserId());
+        protected int CurrentUserId => _impersonatedUserId ?? currentUserAccessor.UserId;
         // TODO: Fix impersonation
 
         /// <summary>
         /// Returns true if current user is admin
         /// </summary>
-        protected bool IsCurrentUserAdmin =>
-            ClaimsPrincipal.Current.IsInRole(Security.AdminRoleName);
+        protected bool IsCurrentUserAdmin => currentUserAccessor.IsAdmin;
         
         /// <summary>
         /// Time of service creation. Used to mark consistent time for all operations performed by service
         /// </summary>
         protected DateTime Now { get; }
 
-        protected DbServiceImplBase(IUnitOfWork unitOfWork)
+        protected DbServiceImplBase(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor)
         {
             UnitOfWork = unitOfWork;
+            this.currentUserAccessor = currentUserAccessor;
             _userRepository = new Lazy<IUserRepository>(unitOfWork.GetUsersRepository);
             _projectRepository = new Lazy<IProjectRepository>(unitOfWork.GetProjectRepository);
             _claimRepository = new Lazy<IClaimsRepository>(unitOfWork.GetClaimsRepository);

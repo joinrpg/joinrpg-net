@@ -24,7 +24,7 @@ namespace Joinrpg.Web.Identity
         }
 
         /// <inheritedoc />
-        public void Dispose() => _ctx?.Dispose();
+        void IDisposable.Dispose() => _ctx?.Dispose();
 
         private async Task CreateImpl(JoinIdentityUser user, CancellationToken ct = default)
         {
@@ -62,6 +62,8 @@ namespace Joinrpg.Web.Identity
             var dbUser = await LoadUser(user, ct);
             dbUser.UserName = user.UserName;
             dbUser.Email = user.UserName;
+            dbUser.Auth.EmailConfirmed = user.EmaiLConfirmed;
+            dbUser.PasswordHash = user.PasswordHash;
             await _ctx.SaveChangesAsync(ct);
         }
 

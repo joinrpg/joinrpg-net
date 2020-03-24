@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using System.Web;
 
 namespace JoinRpg.Web.Models.Characters
 {
-  public class CharacterGroupReportItemViewModel : IEquatable<CharacterGroupReportItemViewModel>
+    public class CharacterGroupReportItemViewModel : IEquatable<CharacterGroupReportItemViewModel>
   {
     public int CharacterGroupId { get; set; }
 

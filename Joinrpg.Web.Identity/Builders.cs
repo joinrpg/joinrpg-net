@@ -13,6 +13,8 @@ namespace Joinrpg.Web.Identity
                 UserName = dbUser.UserName,
                 Id = dbUser.UserId,
                 HasPassword = dbUser.PasswordHash != null,
+                EmaiLConfirmed = dbUser.Auth.EmailConfirmed,
+                PasswordHash = dbUser.PasswordHash,
             };
 
         public static UserExternalLogin ToUserExternalLogin([NotNull] this UserLoginInfo login)

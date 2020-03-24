@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using PscbApi;
 using PscbApi.Models;
@@ -22,8 +23,9 @@ namespace JoinRpg.Services.Impl
         public PaymentsService(
             IUnitOfWork unitOfWork,
             IUriService uriService,
-            IBankSecretsProvider bankSecrets)
-            : base(unitOfWork)
+            IBankSecretsProvider bankSecrets,
+            ICurrentUserAccessor currentUserAccessor)
+            : base(unitOfWork, currentUserAccessor)
         {
             _bankSecrets = bankSecrets;
             _uriService = uriService;
