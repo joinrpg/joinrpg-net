@@ -197,3 +197,6 @@ ModelManifest.xml
 #We will store our API keys here
 /Secret.config
 *.pubxml
+
+#Libman
+Joinrpg.Portal/wwwroot/lib
