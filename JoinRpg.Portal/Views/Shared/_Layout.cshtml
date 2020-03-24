@@ -20,24 +20,6 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i&amp;subset=cyrillic" rel="stylesheet" />
 
     @RenderSection("styles", required: false)
-
-</head>
-<body>
-
-    <vc:main-menu>
-    </vc:main-menu>
-
-    @if (ViewBag.ProjectId != null)
-    {
-        <vc:project-menu>
-        </vc:project-menu>
-    }
-
-    <div class="container body-content">
-        @RenderBody()
-        @Html.Partial("Layout/_FooterPartial")
-    </div>
-
     <environment include="Development">
         <script src="~/lib/jquery/jquery.js"></script>
         <script src="~/lib/twitter-bootstrap/js/bootstrap.js"></script>
@@ -58,6 +40,24 @@
         </script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
+</head>
+<body>
+
+    <vc:main-menu>
+    </vc:main-menu>
+
+    @if (ViewBag.ProjectId != null)
+    {
+        <vc:project-menu>
+        </vc:project-menu>
+    }
+
+    <div class="container body-content">
+        @RenderBody()
+        @Html.Partial("Layout/_FooterPartial")
+    </div>
+
+
 
     @RenderSection("Scripts", required: false)
 
