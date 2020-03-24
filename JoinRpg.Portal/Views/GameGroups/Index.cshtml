@@ -1,6 +1,5 @@
 ﻿@using JetBrains.Annotations
 @using JoinRpg.Web.Models
-@using HtmlString = Microsoft.AspNetCore.Html.HtmlString
 @model GameRolesViewModel
 
 @functions
@@ -30,29 +29,28 @@
 {
     var hideClassName = !item.IsPublic ? "world-object-hidden" : "";
     <div style="margin-left: @(item.DeepLevel)em" class="@hideClassName">
-
             @{
                 var groupLink = Html.ActionLink(item.Name, "Details", new {Model.ProjectId, item.CharacterGroupId}, null);
-                var editControls = Model.HasMasterAccess ? Html.Partial("_GroupEditControls", item, new ViewDataDictionary(ViewData) {{"ShowEditControls", Model.ShowEditControls}}) : HtmlString.Empty;
                 var pathString = string.Join("→", item.Path.Skip(1).Select(p => p.Name)) + "→" + item.Name;
             }
             <div>@switch (item.DeepLevel)
                  {
                      case 2:
                          <span class="h3" title="@pathString">@groupLink</span>
-                         @editControls
                          break;
                      case 1:
                          <span class="h2" title="@pathString">@groupLink</span>
-                         @editControls
                          break;
                      case 0:
                          break;
                      default:
                          <span class="h4" title="@pathString">@groupLink</span>
-                         @editControls
                          break;
                  }
+            @if (item.DeepLevel != 0 && Model.HasMasterAccess)
+            {
+                <partial name="_GropEditControls" model="item" />
+            }
             @if (item.IsSpecial)
             {
                 <span class="label label-default" title="Эта группа автоматически заполняется в зависимости от полей персонажа. @item.BoundExpression">Спецгруппа</span>
