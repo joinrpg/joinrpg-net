@@ -54,7 +54,7 @@ namespace JoinRpg.Web.Models
         [Required]
         [StringLength(100,
             ErrorMessage = "{0} должен быть не короче {2} символов",
-            MinimumLength = 6)]
+            MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }
@@ -80,7 +80,7 @@ namespace JoinRpg.Web.Models
         [Required]
         [StringLength(100,
             ErrorMessage = "{0} должен быть не короче {2} символов",
-            MinimumLength = 6)]
+            MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }

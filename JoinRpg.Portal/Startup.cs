@@ -31,7 +31,7 @@ namespace JoinRpg.Portal
             services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
             services
-                .AddIdentity<JoinIdentityUser, string>()
+                .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
                 .AddDefaultTokenProviders()
                 .AddUserStore<MyUserStore>()
                 .AddRoleStore<MyUserStore>();
@@ -69,7 +69,6 @@ namespace JoinRpg.Portal
             services.AddSwaggerGen(Swagger.ConfigureSwagger);
         }
 
-       
 
         /// <summary>
         /// Runs after ConfigureServices
