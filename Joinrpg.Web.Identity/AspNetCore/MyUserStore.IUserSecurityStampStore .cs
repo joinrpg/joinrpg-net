@@ -11,7 +11,7 @@ namespace Joinrpg.Web.Identity
         {
             var dbUser = await LoadUser(user);
             // if AspNetSecurityStamp setting random guid will make it refresh soonish
-            return dbUser.Auth.AspNetSecurityStamp ?? new Guid().ToString();
+            return dbUser?.Auth?.AspNetSecurityStamp ?? new Guid().ToString();
         }
 
         async Task IUserSecurityStampStore<JoinIdentityUser>.SetSecurityStampAsync(JoinIdentityUser user, string stamp, CancellationToken cancellationToken)
