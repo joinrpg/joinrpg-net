@@ -123,7 +123,7 @@
                             <li role="separator" class="divider"></li>
                             <li>@Html.ActionLink("Отметить перевод", "Create", "Transfer", new { Model.ProjectId }, null)</li>
                             <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
-                            <li asp-is-disabled="@Model.AccessToProject.CanManageMoney">Html.ActionLink("Настройка финансов", "Setup", "Finances", new { Model.ProjectId }, null)</li>
+                            <li asp-is-disabled="@Model.AccessToProject.CanManageMoney">@Html.ActionLink("Настройка финансов", "Setup", "Finances", new { Model.ProjectId }, null)</li>
                             @if (Model.EnableAccommodation)
                             {
                                 <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new { Model.ProjectId }, null)</li>
