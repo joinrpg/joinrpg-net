@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -35,6 +36,16 @@ namespace JoinRpg.Portal.Infrastructure
                     (options.ClientId, options.ClientSecret) = vkConfig;
                 });
             }
+        }
+
+
+        public static void ConfigureValidation(this PasswordOptions password)
+        {
+            password.RequiredLength = 8;
+            password.RequireLowercase = false;
+            password.RequireUppercase = false;
+            password.RequireNonAlphanumeric = false;
+            password.RequireDigit = false;
         }
 
         public static Action<CookieAuthenticationOptions> SetCookieOptions() => options =>
