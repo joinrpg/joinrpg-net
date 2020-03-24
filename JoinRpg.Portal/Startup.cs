@@ -36,6 +36,8 @@ namespace JoinRpg.Portal
                 .AddUserStore<MyUserStore>()
                 .AddRoleStore<MyUserStore>();
 
+            services.ConfigureApplicationCookie(AuthenticationConfigurator.SetCookieOptions());
+
             services.AddLogging();
 
             services.AddHttpContextAccessor();
@@ -67,7 +69,7 @@ namespace JoinRpg.Portal
             services.AddSwaggerGen(Swagger.ConfigureSwagger);
         }
 
-     
+       
 
         /// <summary>
         /// Runs after ConfigureServices
