@@ -4,35 +4,35 @@
     "libraries": [
         {
             "library": "jquery@3.3.1",
-            "destination": "Scripts/lib/jquery/"
+            "destination": "wwwroot/lib/jquery/"
         },
         {
             "library": "jquery-details@0.1.0",
-            "destination": "Scripts/lib/jquery-details/"
+            "destination": "wwwroot/lib/jquery-details/"
         },
         {
             "library": "jquery-validate@1.19.0",
-            "destination": "Scripts/lib/jquery-validate/"
+            "destination": "wwwroot/lib/jquery-validate/"
         },
         {
             "library": "jquery-validation-unobtrusive@3.2.11",
-            "destination": "Scripts/lib/jquery-validation-unobtrusive/"
+            "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
         },
         {
             "library": "twitter-bootstrap@3.4.0",
-            "destination": "Scripts/lib/twitter-bootstrap/"
+            "destination": "wwwroot/lib/twitter-bootstrap/"
         },
         {
             "library": "bootstrap-datepicker@1.8.0",
-            "destination": "Scripts/lib/bootstrap-datepicker/"
+            "destination": "wwwroot/lib/bootstrap-datepicker/"
         },
         {
             "library": "bootstrap-select@1.13.9",
-            "destination": "Scripts/lib/bootstrap-select/"
+            "destination": "wwwroot/lib/bootstrap-select/"
         },
         {
             "library": "respond.js@1.4.2",
-            "destination": "Scripts/lib/respond.js/"
+            "destination": "wwwroot/lib/respond.js/"
         }
     ,
 {
