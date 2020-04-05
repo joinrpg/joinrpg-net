@@ -11,6 +11,7 @@ using JoinRpg.Web.Models.Plugins;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{projectId}/plugins")]
   public class PluginSetupController : ControllerGameBase
   {
     private IPluginFactory PluginFactory { get; }

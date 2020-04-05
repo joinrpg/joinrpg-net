@@ -17,7 +17,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
-  public class ForumController : ControllerGameBase
+    [Route("{projectId}/forums")]
+    public class ForumController : ControllerGameBase
   {
     #region Constructor & Services
     private IForumService ForumService { get; }

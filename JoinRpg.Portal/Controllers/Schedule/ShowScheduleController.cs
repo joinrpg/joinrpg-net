@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace JoinRpg.Portal.Controllers.Schedule
 {
     [AllowAnonymous] // Access to schedule checked by scheduleManager
+    [Route("{projectId}/schedule")]
     public class ShowScheduleController : Common.ControllerGameBase
     {
         public ShowScheduleController(
@@ -53,7 +54,8 @@ namespace JoinRpg.Portal.Controllers.Schedule
             var schedule = await Manager.GetSchedule();
             return View(schedule);
         }
-        
+
+        [Route("full")]
         public async Task<ActionResult> FullScreen(int projectId)
         {
             var errors = await Manager.CheckScheduleConfiguration();
