@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace JoinRpg.Portal.TagHelpers
@@ -38,7 +35,12 @@ namespace JoinRpg.Portal.TagHelpers
         {
             output.TagName = null;
 
-            var partialView = await _htmlHelper.PartialAsync("Acl/PermissionBadge", For);
+            var partialView = await _htmlHelper.PartialAsync("PermissionBadge", new PermissionBadgeViewModel
+            {
+                Value = (bool) For.Model == true,
+                Description = For.Metadata.Description,
+                DisplayName = For.Metadata.DisplayName,
+            }) ;
 
             var writer = new StringWriter();
             partialView.WriteTo(writer, _htmlEncoder);

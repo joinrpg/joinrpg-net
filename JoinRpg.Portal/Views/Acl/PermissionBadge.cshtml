@@ -1,17 +1,17 @@
-﻿@model Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression
+﻿@model JoinRpg.Web.Models.PermissionBadgeViewModel
 
-@if ((bool)Model.Model)
+@if (Model.Value)
 {
-<span class="label label-success" title="@Model.Metadata.Description" data-toggle="tooltip">
+<span class="label label-success" title="@Model.Description" data-toggle="tooltip">
     <span class="glyphicon glyphicon-ok-sign"></span>
-    @Model.Metadata.DisplayName
+    @Model.DisplayName
 </span>
 }
 else
 {
-<span class="label label-default" title="@Model.Metadata.Description" data-toggle="tooltip">
+<span class="label label-default" title="@Model.Description" data-toggle="tooltip">
     <span class="glyphicon glyphicon-remove-sign"> </span>
-    @Model.Metadata.DisplayName
+    @Model.DisplayName
 </span>
 }
 <br />
