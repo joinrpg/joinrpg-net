@@ -13,11 +13,13 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authorization;
+using JoinRpg.Portal.Controllers.Comments;
 
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
     [Route("{projectId}/forums")]
+    [Route("{projectId}/forums/{forumThreadId}/[action]")]
     public class ForumController : ControllerGameBase
   {
     #region Constructor & Services
@@ -149,68 +151,15 @@ namespace JoinRpg.Portal.Controllers
           }
         }
 
-        return ReturnToParent(discussion);
-      }
+                return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
+            }
       catch
       {
         //TODO: Message that comment is not added
-        return ReturnToParent(discussion);
+        return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
       }
 
     }
-
-    private ActionResult ReturnToParent(CommentDiscussion discussion, string extra = null)
-    {
-      if (extra == null)
-      {
-        extra = "";
-      }
-      else
-      {
-        extra = "#" + extra;
-      }
-      var claim = discussion.GetClaim();
-      if (claim != null)
-      {
-        var actionLink = Url.Action("Edit", "Claim", new {claim.ClaimId, discussion.ProjectId});
-        return Redirect(actionLink + extra);
-      }
-      var forumThread = discussion.GetForumThread();
-      if (forumThread != null)
-      {
-        var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, forumThread.ForumThreadId});
-        return Redirect(actionLink + extra);
-      }
-      return NotFound();
-    }
-
-      [Authorize]
-      public async Task<ActionResult> RedirectToDiscussion(int projectid,
-          int? commentid,
-          int? commentDiscussionId)
-      {
-          CommentDiscussion discussion;
-          if (commentid != null)
-          {
-              discussion = await ForumRepository.GetDiscussionByComment(projectid, (int) commentid);
-          }
-          else if (commentDiscussionId != null)
-          {
-              discussion =
-                  await ForumRepository.GetDiscussion(projectid, (int) commentDiscussionId);
-          }
-          else
-          {
-              return NotFound();
-          }
-
-          if (!discussion.HasAnyAccess(CurrentUserId))
-          {
-              return NoAccesToProjectView(discussion.Project);
-          }
-
-          return ReturnToParent(discussion, commentid != null ? $"comment{commentid}" : null);
-      }
 
       [HttpGet]
     public async Task<ActionResult> ListThreads(int projectid)
@@ -251,10 +200,12 @@ namespace JoinRpg.Portal.Controllers
       return View(viewModel);
     }
 
-    public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
-    {
-       await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
-       return await RedirectToDiscussion(projectid,commentid,commentDiscussionId);
-    }
+        public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
+        {
+            await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);
+            var discussion =
+                   await ForumRepository.GetDiscussion(projectid, commentDiscussionId);
+            return CommentRedirectHelper.RedirectToDiscussion(Url, discussion);
+        }
   }
 }
