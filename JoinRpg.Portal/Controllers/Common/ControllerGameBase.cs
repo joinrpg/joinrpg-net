@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
-using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Filter;
 using JoinRpg.Web.Models;

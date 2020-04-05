@@ -1,11 +1,9 @@
 using JoinRpg.Data.Interfaces;
-using JoinRpg.Portal.Infrastructure;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi
 {
-    [DiscoverProjectFilter]
     [ApiController]
   public class XGameApiController : ControllerBase
     {

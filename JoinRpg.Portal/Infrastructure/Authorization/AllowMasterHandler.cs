@@ -1,29 +1,28 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Web.Filter;
+using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization
 {
     public class AllowMasterHandler : AuthorizationHandler<AllowMasterRequirement>
     {
-        public AllowMasterHandler(IProjectRepository projectRepository)
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public AllowMasterHandler(IProjectRepository projectRepository, IHttpContextAccessor httpContextAccessor)
         {
             ProjectRepository = projectRepository;
+            this.httpContextAccessor = httpContextAccessor;
         }
         private IProjectRepository ProjectRepository { get; }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowMasterRequirement requirement)
         {
-            if (!(context.Resource is AuthorizationFilterContext mvcContext))
-            {
-                return;
-            }
-            var projectIdAsObj = mvcContext.HttpContext.Items["ProjectId"];
+
+            var projectIdAsObj = httpContextAccessor.HttpContext.Items["ProjectId"];
             if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
             {
                 context.Fail();
@@ -38,7 +37,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
             }
 
             //Move this to claims to prevent DB call
-            if (project.ProjectAcls.Any(acl => acl.UserId.ToString() == context.User.Identity.Name && requirement.Permission.GetPermssionExpression()(acl)))
+            if (project.ProjectAcls.Any(acl => acl.UserId.ToString() == context.User.Identity.GetUserId() && requirement.Permission.GetPermssionExpression()(acl)))
             {
                 context.Succeed(requirement);
             }

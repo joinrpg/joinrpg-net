@@ -13,6 +13,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 
 namespace JoinRpg.Portal
 {
@@ -43,6 +44,7 @@ namespace JoinRpg.Portal
             services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
+            services.AddRouting(options => options.LowercaseUrls = true);
             services
                 .AddMvc(options =>
                 {
@@ -97,6 +99,8 @@ namespace JoinRpg.Portal
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseMiddleware<DiscoverProjectMiddleware>();
 
             app.UseAuthentication();
 
