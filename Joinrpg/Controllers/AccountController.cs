@@ -140,7 +140,10 @@ namespace JoinRpg.Web.Controllers
             {
                 ModelState.AddModelError("",
                     "Вы уже зарегистрировались. Если пароль не подходит, нажмите «Забыли пароль?»");
-                return View("Login", new LoginViewModel() {Email = model.Email});
+                var returnModel = CreateLoginPageViewModel("");
+                returnModel.Login = new LoginViewModel() { Email = model.Email };
+
+                return View("Login", returnModel);
             }
 
             var passValidateResult =
