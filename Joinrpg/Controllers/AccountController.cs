@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using hbehr.recaptcha;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -125,13 +126,24 @@ namespace JoinRpg.Web.Controllers
                 return View(model);
             }
 
+            string userResponse = HttpContext.Request.Params["g-recaptcha-response"];
+            bool validCaptcha = ReCaptcha.ValidateCaptcha(userResponse);
+            if (!validCaptcha)
+            {
+                ModelState.AddModelError("", "CAPTCHA не подтверждена");
+                return View(model);
+            }
+
             var currentUser = await UserManager.FindByNameAsync(model.Email);
 
             if (currentUser != null)
             {
                 ModelState.AddModelError("",
                     "Вы уже зарегистрировались. Если пароль не подходит, нажмите «Забыли пароль?»");
-                return View("Login", new LoginViewModel() {Email = model.Email});
+                var returnModel = CreateLoginPageViewModel("");
+                returnModel.Login = new LoginViewModel() { Email = model.Email };
+
+                return View("Login", returnModel);
             }
 
             var passValidateResult =
