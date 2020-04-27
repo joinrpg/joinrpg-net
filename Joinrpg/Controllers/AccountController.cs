@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using hbehr.recaptcha;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
@@ -122,6 +123,14 @@ namespace JoinRpg.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return View(model);
+            }
+
+            string userResponse = HttpContext.Request.Params["g-recaptcha-response"];
+            bool validCaptcha = ReCaptcha.ValidateCaptcha(userResponse);
+            if (!validCaptcha)
+            {
+                ModelState.AddModelError("", "CAPTCHA не подтверждена");
                 return View(model);
             }
 
