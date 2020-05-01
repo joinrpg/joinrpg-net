@@ -1,4 +1,4 @@
-﻿﻿var tryNumber = 0;
+﻿var tryNumber = 0;
 jQuery("input[type=submit]").click(function () {
     var self = $(this);
 
@@ -15,8 +15,6 @@ jQuery("input[type=submit]").click(function () {
     return true;
 });
 
-$("html").addClass($.fn.details.support ? "details" : "no-details");
-$("details").details();
 $("[data-toggle='confirmation']").popConfirm({
     yesBtn: "OK",
     noBtn: "Отмена",
@@ -29,7 +27,7 @@ $(".datepicker").datepicker({
 
 //TODO: merge this
 
-$("#deleteElementModal").on("show.bs.modal", function(event) {
+$("#deleteElementModal").on("show.bs.modal", function (event) {
     var button = $(event.relatedTarget);
     var plotElementId = button.data("element");
     var modal = $(this);
@@ -60,10 +58,18 @@ $("#restoreElementModal").on("show.bs.modal", function (event) {
 });
 
 $(".modaldialogforid").on("show.bs.modal", function (event) {
-  var button = $(event.relatedTarget);
-  var entityId = button.data("element");
-  var modal = $(this);
-  modal.find("#entityId").val(entityId);
+    var modal = $(this);
+    var button = $(event.relatedTarget);
+
+    var entityId = button.data("element");
+    modal.find("#entityId").val(entityId);
+
+    var href = button.data("action-url");
+    if (href) {
+        modal.find("form").attr({
+            "action": href
+        });
+    }
 });
 
 var hash = window.location.hash.substr(1);
@@ -71,13 +77,13 @@ if (hash) {
     $("#" + hash).collapse('show');
 }
 
-$(function() {
-  $('[data-toggle="tooltip"]').tooltip();
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
 });
 
 $('.require-element-id')
     .on('show.bs.modal',
-        function(event) {
+        function (event) {
             var button = $(event.relatedTarget);
             var id = button.data('element');
             var modal = $(this);
