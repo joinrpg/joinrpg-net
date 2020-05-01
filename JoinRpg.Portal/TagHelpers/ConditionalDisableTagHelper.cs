@@ -1,3 +1,4 @@
+using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -19,6 +20,10 @@ namespace JoinRpg.Portal.TagHelpers
                 output.AddClass("disabled", HtmlEncoder.Default);
             }
             base.Process(context, output);
+            if (IsDisabled && context.TagName == "a")
+            {
+                output.Attributes.SetAttribute("href", "#");
+            }
         }
     }
 }

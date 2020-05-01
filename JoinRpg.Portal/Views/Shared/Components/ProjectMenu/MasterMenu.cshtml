@@ -123,7 +123,11 @@
                             <li role="separator" class="divider"></li>
                             <li>@Html.ActionLink("Отметить перевод", "Create", "Transfer", new { Model.ProjectId }, null)</li>
                             <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
-                            <li asp-is-disabled="@Model.AccessToProject.CanManageMoney">@Html.ActionLink("Настройка финансов", "Setup", "Finances", new { Model.ProjectId }, null)</li>
+                            <li asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
+                                <a asp-action="Setup" asp-controller="Finances" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.AccessToProject.CanManageMoney">
+                                    Настройка финансов
+                                </a>
+                            </li>
                             @if (Model.EnableAccommodation)
                             {
                                 <li>@Html.ActionLink("Поселение", "Index", "AccommodationType", new { Model.ProjectId }, null)</li>
@@ -147,7 +151,11 @@
                                 <li>@Html.ActionLink("Регистрация", "Index", "CheckIn", new { Model.ProjectId }, null)</li>
                             }
 
-                            <li asp-is-disabled="@Model.AccessToProject.CanChangeProjectProperties">@Html.ActionLink("Настройки", "Edit", "Game", new { Model.ProjectId }, null)</li>
+                            <li asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
+                                <a asp-action="Edit" asp-controller="Game" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
+                                    Настройка
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
