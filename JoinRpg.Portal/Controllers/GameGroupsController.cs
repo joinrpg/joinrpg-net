@@ -24,9 +24,9 @@ using Newtonsoft.Json.Serialization;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [Route("{projectId}/roles/[action]")]
-  public class GameGroupsController : ControllerGameBase
-  {
+    [Route("{projectId}/roles/{characterGroupId}/[action]")]
+    public class GameGroupsController : ControllerGameBase
+    {
 
         public GameGroupsController(
             IProjectRepository projectRepository,
@@ -36,8 +36,8 @@ namespace JoinRpg.Portal.Controllers
         {
         }
 
-      [HttpGet]
-    public async Task<ActionResult> Index(int projectId, int? characterGroupId)
+        [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
+        public async Task<ActionResult> Index(int projectId, int? characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
