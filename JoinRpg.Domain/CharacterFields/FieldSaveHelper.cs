@@ -176,7 +176,9 @@ namespace JoinRpg.Domain.CharacterFields
 
             protected override void SetCharacterNameFromPlayer()
             {
-                //Do nothing - we don't have player yet
+                //TODO: we don't have player yet, but have to set player name from it.
+                //M.b. Disallow create characters in this scenarios?
+                Character.CharacterName = Character.CharacterName ?? "PLAYER_NAME";
             }
         }
 
