@@ -25,7 +25,7 @@
         <p>@Html.DisplayFor(modelItem => item.Summary)</p>
         @foreach (var plot in item.Elements.Where(e => !Model.InWorkOnly  || e.HasWorkTodo))
         {
-            @Html.Partial("ShowElementPartial", plot)
+            @Html.Partial("..//Plot//ShowElementPartial", plot)
             <hr />
         }
     </div>

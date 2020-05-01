@@ -11,7 +11,7 @@
 </span>
     @if (Model.HasEditAccess)
     {
-        <a href="@Url.Action("Create", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
+        <a href="@Url.Action("Create", "Plot", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
     }
 </p>
 @Html.Partial("FolderList", Model)
