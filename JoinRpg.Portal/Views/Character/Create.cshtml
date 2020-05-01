@@ -8,7 +8,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm("Create", "Character", FormMethod.Post)) 
+@using (Html.BeginForm("Create", "Character", new {Model.ProjectId},  FormMethod.Post)) 
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)
