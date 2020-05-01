@@ -13,7 +13,8 @@ using JoinRpg.Web.Models.CheckIn;
 
 namespace JoinRpg.Portal.Controllers
 {
-  [MasterAuthorize()] //TODO specific permission
+    [Route("{projectId}/checkin/[action]")]
+    [MasterAuthorize()] //TODO specific permission
   public class CheckInController : ControllerGameBase
   {
     [ProvidesContext]
@@ -90,7 +91,7 @@ namespace JoinRpg.Portal.Controllers
       }
     }
 
-    [HttpGet]
+    [HttpGet("~/{ProjectId}/claim/{ClaimId}/checkin")]
     public async Task<ActionResult> CheckIn(int projectId, int claimId)
     {
       var claim = await ClaimsRepository.GetClaimWithDetails(projectId, claimId);
@@ -135,7 +136,7 @@ namespace JoinRpg.Portal.Controllers
       off = 0,
     }
 
-    [HttpGet]
+    [HttpGet("~/{ProjectId}/claim/{ClaimId}/secondrole")]
     public async Task<ActionResult> SecondRole(int projectId, int claimId)
     {
       return await ShowSecondRole(projectId, claimId);
@@ -159,8 +160,8 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [ValidateAntiForgeryToken]
-    [HttpPost]
-    public async Task<ActionResult> SecondRole(SecondRoleViewModel model)
+    [HttpPost("~/{ProjectId}/claim/{ClaimId}/secondrole")]
+        public async Task<ActionResult> SecondRole(SecondRoleViewModel model)
     {
       var claim = await ClaimsRepository.GetClaim(model.ProjectId, model.ClaimId);
       if (claim == null)

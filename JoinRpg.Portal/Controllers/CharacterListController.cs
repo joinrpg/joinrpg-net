@@ -16,6 +16,7 @@ using JoinRpg.Web.Models.Exporters;
 namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
+    [Route("{projectId}/characters/[action]")]
   public class CharacterListController : ControllerGameBase
   {
 
@@ -85,6 +86,7 @@ namespace JoinRpg.Portal.Controllers
       return groups.GetChildrenGroups().Select(g => g.CharacterGroupId).Union(characterGroupId).ToArray();
     }
 
+    [HttpGet("~/{ProjectId}/characters/bygroup/{CharacterGroupId}")]
     public async Task<ActionResult> ByGroup(int projectId, int characterGroupId, string export)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);

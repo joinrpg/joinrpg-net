@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{ProjectId}/claim/{ClaimId}/[action]")]
   public class ClaimController : ControllerGameBase
   {
     private readonly IClaimService _claimService;
@@ -36,8 +37,8 @@ namespace JoinRpg.Portal.Controllers
     private IAccommodationInviteRepository AccommodationInviteRepository { get; }
     private IUriService UriService { get; }
 
-    [HttpGet]
-    [Authorize]
+    [HttpGet("/{projectid}/character/{CharacterId}/apply")]
+        [Authorize]
     public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
     {
       var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
@@ -45,17 +46,21 @@ namespace JoinRpg.Portal.Controllers
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
 
-    [HttpGet]
+    [HttpGet("/{projectid}/apply")]
     [Authorize]
-    public async Task<ActionResult> AddForGroup(int projectid, int? characterGroupId)
+    public async Task<ActionResult> AddForGroup(int projectid)
     {
-        if (characterGroupId == null)
-        {
-            var project = await ProjectRepository.GetProjectAsync(projectid);
-            return RedirectToAction("AddForGroup",
-                new {project.ProjectId, project.RootGroup.CharacterGroupId});
-        }
-      var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId.Value);
+            //TODO remove redirect here
+        var project = await ProjectRepository.GetProjectAsync(projectid);
+        return RedirectToAction("AddForGroup",
+            new {project.ProjectId, project.RootGroup.CharacterGroupId});
+    }
+
+    [HttpGet("/{projectid}/roles/{characterGroupId}/apply")]
+    [Authorize]
+    public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
+    {
+        var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
       if (field == null) return NotFound();
         return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
     }
@@ -425,6 +430,7 @@ namespace JoinRpg.Portal.Controllers
       return RedirectToAction("Edit", "Claim", new {claimId, projectId});
     }
 
+    [HttpGet("/{projectId}/myclaim")]
     [Authorize, HttpGet]
     public async Task<ActionResult> MyClaim(int projectId)
     {

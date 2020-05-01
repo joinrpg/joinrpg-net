@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{ProjectId}/claims/[action]")]
     public class ClaimListController : Common.ControllerGameBase
     {
         private IExportDataService ExportDataService { get; }
@@ -101,7 +102,13 @@ namespace JoinRpg.Portal.Controllers
             return await ShowMasterClaimList(projectId, export, "Заявки на игроке", "Index", claims);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [HttpGet("~/{ProjectId}/claims/without-roomtype")]
+        [MasterAuthorize()]
+        public Task<ActionResult> ListWithoutRoomType(int projectId, string export) =>
+            ListForRoomType(projectId, null, export);
+
+        [HttpGet("~/{ProjectId}/claims/by-roomtype/{roomTypeId}")]
+        [MasterAuthorize()]
         public async Task<ActionResult> ListForRoomType(int projectId, int? roomTypeId, string export)
         {
             var claims = await ClaimsRepository.GetClaimsForRoomType(projectId, ClaimStatusSpec.Active, roomTypeId);
@@ -120,18 +127,20 @@ namespace JoinRpg.Portal.Controllers
             return await ShowMasterClaimList(projectId, export, title, "Index", claims);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/discussing")]
+        [MasterAuthorize()]
         public async Task<ActionResult> ListForGroupDirect(int projectId, int characterGroupId, string export)
         {
             var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
             var claims =
                 await ClaimsRepository.GetClaimsForGroupDirect(projectId, ClaimStatusSpec.Active, characterGroupId);
 
-            return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки", claims,
+            return await ShowMasterClaimListForGroup(group, export, "Обсуждаемые заявки (в группу)", claims,
                 GroupNavigationPage.ClaimsDirect);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/claims")]
+        [MasterAuthorize()]
         public async Task<ActionResult> ListForGroup(int projectId, int characterGroupId, string export)
         {
             var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -232,7 +241,9 @@ namespace JoinRpg.Portal.Controllers
             return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", "Index", claims);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [HttpGet("~{ProjectId}/claims/for-master/{ResponsibleMasterId}")]
+        [MasterAuthorize()]
+
         public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
         {
             var claims =
@@ -243,7 +254,8 @@ namespace JoinRpg.Portal.Controllers
             return await ShowMasterClaimList(projectid, export, "Заявки на мастере", "Index", claims);
         }
 
-        [HttpGet, Authorize]
+        [HttpGet("~/my/claims")]
+        [Authorize]
         public async Task<ActionResult> My()
         {
             var user = await GetCurrentUserAsync();
@@ -263,7 +275,8 @@ namespace JoinRpg.Portal.Controllers
                 await ShowMasterClaimList(projectId, export, "Проблемные заявки", "Index", claims);
         }
 
-        [HttpGet, MasterAuthorize()]
+        [HttpGet("~/{ProjectId}/claims/problems-for-master/{ResponsibleMasterId}")]
+        [MasterAuthorize()]
         public async Task<ActionResult> ResponsibleProblems(int projectId, int responsibleMasterId, string export)
         {
             var claims =

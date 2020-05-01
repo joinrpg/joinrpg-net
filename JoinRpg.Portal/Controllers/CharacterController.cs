@@ -118,7 +118,7 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        [HttpGet("~/{projectId}/character/create")]
+        [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/create-character")]
         [MasterAuthorize(Permission.CanEditRoles)]
         public async Task<ActionResult> Create(int projectid, int charactergroupid, bool continueCreating = false)
         {
@@ -135,7 +135,7 @@ namespace JoinRpg.Portal.Controllers
             }.Fill(characterGroup, CurrentUserId));
         }
 
-        [HttpPost("~/{projectId}/character/create")]
+        [HttpPost("~/{ProjectId}/roles/{CharacterGroupId}/create-character")]
         [MasterAuthorize(Permission.CanEditRoles)]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)

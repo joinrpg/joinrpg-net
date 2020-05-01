@@ -48,12 +48,12 @@ namespace JoinRpg.Web.Helpers
                         new {PlotFolderId = link.Identification, link.ProjectId},
                         urlScheme);
                 case LinkType.Comment:
-                    return urlHelper.Action("Index",
+                    return urlHelper.Action("ToComment",
                         "DiscussionRedirect",
                         new {link.ProjectId, CommentId = link.Identification},
                         urlScheme);
                 case LinkType.CommentDiscussion:
-                    return urlHelper.Action("Index",
+                    return urlHelper.Action("ToDiscussion",
                         "DiscussionRedirect",
                         new {link.ProjectId, CommentDiscussionId = link.Identification},
                         urlScheme);
