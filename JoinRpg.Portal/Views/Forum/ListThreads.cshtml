@@ -23,6 +23,6 @@ else
 @if (Model.HasMasterAccess)
 {
     <p>
-        Чтобы открыть новую дикуссию, надо выбрать группу в сетке ролей. Или, возможно, <a href="@Url.Action("CreateThread", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId})">открыть дискуссию, доступную всем игрокам</a>?.
+        Чтобы открыть новую дикуссию, надо выбрать группу в сетке ролей. Или, возможно, <a href="@Url.Action("CreateThread", new {Model.ProjectId, CharacterGroupId = Model.RootGroupId})">открыть дискуссию, доступную всем игрокам</a>?
     </p>
 }
