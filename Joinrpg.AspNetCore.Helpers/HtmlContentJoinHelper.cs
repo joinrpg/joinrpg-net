@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -28,6 +29,12 @@ namespace Joinrpg.AspNetCore.Helpers
             }
             return builder;
         }
+
+        /// <summary>
+        /// Join IHtmlContents them with separator
+        /// </summary>
+        public static IHtmlContent JoinList(this IHtmlHelper self, string rawSeparator, params IHtmlContent[] contents)
+            => self.JoinList(rawSeparator, contents.AsEnumerable());
 
         /// <summary>
         /// Call Html.DisplayFor(..) for every element in list and then joins them with separator
