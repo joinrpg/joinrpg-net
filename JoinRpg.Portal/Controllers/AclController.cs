@@ -12,12 +12,13 @@ using Microsoft.AspNetCore.Http;
 namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize(AllowAdmin = true)]
+    [Route("{projectId}/masters")]
     public class AclController : ControllerGameBase
     {
         private IClaimsRepository ClaimRepository { get; }
         private IUriService UriService { get; }
 
-        [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpPost("add"), ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Add(AclViewModel viewModel)
         {
             try
@@ -77,7 +78,8 @@ namespace JoinRpg.Portal.Controllers
             }));
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpGet("delete")]
+        [MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Delete(int projectId, int projectaclid)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -91,7 +93,8 @@ namespace JoinRpg.Portal.Controllers
 
         }
 
-        [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpPost("delete")]
+        [ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Delete(DeleteAclViewModel viewModel)
         {
             try
@@ -112,7 +115,8 @@ namespace JoinRpg.Portal.Controllers
         }
 
 
-        [HttpGet, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpGet("edit")]
+        [MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Edit(int projectId, int? projectaclid)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -124,7 +128,8 @@ namespace JoinRpg.Portal.Controllers
                 UriService));
         }
 
-        [HttpPost, ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpPost("edit")]
+        [ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Edit(AclViewModel viewModel)
         {
             try
@@ -154,14 +159,14 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [AdminAuthorize]
-        [HttpGet]
+        [HttpGet("force-admin-acess")]
         public ActionResult ForceSet(int projectid)
         {
             return View();
         }
 
         [AdminAuthorize]
-        [HttpPost]
+        [HttpPost("force-admin-acess")]
         public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] FormCollection unused)
         {
             await ProjectService.GrantAccessAsAdmin(projectId);

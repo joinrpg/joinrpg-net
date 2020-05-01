@@ -47,7 +47,8 @@ namespace JoinRpg.Portal.Controllers
         }
     #endregion
 
-    [MasterAuthorize, HttpGet]
+    [HttpGet("~/{projectId}/roles/{charactergroupid}/create-thread")]
+    [MasterAuthorize]
     public async Task<ActionResult> CreateThread(int projectId, int charactergroupid)
     {
       var characterGroup = await ProjectRepository.GetGroupAsync(projectId, charactergroupid);
@@ -58,7 +59,8 @@ namespace JoinRpg.Portal.Controllers
       return View(new CreateForumThreadViewModel(characterGroup.EnsureActive()));
     }
 
-    [MasterAuthorize, HttpPost, ValidateAntiForgeryToken]
+    [HttpPost("~/{projectId}/roles/{charactergroupid}/create-thread")]
+    [MasterAuthorize, ValidateAntiForgeryToken]
     public async Task<ActionResult> CreateThread([NotNull] CreateForumThreadViewModel viewModel)
     {
       var group = (await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId)).EnsureActive();
@@ -161,8 +163,8 @@ namespace JoinRpg.Portal.Controllers
 
     }
 
-      [HttpGet]
-    public async Task<ActionResult> ListThreads(int projectid)
+    [HttpGet("~/{projectId}/forums")]
+        public async Task<ActionResult> ListThreads(int projectid)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
       if (project == null)
@@ -186,7 +188,7 @@ namespace JoinRpg.Portal.Controllers
       return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet("~/{projectId}/roles/{characterGroupId}/forums")]
     public async Task<ActionResult> ListThreadsByGroup(int projectid, int characterGroupId)
     {
       var group = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);

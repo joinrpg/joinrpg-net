@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
+  [Route("{ProjectId}/fields/[action]")]
   public class GameFieldController : ControllerGameBase
   {
     private IFieldSetupService FieldSetupService { get; }
@@ -54,28 +55,32 @@ namespace JoinRpg.Portal.Controllers
             return ViewIfFound(model);
         }
 
-        [HttpGet, MasterAuthorize]
+        [HttpGet("/{ProjectId}/fields/archive")]
+        [MasterAuthorize]
         public async Task<ActionResult> DeletedList(int projectId)
         {
             var model = await Manager.GetInActiveAsync();
             return ViewIfFound("Index", model);
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        [HttpGet]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Create(int projectId)
         {
             var model = await Manager.CreatePageAsync();
             return ViewIfFound(model);
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeFields)]
+        [HttpGet]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Settings()
         {
             var model = await Manager.SettingsPagesAsync();
             return ViewIfFound(model);
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeFields)]
+        [HttpPost]
+        [MasterAuthorize(Permission.CanChangeFields)]
         public async Task<ActionResult> Settings(FieldSettingsViewModel viewModel)
         {
             if (!ModelState.IsValid)

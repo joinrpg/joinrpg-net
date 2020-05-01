@@ -12,6 +12,7 @@ namespace JoinRpg.Portal.Controllers
     [MasterAuthorize()]
     public class ReportsController : ControllerGameBase
     {
+        [HttpGet("{projectId}/reports/2d/{gameReport2DTemplateId}")]
         public async Task<IActionResult> Report2D(int projectId, int gameReport2DTemplateId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
