@@ -21,8 +21,8 @@ namespace JoinRpg.Portal.Controllers
         {
         }
 
-        [HttpGet]
-        [Route("{projectId}/home")]
+        [HttpGet("{projectId}/home")]
+        //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
         public async Task<IActionResult> Details(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
@@ -31,7 +31,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet("/game/create")]
         public IActionResult Create()
         {
             return View(new ProjectCreateViewModel());
@@ -39,7 +39,7 @@ namespace JoinRpg.Portal.Controllers
 
         // POST: Game/Create
         [Authorize]
-        [HttpPost]
+        [HttpPost("/game/create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProjectCreateViewModel model)
         {
@@ -70,7 +70,8 @@ namespace JoinRpg.Portal.Controllers
             return RedirectToAction("Details", new { project.ProjectId });
         }
 
-        [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
+        [HttpGet("/{projectId}/project/settings")]
+        [MasterAuthorize(Permission.CanChangeProjectProperties)]
         public async Task<IActionResult> Edit(int projectId)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
@@ -90,7 +91,8 @@ namespace JoinRpg.Portal.Controllers
             });
         }
 
-        [HttpPost, MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
+        [HttpPost("/{projectId}/project/settings")]
+        [MasterAuthorize(Permission.CanChangeProjectProperties), ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditProjectViewModel viewModel)
         {
             var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
@@ -119,8 +121,8 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        [HttpGet,
-         MasterAuthorize(Permission = Permission.CanChangeProjectProperties, AllowAdmin = true)]
+        [HttpGet("/{projectId}/close")]
+        [MasterAuthorize(Permission = Permission.CanChangeProjectProperties, AllowAdmin = true)]
         public async Task<IActionResult> Close(int projectid)
         {
             var project = await ProjectRepository.GetProjectAsync(projectid);
@@ -135,8 +137,8 @@ namespace JoinRpg.Portal.Controllers
             });
         }
 
-        [HttpPost,
-         MasterAuthorize(AllowAdmin = true, Permission = Permission.CanChangeProjectProperties)]
+        [HttpPost("/{projectId}/close")]
+        [MasterAuthorize(AllowAdmin = true, Permission = Permission.CanChangeProjectProperties)]
         public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
         {
             if (!ModelState.IsValid)

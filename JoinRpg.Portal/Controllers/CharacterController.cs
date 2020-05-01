@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{projectId}/character/{characterid}")]
     public class CharacterController : Common.ControllerGameBase
     {
         private IPlotRepository PlotRepository { get; }
@@ -117,7 +118,7 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("~/{projectId}/character/create")]
         [MasterAuthorize(Permission.CanEditRoles)]
         public async Task<ActionResult> Create(int projectid, int charactergroupid, bool continueCreating = false)
         {
@@ -134,7 +135,7 @@ namespace JoinRpg.Portal.Controllers
             }.Fill(characterGroup, CurrentUserId));
         }
 
-        [HttpPost]
+        [HttpPost("~/{projectId}/character/create")]
         [MasterAuthorize(Permission.CanEditRoles)]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(AddCharacterViewModel viewModel)
