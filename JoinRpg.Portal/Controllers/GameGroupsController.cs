@@ -102,7 +102,7 @@ namespace JoinRpg.Portal.Controllers
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
-    [HttpGet("~/{projectId}/roles/indexjson")]
+    [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]
         public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);

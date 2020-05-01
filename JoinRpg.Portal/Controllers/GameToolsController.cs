@@ -7,6 +7,7 @@ using JoinRpg.Web.Models;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{projectId}/tools/[action]")]
   public class GameToolsController : Common.ControllerGameBase
   {
         public GameToolsController(IProjectRepository projectRepository,
