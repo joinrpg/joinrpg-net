@@ -81,7 +81,8 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
+    [HttpGet("~/{projectId}/roles/hotjson")]
+        public async Task<ActionResult> HotJson(int projectId, int characterGroupId, int? maxCount = null)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
@@ -101,8 +102,8 @@ namespace JoinRpg.Portal.Controllers
           g => g.PublicCharacters.Where(ch => ch.IsHot && ch.IsFirstCopy)).Distinct();
     }
 
-    [HttpGet]
-    public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
+    [HttpGet("~/{projectId}/roles/indexjson")]
+        public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
       if (field == null)
@@ -136,11 +137,11 @@ namespace JoinRpg.Portal.Controllers
       });
     }
 
-    [HttpGet]
+    [HttpGet("~/{projectId}/roles/json_full")]
     public Task<ActionResult> Json_Full(int projectId) => AllGroupsJson(projectId, includeSpecial: true);
 
-    [HttpGet]
-    public Task<ActionResult> Json_Real(int projectId) => AllGroupsJson(projectId, includeSpecial: false);
+    [HttpGet("~/{projectId}/roles/json_real")]
+        public Task<ActionResult> Json_Real(int projectId) => AllGroupsJson(projectId, includeSpecial: false);
 
         private async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
@@ -340,7 +341,7 @@ namespace JoinRpg.Portal.Controllers
 
     [HttpPost, MasterAuthorize(Permission.CanEditRoles), ValidateAntiForgeryToken]
     // ReSharper disable once UnusedParameter.Global
-    public async Task<ActionResult> Delete(int projectId, int characterGroupId, FormCollection collection)
+    public async Task<ActionResult> Delete(int projectId, int characterGroupId, IFormCollection collection)
     {
       var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 

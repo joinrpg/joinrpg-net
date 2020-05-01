@@ -197,7 +197,7 @@ namespace JoinRpg.Portal.Controllers
     [ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanChangeFields)]
     // ReSharper disable once UnusedParameter.Global
-    public async Task<ActionResult> Delete(int projectId, int projectFieldId, FormCollection collection)
+    public async Task<ActionResult> Delete(int projectId, int projectFieldId, IFormCollection collection)
     {
       var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 

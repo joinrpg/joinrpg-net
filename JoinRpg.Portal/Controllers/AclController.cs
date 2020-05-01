@@ -167,7 +167,7 @@ namespace JoinRpg.Portal.Controllers
 
         [AdminAuthorize]
         [HttpPost("force-admin-acess")]
-        public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] FormCollection unused)
+        public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] IFormCollection unused)
         {
             await ProjectService.GrantAccessAsAdmin(projectId);
             return RedirectToAction("Details", "Game", new { projectId });

@@ -294,7 +294,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [HttpPost, MasterAuthorize(Permission.CanManagePlots), ValidateAntiForgeryToken]
-    public async Task<ActionResult> Delete(int projectId, int plotFolderId, [UsedImplicitly] FormCollection collection)
+    public async Task<ActionResult> Delete(int projectId, int plotFolderId, [UsedImplicitly] IFormCollection collection)
     {
       try
       {
