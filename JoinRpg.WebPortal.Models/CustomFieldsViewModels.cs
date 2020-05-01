@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using Joinrpg.Markdown;
@@ -216,8 +217,10 @@ namespace JoinRpg.Web.Models
     {
         public AccessArguments AccessArguments { get; }
         public bool EditAllowed { get; }
+        [Editable(false)]
         public IClaimSource Target { get; }
 
+        [Editable(false)]
         public IReadOnlyCollection<FieldValueViewModel> Fields { get; }
 
         /// <summary>
