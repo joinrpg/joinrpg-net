@@ -130,7 +130,7 @@ namespace JoinRpg.Portal.Controllers
 
         [HttpPost("edit")]
         [ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
-        public async Task<ActionResult> Edit(AclViewModel viewModel)
+        public async Task<ActionResult> Edit(ChangeAclViewModel viewModel)
         {
             try
             {
@@ -152,21 +152,22 @@ namespace JoinRpg.Portal.Controllers
             }
             catch
             {
-                return View(viewModel);
+                //TODO Fix this
+                return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
             }
             return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
         }
 
         [AdminAuthorize]
-        [HttpGet("force-admin-acess")]
+        [HttpGet("force-admin-access")]
         public ActionResult ForceSet(int projectid)
         {
             return View();
         }
 
         [AdminAuthorize]
-        [HttpPost("force-admin-acess")]
+        [HttpPost("force-admin-access")]
         public async Task<ActionResult> ForceSet(int projectId, [UsedImplicitly] IFormCollection unused)
         {
             await ProjectService.GrantAccessAsAdmin(projectId);

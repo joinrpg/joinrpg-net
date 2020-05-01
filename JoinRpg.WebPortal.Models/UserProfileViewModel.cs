@@ -58,6 +58,7 @@ namespace JoinRpg.Web.Models
 
     public int? AllrpgId { get; }
 
+    [Editable(false)]
     public User User { get; } //TODO: Start using ViewModel here
 
     public AccessReason Reason { get; }
