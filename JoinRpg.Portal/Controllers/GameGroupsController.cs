@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{projectId}/roles/[action]")]
   public class GameGroupsController : ControllerGameBase
   {
 
@@ -134,7 +135,12 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
+    public Task<ActionResult> Json_Full(int projectId) => AllGroupsJson(projectId, includeSpecial: true);
+
+    [HttpGet]
+    public Task<ActionResult> Json_Real(int projectId) => AllGroupsJson(projectId, includeSpecial: false);
+
+        private async Task<ActionResult> AllGroupsJson(int projectId, bool includeSpecial)
     {
       var project = await ProjectRepository.GetProjectAsync(projectId);
       var cached = CheckCache(project.CharacterTreeModifiedAt);
