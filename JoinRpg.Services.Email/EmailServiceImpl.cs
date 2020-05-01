@@ -54,6 +54,7 @@ namespace JoinRpg.Services.Email
 Если вдруг вам пришло такое письмо, а вы не просили восстанавливать пароль, ничего страшного! Просто проигнорируйте его.
 
 --
+
 {JoinRpgTeam}";
             User recipient = email.Recipient;
             return MessageService.SendEmail("Восстановление пароля на JoinRpg.Ru",
@@ -75,6 +76,7 @@ namespace JoinRpg.Services.Email
 Если вдруг вам пришло такое письмо, а вы нигде не регистрировались, ничего страшного! Просто проигнорируйте его.
 
 --
+
 {JoinRpgTeam}";
             return MessageService.SendEmail("Регистрация на JoinRpg.Ru",
                 new MarkdownString(text),
