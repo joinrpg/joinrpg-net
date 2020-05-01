@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -179,7 +181,10 @@ namespace JoinRpg.Portal.Controllers
     {
       Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-      return Json(data);
+      return Json(data,
+          // this has to be pascal casing for compatibility
+          new JsonSerializerSettings() {ContractResolver = new DefaultContractResolver()}
+          );
       //{
       //  Data = data,
       //  ContentEncoding = Encoding.UTF8,
