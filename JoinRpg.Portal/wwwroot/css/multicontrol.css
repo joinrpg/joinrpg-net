@@ -1,0 +1,273 @@
+﻿@charset 'UTF-8';
+
+@font-face {
+    font-family: 'LigatureSymbols';
+    src: url('/fonts/LigatureSymbols/LigatureSymbols-2.11-96f41a7f.eot');
+    src: url('/fonts/LigatureSymbols/LigatureSymbols-2.11-96f41a7f.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/LigatureSymbols/LigatureSymbols-2.11-27098c9a.woff') format('woff'),
+         url('/fonts/LigatureSymbols/LigatureSymbols-2.11-86884cb5.ttf') format('truetype'),
+         url('/fonts/LigatureSymbols/LigatureSymbols-2.11-1aafc4bd.svg#LigatureSymbols') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.lsf {
+    font-family: 'LigatureSymbols' !important;
+    -webkit-text-rendering: optimizeLegibility;
+    -moz-text-rendering: optimizeLegibility;
+    -ms-text-rendering: optimizeLegibility;
+    -o-text-rendering: optimizeLegibility;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -ms-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    /* ReSharper disable once CssNotResolved */
+    font-smoothing: antialiased;
+    -webkit-font-feature-settings: "liga" 1, "dlig" 1;
+    -moz-font-feature-settings: "liga=1, dlig=1";
+    -ms-font-feature-settings: "liga" 1, "dlig" 1;
+    -o-font-feature-settings: "liga" 1, "dlig" 1;
+    font-feature-settings: "liga" 1, "dlig" 1;
+    font-size: 18px !important;
+}
+
+.lsf-icon:before {
+    content: attr(title);
+    margin-right: 0.3em;
+    font-size: 130%;
+    font-family: 'LigatureSymbols';
+    -webkit-text-rendering: optimizeLegibility;
+    -moz-text-rendering: optimizeLegibility;
+    -ms-text-rendering: optimizeLegibility;
+    -o-text-rendering: optimizeLegibility;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -ms-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    /* ReSharper disable once CssNotResolved */
+    font-smoothing: antialiased;
+    -webkit-font-feature-settings: "liga" 1, "dlig" 1;
+    -moz-font-feature-settings: "liga=1, dlig=1";
+    -ms-font-feature-settings: "liga" 1, "dlig" 1;
+    -o-font-feature-settings: "liga" 1, "dlig" 1;
+    font-feature-settings: "liga" 1, "dlig" 1;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.multicontrol {
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 24px;
+}
+
+    .multicontrol .mlc-taginput {
+        display: inline-block;
+        max-width: 100%;
+        width: auto;
+        height: 22px;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: none;
+        outline: 0 none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    }
+
+    .multicontrol.disabled .mlc-taginput {
+        background-color: #ddd;
+    }
+
+    .multicontrol ul.mlc-all-groups {
+        z-index: 1001;
+        position: relative;
+        list-style: none;
+        padding: 0;
+        float: left;
+    }
+
+        .multicontrol ul.mlc-all-groups li {
+            display: inline-block;
+            padding: 2px 4px;
+            color: #bbb;
+        }
+
+            .multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:link,
+            .multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:visited {
+                color: rgb(44, 105, 158);
+                text-decoration: none;
+            }
+
+            .multicontrol ul.mlc-all-groups li.mlc-clickable-in-all-groups > a:hover {
+                text-decoration: underline;
+                color: rgb(20, 48, 73);
+            }
+
+    .multicontrol .mlc-list {
+        border: 1px solid #ddd;
+        max-height: 250px;
+        overflow: auto;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        position: relative;
+        z-index: 10001;
+        clear: both;
+    }
+
+        .multicontrol .mlc-list .mlc-loading {
+            height: 50px;
+            background: url('/images/ajax-loader-879d35b3.gif') no-repeat center;
+        }
+
+        .multicontrol .mlc-list > ul {
+            padding: 3px 8px !important;
+            margin: 0;
+        }
+
+        .multicontrol .mlc-list ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+            .multicontrol .mlc-list ul li, .multicontrol .mlc-list ul li > span {
+                width: 100%;
+            }
+
+                .multicontrol .mlc-list ul li > span {
+                    display: inline-block;
+                    padding: 2px 4px;
+                    border-radius: 5px;
+                    color: #333;
+                }
+
+                .multicontrol .mlc-list ul li .mlc-collapser {
+                    padding: 2px 5px 3px 4px;
+                    font-weight: lighter;
+                    font-size: 12px !important;
+                    cursor: pointer;
+                    color: #ccc;
+                    margin: 1px 12px 0 5px
+                }
+
+                .multicontrol .mlc-list ul li > span.title:hover, .multicontrol .mlc-list ul li.focused > span.title {
+                    background-color: rgba(44, 105, 158, 0.54);
+                    cursor: pointer;
+                }
+
+                    .multicontrol .mlc-list ul li > span.title:hover > .mlc-collapser {
+                        color: black;
+                    }
+
+                .multicontrol .mlc-list ul li.selected > span.title {
+                    background-color: rgba(47, 115, 172, 0.82);
+                    cursor: pointer;
+                    color: white;
+                }
+
+            .multicontrol .mlc-list ul .group > .title {
+                font-weight: bold;
+            }
+
+    .multicontrol .mlc-input-group {
+        display: block;
+        width: 100%;
+        padding: 3px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        outline: 0 none;
+        cursor: text;
+        float: left;
+    }
+
+    .multicontrol.disabled .mlc-input-group {
+        background: #ddd;
+        cursor: default;
+        transition: none;
+        -webkit-transition: none;
+        -o-transition: none;
+    }
+
+    .multicontrol .mlc-input-group.focused {
+        border: 2px solid lightskyblue;
+    }
+
+    .multicontrol.disabled .mlc-input-group.focused {
+        border: 1px solid #ccc;
+    }
+
+    .multicontrol .mlc-tags {
+        float: left;
+    }
+
+        .multicontrol .mlc-tags .mlc-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 2px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            color: #333;
+            background-color: #eee;
+        }
+
+            .multicontrol .mlc-tags .mlc-tag > .mlc-name {
+                max-width: 250px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                display: inline-block;
+                line-height: 14px;
+                cursor: default;
+            }
+
+            .multicontrol .mlc-tags .mlc-tag > .mlc-close {
+                color: #555;
+                cursor: pointer;
+                float: right;
+                padding-left: 5px;
+            }
+
+            .multicontrol .mlc-tags .mlc-tag .mlc-close:hover {
+                color: #333;
+            }
+
+            .multicontrol .mlc-tags .mlc-tag .mlc-tag-group {
+                font-weight: bold;
+            }
+
+    .multicontrol .mlc-list .mcl-autocomplete-block > span {
+        font-weight: bold;
+    }
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the top of the
+ * compiled file, but it's generally better to create a new file per style scope.
+ *
+ */
+
+
+/*
+
+
+*/
