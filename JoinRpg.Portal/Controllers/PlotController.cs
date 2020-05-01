@@ -14,86 +14,17 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Plot;
 using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [Route("{projectId}/plot")]
   public class PlotController : ControllerGameBase
   {
     private readonly IPlotService _plotService;
     private readonly IPlotRepository _plotRepository;
         private IUriService UriService { get; }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> Index(int projectId)
-    {
-      return await PlotList(projectId, pf => true);
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> InWork(int projectId)
-    {
-      return await PlotList(projectId, pf => pf.InWork);
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> Ready(int projectId)
-    {
-      return await PlotList(projectId, pf => pf.Completed);
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> ByTag(int projectid, string tagname)
-    {
-      var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
-      var project = await GetProjectFromList(projectid, allFolders);
-      return View("Index", new PlotFolderListViewModel(allFolders, project, CurrentUserIdOrDefault));
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
-    {
-      var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
-      if (group == null)
-      {
-        return NotFound();
-      }
-
-      //TODO slow 
-      var characterGroups = group.GetChildrenGroups().Union(new[] {group}).ToList();
-      var characters = characterGroups.SelectMany(g => g.Characters).Distinct().Select(c => c.CharacterId).ToList();
-      var characterGroupIds = characterGroups.Select(c => c.CharacterGroupId).ToList();
-      var folders = await _plotRepository.GetPlotsForTargets(projectId, characters, characterGroupIds);
-      var project = group.Project;
-
-      var groupNavigation = new CharacterGroupDetailsViewModel(group, CurrentUserIdOrDefault, GroupNavigationPage.Plots);
-
-      return View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation));
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> FlatList(int projectId)
-    {
-      var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList(); 
-      var project = await GetProjectFromList(projectId, folders);
-      return View(
-               new PlotFolderFullListViewModel(
-                 folders, 
-                 project, 
-                 CurrentUserIdOrDefault,
-                 UriService));
-    }
-
-    [MasterAuthorize(AllowPublish = true)]
-    public async Task<ActionResult> FlatListUnready(int projectId)
-    {
-      var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
-      var project = await GetProjectFromList(projectId, folders);
-      return View("FlatList",
-               new PlotFolderFullListViewModel(folders, project, CurrentUserIdOrDefault, UriService, true));
-    }
 
       public PlotController(
           IProjectRepository projectRepository,
@@ -110,7 +41,7 @@ namespace JoinRpg.Portal.Controllers
           UriService = uriService;
       }
 
-      [HttpGet, MasterAuthorize(Permission.CanManagePlots)]
+      [MasterAuthorize(Permission.CanManagePlots)]
     public async Task<ActionResult> Create(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
@@ -133,7 +64,7 @@ namespace JoinRpg.Portal.Controllers
           {
               await _plotService.CreatePlotFolder(viewModel.ProjectId,
                   viewModel.PlotFolderTitleAndTags, viewModel.TodoField);
-              return RedirectToAction("Index", "Plot", new {viewModel.ProjectId});
+              return RedirectToAction("Index", "PlotList", new {viewModel.ProjectId});
           }
           catch (Exception exception)
           {
@@ -272,13 +203,7 @@ namespace JoinRpg.Portal.Controllers
 
     #region private methods
 
-    private async Task<ActionResult> PlotList(int projectId, Func<PlotFolder, bool> predicate)
-    {
-      var allFolders = await _plotRepository.GetPlots(projectId);
-      var folders = allFolders.Where(predicate).ToList(); //Sadly, we have to do this, as we can't query using complex properties
-      var project = await GetProjectFromList(projectId, folders);
-      return View("Index", new PlotFolderListViewModel(folders, project, CurrentUserIdOrDefault));
-    }
+
 
     #endregion
 
@@ -299,7 +224,7 @@ namespace JoinRpg.Portal.Controllers
       try
       {
         await _plotService.DeleteFolder(projectId, plotFolderId);
-        return RedirectToAction("Index", new {projectId});
+        return RedirectToAction("Index", "PlotList", new {projectId});
       }
       catch (Exception)
       {

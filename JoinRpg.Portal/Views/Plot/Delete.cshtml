@@ -14,7 +14,7 @@
 
     <div class="form-actions no-color">
         <input type="submit" value="Удалить" class="btn btn-default" /> |
-        @Html.ActionLink("Назад", "Index", new { Model.ProjectId })
+        @Html.ActionLink("Назад", "Index", "PlotList", new { Model.ProjectId })
     </div>
     }
     @if (Model.Elements.Any())

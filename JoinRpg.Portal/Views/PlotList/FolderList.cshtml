@@ -37,7 +37,7 @@
         <td>
             @if (item.Status != PlotStatus.Deleted && item.HasEditAccess)
             {
-            @Html.ActionLink("Удалить", "Delete", new { item.PlotFolderId, item.ProjectId })
+            @Html.ActionLink("Удалить", "Delete", "Plot", new { item.PlotFolderId, item.ProjectId })
             }
         </td>
     </tr>

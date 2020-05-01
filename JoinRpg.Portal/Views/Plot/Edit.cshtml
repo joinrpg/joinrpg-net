@@ -48,7 +48,7 @@
                 <div class="col-md-offset-2 col-md-10">
                     <input type="submit" value="@(Model.Status == PlotStatus.Deleted ? "Восстановить" : "Сохранить")" class="btn btn-success" />
                     |
-                    @Html.ActionLink("Назад к списку сюжетов", "Index", new { Model.ProjectId }, null)
+                    @Html.ActionLink("Назад к списку сюжетов", "Index", "PlotList", new { Model.ProjectId }, null)
                 </div>
             </div>
         }
