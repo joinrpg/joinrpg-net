@@ -1,0 +1,69 @@
+.joinrpg-roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: none;
+}
+
+.joinrpg-roles-table p {
+  margin-left: 15px;
+  margin-bottom: 5px !important;
+}
+
+.joinrpg-roles-table tr {
+  border: none;
+}
+
+.joinrpg-roles-table td {
+  font-size: 14px;
+  padding: 10px;
+  font-family: books;
+  position: relative;
+  border-top: 1px solid #8586A4;
+  border-bottom: 1px solid #8586A4;
+  border-left: none;
+  border-right: none;
+  background-clip: padding-box;
+}
+
+.joinrpg-roles-table td:first-child {
+  width: 30%;
+}
+
+.joinrpg-roles-table td:nth-child(2){
+  width: 60%;
+  text-align: justify;
+}
+
+.joinrpg-roles-table td:nth-child(3), .joinrpg-roles-table td:nth-child(2).joinrpg-roles-directclaim  {
+  width: 10%;
+  text-align: right;
+}
+
+.joinrpg-roles-location-header {
+	font-weight: bold;
+}
+
+.joinrpg-roles-location-description {
+	font-style: italic;
+}
+.joinrpg-roles-table .joinrpg-description {
+  font-size: 14px;
+}
+.joinrpg-roles-table  a:link {
+  color: rgb(26, 76, 155);
+  text-decoration: none;
+}
+
+.joinrpg-roles-table  a:hover, .joinrpg-roles-table  a:visited {
+  color: rgb(98, 125, 180);
+}
+
+.joinrpg-roles-table  a:hover {
+  text-decoration: underline;
+}
+
+.joinrpg-roles-table .already-claimed {
+	font-size: 11px;
+	font-style: italic;
+}
