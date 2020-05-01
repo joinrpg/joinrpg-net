@@ -199,7 +199,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Delete(int projectId,
             int characterId,
             [UsedImplicitly]
-            FormCollection form)
+            IFormCollection form)
         {
             var field = await CharacterRepository.GetCharacterAsync(projectId, characterId);
             try
