@@ -2,11 +2,11 @@
     ViewBag.Title = "Подтверждение Email";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewBag.Title</h2>
 <div>
     <p>
         Спасибо, что подтвердили свой email.
         <br/>
-        @Html.ActionLink("Нажмите здесь, чтобы войти", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })
+        @(Html.ActionLink("Нажмите здесь, чтобы войти", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })).
     </p>
 </div>
