@@ -442,5 +442,8 @@ namespace JoinRpg.Portal.Controllers
         }
 
         #endregion
+
+        [AllowAnonymous]
+        public ActionResult AccessDenied(string returnUrl) => View("AccessDenied", returnUrl);
     }
 }
