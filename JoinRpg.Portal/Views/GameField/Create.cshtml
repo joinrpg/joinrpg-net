@@ -1,6 +1,5 @@
 ﻿
 @model JoinRpg.Web.Models.FieldSetup.GameFieldCreateViewModel
-<script src="~/Scripts/createfield.js"></script>
 
 @{
     ViewBag.Title = "Добавление нового поля";
@@ -113,14 +112,6 @@
                 @Html.EditorFor(model => model.ValidForNpc)
                 @Html.ValidationMessageFor(model => model.ValidForNpc, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.ValidForNpc)
-            </div>
-        </div>
-
-        <div id="priceBlock" class="form-group" style="display: none;">
-            @Html.LabelFor(model => model.Price, htmlAttributes: new { @class = "control-label col-md-3" })
-            <div class="col-md-9">
-                @Html.EditorFor(model => model.Price)
-                @Html.DescriptionFor(model => model.Price)
             </div>
         </div>
 
