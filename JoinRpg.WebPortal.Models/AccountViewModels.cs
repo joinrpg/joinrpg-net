@@ -68,6 +68,9 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
+
+        [Editable(false)]
+        public string RecaptchaPublicKey {get; set; }
     }
 
     public class ResetPasswordViewModel
