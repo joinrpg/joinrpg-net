@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
@@ -10,11 +6,11 @@ using Xunit;
 
 namespace JoinRpg.Portal.Test.Integration
 {
-    public class AuthChallengeTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class AuthChallengeTests : IClassFixture<JoinApplicationFactory>
     {
-        private readonly WebApplicationFactory<Startup> factory;
+        private readonly JoinApplicationFactory factory;
 
-        public AuthChallengeTests(WebApplicationFactory<Startup> factory)
+        public AuthChallengeTests(JoinApplicationFactory factory)
         {
             this.factory = factory;
         }

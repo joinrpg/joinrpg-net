@@ -1,14 +1,13 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace JoinRpg.Portal.Test.Integration
 {
-    public class SwaggerTests : IClassFixture<WebApplicationFactory<Startup>>
+    public class SwaggerTests : IClassFixture<JoinApplicationFactory>
     {
-        private readonly WebApplicationFactory<Startup> factory;
+        private readonly JoinApplicationFactory factory;
 
-        public SwaggerTests(WebApplicationFactory<Startup> factory)
+        public SwaggerTests(JoinApplicationFactory factory)
         {
             this.factory = factory;
         }
