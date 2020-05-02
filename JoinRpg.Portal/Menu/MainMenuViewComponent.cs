@@ -38,11 +38,7 @@ namespace JoinRpg.Portal.Menu
                 return new List<ProjectLinkViewModel>();
             }
             var projects = await ProjectRepository.GetMyActiveProjectsAsync(user.Value);
-            return projects.Select(p => new ProjectLinkViewModel()
-            {
-                ProjectId = p.ProjectId,
-                ProjectName = p.ProjectName,
-            }).ToList();
+            return projects.ToLinkViewModels().ToList();
         }
     }
 }

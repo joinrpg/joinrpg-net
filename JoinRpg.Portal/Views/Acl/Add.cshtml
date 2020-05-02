@@ -1,0 +1,109 @@
+﻿@using JoinRpg.Web.Models
+@model AclViewModel
+
+@{
+    ViewBag.Title = "Добавление мастера в проект " + Model.ProjectName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    @Html.DisplayFor(model => model.UserDetails)
+</div>
+
+
+@using (Html.BeginForm(FormMethod.Post))
+{
+    <div class="form-horizontal">
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanManageClaims, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanManageClaims" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanManageClaims, null, htmlFieldName: "CanManageClaims")
+                    @Html.DescriptionFor(model => model.CanManageClaims)
+                    @Html.ValidationMessageFor(model => model.CanManageClaims, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanChangeFields, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanChangeFields" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanChangeFields, null, htmlFieldName: "CanChangeFields")
+                    @Html.DescriptionFor(model => model.CanChangeFields)
+                    @Html.ValidationMessageFor(model => model.CanChangeFields, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanChangeProjectProperties, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanChangeProjectProperties" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanChangeProjectProperties, null, htmlFieldName: "CanChangeProjectProperties")
+                    @Html.DescriptionFor(model => model.CanChangeProjectProperties)
+                    @Html.ValidationMessageFor(model => model.CanChangeProjectProperties, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanGrantRights, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanGrantRights" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanGrantRights, null, htmlFieldName: "CanGrantRights")
+                    @Html.DescriptionFor(model => model.CanGrantRights)
+                    @Html.ValidationMessageFor(model => model.CanGrantRights, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanEditRoles, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanEditRoles" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanEditRoles, null, htmlFieldName: "CanEditRoles")
+                    @Html.DescriptionFor(model => model.CanEditRoles)
+                    @Html.ValidationMessageFor(model => model.CanEditRoles, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanManageMoney, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanManageMoney" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanManageMoney, null, htmlFieldName: "CanManageMoney")
+                    @Html.DescriptionFor(model => model.CanManageMoney)
+                    @Html.ValidationMessageFor(model => model.CanManageMoney, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanSendMassMails, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanSendMassMails" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanSendMassMails, null, htmlFieldName: "CanSendMassMails")
+                    @Html.DescriptionFor(model => model.CanSendMassMails)
+                    @Html.ValidationMessageFor(model => model.CanSendMassMails, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CanManagePlots, htmlAttributes: new { @class = "control-label col-md-3", @for = "CanManagePlots" })
+            <div class="col-md-8">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.CanManagePlots, null, htmlFieldName: "CanManagePlots")
+                    @Html.DescriptionFor(model => model.CanManagePlots)
+                    @Html.ValidationMessageFor(model => model.CanManagePlots, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+        <input type="submit" value="Добавить" class="btn btn-success" />| <a asp-controller="User" asp-action="Details" asp-route-userId="@Model.UserId">вернуться в профиль пользователя</a>
+    </div>
+
+}

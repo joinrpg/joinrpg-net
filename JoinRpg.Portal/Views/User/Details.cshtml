@@ -40,11 +40,7 @@
                 @foreach (var master in Model.ThisUserProjects)
                 {
                     <li>
-                        @Html.ActionLink(@master.Project.ProjectName, "Details", "Game", new {master.ProjectId}, null)
-                        @if (master.IsOwner)
-                        {
-                            <span>(создатель проекта)</span>
-                        }
+                        @Html.ActionLink(@master.ProjectName, "Details", "Game", new {master.ProjectId}, null)
                     </li>
                 }
 
@@ -133,25 +129,12 @@
         @Html.Partial("..\\ClaimList\\_ClaimList", Model.Claims, new ViewDataDictionary(ViewData) {{"HideUserColumn", true}, {"HideOperations", true}})
     }
     
-    <div class="panel-group">
-            @if (Model.ProjectsToAdd.Any())
-            {
-                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#addToProject"
-                        aria-expanded="false">
-                    Поставить доступ в проект
-                </button>
-            }
-        <div class="panel panel-default collapse" id="addToProject">
-            <div class="panel-heading">Добавление в проект</div>
-            <div class="panel-body">
-                @if (Model.ProjectsToAdd.Any())
-                {
-                @Html.Partial("AddToProject", Model)
-                }
-            </div>
-        </div>
+
+    @if (Model.ProjectsToAdd.Any())
+    {
+    @Html.Partial("AddToProject", Model)
+    }
     </div>
-</div>
 
 <div class="modal fade" id="changeEmailModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">

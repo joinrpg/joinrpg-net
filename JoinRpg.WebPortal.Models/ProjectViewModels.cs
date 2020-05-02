@@ -16,6 +16,17 @@ namespace JoinRpg.Web.Models
         public string ProjectName { get; set; }
     }
 
+    public static class ProjectLinkViewModelBuilder
+    {
+        public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
+            this IEnumerable<Project> projects) =>
+            projects.Select(p => new ProjectLinkViewModel()
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+            });
+    }
+
     public abstract class ProjectViewModelBase
     {
         public int ProjectId { get; set; }
