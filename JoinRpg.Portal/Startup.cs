@@ -20,9 +20,12 @@ namespace JoinRpg.Portal
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IHostingEnvironment environment;
+
+        public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
             Configuration = configuration;
+            this.environment = environment;
         }
 
         public IConfiguration Configuration { get; }
@@ -51,7 +54,10 @@ namespace JoinRpg.Portal
             services
                 .AddMvc(options =>
                 {
-                    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                    if (!environment.IsEnvironment("IntegrationTest"))
+                    {
+                        options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                    }
                     options.Filters.Add(new SetIsProductionFilterAttribute());
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
                 })
