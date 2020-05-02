@@ -241,7 +241,7 @@ namespace JoinRpg.Portal.Controllers
             return await ShowMasterClaimList(projectid, export, "Заявки с незаполненными полями", "Index", claims);
         }
 
-        [HttpGet("~{ProjectId}/claims/for-master/{ResponsibleMasterId}")]
+        [HttpGet("~/{ProjectId}/claims/for-master/{ResponsibleMasterId}")]
         [MasterAuthorize()]
 
         public async Task<ActionResult> Responsible(int projectid, int responsibleMasterId, string export)
