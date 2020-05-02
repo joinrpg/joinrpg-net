@@ -101,9 +101,20 @@ namespace JoinRpg.Portal
             }
             else
             {
-                //app.UseExceptionHandler("/Home/Error");
-                //app.UseHsts();
+
+                app.UseExceptionHandler("/error");
+
+                app.Use(async (context, next) =>
+                {
+                    await next();
+                    if (context.Response.StatusCode == 404)
+                    {
+                        context.Request.Path = "/error/404";
+                        await next();
+                    }
+                });
             }
+
 
             app.UseSwagger(Swagger.Configure);
             app.UseSwaggerUI(Swagger.ConfigureUI);
