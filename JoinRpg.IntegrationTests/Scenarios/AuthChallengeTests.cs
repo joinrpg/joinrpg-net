@@ -1,10 +1,11 @@
 using System.Net;
 using System.Threading.Tasks;
+using JoinRpg.IntegrationTests.TestInfrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
 using Xunit;
 
-namespace JoinRpg.Portal.Test.Integration
+namespace JoinRpg.IntegrationTests.Scenarios
 {
     public class AuthChallengeTests : IClassFixture<JoinApplicationFactory>
     {
