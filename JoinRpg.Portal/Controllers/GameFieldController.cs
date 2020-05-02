@@ -48,7 +48,7 @@ namespace JoinRpg.Portal.Controllers
             => RedirectToAction("Edit", new { CurrentProjectAccessor.ProjectId, projectFieldId = value.ProjectFieldId });
 
 
-        [HttpGet("{ProjectId}/fields/")]
+        [HttpGet("/{ProjectId}/fields/")]
         [MasterAuthorize]
         public async Task<ActionResult> Index(int projectId)
         {
