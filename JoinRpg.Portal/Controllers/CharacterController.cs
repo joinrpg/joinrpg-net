@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [Route("{projectId}/character/{characterid}")]
+    [Route("{projectId}/character/{characterid}/[action]")]
     public class CharacterController : Common.ControllerGameBase
     {
         private IPlotRepository PlotRepository { get; }

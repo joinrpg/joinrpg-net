@@ -25,7 +25,7 @@ namespace JoinRpg.Portal.Controllers
 
         private readonly IForumRepository forumRepository;
 
-        [Route("discussion/{CommentDiscussionId}")]
+        [HttpGet("discussion/{CommentDiscussionId}")]
         public async Task<ActionResult> ToDiscussion(int projectId, int commentDiscussionId)
         {
             CommentDiscussion discussion = await forumRepository.GetDiscussion(projectId, commentDiscussionId);
@@ -38,7 +38,7 @@ namespace JoinRpg.Portal.Controllers
             return CommentRedirectHelper.RedirectToDiscussion(Url, discussion, commentId: null);
         }
 
-        [Route("comment/{CommentId}")]
+        [HttpGet("comment/{CommentId}")]
         [Authorize]
         public async Task<ActionResult> ToComment(int projectid, int commentid)
         {
