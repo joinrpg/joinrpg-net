@@ -1,10 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JoinRpg.Portal;
+using JoinRpg.Portal.Test.ContainerTest;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JoinRpg.Portal.Test.ContainerTest
+namespace JoinRpg.IntegrationTests.DependencyInjection
 {
     public class FindDerivedClassesDataSourceBase<TClass> : SingleArgumentDataSource
     {
