@@ -2,7 +2,7 @@ using System.Net;
 using System.Threading.Tasks;
 using JoinRpg.Portal.Infrastructure.Authentication;
 
-namespace JoinRpg.IntegrationTests.TestInfrastructure
+namespace JoinRpg.IntegrationTests.TestInfrastructure.Stubs
 {
     internal class StubRecaptchaVerificator : IRecaptchaVerificator
     {

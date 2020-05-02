@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using JoinRpg.IntegrationTests.TestInfrastructure;
 using Shouldly;
 using Xunit;
@@ -25,10 +26,11 @@ namespace JoinRpg.IntegrationTests.Scenarios
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
-        [Fact(Skip = "Need to fix recaptcha")]
+        [Fact(Skip = "Need to fix db")]
         public async Task RegistrationShouldBePossible()
         {
             var client = factory.CreateClient();
+
             var response = await client.PostAsync("account/register",
                 new FormUrlEncodedContent(
                     new[]
@@ -41,8 +43,11 @@ namespace JoinRpg.IntegrationTests.Scenarios
                     }));
 
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
-            var responseText = await response.Content.ReadAsStringAsync();
-            responseText.ShouldContain("Регистрация успешна");
+            HtmlDocument doc = await response.AsHtmlDocument();
+
+            doc.GetTitle().ShouldBe("Регистрация успешна");
         }
+
+       
     }
 }
