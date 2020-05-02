@@ -14,7 +14,7 @@ namespace JoinRpg.Portal.Controllers
         public IUserRepository UserRepository { get; }
         public ICurrentUserAccessor CurrentUserAccessor { get; }
 
-        [HttpGet]
+        [HttpGet("user/{userId}")]
         public async Task<ActionResult> Details(int userId)
         {
             var user = await UserRepository.GetById(userId);
@@ -54,7 +54,8 @@ namespace JoinRpg.Portal.Controllers
             CurrentUserAccessor = currentUserAccessor;
         }
 
-        [HttpGet, Authorize]
+        [Authorize]
+        [HttpGet("user/me")]
         public ActionResult Me()
         {
             return RedirectToAction("Details", new {UserId = CurrentUserAccessor.UserId });

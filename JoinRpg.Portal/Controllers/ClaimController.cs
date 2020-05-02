@@ -95,9 +95,8 @@ namespace JoinRpg.Portal.Controllers
           UriService = uriService;
       }
 
-      [HttpPost]
+      [HttpPost("~/{ProjectId}/claim/add")]
     [Authorize]
-    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Add(AddClaimViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);

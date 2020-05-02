@@ -55,7 +55,11 @@ namespace JoinRpg.Portal.Controllers
         });
     }
 
-    [HttpGet, MasterAuthorize]
+        [MasterAuthorize]
+        [HttpGet("~/{projectId}/roles/report")]
+        public Task<ActionResult> Report(int projectId) => Report(projectId, null);
+
+        [HttpGet, MasterAuthorize]
     public async Task<ActionResult> Report(int projectId, int? characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -72,7 +76,10 @@ namespace JoinRpg.Portal.Controllers
         });
     }
 
-    [HttpGet]
+    [HttpGet("~/{projectId}/roles/hot")]
+    public Task<ActionResult> Hot(int projectId) => Hot(projectId, null);
+
+        [HttpGet]
     public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
     {
       var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
