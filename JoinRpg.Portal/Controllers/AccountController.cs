@@ -24,6 +24,7 @@ namespace JoinRpg.Portal.Controllers
     {
         private readonly IEmailService _emailService;
         private readonly IOptions<RecaptchaOptions> recaptchaOptions;
+        private readonly IRecaptchaVerificator recaptchaVerificator;
 
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }
@@ -35,7 +36,8 @@ namespace JoinRpg.Portal.Controllers
             ApplicationSignInManager signInManager,
             IEmailService emailService,
             IUserRepository userRepository,
-            IOptions<RecaptchaOptions> recaptchaOptions
+            IOptions<RecaptchaOptions> recaptchaOptions,
+            IRecaptchaVerificator recaptchaVerificator
         )
         {
             UserManager = userManager;
@@ -43,6 +45,7 @@ namespace JoinRpg.Portal.Controllers
             _emailService = emailService;
             UserRepository = userRepository;
             this.recaptchaOptions = recaptchaOptions;
+            this.recaptchaVerificator = recaptchaVerificator;
         }
 
         
@@ -147,11 +150,9 @@ namespace JoinRpg.Portal.Controllers
 
             //this can be null i.e. under proxy or from localhost.
             //TODO IISIntegration, etc
-            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-            var secret = recaptchaOptions.Value.PrivateKey;
+            var clientIp = HttpContext.Connection.RemoteIpAddress;
 
-            var captchaApi = new ReCaptchaService();
-            var isValid = await captchaApi.Verify2Async(recaptchaToken, clientIp, secret);
+            var isValid = await recaptchaVerificator.ValidateToken(recaptchaToken, clientIp);
 
             if (!isValid)
             {
