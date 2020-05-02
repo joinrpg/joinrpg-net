@@ -18,7 +18,6 @@ using JoinRpg.Portal.Controllers.Comments;
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
-    [Route("{projectId}/forums")]
     [Route("{projectId}/forums/{forumThreadId}/[action]")]
     public class ForumController : ControllerGameBase
   {
@@ -91,6 +90,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [Authorize]
+    [HttpGet]
     public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
     {
       var forumThread = await GetForumThread(projectid, forumThreadId);
@@ -202,6 +202,7 @@ namespace JoinRpg.Portal.Controllers
       return View(viewModel);
     }
 
+    [HttpPost]
         public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
         {
             await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);

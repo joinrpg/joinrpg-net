@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Helpers;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -14,7 +13,7 @@ using JoinRpg.Web.Models.Plot;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [Route("{projectId}/plot")]
+    [Route("{projectId}/plot/[action]")]
   public class PlotListController : ControllerGameBase
   {
       private readonly IPlotRepository _plotRepository;
@@ -35,25 +34,29 @@ namespace JoinRpg.Portal.Controllers
       }
 
         [MasterAuthorize(AllowPublish = true)]
+        [HttpGet]
       public async Task<ActionResult> Index(int projectId)
       {
           return await PlotList(projectId, pf => true);
       }
 
       [MasterAuthorize(AllowPublish = true)]
-      public async Task<ActionResult> InWork(int projectId)
+      [HttpGet]
+        public async Task<ActionResult> InWork(int projectId)
       {
           return await PlotList(projectId, pf => pf.InWork);
       }
 
       [MasterAuthorize(AllowPublish = true)]
-      public async Task<ActionResult> Ready(int projectId)
+      [HttpGet]
+        public async Task<ActionResult> Ready(int projectId)
       {
           return await PlotList(projectId, pf => pf.Completed);
       }
 
       [MasterAuthorize(AllowPublish = true)]
-      public async Task<ActionResult> ByTag(int projectid, string tagname)
+      [HttpGet]
+        public async Task<ActionResult> ByTag(int projectid, string tagname)
       {
           var allFolders = await _plotRepository.GetPlotsByTag(projectid, tagname);
           var project = await GetProjectFromList(projectid, allFolders);
@@ -61,7 +64,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
 
-      [Route("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
+      [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
       [MasterAuthorize(AllowPublish = true)]
       public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
       {
@@ -84,6 +87,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
       [MasterAuthorize(AllowPublish = true)]
+      [HttpGet]
       public async Task<ActionResult> FlatList(int projectId)
       {
           var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
@@ -97,7 +101,8 @@ namespace JoinRpg.Portal.Controllers
       }
 
       [MasterAuthorize(AllowPublish = true)]
-      public async Task<ActionResult> FlatListUnready(int projectId)
+      [HttpGet]
+        public async Task<ActionResult> FlatListUnready(int projectId)
       {
           var folders = (await _plotRepository.GetPlotsWithTargetAndText(projectId)).ToList();
           var project = await GetProjectFromList(projectId, folders);

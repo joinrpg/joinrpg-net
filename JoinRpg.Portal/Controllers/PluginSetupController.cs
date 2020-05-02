@@ -11,7 +11,8 @@ using JoinRpg.Web.Models.Plugins;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [Route("{projectId}/plugins")]
+    [Route("{projectId}/plugins/[action]")]
+    [MasterAuthorize()]
   public class PluginSetupController : ControllerGameBase
   {
     private IPluginFactory PluginFactory { get; }
@@ -26,7 +27,7 @@ namespace JoinRpg.Portal.Controllers
       PluginFactory = pluginFactory;
     }
 
-    [MasterAuthorize]
+    [HttpGet]
     public async Task<ActionResult> DisplayConfig(int projectid, string plugin)
     {
       var pluginInstance = await PluginFactory.GetConfiguration(projectid, plugin);
@@ -39,8 +40,8 @@ namespace JoinRpg.Portal.Controllers
       return View("ShowMarkdown", pluginInstance.Configuration.ToHtmlString());
     }
 
-    [MasterAuthorize]
-    public async Task<ActionResult> DisplayPage(int projectid, string operation)
+    [HttpGet]
+        public async Task<ActionResult> DisplayPage(int projectid, string operation)
     {
       var project = await ProjectRepository.GetProjectAsync(projectid);
       var pluginInstance = PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(project, operation);
@@ -54,8 +55,8 @@ namespace JoinRpg.Portal.Controllers
         PluginFactory.ShowStaticPage(pluginInstance, project).ToHtmlString());
     }
 
-    [MasterAuthorize()]
-    public async Task<ActionResult> Index(int projectid)
+    [HttpGet]
+        public async Task<ActionResult> Index(int projectid)
     {
       var plugins = await PluginFactory.GetPluginsForProject(projectid);
 

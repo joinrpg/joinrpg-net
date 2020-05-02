@@ -44,6 +44,7 @@ namespace JoinRpg.Portal.Controllers.Schedule
             });
         }
 
+        [HttpGet("")]
         public async Task<ActionResult> Index(int projectId)
         {
             var errors = await Manager.CheckScheduleConfiguration();
@@ -55,7 +56,7 @@ namespace JoinRpg.Portal.Controllers.Schedule
             return View(schedule);
         }
 
-        [Route("full")]
+        [HttpGet("full")]
         public async Task<ActionResult> FullScreen(int projectId)
         {
             var errors = await Manager.CheckScheduleConfiguration();

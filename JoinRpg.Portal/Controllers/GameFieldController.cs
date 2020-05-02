@@ -333,6 +333,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MasterAuthorize(Permission.CanChangeFields)]
+        [HttpPost]
     public async Task<ActionResult> Move(int projectid, int listItemId, short direction)
     {
       var value = await ProjectRepository.GetProjectField(projectid, listItemId);
@@ -355,7 +356,8 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [MasterAuthorize(Permission.CanChangeFields)]
-    public async Task<ActionResult> MoveValue(int projectid, int listItemId, int parentObjectId, short direction)
+    [HttpPost]
+        public async Task<ActionResult> MoveValue(int projectid, int listItemId, int parentObjectId, short direction)
     {
       var value = await ProjectRepository.GetProjectField(projectid, parentObjectId);
 

@@ -19,7 +19,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [Route("{projectId}/plot")]
+    [Route("{projectId}/plot/[action]")]
   public class PlotController : ControllerGameBase
   {
     private readonly IPlotService _plotService;
@@ -42,6 +42,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
       [MasterAuthorize(Permission.CanManagePlots)]
+      [HttpGet]
     public async Task<ActionResult> Create(int projectId)
     {
       var project1 = await ProjectRepository.GetProjectAsync(projectId);
@@ -294,6 +295,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
         //TODO: Make this POST
+        [HttpGet]
     [MasterAuthorize(Permission.CanEditRoles)]
 
     public async Task<ActionResult> MoveElementForCharacter(int projectid, int listItemId, int parentObjectId, int direction)
