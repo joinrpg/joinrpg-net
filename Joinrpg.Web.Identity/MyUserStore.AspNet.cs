@@ -37,18 +37,16 @@ namespace Joinrpg.Web.Identity
             return dbUser?.ToIdentityUser();
         }
 
-        async Task IUserPasswordStore<JoinIdentityUser, int>.SetPasswordHashAsync(JoinIdentityUser user, string passwordHash)
+        Task IUserPasswordStore<JoinIdentityUser, int>.SetPasswordHashAsync(JoinIdentityUser user, string passwordHash)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var dbUser = await LoadUser(user.UserName);
+            user.PasswordHash = passwordHash;
 
-            dbUser.PasswordHash = passwordHash;
-
-            await _ctx.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
         public async Task<string> GetPasswordHashAsync(JoinIdentityUser user)
