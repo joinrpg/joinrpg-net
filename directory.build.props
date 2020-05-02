@@ -27,14 +27,10 @@
             <_Parameter1>$(AssemblyName).Test</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
-    <Choose>
-        <!--
-      Because this projects is using packages.config, they should not receive PackageReference from directory.build.props
-      If they got at least once PackageReference, packages.config will be ignored
-      -->
-        <When Condition="'$(MSBuildProjectName)' != 'JoinRpg.Web'">
-            <ItemGroup>
-            </ItemGroup>
-        </When>
-    </Choose>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 </Project>
