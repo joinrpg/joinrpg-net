@@ -145,7 +145,9 @@ namespace JoinRpg.Portal.Controllers
                 return View(model);
             }
 
-            var clientIp = HttpContext.Connection.RemoteIpAddress.ToString();
+            //this can be null i.e. under proxy or from localhost.
+            //TODO IISIntegration, etc
+            var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var secret = recaptchaOptions.Value.PrivateKey;
 
             var captchaApi = new ReCaptchaService();
