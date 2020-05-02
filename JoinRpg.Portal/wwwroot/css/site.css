@@ -1,0 +1,431 @@
+﻿h1, h2, h3, h4, h5, h6, p, div, dt {
+  font-family: 'Roboto', sans-serif;
+}
+
+p:last-child {
+    margin-bottom: 0;
+}
+
+blockquote {
+  font-size: 14px;
+}
+
+.input-group-xs>.form-control,
+.input-group-xs>.input-group-addon,
+.input-group-xs>.input-group-btn>.btn {
+    height: 22px;
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+  max-width: 700px;
+}
+
+input[type=number] {
+    max-width: 150px;    
+    text-align: right;
+}
+
+@media screen and (min-width: 992px) {
+    .form-horizontal label.control-label {
+        padding-top: 0;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .form-horizontal label.control-label {
+        margin-bottom: 3px;
+    }
+
+    .form-horizontal label.control-label .label {
+        vertical-align: middle;
+    }
+}
+
+.form-control-complex {
+    width: 100%;
+    max-width: 700px;
+    clear: both;
+}
+
+.form-control-complex .form-control-left {
+    display: block;
+    float: left;
+    width: 50%;
+    font-weight: normal;
+}
+
+.form-control-complex .form-control-left [type=checkbox] {
+    display: block;
+    float: left;
+}
+
+.form-control-complex .form-control-left p {
+    margin-left: 25px;
+}
+
+.form-control-complex .form-control-right {
+    display: block;
+    float: left;
+    width: 50%;
+    text-align: right;
+    margin-left: 0;
+}
+
+.form-control-complex .form-control-1-4 {
+    display: block;
+    float: left;
+    width: 25%;
+}
+
+.form-control-complex .form-control-2-4 {
+    display: block;
+    float: left;
+    width: 50%;
+}
+
+.form-control-complex .form-control-4-4 {
+    display: block;
+    float: right;
+    width: 25%;
+}
+
+.radio-group {}
+
+.radio-group .radio-group-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 0.5em;
+}
+
+.radio-group .radio-group-item:last-child {
+    margin-bottom: 0;
+}
+
+.radio-group .radio-group-item input {
+    margin: 0;
+}
+
+.radio-group .radio-group-item .radio-group-item-label {
+    display: block;
+    margin-left: 0.5em;
+}
+
+.radio-group .radio-group-item .radio-group-item-label label {
+    display: block;
+    margin: 0;
+}
+
+.radio-group .radio-group-item .radio-group-item-label .radio-group-item-description {
+    margin-top: 0.25em;
+}
+
+.check-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.check-box input {
+    margin: 0;
+}
+
+.check-box .check-box-label {
+    display: block;
+    margin-left: 0.5em;
+}
+
+.check-box .check-box-label label {
+    display: block;
+    margin: 0;
+}
+
+.check-box .check-box-label .check-box-description {
+    margin-top: 0.25em;
+}
+
+.help-block {
+    margin: 0;
+    padding-bottom: 2px;
+    clear: both;
+}
+
+.multi-line {
+  width: 700px;
+}
+
+.joinrpg-todo {
+  color: #ff8c00;
+}
+
+.no-details details > summary::before {
+  float: left;
+  width: 20px;
+  content: '► ';
+}
+
+.no-details details.open > summary::before {
+  content: '▼ ';
+}
+
+.deleting {
+    background-color: silver;
+    color: gray;
+}
+
+.table .btn-group {
+    display: inline-block;
+}
+
+.table .deleting .btn-group {
+    display: none;
+}
+
+.deleted {
+  text-decoration: line-through;
+  color: gray;
+}
+
+.world-object-hidden {
+  background-color: #DFE4E6;
+}
+
+.price-table {
+    text-align: right;
+}
+
+table .price-value {
+    text-align: right;
+}
+
+.price-value {
+    white-space: nowrap;
+}
+
+.price-RUR::after {
+    content: ' ₽';
+}
+
+input[type=number].price {
+    display: inline-block;
+}
+
+.price-base {
+    display: inline-block;
+    font-weight: bold;
+}
+
+.price-base .price-value
+{
+    font-weight: normal;
+}
+
+.price-subtotal-row {
+    clear: both;
+}
+
+.price-subtotal-row div:first-child {
+    float: left;
+    width: 80%;
+    max-width: 700px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.price-subtotal-row span:last-child {
+    display: block;
+    text-align: right;
+    float: right;
+}
+
+tr.unapprovedPayment {
+    color: silver;
+}
+
+tr.unapprovedPayment td:last-child {
+    color: black;
+}
+
+.join.alert {
+    padding: 1em;
+    margin: 1em 0 1em 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.join.alert:first-child {
+    margin-top: 0;
+}
+
+.join.alert:last-child {
+    margin-bottom: 0;
+}
+
+.join.alert .glyphicon {
+    display: block;
+    margin-right: 1em;
+}
+
+.join.alert .glyphicon::before {
+    font-size: 1.5em;
+}
+
+.join-ellipsis {
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+.join-user {
+    white-space: nowrap;
+}
+
+.join-user i {
+    margin-right: 0.3em;
+}
+
+.join-users-h {
+    list-style-type: none;    
+    display: block;
+    column-count: 3;
+}
+
+@media screen and (max-width: 1300px)
+{
+    .join-users-h
+    {
+        column-count: 2;
+    }
+}
+
+@media screen and (max-width: 800px)
+{
+    .join-users-h
+    {
+        column-count: 1;
+    }
+}
+
+.join-users-h li
+{
+    margin: 0.2em;
+    display: block;
+}
+
+#availRequestsList {
+    max-height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 0;
+}
+#availRequestsListContainer {
+     column-count: 2;
+}
+
+@media screen and (max-width: 1300px)
+{
+    #availRequestsListContainer
+    {
+        column-count: 1;
+    }
+}
+
+#availRequestsList .list-group-item {
+    padding: 0.2em 0.4em;
+}
+
+#availRequestsList .list-group-item button.btn {
+    display: none;
+}
+
+#roomsRows .list-group-item {
+    padding: 0.2em 0;
+    border: none;
+    background: none;
+}
+
+#roomsRows .list-group-item button.btn {
+    vertical-align: middle;
+    padding: 0;
+    margin: 0;
+    width: 1.8em;
+    display: inline-block;
+}
+
+#roomsRows .list-group-item .alert-success .price-value,
+#availRequestsList .list-group-item .alert-success .price-value,
+#peopleList .list-group-item .alert-success .price-value,
+#roomsRows .list-group-item .alert-warning .glyphicon,
+#availRequestsList .list-group-item .alert-warning .glyphicon,
+#peopleList .list-group-item .alert-warning .glyphicon,
+#roomsRows .list-group-item .alert-danger .glyphicon,
+#availRequestsList .list-group-item .alert-danger .glyphicon,
+#peopleList .list-group-item .alert-danger .glyphicon {
+    display: none;
+}
+
+#availRequestsList .list-group-item .acc-payment,
+#roomsRows .list-group-item .acc-payment {
+    vertical-align: middle;
+    float: none;
+    margin: 0 0.3em;
+}
+#availRequestsList .list-group-item .acc-payment {
+    margin-left: 0;
+}
+
+#peopleList {
+    max-height: 200px;
+    overflow-y: scroll;
+    margin: 1em 1em 0 1em;
+}
+
+#peopleList .acc-payment {
+    float: left;
+    margin-right: 0.5em;
+}
+
+#roomsRows .list-group-item .acc-request {
+    vertical-align: middle;
+}
+
+#peopleList div.list-group-item {
+    cursor: pointer;
+    width: 100%;
+    padding: 0.3em 0.6em;
+}
+
+#peopleList div.disabled {
+    cursor: not-allowed;
+}
+
+#peopleList div.list-group-item span.join-ellipsis
+{
+    display: inline-block;
+    width: 90%;
+    vertical-align: middle;
+}
