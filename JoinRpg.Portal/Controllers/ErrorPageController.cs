@@ -8,6 +8,7 @@ using ControllerBase = JoinRpg.Portal.Controllers.Common.ControllerBase;
 namespace JoinRpg.Portal.Controllers
 {
     [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class ErrorPageController : ControllerBase
     {
         [Route("/error/{statusCode?}")]
