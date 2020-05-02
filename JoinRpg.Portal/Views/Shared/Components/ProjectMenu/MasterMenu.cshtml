@@ -82,11 +82,11 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Сюжеты <span class="caret"></span></a>
 
                         <ul class="dropdown-menu">
-                            <li>@Html.ActionLink("Все", "Index", "Plot", new { Model.ProjectId }, null)</li>
-                            <li>@Html.ActionLink("В работе", "InWork", "Plot", new { Model.ProjectId }, null)</li>
-                            <li>@Html.ActionLink("Готовые", "Ready", "Plot", new { Model.ProjectId }, null)</li>
-                            <li>@Html.ActionLink("Одним списком", "FlatList", "Plot", new { Model.ProjectId }, null)</li>
-                            <li>@Html.ActionLink("Одним списком — доделать", "FlatListUnready", "Plot", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Все", "Index", "PlotList", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("В работе", "InWork", "PlotList", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Готовые", "Ready", "PlotList", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Одним списком", "FlatList", "PlotList", new { Model.ProjectId }, null)</li>
+                            <li>@Html.ActionLink("Одним списком — доделать", "FlatListUnready", "PlotList", new { Model.ProjectId }, null)</li>
                         </ul>
                     </li>
                     <li class="dropdown">
