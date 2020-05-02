@@ -8,6 +8,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Http;
+using JoinRpg.Interfaces;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -15,10 +16,24 @@ namespace JoinRpg.Portal.Controllers
     [Route("{projectId}/masters")]
     public class AclController : ControllerGameBase
     {
+        private readonly ICurrentUserAccessor currentUserAccessor;
+
         private IClaimsRepository ClaimRepository { get; }
         private IUriService UriService { get; }
 
-        [HttpPost("~/acl/add")]
+        [HttpGet("add/{userId}")]
+        [MasterAuthorize(Permission.CanGrantRights)]
+        public async Task<ActionResult> Add(int projectId, int userId)
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectId);
+            var currentUser = await UserRepository.GetById(currentUserAccessor.UserId);
+            var targetUser = await UserRepository.GetById(userId);
+            var projectAcl = project.ProjectAcls.Single(acl => acl.UserId == currentUserAccessor.UserId);
+
+            return View(AclViewModel.New(projectAcl, currentUser, targetUser));
+        }
+
+        [HttpPost("add/{userId}")]
         [MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Add(AclViewModel viewModel)
         {
@@ -55,11 +70,13 @@ namespace JoinRpg.Portal.Controllers
             IProjectService projectService,
             IClaimsRepository claimRepository,
             IUriService uriService,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ICurrentUserAccessor currentUserAccessor)
             : base(projectRepository, projectService, userRepository)
         {
             ClaimRepository = claimRepository;
             UriService = uriService;
+            this.currentUserAccessor = currentUserAccessor;
         }
 
         [MasterAuthorize(AllowAdmin = false)]

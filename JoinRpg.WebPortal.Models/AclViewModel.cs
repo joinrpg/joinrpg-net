@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -96,6 +97,32 @@ namespace JoinRpg.Web.Models
                 UserDetails = new UserProfileDetailsViewModel(acl.User,
                     (AccessReason)acl.User.GetProfileAccess(currentUser)),
                 ResponsibleFor = groups.AsObjectLinks(uriService),
+            };
+        }
+
+        public static AclViewModel New(ProjectAcl acl, User currentUser, User targetUser)
+        {
+            return new AclViewModel
+            {
+                ProjectId = acl.ProjectId,
+                ProjectAclId = -1,
+                UserId = acl.UserId,
+                CanManageClaims = acl.CanManageClaims,
+                CanChangeFields = acl.CanChangeFields,
+                CanChangeProjectProperties = acl.CanChangeProjectProperties,
+                CanGrantRights = acl.CanGrantRights,
+                CanEditRoles = acl.CanEditRoles,
+                CanManageMoney = acl.CanManageMoney,
+                CanSendMassMails = acl.CanSendMassMails,
+                CanManagePlots = acl.CanManagePlots,
+                CanManageAccommodation = acl.CanManageAccommodation,
+                CanSetPlayersAccommodations = acl.CanSetPlayersAccommodations,
+                ProjectName = acl.Project.ProjectName,
+
+                AccomodationEnabled = acl.Project.Details.EnableAccommodation,
+
+                UserDetails = new UserProfileDetailsViewModel(targetUser,
+                    (AccessReason)acl.User.GetProfileAccess(currentUser)),
             };
         }
     }

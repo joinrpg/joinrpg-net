@@ -12,13 +12,13 @@ namespace JoinRpg.Web.Models
   {
     public string DisplayName { get; set; }
 
-    public IEnumerable<ProjectAcl> ThisUserProjects { get; set; }
+    public IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
 
     [ReadOnly(true)]
-    public IEnumerable<Project> CanGrantAccessProjects { get; set; } = new Project[] {};
+    public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = new ProjectLinkViewModel[] {};
     public int UserId { get; set; }
 
-    public IEnumerable<Project> ProjectsToAdd
+    public IEnumerable<ProjectLinkViewModel> ProjectsToAdd
       => CanGrantAccessProjects.Where(acl => ThisUserProjects.All(acl1 => acl1.ProjectId != acl.ProjectId));
 
     [ReadOnly(true)]
