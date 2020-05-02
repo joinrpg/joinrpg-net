@@ -390,6 +390,7 @@ namespace JoinRpg.Portal.Controllers
     /// <param name="viewModel"></param>
     /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
     [MasterAuthorize()]
+    [HttpPost]
     public async Task<ActionResult> Move(ClaimOperationViewModel viewModel, string claimTarget)
     {
       var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
@@ -610,6 +611,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
       [MasterAuthorize(Permission.CanManageMoney), ValidateAntiForgeryToken]
+      [HttpPost]
       public async Task<ActionResult> MarkPreferential(int claimid,
           int projectid,
           bool preferential)
@@ -638,6 +640,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
         [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<ActionResult> RequestPreferentialFee(
             MarkMeAsPreferentialViewModel viewModel)
         {
