@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using BitArmory.ReCaptcha;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Identity;
+using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces.Notification;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -13,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -20,6 +23,8 @@ namespace JoinRpg.Portal.Controllers
     public class AccountController : Common.ControllerBase
     {
         private readonly IEmailService _emailService;
+        private readonly IOptions<RecaptchaOptions> recaptchaOptions;
+
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }
         private IUserRepository UserRepository { get; }
@@ -29,13 +34,15 @@ namespace JoinRpg.Portal.Controllers
             ApplicationUserManager userManager,
             ApplicationSignInManager signInManager,
             IEmailService emailService,
-            IUserRepository userRepository
+            IUserRepository userRepository,
+            IOptions<RecaptchaOptions> recaptchaOptions
         )
         {
             UserManager = userManager;
             SignInManager = signInManager;
             _emailService = emailService;
             UserRepository = userRepository;
+            this.recaptchaOptions = recaptchaOptions;
         }
 
         
@@ -75,7 +82,10 @@ namespace JoinRpg.Portal.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(new LoginPageViewModel() {Login = model});
+                var vm1 = await CreateLoginPageViewModelAsync(returnUrl);
+                vm1.Login.Email = model.Email;
+                vm1.Login.ReturnUrl = returnUrl;
+                return View(vm1);
             }
 
             // Require the user to have a confirmed email before they can log on.
@@ -119,7 +129,7 @@ namespace JoinRpg.Portal.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
-            return View();
+            return View(new RegisterViewModel() {RecaptchaPublicKey = recaptchaOptions.Value.PublicKey});
         }
 
         //
@@ -127,12 +137,27 @@ namespace JoinRpg.Portal.Controllers
         [HttpPost]
         [AllowAnonymous]
         
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
         {
             if (!ModelState.IsValid)
             {
+                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }
+
+            var clientIp = HttpContext.Connection.RemoteIpAddress.ToString();
+            var secret = recaptchaOptions.Value.PrivateKey;
+
+            var captchaApi = new ReCaptchaService();
+            var isValid = await captchaApi.Verify2Async(recaptchaToken, clientIp, secret);
+
+            if (!isValid)
+            {
+                ModelState.AddModelError("captcha", "The reCAPTCHA is not valid.");
+                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
+                return View(model);
+            }
+
 
             var currentUser = await UserManager.FindByNameAsync(model.Email);
 
@@ -140,8 +165,9 @@ namespace JoinRpg.Portal.Controllers
             {
                 ModelState.AddModelError("",
                     "Вы уже зарегистрировались. Если пароль не подходит, нажмите «Забыли пароль?»");
-                return View("Login",
-                    new LoginPageViewModel() {Login = new LoginViewModel() {Email = model.Email}});
+                var loginModel = await CreateLoginPageViewModelAsync("");
+                loginModel.Login.Email = model.Email;
+                return View("Login", loginModel);
             }
 
             var user = new JoinIdentityUser { UserName = model.Email };
@@ -149,6 +175,7 @@ namespace JoinRpg.Portal.Controllers
             if (!result.Succeeded)
             {
                 ModelState.AddErrors(result);
+                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }
 

@@ -9,6 +9,7 @@ using Autofac;
 using JoinRpg.DataModel;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -29,6 +30,8 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
+
             services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
             services
