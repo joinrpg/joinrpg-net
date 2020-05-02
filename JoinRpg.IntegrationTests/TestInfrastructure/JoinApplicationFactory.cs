@@ -1,7 +1,8 @@
+using JoinRpg.Portal;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace JoinRpg.Portal.Test.Integration
+namespace JoinRpg.IntegrationTests.TestInfrastructure
 {
     public class JoinApplicationFactory : WebApplicationFactory<Startup>
     {

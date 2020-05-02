@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
+using JoinRpg.IntegrationTests.TestInfrastructure;
 using Xunit;
 
-namespace JoinRpg.Portal.Test.Integration
+namespace JoinRpg.IntegrationTests.Scenarios
 {
     public class SwaggerTests : IClassFixture<JoinApplicationFactory>
     {
