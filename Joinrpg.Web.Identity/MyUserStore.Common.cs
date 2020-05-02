@@ -8,7 +8,6 @@ using JetBrains.Annotations;
 using JoinRpg.Dal.Impl;
 using JoinRpg.DataModel;
 using DbUser = JoinRpg.DataModel.User;
-using Claim = System.Security.Claims.Claim;
 
 namespace Joinrpg.Web.Identity
 {
@@ -44,6 +43,7 @@ namespace Joinrpg.Web.Identity
                     RegisterDate = DateTime.UtcNow,
                     AspNetSecurityStamp = "",
                 },
+                PasswordHash = user.PasswordHash,
             };
 
             if (!hasAnyUser)
