@@ -18,7 +18,8 @@ namespace JoinRpg.Portal.Controllers
         private IClaimsRepository ClaimRepository { get; }
         private IUriService UriService { get; }
 
-        [HttpPost("add"), ValidateAntiForgeryToken, MasterAuthorize(Permission.CanGrantRights)]
+        [HttpPost("~/acl/add")]
+        [MasterAuthorize(Permission.CanGrantRights)]
         public async Task<ActionResult> Add(AclViewModel viewModel)
         {
             try
