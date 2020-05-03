@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Web.Filter;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -27,7 +27,11 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowMasterRequirement requirement)
         {
-
+            if (!context.User.Identity.IsAuthenticated)
+            {
+                context.Fail();
+                return;
+            }
             var projectIdAsObj = httpContextAccessor.HttpContext.Items["ProjectId"];
             if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
             {
@@ -44,8 +48,10 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
                 return;
             }
 
+            var userId = context.User.GetUserIdOrDefault();
+
             //Move this to claims to prevent DB call
-            if (project.ProjectAcls.Any(acl => acl.UserId.ToString() == context.User.Identity.GetUserId() && requirement.Permission.GetPermssionExpression()(acl)))
+            if (project.ProjectAcls.Any(acl => acl.UserId == userId && requirement.Permission.GetPermssionExpression()(acl)))
             {
                 context.Succeed(requirement);
             }

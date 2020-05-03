@@ -1,5 +1,4 @@
 using JoinRpg.Data.Interfaces;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Web.Controllers.XGameApi
@@ -13,10 +12,5 @@ namespace JoinRpg.Web.Controllers.XGameApi
     }
 
     public IProjectRepository ProjectRepository { get; }
-
-    protected int GetCurrentUserId()
-    {
-      return int.Parse(User.Identity.GetUserId());
-    }
   }
 }

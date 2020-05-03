@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
 using JoinRpg.DataModel;
-using Microsoft.AspNet.Identity;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Infrastructure.Authentication;
 
 namespace JoinRpg.Portal.Controllers.Common
 {
@@ -36,21 +36,7 @@ namespace JoinRpg.Portal.Controllers.Common
             }
         }
 
-        protected int? CurrentUserIdOrDefault
-        {
-            get
-            {
-                var userIdString = User.Identity.GetUserId();
-                if (userIdString == null)
-                {
-                    return null;
-                }
-                else
-                {
-                    return int.TryParse(userIdString, out var i) ? (int?)i : null;
-                }
-            }
-        }
+        protected int? CurrentUserIdOrDefault => User.GetUserIdOrDefault();
 
         //protected IReadOnlyDictionary<int, string> GetDynamicValuesFromPost(string prefix)
         //{
