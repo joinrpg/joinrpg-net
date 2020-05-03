@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace JoinRpg.Portal
 {
@@ -30,11 +28,12 @@ namespace JoinRpg.Portal
     }
     public static class MvcHtmlHelpers
     {
+        private static readonly ModelExpressionProvider ModelExpressionProvider = new ModelExpressionProvider(new EmptyModelMetadataProvider());
         //https://stackoverflow.com/a/17455541/408666
         public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper,
             Expression<Func<TModel, TProperty>> expression, TProperty value)
         {
-            string expressionText = ExpressionHelper.GetExpressionText(expression);
+            string expressionText = ModelExpressionProvider.GetExpressionText(expression);
             string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
 
             return htmlHelper.Hidden(propertyName, value, new { });
@@ -155,11 +154,12 @@ namespace JoinRpg.Portal
             return self.GetValue(m => m);
         }
 
-        //https://stackoverflow.com/questions/59000215/asp-net-core-3-0-shortname-in-the-display-attribute-dataannotations
-        //TODO[Core3] пофиксить при переходе на .NET Core 3.0
-        private static ModelExplorer GetModelExplorer<TModel, TValue>(
+        private static IModelExpressionProvider GetModelExpressionProvider<TModel>(this IHtmlHelper<TModel> self)
+            => (IModelExpressionProvider)self.ViewContext.HttpContext.RequestServices.GetService(typeof(IModelExpressionProvider));
+
+        private static ModelExpression GetModelExplorer<TModel, TValue>(
             this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression) =>
-            ExpressionMetadataProvider.FromLambdaExpression(expression, self.ViewData, self.MetadataProvider);
+            self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
 
         public static ModelMetadata GetMetadataFor<TModel, TValue>(
             this IHtmlHelper<TModel> self,Expression<Func<TModel, TValue>> expression)
