@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
-using System.Security.Permissions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -229,10 +228,14 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task GrantAccessAsAdmin(int projectId)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
+            if (!IsCurrentUserAdmin)
+            {
+                throw new NoAccessToProjectException(project, CurrentUserId);
+            }
+            
 
             var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId);
             if (acl == null)
