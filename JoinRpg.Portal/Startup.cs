@@ -14,15 +14,16 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 
 namespace JoinRpg.Portal
 {
     public class Startup
     {
-        private readonly IHostingEnvironment environment;
+        private readonly IWebHostEnvironment environment;
 
-        public Startup(IConfiguration configuration, IHostingEnvironment environment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
             this.environment = environment;
@@ -62,8 +63,7 @@ namespace JoinRpg.Portal
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
                 })
                 .AddControllersAsServices()
-                .AddViewComponentsAsServices()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                .AddViewComponentsAsServices();
 
             services.AddAuthorization(options =>
             {
@@ -93,7 +93,7 @@ namespace JoinRpg.Portal
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -125,16 +125,19 @@ namespace JoinRpg.Portal
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             app.UseMiddleware<DiscoverProjectMiddleware>();
 
             app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapAreaRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                //TODO endpoints.MapHealthChecks("/health");
+                endpoints.MapControllers();
+                endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }
