@@ -2,15 +2,6 @@
 
 @model JoinRpg.Web.Models.CharacterGroups.SubscribeSettingsViewModel
 
-@functions {
-
-    private object CheckBoxEnabled(bool enabled)
-    {
-        return enabled ? null : new {@disabled = "disabled"};
-    }
-
-}
-
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
@@ -32,7 +23,7 @@
         @Html.LabelFor(model => model.ClaimStatusChange, htmlAttributes: new { @class = "control-label col-md-4" })
         <div class="col-md-8">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.ClaimStatusChange, CheckBoxEnabled(Model.EnabledFlags.ClaimStatusChange))
+                <input for="@Model.ClaimStatusChange" disabled="@(!Model.EnabledFlags.ClaimStatusChange)" />
                 @Html.ValidationMessageFor(model => model.ClaimStatusChange, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.ClaimStatusChange)
             </div>
@@ -43,7 +34,7 @@
         @Html.LabelFor(model => model.Comments, htmlAttributes: new { @class = "control-label col-md-4" })
         <div class="col-md-8">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.Comments, CheckBoxEnabled(Model.EnabledFlags.Comments))
+                <input for="@Model.Comments" disabled="@(!Model.EnabledFlags.Comments)" />
                 @Html.ValidationMessageFor(model => model.Comments, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.Comments)
             </div>
@@ -54,7 +45,7 @@
         @Html.LabelFor(model => model.FieldChange, htmlAttributes: new { @class = "control-label col-md-4" })
         <div class="col-md-8">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.FieldChange, CheckBoxEnabled(Model.EnabledFlags.FieldChange))
+                <input for="@Model.FieldChange" disabled="@(!Model.EnabledFlags.FieldChange)" />
                 @Html.ValidationMessageFor(model => model.FieldChange, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.FieldChange)
             </div>
@@ -66,7 +57,7 @@
         @Html.LabelFor(model => model.MoneyOperation, htmlAttributes: new { @class = "control-label col-md-4" })
         <div class="col-md-8">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.MoneyOperation, CheckBoxEnabled(Model.EnabledFlags.MoneyOperation))
+                <input for="@Model.MoneyOperation" disabled="@(!Model.EnabledFlags.MoneyOperation)" />
                 @Html.ValidationMessageFor(model => model.MoneyOperation, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.MoneyOperation)
             </div>
@@ -77,7 +68,7 @@
         @Html.LabelFor(model => model.AccommodationChange, htmlAttributes: new { @class = "control-label col-md-4" })
         <div class="col-md-8">
             <div class="checkbox">
-                @Html.CheckBoxFor(model => model.AccommodationChange, CheckBoxEnabled(Model.EnabledFlags.AccommodationChange))
+                <input for="@Model.AccommodationChange" disabled="@(!Model.EnabledFlags.AccommodationChange)" />
                 @Html.ValidationMessageFor(model => model.AccommodationChange, "", new { @class = "text-danger" })
                 @Html.DescriptionFor(model => model.AccommodationChange)
             </div>
