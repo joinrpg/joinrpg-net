@@ -13,6 +13,7 @@ using JoinRpg.Web.Models.Exporters;
 namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
+    [Route("{projectId}/rooms/report/")]
     public class AccommodationPrintController : Common.ControllerGameBase
     {
         private IAccommodationRepository AccommodationRepository { get; }

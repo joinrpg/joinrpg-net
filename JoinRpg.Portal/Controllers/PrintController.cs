@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
@@ -11,11 +10,13 @@ using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Print;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {
-  [Microsoft.AspNetCore.Authorization.Authorize]
+    [Authorize]
+  [Route("{projectId}/print/[action]")]
   public class PrintController : Common.ControllerGameBase
     {
         private IPlotRepository PlotRepository { get; }
@@ -39,6 +40,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
 
+        [HttpGet]
     public async Task<IActionResult> Character(int projectid, int characterid)
     {
       var character = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
@@ -49,6 +51,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [MasterAuthorize()]
+    [HttpGet]
     public async Task<ActionResult> CharacterList(int projectid, string characterIds)
     {
       var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterIds.UnCompressIdList());
@@ -63,6 +66,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [MasterAuthorize()]
+    [HttpGet]
     public async Task<ActionResult> Index(int projectId)
     {
       var characters = (await ProjectRepository.GetCharacters(projectId)).Where(c => c.IsActive).ToList();
@@ -79,6 +83,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [MasterAuthorize()]
+    [HttpGet]
     public async Task<ActionResult> HandoutReport(int projectid)
     {
       var plotElements =
@@ -89,6 +94,7 @@ namespace JoinRpg.Portal.Controllers
       return View(new HandoutReportViewModel(plotElements, characters));
     }
 
+        [HttpGet]
     public async Task<IActionResult> PrintCards(int projectid, string plugin, string characterIds)
     {
       var characters = await CharacterRepository.GetCharacters(projectid, characterIds.UnCompressIdList());
@@ -123,6 +129,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
     [MasterAuthorize()]
+    [HttpGet]
     public async Task<ActionResult> Envelopes(int projectid, string characterids)
     {
       var characters = await ProjectRepository.LoadCharactersWithGroups(projectid, characterids.UnCompressIdList());
@@ -150,7 +157,6 @@ namespace JoinRpg.Portal.Controllers
       return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
     }
 
-        [Obsolete]
         protected IActionResult WithCharacter(Character character)
         {
             if (character == null)
