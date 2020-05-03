@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using JoinRpg.Portal.Infrastructure.Authentication
 @model JoinRpg.Web.Models.ClaimListViewModel
 
 @if (Model.ShowCount)
@@ -76,7 +76,7 @@
                 @Html.DisplayFor(modelItem => item.UpdateDate)
                 @if (item.LastModifiedBy != null)
                 {
-                    if (item.LastModifiedBy.UserId.ToString() == User.Identity.GetUserId())
+                    if (item.LastModifiedBy.UserId == User.GetUserIdOrDefault())
                     {
                         <text>мной</text>
                     }
