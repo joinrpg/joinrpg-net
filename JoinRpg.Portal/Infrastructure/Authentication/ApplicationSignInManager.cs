@@ -15,14 +15,17 @@ namespace JoinRpg.Portal.Identity
             IUserClaimsPrincipalFactory<JoinIdentityUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor,
             ILogger<SignInManager<JoinIdentityUser>> logger,
-            IAuthenticationSchemeProvider schemes
+            IAuthenticationSchemeProvider schemes,
+            IUserConfirmation<JoinIdentityUser> userConfirmation
         ) :
             base(userManager,
                 contextAccessor,
                 claimsFactory,
                 optionsAccessor,
                 logger,
-                schemes)
+                schemes,
+                userConfirmation
+                )
         {
         }
     }

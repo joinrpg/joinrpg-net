@@ -28,16 +28,16 @@ namespace JoinRpg.Portal
     }
     public static class MvcHtmlHelpers
     {
-        private static readonly ModelExpressionProvider ModelExpressionProvider = new ModelExpressionProvider(new EmptyModelMetadataProvider());
-        //https://stackoverflow.com/a/17455541/408666
-        public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper,
-            Expression<Func<TModel, TProperty>> expression, TProperty value)
-        {
-            string expressionText = ModelExpressionProvider.GetExpressionText(expression);
-            string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
+        //private static readonly ModelExpressionProvider ModelExpressionProvider = new ModelExpressionProvider(new EmptyModelMetadataProvider());
+        ////https://stackoverflow.com/a/17455541/408666
+        //public static IHtmlContent HiddenFor<TModel, TProperty>(this IHtmlHelper<TModel> htmlHelper,
+        //    Expression<Func<TModel, TProperty>> expression, TProperty value)
+        //{
+        //    string expressionText = ModelExpressionProvider.GetExpressionText(expression);
+        //    string propertyName = htmlHelper.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expressionText);
 
-            return htmlHelper.Hidden(propertyName, value, new { });
-        }
+        //    return htmlHelper.Hidden(propertyName, value, new { });
+        //}
 
         public static string GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)

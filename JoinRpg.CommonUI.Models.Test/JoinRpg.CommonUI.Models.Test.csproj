@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyTitle>JoinRpg.CommonUI.Models.Test</AssemblyTitle>
     <Product>JoinRpg.CommonUI.Models.Test</Product>
     <NoWarn>${NoWarn};CS1591</NoWarn>
