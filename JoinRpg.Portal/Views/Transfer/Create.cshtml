@@ -3,6 +3,7 @@
 @model JoinRpg.Web.Models.Money.CreateMoneyTransferViewModel
 
 @{
+    ViewBag.Title = "Перевод денег от мастера к мастеру";
     var masterSelect = Model.Masters.Select(master => new ImprovedSelectListItem()
     {
         Text = master.Name,
