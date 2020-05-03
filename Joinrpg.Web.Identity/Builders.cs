@@ -1,7 +1,6 @@
 
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using Microsoft.AspNet.Identity;
 
 namespace Joinrpg.Web.Identity
 {
@@ -16,15 +15,5 @@ namespace Joinrpg.Web.Identity
                 EmaiLConfirmed = dbUser.Auth.EmailConfirmed,
                 PasswordHash = dbUser.PasswordHash,
             };
-
-        public static UserExternalLogin ToUserExternalLogin([NotNull] this UserLoginInfo login)
-            => new UserExternalLogin()
-            {
-                Key = login.ProviderKey,
-                Provider = login.LoginProvider,
-            };
-
-        public static UserLoginInfo ToUserLoginInfo([NotNull] this UserExternalLogin uel)
-            => new UserLoginInfo(uel.Provider, uel.Key);
     }
 }
