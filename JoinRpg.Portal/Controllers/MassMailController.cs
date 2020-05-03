@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers
 {
   [MasterAuthorize()]
+  [Route("{projectId}/massmail/[action]")]
   public class MassMailController : Common.ControllerGameBase
   {
     private IClaimsRepository ClaimRepository { get; }

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers.Money
 {
     [MasterAuthorize()]
+    [Route("{projectId}/money/transfer/[action]")]
     public class TransferController : ControllerGameBase
     {
         private IFinanceService FinanceService { get; }
@@ -96,6 +97,7 @@ namespace JoinRpg.Portal.Controllers.Money
                 project.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
         }
 
+        [HttpPost]
         public async Task<ActionResult> Approve(int projectId, int moneyTransferId)
             => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
             {
@@ -104,6 +106,7 @@ namespace JoinRpg.Portal.Controllers.Money
                 MoneyTranferId = moneyTransferId,
             });
 
+        [HttpPost]
         public async Task<ActionResult> Decline(int projectId, int moneyTransferId)
             => await ApproveRejectTransfer(new ApproveRejectTransferRequest()
             {

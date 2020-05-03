@@ -10,9 +10,10 @@ using JoinRpg.Web.Models.Reports;
 namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
+    [Route("{projectId}/reports")]
     public class ReportsController : ControllerGameBase
     {
-        [HttpGet("{projectId}/reports/2d/{gameReport2DTemplateId}")]
+        [HttpGet("2d/{gameReport2DTemplateId}")]
         public async Task<IActionResult> Report2D(int projectId, int gameReport2DTemplateId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);

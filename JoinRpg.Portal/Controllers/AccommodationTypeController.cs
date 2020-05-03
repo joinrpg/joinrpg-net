@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers
 {
     [MasterAuthorize()]
+    [Route("{projectId}/rooms/[action]")]
     public class AccommodationTypeController : Common.ControllerGameBase
     {
         private IAccommodationRepository AccommodationRepository { get; }

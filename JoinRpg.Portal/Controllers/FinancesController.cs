@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace JoinRpg.Portal.Controllers
 {
   [Authorize]
+  [Route("{projectId}/money/[action]")]
   public class FinancesController : ControllerGameBase
   {
         private IExportDataService ExportDataService { get; }
@@ -66,10 +67,12 @@ namespace JoinRpg.Portal.Controllers
       return View(new FinanceSetupViewModel(project, CurrentUserId, CurrentUserAccessor.IsAdmin, VirtualUsers.PaymentsUser));
     }
 
+        [HttpGet]
     public async Task<ActionResult> Operations(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.MoneyFlowOperation && fo.Approved);
 
-    public async Task<ActionResult> Moderation(int projectid, string export)
+        [HttpGet]
+        public async Task<ActionResult> Moderation(int projectid, string export)
       => await GetFinanceOperationsList(projectid, export, fo => fo.RequireModeration);
 
         [MasterAuthorize]
@@ -98,7 +101,8 @@ namespace JoinRpg.Portal.Controllers
         }
 
       [MasterAuthorize()]
-      public async Task<ActionResult> MoneySummary(int projectId)
+        [HttpGet]
+        public async Task<ActionResult> MoneySummary(int projectId)
       {
           var project = await ProjectRepository.GetProjectWithFinances(projectId);
           if (project == null)
@@ -124,7 +128,6 @@ namespace JoinRpg.Portal.Controllers
       }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     [MasterAuthorize(Permission.CanManageMoney, AllowAdmin = true)]
     public async Task<ActionResult> TogglePaymentType(TogglePaymentTypeViewModel data)
     {
@@ -214,6 +217,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
         [MasterAuthorize(Permission.CanManageMoney)]
+        [HttpPost]
     public async Task<ActionResult> CreateFeeSetting(CreateProjectFeeSettingViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
@@ -293,6 +297,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
         [MasterAuthorize(Permission.CanManageMoney)]
+        [HttpPost]
     public async Task<ActionResult> ChangeSettings(FinanceGlobalSettingsViewModel viewModel)
     {
       var project = await ProjectRepository.GetProjectAsync(viewModel.ProjectId);
@@ -320,6 +325,7 @@ namespace JoinRpg.Portal.Controllers
     }
 
       [MasterAuthorize()]
+      [HttpGet]
       public async Task<ActionResult> ByMaster(int projectId, int masterId)
       {
           var project = await ProjectRepository.GetProjectWithFinances(projectId);
@@ -374,7 +380,7 @@ namespace JoinRpg.Portal.Controllers
           return Content(s.ToString(), "text/plain", Encoding.ASCII);
       }
 
-      [HttpGet]
+      [HttpGet] //TODO fix this to use POST
       [AdminAuthorize]
       [ActionName("unfixed-fix")]
       public async Task<ActionResult> FixUnfixedPayments(int projectId)
