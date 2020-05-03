@@ -3,14 +3,6 @@
 
 @using JoinRpg.Web.Models
 
-@functions {
-
-    private object CheckBoxChecked(bool autoCreated)
-    {
-        return autoCreated ? new { @checked = "checked" } : null;
-    }
-
-}
 @{
     Model.ActionName = Model.ActionName ?? "Отправить";
     Model.DeleteCharacter = Model.CharacterAutoCreated
