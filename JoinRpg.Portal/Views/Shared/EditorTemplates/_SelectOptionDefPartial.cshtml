@@ -1,4 +1,12 @@
 ﻿
 @using JoinRpg.Web.Models
 @model FieldValueViewModel
-<option value="" @(string.IsNullOrWhiteSpace(Model.Value) ? "selected=true" : "") price="@Model.Price">( ничего не выбрано )@(Model.HasPrice ? @" (" + Html.RenderPrice(Model.Price) + ")" : "")</option>
+@if (string.IsNullOrWhiteSpace(Model.Value))
+{
+    <option value="" price="@Model.Price">( ничего не выбрано )@(Model.HasPrice ? @" (" + Html.RenderPrice(Model.Price) + ")" : "")</option>
+}
+else
+{
+    <option value="" selected="selected" price="@Model.Price">( ничего не выбрано )@(Model.HasPrice ? @" (" + Html.RenderPrice(Model.Price) + ")" : "")</option>
+}
+
