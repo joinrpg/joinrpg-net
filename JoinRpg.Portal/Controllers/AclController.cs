@@ -9,6 +9,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Http;
 using JoinRpg.Interfaces;
+using JoinRpg.Web.Models.Masters;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -88,12 +89,7 @@ namespace JoinRpg.Portal.Controllers
             var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
             var currentUser = await GetCurrentUserAsync();
 
-            return View(project.ProjectAcls.Select(acl =>
-            {
-                return AclViewModel.FromAcl(acl, claims.SingleOrDefault(c => c.MasterId == acl.UserId)?.ClaimCount ?? 0,
-                  groups.Where(gr => gr.ResponsibleMasterUserId == acl.UserId && gr.IsActive).ToList(), currentUser,
-                    UriService);
-            }));
+            return View(new MastersListViewModel(project, claims, groups, currentUser, UriService));
         }
 
         [HttpGet("delete")]
