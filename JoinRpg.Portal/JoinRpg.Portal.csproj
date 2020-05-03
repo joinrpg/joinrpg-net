@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
       <NoWarn>${NoWarn};CS1591</NoWarn>

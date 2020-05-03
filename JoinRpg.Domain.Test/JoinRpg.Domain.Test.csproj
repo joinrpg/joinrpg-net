@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <NoWarn>${NoWarn};CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
