@@ -99,12 +99,13 @@ namespace JoinRpg.Portal
             {
                 app.UseDeveloperExceptionPage();
             }
+            else if (env.IsEnvironment("IntegrationTest"))
+            {
+                //need this to ensure that exceptions from controller will fall directly to integration test
+            }
             else
             {
-
                 app.UseExceptionHandler("/error");
-
-
             }
 
             app.Use(async (context, next) =>
