@@ -10,7 +10,7 @@
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.87.1" />
+    <PackageReference Include="ClosedXML" Version="0.95.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
     <PackageReference Include="System.IO.Packaging" Version="4.0.0" />
   </ItemGroup>
