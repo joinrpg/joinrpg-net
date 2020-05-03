@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>netstandard2</TargetFramework>
   </PropertyGroup>
 
     <ItemGroup>
-        <Reference Include="System.ComponentModel.DataAnnotations" />
     </ItemGroup>
     
   <ItemGroup>
