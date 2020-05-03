@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.Helpers;
 using JoinRpg.Services.Interfaces.Email;
 using Mailgun.Core.Messages;
 using Mailgun.Messages;
@@ -13,15 +12,11 @@ namespace JoinRpg.Common.EmailSending.Impl
         public static IMessageBuilder AddUsers(this IMessageBuilder builder,
             IEnumerable<RecepientData> recipients)
         {
-            foreach (var recipient in recipients.WhereNotNull().Distinct())
-            {
-                builder.AddToRecipient(recipient.ToMailGunRecepient());
-            }
-
+            builder.AddToRecipientList(recipients.Where(x => x != null).Distinct().Select(x => x.ToMailGunRecepient()));
             return builder;
         }
 
-        public static Recipient ToMailGunRecepient(this RecepientData recipient)
+        public static IRecipient ToMailGunRecepient(this RecepientData recipient)
         {
             return new Recipient()
             {
