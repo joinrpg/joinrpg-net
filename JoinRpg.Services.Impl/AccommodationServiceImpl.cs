@@ -10,7 +10,6 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Notification;
-using Microsoft.Practices.ServiceLocation;
 
 namespace JoinRpg.Services.Impl
 {
@@ -22,7 +21,7 @@ namespace JoinRpg.Services.Impl
         public async Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType)
         {
             if (roomType.ProjectId == 0)
-                throw new ActivationException("Inconsistent state. ProjectId can't be 0");
+                throw new ArgumentException("Inconsistent state. ProjectId can't be 0");
 
             ProjectAccommodationType result;
 
