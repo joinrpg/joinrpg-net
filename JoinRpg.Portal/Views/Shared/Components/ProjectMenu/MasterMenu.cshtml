@@ -123,8 +123,8 @@
                             <li role="separator" class="divider"></li>
                             <li>@Html.ActionLink("Отметить перевод", "Create", "Transfer", new { Model.ProjectId }, null)</li>
                             <li>@Html.ActionLink("Сводка по деньгам", "MoneySummary", "Finances", new { Model.ProjectId }, null)</li>
-                            <li asp-is-disabled="!@Model.AccessToProject.CanChangeProjectProperties">
-                                <a asp-action="Setup" asp-controller="Finances" asp-route-projectId="@Model.ProjectId" asp-is-disabled="!@Model.AccessToProject.CanManageMoney">
+                            <li>
+                                <a asp-action="Setup" asp-controller="Finances" asp-route-projectId="@Model.ProjectId">
                                     Настройка финансов
                                 </a>
                             </li>
