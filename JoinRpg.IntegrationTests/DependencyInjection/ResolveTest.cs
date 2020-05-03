@@ -1,5 +1,8 @@
 using System;
 using JoinRpg.IntegrationTests.TestInfrastructure;
+using JoinRpg.Portal;
+using JoinRpg.TestHelpers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit;
@@ -25,8 +28,14 @@ namespace JoinRpg.IntegrationTests.DependencyInjection
         [ClassData(typeof(ControllerDataSource))]
         public void AutofacControllers(Type typeToEnsure) => serviceProvider.GetRequiredService(typeToEnsure).ShouldNotBeNull();
 
+        private class ControllerDataSource : FindDerivedClassesDataSourceBase<Controller, Startup> { }
+
         [Theory]
         [ClassData(typeof(ViewComponentsDataSource))]
         public void AutofacViewComponents(Type typeToEnsure) => serviceProvider.GetRequiredService(typeToEnsure).ShouldNotBeNull();
+
+        public class ViewComponentsDataSource : FindDerivedClassesDataSourceBase<ViewComponent, Startup> { }
     }
+
+
 }

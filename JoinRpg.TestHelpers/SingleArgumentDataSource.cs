@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace JoinRpg.Portal.Test.ContainerTest
+namespace JoinRpg.TestHelpers
 {
     /// <summary>
     /// Helper for create XUnit data sources
