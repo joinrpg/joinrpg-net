@@ -104,16 +104,18 @@ namespace JoinRpg.Portal
 
                 app.UseExceptionHandler("/error");
 
-                app.Use(async (context, next) =>
-                {
-                    await next();
-                    if (context.Response.StatusCode == 404)
-                    {
-                        context.Request.Path = "/error/404";
-                        await next();
-                    }
-                });
+
             }
+
+            app.Use(async (context, next) =>
+            {
+                await next();
+                if (context.Response.StatusCode == 404)
+                {
+                    context.Request.Path = "/error/404";
+                    await next();
+                }
+            });
 
 
             app.UseSwagger(Swagger.Configure);
