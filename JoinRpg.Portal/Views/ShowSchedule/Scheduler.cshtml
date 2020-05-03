@@ -47,7 +47,7 @@
             <div class="scheduler-appointments">
                 @foreach (var appointment in Model.Appointments)
                 {
-                    @Html.Partial("_AppointmentPartial", appointment)
+                    <partial name="_AppointmentPartial" model="appointment"/>
                 }
             </div>
         </div>

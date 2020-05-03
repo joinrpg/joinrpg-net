@@ -58,7 +58,7 @@
 
     <div class="container body-content">
         @RenderBody()
-        @Html.Partial("Layout/_FooterPartial")
+        <partial name="Layout/_FooterPartial" />
     </div>
 
 
@@ -70,6 +70,6 @@
 
     @RenderSection("Scripts", required: false)
 
-    @Html.Partial("Layout/_YandexPartial")
+    <partial name="Layout/_YandexPartial" />
 </body>
 </html>
