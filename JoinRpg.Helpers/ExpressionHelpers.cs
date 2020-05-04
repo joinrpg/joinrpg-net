@@ -8,10 +8,10 @@ namespace JoinRpg.Helpers
     public static class ExpressionHelpers
     {
         [CanBeNull]
-        public static string AsPropertyName<T1, T2>(this Expression<Func<T1, T2>> expression) => expression.AsPropertyAccess()?.Name;
+        public static string? AsPropertyName<T1, T2>(this Expression<Func<T1, T2>> expression) => expression.AsPropertyAccess()?.Name;
 
         [CanBeNull]
-        public static PropertyInfo AsPropertyAccess<T1, T2>(
+        public static PropertyInfo? AsPropertyAccess<T1, T2>(
             this Expression<Func<T1, T2>> expression)
         {
             if (expression.Body is UnaryExpression convertExpression &&
@@ -24,7 +24,7 @@ namespace JoinRpg.Helpers
         }
 
         [CanBeNull]
-        private static PropertyInfo AsPropertyAccess(Expression body)
+        private static PropertyInfo? AsPropertyAccess(Expression body)
         {
             var memberExpression = body as MemberExpression;
             return memberExpression?.Member as PropertyInfo;

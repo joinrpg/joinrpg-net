@@ -23,7 +23,7 @@ namespace JoinRpg.Helpers
         }
 
         [CanBeNull]
-        public static Type GetEnumerableType(Type type)
+        public static Type? GetEnumerableType(Type type)
         {
             foreach (var intType in type.GetInterfaces())
             {

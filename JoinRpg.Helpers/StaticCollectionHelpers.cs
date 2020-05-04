@@ -52,9 +52,27 @@ namespace JoinRpg.Helpers
 
         public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t) => source.Union(new[] { t });
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source) => source.Where(item => item != null);
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T:class
+        {
+            foreach (var i in source)
+            {
+                if (i is T v)
+                {
+                    yield return v;
+                }
+            }
+        }
 
-        public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source) => source.Where(item => item != null).Select(item => item.Value);
+        public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source)
+        {
+            foreach (var i in source)
+            {
+                if (i is int v)
+                {
+                    yield return v;
+                }
+            }
+        }
 
         public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T> collection) => collection ?? Enumerable.Empty<T>();
 

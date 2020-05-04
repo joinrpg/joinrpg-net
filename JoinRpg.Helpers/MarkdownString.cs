@@ -7,8 +7,7 @@ namespace JoinRpg.DataModel
     [ComplexType]
     public class MarkdownString : IEquatable<MarkdownString>
     {
-        public MarkdownString([CanBeNull]
-            string contents)
+        public MarkdownString([CanBeNull] string? contents)
         {
             //TODO: Validate for correct Markdown
             Contents = contents;
@@ -19,11 +18,11 @@ namespace JoinRpg.DataModel
         }
 
         [CanBeNull]
-        public string Contents { get; private set; }
+        public string? Contents { get; private set; }
 
         public override string ToString() => $"Markdown({Contents})";
 
-        public bool Equals(MarkdownString other) => other != null && string.Equals(Contents, other.Contents);
+        public bool Equals(MarkdownString? other) => other is MarkdownString && string.Equals(Contents, other.Contents);
 
         public override bool Equals(object obj)
         {
@@ -50,7 +49,7 @@ namespace JoinRpg.DataModel
 
         public static bool operator ==(MarkdownString string1, MarkdownString string2)
         {
-            return string1?.Equals(string2) ?? ReferenceEquals(string2, null);
+            return string1?.Equals(string2) ?? string2 is null;
         }
 
         public static bool operator !=(MarkdownString string1, MarkdownString string2)

@@ -20,7 +20,7 @@ namespace JoinRpg.Helpers
             return enumValue.GetAttribute<DisplayAttribute>()?.GetName() ?? enumValue.ToString();
         }
 
-        public static string GetShortNameOrDefault([NotNull]
+        public static string? GetShortNameOrDefault([NotNull]
             this Enum enumValue)
         {
             if (enumValue == null)
@@ -46,7 +46,7 @@ namespace JoinRpg.Helpers
         /// <summary>
         /// Returns description for enum value
         /// </summary>
-        public static string GetDescription(this Enum enumValue)
+        public static string? GetDescription(this Enum enumValue)
         {
             if (enumValue == null)
             {
