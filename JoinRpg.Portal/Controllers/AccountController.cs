@@ -282,7 +282,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ResetPassword
         [AllowAnonymous]
-        public async Task<ActionResult> ResetPassword(int userId, string code)
+        public ActionResult ResetPassword(int userId, string code)
         {
             if (userId == 0 || code is null)
             {
