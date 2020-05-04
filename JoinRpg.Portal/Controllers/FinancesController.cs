@@ -128,7 +128,7 @@ namespace JoinRpg.Portal.Controllers
       }
 
     [HttpPost]
-    [MasterAuthorize(Permission.CanManageMoney, AllowAdmin = true)]
+    [RequireMasterOrAdmin(Permission.CanManageMoney)]
     public async Task<ActionResult> TogglePaymentType(TogglePaymentTypeViewModel data)
     {
         try
@@ -153,7 +153,7 @@ namespace JoinRpg.Portal.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [MasterAuthorize(Permission.CanManageMoney, AllowAdmin = true)]
+    [RequireMasterOrAdmin(Permission.CanManageMoney)]
     public async Task<ActionResult> CreatePaymentType(CreatePaymentTypeViewModel viewModel)
     {
         try

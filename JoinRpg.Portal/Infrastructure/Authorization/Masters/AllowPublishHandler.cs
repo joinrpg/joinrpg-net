@@ -1,11 +1,12 @@
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization
 {
-    public class AllowPublishHandler : AuthorizationHandler<AllowMasterRequirement>
+    public class AllowPublishHandler : AuthorizationHandler<MasterRequirement>
     {
         public AllowPublishHandler(IProjectRepository projectRepository)
         {
@@ -13,13 +14,17 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
         }
         private IProjectRepository ProjectRepository { get; }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowMasterRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
         {
+            if (requirement.AllowPublish)
+            {
+                return;
+            }
             if (!(context.Resource is AuthorizationFilterContext mvcContext))
             {
                 return;
             }
-            var projectIdAsObj = mvcContext.HttpContext.Items["ProjectId"];
+            var projectIdAsObj = mvcContext.HttpContext.Items[Constants.ProjectIdName];
             if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
             {
                 context.Fail();

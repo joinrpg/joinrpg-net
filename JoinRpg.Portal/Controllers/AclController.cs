@@ -13,7 +13,7 @@ using JoinRpg.Web.Models.Masters;
 
 namespace JoinRpg.Portal.Controllers
 {
-    [MasterAuthorize(AllowAdmin = true)]
+    [RequireMasterOrAdmin()]
     [Route("{projectId}/masters")]
     public class AclController : ControllerGameBase
     {
@@ -80,7 +80,7 @@ namespace JoinRpg.Portal.Controllers
             this.currentUserAccessor = currentUserAccessor;
         }
 
-        [MasterAuthorize(AllowAdmin = false)]
+        [RequireMasterOrAdmin()]
         [HttpGet]
         public async Task<ActionResult> Index(int projectId)
         {

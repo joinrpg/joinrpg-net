@@ -33,28 +33,28 @@ namespace JoinRpg.Portal.Controllers
           UriService = uriService;
       }
 
-        [MasterAuthorize(AllowPublish = true)]
+        [RequireMasterOrPublish]
         [HttpGet]
       public async Task<ActionResult> Index(int projectId)
       {
           return await PlotList(projectId, pf => true);
       }
 
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       [HttpGet]
         public async Task<ActionResult> InWork(int projectId)
       {
           return await PlotList(projectId, pf => pf.InWork);
       }
 
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       [HttpGet]
         public async Task<ActionResult> Ready(int projectId)
       {
           return await PlotList(projectId, pf => pf.Completed);
       }
 
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       [HttpGet]
         public async Task<ActionResult> ByTag(int projectid, string tagname)
       {
@@ -65,7 +65,7 @@ namespace JoinRpg.Portal.Controllers
 
 
       [HttpGet("~/{ProjectId}/roles/{CharacterGroupId}/plots")]
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       public async Task<ActionResult> ForGroup(int projectId, int characterGroupId)
       {
           var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
@@ -86,7 +86,7 @@ namespace JoinRpg.Portal.Controllers
           return View("ForGroup", new PlotFolderListViewModelForGroup(folders, project, CurrentUserIdOrDefault, groupNavigation));
       }
 
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       [HttpGet]
       public async Task<ActionResult> FlatList(int projectId)
       {
@@ -100,7 +100,7 @@ namespace JoinRpg.Portal.Controllers
                   UriService));
       }
 
-      [MasterAuthorize(AllowPublish = true)]
+      [RequireMasterOrPublish]
       [HttpGet]
         public async Task<ActionResult> FlatListUnready(int projectId)
       {
