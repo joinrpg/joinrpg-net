@@ -4,8 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- asp-net-core-branch
-- netcore31
+- master
 
 pool:
   vmImage: 'windows-latest'
