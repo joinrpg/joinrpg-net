@@ -268,7 +268,7 @@ namespace JoinRpg.Portal.Controllers
                       new { ClaimId = viewModel.LastClaimId, ProjectId = viewModel.LastClaimProjectId });
                 }
             }
-            catch (Exception e)
+            catch
             {
                 //ModelState.AddException(e);
                 return View(viewModel);
