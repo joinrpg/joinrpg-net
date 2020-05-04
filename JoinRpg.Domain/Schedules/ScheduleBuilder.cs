@@ -21,7 +21,7 @@ namespace JoinRpg.Domain.Schedules
             var scheduleSettings = project.Details.ScheduleSettings;
             if (scheduleSettings is null)
             {
-                throw  new Exception("Schedule not enabled");
+                throw new Exception("Schedule not enabled");
             }
             TimeSlotField = scheduleSettings.TimeSlotField;
             RoomField = scheduleSettings.RoomField;
@@ -42,7 +42,7 @@ namespace JoinRpg.Domain.Schedules
         }
 
         private List<List<ProgramItemSlot>> Slots { get; set; }
-        private List<ScheduleRoom> Rooms { get; set;  }
+        private List<ScheduleRoom> Rooms { get; set; }
 
         private List<TimeSlot> TimeSlots { get; set; }
 
@@ -137,7 +137,7 @@ namespace JoinRpg.Domain.Schedules
             => timeSlots.Select(time => rooms.Select(room => new ProgramItemSlot(time, room)).ToList()).ToList();
 
         private IEnumerable<T> InitializeList<T>(IReadOnlyList<ProjectFieldDropdownValue> readOnlyList)
-            where T: ScheduleItemAttribute, new ()
+            where T : ScheduleItemAttribute, new()
         {
             var seqId = 0;
             foreach (var variant in readOnlyList.Where(x => x.IsActive))
@@ -165,7 +165,7 @@ namespace JoinRpg.Domain.Schedules
                 Id = character.CharacterId,
                 Name = character.CharacterName,
                 Description = character.Description,
-                Authors = new[] { character.ApprovedClaim?.Player }.Where(x => ! (x is null)).ToArray(),
+                Authors = new[] { character.ApprovedClaim?.Player }.Where(x => !(x is null)).ToArray(),
                 ProjectId = character.ProjectId,
             };
         }

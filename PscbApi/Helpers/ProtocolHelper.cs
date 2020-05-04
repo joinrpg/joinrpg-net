@@ -31,16 +31,16 @@ namespace PscbApi
         /// <returns>Parsed data</returns>
         public static BankResponseInfo ParseDescriptionString(string description)
         {
-            var items = description?.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+            var items = description?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             BankResponseInfo result = new BankResponseInfo();
             if (items?.Length > 0)
             {
                 items.CheckItem(
                     BankResponseInfo.PaymentsSystemCodeJsonName,
-                    value => result.PaymentCode = (PaymentsSystemResponseCode?) (int.TryParse(value, out var parsed) ? parsed : (int?) null));
+                    value => result.PaymentCode = (PaymentsSystemResponseCode?)(int.TryParse(value, out var parsed) ? parsed : (int?)null));
                 items.CheckItem(
                     BankResponseInfo.ProcessingCenterCodeJsonName,
-                    value => result.ProcessingCode = (ProcessingCenterResponseCode?) (int.TryParse(value, out var parsed) ? parsed : (int?) null));
+                    value => result.ProcessingCode = (ProcessingCenterResponseCode?)(int.TryParse(value, out var parsed) ? parsed : (int?)null));
                 result.Description = items.LastOrDefault();
             }
 

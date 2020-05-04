@@ -35,7 +35,7 @@ namespace PscbApi
                 if (maxLengthConstraint.HasValue)
                     pi.SetValue(
                         instance,
-                        ((string) pi.GetValue(instance)).TrimLength(maxLengthConstraint.Value));
+                        ((string)pi.GetValue(instance)).TrimLength(maxLengthConstraint.Value));
             }
         }
 

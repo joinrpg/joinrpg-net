@@ -21,7 +21,7 @@ namespace JoinRpg.DataModel
         public bool IsInfinite { get; set; } = false;
         public bool IsPlayerSelectable { get; set; } = true;
         public bool IsAutoFilledAccommodation { get; set; } = false;
-       
+
         public virtual ICollection<ProjectAccommodation> ProjectAccommodations { get; set; }
         public virtual ICollection<AccommodationRequest> Desirous { get; set; }
     }

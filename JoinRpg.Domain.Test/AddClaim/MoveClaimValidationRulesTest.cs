@@ -60,7 +60,7 @@ namespace JoinRpg.Domain.Test.AddClaim
 
         private void ShouldDisAllowMove(Claim claim, IClaimSource characterGroup, AddClaimForbideReason reason)
         {
-            characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe(new [] {reason});
+            characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe(new[] { reason });
         }
     }
 }

@@ -165,7 +165,7 @@ namespace JoinRpg.Services.Email
                 //All emails related to claim should have the same title, even if the change was made to a character
                 Claim claim = model.IsCharacterMail ? model.Character.ApprovedClaim : model.Claim;
 
-                
+
 
                 var subject = claim != null
                     ? model.GetClaimEmailTitle(claim)
@@ -183,7 +183,7 @@ namespace JoinRpg.Services.Email
             string body;
             if (email.Room.GetAllInhabitants().Any())
             {
-                body =$@"Покинули комнату:{email.Changed.GetPlayerList()}
+                body = $@"Покинули комнату:{email.Changed.GetPlayerList()}
 
 Остались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
             }
@@ -214,7 +214,7 @@ namespace JoinRpg.Services.Email
                 body += $"\n\nУже были в комнате:{oldInhabitants.GetPlayerList()}";
             }
 
-            
+
             await SendRoomEmail(email, body);
         }
 
@@ -234,7 +234,7 @@ namespace JoinRpg.Services.Email
         public Task Email(NewInviteEmail email)
         {
             string body = $"{email.Initiator.GetDisplayName()} отправил Вам приглашение к совместному проживанию.";
-    
+
             return SendInviteEmail(email, body);
         }
 
@@ -266,7 +266,7 @@ namespace JoinRpg.Services.Email
 ";
 
             var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                    new MarkdownString(String.Format(messageTemplate, email.GetClaimByPerson(emailRecipient)==null? "" :_uriService.Get(email.GetClaimByPerson(emailRecipient)))),
+                    new MarkdownString(String.Format(messageTemplate, email.GetClaimByPerson(emailRecipient) == null ? "" : _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
                     email.Initiator.ToRecepientData(),
                     emailRecipient.ToRecepientData()))
                 .ToList();
@@ -411,7 +411,7 @@ namespace JoinRpg.Services.Email
         }
 
         public async Task Email([NotNull] PublishPlotElementEmail email)
-        {                
+        {
             string plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
 
             string subject = $@"{email.ProjectName}: опубликована вводная";

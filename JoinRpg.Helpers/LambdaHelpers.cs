@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace JoinRpg.Helpers
             Func<object, string> toStringConvertor)
         {
             return o =>
-                ((IEnumerable) o).Cast<object>().Select(toStringConvertor).JoinStrings(", ");
+                ((IEnumerable)o).Cast<object>().Select(toStringConvertor).JoinStrings(", ");
         }
     }
 }

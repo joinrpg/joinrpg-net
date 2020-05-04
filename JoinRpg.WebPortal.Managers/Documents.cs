@@ -1,4 +1,5 @@
-namespace JoinRpg.Web {
+namespace JoinRpg.Web
+{
 
     public static class Documents
     {

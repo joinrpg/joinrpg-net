@@ -39,7 +39,7 @@ namespace Joinrpg.AspNetCore.Helpers
         /// <summary>
         /// Call Html.DisplayFor(..) for every element in list and then joins them with separator
         /// </summary>
-        public static IHtmlContent JoinDisplayFor<TModel, TListItem, TResult>(this IHtmlHelper<TModel> self, string rawSeparator, IEnumerable<TListItem> list,  Func<TListItem, TResult> selector)
+        public static IHtmlContent JoinDisplayFor<TModel, TListItem, TResult>(this IHtmlHelper<TModel> self, string rawSeparator, IEnumerable<TListItem> list, Func<TListItem, TResult> selector)
         {
             IEnumerable<IHtmlContent> ToDisplayFor()
             {
@@ -47,7 +47,7 @@ namespace Joinrpg.AspNetCore.Helpers
                 {
                     var selectedItem = selector(item);
                     yield return self.DisplayFor(model => item);
-                }    
+                }
             }
 
             return self.JoinList(rawSeparator, ToDisplayFor());

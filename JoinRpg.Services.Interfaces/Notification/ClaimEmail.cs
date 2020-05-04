@@ -50,8 +50,8 @@ namespace JoinRpg.Services.Interfaces.Notification
     {
         public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
 
-        public IFieldContainter FieldsContainer => (IFieldContainter) Claim ?? Character;
-        public ILinkable GetLinkable() => (ILinkable) Claim ?? Character;
+        public IFieldContainter FieldsContainer => (IFieldContainter)Claim ?? Character;
+        public ILinkable GetLinkable() => (ILinkable)Claim ?? Character;
 
         [NotNull]
         public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }

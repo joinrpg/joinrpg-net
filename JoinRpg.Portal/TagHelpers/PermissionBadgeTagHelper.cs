@@ -37,10 +37,10 @@ namespace JoinRpg.Portal.TagHelpers
 
             var partialView = await _htmlHelper.PartialAsync("PermissionBadge", new PermissionBadgeViewModel
             {
-                Value = (bool) For.Model == true,
+                Value = (bool)For.Model == true,
                 Description = For.Metadata.Description,
                 DisplayName = For.Metadata.DisplayName,
-            }) ;
+            });
 
             var writer = new StringWriter();
             partialView.WriteTo(writer, _htmlEncoder);

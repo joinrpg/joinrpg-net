@@ -5,7 +5,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models
 {
-    public class GameObjectLinkViewModel 
+    public class GameObjectLinkViewModel
     {
         public GameObjectLinkType Type { get; }
 
@@ -55,20 +55,20 @@ namespace JoinRpg.Web.Models
         }
     }
 
-  public enum GameObjectLinkType
-  {
-    [Display(Name = "Пользователь")]
-    User,
-    [Display(Name = "Группа ролей")]
-    CharacterGroup,
-    [Display(Name = "Персонаж/роль")]
-    Character,
-    [Display(Name = "Заявка")]
-    Claim,
-    [Display(Name = "Сюжет")]
-    Plot,
-    Comment,
-    [Display(Name = "Проект")]
-    Project,
+    public enum GameObjectLinkType
+    {
+        [Display(Name = "Пользователь")]
+        User,
+        [Display(Name = "Группа ролей")]
+        CharacterGroup,
+        [Display(Name = "Персонаж/роль")]
+        Character,
+        [Display(Name = "Заявка")]
+        Claim,
+        [Display(Name = "Сюжет")]
+        Plot,
+        Comment,
+        [Display(Name = "Проект")]
+        Project,
     }
 }

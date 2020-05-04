@@ -34,7 +34,7 @@ namespace JoinRpg.TestHelpers
 
         private static TEnum EnumFromInt<TEnum>(int i) where TEnum : struct, IConvertible
         {
-            return (TEnum) Enum.ToObject(typeof(TEnum), i);
+            return (TEnum)Enum.ToObject(typeof(TEnum), i);
         }
 
         private static int GetEnumMaxValue<TEnum>() where TEnum : struct, IConvertible

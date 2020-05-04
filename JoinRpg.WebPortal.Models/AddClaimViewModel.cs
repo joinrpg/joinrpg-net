@@ -44,10 +44,10 @@ namespace JoinRpg.Web.Models
         public CustomFieldsViewModel Fields { get; private set; }
 
         public static AddClaimViewModel Create(Character character, int playerUserId)
-            => new AddClaimViewModel {CharacterId = character.CharacterId}.Fill(character, playerUserId);
+            => new AddClaimViewModel { CharacterId = character.CharacterId }.Fill(character, playerUserId);
 
         public static AddClaimViewModel Create(CharacterGroup group, int playerUserId)
-            => new AddClaimViewModel {CharacterGroupId = group.CharacterGroupId}.Fill(group, playerUserId);
+            => new AddClaimViewModel { CharacterGroupId = group.CharacterGroupId }.Fill(group, playerUserId);
 
         public AddClaimViewModel Fill(IClaimSource claimSource, int playerUserId)
         {
@@ -63,7 +63,7 @@ namespace JoinRpg.Web.Models
                 })
                 .Any();
 
-            
+
 
             if (!disallowReasons.Any())
             {

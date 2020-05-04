@@ -379,7 +379,7 @@ namespace JoinRpg.Services.Impl
                 .Where(invite => invite.ToClaimId == claimId)
                 .Where(invite => invite.Id != inviteId)
                 .ToListAsync().ConfigureAwait(false);
-            var stateToDecline = new[] {AccommodationRequest.InviteState.Unanswered};
+            var stateToDecline = new[] { AccommodationRequest.InviteState.Unanswered };
             foreach (var accommodationInvite in inviteRequests)
             {
                 if (!stateToDecline.Contains(accommodationInvite.IsAccepted))

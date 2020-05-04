@@ -15,9 +15,9 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
-  [UsedImplicitly]
-  public class PlotServiceImpl : DbServiceImplBase, IPlotService
-  {
+    [UsedImplicitly]
+    public class PlotServiceImpl : DbServiceImplBase, IPlotService
+    {
 
         private readonly IEmailService _email;
 
@@ -29,233 +29,233 @@ namespace JoinRpg.Services.Impl
 
 
         public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
-    {
-      if (masterTitle == null) throw new ArgumentNullException(nameof(masterTitle));
-      var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
-      project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
-      var startTimeUtc = DateTime.UtcNow;
-      var plotFolder = new PlotFolder
-      {
-        CreatedDateTime = startTimeUtc,
-        ModifiedDateTime = startTimeUtc,
-        ProjectId = projectId,
-        MasterTitle = Required(masterTitle.RemoveTagNames()),
-        TodoField = todo,
-        IsActive = true,
-      };
+        {
+            if (masterTitle == null) throw new ArgumentNullException(nameof(masterTitle));
+            var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
+            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            var startTimeUtc = DateTime.UtcNow;
+            var plotFolder = new PlotFolder
+            {
+                CreatedDateTime = startTimeUtc,
+                ModifiedDateTime = startTimeUtc,
+                ProjectId = projectId,
+                MasterTitle = Required(masterTitle.RemoveTagNames()),
+                TodoField = todo,
+                IsActive = true,
+            };
 
-      await AssignTagList(plotFolder.PlotTags, masterTitle);
+            await AssignTagList(plotFolder.PlotTags, masterTitle);
 
-      project.PlotFolders.Add(plotFolder);
-      await UnitOfWork.SaveChangesAsync();
-    }
+            project.PlotFolders.Add(plotFolder);
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-    private async Task AssignTagList(ICollection<ProjectItemTag> presentTags, string title)
-    {
-      var currentTags = new List<ProjectItemTag>(presentTags);
-      var tagObjects = new List<ProjectItemTag>();
+        private async Task AssignTagList(ICollection<ProjectItemTag> presentTags, string title)
+        {
+            var currentTags = new List<ProjectItemTag>(presentTags);
+            var tagObjects = new List<ProjectItemTag>();
 
-      foreach (var tagName in title.ExtractTagNames())
-      {
-        tagObjects.Add(
-          currentTags.SingleOrDefault(tag => tag.TagName == tagName) ??
-          await UnitOfWork.GetDbSet<ProjectItemTag>().FirstOrDefaultAsync(pit => pit.TagName == tagName) ??
-          new ProjectItemTag() {TagName = tagName});
-      }
+            foreach (var tagName in title.ExtractTagNames())
+            {
+                tagObjects.Add(
+                  currentTags.SingleOrDefault(tag => tag.TagName == tagName) ??
+                  await UnitOfWork.GetDbSet<ProjectItemTag>().FirstOrDefaultAsync(pit => pit.TagName == tagName) ??
+                  new ProjectItemTag() { TagName = tagName });
+            }
 
-      presentTags.AssignLinksList(tagObjects);
-    }
+            presentTags.AssignLinksList(tagObjects);
+        }
 
-    public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
-    {
-      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+        public async Task EditPlotFolder(int projectId, int plotFolderId, string plotFolderMasterTitle, string todoField)
+        {
+            var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-      folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
-      
-      folder.TodoField = todoField;
-      folder.IsActive = true; //Restore if deleted
-      folder.ModifiedDateTime = DateTime.UtcNow;
+            folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
-      await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
+            folder.TodoField = todoField;
+            folder.IsActive = true; //Restore if deleted
+            folder.ModifiedDateTime = DateTime.UtcNow;
 
-      folder.MasterTitle = Required(plotFolderMasterTitle.RemoveTagNames());
-      await UnitOfWork.SaveChangesAsync();
-    }
+            await AssignTagList(folder.PlotTags, plotFolderMasterTitle);
 
-    public async Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
-      IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
-    {
-      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+            folder.MasterTitle = Required(plotFolderMasterTitle.RemoveTagNames());
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-      folder.RequestMasterAccess(CurrentUserId);
+        public async Task CreatePlotElement(int projectId, int plotFolderId, string content, string todoField,
+          IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars, PlotElementType elementType)
+        {
+            var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-      var now = DateTime.UtcNow;
-      var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
+            folder.RequestMasterAccess(CurrentUserId);
 
-      if (characterGroups.Count != targetGroups.Distinct().Count())
-      {
-        var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-        throw new Exception($"Groups {missing} doesn't belong to project");
-      }
-      var plotElement = new PlotElement()
-      {
-        CreatedDateTime = now,
-        ModifiedDateTime = now,
-        IsActive = true,
-        IsCompleted = false,
-        ProjectId = projectId,
-        PlotFolderId = plotFolderId,
-        TargetGroups = characterGroups,
-        TargetCharacters = await ValidateCharactersList(projectId, targetChars),
-        ElementType = elementType,
-      };
+            var now = DateTime.UtcNow;
+            var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
 
-      plotElement.Texts.Add(new PlotElementTexts()
-      {
-        Content = new MarkdownString(Required(content.Trim())),
-        TodoField = todoField,
-        Version = 0,
-        ModifiedDateTime = now,
-        AuthorUserId = CurrentUserId,
-      });
+            if (characterGroups.Count != targetGroups.Distinct().Count())
+            {
+                var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+                throw new Exception($"Groups {missing} doesn't belong to project");
+            }
+            var plotElement = new PlotElement()
+            {
+                CreatedDateTime = now,
+                ModifiedDateTime = now,
+                IsActive = true,
+                IsCompleted = false,
+                ProjectId = projectId,
+                PlotFolderId = plotFolderId,
+                TargetGroups = characterGroups,
+                TargetCharacters = await ValidateCharactersList(projectId, targetChars),
+                ElementType = elementType,
+            };
 
-      folder.ModifiedDateTime = now;
+            plotElement.Texts.Add(new PlotElementTexts()
+            {
+                Content = new MarkdownString(Required(content.Trim())),
+                TodoField = todoField,
+                Version = 0,
+                ModifiedDateTime = now,
+                AuthorUserId = CurrentUserId,
+            });
 
-      UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
-      await UnitOfWork.SaveChangesAsync();
-    }
+            folder.ModifiedDateTime = now;
 
-    public async Task DeleteFolder(int projectId, int plotFolderId)
-    {
-      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      if (!folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
-      {
-        throw new DbEntityValidationException();
-      }
-      var now = DateTime.UtcNow;
-      SmartDelete(folder);
-      foreach (var element in folder.Elements)
-      {
-        element.IsActive = false;
-        element.ModifiedDateTime = now;
-      }
-      folder.ModifiedDateTime = now;
-      await UnitOfWork.SaveChangesAsync();
-    }
+            UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-    public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
-    {
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-      plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+        public async Task DeleteFolder(int projectId, int plotFolderId)
+        {
+            var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+            if (!folder.HasMasterAccess(CurrentUserId, acl => acl.CanManagePlots))
+            {
+                throw new DbEntityValidationException();
+            }
+            var now = DateTime.UtcNow;
+            SmartDelete(folder);
+            foreach (var element in folder.Elements)
+            {
+                element.IsActive = false;
+                element.ModifiedDateTime = now;
+            }
+            folder.ModifiedDateTime = now;
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-      SmartDelete(plotElement);
-      plotElement.ModifiedDateTime = DateTime.UtcNow;
-      await UnitOfWork.SaveChangesAsync();
-    }
+        public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
+        {
+            var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
+            plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
-    private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid)
-    {
-      var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-      folder.RequestMasterAccess(CurrentUserId);
-      return folder.Elements.Single(e => e.PlotElementId == plotelementid);
-    }
+            SmartDelete(plotElement);
+            plotElement.ModifiedDateTime = DateTime.UtcNow;
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-    public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents,
-      string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
-    {
-      var now = DateTime.UtcNow;
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
+        private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid)
+        {
+            var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
+            folder.RequestMasterAccess(CurrentUserId);
+            return folder.Elements.Single(e => e.PlotElementId == plotelementid);
+        }
 
-      UpdateElementText(contents, todoField, plotElement, now);
+        public async Task EditPlotElement(int projectId, int plotFolderId, int plotelementid, string contents,
+          string todoField, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars)
+        {
+            var now = DateTime.UtcNow;
+            var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
 
-      await UpdateElementTarget(projectId, targetGroups, targetChars, plotElement);
+            UpdateElementText(contents, todoField, plotElement, now);
 
-      UpdateElementMetadata(plotElement, now);
-      await UnitOfWork.SaveChangesAsync();
-    }
+            await UpdateElementTarget(projectId, targetGroups, targetChars, plotElement);
 
-    private static void UpdateElementMetadata(PlotElement plotElement, DateTime now)
-    {
-      plotElement.IsActive = true;
-      plotElement.ModifiedDateTime = now;
-      plotElement.PlotFolder.ModifiedDateTime = now;
-    }
+            UpdateElementMetadata(plotElement, now);
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-    private async Task UpdateElementTarget(int projectId, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
-      PlotElement plotElement)
-    {
-      var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
+        private static void UpdateElementMetadata(PlotElement plotElement, DateTime now)
+        {
+            plotElement.IsActive = true;
+            plotElement.ModifiedDateTime = now;
+            plotElement.PlotFolder.ModifiedDateTime = now;
+        }
 
-      if (characterGroups.Count != targetGroups.Distinct().Count())
-      {
-        var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
-        throw new Exception($"Groups {missing} doesn't belong to project");
-      }
-      plotElement.TargetGroups.AssignLinksList(characterGroups);
-      plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
-    }
+        private async Task UpdateElementTarget(int projectId, IReadOnlyCollection<int> targetGroups, IReadOnlyCollection<int> targetChars,
+          PlotElement plotElement)
+        {
+            var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
 
-    private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
-    {
-      if (plotElement.LastVersion().Content.Contents == contents &&
-          plotElement.LastVersion().TodoField == todoField) return;
-      var text = new PlotElementTexts()
-      {
-        Content = new MarkdownString(contents),
-        TodoField = todoField,
-        Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
-        PlotElementId = plotElement.PlotElementId,
-        ModifiedDateTime = now,
-        AuthorUserId = CurrentUserId,
-      };
-      plotElement.Texts.Add(text);
-      plotElement.IsCompleted = false;
-    }
+            if (characterGroups.Count != targetGroups.Distinct().Count())
+            {
+                var missing = string.Join(", ", targetGroups.Except(characterGroups.Select(cg => cg.CharacterGroupId)));
+                throw new Exception($"Groups {missing} doesn't belong to project");
+            }
+            plotElement.TargetGroups.AssignLinksList(characterGroups);
+            plotElement.TargetCharacters.AssignLinksList(await ValidateCharactersList(projectId, targetChars));
+        }
 
-    public async Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string contents, string todoField)
-    {
-      var now = DateTime.UtcNow;
-      var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
+        private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
+        {
+            if (plotElement.LastVersion().Content.Contents == contents &&
+                plotElement.LastVersion().TodoField == todoField) return;
+            var text = new PlotElementTexts()
+            {
+                Content = new MarkdownString(contents),
+                TodoField = todoField,
+                Version = plotElement.Texts.Select(t => t.Version).Max() + 1,
+                PlotElementId = plotElement.PlotElementId,
+                ModifiedDateTime = now,
+                AuthorUserId = CurrentUserId,
+            };
+            plotElement.Texts.Add(text);
+            plotElement.IsCompleted = false;
+        }
 
-      UpdateElementText(contents, todoField, plotElement, now);
+        public async Task EditPlotElementText(int projectId, int plotFolderId, int plotelementid, string contents, string todoField)
+        {
+            var now = DateTime.UtcNow;
+            var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
 
-      UpdateElementMetadata(plotElement, now);
-      await UnitOfWork.SaveChangesAsync();
-    }
+            UpdateElementText(contents, todoField, plotElement, now);
 
-    public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
-    {
-      var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-      character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            UpdateElementMetadata(plotElement, now);
+            await UnitOfWork.SaveChangesAsync();
+        }
 
-      var plots = await PlotRepository.GetPlotsForCharacter(character);
+        public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
+        {
+            var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
+            character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
 
-      var voc = character.GetCharacterPlotContainer(plots);
-      var element = plots.Single(p => p.PlotElementId == plotElementId);
-      switch (direction)
-      {
-        case -1:
-          voc.MoveUp(element);
-          break;
-        case 1:
-          voc.MoveDown(element);
-          break;
-        default:
-          throw new ArgumentException(nameof(direction));
-      }
+            var plots = await PlotRepository.GetPlotsForCharacter(character);
 
-      character.PlotElementOrderData = voc.GetStoredOrder();
-      await UnitOfWork.SaveChangesAsync();
-    }
+            var voc = character.GetCharacterPlotContainer(plots);
+            var element = plots.Single(p => p.PlotElementId == plotElementId);
+            switch (direction)
+            {
+                case -1:
+                    voc.MoveUp(element);
+                    break;
+                case 1:
+                    voc.MoveDown(element);
+                    break;
+                default:
+                    throw new ArgumentException(nameof(direction));
+            }
 
-        
+            character.PlotElementOrderData = voc.GetStoredOrder();
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+
         private List<Claim> GetClaimsFromGroups(IEnumerable<CharacterGroup> groups)
         {
             List<Claim> claims = new List<Claim>();
 
             void InternalGetUsersFromGroups(IEnumerable<CharacterGroup> src)
             {
-                foreach(var g in src)
+                foreach (var g in src)
                 {
                     claims.AddRange(g.Characters
                         .Where(c => c.ApprovedClaimId.HasValue)

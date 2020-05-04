@@ -28,6 +28,6 @@ namespace JoinRpg.Data.Interfaces
         public int ClaimId { get; set; }
         public string AccomodationType { get; set; }
         public string RoomName { get; set; }
-       public User User { get; set; }
+        public User User { get; set; }
     }
 }

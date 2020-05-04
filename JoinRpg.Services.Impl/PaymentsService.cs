@@ -123,7 +123,7 @@ namespace JoinRpg.Services.Impl
                         .ToString()
                         .PadLeft(10, '0')
                 );
-            
+
             return new ClaimPaymentContext
             {
                 Accepted = true,
@@ -249,7 +249,7 @@ namespace JoinRpg.Services.Impl
                 // TODO: Probably need to send some notifications?
             }
         }
-        
+
         private abstract class PaymentRedirectUrl : ILinkable
         {
             /// <inheritdoc />

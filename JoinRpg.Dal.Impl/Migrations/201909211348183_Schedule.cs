@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class Schedule : DbMigration
     {
         public override void Up()
@@ -10,11 +10,11 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.ProjectScheduleSettings",
                 c => new
-                    {
-                        ProjectId = c.Int(nullable: false),
-                        RoomField_ProjectFieldId = c.Int(),
-                        TimeSlotField_ProjectFieldId = c.Int(),
-                    })
+                {
+                    ProjectId = c.Int(nullable: false),
+                    RoomField_ProjectFieldId = c.Int(),
+                    TimeSlotField_ProjectFieldId = c.Int(),
+                })
                 .PrimaryKey(t => t.ProjectId)
                 .ForeignKey("dbo.ProjectFields", t => t.RoomField_ProjectFieldId)
                 .ForeignKey("dbo.ProjectFields", t => t.TimeSlotField_ProjectFieldId)
@@ -22,9 +22,9 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ProjectId)
                 .Index(t => t.RoomField_ProjectFieldId)
                 .Index(t => t.TimeSlotField_ProjectFieldId);
-            
+
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.ProjectScheduleSettings", "ProjectId", "dbo.ProjectDetails");

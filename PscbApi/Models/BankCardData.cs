@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Bank card data

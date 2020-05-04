@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class FieldsImprovement2 : DbMigration
     {
         public override void Up()
@@ -11,7 +11,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateIndex("dbo.ProjectCharacterFields", "CharacterGroup_CharacterGroupId");
             AddForeignKey("dbo.ProjectCharacterFields", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups", "CharacterGroupId");
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.ProjectCharacterFields", "CharacterGroup_CharacterGroupId", "dbo.CharacterGroups");

@@ -59,7 +59,7 @@ namespace Joinrpg.Markdown
                 .Build();
 
             var writer = new StringWriter();
-            
+
             renderMethod(contents, writer, pipeline, context);
 
             return sanitizer.Sanitize(writer.ToString()).MarkAsHtmlString();

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Impl.Search
               await
                 UnitOfWork.GetDbSet<Project>()
                   .Where(pr =>
-                    (pr.Active==true&&pr.ProjectName.Contains(searchString)
+                    (pr.Active == true && pr.ProjectName.Contains(searchString)
                      )
                   )
                   .ToListAsync();
@@ -33,7 +33,7 @@ namespace JoinRpg.Services.Impl.Search
                 IsPublic = true,
                 IsActive = proj.Active,
             }).ToList();
-        
+
         }
     }
 }

@@ -20,7 +20,7 @@ namespace JoinRpg.Web.Models
     {
         public User Master { get; }
 
-        [Display(Name="Денег на руках")]
+        [Display(Name = "Денег на руках")]
         public int Total { get; }
 
         [Display(Name = "Получено от других мастеров")]
@@ -188,24 +188,24 @@ namespace JoinRpg.Web.Models
                 fo.OperationType == FinanceOperationType.TransferTo)
             {
                 PaymentTypeName =
-                    ((FinanceOperationTypeViewModel) fo.OperationType).GetDisplayName();
+                    ((FinanceOperationTypeViewModel)fo.OperationType).GetDisplayName();
             }
         }
     }
 
-    public class  MoneyTransferListItemViewModel : MoneyTransferViewModelBase
+    public class MoneyTransferListItemViewModel : MoneyTransferViewModelBase
     {
         [Display(Name = "Внес"), Required]
         public User MarkingMaster { get; }
 
         [Display(Name = "Статус")]
-        public MoneyTransferStateViewModel State { get;  }
+        public MoneyTransferStateViewModel State { get; }
 
         [Display(Name = "От")]
-        public User Sender { get;  }
+        public User Sender { get; }
 
         [Display(Name = "Кому")]
-        public User Receiver { get;  }
+        public User Receiver { get; }
 
         public bool HasApproveAccess { get; }
 
@@ -260,7 +260,7 @@ namespace JoinRpg.Web.Models
         }
 
         [Display(Name = "Способ приема оплаты")]
-        public string Name { get;  }
+        public string Name { get; }
         [Display(Name = "Мастер")]
         public User Master { get; }
         [Display(Name = "Итого")]

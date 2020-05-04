@@ -37,7 +37,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
                 context.Fail();
                 return;
             }
-            
+
             if (project.Details.PublishPlot)
             {
                 context.Succeed(requirement);

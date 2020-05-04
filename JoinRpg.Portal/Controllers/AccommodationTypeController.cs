@@ -98,7 +98,7 @@ namespace JoinRpg.Portal.Controllers
         /// </summary>
         [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpPost]
-        [ValidateAntiForgeryToken]        
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> SaveRoomType(RoomTypeViewModel model)
         {
             if (!ModelState.IsValid)
@@ -215,7 +215,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 await _accommodationService.UnOccupyRoomType(projectId, roomTypeId);
                 return RedirectToAction("EditRoomTypeRooms", "AccommodationType",
-                    new {ProjectId = projectId, RoomTypeId = roomTypeId});
+                    new { ProjectId = projectId, RoomTypeId = roomTypeId });
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
             {
@@ -230,7 +230,7 @@ namespace JoinRpg.Portal.Controllers
         /// <summary>
         /// Removes room
         /// </summary>
-        [MasterAuthorize(Permission.CanManageAccommodation)]        
+        [MasterAuthorize(Permission.CanManageAccommodation)]
         [HttpDelete]
         public async Task<ActionResult> DeleteRoom(int projectId, int roomTypeId, int roomId)
         {

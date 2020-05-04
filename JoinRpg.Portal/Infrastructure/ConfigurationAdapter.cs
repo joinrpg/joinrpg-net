@@ -41,7 +41,7 @@ namespace JoinRpg.Portal.Infrastructure
                 }
                 return connString;
             }
-            }
+        }
 
         // TODO inject this
         internal string XsrfKey => configuration.GetValue<string>("XsrfKey");

@@ -57,7 +57,7 @@ namespace JoinRpg.Portal.Controllers
                     FullName = row.User.FullName,
                     Phone = row.User.Extra?.PhoneNumber,
                 });
-            
+
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
             if (exportType == null)

@@ -55,7 +55,7 @@ namespace JoinRpg.Services.Impl
         /// Returns true if current user is admin
         /// </summary>
         protected bool IsCurrentUserAdmin => currentUserAccessor.IsAdmin;
-        
+
         /// <summary>
         /// Time of service creation. Used to mark consistent time for all operations performed by service
         /// </summary>

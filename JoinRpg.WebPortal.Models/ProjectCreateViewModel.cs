@@ -27,7 +27,7 @@ namespace JoinRpg.Web.Models
     [UsedImplicitly(ImplicitUseTargetFlags.Members)]
     public enum ProjectTypeViewModel
     {
-        [Display(Name="Ролевая игра",
+        [Display(Name = "Ролевая игра",
             Description = "")]
         Larp,
         [Display(Name = "Конвент - участники",

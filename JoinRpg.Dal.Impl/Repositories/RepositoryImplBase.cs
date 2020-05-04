@@ -2,18 +2,18 @@ using System;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
-  public abstract class RepositoryImplBase : IDisposable
-  {
-    protected MyDbContext Ctx { get; }
-
-    protected RepositoryImplBase(MyDbContext ctx)
+    public abstract class RepositoryImplBase : IDisposable
     {
-      Ctx = ctx;
-    }
+        protected MyDbContext Ctx { get; }
 
-    public void Dispose()
-    {
-      Ctx?.Dispose();
+        protected RepositoryImplBase(MyDbContext ctx)
+        {
+            Ctx = ctx;
+        }
+
+        public void Dispose()
+        {
+            Ctx?.Dispose();
+        }
     }
-  }
 }

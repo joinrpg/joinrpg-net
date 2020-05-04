@@ -99,7 +99,7 @@ namespace JoinRpg.Domain.Schedules
         }
 
         [CanBeNull]
-        private static ProjectFieldDropdownValue GetPreviousVariant([NotNull] this  ProjectField field,
+        private static ProjectFieldDropdownValue GetPreviousVariant([NotNull] this ProjectField field,
             [CanBeNull] ProjectFieldDropdownValue variant)
         {
             if (variant is null)

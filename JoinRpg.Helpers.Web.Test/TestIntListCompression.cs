@@ -1,26 +1,27 @@
 using System;
 using System.Linq;
-using Shouldly; using Xunit;
+using Shouldly;
+using Xunit;
 
 namespace JoinRpg.Helpers.Web.Test
 {
-  
-  public class TestIntListCompression
-  {
-    [Fact]
-    public void Test123() => TestList(new[] {1, 2, 3});
 
-      [Fact]
-      public void TestEmpty() => TestList(Array.Empty<int>());
+    public class TestIntListCompression
+    {
+        [Fact]
+        public void Test123() => TestList(new[] { 1, 2, 3 });
 
         [Fact]
-    public void Test1234567() => TestList(new[] {1, 2, 3, 4, 5, 6, 7});
+        public void TestEmpty() => TestList(Array.Empty<int>());
 
-    [Fact]
-    public void Test3Age()
-      =>
-        TestList(new[]
-        {
+        [Fact]
+        public void Test1234567() => TestList(new[] { 1, 2, 3, 4, 5, 6, 7 });
+
+        [Fact]
+        public void Test3Age()
+          =>
+            TestList(new[]
+            {
           1358, 1359, 1360, 1396, 1413, 1420, 1719, 1720, 1754, 1755, 1756, 1759, 1760, 1761, 1764, 1766, 1767, 1768,
           1769, 1770, 1771, 1772, 1776, 1780, 1781, 1783, 1784, 1785, 1786, 1787, 1788, 1789, 1790, 1791, 1792, 1793,
           1794, 1795, 1796, 1797, 1798, 1799, 1800, 1801, 1802, 1803, 1804, 1806, 1807, 1808, 1809, 1810, 1811, 1812,
@@ -109,13 +110,13 @@ namespace JoinRpg.Helpers.Web.Test
           6552, 6555, 6556, 6557, 6559, 6560, 6561, 6562, 6563, 6564, 6565, 6568, 6577, 6586, 6587, 6588, 6590, 6595,
           6617, 6630, 6649, 6653, 6655, 6656, 6659, 6672, 6701, 6712, 6721, 6738, 6742, 6753, 6755, 6760, 6770, 6771,
           6777, 6782, 6796, 6831, 6836, 6848, 6870, 6915, 6919, 6953,
-        });
+            });
 
-      private static void TestList(int[] list)
-      {
-          var compressed = list.CompressIdList();
-          var result = compressed.UnCompressIdList().ToArray();
-          result.ShouldBe(list);
-      }
-  }
+        private static void TestList(int[] list)
+        {
+            var compressed = list.CompressIdList();
+            var result = compressed.UnCompressIdList().ToArray();
+            result.ShouldBe(list);
+        }
+    }
 }

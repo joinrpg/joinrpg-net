@@ -8,19 +8,19 @@ using JoinRpg.Web.Models;
 namespace JoinRpg.Portal.Controllers
 {
     [Route("{projectId}/tools/[action]")]
-  public class GameToolsController : Common.ControllerGameBase
-  {
+    public class GameToolsController : Common.ControllerGameBase
+    {
         public GameToolsController(IProjectRepository projectRepository,
           IProjectService projectService, IUserRepository userRepository)
           : base(projectRepository, projectService, userRepository)
         {
         }
 
-    [HttpGet, MasterAuthorize()]
-    public async Task<ActionResult> Apis(int projectId)
-    {
-      var project = await ProjectRepository.GetProjectAsync(projectId);
-      return View(new ApisIndexViewModel(project, CurrentUserId));
+        [HttpGet, MasterAuthorize()]
+        public async Task<ActionResult> Apis(int projectId)
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectId);
+            return View(new ApisIndexViewModel(project, CurrentUserId));
+        }
     }
-  }
 }

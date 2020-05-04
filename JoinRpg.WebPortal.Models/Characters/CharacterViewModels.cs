@@ -60,14 +60,14 @@ namespace JoinRpg.Web.Models.Characters
             FillFields(new Character()
             {
                 Project = characterGroup.Project,
-                ProjectId =  ProjectId,
+                ProjectId = ProjectId,
                 IsAcceptingClaims = true,
-                ParentCharacterGroupIds = new [] {characterGroup.CharacterGroupId},
+                ParentCharacterGroupIds = new[] { characterGroup.CharacterGroupId },
             }, currentUserId);
             return this;
         }
 
-        [Display(Name="Добавить еще одного персонажа", Description ="После сохранения продолжить добавлять персонажей в эту группу")]
+        [Display(Name = "Добавить еще одного персонажа", Description = "После сохранения продолжить добавлять персонажей в эту группу")]
         public bool ContinueCreating { get; set; }
     }
 

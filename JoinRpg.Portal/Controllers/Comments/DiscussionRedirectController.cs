@@ -42,7 +42,7 @@ namespace JoinRpg.Portal.Controllers
         [Authorize]
         public async Task<ActionResult> ToComment(int projectid, int commentid)
         {
-            CommentDiscussion discussion =  await forumRepository.GetDiscussionByComment(projectid, commentid);
+            CommentDiscussion discussion = await forumRepository.GetDiscussionByComment(projectid, commentid);
 
             if (!discussion.HasAnyAccess(CurrentUserId))
             {

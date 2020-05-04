@@ -13,7 +13,7 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
     [UsedImplicitly]
-    public class FieldSetupServiceImpl: DbServiceImplBase, IFieldSetupService
+    public class FieldSetupServiceImpl : DbServiceImplBase, IFieldSetupService
     {
 
         public async Task AddField(CreateFieldRequest request)
@@ -162,7 +162,7 @@ namespace JoinRpg.Services.Impl
             variant.Label = request.Label;
             variant.IsActive = true;
             variant.MasterDescription = new MarkdownString(request.MasterDescription);
-            
+
             variant.Price = request.Price;
             variant.PlayerSelectable = request.PlayerSelectable;
             if (variant.ProjectField.IsTimeSlot())
@@ -174,7 +174,7 @@ namespace JoinRpg.Services.Impl
             {
                 variant.ProgrammaticValue = request.ProgrammaticValue;
             }
-            
+
 
             CreateOrUpdateSpecialGroup(variant);
         }

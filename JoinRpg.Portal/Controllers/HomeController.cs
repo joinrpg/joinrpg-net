@@ -11,7 +11,7 @@ namespace JoinRpg.Portal.Controllers
         private ProjectListManager ProjectListManager { get; }
         private const int ProjectsOnHomePage = 9;
 
-        public HomeController(ProjectListManager projectListManager) 
+        public HomeController(ProjectListManager projectListManager)
         {
             ProjectListManager = projectListManager;
         }

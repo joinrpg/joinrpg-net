@@ -17,15 +17,15 @@ namespace JoinRpg.Web.Models
         public bool ShowSchedule { get; set; }
     }
 
-  public class PlayerMenuViewModel : MenuViewModelBase
-  {
-    public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
-    public bool PlotPublished { get; set; }
-  }
+    public class PlayerMenuViewModel : MenuViewModelBase
+    {
+        public ICollection<ClaimShortListItemViewModel> Claims { get; set; }
+        public bool PlotPublished { get; set; }
+    }
 
-  public class MasterMenuViewModel : MenuViewModelBase
-  {
-    public ProjectAcl AccessToProject { get; set; }
-    public bool CheckInModuleEnabled { get; set; }
-  }
+    public class MasterMenuViewModel : MenuViewModelBase
+    {
+        public ProjectAcl AccessToProject { get; set; }
+        public bool CheckInModuleEnabled { get; set; }
+    }
 }

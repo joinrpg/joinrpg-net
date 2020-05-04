@@ -2,7 +2,8 @@
 // ReSharper disable InconsistentNaming
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// PSCB payment methods

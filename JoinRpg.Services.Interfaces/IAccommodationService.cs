@@ -64,7 +64,7 @@ namespace JoinRpg.Services.Interfaces
         Task UnOccupyAll(int projectId);
     }
 
-    public class OccupyRequest 
+    public class OccupyRequest
     {
         public int ProjectId { get; set; }
         public int RoomId { get; set; }

@@ -1,6 +1,6 @@
 namespace Joinrpg.Web.Identity
 {
-    public class JoinIdentityUser 
+    public class JoinIdentityUser
     {
         public int Id { get; internal set; }
         public string UserName { get; set; }

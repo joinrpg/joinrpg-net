@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class ObsoleteToActive : DbMigration
     {
         public override void Up()
@@ -11,7 +11,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             DropColumn("dbo.PlotElements", "IsObsolete");
             DropColumn("dbo.PlotFolders", "IsObsolete");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.PlotFolders", "IsObsolete", c => c.Boolean(nullable: false));

@@ -132,7 +132,7 @@ namespace JoinRpg.Services.Impl
                     throw new ArgumentOutOfRangeException(nameof(projectType));
             }
         }
-        
+
         public async Task AddCharacterGroup(int projectId,
             string name,
             bool isPublic,
@@ -176,7 +176,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-       
+
 
         public async Task MoveCharacterGroup(int currentUserId,
             int projectId,
@@ -235,7 +235,7 @@ namespace JoinRpg.Services.Impl
             {
                 throw new NoAccessToProjectException(project, CurrentUserId);
             }
-            
+
 
             var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == CurrentUserId);
             if (acl == null)
@@ -321,7 +321,7 @@ namespace JoinRpg.Services.Impl
 
             foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
             {
-                if (character.ParentCharacterGroupIds.Except(new[] {characterGroupId}).Any())
+                if (character.ParentCharacterGroupIds.Except(new[] { characterGroupId }).Any())
                 {
                     continue;
                 }

@@ -68,7 +68,7 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, new GameFieldCreateViewModel());
         }
 
-        public async Task<T> FillFailedModel<T>(T model) where T:class, IFieldNavigationAware
+        public async Task<T> FillFailedModel<T>(T model) where T : class, IFieldNavigationAware
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -78,7 +78,7 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, model);
         }
 
-        public async Task<FieldSettingsViewModel> FillFailedSettingsModel(FieldSettingsViewModel model) 
+        public async Task<FieldSettingsViewModel> FillFailedSettingsModel(FieldSettingsViewModel model)
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -113,7 +113,7 @@ namespace JoinRpg.WebPortal.Managers
             {
                 return null;
             }
-            
+
             var viewModel = new FieldSettingsViewModel
             {
                 NameField = project.Details.CharacterNameField?.ProjectFieldId ?? -1,
@@ -149,8 +149,8 @@ namespace JoinRpg.WebPortal.Managers
         {
             await Service.SetFieldSettingsAsync(new FieldSettingsRequest()
             {
-                DescriptionField = viewModel.DescriptionField > 0 ?  viewModel.DescriptionField : (int ?)null,
-                NameField = viewModel.NameField > 0 ? viewModel.NameField : (int ?)null,
+                DescriptionField = viewModel.DescriptionField > 0 ? viewModel.DescriptionField : (int?)null,
+                NameField = viewModel.NameField > 0 ? viewModel.NameField : (int?)null,
                 LegacyModelEnabled = viewModel.LegacyModelEnabled,
                 ProjectId = CurrentProject.ProjectId,
             });
@@ -161,11 +161,11 @@ namespace JoinRpg.WebPortal.Managers
             string notSelectedName = null
             )
         {
-            var list =  enumerable.Select(field => new JoinSelectListItem()
+            var list = enumerable.Select(field => new JoinSelectListItem()
             {
                 Value = field.ProjectFieldId,
                 Text = field.FieldName,
-                
+
             }).ToList();
 
             if (notSelectedName != null)
@@ -208,7 +208,7 @@ namespace JoinRpg.WebPortal.Managers
 
         private T FillFromProject<T>(
             Project project,
-            T viewModel) where T: IFieldNavigationAware
+            T viewModel) where T : IFieldNavigationAware
         {
             viewModel.SetNavigation(GetNavigation(FieldNavigationPage.Unknown, project));
             viewModel.ProjectId = project.ProjectId;

@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Receipt item
@@ -74,11 +75,11 @@ namespace PscbApi.Models {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Price < MinPrice)
-                yield return new ValidationResult($"{nameof(Price)} could not be less than {MinPrice}", new []{ nameof(Price) });
+                yield return new ValidationResult($"{nameof(Price)} could not be less than {MinPrice}", new[] { nameof(Price) });
             if (Quantity < 1)
-                yield return new ValidationResult($"{nameof(Quantity)} could not be less than 1", new []{ nameof(Quantity) });
+                yield return new ValidationResult($"{nameof(Quantity)} could not be less than 1", new[] { nameof(Quantity) });
             if (TotalPrice < MinPrice)
-                yield return new ValidationResult($"{nameof(TotalPrice)} could not be less than {MinPrice}", new []{ nameof(TotalPrice) });
+                yield return new ValidationResult($"{nameof(TotalPrice)} could not be less than {MinPrice}", new[] { nameof(TotalPrice) });
         }
     }
 }

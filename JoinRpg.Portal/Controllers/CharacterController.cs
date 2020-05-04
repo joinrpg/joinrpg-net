@@ -109,7 +109,7 @@ namespace JoinRpg.Portal.Controllers
                     viewModel.IsHot);
 
                 return RedirectToAction("Details",
-                    new {viewModel.ProjectId, viewModel.CharacterId});
+                    new { viewModel.ProjectId, viewModel.CharacterId });
             }
             catch (Exception exception)
             {
@@ -161,7 +161,7 @@ namespace JoinRpg.Portal.Controllers
                 if (viewModel.ContinueCreating)
                 {
                     return RedirectToAction("Create",
-                        new {viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating});
+                        new { viewModel.ProjectId, characterGroupId, viewModel.ContinueCreating });
                 }
 
 

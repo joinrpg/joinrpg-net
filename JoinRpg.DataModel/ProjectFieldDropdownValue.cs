@@ -6,7 +6,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global used by LINQ
-    public class ProjectFieldDropdownValue: IDeletableSubEntity, IProjectEntity, IValidatableObject
+    public class ProjectFieldDropdownValue : IDeletableSubEntity, IProjectEntity, IValidatableObject
     {
         public int ProjectFieldDropdownValueId { get; set; }
         public int ProjectFieldId { get; set; }

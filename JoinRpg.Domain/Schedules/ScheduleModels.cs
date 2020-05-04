@@ -17,7 +17,7 @@ namespace JoinRpg.Domain.Schedules
     public class ProgramItemPlaced
     {
         public ProgramItemPlaced(ProgramItem programItem, List<ScheduleBuilder.ProgramItemSlot> slots)
-        :this (programItem, slots.Select(x => x.Room).ToList(), slots.Select(x => x.TimeSlot).ToList())
+        : this(programItem, slots.Select(x => x.Room).ToList(), slots.Select(x => x.TimeSlot).ToList())
         {
         }
 

@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
         public async Task<IEnumerable<ProjectHeader>> GetActiveProjects()
         {
             return (await ProjectRepository.GetMyActiveProjectsAsync(User.GetUserIdOrDefault().Value)).Select(
-                p => new ProjectHeader {ProjectId = p.ProjectId, ProjectName = p.ProjectName});
+                p => new ProjectHeader { ProjectId = p.ProjectId, ProjectName = p.ProjectName });
         }
     }
 }

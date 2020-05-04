@@ -17,7 +17,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var allProjects =  await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserAccessor.UserId);
+            var allProjects = await _projectRepository.GetActiveProjectsWithClaimCount(CurrentUserAccessor.UserId);
 
             var projects =
                 allProjects
@@ -30,7 +30,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
 
         public ProjectListController(
             IProjectRepository projectRepository,
-            ICurrentUserAccessor currentUserAccessor) 
+            ICurrentUserAccessor currentUserAccessor)
         {
             CurrentUserAccessor = currentUserAccessor;
             _projectRepository = projectRepository;

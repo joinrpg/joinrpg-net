@@ -7,7 +7,7 @@ using JoinRpg.Helpers;
 namespace JoinRpg.DataModel
 {
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by LINQ
-    public class FinanceOperation: IProjectEntity, IValidatableObject
+    public class FinanceOperation : IProjectEntity, IValidatableObject
     {
         public int ProjectId { get; set; }
         public virtual Project Project { get; set; }
@@ -61,7 +61,7 @@ namespace JoinRpg.DataModel
                 case FinanceOperationType.TransferFrom:
                     if (PaymentTypeId != null)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must not have payment type specified", new []{ nameof(PaymentTypeId) });
+                        yield return new ValidationResult($"Operation type {OperationType} must not have payment type specified", new[] { nameof(PaymentTypeId) });
                     }
                     break;
                 case FinanceOperationType.Submit:
@@ -69,7 +69,7 @@ namespace JoinRpg.DataModel
                 case FinanceOperationType.Refund:
                     if (PaymentTypeId == null)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must have payment type specified", new []{ nameof(PaymentTypeId) });
+                        yield return new ValidationResult($"Operation type {OperationType} must have payment type specified", new[] { nameof(PaymentTypeId) });
                     }
                     break;
                 default:
@@ -82,17 +82,17 @@ namespace JoinRpg.DataModel
                 case FinanceOperationType.FeeChange:
                     if (MoneyAmount != 0)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount", new []{ nameof(MoneyAmount) });
+                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount", new[] { nameof(MoneyAmount) });
                     }
                     if (FeeChange == 0)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must have fee change not equal to zero", new []{ nameof(FeeChange) });
+                        yield return new ValidationResult($"Operation type {OperationType} must have fee change not equal to zero", new[] { nameof(FeeChange) });
                     }
                     break;
                 case FinanceOperationType.PreferentialFeeRequest:
                     if (MoneyAmount != 0 || FeeChange != 0)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount or fee change", new []{ nameof(MoneyAmount), nameof(FeeChange) });
+                        yield return new ValidationResult($"Operation type {OperationType} must not have money amount or fee change", new[] { nameof(MoneyAmount), nameof(FeeChange) });
                     }
                     break;
                 case FinanceOperationType.Submit:
@@ -100,14 +100,14 @@ namespace JoinRpg.DataModel
                 case FinanceOperationType.TransferFrom:
                     if (MoneyAmount <= 0)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must have positive money amount", new []{ nameof(MoneyAmount) });
+                        yield return new ValidationResult($"Operation type {OperationType} must have positive money amount", new[] { nameof(MoneyAmount) });
                     }
                     break;
                 case FinanceOperationType.Refund:
                 case FinanceOperationType.TransferTo:
                     if (MoneyAmount >= 0)
                     {
-                        yield return new ValidationResult($"Operation type {OperationType} must have negative money amount", new []{ nameof(MoneyAmount) });
+                        yield return new ValidationResult($"Operation type {OperationType} must have negative money amount", new[] { nameof(MoneyAmount) });
                     }
                     break;
                 default:
@@ -116,7 +116,7 @@ namespace JoinRpg.DataModel
 
             if (LinkedClaimId == null && (OperationType == FinanceOperationType.TransferTo || OperationType == FinanceOperationType.TransferFrom))
             {
-                yield return new ValidationResult($"Operation of type {OperationType} must be linked with another claim", new []{ nameof(LinkedClaimId) });
+                yield return new ValidationResult($"Operation of type {OperationType} must be linked with another claim", new[] { nameof(LinkedClaimId) });
             }
         }
 

@@ -18,10 +18,10 @@ namespace JoinRpg.Portal.Helpers
                 return i;
             }
 
-            var projectIdRawValue = ((ValueProviderResult) item).Values;
+            var projectIdRawValue = ((ValueProviderResult)item).Values;
             if (projectIdRawValue.GetType().IsArray)
             {
-                return int.Parse(((string[]) projectIdRawValue)[0]);
+                return int.Parse(((string[])projectIdRawValue)[0]);
             }
             else
             {

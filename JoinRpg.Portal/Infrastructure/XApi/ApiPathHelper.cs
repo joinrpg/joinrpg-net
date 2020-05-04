@@ -1,4 +1,4 @@
-﻿namespace JoinRpg.Portal.Infrastructure
+namespace JoinRpg.Portal.Infrastructure
 {
     internal static class ApiPathHelper
     {

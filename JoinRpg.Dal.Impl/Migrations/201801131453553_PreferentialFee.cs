@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class PreferentialFee : DbMigration
     {
         public override void Up()
@@ -12,7 +12,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.ProjectDetails", "PreferentialFeeConditions_Contents", c => c.String());
             AddColumn("dbo.ProjectFeeSettings", "PreferentialFee", c => c.Int(nullable: true));
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.ProjectFeeSettings", "PreferentialFee");

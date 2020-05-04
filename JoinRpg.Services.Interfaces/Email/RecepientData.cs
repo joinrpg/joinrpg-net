@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 
 namespace JoinRpg.Services.Interfaces.Email
 {
-    public sealed class RecepientData 
+    public sealed class RecepientData
     {
         [NotNull]
         public string DisplayName { get; }

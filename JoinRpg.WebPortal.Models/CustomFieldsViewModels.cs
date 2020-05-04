@@ -11,30 +11,30 @@ using JoinRpg.Web.Helpers;
 
 namespace JoinRpg.Web.Models
 {
-  public class FieldPossibleValueViewModel
-  {
-    public FieldPossibleValueViewModel(ProjectFieldDropdownValue value, bool hasPrice, bool selected = false)
+    public class FieldPossibleValueViewModel
     {
-      ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
-      DescriptionPlainText = value.Description.ToPlainText();
-      Label = value.Label;
-      DescriptionHtml = value.Description.ToHtmlString();
-      MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
-      SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
+        public FieldPossibleValueViewModel(ProjectFieldDropdownValue value, bool hasPrice, bool selected = false)
+        {
+            ProjectFieldDropdownValueId = value.ProjectFieldDropdownValueId;
+            DescriptionPlainText = value.Description.ToPlainText();
+            Label = value.Label;
+            DescriptionHtml = value.Description.ToHtmlString();
+            MasterDescriptionHtml = value.MasterDescription.ToHtmlString();
+            SpecialGroupId = value.CharacterGroup?.CharacterGroupId;
             Price = value.Price;
             HasPrice = hasPrice;
             Selected = selected;
-    }
+        }
 
-    public int? SpecialGroupId { get; }
+        public int? SpecialGroupId { get; }
 
-    public int ProjectFieldDropdownValueId { get; }
+        public int ProjectFieldDropdownValueId { get; }
 
-    public JoinHtmlString DescriptionPlainText { get; }
+        public JoinHtmlString DescriptionPlainText { get; }
 
-    public string Label { get; }
-    public JoinHtmlString DescriptionHtml { get; }
-    public JoinHtmlString MasterDescriptionHtml { get; }
+        public string Label { get; }
+        public JoinHtmlString DescriptionHtml { get; }
+        public JoinHtmlString MasterDescriptionHtml { get; }
 
         /// <summary>
         /// Value's price as specified in value's definition
@@ -47,7 +47,7 @@ namespace JoinRpg.Web.Models
         public bool HasPrice { get; }
 
         public bool Selected { get; }
-  }
+    }
 
     public enum FieldSpecialLabelView
     {
@@ -59,33 +59,33 @@ namespace JoinRpg.Web.Models
         HasPlugin,
     }
 
-  //Actually most of this logic should be moved to Domain
-  public class FieldValueViewModel
-  {
-    public int ProjectFieldId { get; }
+    //Actually most of this logic should be moved to Domain
+    public class FieldValueViewModel
+    {
+        public int ProjectFieldId { get; }
 
         public List<FieldSpecialLabelView> Labels { get; } = new List<FieldSpecialLabelView>();
 
-    public ProjectFieldViewType FieldViewType { get; }
-    public bool CanView { get; }
-    public bool CanEdit { get; }
+        public ProjectFieldViewType FieldViewType { get; }
+        public bool CanView { get; }
+        public bool CanEdit { get; }
 
-    public bool IsPlayerVisible { get; }
+        public bool IsPlayerVisible { get; }
 
-    public bool HasMasterAccess { get; }
+        public bool HasMasterAccess { get; }
 
-    public string Value { get; }
+        public string Value { get; }
 
-    public bool HasValue { get; }
+        public bool HasValue { get; }
 
-    public JoinHtmlString DisplayString { get; }
-    public string FieldName { get; }
+        public JoinHtmlString DisplayString { get; }
+        public string FieldName { get; }
 
-    public bool IsDeleted { get; }
+        public bool IsDeleted { get; }
 
-    public JoinHtmlString Description { get; }
+        public JoinHtmlString Description { get; }
 
-      public JoinHtmlString MasterDescription { get; }
+        public JoinHtmlString MasterDescription { get; }
 
         /// <summary>
         /// Field's price as specified in field's definition
@@ -107,16 +107,16 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public int Fee { get; }
 
-    public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
-    [NotNull]
-    public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
-    [NotNull]
-    public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
+        public string FieldClientId => $"{HtmlIdPrefix}{ProjectFieldId}";
+        [NotNull]
+        public IReadOnlyList<FieldPossibleValueViewModel> ValueList { get; }
+        [NotNull]
+        public IReadOnlyList<FieldPossibleValueViewModel> PossibleValueList { get; }
 
-      public FieldValueViewModel(
-          CustomFieldsViewModel model,
-          [NotNull] FieldWithValue ch,
-          ILinkRenderer renderer)
+        public FieldValueViewModel(
+            CustomFieldsViewModel model,
+            [NotNull] FieldWithValue ch,
+            ILinkRenderer renderer)
         {
             if (ch == null) throw new ArgumentNullException(nameof(ch));
 
@@ -202,16 +202,16 @@ namespace JoinRpg.Web.Models
 
         public MandatoryStatusViewType MandatoryStatus { get; }
 
-    public FieldBoundToViewModel FieldBound { get; }
-    public int ProjectId { get; }
+        public FieldBoundToViewModel FieldBound { get; }
+        public int ProjectId { get; }
 
-    public const string HtmlIdPrefix = "field_";
+        public const string HtmlIdPrefix = "field_";
 
-    /// <summary>
-    /// Value for checkbox filelds only
-    /// </summary>
-    public bool IsCheckboxSet() => !string.IsNullOrWhiteSpace(Value);
-  }
+        /// <summary>
+        /// Value for checkbox filelds only
+        /// </summary>
+        public bool IsCheckboxSet() => !string.IsNullOrWhiteSpace(Value);
+    }
 
     public class CustomFieldsViewModel
     {
@@ -295,7 +295,7 @@ namespace JoinRpg.Web.Models
                 .Select(ch => CreateFieldValueView(ch, renderer))
                 .ToList();
 
-            
+
         }
 
         /// <summary>
@@ -382,13 +382,13 @@ namespace JoinRpg.Web.Models
             return result;
         }
 
-    public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
+        public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
-    [CanBeNull]
-    public FieldValueViewModel FieldById(int projectFieldId)
-    {
-      return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
-    }
+        [CanBeNull]
+        public FieldValueViewModel FieldById(int projectFieldId)
+        {
+            return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
+        }
         [CanBeNull]
         public FieldValueViewModel Field(ProjectField field)
         {

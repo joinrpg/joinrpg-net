@@ -1,12 +1,12 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace JoinRpg.Helpers.Web
 {
-  public static class GravatarExtensions
-  {
-    public static string GravatarHash(this string email)
+    public static class GravatarExtensions
     {
-      return email.ToLowerInvariant().ToHexHash(MD5.Create());
+        public static string GravatarHash(this string email)
+        {
+            return email.ToLowerInvariant().ToHexHash(MD5.Create());
+        }
     }
-  }
 }

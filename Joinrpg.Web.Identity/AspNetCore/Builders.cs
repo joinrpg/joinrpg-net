@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 namespace Joinrpg.Web.Identity.AspNetCore
 {
     internal static class Builders
-    { 
+    {
         public static UserExternalLogin ToUserExternalLogin([NotNull] this UserLoginInfo login)
             => new UserExternalLogin()
             {

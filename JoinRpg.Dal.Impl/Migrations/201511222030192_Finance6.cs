@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class Finance6 : DbMigration
     {
         public override void Up()
@@ -12,7 +12,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateIndex("dbo.PaymentTypes", "UserId");
             AddForeignKey("dbo.PaymentTypes", "UserId", "dbo.Users", "UserId", cascadeDelete: true);
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.PaymentTypes", "UserId", "dbo.Users");

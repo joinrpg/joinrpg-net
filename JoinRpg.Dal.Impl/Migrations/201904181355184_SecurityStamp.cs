@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class SecurityStamp : DbMigration
     {
         public override void Up()
@@ -13,7 +13,7 @@ namespace JoinRpg.Dal.Impl.Migrations
                 c => c.String(nullable: false, defaultValueSql: "CAST(newid() AS varchar(100))")
                 );
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.UserAuthDetails", "AspNetSecurityStamp");

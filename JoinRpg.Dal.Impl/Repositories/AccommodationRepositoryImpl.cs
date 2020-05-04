@@ -56,9 +56,9 @@ namespace JoinRpg.Dal.Impl.Repositories
                 {
                     RoomType = x,
                     // cast to int? required to correctly handle SQL-LINQ nullness
-                    Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?) ar.Subjects.Count)) ?? 0,
+                    Occupied = x.ProjectAccommodations.Sum(room => room.Inhabitants.Sum(ar => (int?)ar.Subjects.Count)) ?? 0,
                     RoomsCount = x.ProjectAccommodations.Count,
-                    ApprovedClaims = x.Desirous.Sum(ar => (int?) ar.Subjects.Count) ?? 0,
+                    ApprovedClaims = x.Desirous.Sum(ar => (int?)ar.Subjects.Count) ?? 0,
                 })
                 .ToListAsync()
                 .ConfigureAwait(false);

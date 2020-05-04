@@ -19,9 +19,9 @@ namespace JoinRpg.Portal.Controllers
         {
             var user = await UserRepository.GetById(userId);
 
-            var currentUser =  User.Identity.IsAuthenticated ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
+            var currentUser = User.Identity.IsAuthenticated ? await UserRepository.GetById(CurrentUserAccessor.UserId) : null;
 
-            var accessReason = (AccessReason) user.GetProfileAccess(currentUser);
+            var accessReason = (AccessReason)user.GetProfileAccess(currentUser);
             var userProfileViewModel = new UserProfileViewModel()
             {
                 DisplayName = user.GetDisplayName(),
@@ -58,7 +58,7 @@ namespace JoinRpg.Portal.Controllers
         [HttpGet("user/me")]
         public ActionResult Me()
         {
-            return RedirectToAction("Details", new {UserId = CurrentUserAccessor.UserId });
+            return RedirectToAction("Details", new { UserId = CurrentUserAccessor.UserId });
         }
     }
 }

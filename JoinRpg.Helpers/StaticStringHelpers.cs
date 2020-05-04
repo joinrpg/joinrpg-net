@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -60,7 +60,7 @@ namespace JoinRpg.Helpers
             string prefix)
         {
             return number.StartsWith(prefix)
-                ? (int?) int.Parse(number.Substring(prefix.Length))
+                ? (int?)int.Parse(number.Substring(prefix.Length))
                 : null;
         }
 
@@ -87,7 +87,7 @@ namespace JoinRpg.Helpers
             var result = new byte[str.Length / 2];
             for (int i = 0; i < str.Length; i += 2)
             {
-                result[i / 2] = (byte) (HexCharToInt(str[i + 1]) + HexCharToInt(str[i]) * 16);
+                result[i / 2] = (byte)(HexCharToInt(str[i + 1]) + HexCharToInt(str[i]) * 16);
             }
 
             return result;

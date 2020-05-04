@@ -33,12 +33,12 @@ namespace JoinRpg.Web.Models.Money
         /// <summary>
         /// Creates new Money model with specified value
         /// </summary>
-        public Money(int value) : this(value, null, null) {}
+        public Money(int value) : this(value, null, null) { }
 
         /// <summary>
         /// Creates new Money model with specified value and html Id
         /// </summary>
-        public Money(int value, string htmlId) : this(value, htmlId, null) {}
+        public Money(int value, string htmlId) : this(value, htmlId, null) { }
 
         /// <summary>
         /// Creates new Money model with specified value, html Id and currency css class code

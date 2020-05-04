@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class Forums : DbMigration
     {
         public override void Up()
@@ -13,18 +13,18 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.ForumThreads",
                 c => new
-                    {
-                        ForumThreadId = c.Int(nullable: false, identity: true),
-                        CharacterGroupId = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        Header = c.String(),
-                        CommentDiscussionId = c.Int(nullable: false),
-                        CreatedAt = c.DateTime(nullable: false),
-                        ModifiedAt = c.DateTime(nullable: false),
-                        AuthorUserId = c.Int(nullable: false),
-                        IsVisibleToPlayer = c.Boolean(nullable: false),
-                        Project_ProjectId = c.Int(),
-                    })
+                {
+                    ForumThreadId = c.Int(nullable: false, identity: true),
+                    CharacterGroupId = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    Header = c.String(),
+                    CommentDiscussionId = c.Int(nullable: false),
+                    CreatedAt = c.DateTime(nullable: false),
+                    ModifiedAt = c.DateTime(nullable: false),
+                    AuthorUserId = c.Int(nullable: false),
+                    IsVisibleToPlayer = c.Boolean(nullable: false),
+                    Project_ProjectId = c.Int(),
+                })
                 .PrimaryKey(t => t.ForumThreadId)
                 .ForeignKey("dbo.Users", t => t.AuthorUserId, cascadeDelete: true)
                 .ForeignKey("dbo.CharacterGroups", t => t.CharacterGroupId, cascadeDelete: true)
@@ -36,26 +36,26 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.CommentDiscussionId)
                 .Index(t => t.AuthorUserId)
                 .Index(t => t.Project_ProjectId);
-            
+
             CreateTable(
                 "dbo.CommentDiscussions",
                 c => new
-                    {
-                        CommentDiscussionId = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                    })
+                {
+                    CommentDiscussionId = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.CommentDiscussionId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.UserForumSubscriptions",
                 c => new
-                    {
-                        UserForumSubscriptionId = c.Int(nullable: false, identity: true),
-                        ForumThreadId = c.Int(nullable: false),
-                        UserId = c.Int(nullable: false),
-                    })
+                {
+                    UserForumSubscriptionId = c.Int(nullable: false, identity: true),
+                    ForumThreadId = c.Int(nullable: false),
+                    UserId = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.UserForumSubscriptionId)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .ForeignKey("dbo.ForumThreads", t => t.ForumThreadId, cascadeDelete: true)
@@ -63,10 +63,10 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.UserId);
 
 
-      AddColumn("dbo.Claims", "CommentDiscussionId", c => c.Int(nullable: true));
-      AddColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: true));
-      AddColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: true));
-      Sql(@"
+            AddColumn("dbo.Claims", "CommentDiscussionId", c => c.Int(nullable: true));
+            AddColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: true));
+            AddColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: true));
+            Sql(@"
 SET IDENTITY_INSERT dbo.CommentDiscussions ON;
 GO
 
@@ -88,11 +88,11 @@ GO
 
 SET IDENTITY_INSERT dbo.CommentDiscussions OFF;
 GO");
-      AlterColumn("dbo.Claims", "CommentDiscussionId", c => c.Int(nullable: false));
-      AlterColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: false));
-      AlterColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: false));
+            AlterColumn("dbo.Claims", "CommentDiscussionId", c => c.Int(nullable: false));
+            AlterColumn("dbo.Comments", "CommentDiscussionId", c => c.Int(nullable: false));
+            AlterColumn("dbo.ReadCommentWatermarks", "CommentDiscussionId", c => c.Int(nullable: false));
 
-      CreateIndex("dbo.Claims", "CommentDiscussionId");
+            CreateIndex("dbo.Claims", "CommentDiscussionId");
             CreateIndex("dbo.Comments", "CommentDiscussionId");
             CreateIndex("dbo.ReadCommentWatermarks", "CommentDiscussionId");
             AddForeignKey("dbo.Comments", "CommentDiscussionId", "dbo.CommentDiscussions", "CommentDiscussionId", cascadeDelete: false);
@@ -101,7 +101,7 @@ GO");
             DropColumn("dbo.Comments", "ClaimId");
             DropColumn("dbo.ReadCommentWatermarks", "ClaimId");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.ReadCommentWatermarks", "ClaimId", c => c.Int(nullable: false));

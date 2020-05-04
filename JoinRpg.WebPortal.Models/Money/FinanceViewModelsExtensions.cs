@@ -4,7 +4,8 @@ using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Web.Models.CommonTypes;
 
-namespace JoinRpg.Web.Models {
+namespace JoinRpg.Web.Models
+{
 
     public static class FinanceViewModelsExtensions
     {

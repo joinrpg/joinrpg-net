@@ -120,7 +120,7 @@ namespace JoinRpg.Services.Impl
                         if (paymentType.IsActive)
                             project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
                         // ...but to enable them back he must have admin permissions
-                        else 
+                        else
                             throw new MustBeAdminException();
                     }
                     break;
@@ -437,7 +437,8 @@ namespace JoinRpg.Services.Impl
             if (CurrentUserId == request.Sender)
             {
                 transfer.ResultState = MoneyTransferState.PendingForReceiver;
-            } else if (CurrentUserId == request.Receiver)
+            }
+            else if (CurrentUserId == request.Receiver)
             {
                 transfer.ResultState = MoneyTransferState.PendingForSender;
             }

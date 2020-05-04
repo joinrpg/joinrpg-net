@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class UserPropertiesAuth : DbMigration
     {
         public override void Up()
@@ -9,18 +9,18 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.UserAuthDetails",
                 c => new
-                    {
-                        UserId = c.Int(nullable: false),
-                        LegacyAllRpgInp = c.Int(),
-                        EmailConfirmed = c.Boolean(nullable: false),
-                    })
+                {
+                    UserId = c.Int(nullable: false),
+                    LegacyAllRpgInp = c.Int(),
+                    EmailConfirmed = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.UserId)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId);
-            
+
             DropColumn("dbo.Users", "LegacyAllRpgInp");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.Users", "LegacyAllRpgInp", c => c.Int());

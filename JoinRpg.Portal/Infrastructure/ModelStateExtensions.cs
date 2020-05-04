@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace JoinRpg.Portal.Infrastructure
 {
-internal static class ModelStateExtensions
+    internal static class ModelStateExtensions
     {
         //TODO messages from resources
         public static void AddException(this ModelStateDictionary dict, Exception exception)

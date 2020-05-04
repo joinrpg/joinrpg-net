@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class MoreRightsForAcl : DbMigration
     {
         public override void Up()
@@ -12,7 +12,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.ProjectAcls", "CanGrantRights", c => c.Boolean(nullable: false));
             DropColumn("dbo.Projects", "CreatorUserId");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.Projects", "CreatorUserId", c => c.Int(nullable: false));

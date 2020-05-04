@@ -45,7 +45,7 @@ namespace JoinRpg.Web.Models.Money
             if (Receiver == Sender)
             {
                 yield return new ValidationResult("Нельзя принять деньги у самого себя",
-                    new[] {nameof(Sender), nameof(Receiver)});
+                    new[] { nameof(Sender), nameof(Receiver) });
             }
         }
     }

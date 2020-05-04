@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class ResponsibleMaster : DbMigration
     {
         public override void Up()
@@ -13,7 +13,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddForeignKey("dbo.CharacterGroups", "ResponsibleMasterUserId", "dbo.Users", "UserId");
             AddForeignKey("dbo.Claims", "ResponsibleMasterUserId", "dbo.Users", "UserId");
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.Claims", "ResponsibleMasterUserId", "dbo.Users");

@@ -10,7 +10,7 @@ using JoinRpg.DataModel.Finances;
 namespace JoinRpg.Dal.Impl.Repositories
 {
     [UsedImplicitly]
-    internal class FinanceReportRepositoryImpl :GameRepositoryImplBase, IFinanceReportRepository
+    internal class FinanceReportRepositoryImpl : GameRepositoryImplBase, IFinanceReportRepository
     {
         public FinanceReportRepositoryImpl(MyDbContext ctx) : base(ctx)
         {

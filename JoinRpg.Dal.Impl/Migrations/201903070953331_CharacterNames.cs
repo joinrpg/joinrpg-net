@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class CharacterNames : DbMigration
     {
         public override void Up()
@@ -93,9 +93,9 @@ WHERE FieldName LIKE '$$$Description'
             DropColumn("dbo.Projects", "ProjectFieldsOrdering");
             DropColumn("dbo.ProjectDetails", "AllrpgId");
             DropColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer");
-            
+
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.ProjectFields", "CharacterGroupId", c => c.Int(nullable: false));

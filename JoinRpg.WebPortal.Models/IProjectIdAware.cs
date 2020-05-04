@@ -1,7 +1,7 @@
-﻿namespace JoinRpg.Web.Models
+namespace JoinRpg.Web.Models
 {
-  public interface IProjectIdAware
-  {
-    int ProjectId { get; }
-  }
+    public interface IProjectIdAware
+    {
+        int ProjectId { get; }
+    }
 }

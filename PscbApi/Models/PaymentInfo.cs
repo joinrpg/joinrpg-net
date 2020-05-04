@@ -12,7 +12,7 @@ namespace PscbApi.Models
         /// Query status
         /// </summary>
         [JsonProperty("status")]
-        public PaymentInfoQueryStatus Status { get;set; }
+        public PaymentInfoQueryStatus Status { get; set; }
 
         /// <summary>
         /// Error code

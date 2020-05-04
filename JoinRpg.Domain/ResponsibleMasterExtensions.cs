@@ -16,7 +16,7 @@ namespace JoinRpg.Domain
 
             if (group.ResponsibleMasterUser != null && includeSelf)
             {
-                return new[] {group.ResponsibleMasterUser};
+                return new[] { group.ResponsibleMasterUser };
             }
             var candidates = new HashSet<CharacterGroup>();
             var removedGroups = new HashSet<CharacterGroup>();
@@ -34,7 +34,7 @@ namespace JoinRpg.Domain
                 if (currentGroup.ResponsibleMasterUserId != null)
                 {
                     candidates.Add(currentGroup);
-                    removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false)); 
+                    removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false));
                     //Some group with set responsible master will shadow out all parents.
                 }
                 else

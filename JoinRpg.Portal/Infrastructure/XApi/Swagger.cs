@@ -80,7 +80,7 @@ namespace JoinRpg.Portal.Infrastructure
 
             }
 
-            
+
         }
     }
 }

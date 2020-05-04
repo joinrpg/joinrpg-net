@@ -215,7 +215,7 @@ namespace JoinRpg.Domain.Test
                 _original.Character.JsonData,
                 "Adding claim should not modify any character fields");
             mock.Character.Groups.Select(g => g.CharacterGroupId).ToList().ShouldBe(
-                (IEnumerable<int>) _original.Character.Groups.Select(g => g.CharacterGroupId)
+                (IEnumerable<int>)_original.Character.Groups.Select(g => g.CharacterGroupId)
                     .ToList(),
                 "Adding claim should not modify any character groups");
             ShouldBeTestExtensions.ShouldBe(claim.JsonData,

@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
-  public class ProblemViewModel
-  {
-    //Mass usage of Display(Name) turns out too slow...
-    private static readonly IDictionary<ClaimProblemType, string> Types = new Dictionary<ClaimProblemType, string>()
+    public class ProblemViewModel
+    {
+        //Mass usage of Display(Name) turns out too slow...
+        private static readonly IDictionary<ClaimProblemType, string> Types = new Dictionary<ClaimProblemType, string>()
     {
       {ClaimProblemType.NoResponsibleMaster, "Не назначен мастер"},
       {ClaimProblemType.InvalidResponsibleMaster, "Неверный мастер"},
@@ -28,21 +28,21 @@ namespace JoinRpg.Web.Models
       {ClaimProblemType.GroupIsBroken, "Группа сломана"},
     };
 
-    public ProblemViewModel(ClaimProblem problem)
-    {
-      ProblemType = Types[problem.ProblemType];
-      ProblemTime = problem.ProblemTime;
-      Severity = problem.Severity;
-      Extra = problem.ExtraInfo;
+        public ProblemViewModel(ClaimProblem problem)
+        {
+            ProblemType = Types[problem.ProblemType];
+            ProblemTime = problem.ProblemTime;
+            Severity = problem.Severity;
+            Extra = problem.ExtraInfo;
+        }
+
+        public string ProblemType { get; }
+
+        public DateTime? ProblemTime { get; }
+
+        public ProblemSeverity Severity { get; }
+
+        public string Extra { get; }
     }
-
-    public string ProblemType { get; }
-
-    public DateTime? ProblemTime { get; }
-
-    public ProblemSeverity Severity { get; }
-
-    public string Extra { get; }
-  }
 
 }

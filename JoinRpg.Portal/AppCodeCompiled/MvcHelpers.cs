@@ -60,7 +60,7 @@ namespace JoinRpg.Portal
             var metadata = self.GetMetadataFor(expression);
             if (metadata.ModelType == typeof(Enum))
             {
-                var e = (Enum) self.GetUntypedModelFor(expression);
+                var e = (Enum)self.GetUntypedModelFor(expression);
                 var dispAttr = e.GetAttribute<DisplayAttribute>();
 
                 return dispAttr == null ? null : dispAttr.Description;
@@ -124,7 +124,7 @@ namespace JoinRpg.Portal
                                   + @" class=""price-value price-RUR"">" + price + "</span>");
         }
 
-        public readonly static string defaultPriceTemplate = @"{0}" + (char) 0x00A0 + (char) 0x20BD;
+        public readonly static string defaultPriceTemplate = @"{0}" + (char)0x00A0 + (char)0x20BD;
 
         /// <summary>
         /// Renders price to a string
@@ -146,7 +146,7 @@ namespace JoinRpg.Portal
         public static TValue GetValue<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
         {
-            return (TValue) self.GetUntypedModelFor(expression);
+            return (TValue)self.GetUntypedModelFor(expression);
         }
 
         public static TModel GetModel<TModel>(this IHtmlHelper<TModel> self)
@@ -162,7 +162,7 @@ namespace JoinRpg.Portal
             self.GetModelExpressionProvider().CreateModelExpression(self.ViewData, expression);
 
         public static ModelMetadata GetMetadataFor<TModel, TValue>(
-            this IHtmlHelper<TModel> self,Expression<Func<TModel, TValue>> expression)
+            this IHtmlHelper<TModel> self, Expression<Func<TModel, TValue>> expression)
             => self.GetModelExplorer(expression).Metadata;
 
         private static object GetUntypedModelFor<TModel, TValue>(
@@ -175,9 +175,10 @@ namespace JoinRpg.Portal
             var selected = count == 0 ? multi2 : (count == 1 ? single : (count < 5 ? multi1 : multi2));
             return count + " " + @selected;
         }
-        
+
         public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request)
         {
-            return new HtmlString(request.Scheme + "://" + request.Host);}
+            return new HtmlString(request.Scheme + "://" + request.Host);
         }
+    }
 }

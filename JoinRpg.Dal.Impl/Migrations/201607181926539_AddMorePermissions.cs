@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class AddMorePermissions : DbMigration
     {
         public override void Up()
@@ -10,7 +10,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.ProjectAcls", "CanManagePlots", c => c.Boolean(nullable: false, defaultValue: true));
             AddColumn("dbo.ProjectDetails", "PublishPlot", c => c.Boolean(nullable: false, defaultValue: false));
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.ProjectDetails", "PublishPlot");

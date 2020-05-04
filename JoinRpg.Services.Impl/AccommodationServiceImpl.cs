@@ -97,7 +97,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<T> CreateRoomEmail<T>(ProjectAccommodation room, Claim[] changed)
-        where T: RoomEmailBase, new()
+        where T : RoomEmailBase, new()
         {
             return new T()
             {
@@ -125,7 +125,7 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == request.ProjectId && r.Id == accommodationRequest.AccommodationId)
                 .FirstOrDefaultAsync();
 
-            await UnOccupyRoomImpl(room, new[] {accommodationRequest});
+            await UnOccupyRoomImpl(room, new[] { accommodationRequest });
         }
 
         private async Task UnOccupyRoomImpl(ProjectAccommodation room,

@@ -3,7 +3,8 @@
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Additional data for <see cref="PaymentMessage"/>

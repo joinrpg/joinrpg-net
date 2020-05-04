@@ -1,7 +1,7 @@
-﻿namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class RegistratonField : DbMigration
     {
         public override void Up()
@@ -12,7 +12,7 @@
             AddColumn("dbo.ProjectDetails", "CheckInProgress", c => c.Boolean(nullable: false));
             AddColumn("dbo.ProjectDetails", "AllowSecondRoles", c => c.Boolean(nullable: false));
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.ProjectDetails", "AllowSecondRoles");

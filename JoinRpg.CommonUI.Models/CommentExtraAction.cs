@@ -9,29 +9,36 @@ namespace JoinRpg.CommonUI.Models
         [UsedImplicitly]
         ApproveFinance,
 
-        [Display(Name = "Финансовая операция отклонена", ShortName = "отмечено")][UsedImplicitly]
+        [Display(Name = "Финансовая операция отклонена", ShortName = "отмечено")]
+        [UsedImplicitly]
         RejectFinance,
 
-        [Display(Name = "Заявка одобрена мастером", ShortName = "одобрена")] [UsedImplicitly]
+        [Display(Name = "Заявка одобрена мастером", ShortName = "одобрена")]
+        [UsedImplicitly]
         ApproveByMaster,
 
-        [Display(Name = "Заявка отклонена мастером", ShortName = "отклонена")] [UsedImplicitly]
+        [Display(Name = "Заявка отклонена мастером", ShortName = "отклонена")]
+        [UsedImplicitly]
         DeclineByMaster,
 
         [Display(Name = "Заявка восстановлена мастером", ShortName = "восстановлена")]
         [UsedImplicitly]
         RestoreByMaster,
 
-        [Display(Name = "Заявка перемещена мастером", ShortName = "изменена")] [UsedImplicitly]
+        [Display(Name = "Заявка перемещена мастером", ShortName = "изменена")]
+        [UsedImplicitly]
         MoveByMaster,
 
-        [Display(Name = "Заявка отозвана игроком", ShortName = "отозвана")] [UsedImplicitly]
+        [Display(Name = "Заявка отозвана игроком", ShortName = "отозвана")]
+        [UsedImplicitly]
         DeclineByPlayer,
 
-        [Display(Name = "Ответственный мастер изменен", ShortName = "изменена")] [UsedImplicitly]
+        [Display(Name = "Ответственный мастер изменен", ShortName = "изменена")]
+        [UsedImplicitly]
         ChangeResponsible,
 
-        [Display(Name = "Новая заявка", ShortName = "подана")] [UsedImplicitly]
+        [Display(Name = "Новая заявка", ShortName = "подана")]
+        [UsedImplicitly]
         NewClaim,
 
         [Display(Name = "Заявка поставлена в лист ожидания", ShortName = "изменена")]
@@ -46,13 +53,16 @@ namespace JoinRpg.CommonUI.Models
         [UsedImplicitly]
         CheckedIn,
 
-        [Display(Name = "Выпущен второй ролью", ShortName = "изменена")] [UsedImplicitly]
+        [Display(Name = "Выпущен второй ролью", ShortName = "изменена")]
+        [UsedImplicitly]
         SecondRole,
 
-        [Display(Name = "Игрок вышел из игры", ShortName = "изменена")] [UsedImplicitly]
+        [Display(Name = "Игрок вышел из игры", ShortName = "изменена")]
+        [UsedImplicitly]
         OutOfGame,
 
-        [Display(Name = "Запрос льготного взноса", ShortName = "изменена")] [UsedImplicitly]
+        [Display(Name = "Запрос льготного взноса", ShortName = "изменена")]
+        [UsedImplicitly]
         RequestPreferential,
     }
 }

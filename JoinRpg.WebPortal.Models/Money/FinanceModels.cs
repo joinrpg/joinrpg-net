@@ -117,7 +117,7 @@ namespace JoinRpg.Web.Models
                     !AcceptContract,
                     () => new ValidationResult(
                         "Необходимо принять соглашение для проведения оплаты",
-                        new []{ nameof(AcceptContract) }));
+                        new[] { nameof(AcceptContract) }));
     }
 
     public class SubmitPaymentViewModel : PaymentViewModelBase
@@ -142,7 +142,7 @@ namespace JoinRpg.Web.Models
 
         [Required]
         public int ClaimId { get; set; }
-        
+
         [Display(Name = "Исходная заявка")]
         public string ClaimName { get; }
 
@@ -185,7 +185,7 @@ namespace JoinRpg.Web.Models
         /// </summary>
         public IReadOnlyCollection<RecipientClaimViewModel> Claims { get; set; }
 
-        public PaymentTransferViewModel() {}
+        public PaymentTransferViewModel() { }
 
         public PaymentTransferViewModel(Claim claim, IEnumerable<Claim> claims) : base()
         {
@@ -203,7 +203,7 @@ namespace JoinRpg.Web.Models
                 .ToArray();
         }
     }
-    
+
 
 
     public class RecipientClaimViewModel : JoinSelectListItem
@@ -221,7 +221,7 @@ namespace JoinRpg.Web.Models
             ClaimId = source.ClaimId;
             Name = source.Name;
             Player = source.Player;
-            Status = ((ClaimStatusView) source.ClaimStatus).GetDisplayName();
+            Status = ((ClaimStatusView)source.ClaimStatus).GetDisplayName();
 
             Text = $"{Name} ({Status}" + (Player != null ? $", {Player.GetDisplayName()}" : "") + ")";
             Value = ClaimId;
@@ -243,12 +243,12 @@ namespace JoinRpg.Web.Models
         Online = PaymentTypeKind.Online,
     }
 
-  public abstract class PaymentTypeViewModelBase
-  {
-    public int ProjectId { get; set; }
-    [Display(Name = "Название метода оплаты"), Required]
-    public string Name { get; set; }
-  }
+    public abstract class PaymentTypeViewModelBase
+    {
+        public int ProjectId { get; set; }
+        [Display(Name = "Название метода оплаты"), Required]
+        public string Name { get; set; }
+    }
 
     public class PaymentTypeViewModel : PaymentTypeViewModelBase
     {
@@ -266,7 +266,7 @@ namespace JoinRpg.Web.Models
         {
             PaymentTypeId = source.PaymentTypeId;
             IsDefault = source.IsDefault;
-            TypeKind = (PaymentTypeKindViewModel) source.TypeKind;
+            TypeKind = (PaymentTypeKindViewModel)source.TypeKind;
             Name = source.GetDisplayName();
             ProjectId = source.ProjectId;
             UserId = source.UserId;
@@ -274,69 +274,69 @@ namespace JoinRpg.Web.Models
         }
     }
 
-  public class EditPaymentTypeViewModel : PaymentTypeViewModelBase
-  {
-    [Display(Name = "Предлагать по умолчанию")]
-    public bool IsDefault { get; set; }
-    public int PaymentTypeId { get; set; }
-  }
+    public class EditPaymentTypeViewModel : PaymentTypeViewModelBase
+    {
+        [Display(Name = "Предлагать по умолчанию")]
+        public bool IsDefault { get; set; }
+        public int PaymentTypeId { get; set; }
+    }
 
-  public class CreatePaymentTypeViewModel : PaymentTypeViewModelBase
-  {
-    
-    [Display(Name = "Мастер", Description = "Укажите здесь мастера, которому принадлежит карточка, на которую будут переводить деньги")]
-    public int UserId { get; set; }
-    [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters { get; set; }
-  }
+    public class CreatePaymentTypeViewModel : PaymentTypeViewModelBase
+    {
 
-  /// <summary>
-  /// Used for project finance configuration
-  /// </summary>
-  public class FinanceSetupViewModel
-  {
-      public string ProjectName { get; }
+        [Display(Name = "Мастер", Description = "Укажите здесь мастера, которому принадлежит карточка, на которую будут переводить деньги")]
+        public int UserId { get; set; }
+        [ReadOnly(true)]
+        public IEnumerable<MasterListItemViewModel> Masters { get; set; }
+    }
 
-      public IReadOnlyList<PaymentTypeListItemViewModel> PaymentTypes { get; }
+    /// <summary>
+    /// Used for project finance configuration
+    /// </summary>
+    public class FinanceSetupViewModel
+    {
+        public string ProjectName { get; }
 
-      public IReadOnlyList<ProjectFeeSettingListItemViewModel> FeeSettings { get; }
+        public IReadOnlyList<PaymentTypeListItemViewModel> PaymentTypes { get; }
 
-      public bool HasEditAccess { get; }
+        public IReadOnlyList<ProjectFeeSettingListItemViewModel> FeeSettings { get; }
 
-      public int ProjectId { get; }
+        public bool HasEditAccess { get; }
 
-      [ReadOnly(true)]
-      public IEnumerable<MasterListItemViewModel> Masters { get; }
+        public int ProjectId { get; }
 
-      public string CurrentUserToken { get; }
+        [ReadOnly(true)]
+        public IEnumerable<MasterListItemViewModel> Masters { get; }
 
-      public FinanceGlobalSettingsViewModel GlobalSettings { get; }
+        public string CurrentUserToken { get; }
 
-      [ReadOnly(true)]
-      public bool IsAdmin { get; }
+        public FinanceGlobalSettingsViewModel GlobalSettings { get; }
 
-      public FinanceSetupViewModel(Project project, int currentUserId, bool isAdmin, User virtualPaymentsUser)
-      {
-          IsAdmin = isAdmin;
-          ProjectName = project.ProjectName;
-          ProjectId = project.ProjectId;
-          HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
+        [ReadOnly(true)]
+        public bool IsAdmin { get; }
 
-          var potentialCashPaymentTypes =
-              project.ProjectAcls
-                  .Where(
-                      acl => project.PaymentTypes
-                          .Where(pt => pt.TypeKind == PaymentTypeKind.Cash)
-                          .All(pt => pt.UserId != acl.UserId))
-                  .Select(acl => new PaymentTypeListItemViewModel(acl));
+        public FinanceSetupViewModel(Project project, int currentUserId, bool isAdmin, User virtualPaymentsUser)
+        {
+            IsAdmin = isAdmin;
+            ProjectName = project.ProjectName;
+            ProjectId = project.ProjectId;
+            HasEditAccess = project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney);
 
-          var existedPaymentTypes =
-              project.PaymentTypes
-                  .Where(pt => pt.TypeKind != PaymentTypeKind.Online)
-                  .Select(pt => new PaymentTypeListItemViewModel(pt));
+            var potentialCashPaymentTypes =
+                project.ProjectAcls
+                    .Where(
+                        acl => project.PaymentTypes
+                            .Where(pt => pt.TypeKind == PaymentTypeKind.Cash)
+                            .All(pt => pt.UserId != acl.UserId))
+                    .Select(acl => new PaymentTypeListItemViewModel(acl));
 
-          var onlinePaymentTypes = new []
-          {
+            var existedPaymentTypes =
+                project.PaymentTypes
+                    .Where(pt => pt.TypeKind != PaymentTypeKind.Online)
+                    .Select(pt => new PaymentTypeListItemViewModel(pt));
+
+            var onlinePaymentTypes = new[]
+            {
               project.PaymentTypes
                   .Where(pt => pt.TypeKind == PaymentTypeKind.Online)
                   .Select(pt => new PaymentTypeListItemViewModel(pt))
@@ -344,112 +344,112 @@ namespace JoinRpg.Web.Models
                   .Single()
           };
 
-          PaymentTypes =
-              onlinePaymentTypes.Union(
-                  existedPaymentTypes.Union(potentialCashPaymentTypes)
-                      .OrderBy(li => !li.IsActive)
-                      .ThenBy(li => !li.IsDefault)
-                      .ThenBy(li => li.TypeKind != PaymentTypeKindViewModel.Custom)
-                      .ThenBy(li => li.Name))
-                  .ToList();
+            PaymentTypes =
+                onlinePaymentTypes.Union(
+                    existedPaymentTypes.Union(potentialCashPaymentTypes)
+                        .OrderBy(li => !li.IsActive)
+                        .ThenBy(li => !li.IsDefault)
+                        .ThenBy(li => li.TypeKind != PaymentTypeKindViewModel.Custom)
+                        .ThenBy(li => li.Name))
+                    .ToList();
 
-          Masters = project.GetMasterListViewModel();
+            Masters = project.GetMasterListViewModel();
 
-          FeeSettings = project.ProjectFeeSettings
-              .Select(fs => new ProjectFeeSettingListItemViewModel(fs))
-              .ToList();
+            FeeSettings = project.ProjectFeeSettings
+                .Select(fs => new ProjectFeeSettingListItemViewModel(fs))
+                .ToList();
 
-          CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
-              .Token.ToHexString();
+            CurrentUserToken = project.ProjectAcls.Single(acl => acl.UserId == currentUserId)
+                .Token.ToHexString();
 
-          GlobalSettings = new FinanceGlobalSettingsViewModel
-          {
-              ProjectId = ProjectId,
-              WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment,
-              PreferentialFeeEnabled = project.Details.PreferentialFeeEnabled,
-              PreferentialFeeConditions = project.Details.PreferentialFeeConditions.Contents,
-          };
-      }
-  }
+            GlobalSettings = new FinanceGlobalSettingsViewModel
+            {
+                ProjectId = ProjectId,
+                WarnOnOverPayment = project.Details.FinanceWarnOnOverPayment,
+                PreferentialFeeEnabled = project.Details.PreferentialFeeEnabled,
+                PreferentialFeeConditions = project.Details.PreferentialFeeConditions.Contents,
+            };
+        }
+    }
 
-  public class TogglePaymentTypeViewModel : IValidatableObject
-  {
-      public int ProjectId { get; set; }
+    public class TogglePaymentTypeViewModel : IValidatableObject
+    {
+        public int ProjectId { get; set; }
 
-      public int? PaymentTypeId { get; set; }
+        public int? PaymentTypeId { get; set; }
 
-      public PaymentTypeKindViewModel? TypeKind { get; set; }
+        public PaymentTypeKindViewModel? TypeKind { get; set; }
 
-      public int? MasterId { get; set; }
+        public int? MasterId { get; set; }
 
-      /// <inheritdoc />
-      public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-      {
-          if (PaymentTypeId == null && (TypeKind == null || TypeKind != PaymentTypeKindViewModel.Online && MasterId == null))
+        /// <inheritdoc />
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (PaymentTypeId == null && (TypeKind == null || TypeKind != PaymentTypeKindViewModel.Online && MasterId == null))
                 yield return new ValidationResult("Для новых методов оплаты должен быть указан тип и пользователь",
-                    new []{ nameof(PaymentTypeId), nameof(TypeKind), nameof(MasterId) });
-      }
-  }
-
-
-  public class PaymentTypeListItemViewModel
-  {
-    public int? PaymentTypeId { get;  }
-    public int ProjectId { get; }
-
-    [Display(Name="Название")]
-    public string Name { get; }
-
-    public PaymentTypeKindViewModel TypeKind { get; }
-
-    public bool IsActive { get; }
-
-    [Display(Name="Основной")]
-    public bool IsDefault { get; }
-
-    public bool CanBePermanentlyDeleted { get; }
-
-    [Display(Name="Ответственный")]
-    public User Master { get; }
-
-    public PaymentTypeListItemViewModel(PaymentType paymentType)
-    {
-      PaymentTypeId = paymentType.PaymentTypeId;
-      ProjectId = paymentType.ProjectId;
-      TypeKind = (PaymentTypeKindViewModel) paymentType.TypeKind;
-      Master = paymentType.User;
-      Name = TypeKind.GetDisplayName(null, paymentType.Name);
-      IsActive = paymentType.IsActive;
-      IsDefault = paymentType.IsDefault;
-      CanBePermanentlyDeleted = IsActive
-          && TypeKind == PaymentTypeKindViewModel.Custom
-          && paymentType.CanBePermanentlyDeleted;
+                    new[] { nameof(PaymentTypeId), nameof(TypeKind), nameof(MasterId) });
+        }
     }
 
-    public PaymentTypeListItemViewModel(ProjectAcl acl)
-    {
-      PaymentTypeId = null;
-      ProjectId = acl.ProjectId;
-      Name = PaymentTypeKindViewModel.Cash.GetDisplayName();
-      TypeKind = PaymentTypeKindViewModel.Cash;
-      Master = acl.User;
-      IsActive = false;
-      IsDefault = false;
-      CanBePermanentlyDeleted = false;
-    }
 
-    public PaymentTypeListItemViewModel(PaymentTypeKind typeKind, User user, int projectId)
+    public class PaymentTypeListItemViewModel
     {
-        Name = typeKind.GetDisplayName(user);
-        PaymentTypeId = null;
-        ProjectId = projectId;
-        Master = user;
-        TypeKind = (PaymentTypeKindViewModel) typeKind;
-        CanBePermanentlyDeleted = false;
-        IsDefault = false;
-        IsActive = false;
+        public int? PaymentTypeId { get; }
+        public int ProjectId { get; }
+
+        [Display(Name = "Название")]
+        public string Name { get; }
+
+        public PaymentTypeKindViewModel TypeKind { get; }
+
+        public bool IsActive { get; }
+
+        [Display(Name = "Основной")]
+        public bool IsDefault { get; }
+
+        public bool CanBePermanentlyDeleted { get; }
+
+        [Display(Name = "Ответственный")]
+        public User Master { get; }
+
+        public PaymentTypeListItemViewModel(PaymentType paymentType)
+        {
+            PaymentTypeId = paymentType.PaymentTypeId;
+            ProjectId = paymentType.ProjectId;
+            TypeKind = (PaymentTypeKindViewModel)paymentType.TypeKind;
+            Master = paymentType.User;
+            Name = TypeKind.GetDisplayName(null, paymentType.Name);
+            IsActive = paymentType.IsActive;
+            IsDefault = paymentType.IsDefault;
+            CanBePermanentlyDeleted = IsActive
+                && TypeKind == PaymentTypeKindViewModel.Custom
+                && paymentType.CanBePermanentlyDeleted;
+        }
+
+        public PaymentTypeListItemViewModel(ProjectAcl acl)
+        {
+            PaymentTypeId = null;
+            ProjectId = acl.ProjectId;
+            Name = PaymentTypeKindViewModel.Cash.GetDisplayName();
+            TypeKind = PaymentTypeKindViewModel.Cash;
+            Master = acl.User;
+            IsActive = false;
+            IsDefault = false;
+            CanBePermanentlyDeleted = false;
+        }
+
+        public PaymentTypeListItemViewModel(PaymentTypeKind typeKind, User user, int projectId)
+        {
+            Name = typeKind.GetDisplayName(user);
+            PaymentTypeId = null;
+            ProjectId = projectId;
+            Master = user;
+            TypeKind = (PaymentTypeKindViewModel)typeKind;
+            CanBePermanentlyDeleted = false;
+            IsDefault = false;
+            IsActive = false;
+        }
     }
-  }
 
     public abstract class ProjectFeeSettingViewModelBase
     {

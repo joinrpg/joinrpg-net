@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class AddMoneyTransfer : DbMigration
     {
         public override void Up()
@@ -10,19 +10,19 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.MoneyTransfers",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        SenderId = c.Int(nullable: false),
-                        ReceiverId = c.Int(nullable: false),
-                        Amount = c.Int(nullable: false),
-                        ResultState = c.Int(nullable: false),
-                        Created = c.DateTimeOffset(nullable: false, precision: 7),
-                        Changed = c.DateTimeOffset(nullable: false, precision: 7),
-                        CreatedById = c.Int(nullable: false),
-                        ChangedById = c.Int(nullable: false),
-                        OperationDate = c.DateTimeOffset(nullable: false, precision: 7),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    SenderId = c.Int(nullable: false),
+                    ReceiverId = c.Int(nullable: false),
+                    Amount = c.Int(nullable: false),
+                    ResultState = c.Int(nullable: false),
+                    Created = c.DateTimeOffset(nullable: false, precision: 7),
+                    Changed = c.DateTimeOffset(nullable: false, precision: 7),
+                    CreatedById = c.Int(nullable: false),
+                    ChangedById = c.Int(nullable: false),
+                    OperationDate = c.DateTimeOffset(nullable: false, precision: 7),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Users", t => t.ChangedById)
                 .ForeignKey("dbo.Users", t => t.CreatedById)
@@ -34,20 +34,20 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ReceiverId)
                 .Index(t => t.CreatedById)
                 .Index(t => t.ChangedById);
-            
+
             CreateTable(
                 "dbo.TransferTexts",
                 c => new
-                    {
-                        MoneyTransferId = c.Int(nullable: false),
-                        Text_Contents = c.String(),
-                    })
+                {
+                    MoneyTransferId = c.Int(nullable: false),
+                    Text_Contents = c.String(),
+                })
                 .PrimaryKey(t => t.MoneyTransferId)
                 .ForeignKey("dbo.MoneyTransfers", t => t.MoneyTransferId)
                 .Index(t => t.MoneyTransferId);
-            
+
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.TransferTexts", "MoneyTransferId", "dbo.MoneyTransfers");

@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Models.CommonTypes
     }
 
     [Obsolete("JoinSelectListItem")]
-    public class ImprovedSelectListItem 
+    public class ImprovedSelectListItem
     {
         public string ExtraSearch { get; set; }
         public string Subtext { get; set; }

@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class PlotTags2 : DbMigration
     {
         public override void Up()
@@ -11,10 +11,10 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.PlotFolderProjectItemTags",
                 c => new
-                    {
-                        PlotFolder_PlotFolderId = c.Int(nullable: false),
-                        ProjectItemTag_ProjectItemTagId = c.Int(nullable: false),
-                    })
+                {
+                    PlotFolder_PlotFolderId = c.Int(nullable: false),
+                    ProjectItemTag_ProjectItemTagId = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => new { t.PlotFolder_PlotFolderId, t.ProjectItemTag_ProjectItemTagId })
                 .ForeignKey("dbo.PlotFolders", t => t.PlotFolder_PlotFolderId, cascadeDelete: true)
                 .ForeignKey("dbo.ProjectItemTags", t => t.ProjectItemTag_ProjectItemTagId, cascadeDelete: true)
@@ -22,10 +22,10 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ProjectItemTag_ProjectItemTagId);
 
             Sql("DELETE FROM dbo.ProjectItemTags");
-            
+
             DropColumn("dbo.ProjectItemTags", "PlotFolder_PlotFolderId");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.ProjectItemTags", "PlotFolder_PlotFolderId", c => c.Int());

@@ -5,7 +5,7 @@ namespace JoinRpg.Services.Interfaces.Notification
 {
     public class RoomEmailBase : EmailModelBase
     {
-        public IReadOnlyCollection<Claim> Changed{ get; set; }
+        public IReadOnlyCollection<Claim> Changed { get; set; }
         public ProjectAccommodation Room { get; set; }
     }
 

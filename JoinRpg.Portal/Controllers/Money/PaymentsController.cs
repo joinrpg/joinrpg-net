@@ -25,7 +25,7 @@ namespace JoinRpg.Portal.Controllers.Money
         }
 
         private string GetClaimUrl(int projectId, int claimId)
-            => Url.Action("Edit", "Claim", new {projectId, claimId});
+            => Url.Action("Edit", "Claim", new { projectId, claimId });
 
         /// <summary>
         /// Returns payment error view
@@ -126,7 +126,7 @@ namespace JoinRpg.Portal.Controllers.Money
         public async Task<ActionResult> ClaimPaymentSuccessGet(int projectId, int claimId, string orderId)
             => await HandleClaimPaymentRedirect(projectId, claimId, orderId, "",
                 "Ошибка обработки успешного платежа");
-        
+
 
         [HttpPost]
         [Authorize]
@@ -157,7 +157,7 @@ namespace JoinRpg.Portal.Controllers.Money
             try
             {
                 await _payments.UpdateClaimPaymentAsync(projectId, claimId, orderId);
-                return RedirectToAction("Edit", "Claim", new {projectId, claimId});
+                return RedirectToAction("Edit", "Claim", new { projectId, claimId });
             }
             catch (Exception e)
             {

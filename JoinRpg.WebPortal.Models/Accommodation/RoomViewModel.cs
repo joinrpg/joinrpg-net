@@ -90,5 +90,5 @@ namespace JoinRpg.Web.Models.Accommodation
             CanAssignRooms = owner.CanAssignRooms;
         }
     }
-    
+
 }

@@ -10,17 +10,17 @@ using JoinRpg.Services.Interfaces.Email;
 
 namespace JoinRpg.Services.Email.Test
 {
-  
-  public class TestMailGunRecepients
-  {
 
-    [Fact]
-    public void TestRecepientVariables()
+    public class TestMailGunRecepients
     {
-      var mock = new MockedProject();
-      var users = new[] { new RecepientData(mock.Player.GetDisplayName(), mock.Player.Email) };
-      var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
-        users.ToRecipientVariables().ShouldBe(expected);
+
+        [Fact]
+        public void TestRecepientVariables()
+        {
+            var mock = new MockedProject();
+            var users = new[] { new RecepientData(mock.Player.GetDisplayName(), mock.Player.Email) };
+            var expected = JObject.Parse("{" + string.Join(", ", users.Select(r => $"\"{r.Email}\":{{\"name\":\"{r.DisplayName}\"}}")) + "}");
+            users.ToRecipientVariables().ShouldBe(expected);
+        }
     }
-  }
 }
