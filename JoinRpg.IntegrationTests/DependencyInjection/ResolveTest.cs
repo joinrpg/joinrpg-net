@@ -21,7 +21,7 @@ namespace JoinRpg.IntegrationTests.DependencyInjection
             //need to ensure that server was properly initialized before start resolving everything
             _ = applicationFactory.CreateClient();
 
-            serviceProvider = applicationFactory.Server.Host.Services;
+            serviceProvider = applicationFactory.Services;
         }
 
         [Theory]

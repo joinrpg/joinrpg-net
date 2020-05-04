@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using System.Diagnostics;
 
 namespace JoinRpg.Portal
 {
