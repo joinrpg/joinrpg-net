@@ -1,7 +1,8 @@
 // ReSharper disable IdentifierTypo
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Allowed VATs

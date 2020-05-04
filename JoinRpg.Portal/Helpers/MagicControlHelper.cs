@@ -1,4 +1,4 @@
-﻿using JoinRpg.Helpers;
+using JoinRpg.Helpers;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Html;

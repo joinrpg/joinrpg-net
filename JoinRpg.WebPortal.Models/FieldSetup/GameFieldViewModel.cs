@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Models.FieldSetup
         void SetNavigation(FieldNavigationModel fieldNavigation);
     }
 
-    public abstract class GameFieldViewModelBase: IValidatableObject, IFieldNavigationAware
+    public abstract class GameFieldViewModelBase : IValidatableObject, IFieldNavigationAware
     {
         public int ProjectId { get; set; }
 
@@ -64,7 +64,7 @@ namespace JoinRpg.Web.Models.FieldSetup
         public FieldNavigationModel Navigation { get; set; }
 
         public abstract void SetNavigation(FieldNavigationModel navigationModel);
-        
+
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (IsPublic && !CanPlayerView)
@@ -144,15 +144,15 @@ namespace JoinRpg.Web.Models.FieldSetup
             DropdownValues = field.GetOrderedValues()
                 .Select(fv => new GameFieldDropdownValueListItemViewModel(fv))
                 .MarkFirstAndLast();
-            FieldViewType = (ProjectFieldViewType) field.FieldType;
-            FieldBoundTo = (FieldBoundToViewModel) field.FieldBoundTo;
+            FieldViewType = (ProjectFieldViewType)field.FieldType;
+            FieldBoundTo = (FieldBoundToViewModel)field.FieldBoundTo;
             IsActive = field.IsActive;
             HasValueList = field.HasValueList();
             WasEverUsed = field.WasEverUsed;
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
             CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
             IsTimeField = field.IsTimeSlot();
-            
+
         }
 
         public GameFieldEditViewModel()
@@ -203,7 +203,7 @@ namespace JoinRpg.Web.Models.FieldSetup
         }
     }
 
-    public class GameFieldCreateViewModel: GameFieldViewModelBase
+    public class GameFieldCreateViewModel : GameFieldViewModelBase
     {
         [Display(Name = "Тип поля")]
         public ProjectFieldViewType FieldViewType { get; set; }
@@ -370,7 +370,7 @@ namespace JoinRpg.Web.Models.FieldSetup
     /// <summary>
     /// View class for editing dropdown value
     /// </summary>
-    public class GameFieldDropdownValueEditViewModel: GameFieldDropdownValueViewModelBase
+    public class GameFieldDropdownValueEditViewModel : GameFieldDropdownValueViewModelBase
     {
         public bool IsActive { get; set; }
 
@@ -399,7 +399,7 @@ namespace JoinRpg.Web.Models.FieldSetup
     /// <summary>
     /// View class for creating dropdown value
     /// </summary>
-    public class GameFieldDropdownValueCreateViewModel: GameFieldDropdownValueViewModelBase
+    public class GameFieldDropdownValueCreateViewModel : GameFieldDropdownValueViewModelBase
     {
         public GameFieldDropdownValueCreateViewModel(ProjectField field) : base(field)
         {

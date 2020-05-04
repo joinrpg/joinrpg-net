@@ -70,7 +70,7 @@ namespace JoinRpg.Web.Models
         public bool RulesApproved { get; set; }
 
         [Editable(false)]
-        public string RecaptchaPublicKey {get; set; }
+        public string RecaptchaPublicKey { get; set; }
     }
 
     public class ResetPasswordViewModel

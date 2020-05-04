@@ -13,69 +13,69 @@ using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
 {
-  public interface IEntityWithCommentsViewModel
-  {
-    int ProjectId { get; }
-    bool HasMasterAccess { get; }
-    IReadOnlyCollection<CommentViewModel> RootComments { get; }
-    int CommentDiscussionId { get; }
-  }
-
-  public static  class CommentViewModelExtensions
-  {
-    public static List<CommentViewModel> ToCommentTreeViewModel(this CommentDiscussion discussion, int currentUserId)
+    public interface IEntityWithCommentsViewModel
     {
-      return discussion.Comments.Where(comment => comment.ParentCommentId == null)
-        .Select(comment => new CommentViewModel(discussion, comment, currentUserId, 0)).OrderBy(c => c.CreatedTime).ToList();
-    }
-  }
-
-  public class CommentViewModel
-  {
-    public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, int deepLevel)
-    {
-        DeepLevel = deepLevel;
-      IsVisibleToPlayer = comment.IsVisibleToPlayer;
-      HasMasterAccess = comment.Project.HasMasterAccess(currentUserId);
-      CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) ||
-                           comment.Finance?.PaymentType?.UserId == currentUserId;
-      IsCommentByPlayer = comment.IsCommentByPlayer;
-      Author = comment.Author;
-      CreatedTime = comment.CreatedAt;
-      Finance = comment.Finance;
-      CommentText = comment.CommentText.Text.ToHtmlString();
-      CommentId = comment.CommentId;
-      ProjectId = comment.ProjectId;
-      CommentDiscussionId = comment.CommentDiscussionId;
-      IsRead = comment.IsReadByUser(currentUserId);
-      ChildComments =
-        parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
-          .Select(c => new CommentViewModel(parent, c, currentUserId, deepLevel +1 ))
-          .OrderBy(c => c.CreatedTime);
-      ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?) comment.ExtraAction.Value;
-      IsVisible = comment.IsVisibleTo(currentUserId);
+        int ProjectId { get; }
+        bool HasMasterAccess { get; }
+        IReadOnlyCollection<CommentViewModel> RootComments { get; }
+        int CommentDiscussionId { get; }
     }
 
-    public bool IsRead { get; }
-    public bool IsVisibleToPlayer { get; }
-    public bool HasMasterAccess { get;}
-    private bool CanModerateFinance { get; }
-    public bool IsCommentByPlayer { get; }
-    public User Author { get; }
-    public DateTime CreatedTime { get; }
-    public FinanceOperation Finance { get; }
-    public JoinHtmlString CommentText { get; }
-    public int CommentId { get; }
-    public IEnumerable<CommentViewModel> ChildComments { get; }
-    public int ProjectId { get;  }
-    public int CommentDiscussionId { get; }
-    public CommentExtraAction? ExtraAction { get; set; }
+    public static class CommentViewModelExtensions
+    {
+        public static List<CommentViewModel> ToCommentTreeViewModel(this CommentDiscussion discussion, int currentUserId)
+        {
+            return discussion.Comments.Where(comment => comment.ParentCommentId == null)
+              .Select(comment => new CommentViewModel(discussion, comment, currentUserId, 0)).OrderBy(c => c.CreatedTime).ToList();
+        }
+    }
 
-    public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
+    public class CommentViewModel
+    {
+        public CommentViewModel(CommentDiscussion parent, Comment comment, int currentUserId, int deepLevel)
+        {
+            DeepLevel = deepLevel;
+            IsVisibleToPlayer = comment.IsVisibleToPlayer;
+            HasMasterAccess = comment.Project.HasMasterAccess(currentUserId);
+            CanModerateFinance = comment.Project.HasMasterAccess(currentUserId, acl => acl.CanManageMoney) ||
+                                 comment.Finance?.PaymentType?.UserId == currentUserId;
+            IsCommentByPlayer = comment.IsCommentByPlayer;
+            Author = comment.Author;
+            CreatedTime = comment.CreatedAt;
+            Finance = comment.Finance;
+            CommentText = comment.CommentText.Text.ToHtmlString();
+            CommentId = comment.CommentId;
+            ProjectId = comment.ProjectId;
+            CommentDiscussionId = comment.CommentDiscussionId;
+            IsRead = comment.IsReadByUser(currentUserId);
+            ChildComments =
+              parent.Comments.Where(c => c.ParentCommentId == comment.CommentId)
+                .Select(c => new CommentViewModel(parent, c, currentUserId, deepLevel + 1))
+                .OrderBy(c => c.CreatedTime);
+            ExtraAction = comment.ExtraAction == null ? null : (CommentExtraAction?)comment.ExtraAction.Value;
+            IsVisible = comment.IsVisibleTo(currentUserId);
+        }
 
-    public bool IsVisible { get; }
+        public bool IsRead { get; }
+        public bool IsVisibleToPlayer { get; }
+        public bool HasMasterAccess { get; }
+        private bool CanModerateFinance { get; }
+        public bool IsCommentByPlayer { get; }
+        public User Author { get; }
+        public DateTime CreatedTime { get; }
+        public FinanceOperation Finance { get; }
+        public JoinHtmlString CommentText { get; }
+        public int CommentId { get; }
+        public IEnumerable<CommentViewModel> ChildComments { get; }
+        public int ProjectId { get; }
+        public int CommentDiscussionId { get; }
+        public CommentExtraAction? ExtraAction { get; set; }
+
+        public bool ShowFinanceModeration => Finance != null && Finance.RequireModeration && CanModerateFinance;
+
+        public bool IsVisible { get; }
         public int DeepLevel { get; }
-  }
+    }
 
     public enum FinanceOperationActionView
     {
@@ -97,7 +97,7 @@ namespace JoinRpg.Web.Models
             FormIndex = Interlocked.Increment(ref LastFormIndex);
         }
 
-        [Required(ErrorMessage="Заполните текст комментария")]
+        [Required(ErrorMessage = "Заполните текст комментария")]
         [DisplayName("Текст комментария")]
         [UIHint("MarkdownString")]
         public string CommentText { get; set; }
@@ -253,7 +253,7 @@ namespace JoinRpg.Web.Models
     public class MasterDenialOperationViewModel : ClaimOperationViewModel
     {
         [Required(ErrorMessage = "Надо указать причину отказа"),
-            Display(Name ="Причина отказа", Description = "Причины отклонения заявки будут видны только мастерам")]
+            Display(Name = "Причина отказа", Description = "Причины отклонения заявки будут видны только мастерам")]
         public ClaimDenialStatusView DenialStatus { get; set; }
         [Display(Name = "Персонажа...")]
         public MasterDenialExtraActionViewModel DeleteCharacter { get; set; }
@@ -261,7 +261,7 @@ namespace JoinRpg.Web.Models
 
     public enum MasterDenialExtraActionViewModel
     {
-        [Display(Name="...сохранить", Description ="Заявка будет отклонена, но персонаж останется в сетке ролей и другие игроки смогут на него заявиться.")]
+        [Display(Name = "...сохранить", Description = "Заявка будет отклонена, но персонаж останется в сетке ролей и другие игроки смогут на него заявиться.")]
         KeepCharacter,
         [Display(Name = "...удалить", Description = "Заявка будет отклонена и персонаж удален и недоступен для заявок. В случае необходимости его можно будет восстановить.")]
         DeleteCharacter,

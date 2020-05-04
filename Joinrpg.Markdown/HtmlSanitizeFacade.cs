@@ -41,7 +41,7 @@ namespace Joinrpg.Markdown
         public static JoinHtmlString SanitizeHtml([NotNull]
             this string str)
         {
-            var unsafeHtml = (UnSafeHtml) str;
+            var unsafeHtml = (UnSafeHtml)str;
             if (unsafeHtml == null) throw new ArgumentNullException(nameof(str));
             return unsafeHtml.SanitizeHtml();
         }

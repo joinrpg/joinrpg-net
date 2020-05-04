@@ -34,7 +34,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
 
         private ActionResult RedirectToUserDetails(int userId)
         {
-            return RedirectToAction("Details", "User", new {area = "", userId});
+            return RedirectToAction("Details", "User", new { area = "", userId });
         }
 
         [ValidateAntiForgeryToken, HttpPost]

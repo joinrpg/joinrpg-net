@@ -1,4 +1,5 @@
-namespace PscbApi {
+namespace PscbApi
+{
 
     /// <summary>
     /// Configuration for <see cref="BankApi"/>

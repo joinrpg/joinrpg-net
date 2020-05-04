@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class FieldsOrdering : DbMigration
     {
         public override void Up()
@@ -10,7 +10,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.ProjectCharacterFields", "ValuesOrdering", c => c.String());
             DropColumn("dbo.ProjectCharacterFields", "Order");
         }
-        
+
         public override void Down()
         {
             AddColumn("dbo.ProjectCharacterFields", "Order", c => c.Int(nullable: false));

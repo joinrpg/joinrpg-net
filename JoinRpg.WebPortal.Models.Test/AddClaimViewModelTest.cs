@@ -142,9 +142,9 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void PublicFieldsShouldBeShownOnCharacters()
         {
-            var field = Mock.CreateField(new ProjectField() { IsPublic =  true, CanPlayerEdit = false});
+            var field = Mock.CreateField(new ProjectField() { IsPublic = true, CanPlayerEdit = false });
             var value = new FieldWithValue(field, "xxx");
-            Mock.Character.JsonData = new[] {value}.SerializeFields();
+            Mock.Character.JsonData = new[] { value }.SerializeFields();
 
             var vm = AddClaimViewModel.Create(Mock.Character, Mock.Player.UserId);
             var fieldView = vm.Fields.Field(field);
@@ -157,7 +157,7 @@ namespace JoinRpg.Web.Test
         [Fact]
         public void NonPublicFieldsShouldNotBeShownOnCharacters()
         {
-            var field = Mock.CreateField(new ProjectField() { IsPublic =  false, CanPlayerEdit = false });
+            var field = Mock.CreateField(new ProjectField() { IsPublic = false, CanPlayerEdit = false });
             var value = new FieldWithValue(field, "xxx");
             Mock.Character.JsonData = new[] { value }.SerializeFields();
 

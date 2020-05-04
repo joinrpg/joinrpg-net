@@ -48,6 +48,6 @@ namespace JoinRpg.IntegrationTests.Scenarios
             doc.GetTitle().ShouldBe("Регистрация успешна");
         }
 
-       
+
     }
 }

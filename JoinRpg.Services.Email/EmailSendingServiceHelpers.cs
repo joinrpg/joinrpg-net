@@ -17,7 +17,7 @@ namespace JoinRpg.Services.Email
                 emailSendingService.SendEmails(subject,
                     body,
                     sender,
-                    new[] {recepient, });
+                    new[] { recepient, });
 
         /// <summary>
         /// Use this method when no additional parameters are needed for users

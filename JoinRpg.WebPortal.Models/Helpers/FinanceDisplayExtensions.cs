@@ -52,6 +52,6 @@ namespace JoinRpg.Web.Models
             return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
 
         }
-        
+
     }
 }

@@ -56,7 +56,7 @@ namespace JoinRpg.Data.Interfaces
         /// Get projects not active since
         /// </summary>
         /// <returns></returns>
-        [NotNull,ItemNotNull]
+        [NotNull, ItemNotNull]
         Task<IReadOnlyCollection<ProjectWithUpdateDateDto>> GetStaleProjects(DateTime inActiveSince);
     }
 }

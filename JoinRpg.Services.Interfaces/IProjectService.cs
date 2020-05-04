@@ -21,7 +21,7 @@ namespace JoinRpg.Services.Interfaces
             bool haveDirectSlotsForSave,
             int directSlotsForSave,
             int? responsibleMasterId);
-       
+
         Task EditCharacterGroup(int projectId,
             int currentUserId,
             int characterGroupId,

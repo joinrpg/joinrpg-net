@@ -12,116 +12,116 @@ using JoinRpg.Web.Models.CommonTypes;
 
 namespace JoinRpg.Web.Models.Plot
 {
-  public abstract class PlotFolderListViewModelBase
-  {
-    public bool HasEditAccess { get; }
-
-    protected PlotFolderListViewModelBase (Project project, bool hasEditAccess)
+    public abstract class PlotFolderListViewModelBase
     {
-      HasEditAccess = hasEditAccess;
+        public bool HasEditAccess { get; }
 
-      ProjectId = project.ProjectId;
-      ProjectName = project.ProjectName;
+        protected PlotFolderListViewModelBase(Project project, bool hasEditAccess)
+        {
+            HasEditAccess = hasEditAccess;
+
+            ProjectId = project.ProjectId;
+            ProjectName = project.ProjectName;
+
+        }
+
+        public int ProjectId { get; }
+        public string ProjectName { get; }
 
     }
 
-    public int ProjectId { get;  }
-    public string ProjectName { get; }
-   
-  }
-
-  [ReadOnly(true)]
-  public class PlotFolderListViewModelForGroup : PlotFolderListViewModel
-  {
-    public CharacterGroupDetailsViewModel GroupNavigation { get; }
-
-    public PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, CharacterGroupDetailsViewModel groupNavigation)
-      : base(folders, project, currentUserId)
+    [ReadOnly(true)]
+    public class PlotFolderListViewModelForGroup : PlotFolderListViewModel
     {
-      GroupNavigation = groupNavigation;
+        public CharacterGroupDetailsViewModel GroupNavigation { get; }
+
+        public PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, CharacterGroupDetailsViewModel groupNavigation)
+          : base(folders, project, currentUserId)
+        {
+            GroupNavigation = groupNavigation;
+        }
     }
-  }
 
-  [ReadOnly(true)]
-  public class PlotFolderListViewModel : PlotFolderListViewModelBase
-  {
-    public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
-    public bool HasMasterAccess { get; private set; }
-
-    public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId)
-      : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
+    [ReadOnly(true)]
+    public class PlotFolderListViewModel : PlotFolderListViewModelBase
     {
-      HasMasterAccess = project.HasMasterAccess(currentUserId);
-      Folders =
-        folders
-          .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
-          .OrderBy(pf => pf.Status)
-          .ThenBy(pf => pf.PlotFolderMasterTitle);
+        public IEnumerable<PlotFolderListItemViewModel> Folders { get; }
+        public bool HasMasterAccess { get; private set; }
+
+        public PlotFolderListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId)
+          : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
+        {
+            HasMasterAccess = project.HasMasterAccess(currentUserId);
+            Folders =
+              folders
+                .Select(f => new PlotFolderListItemViewModel(f, currentUserId))
+                .OrderBy(pf => pf.Status)
+                .ThenBy(pf => pf.PlotFolderMasterTitle);
+        }
     }
-  }
 
-  public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
-  {
-    public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
-    public bool InWorkOnly { get; }
-
-    public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, IUriService uriService, bool inWorkOnly = false)
-      : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
+    public class PlotFolderFullListViewModel : PlotFolderListViewModelBase
     {
-      InWorkOnly = inWorkOnly;
-      Folders =
-        folders
-          .Select(f => new PlotFolderListFullItemViewModel(f, currentUserId, uriService))
-          .OrderBy(pf => pf.Status)
-          .ThenBy(pf => pf.PlotFolderMasterTitle);
+        public IEnumerable<PlotFolderListFullItemViewModel> Folders { get; }
+        public bool InWorkOnly { get; }
+
+        public PlotFolderFullListViewModel(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, IUriService uriService, bool inWorkOnly = false)
+          : base(project, project.HasMasterAccess(currentUserId, acl => acl.CanManagePlots))
+        {
+            InWorkOnly = inWorkOnly;
+            Folders =
+              folders
+                .Select(f => new PlotFolderListFullItemViewModel(f, currentUserId, uriService))
+                .OrderBy(pf => pf.Status)
+                .ThenBy(pf => pf.PlotFolderMasterTitle);
+        }
     }
-  }
 
-  public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
-  {
-    public JoinHtmlString Summary { get; }
-    public IEnumerable<PlotElementViewModel> Elements { get; }
-    public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
-
-    public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId, IUriService uriService) : base(folder, currentUserId)
+    public class PlotFolderListFullItemViewModel : PlotFolderListItemViewModel
     {
-      Summary = folder.MasterSummary.ToHtmlString();
+        public JoinHtmlString Summary { get; }
+        public IEnumerable<PlotElementViewModel> Elements { get; }
+        public bool HasWorkTodo => !string.IsNullOrWhiteSpace(TodoField) || Elements.Any(e => e.HasWorkTodo);
 
-      if (folder.Elements.Any())
-      {
+        public PlotFolderListFullItemViewModel(PlotFolder folder, int? currentUserId, IUriService uriService) : base(folder, currentUserId)
+        {
+            Summary = folder.MasterSummary.ToHtmlString();
 
-        var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Elements.First().Project);
+            if (folder.Elements.Any())
+            {
 
-        Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
-          .Select(
-            p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion(), uriService))
-          .MarkFirstAndLast();
-      }
-      else
-      {
-        Elements = Enumerable.Empty<PlotElementViewModel>();
-      }
+                var linkRenderer = new JoinrpgMarkdownLinkRenderer(folder.Elements.First().Project);
+
+                Elements = folder.Elements.Where(p => p.ElementType == PlotElementType.RegularPlot)
+                  .Select(
+                    p => new PlotElementViewModel(null, currentUserId, linkRenderer, p.LastVersion(), uriService))
+                  .MarkFirstAndLast();
+            }
+            else
+            {
+                Elements = Enumerable.Empty<PlotElementViewModel>();
+            }
+        }
     }
-  }
 
-  public class PlotFolderListItemViewModel : PlotFolderViewModelBase
-  {
-    public int PlotFolderId { get; }
-    public int ElementsCount { get; }
-    public bool HasEditAccess { get; }
-
-    public IEnumerable<string> TagNames { get; }
-
-    public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
+    public class PlotFolderListItemViewModel : PlotFolderViewModelBase
     {
-      PlotFolderId = folder.PlotFolderId;
-      PlotFolderMasterTitle = folder.MasterTitle;
-      TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
-      ProjectId = folder.ProjectId;
-      Status = folder.GetStatus();
-      ElementsCount = folder.Elements.Count;
-      TodoField = folder.TodoField;
-      HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
+        public int PlotFolderId { get; }
+        public int ElementsCount { get; }
+        public bool HasEditAccess { get; }
+
+        public IEnumerable<string> TagNames { get; }
+
+        public PlotFolderListItemViewModel(PlotFolder folder, int? currentUserId)
+        {
+            PlotFolderId = folder.PlotFolderId;
+            PlotFolderMasterTitle = folder.MasterTitle;
+            TagNames = folder.PlotTags.Select(tag => tag.TagName).OrderBy(tag => tag).ToList();
+            ProjectId = folder.ProjectId;
+            Status = folder.GetStatus();
+            ElementsCount = folder.Elements.Count;
+            TodoField = folder.TodoField;
+            HasEditAccess = folder.HasMasterAccess(currentUserId, acl => acl.CanManagePlots) && folder.Project.Active;
+        }
     }
-  }
 }

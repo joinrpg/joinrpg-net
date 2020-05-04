@@ -13,7 +13,7 @@ using JoinRpg.Services.Interfaces.Notification;
 
 namespace JoinRpg.Services.Impl
 {
-    internal  class CharacterServiceImpl : DbServiceImplBase, ICharacterService
+    internal class CharacterServiceImpl : DbServiceImplBase, ICharacterService
     {
         public CharacterServiceImpl(
             IUnitOfWork unitOfWork,

@@ -26,7 +26,7 @@ namespace JoinRpg.Portal.Controllers.Common
             IProjectRepository projectRepository,
             IProjectService projectService,
             IUserRepository userRepository
-            ): base(userRepository)
+            ) : base(userRepository)
         {
             if (projectRepository == null) throw new ArgumentNullException(nameof(projectRepository));
             ProjectRepository = projectRepository;

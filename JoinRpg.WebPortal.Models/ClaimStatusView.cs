@@ -57,7 +57,7 @@ namespace JoinRpg.Web.Models
 
         public static bool CanChangeTo(this ClaimFullStatusView fromStatus,
             ClaimStatusView targetStatus)
-            => ((Claim.Status) fromStatus.ClaimStatus).CanChangeTo((Claim.Status) targetStatus);
+            => ((Claim.Status)fromStatus.ClaimStatus).CanChangeTo((Claim.Status)targetStatus);
 
         // TODO A lot of checks should be unified to Domain (like CanChangeTo)
 
@@ -69,7 +69,7 @@ namespace JoinRpg.Web.Models
 
 
         public static bool IsActive(this ClaimFullStatusView status) =>
-            ((Claim.Status) status.ClaimStatus).IsActive();
+            ((Claim.Status)status.ClaimStatus).IsActive();
 
         public static bool IsAlreadyApproved(this ClaimFullStatusView status) =>
             status.ClaimStatus == ClaimStatusView.Approved ||

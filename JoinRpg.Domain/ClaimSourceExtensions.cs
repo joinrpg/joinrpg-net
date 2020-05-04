@@ -1,5 +1,5 @@
- using System;
- using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
@@ -174,7 +174,7 @@ namespace JoinRpg.Domain
                 }
 
                 if (!project.Details.EnableManyCharacters &&
-                    project.Claims.OfUserApproved(playerId).Except(new [] {existingClaim}).Any())
+                    project.Claims.OfUserApproved(playerId).Except(new[] { existingClaim }).Any())
                 {
                     yield return AddClaimForbideReason.OnlyOneCharacter;
                 }

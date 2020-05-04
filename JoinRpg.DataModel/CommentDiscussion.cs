@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -7,37 +7,37 @@ using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
-  
-  public interface ICommentDiscussionHeader : IProjectEntity
-  {
-    [NotNull, ItemNotNull]
-    IEnumerable<ReadCommentWatermark> Watermarks { get; }
-    [NotNull, ItemNotNull]
-    IEnumerable<ICommentHeader> Comments { get; }
-  }
 
-  // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
-  public class CommentDiscussion : IProjectEntity, ILinkable, ICommentDiscussionHeader
-  {
-    [Key]
-    public int CommentDiscussionId { get; set; }
+    public interface ICommentDiscussionHeader : IProjectEntity
+    {
+        [NotNull, ItemNotNull]
+        IEnumerable<ReadCommentWatermark> Watermarks { get; }
+        [NotNull, ItemNotNull]
+        IEnumerable<ICommentHeader> Comments { get; }
+    }
 
-    public int ProjectId { get; set; }
+    // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global required by EF
+    public class CommentDiscussion : IProjectEntity, ILinkable, ICommentDiscussionHeader
+    {
+        [Key]
+        public int CommentDiscussionId { get; set; }
 
-    [ForeignKey(nameof(ProjectId)),NotNull]
-    public virtual Project Project { get; set; }
+        public int ProjectId { get; set; }
 
-    public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
+        [ForeignKey(nameof(ProjectId)), NotNull]
+        public virtual Project Project { get; set; }
 
-    public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
-    int IOrderableEntity.Id => CommentDiscussionId;
+        public virtual ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
 
-    public LinkType LinkType => Comments.Any() ? LinkType.Comment : LinkType.CommentDiscussion;
+        public virtual ICollection<ReadCommentWatermark> Watermarks { get; set; }
+        int IOrderableEntity.Id => CommentDiscussionId;
 
-    public string Identification => Comments.Any() ? Comments.Last().Identification : CommentDiscussionId.ToString();
-    int? ILinkable.ProjectId => ProjectId;
+        public LinkType LinkType => Comments.Any() ? LinkType.Comment : LinkType.CommentDiscussion;
 
-    IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;
-    IEnumerable<ICommentHeader> ICommentDiscussionHeader.Comments => Comments;
-  }
+        public string Identification => Comments.Any() ? Comments.Last().Identification : CommentDiscussionId.ToString();
+        int? ILinkable.ProjectId => ProjectId;
+
+        IEnumerable<ReadCommentWatermark> ICommentDiscussionHeader.Watermarks => Watermarks;
+        IEnumerable<ICommentHeader> ICommentDiscussionHeader.Comments => Comments;
+    }
 }

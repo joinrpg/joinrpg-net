@@ -10,19 +10,19 @@ using JoinRpg.Services.Interfaces;
 namespace JoinRpg.Services.Impl
 {
     [UsedImplicitly]
-  public class UserServiceImpl : DbServiceImplBase, IUserService
-  {
-    public UserServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
+    public class UserServiceImpl : DbServiceImplBase, IUserService
     {
-    }
+        public UserServiceImpl(IUnitOfWork unitOfWork, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
+        {
+        }
 
-    public async Task UpdateProfile(int userId, string surName, string fatherName, string bornName, string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string vk, string livejournal, string telegram)
-    {
-      if (CurrentUserId != userId)
-      {
-        throw new JoinRpgInvalidUserException();
-      }
-      var user = await UserRepository.WithProfile(userId);
+        public async Task UpdateProfile(int userId, string surName, string fatherName, string bornName, string prefferedName, Gender gender, string phoneNumber, string nicknames, string groupNames, string skype, string vk, string livejournal, string telegram)
+        {
+            if (CurrentUserId != userId)
+            {
+                throw new JoinRpgInvalidUserException();
+            }
+            var user = await UserRepository.WithProfile(userId);
 
             if (!user.VerifiedProfileFlag)
             {
@@ -30,44 +30,44 @@ namespace JoinRpg.Services.Impl
                 user.FatherName = fatherName;
                 user.BornName = bornName;
             }
-      user.PrefferedName = prefferedName;
+            user.PrefferedName = prefferedName;
 
-      user.Extra = user.Extra ?? new UserExtra();
-      user.Extra.Gender = gender;
+            user.Extra = user.Extra ?? new UserExtra();
+            user.Extra.Gender = gender;
 
             if (!user.VerifiedProfileFlag)
             {
                 user.Extra.PhoneNumber = phoneNumber;
             }
-      user.Extra.Nicknames = nicknames;
-      user.Extra.GroupNames = groupNames;
-      user.Extra.Skype = skype;
-      var tokensToRemove = new[]
-        {"http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",};
-      user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
-      user.Extra.Vk = vk?.RemoveFromString(tokensToRemove);
-      user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove);
+            user.Extra.Nicknames = nicknames;
+            user.Extra.GroupNames = groupNames;
+            user.Extra.Skype = skype;
+            var tokensToRemove = new[]
+              {"http://", "https://", "vk.com", "vkontakte.ru", ".livejournal.com", ".lj.ru", "t.me", "/",};
+            user.Extra.Livejournal = livejournal?.RemoveFromString(tokensToRemove);
+            user.Extra.Vk = vk?.RemoveFromString(tokensToRemove);
+            user.Extra.Telegram = telegram?.RemoveFromString(tokensToRemove);
 
-      await UnitOfWork.SaveChangesAsync();
-    }
+            await UnitOfWork.SaveChangesAsync();
+        }
 
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task ChangeEmail(int userId, string newEmail)
-    {
-      var user = await UserRepository.GetById(userId);
-      user.Email = newEmail;
+        {
+            var user = await UserRepository.GetById(userId);
+            user.Email = newEmail;
             //TODO: Send email
             await UnitOfWork.SaveChangesAsync();
-    }
+        }
 
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetAdminFlag(int userId, bool administratorFlag)
-    {
-      var user = await UserRepository.GetById(userId);
-      user.Auth.IsAdmin = administratorFlag;
-      //TODO: Send email
-      await UnitOfWork.SaveChangesAsync();
-    }
+        {
+            var user = await UserRepository.GetById(userId);
+            user.Auth.IsAdmin = administratorFlag;
+            //TODO: Send email
+            await UnitOfWork.SaveChangesAsync();
+        }
 
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetVerificationFlag(int userId, bool verificationFlag)

@@ -3,18 +3,18 @@ using Markdig.Renderers.Html;
 
 namespace Joinrpg.Markdown
 {
-  internal class LinkerRenderAdapter : HtmlObjectRenderer<EntityLinkInline>
-  {
-    private ILinkRenderer LinkRenderer { get; }
-
-    public LinkerRenderAdapter(ILinkRenderer linkRenderer)
+    internal class LinkerRenderAdapter : HtmlObjectRenderer<EntityLinkInline>
     {
-      LinkRenderer = linkRenderer;
-    }
+        private ILinkRenderer LinkRenderer { get; }
 
-    protected override void Write(HtmlRenderer renderer, EntityLinkInline obj)
-    {
-      renderer.Write(LinkRenderer.Render(obj.Match, obj.Index, obj.Extra));
+        public LinkerRenderAdapter(ILinkRenderer linkRenderer)
+        {
+            LinkRenderer = linkRenderer;
+        }
+
+        protected override void Write(HtmlRenderer renderer, EntityLinkInline obj)
+        {
+            renderer.Write(LinkRenderer.Render(obj.Match, obj.Index, obj.Extra));
+        }
     }
-  }
 }

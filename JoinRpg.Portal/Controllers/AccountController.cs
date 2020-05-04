@@ -48,7 +48,7 @@ namespace JoinRpg.Portal.Controllers
             this.recaptchaVerificator = recaptchaVerificator;
         }
 
-        
+
         [AllowAnonymous]
         public async Task<ActionResult> Login(string returnUrl)
         {
@@ -80,7 +80,7 @@ namespace JoinRpg.Portal.Controllers
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-        
+
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
@@ -132,14 +132,14 @@ namespace JoinRpg.Portal.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
-            return View(new RegisterViewModel() {RecaptchaPublicKey = recaptchaOptions.Value.PublicKey});
+            return View(new RegisterViewModel() { RecaptchaPublicKey = recaptchaOptions.Value.PublicKey });
         }
 
         //
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-        
+
         public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
         {
             if (!ModelState.IsValid)
@@ -238,7 +238,7 @@ namespace JoinRpg.Portal.Controllers
         // POST: /Account/ForgotPassword
         [HttpPost]
         [AllowAnonymous]
-        
+
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (ModelState.IsValid)
@@ -296,7 +296,7 @@ namespace JoinRpg.Portal.Controllers
         // POST: /Account/ResetPassword
         [HttpPost]
         [AllowAnonymous]
-        
+
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -336,7 +336,7 @@ namespace JoinRpg.Portal.Controllers
         // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
-        
+
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
@@ -405,7 +405,7 @@ namespace JoinRpg.Portal.Controllers
         // POST: /Account/ExternalLoginConfirmation
         [HttpPost]
         [AllowAnonymous]
-        
+
         public async Task<ActionResult> ExternalLoginConfirmation(
             ExternalLoginConfirmationViewModel model,
             string returnUrl)
@@ -445,7 +445,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpPost]
-        
+
         public async Task<ActionResult> LogOff(string returnUrl)
         {
             await SignInManager.SignOutAsync();

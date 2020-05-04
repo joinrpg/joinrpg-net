@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class Accommodation : DbMigration
     {
         public override void Up()
@@ -10,31 +10,31 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.ProjectAccommodationTypes",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        Name = c.String(nullable: false),
-                        Description = c.String(),
-                        Cost = c.Int(nullable: false),
-                        Capacity = c.Int(nullable: false),
-                        IsInfinite = c.Boolean(nullable: false),
-                        IsPlayerSelectable = c.Boolean(nullable: false),
-                        IsAutoFilledAccommodation = c.Boolean(nullable: false),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    Name = c.String(nullable: false),
+                    Description = c.String(),
+                    Cost = c.Int(nullable: false),
+                    Capacity = c.Int(nullable: false),
+                    IsInfinite = c.Boolean(nullable: false),
+                    IsPlayerSelectable = c.Boolean(nullable: false),
+                    IsAutoFilledAccommodation = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.AccommodationRequests",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        AccommodationTypeId = c.Int(nullable: false),
-                        AccommodationId = c.Int(),
-                        IsAccepted = c.Int(nullable: false),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    AccommodationTypeId = c.Int(nullable: false),
+                    AccommodationId = c.Int(),
+                    IsAccepted = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.ProjectAccommodations", t => t.AccommodationId)
                 .ForeignKey("dbo.ProjectAccommodationTypes", t => t.AccommodationTypeId, cascadeDelete: true)
@@ -42,32 +42,32 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ProjectId)
                 .Index(t => t.AccommodationTypeId)
                 .Index(t => t.AccommodationId);
-            
+
             CreateTable(
                 "dbo.ProjectAccommodations",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        AccommodationTypeId = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        Name = c.String(nullable: false),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    AccommodationTypeId = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    Name = c.String(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: false)
                 .ForeignKey("dbo.ProjectAccommodationTypes", t => t.AccommodationTypeId, cascadeDelete: true)
                 .Index(t => t.AccommodationTypeId)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.AccommodationInvites",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        FromClaimId = c.Int(nullable: false),
-                        ToClaimId = c.Int(nullable: false),
-                        IsAccepted = c.Int(nullable: false),
-                    })
+                {
+                    Id = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    FromClaimId = c.Int(nullable: false),
+                    ToClaimId = c.Int(nullable: false),
+                    IsAccepted = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Claims", t => t.FromClaimId, cascadeDelete: true)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: false)
@@ -75,7 +75,7 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ProjectId)
                 .Index(t => t.FromClaimId)
                 .Index(t => t.ToClaimId);
-            
+
             AddColumn("dbo.Claims", "AccommodationRequest_Id", c => c.Int());
             AddColumn("dbo.ProjectAcls", "CanManageAccommodation", c => c.Boolean(nullable: false));
             AddColumn("dbo.ProjectAcls", "CanSetPlayersAccommodations", c => c.Boolean(nullable: false));
@@ -83,7 +83,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateIndex("dbo.Claims", "AccommodationRequest_Id");
             AddForeignKey("dbo.Claims", "AccommodationRequest_Id", "dbo.AccommodationRequests", "Id");
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.AccommodationInvites", "ToClaimId", "dbo.Claims");

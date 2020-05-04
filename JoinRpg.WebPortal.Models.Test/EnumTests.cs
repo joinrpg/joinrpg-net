@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Test
         public void MoneyTransferState()
             => EnumerationTestHelper.CheckEnums<MoneyTransferState, MoneyTransferStateViewModel>();
 
-        [Fact(Skip ="На UI показывается меньше, это пока нормально")]
+        [Fact(Skip = "На UI показывается меньше, это пока нормально")]
         public void ProjectType()
             => EnumerationTestHelper.CheckEnums<ProjectTypeDto, ProjectTypeViewModel>();
     }

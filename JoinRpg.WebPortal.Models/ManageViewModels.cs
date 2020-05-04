@@ -36,21 +36,21 @@ namespace JoinRpg.Web.Models
         public string Purpose { get; set; }
     }
 
-  public class SetPasswordViewModel
-  {
-    [Required]
-    [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 6)]
-    [DataType(DataType.Password)]
-    [Display(Name = "Новый пароль")]
-    public string NewPassword { get; set; }
+    public class SetPasswordViewModel
+    {
+        [Required]
+        [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Новый пароль")]
+        public string NewPassword { get; set; }
 
-    [DataType(DataType.Password)]
-    [Display(Name = "Еще раз")]
-    [Compare(nameof(NewPassword), ErrorMessage = "Пароли не совпадают")]
-    public string ConfirmPassword { get; set; }
-  }
+        [DataType(DataType.Password)]
+        [Display(Name = "Еще раз")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Пароли не совпадают")]
+        public string ConfirmPassword { get; set; }
+    }
 
-  public class ChangePasswordViewModel : SetPasswordViewModel
+    public class ChangePasswordViewModel : SetPasswordViewModel
     {
         [Required]
         [DataType(DataType.Password)]

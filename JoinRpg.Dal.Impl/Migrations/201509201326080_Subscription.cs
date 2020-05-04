@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class Subscription : DbMigration
     {
         public override void Up()
@@ -9,17 +9,17 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.UserSubscriptions",
                 c => new
-                    {
-                        UserSubscriptionId = c.Int(nullable: false, identity: true),
-                        UserId = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        CharacterGroupId = c.Int(),
-                        CharacterId = c.Int(),
-                        ClaimId = c.Int(),
-                        ClaimStatusChange = c.Boolean(nullable: false),
-                        Comments = c.Boolean(nullable: false),
-                        FieldChange = c.Boolean(nullable: false),
-                    })
+                {
+                    UserSubscriptionId = c.Int(nullable: false, identity: true),
+                    UserId = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    CharacterGroupId = c.Int(),
+                    CharacterId = c.Int(),
+                    ClaimId = c.Int(),
+                    ClaimStatusChange = c.Boolean(nullable: false),
+                    Comments = c.Boolean(nullable: false),
+                    FieldChange = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.UserSubscriptionId)
                 .ForeignKey("dbo.Characters", t => t.CharacterId)
                 .ForeignKey("dbo.CharacterGroups", t => t.CharacterGroupId)
@@ -31,9 +31,9 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.CharacterGroupId)
                 .Index(t => t.CharacterId)
                 .Index(t => t.ClaimId);
-            
+
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.UserSubscriptions", "UserId", "dbo.Users");

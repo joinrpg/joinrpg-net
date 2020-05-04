@@ -22,67 +22,67 @@ using JoinRpg.Web.Models.Print;
 namespace JoinRpg.Web.Models
 {
     public class ClaimViewModel : ICharacterWithPlayerViewModel, IEntityWithCommentsViewModel
-  {
-    public int ClaimId { get; set; }
-    public int ProjectId { get; set; }
+    {
+        public int ClaimId { get; set; }
+        public int ProjectId { get; set; }
 
-    [DisplayName("Игрок")]
-    public User Player { get; set; }
+        [DisplayName("Игрок")]
+        public User Player { get; set; }
 
-    [Display(Name="Статус заявки")]
-    public ClaimFullStatusView Status { get; set; }
+        [Display(Name = "Статус заявки")]
+        public ClaimFullStatusView Status { get; set; }
 
-    public bool IsMyClaim { get; }
+        public bool IsMyClaim { get; }
 
-    public bool HasMasterAccess { get; }
-    public bool CanManageThisClaim { get; }
-   public bool CanChangeRooms { get; }
+        public bool HasMasterAccess { get; }
+        public bool CanManageThisClaim { get; }
+        public bool CanChangeRooms { get; }
         public bool ProjectActive { get; }
-    public IReadOnlyCollection<CommentViewModel> RootComments { get; }
+        public IReadOnlyCollection<CommentViewModel> RootComments { get; }
 
-    public int? CharacterId { get; }
+        public int? CharacterId { get; }
 
-    [DisplayName("Заявка в группу")]
-    public string GroupName { get; set; }
+        [DisplayName("Заявка в группу")]
+        public string GroupName { get; set; }
 
-    public int? CharacterGroupId { get; }
-    public int OtherClaimsForThisCharacterCount { get; }
-    public int OtherClaimsFromThisPlayerCount { get; }
+        public int? CharacterGroupId { get; }
+        public int OtherClaimsForThisCharacterCount { get; }
+        public int OtherClaimsFromThisPlayerCount { get; }
 
-    [ReadOnly(true), DisplayName("Входит в группы")]
-    public CharacterParentGroupsViewModel ParentGroups { get; set; }
+        [ReadOnly(true), DisplayName("Входит в группы")]
+        public CharacterParentGroupsViewModel ParentGroups { get; set; }
 
-    public PlotDisplayViewModel Plot { get; }
+        public PlotDisplayViewModel Plot { get; }
 
-    [Display(Name = "Ответственный мастер")]
-    public int ResponsibleMasterId { get; set; }
+        [Display(Name = "Ответственный мастер")]
+        public int ResponsibleMasterId { get; set; }
 
-    [Display(Name = "Ответственный мастер"), ReadOnly(true)]
-    public User ResponsibleMaster { get; set; }
+        [Display(Name = "Ответственный мастер"), ReadOnly(true)]
+        public User ResponsibleMaster { get; set; }
 
-    [ReadOnly(true)]
-    public IEnumerable<MasterListItemViewModel> Masters { get; }
+        [ReadOnly(true)]
+        public IEnumerable<MasterListItemViewModel> Masters { get; }
 
-    [ReadOnly(true)]
-    public bool HasOtherApprovedClaim { get; }
+        [ReadOnly(true)]
+        public bool HasOtherApprovedClaim { get; }
 
-    [ReadOnly(true)]
-    public IList<CharacterTreeItem> Data { get; }
+        [ReadOnly(true)]
+        public IList<CharacterTreeItem> Data { get; }
 
-    public bool HidePlayer => false;
+        public bool HidePlayer => false;
 
-    public bool HasAccess => true;
+        public bool HasAccess => true;
 
-    public CustomFieldsViewModel Fields { get; }
+        public CustomFieldsViewModel Fields { get; }
 
-    public CharacterNavigationViewModel Navigation { get; }
+        public CharacterNavigationViewModel Navigation { get; }
 
-    [Display(Name = "Взнос")]
-    [NotNull]
-    public ClaimFeeViewModel ClaimFee { get; set; }
+        [Display(Name = "Взнос")]
+        [NotNull]
+        public ClaimFeeViewModel ClaimFee { get; set; }
 
-    [ReadOnly(true)]
-    public IEnumerable<PaymentTypeViewModel> PaymentTypes { get; }
+        [ReadOnly(true)]
+        public IEnumerable<PaymentTypeViewModel> PaymentTypes { get; }
 
         /// <summary>
         /// Returns true if project is active and there are any payment method available
@@ -90,30 +90,30 @@ namespace JoinRpg.Web.Models
         public bool IsPaymentsEnabled
             => (PaymentTypes?.Any() ?? false) && ProjectActive;
 
-    [ReadOnly(true)]
-    public IEnumerable<ProblemViewModel> Problems { get; }
+        [ReadOnly(true)]
+        public IEnumerable<ProblemViewModel> Problems { get; }
 
-    public UserProfileDetailsViewModel PlayerDetails { get; set; }
+        public UserProfileDetailsViewModel PlayerDetails { get; set; }
 
-    [ReadOnly(true)]
-    public bool? CharacterAutoCreated { get; }
+        [ReadOnly(true)]
+        public bool? CharacterAutoCreated { get; }
 
-    [ReadOnly(true)]
-    public bool? CharacterActive { get; }
+        [ReadOnly(true)]
+        public bool? CharacterActive { get; }
 
-    public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
+        public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
 
-    public IEnumerable<UserSubscription> Subscriptions { get; set; }
+        public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
-    public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
+        public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
 
 
-    public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
-    public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
-    public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
-    public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
-    public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
-    public AccommodationRequest AccommodationRequest { get; set; }
+        public IEnumerable<ProjectAccommodationType> AvailableAccommodationTypes { get; set; }
+        public IEnumerable<AccommodationRequest> AccommodationRequests { get; set; }
+        public IEnumerable<AccommodationPotentialNeighbors> PotentialNeighbors { get; set; }
+        public IEnumerable<AccommodationInvite> IncomingInvite { get; set; }
+        public IEnumerable<AccommodationInvite> OutgoingInvite { get; set; }
+        public AccommodationRequest AccommodationRequest { get; set; }
 
 
         public ClaimViewModel(User currentUser,
@@ -127,217 +127,217 @@ namespace JoinRpg.Web.Models
           IEnumerable<AccommodationInvite> incomingInvite = null,
           IEnumerable<AccommodationInvite> outgoingInvite = null)
         {
-          ClaimId = claim.ClaimId;
-          CommentDiscussionId = claim.CommentDiscussionId;
-          RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
-          HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
-          CanManageThisClaim = claim.HasAccess(currentUser.UserId,
-              acl => acl.CanManageClaims,
-              ExtraAccessReason.ResponsibleMaster);
-          CanChangeRooms = claim.HasAccess(currentUser.UserId,
-              acl => acl.CanSetPlayersAccommodations,
-              ExtraAccessReason.PlayerOrResponsible);
-          IsMyClaim = claim.PlayerUserId == currentUser.UserId;
-          Player = claim.Player;
-          ProjectId = claim.ProjectId;
-          ProjectName = claim.Project.ProjectName;
-          Status =  new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));
-          CharacterGroupId = claim.CharacterGroupId;
-          GroupName = claim.Group?.CharacterGroupName;
-          CharacterId = claim.CharacterId;
-          CharacterActive = claim.Character?.IsActive;
-            CharacterAutoCreated= claim.Character?.AutoCreated;
+            ClaimId = claim.ClaimId;
+            CommentDiscussionId = claim.CommentDiscussionId;
+            RootComments = claim.CommentDiscussion.ToCommentTreeViewModel(currentUser.UserId);
+            HasMasterAccess = claim.HasMasterAccess(currentUser.UserId);
+            CanManageThisClaim = claim.HasAccess(currentUser.UserId,
+                acl => acl.CanManageClaims,
+                ExtraAccessReason.ResponsibleMaster);
+            CanChangeRooms = claim.HasAccess(currentUser.UserId,
+                acl => acl.CanSetPlayersAccommodations,
+                ExtraAccessReason.PlayerOrResponsible);
+            IsMyClaim = claim.PlayerUserId == currentUser.UserId;
+            Player = claim.Player;
+            ProjectId = claim.ProjectId;
+            ProjectName = claim.Project.ProjectName;
+            Status = new ClaimFullStatusView(claim, new AccessArguments(claim, currentUser.UserId));
+            CharacterGroupId = claim.CharacterGroupId;
+            GroupName = claim.Group?.CharacterGroupName;
+            CharacterId = claim.CharacterId;
+            CharacterActive = claim.Character?.IsActive;
+            CharacterAutoCreated = claim.Character?.AutoCreated;
             AvailableAccommodationTypes = availableAccommodationTypes?.Where(a =>
               a.IsPlayerSelectable || a.Id == claim.AccommodationRequest?.AccommodationTypeId ||
               claim.HasMasterAccess(currentUser.UserId)).ToList();
             PotentialNeighbors = potentialNeighbors;
             AccommodationRequest = claim.AccommodationRequest;
-          IncomingInvite = incomingInvite;
-          OutgoingInvite = outgoingInvite;
-          OtherClaimsForThisCharacterCount = claim.IsApproved
-              ? 0
-              : claim.OtherClaimsForThisCharacter().Count();
-          HasOtherApprovedClaim = !claim.IsApproved &&
-                                  claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
-          Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
-          OtherClaimsFromThisPlayerCount =
-              OtherClaimsFromThisPlayerCount =
-                  claim.IsApproved || claim.Project.Details.EnableManyCharacters
-                      ? 0
-                      : claim.OtherPendingClaimsForThisPlayer().Count();
-          Masters =
-              claim.Project.GetMasterListViewModel()
-                  .Union(new MasterListItemViewModel() {Id = "-1", Name = "Нет"});
-          ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
-          ResponsibleMaster = claim.ResponsibleMasterUser;
-          Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
-          Navigation =
-              CharacterNavigationViewModel.FromClaim(claim,
-                  currentUser.UserId,
-                  CharacterNavigationPage.Claim);
-          Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
-          PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
-              (AccessReason) claim.Player.GetProfileAccess(currentUser));
-          PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
-          ProjectActive = claim.Project.Active;
-          CheckInStarted = claim.Project.Details.CheckInProgress;
-          CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
-          Validator = new ClaimCheckInValidator(claim);
+            IncomingInvite = incomingInvite;
+            OutgoingInvite = outgoingInvite;
+            OtherClaimsForThisCharacterCount = claim.IsApproved
+                ? 0
+                : claim.OtherClaimsForThisCharacter().Count();
+            HasOtherApprovedClaim = !claim.IsApproved &&
+                                    claim.OtherClaimsForThisCharacter().Any(c => c.IsApproved);
+            Data = new CharacterTreeBuilder(claim.Project.RootGroup, currentUser.UserId).Generate();
+            OtherClaimsFromThisPlayerCount =
+                OtherClaimsFromThisPlayerCount =
+                    claim.IsApproved || claim.Project.Details.EnableManyCharacters
+                        ? 0
+                        : claim.OtherPendingClaimsForThisPlayer().Count();
+            Masters =
+                claim.Project.GetMasterListViewModel()
+                    .Union(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+            ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
+            ResponsibleMaster = claim.ResponsibleMasterUser;
+            Fields = new CustomFieldsViewModel(currentUser.UserId, claim);
+            Navigation =
+                CharacterNavigationViewModel.FromClaim(claim,
+                    currentUser.UserId,
+                    CharacterNavigationPage.Claim);
+            Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
+            PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
+                (AccessReason)claim.Player.GetProfileAccess(currentUser));
+            PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
+            ProjectActive = claim.Project.Active;
+            CheckInStarted = claim.Project.Details.CheckInProgress;
+            CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;
+            Validator = new ClaimCheckInValidator(claim);
 
-          AccommodationEnabled = claim.Project.Details.EnableAccommodation;
+            AccommodationEnabled = claim.Project.Details.EnableAccommodation;
 
-          if (claim.HasAccess(currentUser.UserId,
-                  acl => acl.CanManageMoney, ExtraAccessReason.Player))
-          {
-              // Finance admins can create any payment.
-              // User also can create any payment, but it will be moderated
-              PaymentTypes = claim.Project.ActivePaymentTypes.Select(pt => new PaymentTypeViewModel(pt));
-          }
-          else
-          {
-              // All other masters can create payments only from a user to himself
-              PaymentTypes = claim.Project.ActivePaymentTypes
-                  .Where(pt => pt.UserId == currentUser.UserId)
-                  .Select(pt => new PaymentTypeViewModel(pt));
-          }
-          ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
-
-          if (claim.Character != null)
-          {
-              ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
-                  claim.HasMasterAccess(currentUser.UserId));
-          }
-
-          if (claim.IsApproved && claim.Character != null)
-          {
-              var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
-              Plot = PlotDisplayViewModel.Published(readOnlyList,
-                  currentUser.UserId,
-                  claim.Character,
-                  uriService);
-          }
-          else
-          {
-              Plot = PlotDisplayViewModel.Empty();
-          }
-      }
-
-      public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
-      IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
-    {
-      string claimStatusChangeGroup = "";
-      string commentsGroup = "";
-      string fieldChangeGroup = "";
-      string moneyOperationGroup = "";
-
-      UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip()
-      {
-        HasFullParentSubscription = false,
-        Tooltip = "",
-        IsDirect = false,
-        ClaimStatusChange = false,
-        Comments = false,
-        FieldChange = false,
-        MoneyOperation = false,
-      };
-
-      subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == claimId) != null;
-
-      foreach (var par in parents)
-      {
-        foreach (var subscr in subscriptions)
-        {
-          if (par.CharacterGroupId == subscr.CharacterGroupId &&
-              !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
-          {
-            if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
-                subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
+            if (claim.HasAccess(currentUser.UserId,
+                    acl => acl.CanManageMoney, ExtraAccessReason.Player))
             {
-              break;
+                // Finance admins can create any payment.
+                // User also can create any payment, but it will be moderated
+                PaymentTypes = claim.Project.ActivePaymentTypes.Select(pt => new PaymentTypeViewModel(pt));
             }
-            if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
+            else
             {
-              subscrTooltip.ClaimStatusChange = true;
-              claimStatusChangeGroup = par.CharacterGroupName;
+                // All other masters can create payments only from a user to himself
+                PaymentTypes = claim.Project.ActivePaymentTypes
+                    .Where(pt => pt.UserId == currentUser.UserId)
+                    .Select(pt => new PaymentTypeViewModel(pt));
             }
-            if (subscr.Comments && !subscrTooltip.Comments)
+            ClaimFee = new ClaimFeeViewModel(claim, this, currentUser.UserId);
+
+            if (claim.Character != null)
             {
-              subscrTooltip.Comments = true;
-              commentsGroup = par.CharacterGroupName;
+                ParentGroups = new CharacterParentGroupsViewModel(claim.Character,
+                    claim.HasMasterAccess(currentUser.UserId));
             }
-            if (subscr.FieldChange && !subscrTooltip.FieldChange)
+
+            if (claim.IsApproved && claim.Character != null)
             {
-              subscrTooltip.FieldChange = true;
-              fieldChangeGroup = par.CharacterGroupName;
+                var readOnlyList = claim.Character.GetOrderedPlots(plotElements);
+                Plot = PlotDisplayViewModel.Published(readOnlyList,
+                    currentUser.UserId,
+                    claim.Character,
+                    uriService);
             }
-            if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
+            else
             {
-              subscrTooltip.MoneyOperation = true;
-              moneyOperationGroup = par.CharacterGroupName;
+                Plot = PlotDisplayViewModel.Empty();
             }
-          }
         }
-      }
 
-      if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange &&
-          subscrTooltip.MoneyOperation)
-      {
-        subscrTooltip.HasFullParentSubscription = true;
-      }
+        public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
+        IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
+        {
+            string claimStatusChangeGroup = "";
+            string commentsGroup = "";
+            string fieldChangeGroup = "";
+            string moneyOperationGroup = "";
 
-      subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, claimStatusChangeGroup,
-        commentsGroup, fieldChangeGroup, moneyOperationGroup);
-      return subscrTooltip;
+            UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip()
+            {
+                HasFullParentSubscription = false,
+                Tooltip = "",
+                IsDirect = false,
+                ClaimStatusChange = false,
+                Comments = false,
+                FieldChange = false,
+                MoneyOperation = false,
+            };
+
+            subscrTooltip.IsDirect = subscriptions.FirstOrDefault(s => s.ClaimId == claimId) != null;
+
+            foreach (var par in parents)
+            {
+                foreach (var subscr in subscriptions)
+                {
+                    if (par.CharacterGroupId == subscr.CharacterGroupId &&
+                        !(subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
+                          subscrTooltip.FieldChange && subscrTooltip.MoneyOperation))
+                    {
+                        if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments &&
+                            subscrTooltip.FieldChange && subscrTooltip.MoneyOperation)
+                        {
+                            break;
+                        }
+                        if (subscr.ClaimStatusChange && !subscrTooltip.ClaimStatusChange)
+                        {
+                            subscrTooltip.ClaimStatusChange = true;
+                            claimStatusChangeGroup = par.CharacterGroupName;
+                        }
+                        if (subscr.Comments && !subscrTooltip.Comments)
+                        {
+                            subscrTooltip.Comments = true;
+                            commentsGroup = par.CharacterGroupName;
+                        }
+                        if (subscr.FieldChange && !subscrTooltip.FieldChange)
+                        {
+                            subscrTooltip.FieldChange = true;
+                            fieldChangeGroup = par.CharacterGroupName;
+                        }
+                        if (subscr.MoneyOperation && !subscrTooltip.MoneyOperation)
+                        {
+                            subscrTooltip.MoneyOperation = true;
+                            moneyOperationGroup = par.CharacterGroupName;
+                        }
+                    }
+                }
+            }
+
+            if (subscrTooltip.ClaimStatusChange && subscrTooltip.Comments && subscrTooltip.FieldChange &&
+                subscrTooltip.MoneyOperation)
+            {
+                subscrTooltip.HasFullParentSubscription = true;
+            }
+
+            subscrTooltip.Tooltip = GetFullSubscriptionText(subscrTooltip, claimStatusChangeGroup,
+              commentsGroup, fieldChangeGroup, moneyOperationGroup);
+            return subscrTooltip;
+        }
+
+        public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
+          string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
+          string moneyOperationGroup)
+        {
+            string res;
+            if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
+            {
+                res = "Вы подписаны на эту заявку";
+            }
+            else if (!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments ||
+                       subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
+            {
+                res = "Вы не подписаны на эту заявку";
+            }
+            else
+            {
+                res = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
+
+                if (subscrTooltip.ClaimStatusChange)
+                {
+                    res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
+                }
+                if (subscrTooltip.Comments)
+                {
+                    res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
+                }
+                if (subscrTooltip.FieldChange)
+                {
+                    res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
+                }
+                if (subscrTooltip.MoneyOperation)
+                {
+                    res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
+                }
+
+                res += "</ul>";
+            }
+            return res;
+        }
+
+        public int CommentDiscussionId { get; }
+        public bool CheckInStarted { get; }
+        public bool CheckInModuleEnabled { get; }
+        public ClaimCheckInValidator Validator { get; }
+        public bool AccommodationEnabled { get; }
+        public string ProjectName { get; set; }
     }
-
-    public string GetFullSubscriptionText(UserSubscriptionTooltip subscrTooltip,
-      string claimStatusChangeGroup, string commentsGroup, string fieldChangeGroup,
-      string moneyOperationGroup)
-    {
-      string res;
-      if (subscrTooltip.IsDirect || subscrTooltip.HasFullParentSubscription)
-      {
-        res = "Вы подписаны на эту заявку";
-      }
-      else if (!(subscrTooltip.ClaimStatusChange || subscrTooltip.Comments ||
-                 subscrTooltip.FieldChange || subscrTooltip.MoneyOperation))
-      {
-        res = "Вы не подписаны на эту заявку";
-      }
-      else
-      {
-        res = "Вы не подписаны на эту заявку, но будете получать уведомления в случаях: <br><ul>";
-
-        if (subscrTooltip.ClaimStatusChange)
-        {
-          res += "<li>Изменение статуса (группа \"" + claimStatusChangeGroup + "\")</li>";
-        }
-        if (subscrTooltip.Comments)
-        {
-          res += "<li>Комментарии (группа \"" + commentsGroup + "\")</li>";
-        }
-        if (subscrTooltip.FieldChange)
-        {
-          res += "<li>Изменение полей заявки (группа \"" + fieldChangeGroup + "\")</li>";
-        }
-        if (subscrTooltip.MoneyOperation)
-        {
-          res += "<li>Финансовые операции (группа \"" + moneyOperationGroup + "\")</li>";
-        }
-
-        res += "</ul>";
-      }
-      return res;
-    }
-
-    public int CommentDiscussionId { get; }
-    public bool CheckInStarted { get; }
-    public bool CheckInModuleEnabled { get; }
-    public ClaimCheckInValidator Validator { get; }
-      public bool AccommodationEnabled { get; }
-      public string ProjectName { get; set; }
-  }
 
 
     /// <summary>
@@ -415,8 +415,8 @@ namespace JoinRpg.Web.Models
             LinkedClaimId = source.LinkedClaimId;
             LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : null;
             LinkedClaimUser = source.LinkedClaim?.Player;
-            OperationType = (FinanceOperationTypeViewModel) source.OperationType;
-            OperationState = (FinanceOperationStateViewModel) source.State;
+            OperationType = (FinanceOperationTypeViewModel)source.OperationType;
+            OperationState = (FinanceOperationStateViewModel)source.State;
             RowCssClass = source.State.ToRowClass();
             Date = source.OperationDate.ToShortDateString();
             ShowLinkedClaimLinkIfTransfer = isMaster;
@@ -429,7 +429,7 @@ namespace JoinRpg.Web.Models
                     Title,
                     OperationType.GetDisplayName(),
                     source.PaymentType?.GetDisplayName());
-            
+
             switch (OperationType)
             {
                 case FinanceOperationTypeViewModel.Submit when source.Approved:

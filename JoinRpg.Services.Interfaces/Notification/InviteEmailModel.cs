@@ -4,13 +4,13 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Services.Interfaces.Notification
 {
-    public class InviteEmailModel:EmailModelBase
+    public class InviteEmailModel : EmailModelBase
     {
         public ICollection<Claim> RecipientClaims;
 
         public Claim GetClaimByPerson(User user)
         {
-           return RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
+            return RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
         }
     }
 

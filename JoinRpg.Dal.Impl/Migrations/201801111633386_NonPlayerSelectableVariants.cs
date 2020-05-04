@@ -12,7 +12,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             FROM[dbo].[ProjectFieldDropdownValues] Variants
                 INNER JOIN ProjectFields Fields ON Fields.ProjectFieldId = Variants.ProjectFieldId");
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.ProjectFieldDropdownValues", "PlayerSelectable");

@@ -9,7 +9,7 @@ namespace JoinRpg.Helpers.Web
         /// <inheritdoc />
         public override bool IsValid(object value)
         {
-            return value != null && (bool) value;
+            return value != null && (bool)value;
         }
 
         private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)

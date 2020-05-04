@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Helpers
         /// <summary>
         /// ctor
         /// </summary>
-        public CurrentUserAccessor(IHttpContextAccessor  httpContextAccessor)
+        public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor)
         {
             HttpContextAccessor = httpContextAccessor;
         }

@@ -13,7 +13,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
         public RequireMasterOrPublish(Permission permission = Permission.None) : base($"{nameof(RequireMasterOrPublish)}__{permission}") { }
     }
 
-    public class RequireMaster: AuthorizeAttribute
+    public class RequireMaster : AuthorizeAttribute
     {
         public RequireMaster(Permission permission = Permission.None) : base($"{nameof(RequireMaster)}__{permission}") { }
     }

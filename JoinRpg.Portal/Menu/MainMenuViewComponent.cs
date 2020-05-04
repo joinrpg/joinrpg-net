@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu
 {
-    public class MainMenuViewComponent: ViewComponent
+    public class MainMenuViewComponent : ViewComponent
     {
         public MainMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository)
         {

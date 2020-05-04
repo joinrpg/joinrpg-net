@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class Initial : DbMigration
     {
         public override void Up()
@@ -9,128 +9,128 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.Projects",
                 c => new
-                    {
-                        ProjectId = c.Int(nullable: false, identity: true),
-                        ProjectName = c.String(),
-                        CreatedDate = c.DateTime(nullable: false),
-                        CreatorUserId = c.Int(nullable: false),
-                        Active = c.Boolean(nullable: false),
-                    })
+                {
+                    ProjectId = c.Int(nullable: false, identity: true),
+                    ProjectName = c.String(),
+                    CreatedDate = c.DateTime(nullable: false),
+                    CreatorUserId = c.Int(nullable: false),
+                    Active = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.ProjectId)
                 .ForeignKey("dbo.Users", t => t.CreatorUserId)
                 .Index(t => t.CreatorUserId);
-            
+
             CreateTable(
                 "dbo.CharacterGroups",
                 c => new
-                    {
-                        CharacterGroupId = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        CharacterGroupName = c.String(),
-                        IsRoot = c.Boolean(nullable: false),
-                        IsPublic = c.Boolean(nullable: false),
-                        AvaiableDirectSlots = c.Int(nullable: false),
-                        IsActive = c.Boolean(nullable: false),
-                    })
+                {
+                    CharacterGroupId = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    CharacterGroupName = c.String(),
+                    IsRoot = c.Boolean(nullable: false),
+                    IsPublic = c.Boolean(nullable: false),
+                    AvaiableDirectSlots = c.Int(nullable: false),
+                    IsActive = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.CharacterGroupId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.Characters",
                 c => new
-                    {
-                        CharacterId = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        CharacterName = c.String(),
-                        IsPublic = c.Boolean(nullable: false),
-                        IsAcceptingClaims = c.Boolean(nullable: false),
-                        JsonData = c.String(),
-                        IsActive = c.Boolean(nullable: false),
-                    })
+                {
+                    CharacterId = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    CharacterName = c.String(),
+                    IsPublic = c.Boolean(nullable: false),
+                    IsAcceptingClaims = c.Boolean(nullable: false),
+                    JsonData = c.String(),
+                    IsActive = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.CharacterId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.Users",
                 c => new
-                    {
-                        UserId = c.Int(nullable: false, identity: true),
-                        BornName = c.String(),
-                        FatherName = c.String(),
-                        SurName = c.String(),
-                        LegacyAllRpgInp = c.Int(),
-                        UserName = c.String(),
-                        Email = c.String(),
-                        PasswordHash = c.String(),
-                        PhoneNumber = c.String(),
-                    })
+                {
+                    UserId = c.Int(nullable: false, identity: true),
+                    BornName = c.String(),
+                    FatherName = c.String(),
+                    SurName = c.String(),
+                    LegacyAllRpgInp = c.Int(),
+                    UserName = c.String(),
+                    Email = c.String(),
+                    PasswordHash = c.String(),
+                    PhoneNumber = c.String(),
+                })
                 .PrimaryKey(t => t.UserId);
-            
+
             CreateTable(
                 "dbo.ProjectAcls",
                 c => new
-                    {
-                        UserId = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        ProjectAclId = c.Int(nullable: false),
-                        CanChangeFields = c.Boolean(nullable: false),
-                    })
+                {
+                    UserId = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    ProjectAclId = c.Int(nullable: false),
+                    CanChangeFields = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => new { t.UserId, t.ProjectId })
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .ForeignKey("dbo.Users", t => t.UserId, cascadeDelete: true)
                 .Index(t => t.UserId)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.ProjectCharacterFields",
                 c => new
-                    {
-                        ProjectCharacterFieldId = c.Int(nullable: false, identity: true),
-                        FieldName = c.String(),
-                        FieldType = c.Int(nullable: false),
-                        IsPublic = c.Boolean(nullable: false),
-                        CanPlayerView = c.Boolean(nullable: false),
-                        CanPlayerEdit = c.Boolean(nullable: false),
-                        FieldHint = c.String(),
-                        Order = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        IsActive = c.Boolean(nullable: false),
-                        WasEverUsed = c.Boolean(nullable: false),
-                    })
+                {
+                    ProjectCharacterFieldId = c.Int(nullable: false, identity: true),
+                    FieldName = c.String(),
+                    FieldType = c.Int(nullable: false),
+                    IsPublic = c.Boolean(nullable: false),
+                    CanPlayerView = c.Boolean(nullable: false),
+                    CanPlayerEdit = c.Boolean(nullable: false),
+                    FieldHint = c.String(),
+                    Order = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    IsActive = c.Boolean(nullable: false),
+                    WasEverUsed = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.ProjectCharacterFieldId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .Index(t => t.ProjectId);
-            
+
             CreateTable(
                 "dbo.CharacterCharacterGroups",
                 c => new
-                    {
-                        Character_CharacterId = c.Int(nullable: false),
-                        CharacterGroup_CharacterGroupId = c.Int(nullable: false),
-                    })
+                {
+                    Character_CharacterId = c.Int(nullable: false),
+                    CharacterGroup_CharacterGroupId = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => new { t.Character_CharacterId, t.CharacterGroup_CharacterGroupId })
                 .ForeignKey("dbo.Characters", t => t.Character_CharacterId, cascadeDelete: true)
                 .ForeignKey("dbo.CharacterGroups", t => t.CharacterGroup_CharacterGroupId, cascadeDelete: true)
                 .Index(t => t.Character_CharacterId)
                 .Index(t => t.CharacterGroup_CharacterGroupId);
-            
+
             CreateTable(
                 "dbo.CharacterGroupCharacterGroups",
                 c => new
-                    {
-                        CharacterGroup_CharacterGroupId = c.Int(nullable: false),
-                        CharacterGroup_CharacterGroupId1 = c.Int(nullable: false),
-                    })
+                {
+                    CharacterGroup_CharacterGroupId = c.Int(nullable: false),
+                    CharacterGroup_CharacterGroupId1 = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => new { t.CharacterGroup_CharacterGroupId, t.CharacterGroup_CharacterGroupId1 })
                 .ForeignKey("dbo.CharacterGroups", t => t.CharacterGroup_CharacterGroupId)
                 .ForeignKey("dbo.CharacterGroups", t => t.CharacterGroup_CharacterGroupId1)
                 .Index(t => t.CharacterGroup_CharacterGroupId)
                 .Index(t => t.CharacterGroup_CharacterGroupId1);
-            
+
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.ProjectCharacterFields", "ProjectId", "dbo.Projects");

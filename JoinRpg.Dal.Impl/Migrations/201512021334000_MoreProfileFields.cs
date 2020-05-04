@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class MoreProfileFields : DbMigration
     {
         public override void Up()
@@ -9,7 +9,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.UserExtras", "Vk", c => c.String());
             AddColumn("dbo.UserExtras", "Livejournal", c => c.String());
         }
-        
+
         public override void Down()
         {
             DropColumn("dbo.UserExtras", "Livejournal");

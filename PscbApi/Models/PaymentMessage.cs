@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Payment message
@@ -25,7 +26,7 @@ namespace PscbApi.Models {
         /// </summary>
         [JsonProperty("amount")]
         public decimal Amount { get; set; }
-        
+
         /// <summary>
         /// Order Id specified by store
         /// </summary>
@@ -136,7 +137,7 @@ namespace PscbApi.Models {
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Amount < MinPayment)
-                yield return new ValidationResult($"{nameof(Amount)} could not be less than {MinPayment}", new []{ nameof(Amount) });
+                yield return new ValidationResult($"{nameof(Amount)} could not be less than {MinPayment}", new[] { nameof(Amount) });
         }
     }
 }

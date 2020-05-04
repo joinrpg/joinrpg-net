@@ -1,7 +1,7 @@
 namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class Finances : DbMigration
     {
         public override void Up()
@@ -9,19 +9,19 @@ namespace JoinRpg.Dal.Impl.Migrations
             CreateTable(
                 "dbo.FinanceOperations",
                 c => new
-                    {
-                        FinanceOperationId = c.Int(nullable: false),
-                        ProjectId = c.Int(nullable: false),
-                        ClaimId = c.Int(nullable: false),
-                        FeeChange = c.Int(nullable: false),
-                        MoneyAmount = c.Int(nullable: false),
-                        PaymentTypeId = c.Int(),
-                        MasterUserId = c.Int(nullable: false),
-                        CommentId = c.Int(nullable: false),
-                        Created = c.DateTime(nullable: false),
-                        Changed = c.DateTime(nullable: false),
-                        State = c.Int(nullable: false),
-                    })
+                {
+                    FinanceOperationId = c.Int(nullable: false),
+                    ProjectId = c.Int(nullable: false),
+                    ClaimId = c.Int(nullable: false),
+                    FeeChange = c.Int(nullable: false),
+                    MoneyAmount = c.Int(nullable: false),
+                    PaymentTypeId = c.Int(),
+                    MasterUserId = c.Int(nullable: false),
+                    CommentId = c.Int(nullable: false),
+                    Created = c.DateTime(nullable: false),
+                    Changed = c.DateTime(nullable: false),
+                    State = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.FinanceOperationId)
                 .ForeignKey("dbo.Claims", t => t.ClaimId, cascadeDelete: true)
                 .ForeignKey("dbo.Users", t => t.MasterUserId, cascadeDelete: true)
@@ -33,24 +33,24 @@ namespace JoinRpg.Dal.Impl.Migrations
                 .Index(t => t.ClaimId)
                 .Index(t => t.PaymentTypeId)
                 .Index(t => t.MasterUserId);
-            
+
             CreateTable(
                 "dbo.PaymentTypes",
                 c => new
-                    {
-                        PaymentTypeId = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        Name = c.String(),
-                        UserId = c.Int(),
-                        IsCash = c.Boolean(nullable: false),
-                        IsActive = c.Boolean(nullable: false),
-                    })
+                {
+                    PaymentTypeId = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    Name = c.String(),
+                    UserId = c.Int(),
+                    IsCash = c.Boolean(nullable: false),
+                    IsActive = c.Boolean(nullable: false),
+                })
                 .PrimaryKey(t => t.PaymentTypeId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId, cascadeDelete: true)
                 .ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.ProjectId)
                 .Index(t => t.UserId);
-            
+
             AddColumn("dbo.Claims", "CurrentFee", c => c.Int());
             AddColumn("dbo.ProjectAcls", "CanEditRoles", c => c.Boolean(nullable: false));
             AddColumn("dbo.ProjectAcls", "CanAcceptCash", c => c.Boolean(nullable: false));
@@ -58,7 +58,7 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddColumn("dbo.ProjectDetails", "DefaultFee", c => c.Int());
             AddColumn("dbo.Comments", "FinanceOperationId", c => c.Int());
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.FinanceOperations", "FinanceOperationId", "dbo.Comments");

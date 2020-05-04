@@ -1,7 +1,7 @@
-﻿namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
-    
+    using System.Data.Entity.Migrations;
+
     public partial class PluginFieldMapping : DbMigration
     {
         public override void Up()
@@ -12,14 +12,14 @@
             CreateTable(
                 "dbo.PluginFieldMappings",
                 c => new
-                    {
-                        PluginFieldMappingId = c.Int(nullable: false, identity: true),
-                        ProjectId = c.Int(nullable: false),
-                        ProjectFieldId = c.Int(nullable: false),
-                        ProjectPluginId = c.Int(nullable: false),
-                        MappingName = c.String(nullable: false),
-                        PluginFieldMappingType = c.Int(nullable: false),
-                    })
+                {
+                    PluginFieldMappingId = c.Int(nullable: false, identity: true),
+                    ProjectId = c.Int(nullable: false),
+                    ProjectFieldId = c.Int(nullable: false),
+                    ProjectPluginId = c.Int(nullable: false),
+                    MappingName = c.String(nullable: false),
+                    PluginFieldMappingType = c.Int(nullable: false),
+                })
                 .PrimaryKey(t => t.PluginFieldMappingId)
                 .ForeignKey("dbo.Projects", t => t.ProjectId)
                 .ForeignKey("dbo.ProjectFields", t => t.ProjectFieldId)
@@ -27,12 +27,12 @@
                 .Index(t => t.ProjectId)
                 .Index(t => t.ProjectFieldId)
                 .Index(t => t.ProjectPluginId);
-            
+
             AlterColumn("dbo.ProjectPlugins", "ProjectId", c => c.Int(nullable: false));
             CreateIndex("dbo.ProjectPlugins", "ProjectId");
             AddForeignKey("dbo.ProjectPlugins", "ProjectId", "dbo.Projects", "ProjectId", cascadeDelete: true);
         }
-        
+
         public override void Down()
         {
             DropForeignKey("dbo.ProjectPlugins", "ProjectId", "dbo.Projects");

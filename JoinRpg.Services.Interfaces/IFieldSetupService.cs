@@ -39,7 +39,7 @@ namespace JoinRpg.Services.Interfaces
         Task SetFieldSettingsAsync(FieldSettingsRequest request);
     }
 
-    public class FieldSettingsRequest 
+    public class FieldSettingsRequest
     {
         public int? NameField { get; set; }
         public int? DescriptionField { get; set; }

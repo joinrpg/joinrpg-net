@@ -127,7 +127,7 @@ namespace JoinRpg.Web.Models
         }
     }
 
-    public class ChangeAclViewModel 
+    public class ChangeAclViewModel
     {
         [Display(
                 Name = "Администратор заявок",

@@ -11,11 +11,11 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
     public class AdminHomeController : JoinRpg.Portal.Controllers.Common.ControllerBase
     {
         private IProjectRepository ProjectRepository { get; }
-        
+
 
         public AdminHomeController(
             IProjectRepository projectRepository
-        ) 
+        )
         {
             ProjectRepository = projectRepository;
         }

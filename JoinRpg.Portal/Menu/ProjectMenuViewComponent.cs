@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Menu
 {
-    public class ProjectMenuViewComponent: ViewComponent
+    public class ProjectMenuViewComponent : ViewComponent
     {
         public ProjectMenuViewComponent(ICurrentUserAccessor currentUserAccessor, IProjectRepository projectRepository, ICurrentProjectAccessor currentProjectAccessor)
         {

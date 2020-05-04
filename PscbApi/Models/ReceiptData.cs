@@ -1,7 +1,8 @@
 using System;
 using Newtonsoft.Json;
 
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Information on fiscal document, associated with payment, returned in <see cref="PaymentInfo"/>

@@ -19,9 +19,9 @@ namespace JoinRpg.Web.Models
 
         public ErrorViewModel()
         {
-            #if DEBUG
+#if DEBUG
             Debug = true;
-            #endif
+#endif
         }
     }
 }

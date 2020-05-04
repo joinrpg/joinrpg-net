@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Joinrpg.Web.Identity
 {
-    public class IncorrectUserId 
+    public class IncorrectUserId
     {
     }
 }

@@ -5,7 +5,7 @@ namespace JoinRpg.Portal.Infrastructure.DiscoverFilters
 {
     internal static class ProjectIdExtractor
     {
-        public  static int? TryExtractFromQuery(this IQueryCollection query)
+        public static int? TryExtractFromQuery(this IQueryCollection query)
         {
             if (query.ContainsKey(Constants.ProjectIdName)
                 && int.TryParse(query[Constants.ProjectIdName], out var projectId))

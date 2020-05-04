@@ -8,11 +8,11 @@ namespace JoinRpg.Web.Helpers
     public class CurrentProjectAccessor : ICurrentProjectAccessor
     {
         private readonly IHttpContextAccessor _contextAccessor;
-        
+
         /// <summary>
         /// TODO we expect MasterAuthorize to put it for use, therefore is not usable for players'pages
         /// </summary>
-        private  readonly Lazy<int> ProjectIdLazy ;
+        private readonly Lazy<int> ProjectIdLazy;
 
         public CurrentProjectAccessor(IHttpContextAccessor contextAccessor)
         {

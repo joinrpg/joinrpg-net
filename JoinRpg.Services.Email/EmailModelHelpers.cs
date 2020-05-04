@@ -43,7 +43,7 @@ namespace JoinRpg.Services.Email
 
             if (!players.Any())
             {
-                players = new [] { "n/a"};
+                players = new[] { "n/a" };
             }
 
             return players.JoinStrings(" \n- ");

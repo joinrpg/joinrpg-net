@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -55,7 +55,7 @@ namespace JoinRpg.Helpers
 
         public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t)
         {
-            return source.Union(new[] {t});
+            return source.Union(new[] { t });
         }
 
         public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source)

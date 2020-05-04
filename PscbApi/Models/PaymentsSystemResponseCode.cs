@@ -1,5 +1,6 @@
 // ReSharper disable IdentifierTypo
-namespace PscbApi.Models {
+namespace PscbApi.Models
+{
 
     /// <summary>
     /// Payments system error codes

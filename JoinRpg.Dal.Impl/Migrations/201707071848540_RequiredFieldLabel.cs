@@ -1,21 +1,21 @@
-﻿namespace JoinRpg.Dal.Impl.Migrations
+namespace JoinRpg.Dal.Impl.Migrations
 {
-  using System.Data.Entity.Migrations;
+    using System.Data.Entity.Migrations;
 
-  public partial class RequiredFieldLabel : DbMigration
-  {
-    public override void Up()
+    public partial class RequiredFieldLabel : DbMigration
     {
-      Sql(@"UPDATE ProjectFieldDropdownValues 
+        public override void Up()
+        {
+            Sql(@"UPDATE ProjectFieldDropdownValues 
           SET Label = 'ChangeMe!!!'
           WHERE Label IS NULL");
-      //That's not happening in prod but better safe than sorry
-      AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String(nullable: false));
-    }
+            //That's not happening in prod but better safe than sorry
+            AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String(nullable: false));
+        }
 
-    public override void Down()
-    {
-      AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String());
+        public override void Down()
+        {
+            AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String());
+        }
     }
-  }
 }

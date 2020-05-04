@@ -69,7 +69,7 @@ namespace JoinRpg.Domain
             AccessArguments modelAccessArguments)
         {
             return OrderedValueCache.Value.Where(v =>
-                SelectedIds.Contains(v.ProjectFieldDropdownValueId) || 
+                SelectedIds.Contains(v.ProjectFieldDropdownValueId) ||
                 (v.IsActive && (v.PlayerSelectable || modelAccessArguments.MasterAccess))
                 );
         }

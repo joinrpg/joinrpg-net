@@ -15,7 +15,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync()  => FallbackPolicyProvider.GetDefaultPolicyAsync();
+        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();
 
         public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {

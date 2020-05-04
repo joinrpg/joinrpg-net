@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JoinRpg.DataModel
 {
-    public class ProjectFeeSetting 
+    public class ProjectFeeSetting
     {
         public int ProjectFeeSettingId { get; set; }
         public int ProjectId { get; set; }

@@ -13,54 +13,54 @@ namespace JoinRpg.Portal.Controllers
 {
     [Route("{projectId}/plugins/[action]")]
     [MasterAuthorize()]
-  public class PluginSetupController : ControllerGameBase
-  {
-    private IPluginFactory PluginFactory { get; }
+    public class PluginSetupController : ControllerGameBase
+    {
+        private IPluginFactory PluginFactory { get; }
 
-    public PluginSetupController(
-        IPluginFactory pluginFactory,
-        IProjectRepository projectRepository,
-        IProjectService projectService,
-        IUserRepository userRepository)
-      : base(projectRepository, projectService, userRepository)
+        public PluginSetupController(
+            IPluginFactory pluginFactory,
+            IProjectRepository projectRepository,
+            IProjectService projectService,
+            IUserRepository userRepository)
+          : base(projectRepository, projectService, userRepository)
         {
-      PluginFactory = pluginFactory;
-    }
+            PluginFactory = pluginFactory;
+        }
 
-    [HttpGet]
-    public async Task<ActionResult> DisplayConfig(int projectid, string plugin)
-    {
-      var pluginInstance = await PluginFactory.GetConfiguration(projectid, plugin);
-      if (pluginInstance == null)
-      {
-        return NotFound();
-      }
+        [HttpGet]
+        public async Task<ActionResult> DisplayConfig(int projectid, string plugin)
+        {
+            var pluginInstance = await PluginFactory.GetConfiguration(projectid, plugin);
+            if (pluginInstance == null)
+            {
+                return NotFound();
+            }
 
-      ViewBag.Title = pluginInstance.Name;
-      return View("ShowMarkdown", pluginInstance.Configuration.ToHtmlString());
-    }
+            ViewBag.Title = pluginInstance.Name;
+            return View("ShowMarkdown", pluginInstance.Configuration.ToHtmlString());
+        }
 
-    [HttpGet]
+        [HttpGet]
         public async Task<ActionResult> DisplayPage(int projectid, string operation)
-    {
-      var project = await ProjectRepository.GetProjectAsync(projectid);
-      var pluginInstance = PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(project, operation);
-      if (pluginInstance == null)
-      {
-        return NotFound();
-      }
+        {
+            var project = await ProjectRepository.GetProjectAsync(projectid);
+            var pluginInstance = PluginFactory.GetOperationInstance<IStaticPagePluginOperation>(project, operation);
+            if (pluginInstance == null)
+            {
+                return NotFound();
+            }
 
-      ViewBag.Title = pluginInstance.OperationName;
-      return View("ShowMarkdown",
-        PluginFactory.ShowStaticPage(pluginInstance, project).ToHtmlString());
-    }
+            ViewBag.Title = pluginInstance.OperationName;
+            return View("ShowMarkdown",
+              PluginFactory.ShowStaticPage(pluginInstance, project).ToHtmlString());
+        }
 
-    [HttpGet]
+        [HttpGet]
         public async Task<ActionResult> Index(int projectid)
-    {
-      var plugins = await PluginFactory.GetPluginsForProject(projectid);
+        {
+            var plugins = await PluginFactory.GetPluginsForProject(projectid);
 
-      return View(new PluginListViewModel(projectid, plugins, CurrentUserId));
+            return View(new PluginListViewModel(projectid, plugins, CurrentUserId));
+        }
     }
-  }
 }

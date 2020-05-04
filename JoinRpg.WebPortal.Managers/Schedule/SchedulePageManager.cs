@@ -42,7 +42,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                 Slots = result.Slots.Select2DList(x => x.ToViewModel())
             };
 
-            MergeSlots (viewModel);
+            MergeSlots(viewModel);
             BuildAppointments(viewModel);
 
             return viewModel;
@@ -73,7 +73,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                     {
                         ErrorType = viewModel.ConflictedProgramItems.FirstOrDefault(pi => pi.Id == slot.Id) != null
                             ? AppointmentErrorType.Intersection
-                            : (AppointmentErrorType?) null,
+                            : (AppointmentErrorType?)null,
                         AllRooms = slot.ColSpan == viewModel.Columns.Count,
                         RoomIndex = colIndex,
                         RoomCount = slot.ColSpan,

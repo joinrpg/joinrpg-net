@@ -70,7 +70,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
                     UpdatedAt = character.UpdatedAt,
                     IsActive = character.IsActive,
                     InGame = character.InGame,
-                    BusyStatus = (CharacterBusyStatus) character.GetBusyStatus(),
+                    BusyStatus = (CharacterBusyStatus)character.GetBusyStatus(),
                     Groups = ToGroupHeaders(character.DirectGroups),
                     AllGroups = ToGroupHeaders(character.AllGroups),
                     Fields = GetFields(character, project).Where(field => field.HasViewableValue)
