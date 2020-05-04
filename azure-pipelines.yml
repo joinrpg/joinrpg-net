@@ -31,6 +31,20 @@ steps:
     configuration: '$(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Install dotnet format'
+  inputs:
+    command: 'custom'
+    custom: 'tool'
+    arguments: 'update -g dotnet-format'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Check that formatting is ok. Run dotnet-format'
+  inputs:
+    command: 'custom'
+    custom: 'format'
+    arguments: '--dry-run --check --verbosity diagnostic'
+
+- task: DotNetCoreCLI@2
   inputs:
     command: 'test'
     projects: '**/*Test.csproj'
