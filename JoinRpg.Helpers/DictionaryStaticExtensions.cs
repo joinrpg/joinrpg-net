@@ -10,7 +10,11 @@ namespace JoinRpg.Helpers
             this IReadOnlyDictionary<TKey, TValue> data,
             TKey key)
         {
-            if (data == null) throw new ArgumentNullException(nameof(data));
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             return data.ContainsKey(key) ? data[key] : default(TValue);
         }
     }

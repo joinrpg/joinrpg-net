@@ -11,9 +11,21 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
           [NotNull] Type operation,
           [NotNull] string description, bool allowPlayerAccess, Func<IPluginOperation> implementer, [CanBeNull] string fieldMapping)
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (operation == null) throw new ArgumentNullException(nameof(operation));
-            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
+
+            if (description == null)
+            {
+                throw new ArgumentNullException(nameof(description));
+            }
+
             Name = name;
             Operation = operation;
             Description = description;

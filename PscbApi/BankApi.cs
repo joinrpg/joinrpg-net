@@ -66,8 +66,8 @@ namespace PscbApi
             System.Diagnostics.Debug.WriteLineIf(Debug, JsonConvert.SerializeObject(request, Formatting.Indented));
 
             var requestAsJson = JsonConvert.SerializeObject(request, Formatting.None);
-            byte[] requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
-            byte[] requestWithKey = requestAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
+            var requestAsJsonUtf8 = requestAsJson.ToUtf8Bytes();
+            var requestWithKey = requestAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
             var signature = requestWithKey.Sha256Encode().ToHexString();
 
             using (var httpClient = new HttpClient())
@@ -100,7 +100,10 @@ namespace PscbApi
             Func<string, string> getOrderIdDisplayValue = null)
         {
             if (Debug)
+            {
                 message.Details = "[Debug mode] " + message.Details;
+            }
+
             message.CheckStringPropertyLength(m => m.Details);
             message.CheckStringPropertyLength(m => m.CustomerComment);
             message.CheckStringPropertyLength(m => m.OrderIdDisplayValue);
@@ -123,8 +126,8 @@ namespace PscbApi
                 JsonConvert.SerializeObject(message, Formatting.Indented));
 
             var messageAsJson = JsonConvert.SerializeObject(message, Formatting.None);
-            byte[] messageAsJsonUtf8 = messageAsJson.ToUtf8Bytes();
-            byte[] messageWithKey = messageAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
+            var messageAsJsonUtf8 = messageAsJson.ToUtf8Bytes();
+            var messageWithKey = messageAsJsonUtf8.Concat(_keyAsUtf8).ToArray();
 
             var result = new PaymentRequestDescriptor
             {
@@ -160,7 +163,10 @@ namespace PscbApi
         public async Task<PaymentInfo> GetPaymentInfoAsync(PaymentInfoQuery query)
         {
             if (query == null)
+            {
                 throw new ArgumentNullException(nameof(query));
+            }
+
             query.MerchantId = _configuration.MerchantId;
             Validator.ValidateObject(query, new ValidationContext(query));
 

@@ -11,10 +11,7 @@ namespace JoinRpg.Web.Models.Print
 {
     public class HandoutReportViewModel
     {
-        public HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters)
-        {
-            Handouts = elements.Select(e => new HandoutReportItemViewModel(e, characters));
-        }
+        public HandoutReportViewModel(IEnumerable<PlotElement> elements, IReadOnlyCollection<Character> characters) => Handouts = elements.Select(e => new HandoutReportItemViewModel(e, characters));
         public IEnumerable<HandoutReportItemViewModel> Handouts { get; }
     }
 

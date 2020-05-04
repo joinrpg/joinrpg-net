@@ -36,15 +36,9 @@ namespace JoinRpg.Services.Export.BackEnds
             }
         }
 
-        protected override void AdjustColumnToContent(int columnIndex)
-        {
-            Sheet.Column(columnIndex).AdjustToContents();
-        }
+        protected override void AdjustColumnToContent(int columnIndex) => Sheet.Column(columnIndex).AdjustToContents();
 
-        protected override void FreezeHeader()
-        {
-            Sheet.SheetView.FreezeRows(1);
-        }
+        protected override void FreezeHeader() => Sheet.SheetView.FreezeRows(1);
 
         protected override void SaveToStream(Stream stream) => Sheet.Workbook.SaveAs(stream);
     }

@@ -4,14 +4,8 @@ namespace JoinRpg.Dal.Impl.Migrations
 
     public partial class CanManageClaims : DbMigration
     {
-        public override void Up()
-        {
-            RenameColumn("dbo.ProjectAcls", "CanApproveClaims", "CanManageClaims");
-        }
+        public override void Up() => RenameColumn("dbo.ProjectAcls", "CanApproveClaims", "CanManageClaims");
 
-        public override void Down()
-        {
-            RenameColumn("dbo.ProjectAcls", "CanManageClaims", "CanApproveClaims");
-        }
+        public override void Down() => RenameColumn("dbo.ProjectAcls", "CanManageClaims", "CanApproveClaims");
     }
 }

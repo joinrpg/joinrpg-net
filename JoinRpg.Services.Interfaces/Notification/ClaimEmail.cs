@@ -97,11 +97,16 @@ namespace JoinRpg.Services.Interfaces.Notification
             IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
         {
             if (character != null && claim != null)
+            {
                 throw new ArgumentException(
                     $"Both {nameof(character)} and {nameof(claim)} were provided");
+            }
+
             if (character == null && claim == null)
+            {
                 throw new ArgumentException(
                     $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+            }
 
             Character = character;
             Claim = claim;

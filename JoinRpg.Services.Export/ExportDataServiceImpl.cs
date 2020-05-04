@@ -15,21 +15,12 @@ namespace JoinRpg.Services.Export
           new Dictionary<Type, Func<object, string>>();
 
         [Obsolete]
-        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data)
-        {
-            return GetGenerator(type, data, new AutoFrontend<T>(DisplayFunctions));
-        }
+        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) => GetGenerator(type, data, new AutoFrontend<T>(DisplayFunctions));
 
-        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend)
-        {
-            return new TableGenerator<T>(data, GetGeneratorBackend(type), frontend);
-        }
+        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend) => new TableGenerator<T>(data, GetGeneratorBackend(type), frontend);
 
         [Obsolete]
-        public void BindDisplay<T>(Func<T, string> displayFunc)
-        {
-            DisplayFunctions.Add(typeof(T), arg => displayFunc((T)arg));
-        }
+        public void BindDisplay<T>(Func<T, string> displayFunc) => DisplayFunctions.Add(typeof(T), arg => displayFunc((T)arg));
 
         private static IGeneratorBackend GetGeneratorBackend(ExportType type)
         {

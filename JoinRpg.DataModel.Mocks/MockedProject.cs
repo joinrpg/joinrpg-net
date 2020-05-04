@@ -238,9 +238,6 @@ namespace JoinRpg.DataModel.Mocks
                 Group);
         }
 
-        public static void AssignFieldValues(IFieldContainter mockCharacter, params FieldWithValue[] fieldWithValues)
-        {
-            mockCharacter.JsonData = fieldWithValues.SerializeFields();
-        }
+        public static void AssignFieldValues(IFieldContainter mockCharacter, params FieldWithValue[] fieldWithValues) => mockCharacter.JsonData = fieldWithValues.SerializeFields();
     }
 }

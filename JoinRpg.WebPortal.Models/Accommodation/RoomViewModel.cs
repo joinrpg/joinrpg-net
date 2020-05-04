@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models.Accommodation
             // Extracting list of requests associated with this room
             Requests = owner.Requests.Where(r =>
             {
-                bool result = r.RoomId == Id;
+                var result = r.RoomId == Id;
                 if (result)
                 {
                     Occupancy += r.Persons;

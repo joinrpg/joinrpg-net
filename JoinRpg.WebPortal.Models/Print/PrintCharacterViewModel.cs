@@ -53,7 +53,10 @@ namespace JoinRpg.Web.Models.Print
           (int currentUserId, [NotNull] Character character, IReadOnlyCollection<PlotElement> plots, IUriService uriService)
           : base(character)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
 
             var plotElements = character.GetOrderedPlots(character.SelectPlots(plots)).ToArray();
             Plots = PlotDisplayViewModel.Published(plotElements, currentUserId, character, uriService);

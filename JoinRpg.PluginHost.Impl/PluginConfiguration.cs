@@ -9,8 +9,16 @@ namespace JoinRpg.PluginHost.Impl
     {
         public PluginConfiguration([NotNull] string projectName, [NotNull] string configurationString)
         {
-            if (projectName == null) throw new ArgumentNullException(nameof(projectName));
-            if (configurationString == null) throw new ArgumentNullException(nameof(configurationString));
+            if (projectName == null)
+            {
+                throw new ArgumentNullException(nameof(projectName));
+            }
+
+            if (configurationString == null)
+            {
+                throw new ArgumentNullException(nameof(configurationString));
+            }
+
             ProjectName = projectName;
             ConfigurationString = configurationString;
         }

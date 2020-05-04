@@ -15,10 +15,7 @@ namespace JoinRpg.Experimental.Plugin.HelloWorld
                 yield return new HtmlCardPrintResult($"Hello, {character.CharacterName}! Configuration: {Config}", CardSize.A7);
             }
 
-            public void SetConfiguration(IPluginConfiguration config)
-            {
-                Config = config.GetConfiguration<string>();
-            }
+            public void SetConfiguration(IPluginConfiguration config) => Config = config.GetConfiguration<string>();
         }
 
         public HelloWorldPlugin()

@@ -118,7 +118,10 @@ namespace JoinRpg.Web.Models
             [NotNull] FieldWithValue ch,
             ILinkRenderer renderer)
         {
-            if (ch == null) throw new ArgumentNullException(nameof(ch));
+            if (ch == null)
+            {
+                throw new ArgumentNullException(nameof(ch));
+            }
 
             Value = ch.Value;
 
@@ -162,7 +165,10 @@ namespace JoinRpg.Web.Models
             if (HasPrice)
             {
                 if (FieldViewType.SupportsPricingOnField())
+                {
                     Price = ch.Field.Price;
+                }
+
                 Fee = ch.GetCurrentFee();
             }
 
@@ -264,10 +270,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Common constructor
         /// </summary>
-        public CustomFieldsViewModel()
-        {
-            InitTotals();
-        }
+        public CustomFieldsViewModel() => InitTotals();
 
         /// <summary>
         /// Called from AddClaimViewModel
@@ -371,7 +374,7 @@ namespace JoinRpg.Web.Models
         /// </summary>
         private FieldValueViewModel CreateFieldValueView(FieldWithValue fv, ILinkRenderer renderer)
         {
-            FieldValueViewModel result = new FieldValueViewModel(this, fv, renderer);
+            var result = new FieldValueViewModel(this, fv, renderer);
             // Here is the point to calculate total fee
             if (result.HasPrice)
             {
@@ -385,14 +388,8 @@ namespace JoinRpg.Web.Models
         public bool AnythingAccessible => Fields.Any(f => f.CanEdit || f.CanView);
 
         [CanBeNull]
-        public FieldValueViewModel FieldById(int projectFieldId)
-        {
-            return Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
-        }
+        public FieldValueViewModel FieldById(int projectFieldId) => Fields.SingleOrDefault(field => field.ProjectFieldId == projectFieldId);
         [CanBeNull]
-        public FieldValueViewModel Field(ProjectField field)
-        {
-            return FieldById(field.ProjectFieldId);
-        }
+        public FieldValueViewModel Field(ProjectField field) => FieldById(field.ProjectFieldId);
     }
 }

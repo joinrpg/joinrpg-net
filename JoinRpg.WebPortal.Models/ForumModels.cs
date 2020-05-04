@@ -93,10 +93,7 @@ namespace JoinRpg.Web.Models
     public class ForumThreadListForGroupViewModel : ForumThreadListViewModel
     {
         public ForumThreadListForGroupViewModel(CharacterGroup group, IEnumerable<IForumThreadListItem> threads,
-          int currentUserId) : base(group.Project, threads, currentUserId)
-        {
-            GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
-        }
+          int currentUserId) : base(group.Project, threads, currentUserId) => GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, GroupNavigationPage.Forums);
 
         public CharacterGroupDetailsViewModel GroupModel { get; }
     }

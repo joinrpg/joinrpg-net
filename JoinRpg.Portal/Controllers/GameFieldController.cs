@@ -318,7 +318,9 @@ namespace JoinRpg.Portal.Controllers
                 var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
 
                 if (value == null)
+                {
                     return NotFound();
+                }
 
                 await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive

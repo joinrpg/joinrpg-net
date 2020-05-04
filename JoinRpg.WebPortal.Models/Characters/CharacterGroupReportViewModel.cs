@@ -10,10 +10,7 @@ namespace JoinRpg.Web.Models.Characters
     public static class CharacterGroupReportViewModel
     {
         [MustUseReturnValue]
-        public static IEnumerable<CharacterGroupReportItemViewModel> GetGroups(CharacterGroup field)
-        {
-            return new CharacterGroupHierarchyBuilder(field).Generate().WhereNotNull();
-        }
+        public static IEnumerable<CharacterGroupReportItemViewModel> GetGroups(CharacterGroup field) => new CharacterGroupHierarchyBuilder(field).Generate().WhereNotNull();
 
         //TODO: unit tests
         private class CharacterGroupHierarchyBuilder
@@ -23,10 +20,7 @@ namespace JoinRpg.Web.Models.Characters
             private IList<CharacterGroupReportItemViewModel> Results { get; } =
                 new List<CharacterGroupReportItemViewModel>();
 
-            public CharacterGroupHierarchyBuilder(CharacterGroup root)
-            {
-                Root = root;
-            }
+            public CharacterGroupHierarchyBuilder(CharacterGroup root) => Root = root;
 
             public IList<CharacterGroupReportItemViewModel> Generate()
             {

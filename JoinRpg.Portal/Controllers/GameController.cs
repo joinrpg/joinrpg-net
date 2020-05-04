@@ -26,16 +26,17 @@ namespace JoinRpg.Portal.Controllers
         public async Task<IActionResult> Details(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
-            if (project == null) return NotFound();
+            if (project == null)
+            {
+                return NotFound();
+            }
+
             return View(new ProjectDetailsViewModel(project));
         }
 
         [Authorize]
         [HttpGet("/game/create")]
-        public IActionResult Create()
-        {
-            return View(new ProjectCreateViewModel());
-        }
+        public IActionResult Create() => View(new ProjectCreateViewModel());
 
         // POST: Game/Create
         [Authorize]
@@ -65,10 +66,7 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        private IActionResult RedirectTo(Project project)
-        {
-            return RedirectToAction("Details", new { project.ProjectId });
-        }
+        private IActionResult RedirectTo(Project project) => RedirectToAction("Details", new { project.ProjectId });
 
         [HttpGet("/{projectId}/project/settings")]
         [MasterAuthorize(Permission.CanChangeProjectProperties)]

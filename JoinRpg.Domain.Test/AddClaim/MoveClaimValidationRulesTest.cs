@@ -53,14 +53,8 @@ namespace JoinRpg.Domain.Test.AddClaim
             ShouldAllowMove(claim, Mock.CharacterWithoutGroup);
         }
 
-        private void ShouldAllowMove(Claim claim, IClaimSource characterGroup)
-        {
-            characterGroup.ValidateIfCanMoveClaim(claim).ShouldBeEmpty();
-        }
+        private void ShouldAllowMove(Claim claim, IClaimSource characterGroup) => characterGroup.ValidateIfCanMoveClaim(claim).ShouldBeEmpty();
 
-        private void ShouldDisAllowMove(Claim claim, IClaimSource characterGroup, AddClaimForbideReason reason)
-        {
-            characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe(new[] { reason });
-        }
+        private void ShouldDisAllowMove(Claim claim, IClaimSource characterGroup, AddClaimForbideReason reason) => characterGroup.ValidateIfCanMoveClaim(claim).ShouldBe(new[] { reason });
     }
 }

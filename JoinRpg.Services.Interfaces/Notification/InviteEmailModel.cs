@@ -8,10 +8,7 @@ namespace JoinRpg.Services.Interfaces.Notification
     {
         public ICollection<Claim> RecipientClaims;
 
-        public Claim GetClaimByPerson(User user)
-        {
-            return RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
-        }
+        public Claim GetClaimByPerson(User user) => RecipientClaims.FirstOrDefault(claim => claim.PlayerUserId == user.UserId);
     }
 
     public class NewInviteEmail : InviteEmailModel

@@ -9,24 +9,15 @@ namespace JoinRpg.Domain.Test
     {
         [Theory]
         [MemberData(nameof(FieldTypes))]
-        public void PricingDecided(ProjectFieldType projectFieldType)
-        {
-            Should.NotThrow(() => projectFieldType.SupportsPricing());
-        }
+        public void PricingDecided(ProjectFieldType projectFieldType) => Should.NotThrow(() => projectFieldType.SupportsPricing());
 
         [Theory]
         [MemberData(nameof(FieldTypes))]
-        public void PricingOnFieldDecided(ProjectFieldType projectFieldType)
-        {
-            Should.NotThrow(() => projectFieldType.SupportsPricingOnField());
-        }
+        public void PricingOnFieldDecided(ProjectFieldType projectFieldType) => Should.NotThrow(() => projectFieldType.SupportsPricingOnField());
 
         [Theory]
         [MemberData(nameof(FieldTypes))]
-        public void HasValuesListDecided(ProjectFieldType projectFieldType)
-        {
-            Should.NotThrow(() => projectFieldType.HasValuesList());
-        }
+        public void HasValuesListDecided(ProjectFieldType projectFieldType) => Should.NotThrow(() => projectFieldType.HasValuesList());
 
         // ReSharper disable once MemberCanBePrivate.Global xUnit requirements
         public static TheoryData<ProjectFieldType> FieldTypes =>

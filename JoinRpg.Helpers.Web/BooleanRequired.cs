@@ -7,10 +7,7 @@ namespace JoinRpg.Helpers.Web
     public class BooleanRequired : RequiredAttribute, IClientModelValidator
     {
         /// <inheritdoc />
-        public override bool IsValid(object value)
-        {
-            return value != null && (bool)value;
-        }
+        public override bool IsValid(object value) => value != null && (bool)value;
 
         private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
         {

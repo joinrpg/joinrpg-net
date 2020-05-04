@@ -10,11 +10,8 @@ namespace JoinRpg.Dal.Impl
 {
     internal static class EntityFrameworkExtensions
     {
-        public static void IsUnique(this PrimitivePropertyConfiguration property)
-        {
-            property
+        public static void IsUnique(this PrimitivePropertyConfiguration property) => property
               .HasColumnAnnotation(IndexAnnotation.AnnotationName, new IndexAnnotation(new IndexAttribute() { IsUnique = true }));
-        }
 
         public static void HasIndex(this PrimitivePropertyConfiguration property, string indexName = null, int order = 1)
         {

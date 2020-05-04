@@ -13,16 +13,17 @@ namespace JoinRpg.Helpers
         public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull]
             this IEnumerable<string> strings,
             [NotNull]
-            string separator)
-        {
-            return string.Join(separator, strings.WhereNotNullOrWhiteSpace());
-        }
+            string separator) => string.Join(separator, strings.WhereNotNullOrWhiteSpace());
 
         [NotNull, ItemNotNull]
         public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull]
             this IEnumerable<string> strings)
         {
-            if (strings == null) throw new ArgumentNullException(nameof(strings));
+            if (strings == null)
+            {
+                throw new ArgumentNullException(nameof(strings));
+            }
+
             return strings.Where(s => !string.IsNullOrWhiteSpace(s));
         }
 
@@ -32,8 +33,16 @@ namespace JoinRpg.Helpers
             [NotNull]
             string separator)
         {
-            if (strings == null) throw new ArgumentNullException(nameof(strings));
-            if (separator == null) throw new ArgumentNullException(nameof(separator));
+            if (strings == null)
+            {
+                throw new ArgumentNullException(nameof(strings));
+            }
+
+            if (separator == null)
+            {
+                throw new ArgumentNullException(nameof(separator));
+            }
+
             return string.Join(separator, strings);
         }
 
@@ -41,7 +50,11 @@ namespace JoinRpg.Helpers
         public static string AsString([NotNull]
             this IEnumerable<char> strings)
         {
-            if (strings == null) throw new ArgumentNullException(nameof(strings));
+            if (strings == null)
+            {
+                throw new ArgumentNullException(nameof(strings));
+            }
+
             return string.Join("", strings);
         }
 
@@ -68,7 +81,11 @@ namespace JoinRpg.Helpers
         public static string ToHexString([NotNull]
             this IEnumerable<byte> bytes)
         {
-            if (bytes == null) throw new ArgumentNullException(nameof(bytes));
+            if (bytes == null)
+            {
+                throw new ArgumentNullException(nameof(bytes));
+            }
+
             return bytes.Select(b => $"{b:x2}").JoinStrings("");
         }
 
@@ -76,7 +93,10 @@ namespace JoinRpg.Helpers
         public static byte[] FromHexString([NotNull]
             this string str)
         {
-            if (str == null) throw new ArgumentNullException(nameof(str));
+            if (str == null)
+            {
+                throw new ArgumentNullException(nameof(str));
+            }
 
             str = str.Trim();
             if (str.Length % 2 == 1)
@@ -85,7 +105,7 @@ namespace JoinRpg.Helpers
             }
 
             var result = new byte[str.Length / 2];
-            for (int i = 0; i < str.Length; i += 2)
+            for (var i = 0; i < str.Length; i += 2)
             {
                 result[i / 2] = (byte)(HexCharToInt(str[i + 1]) + HexCharToInt(str[i]) * 16);
             }
@@ -116,8 +136,16 @@ namespace JoinRpg.Helpers
             IEnumerable<string> tokensToRemove,
             StringComparison stringComparison = StringComparison.CurrentCulture)
         {
-            if (url == null) throw new ArgumentNullException(nameof(url));
-            if (tokensToRemove == null) throw new ArgumentNullException(nameof(tokensToRemove));
+            if (url == null)
+            {
+                throw new ArgumentNullException(nameof(url));
+            }
+
+            if (tokensToRemove == null)
+            {
+                throw new ArgumentNullException(nameof(tokensToRemove));
+            }
+
             return tokensToRemove.Aggregate(url,
                 (current, replaceToken) =>
                     current.RemoveFromString(replaceToken, stringComparison));
@@ -130,12 +158,19 @@ namespace JoinRpg.Helpers
             string tokenToRemove,
             StringComparison stringComparison = StringComparison.CurrentCulture)
         {
-            if (str == null) throw new ArgumentNullException(nameof(str));
-            if (tokenToRemove == null) throw new ArgumentNullException(nameof(tokenToRemove));
+            if (str == null)
+            {
+                throw new ArgumentNullException(nameof(str));
+            }
 
-            string retval = str;
+            if (tokenToRemove == null)
+            {
+                throw new ArgumentNullException(nameof(tokenToRemove));
+            }
+
+            var retval = str;
             // find the first occurence of oldValue
-            int pos = retval.IndexOf(tokenToRemove, stringComparison);
+            var pos = retval.IndexOf(tokenToRemove, stringComparison);
 
             while (pos > -1)
             {
@@ -155,15 +190,9 @@ namespace JoinRpg.Helpers
             return hashAlgorithm.ComputeHash(bytes).ToHexString();
         }
 
-        public static string AfterSeparator(this string str, char separator)
-        {
-            return str.SkipWhile(c => c != separator).Skip(1).AsString();
-        }
+        public static string AfterSeparator(this string str, char separator) => str.SkipWhile(c => c != separator).Skip(1).AsString();
 
-        public static string BeforeSeparator(this string str, char separator)
-        {
-            return str.TakeWhile(c => c != separator).AsString();
-        }
+        public static string BeforeSeparator(this string str, char separator) => str.TakeWhile(c => c != separator).AsString();
 
         [NotNull]
         public static int[] ToIntList([CanBeNull]
@@ -183,7 +212,9 @@ namespace JoinRpg.Helpers
             int bytesLimit)
         {
             if (formattableString == null)
+            {
                 throw new ArgumentNullException(nameof(formattableString));
+            }
 
             var ch = formattableString.ToCharArray();
             var epilogue = Encoding.UTF8.GetBytes("…");
@@ -205,7 +236,11 @@ namespace JoinRpg.Helpers
             [NotNull]
             string defaultValue)
         {
-            if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));
+            if (defaultValue == null)
+            {
+                throw new ArgumentNullException(nameof(defaultValue));
+            }
+
             return string.IsNullOrEmpty(value) ? defaultValue : value;
         }
 

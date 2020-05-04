@@ -8,20 +8,14 @@ namespace JoinRpg.Helpers.Web
 {
     public static class IdListUrlExtensions
     {
-        public static string CompressIdList(this IEnumerable<int> list)
-        {
-            return list.OrderBy(l => l).DeltaCompress().MagicJoin();
-        }
+        public static string CompressIdList(this IEnumerable<int> list) => list.OrderBy(l => l).DeltaCompress().MagicJoin();
 
-        public static IReadOnlyCollection<int> UnCompressIdList(this string compressedList)
-        {
-            return compressedList.MagicUnJoin().DeltaUnCompress().ToList();
-        }
+        public static IReadOnlyCollection<int> UnCompressIdList(this string compressedList) => compressedList.MagicUnJoin().DeltaUnCompress().ToList();
 
         private static IEnumerable<int> MagicUnJoin(this string str)
         {
             var idx = -1;
-            string buffer = "";
+            var buffer = "";
             while (idx + 1 < str.Length)
             {
                 idx++;
@@ -37,11 +31,11 @@ namespace JoinRpg.Helpers.Web
                 }
                 if (str[idx] >= 'a' && str[idx] <= 'z')
                 {
-                    yield return (str[idx] - 'a' + 2);
+                    yield return str[idx] - 'a' + 2;
                 }
                 if (str[idx] >= 'A' && str[idx] <= 'Z')
                 {
-                    for (char c = 'A'; c <= str[idx]; c++)
+                    for (var c = 'A'; c <= str[idx]; c++)
                     {
                         yield return 1;
                     }
@@ -54,11 +48,15 @@ namespace JoinRpg.Helpers.Web
         }
         private static string MagicJoin([NotNull] this IEnumerable<int> list)
         {
-            if (list == null) throw new ArgumentNullException(nameof(list));
-            StringBuilder builder = new StringBuilder();
+            if (list == null)
+            {
+                throw new ArgumentNullException(nameof(list));
+            }
+
+            var builder = new StringBuilder();
             using (var enumerator = list.GetEnumerator())
             {
-                bool needSep = false;
+                var needSep = false;
                 while (enumerator.MoveNext())
                 {
                     var next = enumerator.Current;

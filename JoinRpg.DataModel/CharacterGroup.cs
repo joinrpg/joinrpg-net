@@ -31,8 +31,8 @@ namespace JoinRpg.DataModel
         [NotMapped]
         public int[] ParentCharacterGroupIds
         {
-            get { return ParentGroupsImpl._parentCharacterGroupIds; }
-            set { ParentGroupsImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(","); }
+            get => ParentGroupsImpl._parentCharacterGroupIds;
+            set => ParentGroupsImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(",");
         }
 
         public IntList ParentGroupsImpl { get; set; } = new IntList();

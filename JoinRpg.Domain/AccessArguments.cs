@@ -17,7 +17,10 @@ namespace JoinRpg.Domain
 
         public AccessArguments([NotNull] Character character, int? userId)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
 
             MasterAccess = character.HasMasterAccess(userId);
             PlayerAccessToCharacter = character.HasPlayerAccess(userId);
@@ -26,7 +29,10 @@ namespace JoinRpg.Domain
 
         public AccessArguments([NotNull] Claim claim, int? userId)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             MasterAccess = claim.HasMasterAccess(userId);
             PlayerAccessToCharacter = claim.Character?.HasPlayerAccess(userId) ?? false;
@@ -58,10 +64,6 @@ namespace JoinRpg.Domain
         /// </summary>
         public bool AnyAccessToClaim => PlayerAccesToClaim || PlayerAccesToClaim;
 
-        public override string ToString()
-        {
-            return
-                $"AccessArguments(MasterAccess:{MasterAccess}, CharacterAccess:{PlayerAccessToCharacter}, PlayerAccesToClaim:{PlayerAccesToClaim}";
-        }
+        public override string ToString() => $"AccessArguments(MasterAccess:{MasterAccess}, CharacterAccess:{PlayerAccessToCharacter}, PlayerAccesToClaim:{PlayerAccesToClaim}";
     }
 }

@@ -51,9 +51,6 @@ namespace JoinRpg.Web.Models.Schedules
         public int Width => _bounds.Value.Width;
         public int Height => _bounds.Value.Height;
 
-        public AppointmentViewModel(Func<Rect> getBounds)
-        {
-            _bounds = new Lazy<Rect>(getBounds);
-        }
+        public AppointmentViewModel(Func<Rect> getBounds) => _bounds = new Lazy<Rect>(getBounds);
     }
 }

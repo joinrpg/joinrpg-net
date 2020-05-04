@@ -43,8 +43,15 @@ namespace JoinRpg.Portal.Controllers
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId)
                 .ConfigureAwait(false);
 
-            if (project == null) return NotFound();
-            if (!project.Details.EnableAccommodation) return RedirectToAction("Edit", "Game");
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            if (!project.Details.EnableAccommodation)
+            {
+                return RedirectToAction("Edit", "Game");
+            }
 
             var accommodations =
                 (await AccommodationRepository.GetClaimAccommodationReport(projectId)).Select(row => new AccomodationReportListItemViewModel

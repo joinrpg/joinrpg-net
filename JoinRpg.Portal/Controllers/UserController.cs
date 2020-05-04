@@ -56,9 +56,6 @@ namespace JoinRpg.Portal.Controllers
 
         [Authorize]
         [HttpGet("user/me")]
-        public ActionResult Me()
-        {
-            return RedirectToAction("Details", new { UserId = CurrentUserAccessor.UserId });
-        }
+        public ActionResult Me() => RedirectToAction("Details", new { UserId = CurrentUserAccessor.UserId });
     }
 }

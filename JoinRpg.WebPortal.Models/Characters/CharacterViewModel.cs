@@ -46,14 +46,8 @@ namespace JoinRpg.Web.Models.Characters
             return cg != null && Equals(cg);
         }
 
-        public override int GetHashCode()
-        {
-            return CharacterId;
-        }
+        public override int GetHashCode() => CharacterId;
 
-        public override string ToString()
-        {
-            return $"Char(Name={CharacterName})";
-        }
+        public override string ToString() => $"Char(Name={CharacterName})";
     }
 }

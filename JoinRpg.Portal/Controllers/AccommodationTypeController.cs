@@ -40,9 +40,14 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
+            {
                 return NotFound($"Project {projectId} not found");
+            }
+
             if (!project.Details.EnableAccommodation)
+            {
                 return RedirectToAction("Edit", "Game");
+            }
 
             return View(new AccommodationListViewModel(project,
                 await AccommodationRepository.GetRoomTypesForProject(projectId),
@@ -104,7 +109,10 @@ namespace JoinRpg.Portal.Controllers
             if (!ModelState.IsValid)
             {
                 if (model.Id == 0)
+                {
                     return View("AddRoomType", model);
+                }
+
                 return View("EditRoomType", model);
             }
             await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
@@ -129,7 +137,7 @@ namespace JoinRpg.Portal.Controllers
             try
             {
                 IReadOnlyCollection<int> ids = reqId.Split(',')
-                    .Select(s => int.TryParse(s, out int val) ? val : 0)
+                    .Select(s => int.TryParse(s, out var val) ? val : 0)
                     .Where(val => val > 0)
                     .ToList();
                 if (ids.Count > 0)
@@ -160,9 +168,14 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
+            {
                 return NotFound($"Project {projectId} not found");
+            }
+
             if (!project.Details.EnableAccommodation)
+            {
                 return RedirectToAction("Edit", "Game");
+            }
 
             //TODO: Implement mass occupation
 
@@ -175,9 +188,14 @@ namespace JoinRpg.Portal.Controllers
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
             if (project == null)
+            {
                 return NotFound($"Project {projectId} not found");
+            }
+
             if (!project.Details.EnableAccommodation)
+            {
                 return RedirectToAction("Edit", "Game");
+            }
 
             await _accommodationService.UnOccupyAll(projectId);
 
@@ -279,7 +297,7 @@ namespace JoinRpg.Portal.Controllers
         {
             try
             {
-                if (int.TryParse(room, out int roomId))
+                if (int.TryParse(room, out var roomId))
                 {
                     await _accommodationService.EditRoom(roomId, name, projectId, roomTypeId);
                     return Ok();

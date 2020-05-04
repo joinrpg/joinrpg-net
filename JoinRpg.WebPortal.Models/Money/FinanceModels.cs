@@ -31,10 +31,7 @@ namespace JoinRpg.Web.Models
     {
         public JoinHtmlString PreferentialFeeConditions { get; set; }
 
-        public MarkMeAsPreferentialViewModel()
-        {
-            ShowLabel = false;
-        }
+        public MarkMeAsPreferentialViewModel() => ShowLabel = false;
 
         public MarkMeAsPreferentialViewModel(ClaimViewModel claim) : this()
         {
@@ -88,8 +85,8 @@ namespace JoinRpg.Web.Models
         [DisplayName("Комментарий к платежу")]
         public new string CommentText
         {
-            get { return base.CommentText; }
-            set { base.CommentText = value; }
+            get => base.CommentText;
+            set => base.CommentText = value;
         }
 
         [Range(1, 100000, ErrorMessage = "Сумма оплаты должна быть от 1 до 100000")]
@@ -97,18 +94,15 @@ namespace JoinRpg.Web.Models
         [DisplayName("Сумма к оплате")]
         public new int Money
         {
-            get { return base.Money; }
-            set { base.Money = value; }
+            get => base.Money;
+            set => base.Money = value;
         }
 
         public bool AcceptContract { get; set; }
 
         public PaymentViewModel() { }
 
-        public PaymentViewModel(ClaimViewModel claim) : base(claim)
-        {
-            ActionName = "Оплатить";
-        }
+        public PaymentViewModel(ClaimViewModel claim) : base(claim) => ActionName = "Оплатить";
 
         /// <inheritdoc />
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -176,8 +170,8 @@ namespace JoinRpg.Web.Models
         [UIHint("MarkdownString")]
         public new string CommentText
         {
-            get { return base.CommentText; }
-            set { base.CommentText = value; }
+            get => base.CommentText;
+            set => base.CommentText = value;
         }
 
         /// <summary>
@@ -385,9 +379,11 @@ namespace JoinRpg.Web.Models
         /// <inheritdoc />
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (PaymentTypeId == null && (TypeKind == null || TypeKind != PaymentTypeKindViewModel.Online && MasterId == null))
+            if (PaymentTypeId == null && (TypeKind == null || (TypeKind != PaymentTypeKindViewModel.Online && MasterId == null)))
+            {
                 yield return new ValidationResult("Для новых методов оплаты должен быть указан тип и пользователь",
                     new[] { nameof(PaymentTypeId), nameof(TypeKind), nameof(MasterId) });
+            }
         }
     }
 

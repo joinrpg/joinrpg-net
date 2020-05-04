@@ -19,7 +19,7 @@ namespace JoinRpg.Services.Impl.Search
         public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
         {
             bool matchByIdIsPerfect;
-            int? characterIdToFind = SearchKeywordsResolver.TryGetId(
+            var characterIdToFind = SearchKeywordsResolver.TryGetId(
               searchString,
               keysForPerfectMath,
               out matchByIdIsPerfect);

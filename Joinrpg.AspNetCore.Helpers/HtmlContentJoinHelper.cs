@@ -17,7 +17,7 @@ namespace Joinrpg.AspNetCore.Helpers
         public static IHtmlContent JoinList(this IHtmlHelper self, string rawSeparator, IEnumerable<IHtmlContent> contents)
         {
             var builder = new HtmlContentBuilder();
-            bool writeSep = false;
+            var writeSep = false;
             foreach (var c in contents)
             {
                 if (writeSep)
@@ -56,9 +56,6 @@ namespace Joinrpg.AspNetCore.Helpers
         /// <summary>
         /// Call Html.DisplayFor(..) for every element in list and then joins them with separator
         /// </summary>
-        public static IHtmlContent JoinDisplayFor<TModel, TListItem>(this IHtmlHelper<TModel> self, string rawSeparator, IEnumerable<TListItem> list)
-        {
-            return self.JoinDisplayFor(rawSeparator, list, item => item);
-        }
+        public static IHtmlContent JoinDisplayFor<TModel, TListItem>(this IHtmlHelper<TModel> self, string rawSeparator, IEnumerable<TListItem> list) => self.JoinDisplayFor(rawSeparator, list, item => item);
     }
 }

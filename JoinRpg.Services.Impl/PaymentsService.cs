@@ -55,7 +55,10 @@ namespace JoinRpg.Services.Impl
             Claim claim = await UnitOfWork.GetClaimsRepository()
                 .GetClaim(projectId, claimId);
             if (claim == null)
+            {
                 throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
+            }
+
             return claim;
         }
 
@@ -67,16 +70,22 @@ namespace JoinRpg.Services.Impl
 
             // Checking access rights
             if (claim.PlayerUserId != CurrentUserId)
+            {
                 throw new NoAccessToProjectException(claim.Project, CurrentUserId);
+            }
 
             PaymentType onlinePaymentType =
                 claim.Project.ActivePaymentTypes.SingleOrDefault(
                     pt => pt.TypeKind == PaymentTypeKind.Online);
             if (onlinePaymentType == null)
+            {
                 throw new OnlinePaymentsNotAvailable(claim.Project);
+            }
 
             if (request.Money <= 0)
+            {
                 throw new PaymentException(claim.Project, $"Money amount must be positive integer");
+            }
 
             User user = await GetCurrentUser();
 
@@ -167,13 +176,24 @@ namespace JoinRpg.Services.Impl
             FinanceOperation fo = await UnitOfWork.GetDbSet<FinanceOperation>().FindAsync(operationId);
 
             if (fo == null)
+            {
                 throw new JoinRpgEntityNotFoundException(operationId, nameof(FinanceOperation));
+            }
+
             if (fo.ClaimId != claimId)
+            {
                 throw new JoinRpgEntityNotFoundException(claimId, nameof(Claim));
+            }
+
             if (fo.ProjectId != projectId)
+            {
                 throw new JoinRpgEntityNotFoundException(projectId, nameof(Project));
+            }
+
             if (fo.OperationType != FinanceOperationType.Online || fo.PaymentType?.TypeKind != PaymentTypeKind.Online)
+            {
                 throw new PaymentException(fo.Project, "Finance operation is not online payment");
+            }
 
             return fo;
         }
@@ -240,11 +260,15 @@ namespace JoinRpg.Services.Impl
                     }
                 }
                 else if (IsCurrentUserAdmin)
+                {
                     throw new PaymentException(fo.Project, $"Payment status check failed: {paymentInfo.ErrorDescription}");
+                }
 
                 // Saving if status was updated
                 if (fo.State != FinanceOperationState.Proposed)
+                {
                     await UnitOfWork.SaveChangesAsync();
+                }
 
                 // TODO: Probably need to send some notifications?
             }
@@ -270,18 +294,12 @@ namespace JoinRpg.Services.Impl
 
         private class PaymentSuccessUrl : PaymentRedirectUrl
         {
-            public PaymentSuccessUrl(int projectId, int claimId) : base(projectId, claimId)
-            {
-                LinkType = LinkType.PaymentSuccess;
-            }
+            public PaymentSuccessUrl(int projectId, int claimId) : base(projectId, claimId) => LinkType = LinkType.PaymentSuccess;
         }
 
         private class PaymentFailUrl : PaymentRedirectUrl
         {
-            public PaymentFailUrl(int projectId, int claimId) : base(projectId, claimId)
-            {
-                LinkType = LinkType.PaymentFail;
-            }
+            public PaymentFailUrl(int projectId, int claimId) : base(projectId, claimId) => LinkType = LinkType.PaymentFail;
         }
 
     }

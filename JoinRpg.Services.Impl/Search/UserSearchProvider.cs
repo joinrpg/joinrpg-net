@@ -25,7 +25,7 @@ namespace JoinRpg.Services.Impl.Search
         public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
         {
             bool matchByIdIsPerfect;
-            int? idToFind = SearchKeywordsResolver.TryGetId(
+            var idToFind = SearchKeywordsResolver.TryGetId(
               searchString,
               keysForPerfectMath,
               out matchByIdIsPerfect);
@@ -47,7 +47,7 @@ namespace JoinRpg.Services.Impl.Search
 
             return results.Select(user =>
             {
-                bool wasfoundById = user.UserId == idToFind;
+                var wasfoundById = user.UserId == idToFind;
                 var description = new MarkdownString(wasfoundById
             ? WorldObjectProviderBase.GetFoundByIdDescription(user.UserId)
             : "");

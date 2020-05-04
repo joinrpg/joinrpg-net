@@ -40,15 +40,9 @@ namespace JoinRpg.Web.Models.Characters
 
         public override bool Equals(object obj) => Equals(obj as CharacterGroupReportItemViewModel);
 
-        public override int GetHashCode()
-        {
-            return CharacterGroupId;
-        }
+        public override int GetHashCode() => CharacterGroupId;
 
-        public override string ToString()
-        {
-            return $"ChGroup(Name={Name})";
-        }
+        public override string ToString() => $"ChGroup(Name={Name})";
     }
 
 }

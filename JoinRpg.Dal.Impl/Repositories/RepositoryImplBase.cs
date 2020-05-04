@@ -6,14 +6,8 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
         protected MyDbContext Ctx { get; }
 
-        protected RepositoryImplBase(MyDbContext ctx)
-        {
-            Ctx = ctx;
-        }
+        protected RepositoryImplBase(MyDbContext ctx) => Ctx = ctx;
 
-        public void Dispose()
-        {
-            Ctx?.Dispose();
-        }
+        public void Dispose() => Ctx?.Dispose();
     }
 }

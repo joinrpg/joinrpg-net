@@ -175,10 +175,7 @@ namespace JoinRpg.Portal.Controllers
 
         [AdminAuthorize]
         [HttpGet("force-admin-access")]
-        public ActionResult ForceSet(int projectid)
-        {
-            return View();
-        }
+        public ActionResult ForceSet(int projectid) => View();
 
         [AdminAuthorize]
         [HttpPost("force-admin-access")]

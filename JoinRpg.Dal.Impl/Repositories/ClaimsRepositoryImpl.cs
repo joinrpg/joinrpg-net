@@ -19,10 +19,7 @@ namespace JoinRpg.Dal.Impl.Repositories
         {
         }
 
-        public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status)
-        {
-            return GetClaimsImpl(projectId, status, claim => true);
-        }
+        public Task<IReadOnlyCollection<Claim>> GetClaims(int projectId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, claim => true);
 
         public async Task<IReadOnlyCollection<Claim>> GetClaimsForMoneyTransfersListAsync(int projectId, ClaimStatusSpec claimStatusSpec)
         {
@@ -66,10 +63,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .ToListAsync();
         }
 
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status)
-        {
-            return GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
-        }
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForMaster(int projectId, int userId, ClaimStatusSpec status) => GetClaimsImpl(projectId, status, claim => claim.ResponsibleMasterUserId == userId);
 
         public Task<Claim> GetClaim(int projectId, int? claimId) => GetClaimImpl(
           e => e.ClaimId == claimId && e.ProjectId == projectId);
@@ -155,14 +149,8 @@ namespace JoinRpg.Dal.Impl.Repositories
                         )));
         }
 
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId)
-        {
-            return GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
-        }
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForGroupDirect(int projectId, ClaimStatusSpec active, int characterGroupsId) => GetClaimsImpl(projectId, active, claim => claim.CharacterGroupId == characterGroupsId);
 
-        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId)
-        {
-            return GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
-        }
+        public Task<IReadOnlyCollection<Claim>> GetClaimsForPlayer(int projectId, ClaimStatusSpec claimStatusSpec, int userId) => GetClaimsImpl(projectId, claimStatusSpec, claim => claim.PlayerUserId == userId);
     }
 }

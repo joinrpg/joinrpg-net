@@ -28,7 +28,7 @@ namespace JoinRpg.Domain
         [CanBeNull]
         public string Value
         {
-            get { return _value; }
+            get => _value;
             set
             {
                 _value = value;
@@ -75,16 +75,10 @@ namespace JoinRpg.Domain
         }
 
         [ItemNotNull, NotNull]
-        public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues()
-        {
-            return OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
-        }
+        public IEnumerable<ProjectFieldDropdownValue> GetDropdownValues() => OrderedValueCache.Value.Where(v => SelectedIds.Contains(v.ProjectFieldDropdownValueId));
 
         [NotNull, ItemNotNull]
-        public IEnumerable<CharacterGroup> GetSpecialGroupsToApply()
-        {
-            return Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
-        }
+        public IEnumerable<CharacterGroup> GetSpecialGroupsToApply() => Field.HasSpecialGroup() ? GetDropdownValues().Select(c => c.CharacterGroup) : Enumerable.Empty<CharacterGroup>();
 
         public bool HasViewAccess(AccessArguments accessArguments)
         {
@@ -100,13 +94,13 @@ namespace JoinRpg.Domain
 
         public bool HasEditAccess(AccessArguments accessArguments)
         {
-            return (accessArguments.MasterAccess
+            return accessArguments.MasterAccess
                    ||
                    (accessArguments.PlayerAccessToCharacter && Field.CanPlayerEdit &&
                     Field.FieldBoundTo == FieldBoundTo.Character)
                    ||
                    (accessArguments.PlayerAccesToClaim && Field.CanPlayerEdit &&
-                   (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter)));
+                   (Field.ShowOnUnApprovedClaims || accessArguments.PlayerAccessToCharacter));
         }
 
         public override string ToString() => $"{Field.FieldName}={Value}";
@@ -118,7 +112,10 @@ namespace JoinRpg.Domain
         public int ToInt()
         {
             if (!int.TryParse(Value, out var result))
+            {
                 result = default(int);
+            }
+
             return result;
         }
 

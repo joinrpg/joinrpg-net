@@ -9,10 +9,7 @@ namespace JoinRpg.Portal.Infrastructure
 {
     public class SetUserDataFilterAttribute : ResultFilterAttribute
     {
-        public SetUserDataFilterAttribute(ICurrentUserAccessor currentUserAccessor)
-        {
-            CurrentUserAccessor = currentUserAccessor;
-        }
+        public SetUserDataFilterAttribute(ICurrentUserAccessor currentUserAccessor) => CurrentUserAccessor = currentUserAccessor;
 
         private ICurrentUserAccessor CurrentUserAccessor { get; }
 

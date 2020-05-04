@@ -27,15 +27,9 @@ namespace JoinRpg.Services.Email
             }
         }
 
-        public static bool GetEmailEnabled(this EmailModelBase model)
-        {
-            return !model.ProjectName.Trim().StartsWith("NOEMAIL");
-        }
+        public static bool GetEmailEnabled(this EmailModelBase model) => !model.ProjectName.Trim().StartsWith("NOEMAIL");
 
-        public static List<User> GetRecipients(this EmailModelBase model)
-        {
-            return model.Recipients.Where(u => u != null && u.UserId != model.Initiator.UserId).Distinct().ToList();
-        }
+        public static List<User> GetRecipients(this EmailModelBase model) => model.Recipients.Where(u => u != null && u.UserId != model.Initiator.UserId).Distinct().ToList();
 
         public static string GetPlayerList(this IEnumerable<Claim> claims)
         {
@@ -49,14 +43,8 @@ namespace JoinRpg.Services.Email
             return players.JoinStrings(" \n- ");
         }
 
-        public static string GetClaimEmailTitle(this EmailModelBase model, Claim claim)
-        {
-            return $"{model.ProjectName}: {claim.Name}, игрок {claim.Player.GetDisplayName()}";
-        }
+        public static string GetClaimEmailTitle(this EmailModelBase model, Claim claim) => $"{model.ProjectName}: {claim.Name}, игрок {claim.Player.GetDisplayName()}";
 
-        public static string GetClaimEmailTitle(this ClaimEmailModel model)
-        {
-            return model.GetClaimEmailTitle(model.Claim);
-        }
+        public static string GetClaimEmailTitle(this ClaimEmailModel model) => model.GetClaimEmailTitle(model.Claim);
     }
 }

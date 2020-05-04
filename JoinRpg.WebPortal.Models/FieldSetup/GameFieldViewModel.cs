@@ -80,13 +80,12 @@ namespace JoinRpg.Web.Models.FieldSetup
             }
 
             foreach (var validationResult in ValidateCore())
+            {
                 yield return validationResult;
+            }
         }
 
-        protected virtual IEnumerable<ValidationResult> ValidateCore()
-        {
-            return Enumerable.Empty<ValidationResult>();
-        }
+        protected virtual IEnumerable<ValidationResult> ValidateCore() => Enumerable.Empty<ValidationResult>();
     }
 
     public class GameFieldEditViewModel : GameFieldViewModelBase, IMovableListItem
@@ -247,8 +246,8 @@ namespace JoinRpg.Web.Models.FieldSetup
 
         public GameFieldListViewModel(FieldNavigationModel navigation, IEnumerable<GameFieldEditViewModel> fields)
         {
-            this.Navigation = navigation;
-            this.Items = fields;
+            Navigation = navigation;
+            Items = fields;
         }
     }
 
@@ -417,9 +416,6 @@ namespace JoinRpg.Web.Models.FieldSetup
 
     public static class GameFieldViewModelsExtensions
     {
-        public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields, int currentUserId)
-        {
-            return gameFields.Select(pf => new GameFieldEditViewModel(pf, currentUserId)).MarkFirstAndLast();
-        }
+        public static IEnumerable<GameFieldEditViewModel> ToViewModels(this IEnumerable<ProjectField> gameFields, int currentUserId) => gameFields.Select(pf => new GameFieldEditViewModel(pf, currentUserId)).MarkFirstAndLast();
     }
 }

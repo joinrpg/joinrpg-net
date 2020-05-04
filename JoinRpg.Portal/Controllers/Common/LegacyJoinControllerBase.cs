@@ -15,15 +15,9 @@ namespace JoinRpg.Portal.Controllers.Common
 
         protected readonly IUserRepository UserRepository;
 
-        protected LegacyJoinControllerBase(IUserRepository userRepository)
-        {
-            UserRepository = userRepository;
-        }
+        protected LegacyJoinControllerBase(IUserRepository userRepository) => UserRepository = userRepository;
 
-        protected async Task<User> GetCurrentUserAsync()
-        {
-            return await UserRepository.GetById(CurrentUserId);
-        }
+        protected async Task<User> GetCurrentUserAsync() => await UserRepository.GetById(CurrentUserId);
 
         protected int CurrentUserId
         {
@@ -31,7 +25,10 @@ namespace JoinRpg.Portal.Controllers.Common
             {
                 var id = CurrentUserIdOrDefault;
                 if (id == null)
+                {
                     throw new Exception("Authorization required here");
+                }
+
                 return id.Value;
             }
         }

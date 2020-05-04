@@ -50,7 +50,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
 
         private void BuildAppointments(SchedulePageViewModel viewModel)
         {
-            List<AppointmentViewModel> result = new List<AppointmentViewModel>(64);
+            var result = new List<AppointmentViewModel>(64);
 
             for (var i = 0; i < viewModel.Rows.Count; i++)
             {
@@ -59,7 +59,9 @@ namespace JoinRpg.WebPortal.Managers.Schedule
                 {
                     var slot = row[j];
                     if (slot.IsEmpty || slot.ColSpan == 0 || slot.RowSpan == 0)
+                    {
                         continue;
+                    }
 
                     var rowIndex = i;
                     var colIndex = j;

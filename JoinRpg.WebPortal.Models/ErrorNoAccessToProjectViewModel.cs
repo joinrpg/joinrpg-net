@@ -15,7 +15,11 @@ namespace JoinRpg.Web.Models
 
         public ErrorNoAccessToProjectViewModel([NotNull] Project project, Permission permission = Permission.None)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             CanGrantAccess = project.ProjectAcls.Where(acl => acl.CanGrantRights).Select(acl => acl.User);
             ProjectId = project.ProjectId;
             ProjectName = project.ProjectName;

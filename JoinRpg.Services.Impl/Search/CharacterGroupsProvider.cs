@@ -12,7 +12,7 @@ namespace JoinRpg.Services.Impl.Search
         public async Task<IReadOnlyCollection<ISearchResult>> SearchAsync(int? currentUserId, string searchString)
         {
             int parsedValue;
-            int? characterGroupIdToFind = int.TryParse(searchString.Trim(), out parsedValue)
+            var characterGroupIdToFind = int.TryParse(searchString.Trim(), out parsedValue)
               ? (int?)parsedValue
               : null;
 

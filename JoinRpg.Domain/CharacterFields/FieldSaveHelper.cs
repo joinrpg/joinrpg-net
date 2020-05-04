@@ -83,7 +83,10 @@ namespace JoinRpg.Domain.CharacterFields
             /// </summary>
             public bool AssignFieldValue(FieldWithValue field, string newValue)
             {
-                if (field.Value == newValue) return false;
+                if (field.Value == newValue)
+                {
+                    return false;
+                }
 
                 var existingField = UpdatedFields.FirstOrDefault(uf => uf.Field == field.Field);
                 if (existingField != null)
@@ -231,10 +234,7 @@ namespace JoinRpg.Domain.CharacterFields
                 UpdateSpecialGroups(fields);
             }
 
-            protected override void SetCharacterNameFromPlayer()
-            {
-                Character.CharacterName = Claim.Player.GetDisplayName();
-            }
+            protected override void SetCharacterNameFromPlayer() => Character.CharacterName = Claim.Player.GetDisplayName();
         }
 
         /// <summary>
@@ -250,7 +250,11 @@ namespace JoinRpg.Domain.CharacterFields
             IReadOnlyDictionary<int, string> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return SaveCharacterFieldsImpl(currentUserId,
                 claim.Character,
                 claim,
@@ -271,7 +275,11 @@ namespace JoinRpg.Domain.CharacterFields
             IReadOnlyDictionary<int, string> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             return SaveCharacterFieldsImpl(currentUserId,
                 character,
                 character.ApprovedClaim,
@@ -290,7 +298,10 @@ namespace JoinRpg.Domain.CharacterFields
             IReadOnlyDictionary<int, string> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
-            if (newFieldValue == null) throw new ArgumentNullException(nameof(newFieldValue));
+            if (newFieldValue == null)
+            {
+                throw new ArgumentNullException(nameof(newFieldValue));
+            }
 
             var strategy = CreateStrategy(currentUserId, character, claim, generator);
 

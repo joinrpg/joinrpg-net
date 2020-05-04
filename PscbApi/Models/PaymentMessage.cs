@@ -137,7 +137,9 @@ namespace PscbApi.Models
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (Amount < MinPayment)
+            {
                 yield return new ValidationResult($"{nameof(Amount)} could not be less than {MinPayment}", new[] { nameof(Amount) });
+            }
         }
     }
 }

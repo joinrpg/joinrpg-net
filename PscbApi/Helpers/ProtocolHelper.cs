@@ -18,10 +18,12 @@ namespace PscbApi
             var item = items.FirstOrDefault(
                 i => i.StartsWith(ident, true, CultureInfo.InvariantCulture));
             if (!string.IsNullOrWhiteSpace(item))
+            {
                 handleData(
                     item.Remove(0, ident.Length)
                         .TrimStart(':')
                         .Trim());
+            }
         }
 
         /// <summary>
@@ -32,7 +34,7 @@ namespace PscbApi
         public static BankResponseInfo ParseDescriptionString(string description)
         {
             var items = description?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            BankResponseInfo result = new BankResponseInfo();
+            var result = new BankResponseInfo();
             if (items?.Length > 0)
             {
                 items.CheckItem(

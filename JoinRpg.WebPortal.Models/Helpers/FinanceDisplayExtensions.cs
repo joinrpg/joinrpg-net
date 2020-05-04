@@ -38,7 +38,10 @@ namespace JoinRpg.Web.Models
         public static string GetDisplayName([NotNull] this PaymentType paymentType)
         {
             if (paymentType == null)
+            {
                 throw new ArgumentNullException(nameof(paymentType));
+            }
+
             return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
         }
 
@@ -48,7 +51,10 @@ namespace JoinRpg.Web.Models
         public static string GetDisplayName([NotNull] this PaymentTypeViewModel paymentType)
         {
             if (paymentType == null)
+            {
                 throw new ArgumentNullException(nameof(paymentType));
+            }
+
             return paymentType.TypeKind.GetDisplayName(paymentType.User, paymentType.Name);
 
         }

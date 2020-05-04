@@ -36,10 +36,7 @@ namespace JoinRpg.Web.Models.Plot
         public CharacterGroupDetailsViewModel GroupNavigation { get; }
 
         public PlotFolderListViewModelForGroup(IEnumerable<PlotFolder> folders, Project project, int? currentUserId, CharacterGroupDetailsViewModel groupNavigation)
-          : base(folders, project, currentUserId)
-        {
-            GroupNavigation = groupNavigation;
-        }
+          : base(folders, project, currentUserId) => GroupNavigation = groupNavigation;
     }
 
     [ReadOnly(true)]

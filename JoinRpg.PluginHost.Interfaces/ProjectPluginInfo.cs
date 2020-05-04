@@ -15,10 +15,26 @@ namespace JoinRpg.PluginHost.Interfaces
           [CanBeNull, ItemNotNull] IReadOnlyCollection<PluginFieldMapping> activeMappings,
           [CanBeNull] int? projectPluginId)
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (staticPages == null) throw new ArgumentNullException(nameof(staticPages));
-            if (description == null) throw new ArgumentNullException(nameof(description));
-            if (possibleMappings == null) throw new ArgumentNullException(nameof(possibleMappings));
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (staticPages == null)
+            {
+                throw new ArgumentNullException(nameof(staticPages));
+            }
+
+            if (description == null)
+            {
+                throw new ArgumentNullException(nameof(description));
+            }
+
+            if (possibleMappings == null)
+            {
+                throw new ArgumentNullException(nameof(possibleMappings));
+            }
+
             Name = name;
             Installed = projectPluginId != null;
             StaticPages = staticPages;

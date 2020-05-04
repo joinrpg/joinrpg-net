@@ -24,7 +24,11 @@ namespace JoinRpg.Domain
             Expression<Func<ProjectAcl, bool>> access,
             ExtraAccessReason reasons = ExtraAccessReason.None)
         {
-            if (claim?.Project == null) throw new ArgumentNullException(nameof(claim));
+            if (claim?.Project == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             if (!claim.HasAccess(currentUserId, access, reasons))
             {
                 throw new NoAccessToProjectException(claim, currentUserId);
@@ -37,10 +41,7 @@ namespace JoinRpg.Domain
         public static Claim RequestAccess([CanBeNull]
             this Claim claim,
             int currentUserId,
-            ExtraAccessReason reasons = ExtraAccessReason.None)
-        {
-            return claim.RequestAccess(currentUserId, acl => true, reasons);
-        }
+            ExtraAccessReason reasons = ExtraAccessReason.None) => claim.RequestAccess(currentUserId, acl => true, reasons);
 
         public static bool HasAccess([NotNull] this Claim claim,
             int? userId,
@@ -48,8 +49,15 @@ namespace JoinRpg.Domain
             Expression<Func<ProjectAcl, bool>> permission,
             ExtraAccessReason reasons = ExtraAccessReason.None)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
-            if (permission == null) throw new ArgumentNullException(nameof(permission));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (permission == null)
+            {
+                throw new ArgumentNullException(nameof(permission));
+            }
 
             if (userId == null)
             {
@@ -71,9 +79,6 @@ namespace JoinRpg.Domain
 
         public static bool HasAccess([NotNull] this Claim claim,
             int? userId,
-            ExtraAccessReason reasons = ExtraAccessReason.None)
-        {
-            return claim.HasAccess(userId, acl => true, reasons);
-        }
+            ExtraAccessReason reasons = ExtraAccessReason.None) => claim.HasAccess(userId, acl => true, reasons);
     }
 }

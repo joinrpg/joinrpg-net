@@ -47,8 +47,8 @@ namespace JoinRpg.Dal.Impl.Repositories
             GetClaimsWithSameAccommodationTypeToInvite(int accommodationTypeId)
         {
             return await Ctx.Set<AccommodationRequest>().Where(request =>
-                    (request.AccommodationTypeId == accommodationTypeId &&
-                     request.AccommodationId == null))
+                    request.AccommodationTypeId == accommodationTypeId &&
+                     request.AccommodationId == null)
                 .SelectMany(request => request.Subjects)
                 .Where(claim => claim.ClaimStatus == Claim.Status.Approved)
                 .Include(claim => claim.Player)

@@ -14,7 +14,11 @@ namespace JoinRpg.Domain
 
         public static IEnumerable<ClaimProblem> GetProblems([NotNull] this Claim claim, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return Filters.SelectMany(f => f.GetProblems(claim)).Where(p => p.Severity >= minimalSeverity);
         }
 
@@ -29,8 +33,16 @@ namespace JoinRpg.Domain
 
         public static bool HasProblemsForFields([NotNull] this Claim claim, [NotNull, ItemNotNull] IEnumerable<ProjectField> fields)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
-            if (fields == null) throw new ArgumentNullException(nameof(fields));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (fields == null)
+            {
+                throw new ArgumentNullException(nameof(fields));
+            }
+
             return claim.GetProblems().OfType<FieldRelatedProblem>().Any(fp => fields.Select(f => f.ProjectFieldId).Contains(fp.Field.ProjectFieldId));
         }
     }
@@ -41,7 +53,11 @@ namespace JoinRpg.Domain
 
         public static IEnumerable<ClaimProblem> GetProblems([NotNull] this Character claim, ProblemSeverity minimalSeverity = ProblemSeverity.Hint)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return Filters.SelectMany(f => f.GetProblems(claim)).Where(p => p.Severity >= minimalSeverity);
         }
 
@@ -55,8 +71,16 @@ namespace JoinRpg.Domain
 
         public static bool HasProblemsForField([NotNull] this Character character, [NotNull] ProjectField field)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
-            if (field == null) throw new ArgumentNullException(nameof(field));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
             return character.GetProblems().OfType<FieldRelatedProblem>().Any(fp => fp.Field == field);
         }
     }
@@ -89,7 +113,11 @@ namespace JoinRpg.Domain
         public FieldRelatedProblem(ClaimProblemType problemType, ProblemSeverity severity, [NotNull] ProjectField field)
           : base(problemType, severity, null, field.FieldName)
         {
-            if (field == null) throw new ArgumentNullException(nameof(field));
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+
             Field = field;
         }
     }

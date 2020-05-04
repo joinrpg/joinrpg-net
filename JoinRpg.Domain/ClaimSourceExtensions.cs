@@ -22,14 +22,15 @@ namespace JoinRpg.Domain
         public static IEnumerable<CharacterGroup> GetChildrenGroups([NotNull]
             this CharacterGroup target)
         {
-            if (target == null) throw new ArgumentNullException(nameof(target));
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             return target.ChildGroups.SelectMany(g => g.FlatTree(gr => gr.ChildGroups)).Distinct();
         }
 
-        public static bool HasActiveClaims(this IClaimSource target)
-        {
-            return target.Claims.Any(claim => claim.ClaimStatus.IsActive());
-        }
+        public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
 
         public static bool IsNpc([CanBeNull]
             this IClaimSource target)
@@ -39,35 +40,20 @@ namespace JoinRpg.Domain
         }
 
         public static bool IsAcceptingClaims<T>(this T characterGroup)
-            where T : IClaimSource
-        {
-            return !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
-        }
+            where T : IClaimSource => !ValidateIfCanAddClaim(characterGroup, playerUserId: null).Any();
 
         public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanAddClaim<T>(
             this T claimSource,
             int? playerUserId)
-            where T : IClaimSource
-        {
-            return ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
-        }
+            where T : IClaimSource => ValidateImpl(claimSource, playerUserId, existingClaim: null).ToList();
 
 
-        public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim)
-        {
-            return ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
-        }
+        public static IReadOnlyCollection<AddClaimForbideReason> ValidateIfCanMoveClaim(this IClaimSource claimSource, Claim claim) => ValidateImpl(claimSource, claim.PlayerUserId, claim).ToList();
 
         public static void EnsureCanAddClaim<T>(this T claimSource, int currentUserId)
-            where T : IClaimSource
-        {
-            ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
-        }
+            where T : IClaimSource => ThrowIfValidationFailed(claimSource.ValidateIfCanAddClaim(currentUserId), claim: null);
 
-        public static void EnsureCanMoveClaim(this IClaimSource claimSource, Claim claim)
-        {
-            ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
-        }
+        public static void EnsureCanMoveClaim(this IClaimSource claimSource, Claim claim) => ThrowIfValidationFailed(claimSource.ValidateIfCanMoveClaim(claim), claim);
 
         private static void ThrowIfValidationFailed(
             IReadOnlyCollection<AddClaimForbideReason> validation,

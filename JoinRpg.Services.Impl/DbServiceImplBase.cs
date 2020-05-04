@@ -77,15 +77,9 @@ namespace JoinRpg.Services.Impl
             Now = DateTime.UtcNow;
         }
 
-        protected void StartImpersonate(int userId)
-        {
-            _impersonatedUserId = userId;
-        }
+        protected void StartImpersonate(int userId) => _impersonatedUserId = userId;
 
-        protected void ResetImpersonation()
-        {
-            _impersonatedUserId = null;
-        }
+        protected void ResetImpersonation() => _impersonatedUserId = null;
 
         [NotNull]
         protected async Task<T> LoadProjectSubEntityAsync<T>(int projectId, int subentityId)
@@ -208,14 +202,8 @@ namespace JoinRpg.Services.Impl
             entity.UpdatedById = CurrentUserId;
         }
 
-        protected void MarkTreeModified([NotNull] Project project)
-        {
-            project.CharacterTreeModifiedAt = Now;
-        }
+        protected void MarkTreeModified([NotNull] Project project) => project.CharacterTreeModifiedAt = Now;
 
-        protected async Task<User> GetCurrentUser()
-        {
-            return await UserRepository.GetById(CurrentUserId);
-        }
+        protected async Task<User> GetCurrentUser() => await UserRepository.GetById(CurrentUserId);
     }
 }

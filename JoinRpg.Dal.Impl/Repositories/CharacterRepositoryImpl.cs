@@ -29,10 +29,7 @@ namespace JoinRpg.Dal.Impl.Repositories
               }).ToListAsync();
         }
 
-        public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds)
-        {
-            return await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
-        }
+        public async Task<IReadOnlyCollection<Character>> GetCharacters(int projectId, IReadOnlyCollection<int> characterIds) => await Ctx.Set<Character>().Where(cg => cg.ProjectId == projectId && characterIds.Contains(cg.CharacterId)).ToListAsync();
 
         public async Task<Character> GetCharacterWithGroups(int projectId, int characterId)
         {

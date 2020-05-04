@@ -17,10 +17,7 @@ namespace JoinRpg.Domain.CharacterFields
         public FieldWithPreviousAndNewValue(
           ProjectField field,
           [CanBeNull] string value,
-          [CanBeNull] string previousValue) : base(field, value)
-        {
-            PreviousValue = previousValue;
-        }
+          [CanBeNull] string previousValue) : base(field, value) => PreviousValue = previousValue;
 
         public override string ToString() => $"{Field.FieldName}={Value},PreviousValue={PreviousValue}";
     }

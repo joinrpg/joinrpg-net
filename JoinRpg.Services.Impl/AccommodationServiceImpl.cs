@@ -21,7 +21,9 @@ namespace JoinRpg.Services.Impl
         public async Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType)
         {
             if (roomType.ProjectId == 0)
+            {
                 throw new ArgumentException("Inconsistent state. ProjectId can't be 0");
+            }
 
             ProjectAccommodationType result;
 
@@ -48,10 +50,7 @@ namespace JoinRpg.Services.Impl
             return result;
         }
 
-        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId)
-        {
-            return await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
-        }
+        public async Task<IReadOnlyCollection<ProjectAccommodationType>> GetRoomTypesAsync(int projectId) => await AccomodationRepository.GetAccommodationForProject(projectId).ConfigureAwait(false);
 
         public async Task<ProjectAccommodationType> GetRoomTypeAsync(int roomTypeId)
         {
@@ -215,9 +214,14 @@ namespace JoinRpg.Services.Impl
 
             ProjectAccommodationType roomType = UnitOfWork.GetDbSet<ProjectAccommodationType>().Find(roomTypeId);
             if (roomType == null)
+            {
                 throw new JoinRpgEntityNotFoundException(roomTypeId, typeof(ProjectAccommodationType).Name);
+            }
+
             if (roomType.ProjectId != projectId)
+            {
                 throw new ArgumentException($"Room type {roomTypeId} is from another project than specified", nameof(roomTypeId));
+            }
 
             // Internal function
             // Creates new room using name and parameters from given room info
@@ -234,13 +238,13 @@ namespace JoinRpg.Services.Impl
             // Iterates through rooms list and creates object for each room from a list
             IEnumerable<ProjectAccommodation> CreateRooms(string r)
             {
-                foreach (string roomCandidate in r.Split(','))
+                foreach (var roomCandidate in r.Split(','))
                 {
-                    int rangePos = roomCandidate.IndexOf('-');
+                    var rangePos = roomCandidate.IndexOf('-');
                     if (rangePos > -1)
                     {
-                        if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out int roomsRangeStart)
-                            && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out int roomsRangeEnd)
+                        if (int.TryParse(roomCandidate.Substring(0, rangePos).Trim(), out var roomsRangeStart)
+                            && int.TryParse(roomCandidate.Substring(rangePos + 1).Trim(), out var roomsRangeEnd)
                             && roomsRangeStart < roomsRangeEnd)
                         {
                             while (roomsRangeStart <= roomsRangeEnd)
@@ -268,16 +272,23 @@ namespace JoinRpg.Services.Impl
             var result = UnitOfWork.GetDbSet<ProjectAccommodation>().Find(roomId);
 
             if (result == null)
+            {
                 throw new JoinRpgEntityNotFoundException(roomId, typeof(ProjectAccommodation).Name);
+            }
+
             if (projectId.HasValue)
             {
                 if (result.ProjectId != projectId.Value)
+                {
                     throw new ArgumentException($"Room {roomId} is from different project than specified", nameof(projectId));
+                }
             }
             if (roomTypeId.HasValue)
             {
                 if (result.AccommodationTypeId != roomTypeId.Value)
+                {
                     throw new ArgumentException($"Room {roomId} is from different room type than specified", nameof(projectId));
+                }
             }
 
             return result;
@@ -301,9 +312,6 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
-        {
-            EmailService = emailService;
-        }
+        public AccommodationServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => EmailService = emailService;
     }
 }

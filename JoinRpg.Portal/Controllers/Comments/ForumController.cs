@@ -94,7 +94,10 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> ViewThread(int projectid, int forumThreadId)
         {
             var forumThread = await GetForumThread(projectid, forumThreadId);
-            if (forumThread == null) return NotFound();
+            if (forumThread == null)
+            {
+                return NotFound();
+            }
 
             var viewModel = new ForumThreadViewModel(forumThread, CurrentUserId);
             return View(viewModel);
@@ -122,7 +125,10 @@ namespace JoinRpg.Portal.Controllers
             CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
             discussion.RequestAnyAccess(CurrentUserId);
 
-            if (discussion == null) return NotFound();
+            if (discussion == null)
+            {
+                return NotFound();
+            }
 
             try
 

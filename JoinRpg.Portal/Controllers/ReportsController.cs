@@ -18,13 +18,19 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             var template =
                 field.Project.GameReport2DTemplates.SingleOrDefault(
                     t => t.GameReport2DTemplateId == gameReport2DTemplateId);
 
-            if (template == null) return NotFound();
+            if (template == null)
+            {
+                return NotFound();
+            }
 
             var report2DResultViewModel = new Report2DResultViewModel(template);
 

@@ -48,10 +48,7 @@ namespace JoinRpg.Services.Impl.Search
               || entity.Project.HasMasterAccess(currentUserId);
         }
 
-        public static string GetFoundByIdDescription(int idToFind)
-        {
-            return $"ID: {idToFind}";
-        }
+        public static string GetFoundByIdDescription(int idToFind) => $"ID: {idToFind}";
 
         public IUnitOfWork UnitOfWork { protected get; set; }
     }

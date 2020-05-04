@@ -8,10 +8,7 @@ namespace JoinRpg.Domain
 {
     public static class CommentExtensions
     {
-        public static bool IsReadByUser(this Comment comment, int userId)
-        {
-            return comment.Discussion.GetWatermark(userId) >= comment.CommentId;
-        }
+        public static bool IsReadByUser(this Comment comment, int userId) => comment.Discussion.GetWatermark(userId) >= comment.CommentId;
 
         private static int GetWatermark(this ICommentDiscussionHeader discussion, int userId)
         {
@@ -20,10 +17,7 @@ namespace JoinRpg.Domain
             return comments.Union(watermarks).Union(0).Max();
         }
 
-        public static IEnumerable<Comment> InLastXDays(this IEnumerable<Comment> masterAnswers, int days)
-        {
-            return masterAnswers.Where(comment => DateTime.UtcNow.Subtract(comment.CreatedAt) < TimeSpan.FromDays(days));
-        }
+        public static IEnumerable<Comment> InLastXDays(this IEnumerable<Comment> masterAnswers, int days) => masterAnswers.Where(comment => DateTime.UtcNow.Subtract(comment.CreatedAt) < TimeSpan.FromDays(days));
 
         public static int GetUnreadCount(this ICommentDiscussionHeader commentDiscussion, int currentUserId)
         {
@@ -31,9 +25,6 @@ namespace JoinRpg.Domain
             return commentDiscussion.Comments.Where(c => c.IsVisibleTo(currentUserId)).Count(comment => watermark < comment.Id);
         }
 
-        public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId)
-        {
-            return comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(currentUserId);
-        }
+        public static bool IsVisibleTo(this ICommentHeader comment, int currentUserId) => comment.IsVisibleToPlayer || comment.Project.HasMasterAccess(currentUserId);
     }
 }

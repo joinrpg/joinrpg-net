@@ -9,10 +9,7 @@ namespace JoinRpg.Services.Impl
     [UsedImplicitly]
     internal class FieldDefaultValueGenerator : IFieldDefaultValueGenerator
     {
-        public FieldDefaultValueGenerator(IPluginFactory pluginFactory)
-        {
-            PluginFactory = pluginFactory;
-        }
+        public FieldDefaultValueGenerator(IPluginFactory pluginFactory) => PluginFactory = pluginFactory;
 
         private IPluginFactory PluginFactory { get; }
         public string CreateDefaultValue(Claim claim, FieldWithValue field) => null;

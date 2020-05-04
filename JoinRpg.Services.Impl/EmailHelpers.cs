@@ -19,7 +19,11 @@ namespace JoinRpg.Services.Impl
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
             IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             var subscriptions = claim
                 .GetSubscriptions(subscribePredicate)
                 .ToList();
@@ -39,7 +43,10 @@ namespace JoinRpg.Services.Impl
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
             IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
 
             var subscriptions = character
                 .GetSubscriptions(subscribePredicate)

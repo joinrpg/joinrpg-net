@@ -34,10 +34,7 @@ namespace JoinRpg.Domain
         [PublicAPI]
         public Project Project { get; }
 
-        public JoinRpgProjectException(Project project, string message) : base(message)
-        {
-            Project = project;
-        }
+        public JoinRpgProjectException(Project project, string message) : base(message) => Project = project;
     }
 
     public abstract class JoinRpgProjectEntityException : JoinRpgProjectException
@@ -192,10 +189,7 @@ namespace JoinRpg.Domain
     public class MasterHasResponsibleException : JoinRpgProjectEntityException
     {
         public User Master { get; }
-        public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.")
-        {
-            Master = entity.User;
-        }
+        public MasterHasResponsibleException(ProjectAcl entity) : base(entity, "Cannot remove master that has groups attached to it.") => Master = entity.User;
     }
 
     public class RoomIsOccupiedException : JoinRpgProjectEntityException
@@ -211,32 +205,20 @@ namespace JoinRpg.Domain
         public int? UserId { get; }
 
         public NoAccessToProjectException(Project project, int? userId, Expression<Func<ProjectAcl, bool>> accessExpression)
-          : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}")
-        {
-            UserId = userId;
-        }
+          : base(project, $"No access to project {project.ProjectName} for user {userId}. Required access: {accessExpression.AsPropertyName()}") => UserId = userId;
 
         public NoAccessToProjectException(Project project, int? userId)
-          : base(project, $"No access to project {project.ProjectName} for user {userId}")
-        {
-            UserId = userId;
-        }
+          : base(project, $"No access to project {project.ProjectName} for user {userId}") => UserId = userId;
 
         public NoAccessToProjectException(IProjectEntity entity, int? userId)
-      : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}")
-        {
-            UserId = userId;
-        }
+      : base(entity, $"No access to entity of {entity.Project.ProjectName} for user {userId}") => UserId = userId;
     }
 
     public class FieldRequiredException : JoinRpgBaseException
     {
         public string FieldName { get; }
 
-        public FieldRequiredException(string fieldName) : base($"{fieldName}")
-        {
-            FieldName = fieldName;
-        }
+        public FieldRequiredException(string fieldName) : base($"{fieldName}") => FieldName = fieldName;
     }
 
     public class ValueAlreadySetException : JoinRpgBaseException

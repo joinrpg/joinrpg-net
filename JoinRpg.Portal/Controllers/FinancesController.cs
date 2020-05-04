@@ -134,14 +134,19 @@ namespace JoinRpg.Portal.Controllers
             try
             {
                 if (data.PaymentTypeId > 0)
+                {
                     await FinanceService.TogglePaymentActiveness(data.ProjectId, data.PaymentTypeId.Value);
+                }
                 else
+                {
                     await FinanceService.CreatePaymentType(new CreatePaymentTypeRequest
                     {
                         ProjectId = data.ProjectId,
                         TargetMasterId = data.MasterId,
                         TypeKind = (PaymentTypeKind)data.TypeKind.GetValueOrDefault(PaymentTypeKindViewModel.Custom),
                     });
+                }
+
                 return RedirectToAction("Setup", new { projectid = data.ProjectId });
             }
             catch
@@ -290,7 +295,7 @@ namespace JoinRpg.Portal.Controllers
             var generator = ExportDataService.GetGenerator(ExportType.Csv, summary,
         new MoneySummaryByMasterExporter(UriService));
 
-            string fileName = project.ProjectName + ": " + "money-summary";
+            var fileName = project.ProjectName + ": " + "money-summary";
 
             return File(await generator.Generate(), generator.ContentType,
                 Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
@@ -367,7 +372,7 @@ namespace JoinRpg.Portal.Controllers
                 .Include(c => c.AccommodationRequest)
                 .ToArrayAsync();
 
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             s.AppendLine($"{"Id".PadLeft(10, ' ')} {"Paid".PadLeft(10, ' ')} {"Fee".PadLeft(10, ' ')}");
 
             foreach (Claim claim in claims)

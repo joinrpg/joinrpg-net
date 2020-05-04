@@ -6,10 +6,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
     [ApiController]
     public class XGameApiController : ControllerBase
     {
-        public XGameApiController(IProjectRepository projectRepository)
-        {
-            ProjectRepository = projectRepository;
-        }
+        public XGameApiController(IProjectRepository projectRepository) => ProjectRepository = projectRepository;
 
         public IProjectRepository ProjectRepository { get; }
     }

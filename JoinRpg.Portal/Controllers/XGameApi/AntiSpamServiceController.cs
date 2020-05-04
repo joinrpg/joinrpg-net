@@ -12,10 +12,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
         internal IAntiSpamService Service { get; }
 
         /// <inheritdoc />
-        public AntiSpamServiceController(IProjectRepository projectRepository, IAntiSpamService service) : base(projectRepository)
-        {
-            Service = service;
-        }
+        public AntiSpamServiceController(IProjectRepository projectRepository, IAntiSpamService service) : base(projectRepository) => Service = service;
 
         [Route("islarper")]
         [HttpGet]

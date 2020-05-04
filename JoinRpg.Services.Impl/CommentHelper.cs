@@ -18,8 +18,16 @@ namespace JoinRpg.Services.Impl
             Comment parentComment,
             CommentExtraAction? extraAction = null)
         {
-            if (commentDiscussion == null) throw new ArgumentNullException(nameof(commentDiscussion));
-            if (commentText == null) throw new ArgumentNullException(nameof(commentText));
+            if (commentDiscussion == null)
+            {
+                throw new ArgumentNullException(nameof(commentDiscussion));
+            }
+
+            if (commentText == null)
+            {
+                throw new ArgumentNullException(nameof(commentText));
+            }
+
             var comment = new Comment
             {
                 CommentId = -1,

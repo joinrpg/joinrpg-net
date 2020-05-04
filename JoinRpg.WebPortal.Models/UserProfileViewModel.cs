@@ -68,7 +68,11 @@ namespace JoinRpg.Web.Models
 
         public UserProfileDetailsViewModel([NotNull] User user, AccessReason reason)
         {
-            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             Email = user.Email;
             FullName = user.FullName;
             User = user;

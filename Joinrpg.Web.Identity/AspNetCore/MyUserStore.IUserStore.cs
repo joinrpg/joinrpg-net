@@ -13,10 +13,7 @@ namespace Joinrpg.Web.Identity
             return IdentityResult.Success;
         }
 
-        Task<IdentityResult> IUserStore<JoinIdentityUser>.DeleteAsync(JoinIdentityUser user, CancellationToken ct)
-        {
-            throw new NotSupportedException();
-        }
+        Task<IdentityResult> IUserStore<JoinIdentityUser>.DeleteAsync(JoinIdentityUser user, CancellationToken ct) => throw new NotSupportedException();
 
         async Task<JoinIdentityUser> IUserStore<JoinIdentityUser>.FindByIdAsync(string userId, CancellationToken ct)
         {

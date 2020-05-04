@@ -9,14 +9,15 @@ namespace JoinRpg.Domain
 {
     public static class UserExtensions
     {
-        public static IEnumerable<Project> GetProjects(this User user, Func<ProjectAcl, bool> predicate)
-        {
-            return user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
-        }
+        public static IEnumerable<Project> GetProjects(this User user, Func<ProjectAcl, bool> predicate) => user.ProjectAcls.Where(predicate).Select(acl => acl.Project);
 
         public static AccessReason GetProfileAccess([NotNull] this User user, [CanBeNull] User currentUser)
         {
-            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             if (currentUser == null)
             {
                 return AccessReason.NoAccess;
@@ -56,7 +57,9 @@ namespace JoinRpg.Domain
         public static string GetDisplayName([NotNull] this User user)
         {
             if (user == null)
+            {
                 throw new ArgumentNullException(nameof(user));
+            }
 
             if (!string.IsNullOrWhiteSpace(user.PrefferedName))
             {
@@ -76,11 +79,16 @@ namespace JoinRpg.Domain
         public static string GetHint([NotNull] this User user)
         {
             if (user == null)
+            {
                 throw new ArgumentNullException(nameof(user));
+            }
 
             var result = "";
             if (user.VerifiedProfileFlag)
+            {
                 result += "Подтвержденный пользователь";
+            }
+
             return result;
         }
     }

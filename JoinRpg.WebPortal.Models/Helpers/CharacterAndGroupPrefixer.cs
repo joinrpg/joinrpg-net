@@ -23,29 +23,28 @@ namespace JoinRpg.Web.Helpers
 
         public static List<int> GetUnprefixedChars([NotNull] this IEnumerable<string> targets)
         {
-            if (targets == null) throw new ArgumentNullException(nameof(targets));
+            if (targets == null)
+            {
+                throw new ArgumentNullException(nameof(targets));
+            }
+
             return targets.UnprefixNumbers(CharFieldPrefix).ToList();
         }
 
         public static List<int> GetUnprefixedGroups([NotNull] this IEnumerable<string> targets)
         {
-            if (targets == null) throw new ArgumentNullException(nameof(targets));
+            if (targets == null)
+            {
+                throw new ArgumentNullException(nameof(targets));
+            }
+
             return targets.UnprefixNumbers(GroupFieldPrefix).ToList();
         }
 
-        public static List<string> GetParentGroupsForEdit(this IWorldObject field)
-        {
-            return field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
-        }
+        public static List<string> GetParentGroupsForEdit(this IWorldObject field) => field.ParentGroups.Where(gr => !gr.IsSpecial).Select(pg => pg.CharacterGroupId).PrefixAsGroups().ToList();
 
-        public static List<string> AsPossibleParentForEdit(this CharacterGroup field)
-        {
-            return new List<int> { field.CharacterGroupId }.PrefixAsGroups().ToList();
-        }
+        public static List<string> AsPossibleParentForEdit(this CharacterGroup field) => new List<int> { field.CharacterGroupId }.PrefixAsGroups().ToList();
 
-        public static IEnumerable<string> GetElementBindingsForEdit(this PlotElement e)
-        {
-            return e.TargetGroups.Select(g => g.CharacterGroupId).PrefixAsGroups().Union(e.TargetCharacters.Select(c => c.CharacterId).PrefixAsCharacters());
-        }
+        public static IEnumerable<string> GetElementBindingsForEdit(this PlotElement e) => e.TargetGroups.Select(g => g.CharacterGroupId).PrefixAsGroups().Union(e.TargetCharacters.Select(c => c.CharacterId).PrefixAsCharacters());
     }
 }

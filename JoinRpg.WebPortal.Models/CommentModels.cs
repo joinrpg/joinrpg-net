@@ -92,10 +92,7 @@ namespace JoinRpg.Web.Models
 
         internal static int LastFormIndex = 0;
 
-        public CommentTextViewModel()
-        {
-            FormIndex = Interlocked.Increment(ref LastFormIndex);
-        }
+        public CommentTextViewModel() => FormIndex = Interlocked.Increment(ref LastFormIndex);
 
         [Required(ErrorMessage = "Заполните текст комментария")]
         [DisplayName("Текст комментария")]

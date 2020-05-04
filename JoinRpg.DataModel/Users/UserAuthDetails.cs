@@ -16,9 +16,6 @@ namespace JoinRpg.DataModel
         [NotNull]
         public string AspNetSecurityStamp { get; set; }
 
-        public override string ToString()
-        {
-            return $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
-        }
+        public override string ToString() => $"UserAuthDetails(UserId: {UserId}, EmailConfirmed: {EmailConfirmed}, RegisterDate: {RegisterDate})";
     }
 }

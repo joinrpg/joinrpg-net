@@ -10,11 +10,7 @@ namespace JoinRpg.Common.EmailSending.Impl
     internal static class RecepientExtensions
     {
         public static IMessageBuilder AddUsers(this IMessageBuilder builder,
-            IEnumerable<RecepientData> recipients)
-        {
-            builder.AddToRecipientList(recipients.Where(x => x != null).Distinct().Select(x => x.ToMailGunRecepient()));
-            return builder;
-        }
+            IEnumerable<RecepientData> recipients) => builder.AddToRecipientList(recipients.Where(x => x != null).Distinct().Select(x => x.ToMailGunRecepient()));
 
         public static IRecipient ToMailGunRecepient(this RecepientData recipient)
         {
@@ -32,8 +28,10 @@ namespace JoinRpg.Common.EmailSending.Impl
             var recipientVars = new JObject();
             foreach (var r in recipients)
             {
-                var jobj = new JObject();
-                jobj.Add(Constants.MailGunName, r.DisplayName);
+                var jobj = new JObject
+                {
+                    { Constants.MailGunName, r.DisplayName }
+                };
 
                 foreach (var nameAndValue in r.RecipientSpecificValues)
                 {

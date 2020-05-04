@@ -91,11 +91,17 @@ namespace JoinRpg.Services.Impl
             };
             // TODO: Remove when complete Refunds be available
             if (money > 0)
+            {
                 financeOperation.OperationType = FinanceOperationType.Submit;
+            }
             else if (money < 0)
+            {
                 financeOperation.OperationType = FinanceOperationType.Refund;
+            }
             else
+            {
                 throw new PaymentException(claim.Project, "Submit or Refund sum could not be 0");
+            }
 
             comment.Finance = financeOperation;
 
@@ -129,10 +135,7 @@ namespace JoinRpg.Services.Impl
             return claim.RequestAccess(CurrentUserId, accessType, reason);
         }
 
-        protected Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None)
-        {
-            return LoadClaimAsMaster(request, acl => true, reason);
-        }
+        protected Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, ExtraAccessReason reason = ExtraAccessReason.None) => LoadClaimAsMaster(request, acl => true, reason);
 
 
         protected async Task<TEmail> CreateClaimEmail<TEmail>(
@@ -145,8 +148,16 @@ namespace JoinRpg.Services.Impl
             where TEmail : ClaimEmailModel, new()
         {
             var initiator = await GetCurrentUser();
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
-            if (commentText == null) throw new ArgumentNullException(nameof(commentText));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (commentText == null)
+            {
+                throw new ArgumentNullException(nameof(commentText));
+            }
+
             var subscriptions =
                 claim.GetSubscriptions(subscribePredicate, extraRecipients ?? Enumerable.Empty<User>(),
                     mastersOnly).ToList();

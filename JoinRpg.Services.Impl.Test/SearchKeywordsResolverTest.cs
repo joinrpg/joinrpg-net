@@ -15,7 +15,7 @@ namespace JoinRpg.Services.Impl.Test
 
         private void Verify(string searchString, int? expectedId, bool exactMatchFlag)
         {
-            int? id = SearchKeywordsResolver.TryGetId(searchString, KeysForPerfectMath, out var isPerfectMatch);
+            var id = SearchKeywordsResolver.TryGetId(searchString, KeysForPerfectMath, out var isPerfectMatch);
 
             id.ShouldBe(expectedId, $"ExpectedId was wrong for {searchString}");
             isPerfectMatch.ShouldBe(exactMatchFlag, $"isPerfectMathc was wrong for {searchString}");

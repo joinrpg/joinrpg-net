@@ -36,7 +36,10 @@ namespace JoinRpg.Web.Models
         public bool Equals(AccommodationPotentialNeighbors x, AccommodationPotentialNeighbors y)
         {
             //Check whether the objects are the same object. 
-            if (Object.ReferenceEquals(x, y)) return true;
+            if (Object.ReferenceEquals(x, y))
+            {
+                return true;
+            }
 
             //Check whether the products' properties are equal. 
             return x != null && y != null && x.ClaimId.Equals(y.ClaimId);

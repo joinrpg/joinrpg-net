@@ -30,10 +30,7 @@ namespace JoinRpg.Services.Impl
             IFieldDefaultValueGenerator fieldDefaultValueGenerator,
             IVirtualUsersService vpu,
             ICurrentUserAccessor currentUserAccessor
-            ) : base(unitOfWork, emailService, fieldDefaultValueGenerator, currentUserAccessor)
-        {
-            _vpu = vpu;
-        }
+            ) : base(unitOfWork, emailService, fieldDefaultValueGenerator, currentUserAccessor) => _vpu = vpu;
 
         public async Task FeeAcceptedOperation(FeeAcceptedOperationRequest request)
         {
@@ -63,37 +60,52 @@ namespace JoinRpg.Services.Impl
 
             // Checking access rights of the current user
             if (!IsCurrentUserAdmin)
+            {
                 project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            }
 
             // Preparing master Id and checking if the same payment type already created
             int masterId;
             if (request.TypeKind != PaymentTypeKind.Online)
             {
                 if (request.TargetMasterId == null)
+                {
                     throw new ArgumentNullException(nameof(request.TargetMasterId), @"Target master must be specified");
+                }
+
                 project.RequestMasterAccess(request.TargetMasterId);
                 // Cash payment could be only one
                 if (request.TypeKind == PaymentTypeKind.Cash && project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
+                {
                     throw new JoinRpgInvalidUserException($@"Payment of type ${request.TypeKind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
+                }
+
                 masterId = request.TargetMasterId.Value;
             }
             else
             {
                 if (project.PaymentTypes.Any(pt => pt.TypeKind == PaymentTypeKind.Online))
+                {
                     throw new DataException("Can't create more than one online payment type");
+                }
+
                 masterId = _vpu.PaymentsUser.UserId;
             }
 
             // Checking custom payment type name
             if (request.TypeKind == PaymentTypeKind.Custom && string.IsNullOrWhiteSpace(request.Name))
+            {
                 throw new ArgumentNullException(nameof(request.Name), "Custom payment type name must be specified");
+            }
 
             // Creating payment type
             var result = new PaymentType(request.TypeKind, request.ProjectId, masterId);
 
             // Configuring payment type
             if (result.TypeKind == PaymentTypeKind.Custom)
+            {
                 result.Name = request.Name.Trim();
+            }
 
             // Saving
             project.PaymentTypes.Add(result);
@@ -111,17 +123,24 @@ namespace JoinRpg.Services.Impl
                 case PaymentTypeKind.Custom:
                 case PaymentTypeKind.Cash:
                     if (!IsCurrentUserAdmin)
+                    {
                         project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    }
+
                     break;
                 case PaymentTypeKind.Online:
                     if (!IsCurrentUserAdmin)
                     {
                         // Regular master with finance management permissions can disable online payments
                         if (paymentType.IsActive)
+                        {
                             project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                        }
                         // ...but to enable them back he must have admin permissions
                         else
+                        {
                             throw new MustBeAdminException();
+                        }
                     }
                     break;
                 default:
@@ -129,9 +148,13 @@ namespace JoinRpg.Services.Impl
             }
 
             if (paymentType.IsActive)
+            {
                 SmartDelete(paymentType);
+            }
             else
+            {
                 paymentType.IsActive = true;
+            }
 
             await UnitOfWork.SaveChangesAsync();
         }
@@ -363,19 +386,28 @@ namespace JoinRpg.Services.Impl
             // Loading source claim
             Claim claimFrom = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
             if (claimFrom == null)
+            {
                 throw new JoinRpgEntityNotFoundException(request.ClaimId, nameof(Claim));
+            }
+
             if (!claimFrom.HasMasterAccess(CurrentUserId, acl => acl.CanManageMoney))
+            {
                 throw new NoAccessToProjectException(claimFrom.Project, CurrentUserId);
+            }
 
             // Loading destination claim
             Claim claimTo = await ClaimsRepository.GetClaim(request.ProjectId, request.ToClaimId);
             if (claimTo == null)
+            {
                 throw new JoinRpgEntityNotFoundException(request.ToClaimId, nameof(Claim));
+            }
 
             // Checking money amount
             var availableMoney = claimFrom.GetPaymentSum();
             if (availableMoney < request.Money)
+            {
                 throw new PaymentException(claimFrom.Project, $"Not enough money at claim {claimFrom.Name} to perform transfer");
+            }
 
             // Adding comments
             await AddTransferCommentsAsync(

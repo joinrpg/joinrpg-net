@@ -43,9 +43,6 @@ namespace JoinRpg.Dal.Impl.Repositories
             }
         }
 
-        public static Expression<Func<Claim, bool>> GetMyClaim(int userId)
-        {
-            return claim => claim.PlayerUserId == userId;
-        }
+        public static Expression<Func<Claim, bool>> GetMyClaim(int userId) => claim => claim.PlayerUserId == userId;
     }
 }

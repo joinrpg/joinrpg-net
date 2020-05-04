@@ -15,8 +15,16 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
           int characterId, IEnumerable<CharacterGroupInfo> groups, [CanBeNull] string playerName,
           [CanBeNull] string playerFullName, int? playerId)
         {
-            if (characterName == null) throw new ArgumentNullException(nameof(characterName));
-            if (fields == null) throw new ArgumentNullException(nameof(fields));
+            if (characterName == null)
+            {
+                throw new ArgumentNullException(nameof(characterName));
+            }
+
+            if (fields == null)
+            {
+                throw new ArgumentNullException(nameof(fields));
+            }
+
             CharacterName = characterName;
             Fields = fields.ToArray();
             CharacterId = characterId;

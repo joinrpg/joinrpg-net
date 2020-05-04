@@ -40,10 +40,8 @@ namespace Joinrpg.Markdown
         /// TODO: not implemented yet
         /// </summary>
         public static MarkdownString HighlightDiffPlaceholder(MarkdownString newString,
-            MarkdownString oldString)
-        {
+            MarkdownString oldString) =>
             //TODO: look for diff algorithms
-            return newString;
-        }
+            newString;
     }
 }
