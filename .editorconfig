@@ -14,6 +14,9 @@ max_line_length  = 100
 [*.{cs, cshtml, js}]
 charset = utf-8
 
+[*.yml]
+indent_size = 2
+
 [*.cs]
 dotnet_style_predefined_type_for_locals_parameters_members = true:warning
 dotnet_style_predefined_type_for_member_access = true:warning
