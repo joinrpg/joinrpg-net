@@ -14,9 +14,6 @@ namespace JoinRpg.Dal.Impl.Migrations
                 );
         }
 
-        public override void Down()
-        {
-            DropColumn("dbo.UserAuthDetails", "AspNetSecurityStamp");
-        }
+        public override void Down() => DropColumn("dbo.UserAuthDetails", "AspNetSecurityStamp");
     }
 }

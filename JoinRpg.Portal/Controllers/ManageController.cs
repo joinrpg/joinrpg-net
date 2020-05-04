@@ -91,10 +91,7 @@ namespace JoinRpg.Portal.Controllers
 
         //
         // GET: /Manage/ChangePassword
-        public ActionResult ChangePassword()
-        {
-            return View();
-        }
+        public ActionResult ChangePassword() => View();
 
         //
         // POST: /Manage/ChangePassword
@@ -120,10 +117,7 @@ namespace JoinRpg.Portal.Controllers
 
         //
         // GET: /Manage/SetPassword
-        public ActionResult SetPassword()
-        {
-            return View();
-        }
+        public ActionResult SetPassword() => View();
 
         //
         // POST: /Manage/SetPassword

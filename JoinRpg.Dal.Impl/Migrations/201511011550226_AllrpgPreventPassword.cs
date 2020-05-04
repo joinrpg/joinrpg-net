@@ -10,9 +10,6 @@ namespace JoinRpg.Dal.Impl.Migrations
               c => c.Boolean(nullable: false, defaultValue: true));
         }
 
-        public override void Down()
-        {
-            DropColumn("dbo.AllrpgUserDetails", "PreventAllrpgPassword");
-        }
+        public override void Down() => DropColumn("dbo.AllrpgUserDetails", "PreventAllrpgPassword");
     }
 }

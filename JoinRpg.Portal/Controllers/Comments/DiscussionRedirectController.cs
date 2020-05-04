@@ -18,10 +18,7 @@ namespace JoinRpg.Portal.Controllers
             IProjectService projectService,
             IUserRepository userRepository,
             IForumRepository forumRepository)
-            : base(projectRepository, projectService, userRepository)
-        {
-            this.forumRepository = forumRepository;
-        }
+            : base(projectRepository, projectService, userRepository) => this.forumRepository = forumRepository;
 
         private readonly IForumRepository forumRepository;
 

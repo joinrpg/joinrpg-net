@@ -17,9 +17,6 @@ namespace PscbApi
         /// <summary>
         /// Creates new Identifier attribute
         /// </summary>
-        public IdentifierAttribute(string identifier)
-        {
-            Identifier = identifier;
-        }
+        public IdentifierAttribute(string identifier) => Identifier = identifier;
     }
 }

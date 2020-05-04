@@ -14,9 +14,6 @@ INCLUDE ([CharacterGroupId], [CharacterId], [CommentDiscussionId], [CreateDate],
   [MasterDeclinedDate], [PlayerAcceptedDate], [PlayerDeclinedDate], [PlayerUserId], [ResponsibleMasterUserId]) ");
         }
 
-        public override void Down()
-        {
-            Sql("DROP INDEX [nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84] ON [dbo].[Claims] ");
-        }
+        public override void Down() => Sql("DROP INDEX [nci_wi_Claims_DD27A24D517BFF9AFEC7C6C5C8FCCA84] ON [dbo].[Claims] ");
     }
 }

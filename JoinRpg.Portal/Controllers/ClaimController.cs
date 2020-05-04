@@ -42,7 +42,11 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> AddForCharacter(int projectid, int characterid)
         {
             var field = await CharacterRepository.GetCharacterAsync(projectid, characterid);
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
+
             return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
         }
 
@@ -61,7 +65,11 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> AddForGroup(int projectid, int characterGroupId)
         {
             var field = await ProjectRepository.GetGroupAsync(projectid, characterGroupId);
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
+
             return View("Add", AddClaimViewModel.Create(field, CurrentUserId));
         }
 
@@ -139,7 +147,7 @@ namespace JoinRpg.Portal.Controllers
             }
 
             var printPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
-              ? (PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(claim.Project)).Where(
+              ? PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(claim.Project).Where(
                 p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
               : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
 
@@ -344,7 +352,11 @@ namespace JoinRpg.Portal.Controllers
             {
                 return NotFound();
             }
-            if (claim.PlayerUserId != CurrentUserId) return NoAccesToProjectView(claim.Project);
+            if (claim.PlayerUserId != CurrentUserId)
+            {
+                return NoAccesToProjectView(claim.Project);
+            }
+
             try
             {
                 if (!ModelState.IsValid)
@@ -419,16 +431,10 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MustUseReturnValue]
-        private ActionResult ReturnToClaim(ClaimOperationViewModel viewModel)
-        {
-            return ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
-        }
+        private ActionResult ReturnToClaim(ClaimOperationViewModel viewModel) => ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
 
         [MustUseReturnValue]
-        private ActionResult ReturnToClaim(int claimId, int projectId)
-        {
-            return RedirectToAction("Edit", "Claim", new { claimId, projectId });
-        }
+        private ActionResult ReturnToClaim(int claimId, int projectId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
 
         [HttpGet("/{projectId}/myclaim")]
         [Authorize, HttpGet]
@@ -799,7 +805,7 @@ namespace JoinRpg.Portal.Controllers
             IReadOnlyCollection<Claim> claims = await _claimsRepository.GetClaimsForMoneyTransfersListAsync(
                 claim.ProjectId,
                 ClaimStatusSpec.ActiveOrOnHold);
-            if (claims.Count == 0 || claims.Count == 1 && claims.First().ClaimId == claimId)
+            if (claims.Count == 0 || (claims.Count == 1 && claims.First().ClaimId == claimId))
             {
                 return View("Error", new ErrorViewModel
                 {

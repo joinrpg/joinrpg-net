@@ -15,8 +15,16 @@ namespace JoinRpg.Helpers.Web
         [NotNull]
         public static JoinHtmlString WithDefaultStringValue([NotNull] this JoinHtmlString toHtmlString, [NotNull] string defaultValue)
         {
-            if (toHtmlString == null) throw new ArgumentNullException(nameof(toHtmlString));
-            if (defaultValue == null) throw new ArgumentNullException(nameof(defaultValue));
+            if (toHtmlString == null)
+            {
+                throw new ArgumentNullException(nameof(toHtmlString));
+            }
+
+            if (defaultValue == null)
+            {
+                throw new ArgumentNullException(nameof(defaultValue));
+            }
+
             return toHtmlString.ToHtmlString().WithDefaultStringValue(defaultValue).MarkAsHtmlString();
         }
 

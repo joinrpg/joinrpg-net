@@ -5,9 +5,6 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 {
     public class AdminAuthorizeAttribute : AuthorizeAttribute
     {
-        public AdminAuthorizeAttribute()
-        {
-            Roles = Security.AdminRoleName;
-        }
+        public AdminAuthorizeAttribute() => Roles = Security.AdminRoleName;
     }
 }

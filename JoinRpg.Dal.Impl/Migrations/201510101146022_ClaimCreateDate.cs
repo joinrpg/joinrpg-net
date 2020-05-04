@@ -11,9 +11,6 @@ namespace JoinRpg.Dal.Impl.Migrations
             AlterColumn("dbo.Claims", "CreateDate", c => c.DateTime(nullable: false));
         }
 
-        public override void Down()
-        {
-            DropColumn("dbo.Claims", "CreateDate");
-        }
+        public override void Down() => DropColumn("dbo.Claims", "CreateDate");
     }
 }

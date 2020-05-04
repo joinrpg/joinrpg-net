@@ -13,10 +13,7 @@ namespace JoinRpg.Web.Models.Characters
     public static class CharacterGroupListViewModel
     {
         [MustUseReturnValue]
-        public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId)
-        {
-            return new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
-        }
+        public static IEnumerable<CharacterGroupListItemViewModel> GetGroups(CharacterGroup field, int? currentUserId) => new CharacterGroupHierarchyBuilder(field, currentUserId).Generate().WhereNotNull();
 
         //TODO: unit tests
         private class CharacterGroupHierarchyBuilder

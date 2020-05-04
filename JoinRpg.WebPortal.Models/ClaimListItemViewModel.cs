@@ -61,11 +61,10 @@ namespace JoinRpg.Web.Models
     public class ClaimListForGroupViewModel : ClaimListViewModel
     {
         public CharacterGroupDetailsViewModel GroupModel { get; }
-        public ClaimListForGroupViewModel(int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
-          : base(currentUserId, claims, group.ProjectId)
-        {
-            GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
-        }
+        public ClaimListForGroupViewModel
+            (int currentUserId, IReadOnlyCollection<Claim> claims, CharacterGroup @group, GroupNavigationPage page)
+            : base(currentUserId, claims, group.ProjectId)
+            => GroupModel = new CharacterGroupDetailsViewModel(group, currentUserId, page);
     }
 
     public class ClaimListItemViewModel : ILinkable
@@ -126,7 +125,11 @@ namespace JoinRpg.Web.Models
             Claim claim,
             int currentUserId)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             var lastComment = claim.CommentDiscussion.Comments.Where(c => c.IsVisibleToPlayer)
                 .OrderByDescending(c => c.CommentId).FirstOrDefault();
 

@@ -50,10 +50,7 @@ namespace JoinRpg.Portal.Controllers
 
 
         [AllowAnonymous]
-        public async Task<ActionResult> Login(string returnUrl)
-        {
-            return View(await CreateLoginPageViewModelAsync(returnUrl));
-        }
+        public async Task<ActionResult> Login(string returnUrl) => View(await CreateLoginPageViewModelAsync(returnUrl));
 
         private async Task<LoginPageViewModel> CreateLoginPageViewModelAsync(string returnUrl)
         {
@@ -130,10 +127,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
-        public ActionResult Register()
-        {
-            return View(new RegisterViewModel() { RecaptchaPublicKey = recaptchaOptions.Value.PublicKey });
-        }
+        public ActionResult Register() => View(new RegisterViewModel() { RecaptchaPublicKey = recaptchaOptions.Value.PublicKey });
 
         //
         // POST: /Account/Register
@@ -192,7 +186,7 @@ namespace JoinRpg.Portal.Controllers
 
         private async Task SendConfirmationEmail(JoinIdentityUser user)
         {
-            string code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.Action("ConfirmEmail",
                 "Account",
                 new { userId = user.UserId, code },
@@ -229,10 +223,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ForgotPassword
         [AllowAnonymous]
-        public ActionResult ForgotPassword()
-        {
-            return View(new ForgotPasswordViewModel());
-        }
+        public ActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
 
         //
         // POST: /Account/ForgotPassword
@@ -251,7 +242,7 @@ namespace JoinRpg.Portal.Controllers
                 }
 
                 // Send an email with this link
-                string code = await UserManager.GeneratePasswordResetTokenAsync(user);
+                var code = await UserManager.GeneratePasswordResetTokenAsync(user);
                 var callbackUrl = Url.Action("ResetPassword",
                     "Account",
                     new { userId = user.UserId, code },
@@ -274,10 +265,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ForgotPasswordConfirmation
         [AllowAnonymous]
-        public ActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
+        public ActionResult ForgotPasswordConfirmation() => View();
 
         //
         // GET: /Account/ResetPassword
@@ -327,10 +315,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ResetPasswordConfirmation
         [AllowAnonymous]
-        public ActionResult ResetPasswordConfirmation()
-        {
-            return View();
-        }
+        public ActionResult ResetPasswordConfirmation() => View();
 
         //
         // POST: /Account/ExternalLogin
@@ -455,10 +440,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ExternalLoginFailure
         [AllowAnonymous]
-        public ActionResult ExternalLoginFailure()
-        {
-            return View();
-        }
+        public ActionResult ExternalLoginFailure() => View();
 
         #region Helpers
         private ActionResult RedirectToLocal(string returnUrl)

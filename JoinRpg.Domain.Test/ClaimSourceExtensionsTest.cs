@@ -8,9 +8,6 @@ namespace JoinRpg.Domain.Test
     public class ClaimSourceExtensionsTest
     {
         [Fact]
-        public void CharacterGroupIsNeverNpc()
-        {
-            new CharacterGroup().IsNpc().ShouldBeFalse();
-        }
+        public void CharacterGroupIsNeverNpc() => new CharacterGroup().IsNpc().ShouldBeFalse();
     }
 }

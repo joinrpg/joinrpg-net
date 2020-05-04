@@ -45,7 +45,7 @@ namespace JoinRpg.Services.Email
         #region Account emails
         public Task Email(RemindPasswordEmail email)
         {
-            string text = $@"Добрый день, %recipient.name%, 
+            var text = $@"Добрый день, %recipient.name%, 
 
 вы (или кто-то, выдающий себя за вас) запросил восстановление пароля на сайте JoinRpg.Ru. 
 Если это вы, кликните <a href=""{
@@ -65,7 +65,7 @@ namespace JoinRpg.Services.Email
 
         public Task Email(ConfirmEmail email)
         {
-            string text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
+            var text = $@"Здравствуйте, и добро пожаловать на joinrpg.ru!
 
 Пожалуйста, подтвердите свой аккаунт, кликнув <a href=""{
                     email.CallbackUrl
@@ -148,11 +148,11 @@ namespace JoinRpg.Services.Email
                 : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim?.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-            string linkString = _uriService.Get(model.GetLinkable());
+            var linkString = _uriService.Get(model.GetLinkable());
 
             if (recipients.Any())
             {
-                string text = $@"{StandartGreeting()},
+                var text = $@"{StandartGreeting()},
 Данные {Target(true)} были изменены. Новые значения:
 
 {MessageService.GetUserDependentValue(ChangedFieldsKey)}
@@ -197,7 +197,7 @@ namespace JoinRpg.Services.Email
 
         public async Task Email(LeaveRoomEmail email)
         {
-            string body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отозвана или отклонена.";
+            var body = $"{email.Claim?.Player?.GetDisplayName()} покинул комнату, так как его заявка была отозвана или отклонена.";
             if (email.Room.GetAllInhabitants().Any())
             {
                 body += $"\n\nОстались в комнате:{email.Room.GetAllInhabitants().GetPlayerList()}";
@@ -233,21 +233,21 @@ namespace JoinRpg.Services.Email
 
         public Task Email(NewInviteEmail email)
         {
-            string body = $"{email.Initiator.GetDisplayName()} отправил Вам приглашение к совместному проживанию.";
+            var body = $"{email.Initiator.GetDisplayName()} отправил Вам приглашение к совместному проживанию.";
 
             return SendInviteEmail(email, body);
         }
 
         public Task Email(DeclineInviteEmail email)
         {
-            string body = $"{email.Initiator.GetDisplayName()} отменил приглашение к совместному проживанию.";
+            var body = $"{email.Initiator.GetDisplayName()} отменил приглашение к совместному проживанию.";
 
             return SendInviteEmail(email, body);
         }
 
         public Task Email(AcceptInviteEmail email)
         {
-            string body = $"{email.Initiator.GetDisplayName()} принял Ваше приглашение к совместному проживанию.";
+            var body = $"{email.Initiator.GetDisplayName()} принял Ваше приглашение к совместному проживанию.";
 
             return SendInviteEmail(email, body);
         }
@@ -383,7 +383,7 @@ namespace JoinRpg.Services.Email
                 extraText = "**" + extraText + "**\n\n";
             }
 
-            string text1 = $@"{StandartGreeting()}
+            var text1 = $@"{StandartGreeting()}
 Заявка {model.Claim.Name} игрока {model.Claim.Player.GetDisplayName()} {actionName} {model.GetInitiatorString()}
 {text}
 
@@ -412,18 +412,18 @@ namespace JoinRpg.Services.Email
 
         public async Task Email([NotNull] PublishPlotElementEmail email)
         {
-            string plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
+            var plotElementId = $@"#pe{email.PlotElement.PlotElementId}";
 
-            string subject = $@"{email.ProjectName}: опубликована вводная";
-            string body = $@"{StandartGreeting()}"
+            var subject = $@"{email.ProjectName}: опубликована вводная";
+            var body = $@"{StandartGreeting()}"
                 + $"<br />Прочитать вводную: <a href=\"{MessageService.GetUserDependentValue(ClaimUriKey)}\">{MessageService.GetUserDependentValue(ClaimUriKey)}</a>"
                 + "<br /><br />"
                 + email.Text.ToHtmlString().ToHtmlString();
-            string text = $@"{StandartGreeting()}"
+            var text = $@"{StandartGreeting()}"
                 + $"\nПрочитать вводную: {MessageService.GetUserDependentValue(ClaimUriKey)}"
                 + $"\n\n{email.Text.ToPlainText()}";
 
-            List<RecepientData> recipients = email.Claims
+            var recipients = email.Claims
                 .Distinct(new ClaimsComparer())
                 .Select(c => c.Player.ToRecepientData(new Dictionary<string, string> {
                     { ClaimUriKey, _uriService.Get(c) + plotElementId } }))

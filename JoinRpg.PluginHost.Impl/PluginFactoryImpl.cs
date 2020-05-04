@@ -53,10 +53,7 @@ namespace JoinRpg.PluginHost.Impl
               (pp, p) => new PluginWithConfig { Plugin = p, Configuration = pp.Configuration });
         }
 
-        public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c)
-        {
-            return pluginInstance.CreatePluginInstance().PrintForCharacter(c.ToPluginModel());
-        }
+        public IEnumerable<HtmlCardPrintResult> PrintForCharacter(PluginOperationData<IPrintCardPluginOperation> pluginInstance, Character c) => pluginInstance.CreatePluginInstance().PrintForCharacter(c.ToPluginModel());
 
         public MarkdownString ShowStaticPage(PluginOperationData<IStaticPagePluginOperation> pluginInstance, Project project)
         {
@@ -94,7 +91,11 @@ namespace JoinRpg.PluginHost.Impl
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectid);
             var pluginInstance = GetProjectInstalledPlugins(project).SingleOrDefault(p => p.Plugin.GetName() == plugin);
-            if (pluginInstance == null) return null;
+            if (pluginInstance == null)
+            {
+                return null;
+            }
+
             return new ProjectPluginConfiguraton(pluginInstance.Plugin.GetName(),
               new MarkdownString($"```\n{pluginInstance.Configuration}\n```"));
         }

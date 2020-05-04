@@ -15,9 +15,6 @@ WHERE PD.ProjectId IS NULL");
             AddColumn("dbo.ProjectDetails", "FinanceWarnOnOverPayment", c => c.Boolean(nullable: false, defaultValue: true));
         }
 
-        public override void Down()
-        {
-            DropColumn("dbo.ProjectDetails", "FinanceWarnOnOverPayment");
-        }
+        public override void Down() => DropColumn("dbo.ProjectDetails", "FinanceWarnOnOverPayment");
     }
 }

@@ -309,7 +309,10 @@ namespace JoinRpg.Services.Impl
         {
             var characterGroup = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-            if (characterGroup == null) throw new DbEntityValidationException();
+            if (characterGroup == null)
+            {
+                throw new DbEntityValidationException();
+            }
 
             if (characterGroup.HasActiveClaims())
             {

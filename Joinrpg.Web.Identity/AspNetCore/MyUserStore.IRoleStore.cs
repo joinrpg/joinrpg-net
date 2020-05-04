@@ -39,9 +39,6 @@ namespace Joinrpg.Web.Identity
             => throw new NotSupportedException();
 
         // We actually support only one role, everything else is not bind to roles
-        private static Task<string> CheckRole(string roleId)
-        {
-            return Task.FromResult(roleId == "Admin" ? "Admin" : null);
-        }
+        private static Task<string> CheckRole(string roleId) => Task.FromResult(roleId == "Admin" ? "Admin" : null);
     }
 }

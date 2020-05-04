@@ -36,9 +36,15 @@ namespace JoinRpg.Web.Models.Plot
             [NotNull] PlotElementTexts plotElementVersion,
             IUriService uriService)
         {
-            if (linkRendrer == null) throw new ArgumentNullException(nameof(linkRendrer));
+            if (linkRendrer == null)
+            {
+                throw new ArgumentNullException(nameof(linkRendrer));
+            }
+
             if (plotElementVersion == null)
+            {
                 throw new ArgumentNullException(nameof(plotElementVersion));
+            }
 
             var p = plotElementVersion.PlotElement;
 
@@ -84,8 +90,10 @@ namespace JoinRpg.Web.Models.Plot
             PlotElementType plotElementType,
             IUriService uriService)
         {
-            if (plots == null) throw new ArgumentNullException(nameof(plots));
-
+            if (plots == null)
+            {
+                throw new ArgumentNullException(nameof(plots));
+            }
 
             var projectEntity = ((IProjectEntity)character ?? plots.FirstOrDefault())?.Project;
             var hasMasterAccess = projectEntity?.HasMasterAccess(currentUserId) ?? false;
@@ -134,10 +142,7 @@ namespace JoinRpg.Web.Models.Plot
             }
         }
 
-        private PlotDisplayViewModel()
-        {
-            Elements = Enumerable.Empty<PlotElementViewModel>();
-        }
+        private PlotDisplayViewModel() => Elements = Enumerable.Empty<PlotElementViewModel>();
 
         public IEnumerable<PlotElementViewModel> Elements { get; }
         public bool HasUnready { get; }

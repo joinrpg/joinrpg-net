@@ -8,10 +8,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
     {
         private readonly JoinApplicationFactory factory;
 
-        public SwaggerTests(JoinApplicationFactory factory)
-        {
-            this.factory = factory;
-        }
+        public SwaggerTests(JoinApplicationFactory factory) => this.factory = factory;
 
         [Fact]
         public async Task SwaggerShouldWork()

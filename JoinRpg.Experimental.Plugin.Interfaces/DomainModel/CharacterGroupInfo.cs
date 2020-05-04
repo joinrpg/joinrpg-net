@@ -13,7 +13,7 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
         public int CharacterGroupId { get; }
         public string CharacterGroupName { get; }
 
-        public bool Equals(CharacterGroupInfo other) => other != null && other.CharacterGroupId == this.CharacterGroupId;
+        public bool Equals(CharacterGroupInfo other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
         public override string ToString() => CharacterGroupName;
     }

@@ -11,10 +11,7 @@ namespace JoinRpg.Portal.Controllers
         private ProjectListManager ProjectListManager { get; }
         private const int ProjectsOnHomePage = 9;
 
-        public HomeController(ProjectListManager projectListManager)
-        {
-            ProjectListManager = projectListManager;
-        }
+        public HomeController(ProjectListManager projectListManager) => ProjectListManager = projectListManager;
 
         public async Task<ActionResult> Index() =>
             View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));

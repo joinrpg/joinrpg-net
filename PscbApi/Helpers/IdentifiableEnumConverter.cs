@@ -20,7 +20,9 @@ namespace PscbApi
                 writer.WriteValue(value.GetType().IsEnum ? (value as Enum).GetIdentifier() : value);
             }
             else
+            {
                 writer.WriteNull();
+            }
         }
 
         /// <inheritdoc />
@@ -32,7 +34,10 @@ namespace PscbApi
             {
                 actualType = Nullable.GetUnderlyingType(objectType);
                 if (!actualType?.IsEnum ?? false)
+                {
                     actualType = null;
+                }
+
                 nullable = actualType != null;
             }
 
@@ -47,11 +52,15 @@ namespace PscbApi
                             .Cast<Enum>()
                             .FirstOrDefault(v => v.GetIdentifier().Equals(sValue, StringComparison.InvariantCultureIgnoreCase));
                         if (result != null)
+                        {
                             return result;
+                        }
                     }
                 }
                 else if (nullable)
+                {
                     return null;
+                }
             }
 
             throw new InvalidCastException($"\"{value}\" could not be converted to {actualType?.Name ?? objectType.Name}");

@@ -72,8 +72,8 @@ namespace JoinRpg.DataModel
         [NotMapped]
         public int[] AvailableForCharacterGroupIds
         {
-            get { return AviableForImpl._parentCharacterGroupIds; }
-            set { AviableForImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(","); }
+            get => AviableForImpl._parentCharacterGroupIds;
+            set => AviableForImpl.ListIds = value.Select(v => v.ToString()).JoinStrings(",");
         }
 
         public IntList AviableForImpl { get; set; } = new IntList();

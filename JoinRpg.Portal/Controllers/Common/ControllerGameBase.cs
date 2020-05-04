@@ -28,35 +28,27 @@ namespace JoinRpg.Portal.Controllers.Common
             IUserRepository userRepository
             ) : base(userRepository)
         {
-            if (projectRepository == null) throw new ArgumentNullException(nameof(projectRepository));
+            if (projectRepository == null)
+            {
+                throw new ArgumentNullException(nameof(projectRepository));
+            }
+
             ProjectRepository = projectRepository;
             ProjectService = projectService;
         }
 
-        protected ActionResult NoAccesToProjectView(Project project)
-        {
-            return View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
-        }
+        protected ActionResult NoAccesToProjectView(Project project) => View("ErrorNoAccessToProject", new ErrorNoAccessToProjectViewModel(project));
 
         //protected IReadOnlyDictionary<int, string> GetCustomFieldValuesFromPost() =>
         //    GetDynamicValuesFromPost(FieldValueViewModel.HtmlIdPrefix);
 
         [Obsolete]
-        protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders)
-        {
-            return folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
-        }
+        protected async Task<Project> GetProjectFromList(int projectId, IEnumerable<IProjectEntity> folders) => folders.FirstOrDefault()?.Project ?? await ProjectRepository.GetProjectAsync(projectId);
 
 
-        protected ActionResult RedirectToIndex(Project project)
-        {
-            return RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
-        }
+        protected ActionResult RedirectToIndex(Project project) => RedirectToAction("Index", "GameGroups", new { project.ProjectId, area = "" });
 
-        protected ActionResult RedirectToIndex(int projectId, int characterGroupId, [AspMvcAction] string action = "Index")
-        {
-            return RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
-        }
+        protected ActionResult RedirectToIndex(int projectId, int characterGroupId, [AspMvcAction] string action = "Index") => RedirectToAction(action, "GameGroups", new { projectId, characterGroupId, area = "" });
 
         protected async Task<ActionResult> RedirectToProject(int projectId)
         {
@@ -65,10 +57,7 @@ namespace JoinRpg.Portal.Controllers.Common
         }
 
         [Obsolete]
-        protected static ExportType? GetExportTypeByName(string export)
-        {
-            return ExportTypeNameParserHelper.ToExportType(export);
-        }
+        protected static ExportType? GetExportTypeByName(string export) => ExportTypeNameParserHelper.ToExportType(export);
 
 
         //protected async Task<FileContentResult> ReturnExportResult(string fileName, IExportGenerator generator)

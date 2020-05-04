@@ -32,10 +32,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
             return RedirectToUserDetails(model.UserId);
         }
 
-        private ActionResult RedirectToUserDetails(int userId)
-        {
-            return RedirectToAction("Details", "User", new { area = "", userId });
-        }
+        private ActionResult RedirectToUserDetails(int userId) => RedirectToAction("Details", "User", new { area = "", userId });
 
         [ValidateAntiForgeryToken, HttpPost]
         public async Task<ActionResult> GrantAmin(int userId)

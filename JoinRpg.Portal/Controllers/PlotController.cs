@@ -247,10 +247,7 @@ namespace JoinRpg.Portal.Controllers
             }
         }
 
-        private ActionResult ReturnToPlot(int projectId, int plotFolderId)
-        {
-            return RedirectToAction("Edit", new { projectId, plotFolderId });
-        }
+        private ActionResult ReturnToPlot(int projectId, int plotFolderId) => RedirectToAction("Edit", new { projectId, plotFolderId });
 
         [HttpGet, MasterAuthorize()]
         public async Task<ActionResult> EditElement(int plotelementid, int plotFolderId, int projectId)

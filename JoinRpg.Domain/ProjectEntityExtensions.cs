@@ -11,13 +11,21 @@ namespace JoinRpg.Domain
         [MustUseReturnValue]
         public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId, Expression<Func<ProjectAcl, bool>> requiredAccess)
         {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
             return entity.Project.ProjectAcls.Where(acl => requiredAccess.Compile()(acl)).Any(pa => pa.UserId == currentUserId);
         }
 
         public static bool HasMasterAccess([NotNull] this IProjectEntity entity, int? currentUserId)
         {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
             return entity.HasMasterAccess(currentUserId, acl => true);
         }
 
@@ -73,13 +81,21 @@ namespace JoinRpg.Domain
 
         public static bool HasPlayerAccess([NotNull] this Character character, int? currentUserId)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             return currentUserId != null && character.ApprovedClaim?.PlayerUserId == currentUserId;
         }
 
         public static bool HasAnyAccess([NotNull] this Character character, int? currentUserIdOrDefault)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             return character.HasMasterAccess(currentUserIdOrDefault) || character.HasPlayerAccess(currentUserIdOrDefault);
         }
 
@@ -91,21 +107,19 @@ namespace JoinRpg.Domain
 
         public static bool HasPlayerAccesToClaim([NotNull] this Claim claim, int? currentUserIdOrDefault)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return claim.PlayerUserId == currentUserIdOrDefault;
         }
 
-        public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId)
-        {
-            return character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
-        }
+        public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
 
         [NotNull]
         public static T EnsureProjectActive<T>(this T entity)
-      where T : IProjectEntity
-        {
-            return !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
-        }
+      where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
 
         public static void RequestAnyAccess(this CommentDiscussion discussion, int currentUserId)
         {
@@ -115,10 +129,7 @@ namespace JoinRpg.Domain
             }
         }
 
-        public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId)
-        {
-            return (discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId));
-        }
+        public static bool HasAnyAccess(this CommentDiscussion discussion, int currentUserId) => discussion.HasMasterAccess(currentUserId) || discussion.HasPlayerAccess(currentUserId);
 
         public static bool HasPlayerAccess(this CommentDiscussion commentDiscussion, int currentUserId)
         {
@@ -141,7 +152,11 @@ namespace JoinRpg.Domain
         [MustUseReturnValue]
         public static bool HasPlayerAccess([NotNull] this IForumThread forumThread, int? currentUserId)
         {
-            if (forumThread == null) throw new ArgumentNullException(nameof(forumThread));
+            if (forumThread == null)
+            {
+                throw new ArgumentNullException(nameof(forumThread));
+            }
+
             return currentUserId != null && forumThread.IsVisibleToPlayer &&
                    forumThread.Project.Claims.OfUserApproved((int)currentUserId)
                      .Any(c => c.IsPartOfGroup(forumThread.CharacterGroupId));
@@ -150,7 +165,11 @@ namespace JoinRpg.Domain
         [MustUseReturnValue]
         public static bool HasAnyAccess([NotNull] this IForumThread forumThread, int? currentUserId)
         {
-            if (forumThread == null) throw new ArgumentNullException(nameof(forumThread));
+            if (forumThread == null)
+            {
+                throw new ArgumentNullException(nameof(forumThread));
+            }
+
             return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
         }
 

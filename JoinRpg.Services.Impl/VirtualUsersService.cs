@@ -19,10 +19,7 @@ namespace JoinRpg.Services.Impl
         /// <summary>
         /// Default constructor
         /// </summary>
-        public VirtualUsersService(Func<IUnitOfWork> uowResolver)
-        {
-            _paymentsUser = new Lazy<User>(() => LoadPaymentsUser(uowResolver()), true);
-        }
+        public VirtualUsersService(Func<IUnitOfWork> uowResolver) => _paymentsUser = new Lazy<User>(() => LoadPaymentsUser(uowResolver()), true);
 
         private User LoadPaymentsUser(IUnitOfWork uow)
         {
@@ -34,7 +31,10 @@ namespace JoinRpg.Services.Impl
                 .Include(u => u.Extra)
                 .SingleOrDefault(u => u.Email == User.OnlinePaymentVirtualUser);
             if (result == null)
+            {
                 throw new DataException("Virtual payments manager user was not found");
+            }
+
             return result;
         }
     }

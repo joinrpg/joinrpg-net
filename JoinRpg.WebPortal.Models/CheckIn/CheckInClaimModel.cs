@@ -16,8 +16,15 @@ namespace JoinRpg.Web.Models.CheckIn
     {
         public CheckInClaimModel([NotNull] Claim claim, [NotNull] User currentUser, [CanBeNull] IReadOnlyCollection<PlotElement> plotElements)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
-            if (currentUser == null) throw new ArgumentNullException(nameof(currentUser));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
+            if (currentUser == null)
+            {
+                throw new ArgumentNullException(nameof(currentUser));
+            }
 
             Validator = new ClaimCheckInValidator(claim);
             CheckInTime = claim.CheckInDate;

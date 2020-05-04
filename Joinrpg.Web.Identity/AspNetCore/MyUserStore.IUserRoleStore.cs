@@ -9,10 +9,7 @@ namespace Joinrpg.Web.Identity
 {
     public partial class MyUserStore : IUserRoleStore<JoinIdentityUser>
     {
-        Task IUserRoleStore<JoinIdentityUser>.AddToRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
+        Task IUserRoleStore<JoinIdentityUser>.AddToRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         async Task<IList<string>> IUserRoleStore<JoinIdentityUser>.GetRolesAsync(JoinIdentityUser user, CancellationToken cancellationToken)
         {
@@ -29,10 +26,7 @@ namespace Joinrpg.Web.Identity
             return list;
         }
 
-        Task<IList<JoinIdentityUser>> IUserRoleStore<JoinIdentityUser>.GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
+        Task<IList<JoinIdentityUser>> IUserRoleStore<JoinIdentityUser>.GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         async Task<bool> IUserRoleStore<JoinIdentityUser>.IsInRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken)
         {
@@ -42,9 +36,6 @@ namespace Joinrpg.Web.Identity
             return roles.Contains(roleName);
         }
 
-        Task IUserRoleStore<JoinIdentityUser>.RemoveFromRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken)
-        {
-            throw new NotSupportedException();
-        }
+        Task IUserRoleStore<JoinIdentityUser>.RemoveFromRoleAsync(JoinIdentityUser user, string roleName, CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 }

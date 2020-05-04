@@ -84,13 +84,21 @@ namespace JoinRpg.Domain
         public static ClaimPaymentStatus GetClaimPaymentStatus(int totalFee, int balance)
         {
             if (totalFee < balance)
+            {
                 return ClaimPaymentStatus.Overpaid;
+            }
             else if (totalFee == balance)
+            {
                 return ClaimPaymentStatus.Paid;
+            }
             else if (balance > 0)
+            {
                 return ClaimPaymentStatus.MoreToPay;
+            }
             else
+            {
                 return ClaimPaymentStatus.NotPaid;
+            }
         }
 
         /// <summary>
@@ -147,7 +155,9 @@ namespace JoinRpg.Domain
         private static int ClaimFieldsFee(this Claim claim, int? fieldsFee)
         {
             if (fieldsFee == null)
+            {
                 fieldsFee = claim.FieldsFee ?? claim.CalcClaimFieldsFee();
+            }
             // cache
             claim.FieldsFee = fieldsFee;
 
@@ -211,7 +221,11 @@ namespace JoinRpg.Domain
             this Project project,
             int userId)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             return project.PaymentTypes.SingleOrDefault(pt => pt.UserId == userId && pt.TypeKind == PaymentTypeKind.Cash);
         }
 
@@ -220,8 +234,16 @@ namespace JoinRpg.Domain
             [NotNull]
             User user)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
-            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             return GetCashPaymentType(project, user.UserId)?.IsActive ?? false;
         }
 

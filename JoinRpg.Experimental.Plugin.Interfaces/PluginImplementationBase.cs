@@ -11,8 +11,15 @@ namespace JoinRpg.Experimental.Plugin.Interfaces
         protected void Register<T>([NotNull] string name, [NotNull] string description = "", bool allowPlayerAccess = false, string fieldMappng = null)
           where T : IPluginOperation, new()
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (description == null)
+            {
+                throw new ArgumentNullException(nameof(description));
+            }
 
             var fieldOperation = typeof(IFieldOperation).IsAssignableFrom(typeof(T));
             if (fieldMappng == null && fieldOperation)

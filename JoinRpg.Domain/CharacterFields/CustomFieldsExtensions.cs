@@ -14,7 +14,11 @@ namespace JoinRpg.Domain
         [NotNull, ItemNotNull, MustUseReturnValue]
         public static IReadOnlyList<FieldWithValue> GetFieldsNotFilled([NotNull] this Project project)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             return
               project.GetOrderedFields()
                 .Select(pf => new FieldWithValue(pf, value: null)).ToList().AsReadOnly();
@@ -25,14 +29,21 @@ namespace JoinRpg.Domain
         /// </summary>
         public static IEnumerable<FieldWithValue> GetFieldsNotFilledWithoutOrder([NotNull] this Project project)
         {
-            if (project == null) throw new ArgumentNullException(nameof(project));
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             return project.ProjectFields.Select(pf => new FieldWithValue(pf, null));
         }
 
         [MustUseReturnValue]
         public static string SerializeFields([NotNull] this IEnumerable<FieldWithValue> fieldWithValues)
         {
-            if (fieldWithValues == null) throw new ArgumentNullException(nameof(fieldWithValues));
+            if (fieldWithValues == null)
+            {
+                throw new ArgumentNullException(nameof(fieldWithValues));
+            }
 
             return
               JsonConvert.SerializeObject(
@@ -49,7 +60,10 @@ namespace JoinRpg.Domain
 
         public static void MarkUsed([NotNull] this FieldWithValue field)
         {
-            if (field == null) throw new ArgumentNullException(nameof(field));
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
 
             if (!field.Field.WasEverUsed)
             {
@@ -68,7 +82,11 @@ namespace JoinRpg.Domain
         public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
           [CanBeNull] IFieldContainter container)
         {
-            if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
+            if (characterFieldValues == null)
+            {
+                throw new ArgumentNullException(nameof(characterFieldValues));
+            }
+
             if (container == null)
             {
                 return;
@@ -96,7 +114,11 @@ namespace JoinRpg.Domain
           [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim,
           [CanBeNull] Character character)
         {
-            if (characterFieldValues == null) throw new ArgumentNullException(nameof(characterFieldValues));
+            if (characterFieldValues == null)
+            {
+                throw new ArgumentNullException(nameof(characterFieldValues));
+            }
+
             characterFieldValues.FillFrom(claim);
             characterFieldValues.FillFrom(character);
             return characterFieldValues;
@@ -104,7 +126,11 @@ namespace JoinRpg.Domain
 
         public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Character character)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             return character.Project
               .GetFieldsNotFilled()
               .ToList()
@@ -113,7 +139,11 @@ namespace JoinRpg.Domain
 
         public static IReadOnlyCollection<FieldWithValue> GetFields([NotNull] this Claim claim)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return claim.Project
               .GetFieldsNotFilled()
               .ToList()
@@ -125,7 +155,10 @@ namespace JoinRpg.Domain
           [NotNull] this IFieldContainter entityWithFields,
           int userId)
         {
-            if (entityWithFields == null) throw new ArgumentNullException(nameof(entityWithFields));
+            if (entityWithFields == null)
+            {
+                throw new ArgumentNullException(nameof(entityWithFields));
+            }
 
             var claim = entityWithFields as Claim;
             var character = entityWithFields as Character;

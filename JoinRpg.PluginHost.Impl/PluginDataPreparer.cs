@@ -21,14 +21,8 @@ namespace JoinRpg.PluginHost.Impl
               player?.GetDisplayName(), player?.FullName, player?.UserId);
         }
 
-        private static CharacterGroupInfo ToPluginModel(this CharacterGroup g)
-        {
-            return new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName);
-        }
+        private static CharacterGroupInfo ToPluginModel(this CharacterGroup g) => new CharacterGroupInfo(g.CharacterGroupId, g.CharacterGroupName);
 
-        private static CharacterFieldInfo ToPluginModel(this FieldWithValue f)
-        {
-            return new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString);
-        }
+        private static CharacterFieldInfo ToPluginModel(this FieldWithValue f) => new CharacterFieldInfo(f.Field.ProjectFieldId, f.Value, f.Field.FieldName, f.DisplayString);
     }
 }

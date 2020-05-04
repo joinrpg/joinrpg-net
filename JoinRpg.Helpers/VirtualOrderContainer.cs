@@ -14,10 +14,7 @@ namespace JoinRpg.Helpers
     {
         //Factory function enable type inference
         public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs,
-            string ordering) where TChild : class, IOrderableEntity
-        {
-            return new VirtualOrderContainer<TChild>(ordering, childs);
-        }
+            string ordering) where TChild : class, IOrderableEntity => new VirtualOrderContainer<TChild>(ordering, childs);
     }
 
     public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
@@ -35,7 +32,10 @@ namespace JoinRpg.Helpers
             IEnumerable<TItem> entites)
         {
             storedOrder = storedOrder ?? "";
-            if (entites == null) throw new ArgumentNullException(nameof(entites));
+            if (entites == null)
+            {
+                throw new ArgumentNullException(nameof(entites));
+            }
 
             var list = entites.ToList(); // Copy 
 
@@ -71,10 +71,7 @@ namespace JoinRpg.Helpers
             return item;
         }
 
-        public string GetStoredOrder()
-        {
-            return string.Join(Separator.ToString(), Items.Select(item => item.Id));
-        }
+        public string GetStoredOrder() => string.Join(Separator.ToString(), Items.Select(item => item.Id));
 
         public IReadOnlyList<TItem> OrderedItems => Items.AsReadOnly();
 

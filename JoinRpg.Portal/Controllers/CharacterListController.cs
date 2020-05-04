@@ -94,7 +94,10 @@ namespace JoinRpg.Portal.Controllers
             var characters =
               (await ProjectRepository.GetCharacterByGroups(projectId, groupIds)).Where(ch => ch.IsActive).ToList();
 
-            if (characterGroup == null) return NotFound();
+            if (characterGroup == null)
+            {
+                return NotFound();
+            }
 
             var plots = await PlotRepository.GetPlotsWithTargets(projectId);
 

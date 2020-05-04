@@ -15,10 +15,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
 
         public AdminHomeController(
             IProjectRepository projectRepository
-        )
-        {
-            ProjectRepository = projectRepository;
-        }
+        ) => ProjectRepository = projectRepository;
 
         public IActionResult Index() => View();
 

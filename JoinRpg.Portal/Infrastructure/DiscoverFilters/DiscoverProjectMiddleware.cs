@@ -10,10 +10,7 @@ namespace JoinRpg.Portal.Infrastructure.DiscoverFilters
     {
         private readonly RequestDelegate nextDelegate;
 
-        public DiscoverProjectMiddleware(RequestDelegate nextDelegate)
-        {
-            this.nextDelegate = nextDelegate;
-        }
+        public DiscoverProjectMiddleware(RequestDelegate nextDelegate) => this.nextDelegate = nextDelegate;
 
         /// <inheritedoc />
         public async Task InvokeAsync(HttpContext context)

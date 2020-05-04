@@ -14,7 +14,7 @@ namespace JoinRpg.DataModel
         [EditorBrowsable(EditorBrowsableState.Never), UsedImplicitly]
         public string ListIds
         {
-            get { return _internalData; }
+            get => _internalData;
             set
             {
                 _internalData = value;

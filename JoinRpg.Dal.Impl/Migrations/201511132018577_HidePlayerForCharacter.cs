@@ -4,14 +4,8 @@ namespace JoinRpg.Dal.Impl.Migrations
 
     public partial class HidePlayerForCharacter : DbMigration
     {
-        public override void Up()
-        {
-            AddColumn("dbo.Characters", "HidePlayerForCharacter", c => c.Boolean(nullable: false, defaultValue: false));
-        }
+        public override void Up() => AddColumn("dbo.Characters", "HidePlayerForCharacter", c => c.Boolean(nullable: false, defaultValue: false));
 
-        public override void Down()
-        {
-            DropColumn("dbo.Characters", "HidePlayerForCharacter");
-        }
+        public override void Down() => DropColumn("dbo.Characters", "HidePlayerForCharacter");
     }
 }

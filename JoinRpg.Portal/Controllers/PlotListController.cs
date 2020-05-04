@@ -35,24 +35,15 @@ namespace JoinRpg.Portal.Controllers
 
         [RequireMasterOrPublish]
         [HttpGet]
-        public async Task<ActionResult> Index(int projectId)
-        {
-            return await PlotList(projectId, pf => true);
-        }
+        public async Task<ActionResult> Index(int projectId) => await PlotList(projectId, pf => true);
 
         [RequireMasterOrPublish]
         [HttpGet]
-        public async Task<ActionResult> InWork(int projectId)
-        {
-            return await PlotList(projectId, pf => pf.InWork);
-        }
+        public async Task<ActionResult> InWork(int projectId) => await PlotList(projectId, pf => pf.InWork);
 
         [RequireMasterOrPublish]
         [HttpGet]
-        public async Task<ActionResult> Ready(int projectId)
-        {
-            return await PlotList(projectId, pf => pf.Completed);
-        }
+        public async Task<ActionResult> Ready(int projectId) => await PlotList(projectId, pf => pf.Completed);
 
         [RequireMasterOrPublish]
         [HttpGet]

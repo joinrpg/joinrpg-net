@@ -51,8 +51,14 @@ namespace JoinRpg.Dal.Impl.Repositories
         public async Task<IReadOnlyCollection<IForumThreadListItem>> GetThreads(int projectId, bool isMaster, IEnumerable<int> groupIds)
         {
             Expression<Func<ForumThread, bool>> groupPredicate;
-            if (groupIds == null) groupPredicate = thread => true;
-            else groupPredicate = thread => groupIds.Contains(thread.CharacterGroupId);
+            if (groupIds == null)
+            {
+                groupPredicate = thread => true;
+            }
+            else
+            {
+                groupPredicate = thread => groupIds.Contains(thread.CharacterGroupId);
+            }
 
             return await Ctx.Set<ForumThread>()
               .Where(thread => thread.ProjectId == projectId)

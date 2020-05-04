@@ -23,7 +23,7 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
         {
             var responseText = await response.Content.ReadAsStringAsync();
 
-            HtmlDocument doc = new HtmlDocument();
+            var doc = new HtmlDocument();
             doc.LoadHtml(responseText);
             return doc;
         }

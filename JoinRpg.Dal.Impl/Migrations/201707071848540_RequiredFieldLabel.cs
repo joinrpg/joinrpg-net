@@ -13,9 +13,6 @@ namespace JoinRpg.Dal.Impl.Migrations
             AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String(nullable: false));
         }
 
-        public override void Down()
-        {
-            AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String());
-        }
+        public override void Down() => AlterColumn("dbo.ProjectFieldDropdownValues", "Label", c => c.String());
     }
 }

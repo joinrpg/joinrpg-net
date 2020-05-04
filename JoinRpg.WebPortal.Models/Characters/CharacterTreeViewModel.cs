@@ -36,10 +36,7 @@ namespace JoinRpg.Web.Models.Characters
         public JoinHtmlString Description { get; }
 
 
-        public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group)
-        {
-            Description = group.Description.ToHtmlString();
-        }
+        public CharacterGroupWithDescViewModel(CharacterGroup group) : base(group) => Description = group.Description.ToHtmlString();
     }
 
     public class CharacterTreeItem : CharacterGroupLinkViewModel, IEquatable<CharacterTreeItem>
@@ -60,15 +57,9 @@ namespace JoinRpg.Web.Models.Characters
 
         public override bool Equals(object obj) => Equals(obj as CharacterTreeItem);
 
-        public override int GetHashCode()
-        {
-            return CharacterGroupId;
-        }
+        public override int GetHashCode() => CharacterGroupId;
 
-        public override string ToString()
-        {
-            return $"ChGroup(Name={Name})";
-        }
+        public override string ToString() => $"ChGroup(Name={Name})";
 
         public CharacterTreeItem(CharacterGroup arg) : base(arg)
         {
@@ -95,15 +86,9 @@ namespace JoinRpg.Web.Models.Characters
 
         public override bool Equals(object obj) => Equals(obj as CharacterLinkViewModel);
 
-        public override int GetHashCode()
-        {
-            return CharacterId;
-        }
+        public override int GetHashCode() => CharacterId;
 
-        public override string ToString()
-        {
-            return $"Char(Name={CharacterName})";
-        }
+        public override string ToString() => $"Char(Name={CharacterName})";
 
         public CharacterLinkViewModel(Character arg)
         {

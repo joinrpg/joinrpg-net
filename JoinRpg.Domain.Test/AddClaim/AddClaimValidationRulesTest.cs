@@ -10,28 +10,16 @@ namespace JoinRpg.Domain.Test.AddClaim
         private MockedProject Mock { get; } = new MockedProject();
 
         [Fact]
-        public void AddClaimAllowedCharacter()
-        {
-            ShouldBeAllowed(Mock.Character);
-        }
+        public void AddClaimAllowedCharacter() => ShouldBeAllowed(Mock.Character);
 
         [Fact]
-        public void AddClaimAllowedGroup()
-        {
-            ShouldBeAllowed(Mock.Group);
-        }
+        public void AddClaimAllowedGroup() => ShouldBeAllowed(Mock.Group);
 
         [Fact]
-        public void AddClaimAllowedCharacterWithoutUser()
-        {
-            Mock.Character.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
-        }
+        public void AddClaimAllowedCharacterWithoutUser() => Mock.Character.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
 
         [Fact]
-        public void AddClaimAllowedGroupWithoutUser()
-        {
-            Mock.Group.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
-        }
+        public void AddClaimAllowedGroupWithoutUser() => Mock.Group.ValidateIfCanAddClaim(playerUserId: null).ShouldBeEmpty();
 
         [Fact]
         public void CantSendClaimIfProjectClaimsClosed()

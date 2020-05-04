@@ -19,10 +19,7 @@ namespace JoinRpg.Web.Helpers
         /// <summary>
         /// ctor
         /// </summary>
-        public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor)
-        {
-            HttpContextAccessor = httpContextAccessor;
-        }
+        public CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) => HttpContextAccessor = httpContextAccessor;
 
         int ICurrentUserAccessor.UserId => User.GetUserIdOrDefault() ?? throw new Exception("Authorization required here");
 

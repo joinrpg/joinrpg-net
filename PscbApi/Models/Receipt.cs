@@ -42,7 +42,9 @@ namespace PscbApi.Models
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if ((Items?.Count ?? 0) == 0)
+            {
                 yield return new ValidationResult("At least one receipt item required");
+            }
         }
     }
 }

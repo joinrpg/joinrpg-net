@@ -13,10 +13,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
     {
         private readonly JoinApplicationFactory factory;
 
-        public RegisterScenario(JoinApplicationFactory factory)
-        {
-            this.factory = factory;
-        }
+        public RegisterScenario(JoinApplicationFactory factory) => this.factory = factory;
 
         [Fact]
         public async Task RegistrationPageShouldOpen()

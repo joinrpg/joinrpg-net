@@ -8,10 +8,7 @@ namespace JoinRpg.Helpers
     public static class ExpressionHelpers
     {
         [CanBeNull]
-        public static string AsPropertyName<T1, T2>(this Expression<Func<T1, T2>> expression)
-        {
-            return expression.AsPropertyAccess()?.Name;
-        }
+        public static string AsPropertyName<T1, T2>(this Expression<Func<T1, T2>> expression) => expression.AsPropertyAccess()?.Name;
 
         [CanBeNull]
         public static PropertyInfo AsPropertyAccess<T1, T2>(
@@ -33,9 +30,6 @@ namespace JoinRpg.Helpers
             return memberExpression?.Member as PropertyInfo;
         }
 
-        public static string AsPropertyName<T1>(this Expression<Func<T1>> expression)
-        {
-            return ((MemberExpression)expression.Body).Member.Name;
-        }
+        public static string AsPropertyName<T1>(this Expression<Func<T1>> expression) => ((MemberExpression)expression.Body).Member.Name;
     }
 }

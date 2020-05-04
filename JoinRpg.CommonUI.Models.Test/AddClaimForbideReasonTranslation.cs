@@ -10,10 +10,7 @@ namespace JoinRpg.CommonUI.Models.Test
     {
         [Theory]
         [MemberData(nameof(AddClaimForbideReasons))]
-        public void AllTranslated(AddClaimForbideReason reason)
-        {
-            Should.NotThrow(() => reason.ToViewModel());
-        }
+        public void AllTranslated(AddClaimForbideReason reason) => Should.NotThrow(() => reason.ToViewModel());
 
         [Fact]
         public void TranslatedToDistinct()

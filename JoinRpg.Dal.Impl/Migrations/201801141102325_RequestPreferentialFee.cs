@@ -5,14 +5,8 @@ namespace JoinRpg.Dal.Impl.Migrations
 
     public partial class RequestPreferentialFee : DbMigration
     {
-        public override void Up()
-        {
-            AddColumn("dbo.FinanceOperations", "MarkMeAsPreferential", c => c.Boolean(nullable: false, defaultValue: false));
-        }
+        public override void Up() => AddColumn("dbo.FinanceOperations", "MarkMeAsPreferential", c => c.Boolean(nullable: false, defaultValue: false));
 
-        public override void Down()
-        {
-            DropColumn("dbo.FinanceOperations", "MarkMeAsPreferential");
-        }
+        public override void Down() => DropColumn("dbo.FinanceOperations", "MarkMeAsPreferential");
     }
 }

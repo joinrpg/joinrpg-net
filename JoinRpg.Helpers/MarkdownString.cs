@@ -23,17 +23,20 @@ namespace JoinRpg.DataModel
 
         public override string ToString() => $"Markdown({Contents})";
 
-        public bool Equals(MarkdownString other)
-        {
-            return other != null && string.Equals(Contents, other.Contents);
-        }
+        public bool Equals(MarkdownString other) => other != null && string.Equals(Contents, other.Contents);
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, obj))
+            {
                 return true;
+            }
+
             return Equals(obj as MarkdownString);
         }
 

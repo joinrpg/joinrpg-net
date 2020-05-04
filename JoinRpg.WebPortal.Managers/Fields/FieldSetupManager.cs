@@ -42,18 +42,12 @@ namespace JoinRpg.WebPortal.Managers
         /// <summary>
         /// Get all active fields
         /// </summary>
-        public async Task<GameFieldListViewModel> GetActiveAsync()
-        {
-            return await GetFieldsImpl(FieldNavigationPage.ActiveFieldsList, field => field.IsActive);
-        }
+        public async Task<GameFieldListViewModel> GetActiveAsync() => await GetFieldsImpl(FieldNavigationPage.ActiveFieldsList, field => field.IsActive);
 
         /// <summary>
         /// Get all inactive fields
         /// </summary>
-        public async Task<GameFieldListViewModel> GetInActiveAsync()
-        {
-            return await GetFieldsImpl(FieldNavigationPage.DeletedFieldsList, field => !field.IsActive);
-        }
+        public async Task<GameFieldListViewModel> GetInActiveAsync() => await GetFieldsImpl(FieldNavigationPage.DeletedFieldsList, field => !field.IsActive);
 
         /// <summary>
         /// Get field creation page

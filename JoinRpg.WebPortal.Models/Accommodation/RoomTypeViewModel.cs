@@ -98,32 +98,47 @@ namespace JoinRpg.Web.Models.Accommodation
             Requests = entity.Desirous.Select(ar => new AccRequestViewModel(ar)).ToList();
 
             // Creating a list of requests not assigned to any room
-            List<AccRequestViewModel> ua = Requests.Where(ar => ar.RoomId == 0).ToList();
+            var ua = Requests.Where(ar => ar.RoomId == 0).ToList();
             ua.Sort((x, y) =>
             {
-                int result = x.Persons - y.Persons;
+                var result = x.Persons - y.Persons;
                 if (result == 0)
+                {
                     result = x.FeeToPay - y.FeeToPay;
+                }
+
                 if (result == 0)
+                {
                     result = string.Compare(x.PersonsList, y.PersonsList, StringComparison.CurrentCultureIgnoreCase);
+                }
+
                 return result;
             });
             UnassignedRequests = ua;
 
             // Creating a list of rooms contained in this room type
-            List<RoomViewModel> rl = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
+            var rl = entity.ProjectAccommodations.Select(acc => new RoomViewModel(acc, this)).ToList();
             rl.Sort((x, y) =>
             {
                 if (x.Occupancy == y.Occupancy)
                 {
-                    if (int.TryParse(x.Name, out int xn) && int.TryParse(y.Name, out int yn))
+                    if (int.TryParse(x.Name, out var xn) && int.TryParse(y.Name, out var yn))
+                    {
                         return xn - yn;
+                    }
+
                     return string.Compare(x.Name, y.Name, StringComparison.CurrentCultureIgnoreCase);
                 }
                 if (x.Occupancy == x.Capacity)
+                {
                     return 1;
+                }
+
                 if (y.Occupancy == y.Capacity)
+                {
                     return -1;
+                }
+
                 return y.Occupancy - x.Occupancy;
             });
             Rooms = rl;

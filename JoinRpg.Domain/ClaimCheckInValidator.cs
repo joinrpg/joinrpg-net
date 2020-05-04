@@ -13,7 +13,11 @@ namespace JoinRpg.Domain
 
         public ClaimCheckInValidator([NotNull] Claim claim)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             this.claim = claim;
         }
 

@@ -121,9 +121,6 @@ namespace JoinRpg.Domain.Test
             AssertCorrectFieldsArePresent(userVisibleFields, expectedFields);
         }
 
-        private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectField[] expectedFields)
-        {
-            actualFields.Select(actual => actual.Field).ShouldBe(expectedFields, ignoreOrder: true);
-        }
+        private void AssertCorrectFieldsArePresent(IList<FieldWithValue> actualFields, params ProjectField[] expectedFields) => actualFields.Select(actual => actual.Field).ShouldBe(expectedFields, ignoreOrder: true);
     }
 }

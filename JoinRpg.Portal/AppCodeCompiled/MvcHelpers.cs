@@ -40,10 +40,7 @@ namespace JoinRpg.Portal
         //}
 
         public static string GetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
-            Expression<Func<TModel, TValue>> expression)
-        {
-            return self.GetMetadataFor(expression).Description;
-        }
+            Expression<Func<TModel, TValue>> expression) => self.GetMetadataFor(expression).Description;
 
         private static string TryGetDescription<TModel, TValue>(this IHtmlHelper<TModel> self,
             Expression<Func<TModel, TValue>> expression)
@@ -89,27 +86,24 @@ namespace JoinRpg.Portal
         /// </summary>
         public static IHtmlContent RenderAttrs(this IHtmlHelper self, Dictionary<string, string> attrs)
         {
-            string s = string.Empty;
+            var s = string.Empty;
             foreach (var kv in attrs)
+            {
                 s += s + @" " + kv.Key + @"=""" + WebUtility.HtmlEncode(kv.Value) + @"""";
+            }
+
             return self.Raw(s);
         }
 
         /// <summary>
         /// Converts payment status to CSS display property value
         /// </summary>
-        public static string PaymentStatusToDisplayStyle(this ClaimFeeViewModel self, ClaimPaymentStatus status)
-        {
-            return self.PaymentStatus == status ? "inline" : "none";
-        }
+        public static string PaymentStatusToDisplayStyle(this ClaimFeeViewModel self, ClaimPaymentStatus status) => self.PaymentStatus == status ? "inline" : "none";
 
         /// <summary>
         /// Renders specified number as a price to html tag
         /// </summary>
-        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id = null)
-        {
-            return self.RenderPriceElement(price.ToString(), id);
-        }
+        public static IHtmlContent RenderPriceElement(this IHtmlHelper self, int price, string id = null) => self.RenderPriceElement(price.ToString(), id);
 
         /// <summary>
         /// Renders specified value as a price to html tag
@@ -118,7 +112,10 @@ namespace JoinRpg.Portal
         {
             //TODO[Localize]
             if (!string.IsNullOrWhiteSpace(id))
+            {
                 id = id.Trim();
+            }
+
             return new HtmlString("<span "
                                   + (string.IsNullOrWhiteSpace(id) ? "" : @"id=" + id)
                                   + @" class=""price-value price-RUR"">" + price + "</span>");
@@ -144,15 +141,9 @@ namespace JoinRpg.Portal
         }
 
         public static TValue GetValue<TModel, TValue>(this IHtmlHelper<TModel> self,
-            Expression<Func<TModel, TValue>> expression)
-        {
-            return (TValue)self.GetUntypedModelFor(expression);
-        }
+            Expression<Func<TModel, TValue>> expression) => (TValue)self.GetUntypedModelFor(expression);
 
-        public static TModel GetModel<TModel>(this IHtmlHelper<TModel> self)
-        {
-            return self.GetValue(m => m);
-        }
+        public static TModel GetModel<TModel>(this IHtmlHelper<TModel> self) => self.GetValue(m => m);
 
         private static IModelExpressionProvider GetModelExpressionProvider<TModel>(this IHtmlHelper<TModel> self)
             => (IModelExpressionProvider)self.ViewContext.HttpContext.RequestServices.GetService(typeof(IModelExpressionProvider));
@@ -176,9 +167,6 @@ namespace JoinRpg.Portal
             return count + " " + @selected;
         }
 
-        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request)
-        {
-            return new HtmlString(request.Scheme + "://" + request.Host);
-        }
+        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new HtmlString(request.Scheme + "://" + request.Host);
     }
 }

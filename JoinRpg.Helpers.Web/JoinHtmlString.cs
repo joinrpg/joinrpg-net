@@ -13,10 +13,7 @@ namespace JoinRpg.Helpers.Web
     {
         private string Value { get; }
 
-        private JoinHtmlString(string value)
-        {
-            Value = value;
-        }
+        private JoinHtmlString(string value) => Value = value;
 
         /// <summary>
         /// Converts from AspNetCore style string

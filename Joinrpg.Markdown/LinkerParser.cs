@@ -14,7 +14,11 @@ namespace Joinrpg.Markdown
 
         public LinkerParser([NotNull] ILinkRenderer linkRenderer)
         {
-            if (linkRenderer == null) throw new ArgumentNullException(nameof(linkRenderer));
+            if (linkRenderer == null)
+            {
+                throw new ArgumentNullException(nameof(linkRenderer));
+            }
+
             LinkRenderer = linkRenderer;
         }
 

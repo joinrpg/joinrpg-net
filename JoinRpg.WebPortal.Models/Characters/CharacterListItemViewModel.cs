@@ -94,7 +94,10 @@ namespace JoinRpg.Web.Models.Characters
             int currentUserId,
             IEnumerable<ClaimProblem> problems)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
 
             BusyStatus = character.GetBusyStatus();
 

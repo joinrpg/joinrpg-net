@@ -21,16 +21,17 @@ namespace JoinRpg.Services.Impl
 
         private readonly IEmailService _email;
 
-        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor)
-        {
-            _email = email;
-        }
+        public PlotServiceImpl(IUnitOfWork unitOfWork, IEmailService email, ICurrentUserAccessor currentUserAccessor) : base(unitOfWork, currentUserAccessor) => _email = email;
 
 
 
         public async Task CreatePlotFolder(int projectId, string masterTitle, string todo)
         {
-            if (masterTitle == null) throw new ArgumentNullException(nameof(masterTitle));
+            if (masterTitle == null)
+            {
+                throw new ArgumentNullException(nameof(masterTitle));
+            }
+
             var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
             project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
             var startTimeUtc = DateTime.UtcNow;
@@ -198,7 +199,11 @@ namespace JoinRpg.Services.Impl
         private void UpdateElementText(string contents, string todoField, PlotElement plotElement, DateTime now)
         {
             if (plotElement.LastVersion().Content.Contents == contents &&
-                plotElement.LastVersion().TodoField == todoField) return;
+                plotElement.LastVersion().TodoField == todoField)
+            {
+                return;
+            }
+
             var text = new PlotElementTexts()
             {
                 Content = new MarkdownString(contents),
@@ -251,7 +256,7 @@ namespace JoinRpg.Services.Impl
 
         private List<Claim> GetClaimsFromGroups(IEnumerable<CharacterGroup> groups)
         {
-            List<Claim> claims = new List<Claim>();
+            var claims = new List<Claim>();
 
             void InternalGetUsersFromGroups(IEnumerable<CharacterGroup> src)
             {

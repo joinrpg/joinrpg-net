@@ -24,7 +24,11 @@ namespace Markdig.Helpers
         /// <exception cref="System.ArgumentNullException"></exception>
         public TextMatchHelper(HashSet<string> matches)
         {
-            if (matches == null) throw new ArgumentNullException(nameof(matches));
+            if (matches == null)
+            {
+                throw new ArgumentNullException(nameof(matches));
+            }
+
             var list = new List<string>(matches);
             root = new CharNode();
             listCache = new ListCache();
@@ -45,7 +49,10 @@ namespace Markdig.Helpers
         /// <exception cref="System.ArgumentNullException"></exception>
         public bool TryMatch(string text, int offset, int length, out string match)
         {
-            if (text == null) throw new ArgumentNullException(nameof(text));
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
             // TODO(lazy): we should check offset and length for a better exception experience in case of wrong usage
             var node = root;
             match = null;
@@ -76,7 +83,7 @@ namespace Markdig.Helpers
         {
             // TODO(lazy): This code for building the nodes is not very efficient in terms of memory usage and could be optimized (using structs and indices)
             // At least, we are using a cache for the temporary objects build (List<string>)
-            for (int i = 0; i < list.Count; i++)
+            for (var i = 0; i < list.Count; i++)
             {
                 var str = list[i];
                 var c = str[index];
@@ -117,10 +124,7 @@ namespace Markdig.Helpers
 
         private class ListCache : DefaultObjectCache<List<string>>
         {
-            protected override void Reset(List<string> instance)
-            {
-                instance.Clear();
-            }
+            protected override void Reset(List<string> instance) => instance.Clear();
         }
 
         private class CharNode : Dictionary<char, CharNode>

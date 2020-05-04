@@ -10,10 +10,7 @@ namespace JoinRpg.Domain
     public static class ClaimExtensions
     {
 
-        public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim)
-        {
-            return claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
-        }
+        public static IEnumerable<Claim> OtherPendingClaimsForThisPlayer(this Claim claim) => claim.Player.Claims.Where(c => c.ClaimId != claim.ClaimId && c.IsPending && c.ProjectId == claim.ProjectId);
 
         /// <summary>
         /// If claims for group, not for character, this is 0
@@ -23,14 +20,22 @@ namespace JoinRpg.Domain
         [NotNull, ItemNotNull]
         public static IEnumerable<Claim> OtherClaimsForThisCharacter([NotNull] this Claim claim)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             return claim.Character?.Claims?.Where(c => c.PlayerUserId != claim.PlayerUserId && c.ClaimStatus.IsActive()) ?? new List<Claim>();
         }
 
         [NotNull]
         public static IClaimSource GetTarget([NotNull] this Claim claim)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             if (claim.Character == null && claim.Group == null)
             {
                 throw new InvalidOperationException("Claim not bound neither to character nor character group. That shouldn't happen");
@@ -47,10 +52,7 @@ namespace JoinRpg.Domain
               .WhereNotNull();
         }
 
-        public static bool IsPartOfGroup(this Claim cl, int characterGroupId)
-        {
-            return cl.GetTarget().IsPartOfGroup(characterGroupId);
-        }
+        public static bool IsPartOfGroup(this Claim cl, int characterGroupId) => cl.GetTarget().IsPartOfGroup(characterGroupId);
 
         public static bool IsPartOfAnyOfGroups([CanBeNull] this IClaimSource claimSource, IEnumerable<CharacterGroup> groups)
         {
@@ -116,20 +118,11 @@ namespace JoinRpg.Domain
             }
         }
 
-        public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim)
-        {
-            return claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
-        }
+        public static IEnumerable<Comment> GetMasterAnswers(this CommentDiscussion claim) => claim.Comments.Where(comment => !comment.IsCommentByPlayer && comment.IsVisibleToPlayer);
 
-        public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId)
-        {
-            return enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
-        }
+        public static IEnumerable<Claim> OfUserActive(this IEnumerable<Claim> enumerable, int? currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.ClaimStatus.IsActive());
 
-        public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId)
-        {
-            return enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
-        }
+        public static IEnumerable<Claim> OfUserApproved(this IEnumerable<Claim> enumerable, int currentUserId) => enumerable.Where(c => c.PlayerUserId == currentUserId && c.IsApproved);
 
         public static void ChangeStatusWithCheck(this Claim claim, Claim.Status targetStatus)
         {
@@ -140,7 +133,10 @@ namespace JoinRpg.Domain
         [CanBeNull, MustUseReturnValue]
         public static Claim TrySelectSingleClaim([NotNull, ItemNotNull] this IReadOnlyCollection<Claim> claims)
         {
-            if (claims == null) throw new ArgumentNullException(nameof(claims));
+            if (claims == null)
+            {
+                throw new ArgumentNullException(nameof(claims));
+            }
 
             if (claims.Count(c => c.IsApproved) == 1)
             {

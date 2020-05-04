@@ -11,10 +11,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
     {
         private readonly JoinApplicationFactory factory;
 
-        public AuthChallengeTests(JoinApplicationFactory factory)
-        {
-            this.factory = factory;
-        }
+        public AuthChallengeTests(JoinApplicationFactory factory) => this.factory = factory;
 
         [Fact]
         public async Task ApiShouldReturn401()

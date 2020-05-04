@@ -225,12 +225,12 @@ namespace JoinRpg.Web.Models
         public UserSubscriptionTooltip GetFullSubscriptionTooltip(IEnumerable<CharacterGroup> parents,
         IReadOnlyCollection<UserSubscription> subscriptions, int claimId)
         {
-            string claimStatusChangeGroup = "";
-            string commentsGroup = "";
-            string fieldChangeGroup = "";
-            string moneyOperationGroup = "";
+            var claimStatusChangeGroup = "";
+            var commentsGroup = "";
+            var fieldChangeGroup = "";
+            var moneyOperationGroup = "";
 
-            UserSubscriptionTooltip subscrTooltip = new UserSubscriptionTooltip()
+            var subscrTooltip = new UserSubscriptionTooltip()
             {
                 HasFullParentSubscription = false,
                 Tooltip = "",
@@ -423,12 +423,16 @@ namespace JoinRpg.Web.Models
 
             Title = OperationType.GetDescription();
             if (string.IsNullOrWhiteSpace(Title))
+            {
                 Title = OperationType.GetDisplayName();
+            }
             else
+            {
                 Title = string.Format(
                     Title,
                     OperationType.GetDisplayName(),
                     source.PaymentType?.GetDisplayName());
+            }
 
             switch (OperationType)
             {
@@ -473,9 +477,14 @@ namespace JoinRpg.Web.Models
             FieldsFee = model.Fields.FieldsFee;
 
             foreach (FinanceOperationState s in Enum.GetValues(typeof(FinanceOperationState)))
+            {
                 Balance[s] = 0;
+            }
+
             foreach (var fo in claim.FinanceOperations)
+            {
                 Balance[fo.State] += fo.MoneyAmount;
+            }
 
             HasMasterAccess = claim.HasMasterAccess(currentUserId);
             HasFeeAdminAccess = claim.HasAccess(currentUserId, acl => acl.CanManageMoney);

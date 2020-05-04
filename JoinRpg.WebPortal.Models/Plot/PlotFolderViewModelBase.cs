@@ -23,14 +23,15 @@ namespace JoinRpg.Web.Models.Plot
 
     public static class PlotStatusExts
     {
-        public static PlotStatus GetStatus(this PlotFolder folder)
-        {
-            return folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
-        }
+        public static PlotStatus GetStatus(this PlotFolder folder) => folder.IsActive ? (folder.InWork ? PlotStatus.InWork : PlotStatus.Completed) : PlotStatus.Deleted;
 
         public static PlotStatus GetStatus(this PlotElement e)
         {
-            if (!e.IsActive) return PlotStatus.Deleted;
+            if (!e.IsActive)
+            {
+                return PlotStatus.Deleted;
+            }
+
             if (e.Published == null)
             {
                 return PlotStatus.InWork;

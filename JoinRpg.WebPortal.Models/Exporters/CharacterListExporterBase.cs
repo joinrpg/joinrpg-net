@@ -10,10 +10,7 @@ namespace JoinRpg.Web.Models.Exporters
     {
         protected CharacterListExporterBase(IReadOnlyCollection<ProjectField> fields,
             IUriService uriService)
-            : base(uriService)
-        {
-            Fields = fields;
-        }
+            : base(uriService) => Fields = fields;
 
         protected IReadOnlyCollection<ProjectField> Fields { get; }
 

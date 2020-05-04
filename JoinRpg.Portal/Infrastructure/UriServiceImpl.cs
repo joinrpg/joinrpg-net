@@ -17,7 +17,11 @@ namespace JoinRpg.Web.Helpers
         private string GetRouteTarget([NotNull]
             ILinkable link, UrlHelper urlHelper)
         {
-            if (link == null) throw new ArgumentNullException(nameof(link));
+            if (link == null)
+            {
+                throw new ArgumentNullException(nameof(link));
+            }
+
             var urlScheme = urlHelper.ActionContext.HttpContext.Request.Scheme ?? "http";
             switch (link.LinkType)
             {
@@ -76,10 +80,7 @@ namespace JoinRpg.Web.Helpers
             }
         }
 
-        public UriServiceImpl(IActionContextAccessor actionContextAccessor)
-        {
-            _actionContextAccessor = actionContextAccessor;
-        }
+        public UriServiceImpl(IActionContextAccessor actionContextAccessor) => _actionContextAccessor = actionContextAccessor;
 
         public string Get(ILinkable link) => GetUri(link).ToString();
 

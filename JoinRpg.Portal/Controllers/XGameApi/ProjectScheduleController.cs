@@ -19,10 +19,7 @@ namespace JoinRpg.Web.Controllers.XGameApi
     {
         private SchedulePageManager Manager { get; }
 
-        public ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : base(projectRepository)
-        {
-            Manager = manager;
-        }
+        public ProjectScheduleController(IProjectRepository projectRepository, SchedulePageManager manager) : base(projectRepository) => Manager = manager;
 
         [HttpGet]
         [Route("all")]

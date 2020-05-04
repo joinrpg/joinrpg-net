@@ -8,10 +8,7 @@ namespace Joinrpg.AspNetCore.Helpers
 {
     public static class FormCollectionHelpers
     {
-        private static Dictionary<string, string> ToDictionary(this IFormCollection collection)
-        {
-            return collection.Keys.ToDictionary(key => key, key => collection[key].First());
-        }
+        private static Dictionary<string, string> ToDictionary(this IFormCollection collection) => collection.Keys.ToDictionary(key => key, key => collection[key].First());
 
         public static IReadOnlyDictionary<int, string> GetDynamicValuesFromPost(this HttpRequest request, string prefix)
         {

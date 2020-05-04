@@ -11,10 +11,7 @@ namespace JoinRpg.Dal.Impl.Repositories
     {
         private readonly MyDbContext _ctx;
 
-        public UserInfoRepository(MyDbContext ctx)
-        {
-            _ctx = ctx;
-        }
+        public UserInfoRepository(MyDbContext ctx) => _ctx = ctx;
 
         public Task<User> GetById(int id) => _ctx.UserSet.FindAsync(id);
         public Task<User> WithProfile(int userId)
@@ -26,10 +23,7 @@ namespace JoinRpg.Dal.Impl.Repositories
               .SingleOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public Task<User> GetWithSubscribe(int currentUserId)
-        {
-            return _ctx.UserSet.Include(u => u.Subscriptions).SingleOrDefaultAsync(u => u.UserId == currentUserId);
-        }
+        public Task<User> GetWithSubscribe(int currentUserId) => _ctx.UserSet.Include(u => u.Subscriptions).SingleOrDefaultAsync(u => u.UserId == currentUserId);
 
         public Task<User> GetByEmail(string email)
         {

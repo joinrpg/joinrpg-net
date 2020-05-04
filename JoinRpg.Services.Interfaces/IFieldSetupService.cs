@@ -168,10 +168,7 @@ namespace JoinRpg.Services.Interfaces
             showForUnapprovedClaims,
             price,
             masterFieldHint,
-            programmaticValue)
-        {
-            ProjectFieldId = projectFieldId;
-        }
+            programmaticValue) => ProjectFieldId = projectFieldId;
 
         public int ProjectFieldId { get; }
     }
@@ -230,10 +227,7 @@ namespace JoinRpg.Services.Interfaces
                 programmaticValue,
                 price,
                 playerSelectable,
-                timeSlotOptions)
-        {
-            ProjectFieldDropdownValueId = projectFieldDropdownValueId;
-        }
+                timeSlotOptions) => ProjectFieldDropdownValueId = projectFieldDropdownValueId;
 
         public int ProjectFieldDropdownValueId { get; }
     }

@@ -19,7 +19,11 @@ namespace JoinRpg.Web.Models.Characters
 
         public CharacterParentGroupsViewModel([NotNull] Character character, bool hasMasterAccess)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             HasMasterAccess = hasMasterAccess;
             ParentGroups = character
               .GetParentGroupsToTop()

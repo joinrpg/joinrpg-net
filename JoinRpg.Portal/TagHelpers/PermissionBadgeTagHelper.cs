@@ -27,7 +27,7 @@ namespace JoinRpg.Portal.TagHelpers
         [ViewContext]
         public ViewContext ViewContext
         {
-            set { _htmlHelper.Contextualize(value); }
+            set => _htmlHelper.Contextualize(value);
         }
 
 

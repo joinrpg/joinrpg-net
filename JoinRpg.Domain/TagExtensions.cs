@@ -11,7 +11,11 @@ namespace JoinRpg.Domain
     {
         public static IEnumerable<string> ExtractTagNames([NotNull] this string title)
         {
-            if (title == null) throw new ArgumentNullException(nameof(title));
+            if (title == null)
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
+
             return ExtractTagNamesImpl(title).Distinct();
         }
 
@@ -19,7 +23,10 @@ namespace JoinRpg.Domain
         {
             for (var i = 0; i < title.Length; i++)
             {
-                if (title[i] != '#') continue;
+                if (title[i] != '#')
+                {
+                    continue;
+                }
 
                 var tagName = title.Skip(i + 1).TakeWhile(c => char.IsLetterOrDigit(c) || c == '_').AsString().Trim();
                 if (tagName != "")
@@ -31,7 +38,10 @@ namespace JoinRpg.Domain
 
         public static string RemoveTagNames([NotNull] this string title)
         {
-            if (title == null) throw new ArgumentNullException(nameof(title));
+            if (title == null)
+            {
+                throw new ArgumentNullException(nameof(title));
+            }
 
             var extractTagNames = title.ExtractTagNames().ToList();
             return title
@@ -41,9 +51,6 @@ namespace JoinRpg.Domain
               .Trim();
         }
 
-        public static string GetTagString(this IEnumerable<ProjectItemTag> tags)
-        {
-            return tags.Select(tag => "#" + tag.TagName).JoinStrings(" ");
-        }
+        public static string GetTagString(this IEnumerable<ProjectItemTag> tags) => tags.Select(tag => "#" + tag.TagName).JoinStrings(" ");
     }
 }

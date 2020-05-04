@@ -9,10 +9,7 @@ namespace JoinRpg.Helpers.Test
     {
         private class Foo : IOrderableEntity
         {
-            public Foo(int id)
-            {
-                Id = id;
-            }
+            public Foo(int id) => Id = id;
 
             public int Id { get; }
 

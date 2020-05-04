@@ -12,7 +12,10 @@ namespace JoinRpg.Domain
         [NotNull, ItemNotNull]
         public static IEnumerable<User> GetResponsibleMasters([NotNull] this IClaimSource group, bool includeSelf = true)
         {
-            if (group == null) throw new ArgumentNullException(nameof(group));
+            if (group == null)
+            {
+                throw new ArgumentNullException(nameof(group));
+            }
 
             if (group.ResponsibleMasterUser != null && includeSelf)
             {
@@ -56,7 +59,11 @@ namespace JoinRpg.Domain
         [CanBeNull]
         public static User GetResponsibleMaster([NotNull] this Character character)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
+            if (character == null)
+            {
+                throw new ArgumentNullException(nameof(character));
+            }
+
             return character.ApprovedClaim?.ResponsibleMasterUser ?? character.GetResponsibleMasters().FirstOrDefault();
         }
     }

@@ -22,10 +22,7 @@ namespace JoinRpg.Portal.Controllers
             IProjectRepository projectRepository,
             IProjectService projectService,
             IUserRepository userRepository)
-          : base(projectRepository, projectService, userRepository)
-        {
-            PluginFactory = pluginFactory;
-        }
+          : base(projectRepository, projectService, userRepository) => PluginFactory = pluginFactory;
 
         [HttpGet]
         public async Task<ActionResult> DisplayConfig(int projectid, string plugin)

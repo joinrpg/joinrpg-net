@@ -9,7 +9,7 @@ namespace JoinRpg.Helpers.Validation
         protected override ValidationResult IsValid(object value,
             ValidationContext validationContext)
         {
-            DateTime dt = (DateTime)value;
+            var dt = (DateTime)value;
             if (dt.Date <= DateTime.UtcNow.Date.AddDays(+1)
             ) //TODO[UTC]: if everyone properly uses UTC, we don't have to do +1
             {

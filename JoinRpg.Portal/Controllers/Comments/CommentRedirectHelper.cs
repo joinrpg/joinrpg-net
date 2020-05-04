@@ -8,7 +8,7 @@ namespace JoinRpg.Portal.Controllers.Comments
     {
         public static ActionResult RedirectToDiscussion(IUrlHelper Url, CommentDiscussion discussion, int? commentId = null)
         {
-            string extra = commentId != null ? $"#comment{commentId}" : null;
+            var extra = commentId != null ? $"#comment{commentId}" : null;
             var claim = discussion.GetClaim();
             if (claim != null)
             {

@@ -267,7 +267,10 @@ namespace JoinRpg.Services.Impl
             foreach (var fieldValue in field.DropdownValues)
             {
                 if (fieldValue.CharacterGroup == null)
+                {
                     continue; //We can't convert to LINQ because of RSRP-457084
+                }
+
                 UpdateSpecialGroupProperties(fieldValue);
             }
 

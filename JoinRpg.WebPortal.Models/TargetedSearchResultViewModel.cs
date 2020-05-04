@@ -22,7 +22,7 @@ namespace JoinRpg.Web.Models
 
         public JoinHtmlString GetFormattedDescription(int maxLengthToShow)
         {
-            string descriptionToShow = TruncateString(
+            var descriptionToShow = TruncateString(
                 SearchResult.Description.ToPlainText().ToHtmlString(),
                 SearchTarget,
                 maxLengthToShow);
@@ -51,13 +51,13 @@ namespace JoinRpg.Web.Models
                 return stringToTruncate;
             }
 
-            int startOfSearchedFragment = stringToTruncate.IndexOf(targetText, stringComparison);
+            var startOfSearchedFragment = stringToTruncate.IndexOf(targetText, stringComparison);
 
             //show the beginning of the string if target fragment is not found
             startOfSearchedFragment = startOfSearchedFragment < 0 ? 0 : startOfSearchedFragment;
 
             //Try to put the beginning of the searched fragment in the middle of the substring
-            int startOfSubtringToShow = startOfSearchedFragment > (maxLength / 2)
+            var startOfSubtringToShow = startOfSearchedFragment > (maxLength / 2)
                 ? startOfSearchedFragment - (maxLength / 2)
                 : 0;
 
@@ -66,7 +66,7 @@ namespace JoinRpg.Web.Models
                 ? stringToTruncate.Length - maxLength
                 : startOfSubtringToShow;
 
-            string truncatedString = stringToTruncate.Substring(startOfSubtringToShow, maxLength);
+            var truncatedString = stringToTruncate.Substring(startOfSubtringToShow, maxLength);
 
             if (startOfSubtringToShow > 0)
             {

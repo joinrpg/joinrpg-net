@@ -13,9 +13,20 @@ namespace JoinRpg.PluginHost.Interfaces
           bool allowPlayerAccess,
           [CanBeNull] string fieldMapping)
         {
-            if (operationName == null) throw new ArgumentNullException(nameof(operationName));
-            if (createPluginInstance == null) throw new ArgumentNullException(nameof(createPluginInstance));
-            if (description == null) throw new ArgumentNullException(nameof(description));
+            if (operationName == null)
+            {
+                throw new ArgumentNullException(nameof(operationName));
+            }
+
+            if (createPluginInstance == null)
+            {
+                throw new ArgumentNullException(nameof(createPluginInstance));
+            }
+
+            if (description == null)
+            {
+                throw new ArgumentNullException(nameof(description));
+            }
 
             OperationName = operationName;
             CreatePluginInstance = createPluginInstance;

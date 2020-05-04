@@ -14,10 +14,7 @@ namespace JoinRpg.Helpers.Web
         public string UnValidatedValue { get; }
 
         private UnSafeHtml([NotNull]
-            string value)
-        {
-            UnValidatedValue = value;
-        }
+            string value) => UnValidatedValue = value;
 
         /// <summary>
         /// Conversion from string

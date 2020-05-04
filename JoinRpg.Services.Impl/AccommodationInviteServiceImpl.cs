@@ -18,10 +18,7 @@ namespace JoinRpg.Services.Impl
     public class AccommodationInviteServiceImpl : DbServiceImplBase, IAccommodationInviteService
     {
         public AccommodationInviteServiceImpl(IUnitOfWork unitOfWork, IEmailService emailService, ICurrentUserAccessor currentUserAccessor) :
-            base(unitOfWork, currentUserAccessor)
-        {
-            EmailService = emailService;
-        }
+            base(unitOfWork, currentUserAccessor) => EmailService = emailService;
 
         private IEmailService EmailService { get; }
 
@@ -196,10 +193,12 @@ namespace JoinRpg.Services.Impl
             string accommodationRequestPrefix)
         {
             if (receiverClaimOrAccommodationRequestId.StartsWith(accommodationRequestPrefix))
+            {
                 return await CreateAccommodationInviteToAccommodationRequest(projectId,
                     senderClaimId,
                     int.Parse(receiverClaimOrAccommodationRequestId.Substring(2)),
                     accommodationRequestId).ConfigureAwait(false);
+            }
 
             return new[]
             {
@@ -294,7 +293,9 @@ namespace JoinRpg.Services.Impl
                 .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (inviteRequest == null)
+            {
                 throw new Exception("Invite request not found.");
+            }
 
             inviteRequest.IsAccepted = newState;
             inviteRequest.ResolveDescription = newState == AccommodationRequest.InviteState.Canceled
@@ -327,7 +328,9 @@ namespace JoinRpg.Services.Impl
                 .ConfigureAwait(false);
 
             if (inviteRequests.Count == 0)
+            {
                 return;
+            }
 
             var claims = new List<int>();
             foreach (var accommodationInvite in inviteRequests)

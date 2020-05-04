@@ -9,10 +9,7 @@ namespace JoinRpg.Web.Models.Exporters
     public class ClaimListItemViewModelExporter : CustomExporter<ClaimListItemViewModel>
     {
         public ClaimListItemViewModelExporter(Project project, IUriService uriService) : base(
-            uriService)
-        {
-            Project = project;
-        }
+            uriService) => Project = project;
 
         private Project Project { get; }
 

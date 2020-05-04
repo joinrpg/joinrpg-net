@@ -19,7 +19,7 @@ namespace JoinRpg.Portal.TagHelpers
             base.Process(context, output);
 
             var childContent = await output.GetChildContentAsync();
-            string content = childContent.GetContent();
+            var content = childContent.GetContent();
             output.TagName = "li";
             var hrefAttr = output.Attributes.FirstOrDefault(a => a.Name == "href");
             if (hrefAttr != null)
@@ -28,7 +28,9 @@ namespace JoinRpg.Portal.TagHelpers
                 output.Attributes.Remove(hrefAttr);
             }
             else
+            {
                 output.Content.SetHtmlContent(content);
+            }
 
             if (ShouldBeActive())
             {
@@ -38,8 +40,8 @@ namespace JoinRpg.Portal.TagHelpers
 
         private bool ShouldBeActive()
         {
-            string currentController = ViewContext.RouteData.Values["Controller"].ToString();
-            string currentAction = ViewContext.RouteData.Values["Action"].ToString();
+            var currentController = ViewContext.RouteData.Values["Controller"].ToString();
+            var currentAction = ViewContext.RouteData.Values["Action"].ToString();
 
             if (!string.IsNullOrWhiteSpace(Controller) && Controller.ToLower() != currentController.ToLower())
             {

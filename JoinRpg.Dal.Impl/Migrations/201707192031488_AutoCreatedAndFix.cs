@@ -19,9 +19,6 @@ INNER JOIN Claims CL ON CL.CharacterId = CH.CharacterId
 WHERE CL.ClaimStatus = 2 AND (CH.ApprovedClaimId <> CL.CLaimId OR CH.ApprovedClaimId IS NULL)");
         }
 
-        public override void Down()
-        {
-            DropColumn("dbo.Characters", "AutoCreated");
-        }
+        public override void Down() => DropColumn("dbo.Characters", "AutoCreated");
     }
 }

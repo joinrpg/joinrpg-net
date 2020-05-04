@@ -17,10 +17,7 @@ namespace JoinRpg.Portal.Infrastructure
         /// <summary>
         /// ctor
         /// </summary>
-        public ConfigurationAdapter(IConfiguration configuration)
-        {
-            this.configuration = configuration;
-        }
+        public ConfigurationAdapter(IConfiguration configuration) => this.configuration = configuration;
 
         string IMailGunConfig.ApiDomain => configuration.GetValue<string>("MailGunApiDomain");
 

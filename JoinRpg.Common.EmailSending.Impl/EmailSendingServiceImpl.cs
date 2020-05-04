@@ -41,15 +41,19 @@ namespace JoinRpg.Common.EmailSending.Impl
             IReadOnlyCollection<RecepientData> to)
         {
             if (!to.Any())
+            {
                 return;
+            }
 
             for (var i = 0; i * Constants.MaxRecipientsInChunk < to.Count; i++)
+            {
                 await SendEmailChunkImpl(
                     to.Skip(i * Constants.MaxRecipientsInChunk).Take(Constants.MaxRecipientsInChunk).ToList(),
                     subject,
                     text,
                     sender,
                     body);
+            }
         }
 
         public async Task SendEmails(string subject, MarkdownString body, RecepientData sender, IReadOnlyCollection<RecepientData> to)

@@ -16,10 +16,7 @@ namespace Joinrpg.Web.Identity
             return dbUser?.ToIdentityUser();
         }
 
-        Task<string> IUserEmailStore<JoinIdentityUser>.GetEmailAsync(JoinIdentityUser user, CancellationToken ct)
-        {
-            return Task.FromResult(user.UserName);
-        }
+        Task<string> IUserEmailStore<JoinIdentityUser>.GetEmailAsync(JoinIdentityUser user, CancellationToken ct) => Task.FromResult(user.UserName);
 
         async Task<bool> IUserEmailStore<JoinIdentityUser>.GetEmailConfirmedAsync(JoinIdentityUser user, CancellationToken ct)
         {
@@ -27,10 +24,7 @@ namespace Joinrpg.Web.Identity
             return dbUser.Auth.EmailConfirmed;
         }
 
-        Task<string> IUserEmailStore<JoinIdentityUser>.GetNormalizedEmailAsync(JoinIdentityUser user, CancellationToken ct)
-        {
-            return Task.FromResult(user.UserName.ToUpperInvariant());
-        }
+        Task<string> IUserEmailStore<JoinIdentityUser>.GetNormalizedEmailAsync(JoinIdentityUser user, CancellationToken ct) => Task.FromResult(user.UserName.ToUpperInvariant());
 
         Task IUserEmailStore<JoinIdentityUser>.SetEmailAsync(JoinIdentityUser user, string email, CancellationToken ct)
         {

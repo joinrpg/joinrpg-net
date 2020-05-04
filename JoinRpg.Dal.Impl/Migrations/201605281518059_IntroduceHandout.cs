@@ -4,14 +4,8 @@ namespace JoinRpg.Dal.Impl.Migrations
 
     public partial class IntroduceHandout : DbMigration
     {
-        public override void Up()
-        {
-            AddColumn("dbo.PlotElements", "ElementType", c => c.Int(nullable: false));
-        }
+        public override void Up() => AddColumn("dbo.PlotElements", "ElementType", c => c.Int(nullable: false));
 
-        public override void Down()
-        {
-            DropColumn("dbo.PlotElements", "ElementType");
-        }
+        public override void Down() => DropColumn("dbo.PlotElements", "ElementType");
     }
 }

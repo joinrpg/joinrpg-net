@@ -13,18 +13,12 @@ namespace JoinRpg.Services.Export.BackEnds
 
         public string FileExtension => "csv";
 
-        public void WriteHeaders(IEnumerable<ITableColumn> columns)
-        {
-            Builder.AppendLine(string.Join(",", columns.Select(c => EscapeForCsv(c.Name))));
-        }
+        public void WriteHeaders(IEnumerable<ITableColumn> columns) => Builder.AppendLine(string.Join(",", columns.Select(c => EscapeForCsv(c.Name))));
 
         public void WriteRow(IEnumerable<Cell> cells)
           => Builder.AppendLine(string.Join(",", cells.Select(GetContentForCsv)));
 
-        private static string GetContentForCsv(Cell c)
-        {
-            return EscapeForCsv(c.Content?.ToString());
-        }
+        private static string GetContentForCsv(Cell c) => EscapeForCsv(c.Content?.ToString());
 
         private static string EscapeForCsv(string value)
         {

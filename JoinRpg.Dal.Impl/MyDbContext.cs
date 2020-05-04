@@ -17,18 +17,12 @@ namespace JoinRpg.Dal.Impl
         /// <summary>
         /// Constructor for migrations
         /// </summary>
-        public MyDbContext() : base("DefaultConnection")
-        {
-            Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
-        }
+        public MyDbContext() : base("DefaultConnection") => Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
 
         /// <summary>
         /// Main constructor
         /// </summary>
-        public MyDbContext(IJoinDbContextConfiguration configuration) : base(configuration.ConnectionString)
-        {
-            Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
-        }
+        public MyDbContext(IJoinDbContextConfiguration configuration) : base(configuration.ConnectionString) => Database.Log = sql => { System.Diagnostics.Debug.WriteLine(sql); };
 
         public DbSet<Project> ProjectsSet => Set<Project>();
 

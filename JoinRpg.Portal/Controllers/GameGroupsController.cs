@@ -41,7 +41,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             return View(
               new GameRolesViewModel
@@ -64,7 +67,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             return View(
               new GameRolesReportViewModel
@@ -83,7 +89,11 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> Hot(int projectId, int? characterGroupId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
+
             return View(GetHotCharacters(field));
         }
 
@@ -289,7 +299,10 @@ namespace JoinRpg.Portal.Controllers
 
         {
             if (!group.HaveDirectSlots)
+            {
                 return DirectClaimSettings.NoDirectClaims;
+            }
+
             return group.DirectSlotsUnlimited ? DirectClaimSettings.DirectClaimsUnlimited : DirectClaimSettings.DirectClaimsLimited;
         }
 
@@ -340,7 +353,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             return View(field);
         }
@@ -352,7 +368,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             var project = field.Project;
             try
@@ -373,7 +392,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var field = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
 
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
 
             return View(FillFromCharacterGroup(new AddCharacterGroupViewModel()
             {
@@ -388,7 +410,11 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> AddGroup(AddCharacterGroupViewModel viewModel, int charactergroupid)
         {
             var field = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, charactergroupid);
-            if (field == null) return NotFound();
+            if (field == null)
+            {
+                return NotFound();
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(FillFromCharacterGroup(viewModel, field));
@@ -423,10 +449,7 @@ namespace JoinRpg.Portal.Controllers
 
         [MasterAuthorize(Permission.CanEditRoles)]
         [HttpPost]
-        public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
-        {
-            return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
-        }
+        public Task<ActionResult> MoveUp(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, -1);
 
         private async Task<ActionResult> MoveImpl(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId, short direction)
         {
@@ -446,10 +469,7 @@ namespace JoinRpg.Portal.Controllers
 
         [MasterAuthorize(Permission.CanEditRoles)]
         [HttpPost]
-        public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId)
-        {
-            return MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
-        }
+        public Task<ActionResult> MoveDown(int projectId, int charactergroupId, int parentCharacterGroupId, int currentRootGroupId) => MoveImpl(projectId, charactergroupId, parentCharacterGroupId, currentRootGroupId, +1);
 
         [HttpGet, MasterAuthorize()]
         public async Task<ActionResult> EditSubscribe(int projectId, int characterGroupId)
@@ -533,7 +553,10 @@ namespace JoinRpg.Portal.Controllers
         {
             string header = Request.Headers["If-Modified-Since"];
 
-            if (header == null) return false;
+            if (header == null)
+            {
+                return false;
+            }
 
             return DateTime.TryParse(header, out var isModifiedSince) &&
                    isModifiedSince.ToUniversalTime() > contentModified;
@@ -541,7 +564,11 @@ namespace JoinRpg.Portal.Controllers
 
         protected bool CheckCache(DateTime characterTreeModifiedAt)
         {
-            if (IsClientCached(characterTreeModifiedAt)) return true;
+            if (IsClientCached(characterTreeModifiedAt))
+            {
+                return true;
+            }
+
             Response.Headers.Add("Last-Modified", characterTreeModifiedAt.ToString("R"));
             return false;
         }

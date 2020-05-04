@@ -720,7 +720,7 @@ namespace JoinRpg.Services.Impl
               new[] { parentComment?.Author, parentComment?.Finance?.PaymentType?.User }.
               Union(extraSubscriptions ?? Enumerable.Empty<User>());
 
-            bool mastersOnly = !visibleToPlayerUpdated;
+            var mastersOnly = !visibleToPlayerUpdated;
             return
               await CreateClaimEmail<T>(claim, commentText, predicate,
                 extraAction, mastersOnly, extraRecipients);
@@ -813,10 +813,7 @@ namespace JoinRpg.Services.Impl
             IAccommodationInviteService accommodationInviteService,
             ICurrentUserAccessor currentUserAccessor
             ) : base(unitOfWork, emailService,
-          fieldDefaultValueGenerator, currentUserAccessor)
-        {
-            this._accommodationInviteService = accommodationInviteService;
-        }
+          fieldDefaultValueGenerator, currentUserAccessor) => _accommodationInviteService = accommodationInviteService;
 
         private void SetDiscussed(Claim claim, bool isVisibleToPlayer)
         {

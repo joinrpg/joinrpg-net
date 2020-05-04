@@ -59,10 +59,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpPost]
-        public ActionResult Index(int projectId, int claimId)
-        {
-            return RedirectToAction("CheckIn", new { projectId, claimId });
-        }
+        public ActionResult Index(int projectId, int claimId) => RedirectToAction("CheckIn", new { projectId, claimId });
 
         [HttpGet, MasterAuthorize(Permission.CanChangeProjectProperties)]
         public async Task<ActionResult> Setup(int projectId)
@@ -137,10 +134,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("~/{ProjectId}/claim/{ClaimId}/secondrole")]
-        public async Task<ActionResult> SecondRole(int projectId, int claimId)
-        {
-            return await ShowSecondRole(projectId, claimId);
-        }
+        public async Task<ActionResult> SecondRole(int projectId, int claimId) => await ShowSecondRole(projectId, claimId);
 
         private async Task<ActionResult> ShowSecondRole(int projectId, int claimId)
         {

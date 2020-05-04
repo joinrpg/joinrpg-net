@@ -25,10 +25,7 @@ namespace JoinRpg.Portal.Controllers.Money
             IFinanceService financeService,
             IUserRepository userRepository) : base(projectRepository,
                 projectService,
-                userRepository)
-        {
-            FinanceService = financeService;
-        }
+                userRepository) => FinanceService = financeService;
 
         [HttpGet]
         public async Task<IActionResult> Create(int projectId)

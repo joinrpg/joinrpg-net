@@ -9,10 +9,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
 {
     internal class FieldNotSetFilterBase
     {
-        protected static IEnumerable<ClaimProblem> CheckFields(IEnumerable<FieldWithValue> fieldsToCheck, IClaimSource target)
-        {
-            return fieldsToCheck.SelectMany(fieldWithValue => CheckField(target, fieldWithValue));
-        }
+        protected static IEnumerable<ClaimProblem> CheckFields(IEnumerable<FieldWithValue> fieldsToCheck, IClaimSource target) => fieldsToCheck.SelectMany(fieldWithValue => CheckField(target, fieldWithValue));
 
         private static IEnumerable<ClaimProblem> CheckField(IClaimSource target, FieldWithValue fieldWithValue)
         {
@@ -26,7 +23,10 @@ namespace JoinRpg.Domain.CharacterProblemFilters
 
             if (hasValue)
             {
-                if (isAvailableForTarget) yield break;
+                if (isAvailableForTarget)
+                {
+                    yield break;
+                }
 
                 if (fieldWithValue.Field.IsActive)
                 {
@@ -35,7 +35,10 @@ namespace JoinRpg.Domain.CharacterProblemFilters
             }
             else
             {
-                if (!isAvailableForTarget) yield break;
+                if (!isAvailableForTarget)
+                {
+                    yield break;
+                }
 
                 switch (fieldWithValue.Field.MandatoryStatus)
                 {
@@ -54,10 +57,7 @@ namespace JoinRpg.Domain.CharacterProblemFilters
         }
 
         [MustUseReturnValue]
-        private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue)
-        {
-            return new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
-        }
+        private static ClaimProblem FieldProblem(ClaimProblemType problemType, ProblemSeverity severity, FieldWithValue fieldWithValue) => new FieldRelatedProblem(problemType, severity, fieldWithValue.Field);
     }
 
     internal class FieldNotSetFilterCharacter : FieldNotSetFilterBase, IProblemFilter<Character>

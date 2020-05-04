@@ -198,7 +198,11 @@ namespace JoinRpg.Web.Models.Characters
             int currentUserId,
             CharacterNavigationPage characterNavigationPage)
         {
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
+
             var vm = new CharacterNavigationViewModel
             {
                 CanAddClaim = false,

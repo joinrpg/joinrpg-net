@@ -45,7 +45,10 @@ namespace JoinRpg.Portal.Controllers
         {
             var character = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
             var error = WithCharacter(character);
-            if (error != null) return error;
+            if (error != null)
+            {
+                return error;
+            }
 
             return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character), UriService));
         }
@@ -152,10 +155,7 @@ namespace JoinRpg.Portal.Controllers
             return View("PrintCards", cards);
         }
 
-        private static string GetFeeDueString(PrintCharacterViewModelSlim v)
-        {
-            return v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
-        }
+        private static string GetFeeDueString(PrintCharacterViewModelSlim v) => v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
 
         protected IActionResult WithCharacter(Character character)
         {

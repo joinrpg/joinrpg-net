@@ -13,16 +13,17 @@ namespace JoinRpg.Web.Models.Exporters
 {
     public abstract class CustomExporter<TRow> : IGeneratorFrontend
     {
-        protected CustomExporter(IUriService uriService)
-        {
-            UriService = uriService;
-        }
+        protected CustomExporter(IUriService uriService) => UriService = uriService;
 
         private class TableColumn<T> : ITableColumn
         {
             public TableColumn([CanBeNull] string name, [NotNull] Func<TRow, T> getter)
             {
-                if (getter == null) throw new ArgumentNullException(nameof(getter));
+                if (getter == null)
+                {
+                    throw new ArgumentNullException(nameof(getter));
+                }
+
                 Name = name;
                 Getter = getter;
             }
@@ -32,10 +33,7 @@ namespace JoinRpg.Web.Models.Exporters
             {
             }
 
-            public object ExtractValue(object row)
-            {
-                return Getter((TRow)row);
-            }
+            public object ExtractValue(object row) => Getter((TRow)row);
 
             public string Name { get; }
 
@@ -48,16 +46,10 @@ namespace JoinRpg.Web.Models.Exporters
         public abstract IEnumerable<ITableColumn> ParseColumns();
 
         [MustUseReturnValue]
-        protected ITableColumn StringColumn(Expression<Func<TRow, string>> func)
-        {
-            return new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
-        }
+        protected ITableColumn StringColumn(Expression<Func<TRow, string>> func) => new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
 
         [Pure]
-        protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string name = null)
-        {
-            return new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
-        }
+        protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string name = null) => new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
 
         [Pure]
         protected ITableColumn UriListColumn(Expression<Func<TRow, IEnumerable<ILinkable>>> func)
@@ -139,16 +131,10 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [MustUseReturnValue]
-        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string name = null)
-        {
-            return ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
-        }
+        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
 
         [MustUseReturnValue]
-        private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string>>[] expressions)
-        {
-            return expressions.Select(expression => ComplexElementMemberColumn(func, expression));
-        }
+        private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
 
         [MustUseReturnValue]
         protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr, string name = null)
@@ -160,10 +146,7 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [Pure]
-        private static string CombineName(params PropertyInfo[] propertyAccessors)
-        {
-            return propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
-        }
+        private static string CombineName(params PropertyInfo[] propertyAccessors) => propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
 
         [MustUseReturnValue]
         protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1>> complexGetter,
@@ -183,10 +166,7 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [Pure]
-        protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc)
-        {
-            return FieldColumn(projectField, fieldsFunc, projectField.FieldName);
-        }
+        protected ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc) => FieldColumn(projectField, fieldsFunc, projectField.FieldName);
 
         [Pure]
         protected static ITableColumn FieldColumn(ProjectField projectField, Func<TRow, IReadOnlyCollection<FieldWithValue>> fieldsFunc, string name)

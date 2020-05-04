@@ -35,7 +35,7 @@ namespace JoinRpg.Portal
           [InstantHandle] Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName)
         {
             var rd = self.ViewContext.RouteData;
-            string currentController = rd.GetRequiredString("controller");
+            var currentController = rd.GetRequiredString("controller");
             return self.MoveControl(expression, actionName, currentController);
         }
     }

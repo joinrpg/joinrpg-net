@@ -12,11 +12,7 @@ namespace JoinRpg.DataModel
     {
         public int UserId { get; set; }
 
-        public override string ToString()
-        {
-            return
-              $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
-        }
+        public override string ToString() => $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
 
         public string BornName { get; set; }
 
@@ -80,8 +76,8 @@ namespace JoinRpg.DataModel
 
         public Gender Gender
         {
-            get { return (Gender)GenderByte; }
-            set { GenderByte = (byte)value; }
+            get => (Gender)GenderByte;
+            set => GenderByte = (byte)value;
         }
 
         public string PhoneNumber { get; set; }
@@ -98,10 +94,7 @@ namespace JoinRpg.DataModel
 
         public DateTime? BirthDate { get; set; }
 
-        public override string ToString()
-        {
-            return $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
-        }
+        public override string ToString() => $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
     }
 
     public class AllrpgUserDetails
@@ -113,9 +106,6 @@ namespace JoinRpg.DataModel
         [Obsolete("Not used anymore")]
         public bool PreventAllrpgPassword { get; set; }
 
-        public override string ToString()
-        {
-            return $"AllrpgUser(UserId: {UserId}, Sid: {Sid}, JsonProfile: {JsonProfile}";
-        }
+        public override string ToString() => $"AllrpgUser(UserId: {UserId}, Sid: {Sid}, JsonProfile: {JsonProfile}";
     }
 }

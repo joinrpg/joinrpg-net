@@ -8,10 +8,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
 {
     public class AllowPublishHandler : AuthorizationHandler<MasterRequirement>
     {
-        public AllowPublishHandler(IProjectRepository projectRepository)
-        {
-            ProjectRepository = projectRepository;
-        }
+        public AllowPublishHandler(IProjectRepository projectRepository) => ProjectRepository = projectRepository;
         private IProjectRepository ProjectRepository { get; }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)

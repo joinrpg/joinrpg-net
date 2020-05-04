@@ -23,7 +23,7 @@ namespace JoinRpg.Web.Models.Plot
         [ReadOnly(true)]
         public bool HasEditAccess { get; private set; }
 
-        [ReadOnly((true))]
+        [ReadOnly(true)]
         public IEnumerable<string> TagNames { get; private set; }
 
 
@@ -32,7 +32,11 @@ namespace JoinRpg.Web.Models.Plot
 
         public EditPlotFolderViewModel([NotNull] PlotFolder folder, int? currentUserId, IUriService uriService)
         {
-            if (folder == null) throw new ArgumentNullException(nameof(folder));
+            if (folder == null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
             PlotFolderId = folder.PlotFolderId;
             TodoField = folder.TodoField;
             ProjectId = folder.ProjectId;

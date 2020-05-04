@@ -10,10 +10,7 @@ namespace JoinRpg.Helpers
     {
         private static readonly Random Rng = new Random();
 
-        public static Dictionary<string, string> ToDictionary(this NameValueCollection collection)
-        {
-            return collection.AllKeys.ToDictionary(key => key, key => collection[key]);
-        }
+        public static Dictionary<string, string> ToDictionary(this NameValueCollection collection) => collection.AllKeys.ToDictionary(key => key, key => collection[key]);
 
         [NotNull, ItemNotNull]
         public static ISet<T> FlatTree<T>(this T obj,
@@ -53,37 +50,25 @@ namespace JoinRpg.Helpers
             bool add)
             => source.Union(add ? enumerable : Enumerable.Empty<T>());
 
-        public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t)
-        {
-            return source.Union(new[] { t });
-        }
+        public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t) => source.Union(new[] { t });
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source)
-        {
-            return source.Where(item => item != null);
-        }
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> source) => source.Where(item => item != null);
 
-        public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source)
-        {
-            return source.Where(item => item != null).Select(item => item.Value);
-        }
+        public static IEnumerable<int> WhereNotNull(this IEnumerable<int?> source) => source.Where(item => item != null).Select(item => item.Value);
 
-        public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T> collection)
-        {
-            return collection ?? Enumerable.Empty<T>();
-        }
+        public static IEnumerable<T> OrEmptyList<T>(this IEnumerable<T> collection) => collection ?? Enumerable.Empty<T>();
 
         public static IEnumerable<T> Shuffle<T>([NotNull]
-            this IEnumerable<T> source)
-        {
-            return Shuffle(source, Rng);
-        }
+            this IEnumerable<T> source) => Shuffle(source, Rng);
 
         public static IEnumerable<T> Shuffle<T>([NotNull]
             this IEnumerable<T> source,
             Random random)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
 
             var sourceArray = source.ToArray();
 
@@ -102,8 +87,16 @@ namespace JoinRpg.Helpers
             IEnumerable<T> toAdd,
             int totalLimit)
         {
-            if (alreadyTaken == null) throw new ArgumentNullException(nameof(alreadyTaken));
-            if (toAdd == null) throw new ArgumentNullException(nameof(toAdd));
+            if (alreadyTaken == null)
+            {
+                throw new ArgumentNullException(nameof(alreadyTaken));
+            }
+
+            if (toAdd == null)
+            {
+                throw new ArgumentNullException(nameof(toAdd));
+            }
+
             return alreadyTaken.Union(
                 toAdd
                     .Except(alreadyTaken)

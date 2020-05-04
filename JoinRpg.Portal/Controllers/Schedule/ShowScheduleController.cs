@@ -21,10 +21,7 @@ namespace JoinRpg.Portal.Controllers.Schedule
             IProjectRepository projectRepository,
             IProjectService projectService,
             IUserRepository userRepository, SchedulePageManager manager)
-            : base(projectRepository, projectService, userRepository)
-        {
-            Manager = manager;
-        }
+            : base(projectRepository, projectService, userRepository) => Manager = manager;
 
         public SchedulePageManager Manager { get; }
 

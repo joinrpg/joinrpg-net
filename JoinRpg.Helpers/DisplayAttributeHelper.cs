@@ -35,7 +35,10 @@ namespace JoinRpg.Helpers
         public static string GetDisplayName([NotNull]
             this PropertyInfo propertyInfo)
         {
-            if (propertyInfo == null) throw new ArgumentNullException(nameof(propertyInfo));
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
 
             return propertyInfo.GetCustomAttribute<DisplayAttribute>()?.Name ?? propertyInfo.Name;
         }
@@ -46,7 +49,10 @@ namespace JoinRpg.Helpers
         public static string GetDescription(this Enum enumValue)
         {
             if (enumValue == null)
+            {
                 throw new ArgumentNullException(nameof(enumValue));
+            }
+
             return enumValue.GetAttribute<DisplayAttribute>()
                     ?.Description
                 ?? enumValue.GetAttribute<DescriptionAttribute>()

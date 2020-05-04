@@ -32,15 +32,9 @@ namespace JoinRpg.Portal.Infrastructure
             c.DocumentFilter<SwaggerXGameApiFilter>();
         }
 
-        internal static void Configure(SwaggerOptions options)
-        {
-            options.PreSerializeFilters.Add(ReverseProxyPreSerializeFilter);
-        }
+        internal static void Configure(SwaggerOptions options) => options.PreSerializeFilters.Add(ReverseProxyPreSerializeFilter);
 
-        internal static void ConfigureUI(SwaggerUIOptions c)
-        {
-            c.SwaggerEndpoint("v1/swagger.json", "My API V1");
-        }
+        internal static void ConfigureUI(SwaggerUIOptions c) => c.SwaggerEndpoint("v1/swagger.json", "My API V1");
 
         internal static Task RedirectToSwagger(HttpContext ctx)
         {
