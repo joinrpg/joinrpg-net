@@ -1,9 +1,11 @@
 using System.Threading.Tasks;
 using JoinRpg.WebPortal.Managers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Common.ControllerBase
     {
         private ProjectListManager ProjectListManager { get; }

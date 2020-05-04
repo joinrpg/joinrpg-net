@@ -66,15 +66,9 @@ namespace JoinRpg.Portal
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicyAsRequirement<AllowPublishRequirement>();
-                options.AddPolicy(PolicyConstants.AllowAdminPolicy,
-                    policy => policy.RequireAssertion(context => context.User.IsInRole(Security.AdminRoleName)));
-            }
-            );
+            services.AddAuthorization();
 
-            services.AddTransient<IAuthorizationPolicyProvider, AllowMasterPolicyProvider>();
+            services.AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>();
 
             services
                 .AddAuthentication()

@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Web.Filter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Infrastructure.Authorization
 {
-    public class AllowMasterHandler : AuthorizationHandler<AllowMasterRequirement>
+    public class AllowMasterHandler : AuthorizationHandler<MasterRequirement>
     {
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<AllowMasterHandler> logger;
@@ -25,14 +26,14 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
         }
         private IProjectRepository ProjectRepository { get; }
 
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AllowMasterRequirement requirement)
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, MasterRequirement requirement)
         {
             if (!context.User.Identity.IsAuthenticated)
             {
                 context.Fail();
                 return;
             }
-            var projectIdAsObj = httpContextAccessor.HttpContext.Items["ProjectId"];
+            var projectIdAsObj = httpContextAccessor.HttpContext.Items[Constants.ProjectIdName];
             if (projectIdAsObj == null || !int.TryParse(projectIdAsObj.ToString(), out var projectId))
             {
                 logger.LogError("Project id was not discovered, but master access required. That's probably problem with routing");

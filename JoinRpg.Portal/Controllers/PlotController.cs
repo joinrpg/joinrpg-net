@@ -74,7 +74,7 @@ namespace JoinRpg.Portal.Controllers
           }
       }
 
-      [HttpGet, MasterAuthorize(AllowPublish = true)]
+      [HttpGet, RequireMasterOrPublish]
     public async Task<ActionResult> Edit(int projectId, int plotFolderId)
     {
       var folder = await _plotRepository.GetPlotFolderAsync(projectId, plotFolderId);

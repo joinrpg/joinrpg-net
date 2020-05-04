@@ -122,7 +122,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("/{projectId}/close")]
-        [MasterAuthorize(Permission = Permission.CanChangeProjectProperties, AllowAdmin = true)]
+        [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
         public async Task<IActionResult> Close(int projectid)
         {
             var project = await ProjectRepository.GetProjectAsync(projectid);
@@ -138,7 +138,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpPost("/{projectId}/close")]
-        [MasterAuthorize(AllowAdmin = true, Permission = Permission.CanChangeProjectProperties)]
+        [RequireMasterOrAdmin(Permission.CanChangeProjectProperties)]
         public async Task<IActionResult> Close(CloseProjectViewModel viewModel)
         {
             if (!ModelState.IsValid)
