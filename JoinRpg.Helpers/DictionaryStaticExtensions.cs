@@ -9,7 +9,7 @@ namespace JoinRpg.Helpers
         public static TValue? GetValueOrDefault<TKey, TValue>([NotNull]
             this IReadOnlyDictionary<TKey, TValue> data,
             TKey key)
-            where TValue: class
+            where TValue : class
         {
             if (data == null)
             {

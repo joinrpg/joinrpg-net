@@ -32,7 +32,7 @@ namespace JoinRpg.Services.Impl
             }
             user.PrefferedName = prefferedName;
 
-            user.Extra = user.Extra ?? new UserExtra();
+            user.Extra ??= new UserExtra();
             user.Extra.Gender = gender;
 
             if (!user.VerifiedProfileFlag)

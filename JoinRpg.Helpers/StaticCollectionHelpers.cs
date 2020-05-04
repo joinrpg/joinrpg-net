@@ -52,7 +52,7 @@ namespace JoinRpg.Helpers
 
         public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T t) => source.Union(new[] { t });
 
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T:class
+        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source) where T : class
         {
             foreach (var i in source)
             {

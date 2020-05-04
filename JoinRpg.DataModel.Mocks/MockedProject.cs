@@ -131,12 +131,12 @@ namespace JoinRpg.DataModel.Mocks
 
         public CharacterGroup CreateCharacterGroup(CharacterGroup characterGroup = null)
         {
-            characterGroup = characterGroup ?? new CharacterGroup();
+            characterGroup ??= new CharacterGroup();
 
             characterGroup.Project = Project;
             characterGroup.ProjectId = Project.ProjectId;
             characterGroup.CharacterGroupId = Project.CharacterGroups.GetNextId();
-            characterGroup.CharacterGroupName = characterGroup.CharacterGroupName ?? "test_" + characterGroup.CharacterGroupId;
+            characterGroup.CharacterGroupName ??= "test_" + characterGroup.CharacterGroupId;
             characterGroup.IsActive = true;
             Project.CharacterGroups.Add(characterGroup);
 
@@ -152,11 +152,11 @@ namespace JoinRpg.DataModel.Mocks
 
         public ProjectField CreateField(ProjectField field = null)
         {
-            field = field ?? new ProjectField();
+            field ??= new ProjectField();
             field.Project = Project;
             field.ProjectId = Project.ProjectId;
             field.ProjectFieldId = Project.ProjectFields.GetNextId();
-            field.FieldName = field.FieldName ?? "test_" + field.ProjectFieldId;
+            field.FieldName ??= "test_" + field.ProjectFieldId;
             field.AvailableForCharacterGroupIds = Array.Empty<int>();
             field.IsActive = true;
             Project.ProjectFields.Add(field);
