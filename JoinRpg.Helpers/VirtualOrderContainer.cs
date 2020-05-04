@@ -31,7 +31,7 @@ namespace JoinRpg.Helpers
             [ItemNotNull] [NotNull]
             IEnumerable<TItem> entites)
         {
-            storedOrder = storedOrder ?? "";
+            storedOrder ??= "";
             if (entites == null)
             {
                 throw new ArgumentNullException(nameof(entites));

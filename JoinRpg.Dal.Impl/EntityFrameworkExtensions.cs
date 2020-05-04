@@ -15,7 +15,7 @@ namespace JoinRpg.Dal.Impl
 
         public static void HasIndex(this PrimitivePropertyConfiguration property, string indexName = null, int order = 1)
         {
-            indexName = indexName ?? new Guid().ToString();
+            indexName ??= new Guid().ToString();
             property
               .HasColumnAnnotation(IndexAnnotation.AnnotationName,
                 new IndexAnnotation(new IndexAttribute(indexName) { IsUnique = true, Order = order }));

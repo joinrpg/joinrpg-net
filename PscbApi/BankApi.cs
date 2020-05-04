@@ -111,8 +111,8 @@ namespace PscbApi
             {
                 receiptItem.CheckStringPropertyLength(r => r.Name);
             }
-            message.SuccessUrl = message.SuccessUrl ?? _configuration.DefaultSuccessUrl;
-            message.FailUrl = message.FailUrl ?? _configuration.DefaultFailUrl;
+            message.SuccessUrl ??= _configuration.DefaultSuccessUrl;
+            message.FailUrl ??= _configuration.DefaultFailUrl;
             Validator.ValidateObject(message, new ValidationContext(message) { MemberName = nameof(message) });
 
             message.OrderId = await getOrderId() ?? message.OrderId;

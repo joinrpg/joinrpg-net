@@ -74,7 +74,7 @@ namespace JoinRpg.Web.Models
             }
             if (startOfSubtringToShow + maxLength < stringToTruncate.Length)
             {
-                truncatedString = truncatedString + "...";
+                truncatedString += "...";
             }
             return truncatedString;
         }

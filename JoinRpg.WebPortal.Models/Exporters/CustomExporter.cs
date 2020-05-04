@@ -141,7 +141,7 @@ namespace JoinRpg.Web.Models.Exporters
           where T : class
         {
 
-            name = name ?? CombineName(complexGetter.AsPropertyAccess(), expr.AsPropertyAccess());
+            name ??= CombineName(complexGetter.AsPropertyAccess(), expr.AsPropertyAccess());
             return new TableColumn<TOut>(name, CombineGetters(complexGetter, expr).Compile());
         }
 
@@ -154,7 +154,7 @@ namespace JoinRpg.Web.Models.Exporters
           where T2 : class
           where T1 : class
         {
-            name = name ?? CombineName(complexGetter.AsPropertyAccess(), immed.AsPropertyAccess(), expr.AsPropertyAccess());
+            name ??= CombineName(complexGetter.AsPropertyAccess(), immed.AsPropertyAccess(), expr.AsPropertyAccess());
             return new TableColumn<TOut>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
         }
 

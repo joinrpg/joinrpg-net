@@ -41,7 +41,7 @@ namespace Joinrpg.Markdown
         private static JoinHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer linkRenderer,
             Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
         {
-            linkRenderer = linkRenderer ?? DoNothingLinkRenderer.Instance;
+            linkRenderer ??= DoNothingLinkRenderer.Instance;
             if (markdownString?.Contents == null)
             {
                 return "".MarkAsHtmlString();

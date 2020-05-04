@@ -309,7 +309,7 @@ namespace JoinRpg.Services.Impl
             claim.MasterAcceptedDate = Now;
             claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
-            claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? CurrentUserId;
+            claim.ResponsibleMasterUserId ??= CurrentUserId;
             AddCommentImpl(claim, null, commentText, true, CommentExtraAction.ApproveByMaster);
 
             if (!claim.Project.Details.EnableManyCharacters)
@@ -601,7 +601,7 @@ namespace JoinRpg.Services.Impl
             claim.ClaimStatus = Claim.Status.AddedByUser; //TODO: Actually should be "AddedByMaster" but we don't support it yet.
             claim.ClaimDenialStatus = null;
             SetDiscussed(claim, true);
-            claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
+            claim.ResponsibleMasterUserId ??= currentUserId;
 
 
             if (claim.Character != null)
@@ -663,7 +663,7 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            claim.ResponsibleMasterUserId = claim.ResponsibleMasterUserId ?? currentUserId;
+            claim.ResponsibleMasterUserId ??= currentUserId;
             var email =
               await
                 AddCommentWithEmail<MoveByMasterEmail>(contents, claim,
