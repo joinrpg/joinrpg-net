@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Helpers
                         new { UserId = link.Identification },
                         urlScheme);
                 case LinkType.ResultCharacterGroup:
-                    return urlHelper.Action("Index",
+                    return urlHelper.Action("Details",
                         "GameGroups",
                         new { CharacterGroupId = link.Identification, link.ProjectId },
                         urlScheme);
