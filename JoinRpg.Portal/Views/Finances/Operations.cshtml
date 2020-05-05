@@ -7,6 +7,6 @@
 
 <h2>@ViewBag.Title</h2>
 
-@Html.Partial("_ListOperationsDropdown", Model)
+<partial name="_ListOperationsDropdown" model="Model" />
 
-@Html.Partial("_Operations", Model.Items)
+<partial name="_Operations" model="Model.Items" />
