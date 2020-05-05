@@ -11,11 +11,10 @@ namespace JoinRpg.Web.Helpers
     [UsedImplicitly]
     internal class UriServiceImpl : IUriService
     {
-        private readonly IActionContextAccessor _actionContextAccessor;
-
+        private readonly Lazy<IUrlHelper> urlHelper;
 
         private string GetRouteTarget([NotNull]
-            ILinkable link, UrlHelper urlHelper)
+            ILinkable link, IUrlHelper urlHelper)
         {
             if (link == null)
             {
@@ -80,14 +79,11 @@ namespace JoinRpg.Web.Helpers
             }
         }
 
-        public UriServiceImpl(IActionContextAccessor actionContextAccessor) => _actionContextAccessor = actionContextAccessor;
+        public UriServiceImpl(IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor)
+            => urlHelper = new Lazy<IUrlHelper>(urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext));
 
         public string Get(ILinkable link) => GetUri(link).ToString();
 
-        public Uri GetUri(ILinkable link)
-        {
-            var urlHelper = new UrlHelper(_actionContextAccessor.ActionContext);
-            return new Uri(GetRouteTarget(link, urlHelper));
-        }
+        public Uri GetUri(ILinkable link) => new Uri(GetRouteTarget(link, urlHelper.Value));
     }
 }
