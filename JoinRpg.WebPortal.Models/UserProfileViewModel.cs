@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using JoinRpg.Domain;
 
 namespace JoinRpg.Web.Models
 {
@@ -66,6 +67,11 @@ namespace JoinRpg.Web.Models
         public bool IsVerifiedUser { get; }
         public bool IsAdmin { get; }
 
+        public UserProfileDetailsViewModel(User user, User currentUser)
+            : this(user, (AccessReason)user.GetProfileAccess(currentUser))
+        {
+
+        }
         public UserProfileDetailsViewModel([NotNull] User user, AccessReason reason)
         {
             if (user == null)
