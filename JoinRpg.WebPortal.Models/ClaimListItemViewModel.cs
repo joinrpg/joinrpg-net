@@ -111,6 +111,9 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Осталось")]
         public int FeeDue { get; }
 
+        [Display(Name = "Итого взнос")]
+        public int TotalFee { get; }
+
         [Display(Name = "Тип поселения")]
         public string AccomodationType { get; }
 
@@ -150,6 +153,7 @@ namespace JoinRpg.Web.Models
             Fields = claim.GetFields();
             FeePaid = claim.ClaimBalance();
             FeeDue = claim.ClaimFeeDue();
+            TotalFee = claim.ClaimTotalFee();
 
             PreferentialFeeUser = claim.PreferentialFeeUser;
 
