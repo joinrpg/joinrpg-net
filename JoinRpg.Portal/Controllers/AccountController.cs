@@ -127,17 +127,30 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
-        public ActionResult Register() => View(new RegisterViewModel() { RecaptchaPublicKey = recaptchaOptions.Value.PublicKey });
+        public ActionResult Register()
+        {
+            var isRecaptchaConfigured = recaptchaVerificator.IsRecaptchaConfigured();
+            return View
+                (
+                    new RegisterViewModel()
+                    {
+                        IsRecaptchaConfigured = isRecaptchaConfigured,
+                        RecaptchaPublicKey = recaptchaOptions.Value.PublicKey,
+                    }
+                );
+        }
 
         //
         // POST: /Account/Register
         [HttpPost]
         [AllowAnonymous]
-
         public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
         {
+            var isRecaptchaConfigured = recaptchaVerificator.IsRecaptchaConfigured();
+
             if (!ModelState.IsValid)
             {
+                model.IsRecaptchaConfigured = isRecaptchaConfigured;
                 model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }
@@ -146,15 +159,18 @@ namespace JoinRpg.Portal.Controllers
             //TODO IISIntegration, etc
             var clientIp = HttpContext.Connection.RemoteIpAddress;
 
-            var isValid = await recaptchaVerificator.ValidateToken(recaptchaToken, clientIp);
-
-            if (!isValid)
+            if (isRecaptchaConfigured)
             {
-                ModelState.AddModelError("captcha", "The reCAPTCHA is not valid.");
-                model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
-                return View(model);
-            }
+                var isRecaptchaValid = await recaptchaVerificator.ValidateToken(recaptchaToken, clientIp);
 
+                if (!isRecaptchaValid)
+                {
+                    ModelState.AddModelError("captcha", "Невозможно верифицировать ReCAPTCHA. Если эта ошибка повторяется, пожалуйста, обратитесь в техподдержку.");
+                    model.IsRecaptchaConfigured = isRecaptchaConfigured;
+                    model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
+                    return View(model);
+                }
+            }
 
             var currentUser = await UserManager.FindByNameAsync(model.Email);
 
@@ -172,6 +188,7 @@ namespace JoinRpg.Portal.Controllers
             if (!result.Succeeded)
             {
                 ModelState.AddErrors(result);
+                model.IsRecaptchaConfigured = isRecaptchaConfigured;
                 model.RecaptchaPublicKey = recaptchaOptions.Value.PublicKey;
                 return View(model);
             }

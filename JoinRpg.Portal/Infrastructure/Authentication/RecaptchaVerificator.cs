@@ -1,8 +1,10 @@
-using System.Net;
-using System.Threading.Tasks;
 using BitArmory.ReCaptcha;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
 
 namespace JoinRpg.Portal.Infrastructure.Authentication
 {
@@ -24,6 +26,17 @@ namespace JoinRpg.Portal.Infrastructure.Authentication
             var secret = recaptchaOptions.Value.PrivateKey;
 
             return reCaptchaService.Verify2Async(recaptchaToken, clientIp?.ToString(), secret);
+        }
+
+        public bool IsRecaptchaConfigured()
+        {
+            return IsRecaptchaKeyValid(recaptchaOptions.Value.PublicKey)
+                && IsRecaptchaKeyValid(recaptchaOptions.Value.PrivateKey);
+        }
+
+        private bool IsRecaptchaKeyValid(string key)
+        {
+            return !string.IsNullOrEmpty(key) && !string.Equals(key, "_");
         }
     }
 }

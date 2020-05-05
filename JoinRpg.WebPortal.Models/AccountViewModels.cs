@@ -71,6 +71,9 @@ namespace JoinRpg.Web.Models
 
         [Editable(false)]
         public string RecaptchaPublicKey { get; set; }
+
+        [Editable(false)]
+        public bool IsRecaptchaConfigured { get; set; }
     }
 
     public class ResetPasswordViewModel
