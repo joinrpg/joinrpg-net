@@ -53,7 +53,7 @@ namespace JoinRpg.Portal
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddRouting(options => options.LowercaseUrls = true);
-            services
+            var mvc = services
                 .AddMvc(options =>
                 {
                     if (!environment.IsEnvironment("IntegrationTest"))
@@ -65,6 +65,12 @@ namespace JoinRpg.Portal
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
+
+            if (environment.IsDevelopment())
+            {
+                //That's make local debug more easy
+                mvc.AddRazorRuntimeCompilation();
+            }
 
             services.AddAuthorization();
 
