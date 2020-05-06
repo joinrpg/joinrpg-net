@@ -9,10 +9,10 @@ For now joinrpg could be build & run only on **Windows**. Porting to .NET Core s
 1. Download [Visual Studio 2019](https://www.visualstudio.com/). Community Edition should be enough.
 1. Recommended to install Github Extension (options during install). See more on https://visualstudio.github.com/.
 1. Download .Net Framework 4.7.2 and .Net Framework 4.7.2 SDK (targeting pack).
-1. Download [SQL Server Express LocalDB 2017](https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SqlLocalDB.msi)
+1. Download [SQL Server Express LocalDB 2017](https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SqlLocalDB.msi) and important! 
+download the latest [cumulative update for SQL Server 2017](https://support.microsoft.com/en-us/help/4047329/sql-server-2017-build-versions)
    1. Create an instance of localdb from command prompt, if you don't have any </br>`sqllocaldb create MSSQLLocalDB`
-1. Input you github credentials into Visual Studio and clone your repository.
-  - Or clone repository using Git cmd client or Github for windows or whatever you like.
+1. Input you github credentials into Visual Studio and clone your repository. Or clone repository using Git cmd client or Github for windows or whatever you like.
 1. Perform the following git commands (you may need to restart VisualStudio in order to see newly added remote repository under TeamExplorer): 
 	- `git remote add upstream https://github.com/joinrpg/joinrpg-net.git`
 	- `git fetch upstream`
