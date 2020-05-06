@@ -37,3 +37,10 @@ Telegram chats
 ==
 
 We using a lot of tlgrm chats to talk about Joinrpg. Developer's question could be addressed to https://t.me/joinchat/AAAAAEKdDvRjI0Z1n79EJA сhat.
+
+Code guidelines
+==
+
+Some common code practices, used amongst this repository
+
+- If possible, avoid the usage of regular expressions
