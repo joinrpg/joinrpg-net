@@ -49,12 +49,47 @@
         <tbody>
             @foreach (var roomType in Model.RoomTypes)
             {
-                @Html.Partial("_RoomTypeDetails", roomType)
+              <partial name="_RoomTypeDetails" model="roomType" />
             }
             @if (Model.RoomTypes.Count == 0)
             {
                 <tr><td colspan="7">Типы размещения не добавлены</td></tr>
             }
+        <tr>
+          <td>Итого</td>
+          <td class="visible-lg">&nbsp;</td>
+          <td class="price-value">&nbsp;</td>
+          @if (Model.TotalCapacity != null)
+          {
+            <td class="price-value">
+              @Model.TotalCapacity
+              @if (Model.IsInfinite)
+              {
+               <text> + ∞</text>
+              }
+          </td>
+          }
+          else
+          {
+            <td class="price-value">∞</td>
+          }
+          <td class="price-value">@(Model.FreeCapacity)</td>
+          <td class="price-value">
+            @(Model.TotalPending) / @(Model.TotalOccupied)
+            <a class="btn btn-sm btn-default glyphicon glyphicon-option-horizontal disabled" href="#"></a>
+          </td>
+          <td colspan="2">
+            &nbsp;
+          </td>
+          <td>
+            @if (Model.CanManageRooms)
+            {
+              <a href="@Url.Action("AddRoomType", "AccommodationType", new {Model.ProjectId })" class="btn btn-success">
+                <i class="glyphicon glyphicon-plus"></i> Добавить тип размещения
+              </a>
+            }
+          </td>
+        </tr>
         </tbody>
     </table>
 </div>

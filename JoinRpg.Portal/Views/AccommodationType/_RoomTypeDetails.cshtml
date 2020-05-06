@@ -20,11 +20,11 @@
         }
         else
         {
-            <td class="price-value">@Model.Capacity &#x2715; @Model.RoomsCount = Model.TotalCapacity</td>
+            <td class="price-value">@Model.Capacity &#x2715; @Model.RoomsCount = @Model.TotalCapacity</td>
         }
-        <td class="price-value">@(Model.TotalCapacity - Model.Occupied)</td>
+        <td class="price-value">@(Model.FreeCapacity)</td>
         <td class="price-value">
-            @(Model.ApprovedClaims - Model.Occupied) / @(Model.Occupied)
+            @(Model.PendingRequests) / @(Model.Occupied)
             <a title="Показать список заявок на тип поселения «@Model.Name»" class="btn btn-sm btn-default glyphicon glyphicon-option-horizontal" href="@Url.Action("ListForRoomType", "ClaimList", new { Model.ProjectId, RoomTypeId = Model.Id })"></a>
         </td>
         <td>

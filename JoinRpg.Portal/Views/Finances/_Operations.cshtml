@@ -36,7 +36,7 @@
                 @item.FinanceOperationId
             </td>
             <td>
-                @Html.Partial("Money", new Money(item.Money))
+                <partial name="Money" model="new Money(item.Money)" />
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.PaymentMaster)
@@ -48,7 +48,8 @@
                 <a href="@item.ClaimLink">@item.Claim</a>
             </td>
             <td>
-                @Html.DisplayFor(model => item.Player)
+                @Html.DisplayFor(model => item.Player) <br/>
+                @item.Player.FullName
             </td>
             <td>
                 @item.OperationDate.ToShortDateString()
