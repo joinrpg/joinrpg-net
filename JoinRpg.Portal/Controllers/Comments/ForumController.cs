@@ -118,8 +118,7 @@ namespace JoinRpg.Portal.Controllers
             return forumThread;
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost("~/{projectId}/forums/createcomment")]
         public async Task<ActionResult> CreateComment(AddCommentViewModel viewModel)
         {
             CommentDiscussion discussion = await ForumRepository.GetDiscussion(viewModel.ProjectId, viewModel.CommentDiscussionId);
@@ -208,7 +207,7 @@ namespace JoinRpg.Portal.Controllers
             return View(viewModel);
         }
 
-        [HttpPost]
+        [HttpPost("~/{projectId}/forums/concealcomment")]
         public async Task<ActionResult> ConcealComment(int projectid, int commentid, int commentDiscussionId)
         {
             await ClaimService.ConcealComment(projectid, commentid, commentDiscussionId, CurrentUserId);

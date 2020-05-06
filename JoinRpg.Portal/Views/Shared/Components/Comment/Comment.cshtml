@@ -1,5 +1,4 @@
-﻿@using JoinRpg.CommonUI.Models
-@using JoinRpg.DataModel
+﻿@using JoinRpg.DataModel
 @using JoinRpg.Web.Models
 @model CommentViewModel
 
@@ -18,7 +17,7 @@
     <table>
         <tr>
             <td class="hidden-xs" style="vertical-align: text-top">
-                @Html.Partial("DisplayTemplates/UserAvatar", comment.Author)
+              <partial name="DisplayTemplates/UserAvatar" model="comment.Author" />
             </td>
             <td>
                 <div class="@hideClassName" style="margin-bottom: 1em;">
@@ -53,7 +52,20 @@
 
                         @if (comment.HasMasterAccess && !comment.ChildComments.Any() && comment.IsVisibleToPlayer && !comment.IsCommentByPlayer)
                             {
-                        <a href="@Url.Action("ConcealComment", "Forum", new { comment.ProjectId, comment.CommentId, comment.CommentDiscussionId})" class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></a>
+                              <form
+                                    asp-controller="Forum"
+                                    asp-action="ConcealComment"
+                                    asp-route-projectId="@comment.ProjectId"
+                                    asp-route-commentId="@comment.CommentId"
+                                    asp-route-commentDiscussionId="@comment.CommentDiscussionId"
+                                    method="post"
+                                    style="display:inline"
+                                    >
+                                <button  type="submit" class="btn btn-xs hidden-xs">
+                                  <span class="glyphicon glyphicon-eye-close" title="Скрыть комментарий от игрока"></span>
+                                </button>
+                              </form>
+
                             }
 
                     </div>
@@ -115,18 +127,8 @@
                         Ответить
                     </a>
                     <div id="answerComment@(comment.CommentId)" class="collapse">
-                        @using (Html.BeginForm("CreateComment", "Forum", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                            {
-                        @Html.Partial("../Comments/_AddCommentPartial", new AddCommentViewModel
-                   {
-                       ProjectId = comment.ProjectId,
-                       CommentDiscussionId = comment.CommentDiscussionId,
-                       ParentCommentId = comment.CommentId,
-                       EnableFinanceAction = comment.ShowFinanceModeration,
-                       EnableHideFromUser = comment.HasMasterAccess,
-                       HideFromUser = !comment.IsVisibleToPlayer
-                   })
-                            }
+                      <partial name="../Comments/_AddCommentFormPartial"
+                               model="@new AddCommentViewModel { ProjectId = comment.ProjectId, CommentDiscussionId = comment.CommentDiscussionId, ParentCommentId = comment.CommentId, EnableFinanceAction = comment.ShowFinanceModeration, EnableHideFromUser = comment.HasMasterAccess, HideFromUser = !comment.IsVisibleToPlayer }" />
                     </div>
                 </div>
             </td>
@@ -141,7 +143,7 @@
             {
                 var style = Model.DeepLevel < 4 ? "margin-left:2em" : "";
         <div style="@style">
-            <vc:comment for="@childComment"></vc:comment>
+            <vc:comment comment="@childComment"></vc:comment>
         </div>
             }
     </div>
