@@ -35,7 +35,7 @@ namespace JoinRpg.Portal.Controllers
         /// <summary>
         /// Shows list of registered room types
         /// </summary>
-        [HttpGet]
+        [HttpGet("~/{projectId}/rooms/")]
         public async Task<ActionResult> Index(int projectId)
         {
             var project = await ProjectRepository.GetProjectWithDetailsAsync(projectId);
