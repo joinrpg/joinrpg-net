@@ -3,11 +3,13 @@ using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using System.Data.Entity;
+using System.Linq;
+using JoinRpg.Data.Interfaces.Subscribe;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {
     [UsedImplicitly]
-    public class UserInfoRepository : IUserRepository
+    internal class UserInfoRepository : IUserRepository, IUserSubscribeRepository
     {
         private readonly MyDbContext _ctx;
 
@@ -23,7 +25,46 @@ namespace JoinRpg.Dal.Impl.Repositories
               .SingleOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public Task<User> GetWithSubscribe(int currentUserId) => _ctx.UserSet.Include(u => u.Subscriptions).SingleOrDefaultAsync(u => u.UserId == currentUserId);
+        public Task<User> GetWithSubscribe(int currentUserId)
+            => _ctx
+                .Set<User>()
+                .Include(u => u.Subscriptions)
+                .SingleOrDefaultAsync(u => u.UserId == currentUserId);
+
+        public async Task<(User User, UserSubscriptionDto[] UserSubscriptions)>
+            LoadSubscriptionsForProject(int userId, int projectId)
+        {
+            var user = await WithProfile(userId);
+            var subscribe = await _ctx.Set<UserSubscription>()
+                .Where(x => x.ProjectId == projectId && x.UserId == userId)
+                .Include(x => x.CharacterGroup)
+                .Include(x => x.Claim)
+                .Include(x => x.Character)
+                .Select(x =>
+                    new UserSubscriptionDto()
+                    {
+                        UserSubscriptionId = x.UserSubscriptionId,
+                        ProjectId = x.ProjectId,
+                        CharacterGroupId = x.CharacterGroupId,
+                        CharacterGroupName = x.CharacterGroup.CharacterGroupName,
+                        CharacterId = x.CharacterId,
+                        CharacterNames = x.Character.CharacterName,
+                        ClaimId = x.ClaimId,
+                        ClaimName = (x.Claim.Character != null ? x.Claim.Character.CharacterName : null)
+                            ?? (x.Claim.Group != null ? x.Claim.Group.CharacterGroupName : null),
+                        Options = new SubscriptionDto
+                        {
+                            AccommodationChange = x.AccommodationChange,
+                            ClaimStatusChange = x.ClaimStatusChange,
+                            Comments = x.Comments,
+                            FieldChange = x.FieldChange,
+                            MoneyOperation = x.MoneyOperation,
+                        }
+                    }
+                )
+                .ToArrayAsync();
+            return (user, subscribe);
+        }
 
         public Task<User> GetByEmail(string email)
         {

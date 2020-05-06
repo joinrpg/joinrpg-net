@@ -84,6 +84,9 @@
                         <b>Отв. мастер</b>: @Html.JoinDisplayFor(", ", item.ResponsibleFor)
                     </div>
                 }
+                    <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
+                        Подписки
+                    </a>
                 @if (Model.CanCurrentUserGrantRights)
                 {
 

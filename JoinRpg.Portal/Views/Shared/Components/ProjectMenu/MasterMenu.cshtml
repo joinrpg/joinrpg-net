@@ -30,6 +30,11 @@
                             @Html.ActionLink("Мой лист ожидания", "ResponsibleOnHold", "ClaimList", new { Model.ProjectId, ResponsibleMasterId = User.GetUserIdOrDefault() }, null)
                         </li>
                         <li>@Html.ActionLink("Мои деньги", "ByMaster", "Finances", new { Model.ProjectId, MasterId = User.GetUserIdOrDefault() }, null)</li>
+                        <li>
+                             <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@Model.ProjectId" asp-route-masterId="@User.GetUserIdOrDefault()">
+                                 Мои подписки
+                             </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="dropdown">

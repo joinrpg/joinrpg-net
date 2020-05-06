@@ -5,9 +5,6 @@
     <Product>JoinRpg.Data.Interfaces</Product>
   </PropertyGroup>
   <ItemGroup>
-    
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>

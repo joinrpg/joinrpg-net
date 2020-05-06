@@ -1,0 +1,67 @@
+﻿@model JoinRpg.Web.Models.Subscribe.SubscribeListViewModel
+
+@{
+    ViewBag.Title = "Настройки подписок";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@Html.DisplayFor(model => model.User)
+
+<h3>Подписки</h3>
+
+<table class="table">
+
+    <tr><th>Предмет подписки</th><th>Виды операций</th></tr>
+
+    @foreach (var item in Model.Items)
+    {
+        <tr>
+            <td>
+                <a href="@item.Link">
+                    @item.Name
+                </a>
+            </td>
+            <td>
+                @if (item.ClaimStatusChange && item.AccommodationChange && item.Comments && item.FieldChange && item.MoneyOperation)
+                {
+                    <label class="label label-success">
+                        Любые изменения
+                    </label>
+                }
+                else
+                {
+                    @if (item.ClaimStatusChange)
+                    {
+                        <label asp-for="@item.ClaimStatusChange" class="label label-success"> </label>
+                    }
+                    @if (item.Comments)
+                    {
+                        <label asp-for="@item.Comments" class="label label-success"> </label>
+                    }
+                    @if (item.FieldChange)
+                    {
+                        <label asp-for="@item.FieldChange" class="label label-success"> </label>
+                    }
+                    @if (item.MoneyOperation)
+                    {
+                        <label asp-for="@item.MoneyOperation" class="label label-success"> </label>
+                    }
+                    @if (item.AccommodationChange)
+                    {
+                        <label asp-for="@item.AccommodationChange" class="label label-success"> </label>
+                    }
+                }
+            </td>
+        </tr>
+    }
+    <tr>
+        <td title="Эту подписку нельзя настроить">Заявки, за которые отвественен</td>
+        <td>
+            <label class="label label-success">
+                Любые изменения
+            </label>
+        </td>
+    </tr>
+
+</table>
