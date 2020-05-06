@@ -54,6 +54,7 @@ namespace Joinrpg.Markdown
             //TODO - do we need to save re-use pipeline?
             var pipeline = new MarkdownPipelineBuilder()
                 .UseSoftlineBreakAsHardlineBreak()
+                .UseMediaLinks()
                 .UseAutoLinks()
                 .UseEntityLinker(linkRenderer)
                 .Build();
