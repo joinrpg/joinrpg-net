@@ -57,11 +57,14 @@ namespace JoinRpg.Web.Models.Subscribe
                     Identification = link.id.ToString(),
                     ProjectId = dto.ProjectId,
                 }),
-                AccommodationChange = dto.Options.AccommodationChange,
-                ClaimStatusChange = dto.Options.ClaimStatusChange,
-                Comments = dto.Options.Comments,
-                FieldChange = dto.Options.FieldChange,
-                MoneyOperation = dto.Options.MoneyOperation,
+                Options = new SubscribeOptionsViewModel()
+                {
+                    AccommodationChange = dto.Options.AccommodationChange,
+                    ClaimStatusChange = dto.Options.ClaimStatusChange,
+                    Comments = dto.Options.Comments,
+                    FieldChange = dto.Options.FieldChange,
+                    MoneyOperation = dto.Options.MoneyOperation,
+                },
             };
         }
 

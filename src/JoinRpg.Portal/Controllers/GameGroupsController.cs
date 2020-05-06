@@ -500,7 +500,7 @@ namespace JoinRpg.Portal.Controllers
 
             var serverModel = new SubscribeSettingsViewModel(user, group);
 
-            serverModel.OrSetIn(viewModel);
+            serverModel.Options.AssignFrom(viewModel.Options);
 
             try
             {

@@ -23,7 +23,7 @@
                 </a>
             </td>
             <td>
-                @if (item.ClaimStatusChange && item.AccommodationChange && item.Comments && item.FieldChange && item.MoneyOperation)
+                @if (item.Options.AllSet)
                 {
                     <label class="label label-success">
                         Любые изменения
@@ -31,25 +31,25 @@
                 }
                 else
                 {
-                    @if (item.ClaimStatusChange)
+                    @if (item.Options.ClaimStatusChange)
                     {
-                        <label asp-for="@item.ClaimStatusChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.ClaimStatusChange" class="label label-success"> </label>
                     }
-                    @if (item.Comments)
+                    @if (item.Options.Comments)
                     {
-                        <label asp-for="@item.Comments" class="label label-success"> </label>
+                        <label asp-for="@item.Options.Comments" class="label label-success"> </label>
                     }
-                    @if (item.FieldChange)
+                    @if (item.Options.FieldChange)
                     {
-                        <label asp-for="@item.FieldChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.FieldChange" class="label label-success"> </label>
                     }
-                    @if (item.MoneyOperation)
+                    @if (item.Options.MoneyOperation)
                     {
-                        <label asp-for="@item.MoneyOperation" class="label label-success"> </label>
+                        <label asp-for="@item.Options.MoneyOperation" class="label label-success"> </label>
                     }
-                    @if (item.AccommodationChange)
+                    @if (item.Options.AccommodationChange)
                     {
-                        <label asp-for="@item.AccommodationChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.AccommodationChange" class="label label-success"> </label>
                     }
                 }
             </td>

@@ -1,0 +1,74 @@
+﻿@using JoinRpg.Web.Models.Subscribe
+@model SubscribeOptionsViewModel 
+@{
+    SubscribeOptionsViewModel disabledFlags = new SubscribeOptionsViewModel();
+    @if (ViewData.ContainsKey("DisableFlags"))
+    {
+      disabledFlags = (SubscribeOptionsViewModel)ViewData["DisableFlags"];
+    }
+}
+
+<div class="form-group">
+  <label asp-for="ClaimStatusChange" class = "control-label col-md-4">
+
+  </label>
+  <div class="col-md-8">
+    <div>
+      <input asp-for="@Model.ClaimStatusChange" disabled="@(disabledFlags.ClaimStatusChange)" />
+      <div><span asp-validation-for="ClaimStatusChange" class="text-danger"></span></div>
+      @Html.DescriptionFor(model => model.ClaimStatusChange)
+    </div>
+  </div>
+</div>
+
+<div class="form-group">
+  <label asp-for="Comments" class="control-label col-md-4">
+
+  </label>
+  <div class="col-md-8">
+    <div>
+      <input asp-for="@Model.Comments" disabled="@(disabledFlags.Comments)" />
+      <div><span asp-validation-for="Comments" class="text-danger"></span></div>
+      @Html.DescriptionFor(model => model.Comments)
+    </div>
+  </div>
+</div>
+
+<div class="form-group">
+  <label asp-for="FieldChange" class="control-label col-md-4">
+
+  </label>
+  <div class="col-md-8">
+    <div>
+      <input asp-for="@Model.FieldChange" FieldChange="@(disabledFlags.FieldChange)" />
+      <div><span asp-validation-for="Comments" class="text-danger"></span></div>
+      @Html.DescriptionFor(model => model.FieldChange)
+    </div>
+  </div>
+</div>
+
+<div class="form-group">
+  <label asp-for="MoneyOperation" class="control-label col-md-4">
+
+  </label>
+  <div class="col-md-8">
+    <div>
+      <input asp-for="@Model.MoneyOperation" FieldChange="@(disabledFlags.MoneyOperation)" />
+      <div><span asp-validation-for="MoneyOperation" class="text-danger"></span></div>
+      @Html.DescriptionFor(model => model.MoneyOperation)
+    </div>
+  </div>
+</div>
+
+<div class="form-group">
+  <label asp-for="AccommodationChange" class="control-label col-md-4">
+
+  </label>
+  <div class="col-md-8">
+    <div>
+      <input asp-for="@Model.AccommodationChange" FieldChange="@(disabledFlags.AccommodationChange)" />
+      <div><span asp-validation-for="AccommodationChange" class="text-danger"></span></div>
+      @Html.DescriptionFor(model => model.AccommodationChange)
+    </div>
+  </div>
+</div>
