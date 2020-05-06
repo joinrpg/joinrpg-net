@@ -8,5 +8,7 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure.Stubs
     {
         Task<bool> IRecaptchaVerificator.ValidateToken(string recaptchaToken, IPAddress clientIp) =>
             Task.FromResult(true);
+
+        bool IRecaptchaVerificator.IsRecaptchaConfigured() => true;
     }
 }
