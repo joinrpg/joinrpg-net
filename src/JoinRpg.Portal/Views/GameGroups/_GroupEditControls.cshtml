@@ -26,7 +26,7 @@
             </li>
         }
         <li>
-            <a href="@Url.Action("EditSubscribe", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+            <a asp-controller="GameSubscribe" asp-action="EditForGroup" asp-route-projectId="@Model.ProjectId" asp-route-characterGroupId="@Model.CharacterGroupId">
                 <span class="glyphicon glyphicon-pushpin"></span> подписка
             </a>
 

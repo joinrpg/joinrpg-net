@@ -1,5 +1,8 @@
+using System;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.Domain;
+using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
@@ -37,5 +40,55 @@ namespace JoinRpg.Portal.Controllers
 
             return View(data.ToSubscribeListViewModel(currentUser, uriService));
         }
+
+        [HttpGet("{characterGroupId}")]
+        public async Task<ActionResult> EditForGroup(int projectId, int characterGroupId)
+        {
+            var group = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+
+            return View(new SubscribeSettingsViewModel(user, group));
+        }
+
+        [HttpPost("{characterGroupId}")]
+        public async Task<ActionResult> EditForGroup(SubscribeSettingsViewModel viewModel)
+        {
+            var group = await ProjectRepository.GetGroupAsync(viewModel.ProjectId, viewModel.CharacterGroupId);
+
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            var user = await UserRepository.GetWithSubscribe(CurrentUserId);
+
+            var serverModel = new SubscribeSettingsViewModel(user, group);
+
+            serverModel.Options.AssignFrom(viewModel.Options);
+
+            try
+            {
+                await
+                    ProjectService.UpdateSubscribeForGroup(new SubscribeForGroupRequest
+                    {
+                        CharacterGroupId = group.CharacterGroupId,
+                        ProjectId = group.ProjectId,
+                    }.AssignFrom(serverModel.GetOptionsToSubscribeDirectly()));
+
+                return RedirectToIndex(group.Project);
+            }
+            catch (Exception e)
+            {
+                ModelState.AddException(e);
+                return View(serverModel);
+            }
+
+        }
+
     }
 }
