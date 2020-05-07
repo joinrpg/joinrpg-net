@@ -108,11 +108,14 @@ namespace JoinRpg.Portal
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
-            app.UseRequestLocalization(options => {
+            app.UseRequestLocalization(options =>
+            {
 
                 options.SupportedCultures = LocalizationService.SupportedCultures;
                 options.SupportedUICultures = LocalizationService.SupportedCultures;
                 options.DefaultRequestCulture = new RequestCulture("en-US");
+
+                options.RequestCultureProviders.Insert(0, new NotAllowUnsupportedCulturesCultureProvider());
             });
 
             if (env.IsDevelopment())

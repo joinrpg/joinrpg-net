@@ -9,12 +9,12 @@ namespace JoinRpg.Web.Models
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
-        [Display(Name = "Email")]
+        [Display(Name = "ExternalLoginConfirmationViewModel_Email")]
         public string Email { get; set; }
 
         [Required]
-        [Display(Name = "I agree with the rules")]
-        [BooleanRequired(ErrorMessage = "You must agree with the rules in order to continue")]
+        [Display(Name = "ExternalLoginConfirmationViewModel_AgreeWithTheRules")]
+        [BooleanRequired(ErrorMessage = "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules")]
         public bool RulesApproved { get; set; }
     }
 
@@ -33,40 +33,40 @@ namespace JoinRpg.Web.Models
     public class LoginViewModel
     {
         [Required]
-        [Display(Name = "Email")]
+        [Display(Name = "LoginViewModel_Email")]
         [EmailAddress]
         public string Email { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "LoginViewModel_Password")]
         public string Password { get; set; }
         public string ReturnUrl { get; set; }
     }
 
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "The field {0} is required")]
+        [Required(ErrorMessage = "RegisterViewModel_FieldIsRequired")]
         [EmailAddress]
-        [Display(Name = "Email")]
+        [Display(Name = "RegisterViewModel_Email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "The field {0} is required")]
+        [Required(ErrorMessage = "RegisterViewModel_FieldIsRequired")]
         [StringLength(100,
-            ErrorMessage = "{0} should not be shorter than {2} symbols",
+            ErrorMessage = "RegisterViewModel_FieldShouldNotBeShorterThan",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "RegisterViewModel_Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "One more time?")]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        [Display(Name = "RegisterViewModel_OneMoreTime")]
+        [Compare("Password", ErrorMessage = "RegisterViewModel_PasswordsDoNotMatch")]
         public string ConfirmPassword { get; set; }
 
         [Required()]
-        [Display(Name = "I agree with the rules")]
-        [BooleanRequired(ErrorMessage = "You must agree with the rules in order to continue")]
+        [Display(Name = "RegisterViewModel_AgreeWithTheRules")]
+        [BooleanRequired(ErrorMessage = "RegisterViewModel_MustAgreeWithTheRules")]
         public bool RulesApproved { get; set; }
 
         [Editable(false)]
@@ -80,20 +80,20 @@ namespace JoinRpg.Web.Models
     {
         [Required]
         [EmailAddress]
-        [Display(Name = "Email")]
+        [Display(Name = "ResetPasswordViewModel_Email")]
         public string Email { get; set; }
 
         [Required]
         [StringLength(100,
-            ErrorMessage = "{0} should not be shorter than {2} symbols",
+            ErrorMessage = "ResetPasswordViewModel_FieldShouldNotBeShorterThan",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "ResetPasswordViewModel_Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "One more time?")]
-        [Compare("Password", ErrorMessage = "Passwords do not match")]
+        [Display(Name = "ResetPasswordViewModel_OneMoreTime")]
+        [Compare("Password", ErrorMessage = "ResetPasswordViewModel_PasswordsDoNotMatch")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
@@ -103,7 +103,7 @@ namespace JoinRpg.Web.Models
     {
         [Required]
         [EmailAddress]
-        [Display(Name = "Email")]
+        [Display(Name = "ForgotPasswordViewModel_Email")]
         public string Email { get; set; }
     }
 
@@ -111,41 +111,41 @@ namespace JoinRpg.Web.Models
     {
         public int UserId { get; set; }
 
-        [Display(Name = "Name")]
+        [Display(Name = "EditUserProfileViewModel_Name")]
         public string BornName { get; set; }
 
-        [Display(Name = "Middle name")]
+        [Display(Name = "EditUserProfileViewModel_MiddleName")]
         public string FatherName { get; set; }
 
-        [Display(Name = "Surname")]
+        [Display(Name = "EditUserProfileViewModel_Surname")]
         public string SurName { get; set; }
 
-        [Display(Name = "Nickname", Description ="NicknameDescription")]
-        [Required(ErrorMessage = "Enter the nickname")]
+        [Display(Name = "EditUserProfileViewModel_Nickname", Description = "EditUserProfileViewModel_NicknameDescription")]
+        [Required(ErrorMessage = "EditUserProfileViewModel_EnterNickname")]
         public string PrefferedName { get; set; }
 
-        [Display(Name = "Sex")]
+        [Display(Name = "EditUserProfileViewModel_Sex")]
         public Gender Gender { get; set; }
 
-        [Display(Name = "Phone number"), DataType(DataType.PhoneNumber)]
+        [Display(Name = "EditUserProfileViewModel_PhoneNumber"), DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "Skype")]
+        [Display(Name = "EditUserProfileViewModel_Skype")]
         public string Skype { get; set; }
 
-        [Display(Name = "LiveJournal")]
+        [Display(Name = "EditUserProfileViewModel_LiveJournal")]
         public string Livejournal { get; set; }
 
-        [Display(Name = "VK")]
+        [Display(Name = "EditUserProfileViewModel_VK")]
         public string Vk { get; set; }
 
-        [Display(Name = "Telegram")]
+        [Display(Name = "EditUserProfileViewModel_Telegram")]
         public string Telegram { get; set; }
 
-        [Display(Name = "All nicknames", Description = "AllNicknamesDescription")]
+        [Display(Name = "EditUserProfileViewModel_AllNicknames", Description = "EditUserProfileViewModel_AllNicknamesDescription")]
         public string Nicknames { get; set; }
 
-        [Display(Name = "LARP organiser groups or clubs", Description = "LarpGroupsDescription")]
+        [Display(Name = "EditUserProfileViewModel_AllGroups", Description = "EditUserProfileViewModel_AllGroupsDescription")]
         public string GroupNames { get; set; }
 
         public int? LastClaimId { get; set; }

@@ -123,70 +123,130 @@
   <data name="AccountController_LoginOrPasswordNotFound" xml:space="preserve">
     <value>Не найден логин или пароль</value>
   </data>
-  <data name="All nicknames" xml:space="preserve">
-    <value>Все ник(и)</value>
-  </data>
-  <data name="AllNicknamesDescription" xml:space="preserve">
-    <value>Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по-другому написанный ник</value>
-  </data>
-  <data name="Documentation" xml:space="preserve">
-    <value>Документация</value>
-  </data>
-  <data name="Email" xml:space="preserve">
-    <value>Email</value>
-  </data>
-  <data name="Enter the nickname" xml:space="preserve">
-    <value>Укажите, как вас называть</value>
-  </data>
-  <data name="I agree with the rules" xml:space="preserve">
-    <value>Согласен с правилами</value>
-  </data>
-  <data name="LARP organiser groups or clubs" xml:space="preserve">
+  <data name="EditUserProfileViewModel_AllGroups" xml:space="preserve">
     <value>МГ/Клубы</value>
   </data>
-  <data name="LarpGroupsDescription" xml:space="preserve">
+  <data name="EditUserProfileViewModel_AllGroupsDescription" xml:space="preserve">
     <value>Все мастерские группы/клубы, через запятую, к которым вы себя относите.</value>
   </data>
-  <data name="LiveJournal" xml:space="preserve">
+  <data name="EditUserProfileViewModel_AllNicknames" xml:space="preserve">
+    <value>Все ник(и)</value>
+  </data>
+  <data name="EditUserProfileViewModel_AllNicknamesDescription" xml:space="preserve">
+    <value>Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по-другому написанный ник</value>
+  </data>
+  <data name="EditUserProfileViewModel_EnterNickname" xml:space="preserve">
+    <value>Укажите, как вас называть</value>
+  </data>
+  <data name="EditUserProfileViewModel_LiveJournal" xml:space="preserve">
     <value>ЖЖ</value>
   </data>
-  <data name="Middle name" xml:space="preserve">
+  <data name="EditUserProfileViewModel_MiddleName" xml:space="preserve">
     <value>Отчество</value>
   </data>
-  <data name="Name" xml:space="preserve">
+  <data name="EditUserProfileViewModel_Name" xml:space="preserve">
     <value>Имя</value>
   </data>
-  <data name="Nickname" xml:space="preserve">
+  <data name="EditUserProfileViewModel_Nickname" xml:space="preserve">
     <value>Как называть</value>
   </data>
-  <data name="NicknameDescription" xml:space="preserve">
+  <data name="EditUserProfileViewModel_NicknameDescription" xml:space="preserve">
     <value>Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника).</value>
   </data>
-  <data name="One more time?" xml:space="preserve">
-    <value>Еще раз?</value>
-  </data>
-  <data name="Password" xml:space="preserve">
-    <value>Пароль</value>
-  </data>
-  <data name="Passwords do not match" xml:space="preserve">
-    <value>Пароли не совпадают</value>
-  </data>
-  <data name="Phone number" xml:space="preserve">
+  <data name="EditUserProfileViewModel_PhoneNumber" xml:space="preserve">
     <value>Номер телефона</value>
   </data>
-  <data name="Sex" xml:space="preserve">
+  <data name="EditUserProfileViewModel_Sex" xml:space="preserve">
     <value>Пол</value>
   </data>
-  <data name="Surname" xml:space="preserve">
+  <data name="EditUserProfileViewModel_Skype" xml:space="preserve">
+    <value>Skype</value>
+  </data>
+  <data name="EditUserProfileViewModel_Surname" xml:space="preserve">
     <value>Фамилия</value>
   </data>
-  <data name="The field {0} is required" xml:space="preserve">
-    <value>Поле {0} обязательно для заполнения</value>
+  <data name="EditUserProfileViewModel_Telegram" xml:space="preserve">
+    <value>Telegram</value>
   </data>
-  <data name="You must agree with the rules in order to continue" xml:space="preserve">
+  <data name="EditUserProfileViewModel_VK" xml:space="preserve">
+    <value>ВК</value>
+  </data>
+  <data name="ExternalLoginConfirmationViewModel_AgreeWithTheRules" xml:space="preserve">
+    <value>Согласен с правилами</value>
+  </data>
+  <data name="ExternalLoginConfirmationViewModel_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="ExternalLoginConfirmationViewModel_MustAgreeWithTheRules" xml:space="preserve">
     <value>Согласитесь с правилами, чтобы продолжить</value>
   </data>
-  <data name="{0} should not be shorter than {2} symbols" xml:space="preserve">
+  <data name="ForgotPasswordViewModel_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="IndexView_TestMenu_About" xml:space="preserve">
+    <value>О проекте</value>
+  </data>
+  <data name="IndexView_TestMenu_CreateTestApplicationDatabase" xml:space="preserve">
+    <value>Создать тестовую базу заявок</value>
+  </data>
+  <data name="IndexView_TestMenu_Documentation" xml:space="preserve">
+    <value>Документация</value>
+  </data>
+  <data name="IndexView_TestMenu_GoToMainServer" xml:space="preserve">
+    <value>Перейти на основной сервер</value>
+  </data>
+  <data name="IndexView_Test_DontUseTestVersionForRealWork" xml:space="preserve">
+    <value>Не используйте ее для реальной работы с игроками.</value>
+  </data>
+  <data name="IndexView_Test_Hello" xml:space="preserve">
+    <value>Это тестовая версия JoinRpg.ru.</value>
+  </data>
+  <data name="IndexView_Test_RedirectPlayersToMainServer" xml:space="preserve">
+    <value>Если вы игрок и забрели сюда случайно, вам на основной сервер.</value>
+  </data>
+  <data name="LoginViewModel_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="LoginViewModel_Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="RegisterViewModel_AgreeWithTheRules" xml:space="preserve">
+    <value>Согласен с правилами</value>
+  </data>
+  <data name="RegisterViewModel_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="RegisterViewModel_FieldIsRequired" xml:space="preserve">
+    <value>Поле {0} обязательно для заполнения</value>
+  </data>
+  <data name="RegisterViewModel_FieldShouldNotBeShorterThan" xml:space="preserve">
     <value>{0} должен быть не короче {2} символов</value>
+  </data>
+  <data name="RegisterViewModel_MustAgreeWithTheRules" xml:space="preserve">
+    <value>Согласитесь с правилами, чтобы продолжить</value>
+  </data>
+  <data name="RegisterViewModel_OneMoreTime" xml:space="preserve">
+    <value>Еще раз?</value>
+  </data>
+  <data name="RegisterViewModel_Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="RegisterViewModel_PasswordsDoNotMatch" xml:space="preserve">
+    <value>Пароли не совпадают</value>
+  </data>
+  <data name="ResetPasswordViewModel_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="ResetPasswordViewModel_FieldShouldNotBeShorterThan" xml:space="preserve">
+    <value>{0} должен быть не короче {2} символов</value>
+  </data>
+  <data name="ResetPasswordViewModel_OneMoreTime" xml:space="preserve">
+    <value>Еще раз?</value>
+  </data>
+  <data name="ResetPasswordViewModel_Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="ResetPasswordViewModel_PasswordsDoNotMatch" xml:space="preserve">
+    <value>Пароли не совпадают</value>
   </data>
 </root>

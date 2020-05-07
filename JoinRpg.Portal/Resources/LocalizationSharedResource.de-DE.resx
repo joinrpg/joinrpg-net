@@ -118,52 +118,52 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AccountController_ImpossibleToVerifyCaptcha" xml:space="preserve">
-    <value>Impossible to verify ReCAPTCHA. If the error persists, please, contact the support.</value>
+    <value>Die Verifizierung von ReCAPTCHA ist zur Zeit leider nicht möglich. Falls dieser Fehler erneut auftritt, bitte melden Sie sich an den Support.</value>
   </data>
   <data name="AccountController_LoginOrPasswordNotFound" xml:space="preserve">
-    <value>Login or password was not found</value>
+    <value>Das Login oder das Passwort können nicht gefunden werden</value>
   </data>
   <data name="EditUserProfileViewModel_AllGroups" xml:space="preserve">
-    <value>LARP organiser groups or clubs</value>
+    <value>Orga-Gruppen oder Clubs</value>
   </data>
   <data name="EditUserProfileViewModel_AllGroupsDescription" xml:space="preserve">
-    <value>All LARP ogranisers groups or clubs, which you consider you belong to, divided by comma. </value>
+    <value>Alle Gruppen von Orgas oder die LARP-Vereine, dazu Sie gehören, mit Komma getrennt. </value>
   </data>
   <data name="EditUserProfileViewModel_AllNicknames" xml:space="preserve">
-    <value>All nicknames</value>
+    <value>Alle Spitznamen</value>
   </data>
   <data name="EditUserProfileViewModel_AllNicknamesDescription" xml:space="preserve">
-    <value>All nicknames, divided by comma, which you could be known under. This will allow those, who uses your old or in other way written nickname, to find you. </value>
+    <value>Alle Spitznamen, unter denen Sie bekannt sind. Diese Spitznamen werden in dem Suchsystem benutzt, um einen Suchprozess für Ihre Bekanntschafte zu erleichten.</value>
   </data>
   <data name="EditUserProfileViewModel_EnterNickname" xml:space="preserve">
-    <value>Enter the nickname</value>
+    <value>Bitte geben Sie Ihren bevorzugten Namen ein</value>
   </data>
   <data name="EditUserProfileViewModel_LiveJournal" xml:space="preserve">
     <value>LiveJournal</value>
   </data>
   <data name="EditUserProfileViewModel_MiddleName" xml:space="preserve">
-    <value>Middle Name</value>
+    <value>Alle Andere Namen</value>
   </data>
   <data name="EditUserProfileViewModel_Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Vorname</value>
   </data>
   <data name="EditUserProfileViewModel_Nickname" xml:space="preserve">
-    <value>Nickname</value>
+    <value>Spitzname</value>
   </data>
   <data name="EditUserProfileViewModel_NicknameDescription" xml:space="preserve">
-    <value>Under which name/nickname do you wish to be known? We reccomend to enter the nickname in Latin letters (or your name/surname, if you don't have a nickname).</value>
+    <value>Unter welchen Namen bevorzugen Sie bekannt zu werden? Es ist empfohlen, die latinische Buchstaben zum Spitznamen zu benutzen (oder geben Sie Ihren gewöhnlichen Vornamen/Nachnamen, wenn Sie keinen Spitznamen haben).</value>
   </data>
   <data name="EditUserProfileViewModel_PhoneNumber" xml:space="preserve">
-    <value>Phone number</value>
+    <value>Handynummer</value>
   </data>
   <data name="EditUserProfileViewModel_Sex" xml:space="preserve">
-    <value>Sex</value>
+    <value>Geschlecht</value>
   </data>
   <data name="EditUserProfileViewModel_Skype" xml:space="preserve">
     <value>Skype</value>
   </data>
   <data name="EditUserProfileViewModel_Surname" xml:space="preserve">
-    <value>Surname</value>
+    <value>Nachname</value>
   </data>
   <data name="EditUserProfileViewModel_Telegram" xml:space="preserve">
     <value>Telegram</value>
@@ -172,81 +172,81 @@
     <value>VK</value>
   </data>
   <data name="ExternalLoginConfirmationViewModel_AgreeWithTheRules" xml:space="preserve">
-    <value>I agree with the rules</value>
+    <value>Ich bin mit den Regeln einverstanden</value>
   </data>
   <data name="ExternalLoginConfirmationViewModel_Email" xml:space="preserve">
     <value>Email</value>
   </data>
   <data name="ExternalLoginConfirmationViewModel_MustAgreeWithTheRules" xml:space="preserve">
-    <value>You must agree with the rules in order to continue</value>
+    <value>Bitte stimmen Sie mit den Regeln zu, um fortzusetzen</value>
   </data>
   <data name="ForgotPasswordViewModel_Email" xml:space="preserve">
     <value>Email</value>
   </data>
   <data name="IndexView_TestMenu_About" xml:space="preserve">
-    <value>About</value>
+    <value>Über das Projekt</value>
   </data>
   <data name="IndexView_TestMenu_CreateTestApplicationDatabase" xml:space="preserve">
-    <value>Create test LARP application database</value>
+    <value>Testrollenspielanmeldungdatenbank erstellen</value>
   </data>
   <data name="IndexView_TestMenu_Documentation" xml:space="preserve">
-    <value>Documentation</value>
+    <value>Dokumentation</value>
   </data>
   <data name="IndexView_TestMenu_GoToMainServer" xml:space="preserve">
-    <value>Go to main server</value>
+    <value>An den Hauptserver gehen</value>
   </data>
   <data name="IndexView_Test_DontUseTestVersionForRealWork" xml:space="preserve">
-    <value>Do not use it for real work with the players.</value>
+    <value>Bitte verwenden Sie diese Version für Ihre Arbeit nicht.</value>
   </data>
   <data name="IndexView_Test_Hello" xml:space="preserve">
-    <value>This is a test version of JoinRpg.ru.</value>
+    <value>Das ist eine Testversion von JoinRpg.ru.</value>
   </data>
   <data name="IndexView_Test_RedirectPlayersToMainServer" xml:space="preserve">
-    <value>If you are a player and got on this page accidentally, you should visit the main site.</value>
+    <value>Wenn Sie ein LARPer oder LARPerin sind, sollen Sie an den Hauptserver von JoinRpg gehen. </value>
   </data>
   <data name="LoginViewModel_Email" xml:space="preserve">
     <value>Email</value>
   </data>
   <data name="LoginViewModel_Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Passwort</value>
   </data>
   <data name="RegisterViewModel_AgreeWithTheRules" xml:space="preserve">
-    <value>I agree with the rules</value>
+    <value>Ich bin mit den Regeln einverstanden</value>
   </data>
   <data name="RegisterViewModel_Email" xml:space="preserve">
     <value>Email</value>
   </data>
   <data name="RegisterViewModel_FieldIsRequired" xml:space="preserve">
-    <value>The field {0} is required</value>
+    <value>Das Feld {0} ist erforderlich</value>
   </data>
   <data name="RegisterViewModel_FieldShouldNotBeShorterThan" xml:space="preserve">
-    <value>{0} should not be shorter than {2} symbols</value>
+    <value>{0} muss nicht kürzer als {2} Zeichnen sein</value>
   </data>
   <data name="RegisterViewModel_MustAgreeWithTheRules" xml:space="preserve">
-    <value>You must agree with the rules in order to continue</value>
+    <value>Bitte stimmen Sie mit den Regeln zu, um fortzusetzen</value>
   </data>
   <data name="RegisterViewModel_OneMoreTime" xml:space="preserve">
-    <value>One more time?</value>
+    <value>Noch mal?</value>
   </data>
   <data name="RegisterViewModel_Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Passwort</value>
   </data>
   <data name="RegisterViewModel_PasswordsDoNotMatch" xml:space="preserve">
-    <value>Passwords do not match</value>
+    <value>Passwörter stimmen nicht überein</value>
   </data>
   <data name="ResetPasswordViewModel_Email" xml:space="preserve">
     <value>Email</value>
   </data>
   <data name="ResetPasswordViewModel_FieldShouldNotBeShorterThan" xml:space="preserve">
-    <value>{0} should not be shorter than {2} symbols</value>
+    <value>{0} muss nicht kürzer als {2} Zeichnen sein</value>
   </data>
   <data name="ResetPasswordViewModel_OneMoreTime" xml:space="preserve">
-    <value>One more time?</value>
+    <value>Noch mal?</value>
   </data>
   <data name="ResetPasswordViewModel_Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Passwort</value>
   </data>
   <data name="ResetPasswordViewModel_PasswordsDoNotMatch" xml:space="preserve">
-    <value>Passwords do not match</value>
+    <value>Passwörter stimmen nicht überein</value>
   </data>
 </root>
