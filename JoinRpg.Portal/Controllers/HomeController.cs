@@ -1,6 +1,9 @@
+using System;
 using System.Threading.Tasks;
 using JoinRpg.WebPortal.Managers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
@@ -12,6 +15,18 @@ namespace JoinRpg.Portal.Controllers
         private const int ProjectsOnHomePage = 9;
 
         public HomeController(ProjectListManager projectListManager) => ProjectListManager = projectListManager;
+
+        public ActionResult Language(string culture)
+        {
+            // overwrite the cookie
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
 
         public async Task<ActionResult> Index() =>
             View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));
