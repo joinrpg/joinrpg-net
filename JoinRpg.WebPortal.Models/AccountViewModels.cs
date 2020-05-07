@@ -13,8 +13,8 @@ namespace JoinRpg.Web.Models
         public string Email { get; set; }
 
         [Required]
-        [Display(Name = "Согласен с правилами")]
-        [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
+        [Display(Name = "I agree with the rules")]
+        [BooleanRequired(ErrorMessage = "You must agree with the rules in order to continue")]
         public bool RulesApproved { get; set; }
     }
 
@@ -39,34 +39,34 @@ namespace JoinRpg.Web.Models
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
+        [Display(Name = "Password")]
         public string Password { get; set; }
         public string ReturnUrl { get; set; }
     }
 
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Поле Email обязательно для заполнения")]
+        [Required(ErrorMessage = "The field {0} is required")]
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Поле Пароль обязательно для заполнения")]
+        [Required(ErrorMessage = "The field {0} is required")]
         [StringLength(100,
-            ErrorMessage = "{0} должен быть не короче {2} символов",
+            ErrorMessage = "{0} should not be shorter than {2} symbols",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
+        [Display(Name = "Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Еще раз?")]
-        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        [Display(Name = "One more time?")]
+        [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
 
         [Required()]
-        [Display(Name = "Согласен с правилами")]
-        [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
+        [Display(Name = "I agree with the rules")]
+        [BooleanRequired(ErrorMessage = "You must agree with the rules in order to continue")]
         public bool RulesApproved { get; set; }
 
         [Editable(false)]
@@ -85,15 +85,15 @@ namespace JoinRpg.Web.Models
 
         [Required]
         [StringLength(100,
-            ErrorMessage = "{0} должен быть не короче {2} символов",
+            ErrorMessage = "{0} should not be shorter than {2} symbols",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
+        [Display(Name = "Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Еще раз?")]
-        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
+        [Display(Name = "One more time?")]
+        [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
@@ -111,31 +111,29 @@ namespace JoinRpg.Web.Models
     {
         public int UserId { get; set; }
 
-        [Display(Name = "Имя")]
+        [Display(Name = "Name")]
         public string BornName { get; set; }
 
-        [Display(Name = "Отчество")]
+        [Display(Name = "Middle name")]
         public string FatherName { get; set; }
 
-        [Display(Name = "Фамилия")]
+        [Display(Name = "Surname")]
         public string SurName { get; set; }
 
-        [Display(Name = "Как называть",
-            Description =
-                "Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника).")]
-        [Required(ErrorMessage = "Укажите, как вас называть")]
+        [Display(Name = "Nickname", Description ="NicknameDescription")]
+        [Required(ErrorMessage = "Enter the nickname")]
         public string PrefferedName { get; set; }
 
-        [Display(Name = "Пол")]
+        [Display(Name = "Sex")]
         public Gender Gender { get; set; }
 
-        [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber)]
+        [Display(Name = "Phone number"), DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
         [Display(Name = "Skype")]
         public string Skype { get; set; }
 
-        [Display(Name = "ЖЖ")]
+        [Display(Name = "LiveJournal")]
         public string Livejournal { get; set; }
 
         [Display(Name = "VK")]
@@ -144,14 +142,10 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Telegram")]
         public string Telegram { get; set; }
 
-        [Display(Name = "Все ник(и)",
-            Description =
-                "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по другому написанный ник")]
+        [Display(Name = "All nicknames", Description = "AllNicknamesDescription")]
         public string Nicknames { get; set; }
 
-        [Display(Name = "МГ/Клубы",
-            Description =
-                "Все мастерские группы/клубы, через запятую, к которым вы себя относите. ")]
+        [Display(Name = "LARP organiser groups or clubs", Description = "LarpGroupsDescription")]
         public string GroupNames { get; set; }
 
         public int? LastClaimId { get; set; }
@@ -160,6 +154,7 @@ namespace JoinRpg.Web.Models
         [ReadOnly(true)]
         public bool IsVerifiedFlag { get; set; }
 
+        // ????
         /*[Display(Name="Дата рождения", Description = "Указание даты рождения подтверждает мастерам, что вы совершеннолетний"), Required]
         public DateTime? BirthDate { get; set; }*/
     }

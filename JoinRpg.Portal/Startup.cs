@@ -1,22 +1,31 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Joinrpg.Web.Identity;
 using Autofac;
-using JoinRpg.DataModel;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using JoinRpg.Portal.Infrastructure.DiscoverFilters;
-using System.Diagnostics;
+using Microsoft.Extensions.Localization;
+using System.Collections.Generic;
+using System.Globalization;
+using JoinRpg.Portal.Infrastructure.Localization;
+using Autofac.Core;
+using Microsoft.AspNetCore.Mvc.Razor;
+using System.Reflection;
+using JoinRpg.Web.Models;
+using JoinRpg.Portal.Resources;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 
 namespace JoinRpg.Portal
 {
@@ -54,6 +63,27 @@ namespace JoinRpg.Portal
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddRouting(options => options.LowercaseUrls = true);
+
+            services.AddSingleton<IValidationAttributeAdapterProvider, BooleanRequiredAttributeAdapterProvider>();
+            services.AddSingleton<LocalizationService>();
+            services.AddLocalization(o => o.ResourcesPath = "Resources");
+
+            IList<CultureInfo> supportedCultures = new List<CultureInfo>
+            {
+                new CultureInfo("ru-RU"),
+                new CultureInfo("en-US")
+            };
+
+            services.Configure<RequestLocalizationOptions>(options => {
+
+                options.DefaultRequestCulture = new RequestCulture("ru-RU");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+
+                options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+            });
+
+
             var mvc = services
                 .AddMvc(options =>
                 {
@@ -65,7 +95,11 @@ namespace JoinRpg.Portal
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
                 })
                 .AddControllersAsServices()
-                .AddViewComponentsAsServices();
+                .AddViewComponentsAsServices()
+                .AddDataAnnotationsLocalization(options =>
+                {
+                    options.DataAnnotationLocalizerProvider = (type, factory) => LocalizationService.CreateLocalizer(factory);
+                });
 
             if (environment.IsDevelopment())
             {
@@ -85,7 +119,6 @@ namespace JoinRpg.Portal
             services.AddApplicationInsightsTelemetry();
         }
 
-
         /// <summary>
         /// Runs after ConfigureServices
         /// </summary>
@@ -98,6 +131,15 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRequestLocalization(options => {
+
+                options.SupportedCultures = new List<CultureInfo> { new CultureInfo("ru-RU") };
+                options.SupportedUICultures = new List<CultureInfo> { new CultureInfo("ru-RU") };
+                options.DefaultRequestCulture = new RequestCulture("ru-RU");
+
+                options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -120,7 +162,6 @@ namespace JoinRpg.Portal
                     await next();
                 }
             });
-
 
             app.UseSwagger(Swagger.Configure);
             app.UseSwaggerUI(Swagger.ConfigureUI);
