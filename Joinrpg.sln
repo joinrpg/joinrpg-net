@@ -98,7 +98,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Managers"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Interfaces", "JoinRpg.Interfaces\JoinRpg.Interfaces.csproj", "{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PscbApi", "PscbApi\PscbApi.csproj", "{0453A789-D5AF-4E74-BE0B-9593AE524E6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PscbApi", "PscbApi\PscbApi.csproj", "{0453A789-D5AF-4E74-BE0B-9593AE524E6D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models.Test", "JoinRpg.WebPortal.Models.Test\JoinRpg.WebPortal.Models.Test.csproj", "{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}"
 EndProject
@@ -108,7 +108,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.AspNetCore.Helpers"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal.Test", "JoinRpg.Portal.Test\JoinRpg.Portal.Test.csproj", "{78FC0625-A66C-4152-8BE2-FEAE45F161D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.IntegrationTests", "JoinRpg.IntegrationTests\JoinRpg.IntegrationTests.csproj", "{17FBA40C-1B31-4575-A4EC-27D40F65D63A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.IntegrationTest", "JoinRpg.IntegrationTests\JoinRpg.IntegrationTest.csproj", "{17FBA40C-1B31-4575-A4EC-27D40F65D63A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
