@@ -1,0 +1,136 @@
+#: AccountController.cs
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
+msgstr "Die Verifizierung von ReCAPTCHA ist zur Zeit leider nicht möglich. Falls dieser Fehler erneut auftritt, bitte melden Sie sich an den Support."
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
+msgstr "Das Login oder das Passwort können nicht gefunden werden"
+
+#: AccountViewModels.cs
+#: EditUserProfileViewModel
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgstr "Orga-Gruppen oder Clubs"
+
+msgid "EditUserProfileViewModel_AllGroupsDescription"
+msgstr "Alle Gruppen von Orgas oder die LARP-Vereine, dazu Sie gehören, mit Komma getrennt. "
+
+msgid "EditUserProfileViewModel_AllNicknames"
+msgstr "Alle Spitznamen"
+
+msgid "EditUserProfileViewModel_AllNicknamesDescription"
+msgstr "Alle Spitznamen, unter denen Sie bekannt sind. Diese Spitznamen werden in dem Suchsystem benutzt, um einen Suchprozess für Ihre Bekanntschafte zu erleichten."
+
+msgid "EditUserProfileViewModel_EnterNickname"
+msgstr "Bitte geben Sie Ihren bevorzugten Namen ein"
+
+msgid "EditUserProfileViewModel_LiveJournal"
+msgstr "LiveJournal"
+
+msgid "EditUserProfileViewModel_MiddleName"
+msgstr "Alle Andere Namen"
+
+msgid "EditUserProfileViewModel_Name"
+msgstr "Vorname"
+
+msgid "EditUserProfileViewModel_Nickname"
+msgstr "Spitzname"
+
+msgid "EditUserProfileViewModel_NicknameDescription"
+msgstr "Unter welchen Namen bevorzugen Sie bekannt zu werden? Es ist empfohlen, die latinische Buchstaben zum Spitznamen zu benutzen (oder geben Sie Ihren gewöhnlichen Vornamen/Nachnamen, wenn Sie keinen Spitznamen haben)."
+
+msgid "EditUserProfileViewModel_PhoneNumber"
+msgstr "Handynummer"
+
+msgid "EditUserProfileViewModel_Sex"
+msgstr "Geschlecht"
+
+msgid "EditUserProfileViewModel_Skype"
+msgstr "Skype"
+
+msgid "EditUserProfileViewModel_Surname"
+msgstr "Nachname"
+
+msgid "EditUserProfileViewModel_Telegram"
+msgstr "Telegram"
+
+msgid "EditUserProfileViewModel_VK"
+msgstr "VK"
+
+msgid "ExternalLoginConfirmationViewModel_AgreeWithTheRules"
+msgstr "Ich bin mit den Regeln einverstanden"
+
+msgid "ExternalLoginConfirmationViewModel_Email"
+msgstr "Email"
+
+msgid "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules"
+msgstr "Bitte stimmen Sie mit den Regeln zu, um fortzusetzen"
+
+msgid "ForgotPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "IndexView_TestMenu_About"
+msgstr "Über das Projekt"
+
+msgid "IndexView_TestMenu_CreateTestApplicationDatabase"
+msgstr "Testrollenspielanmeldungdatenbank erstellen"
+
+msgid "IndexView_TestMenu_Documentation"
+msgstr "Dokumentation"
+
+msgid "IndexView_TestMenu_GoToMainServer"
+msgstr "An den Hauptserver gehen"
+
+msgid "IndexView_Test_DontUseTestVersionForRealWork"
+msgstr "Bitte verwenden Sie diese Version für Ihre Arbeit nicht."
+
+msgid "IndexView_Test_Hello"
+msgstr "Das ist eine Testversion von JoinRpg.ru."
+
+msgid "IndexView_Test_RedirectPlayersToMainServer"
+msgstr "Wenn Sie ein LARPer oder LARPerin sind, sollen Sie an den Hauptserver von JoinRpg gehen. "
+
+msgid "LoginViewModel_Email"
+msgstr "Email"
+
+msgid "LoginViewModel_Password"
+msgstr "Passwort"
+
+msgid "RegisterViewModel_AgreeWithTheRules"
+msgstr "Ich bin mit den Regeln einverstanden"
+
+msgid "RegisterViewModel_Email"
+msgstr "Email"
+
+msgid "RegisterViewModel_FieldIsRequired"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "RegisterViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} muss nicht kürzer als {2} Zeichnen sein"
+
+msgid "RegisterViewModel_MustAgreeWithTheRules"
+msgstr "Bitte stimmen Sie mit den Regeln zu, um fortzusetzen"
+
+msgid "RegisterViewModel_OneMoreTime"
+msgstr "Noch mal?"
+
+msgid "RegisterViewModel_Password"
+msgstr "Passwort"
+
+msgid "RegisterViewModel_PasswordsDoNotMatch"
+msgstr "Passwörter stimmen nicht überein"
+
+msgid "ResetPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "ResetPasswordViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} muss nicht kürzer als {2} Zeichnen sein"
+
+msgid "ResetPasswordViewModel_OneMoreTime"
+msgstr "Noch mal?"
+
+msgid "ResetPasswordViewModel_Password"
+msgstr "Passwort"
+
+msgid "ResetPasswordViewModel_PasswordsDoNotMatch"
+msgstr "Passwörter stimmen nicht überein"

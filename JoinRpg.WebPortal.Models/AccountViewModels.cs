@@ -8,6 +8,12 @@ namespace JoinRpg.Web.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
+        private static readonly string DisplayName;
+        static ExternalLoginConfirmationViewModel()
+        {
+            DisplayName = "";
+        }
+
         [Required]
         [Display(Name = "ExternalLoginConfirmationViewModel_Email")]
         public string Email { get; set; }
@@ -111,7 +117,7 @@ namespace JoinRpg.Web.Models
     {
         public int UserId { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Name")]
+        [Display(Name = "Имя")]
         public string BornName { get; set; }
 
         [Display(Name = "EditUserProfileViewModel_MiddleName")]

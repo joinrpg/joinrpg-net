@@ -15,8 +15,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
-using JoinRpg.Portal.Infrastructure.Localization;
 using JoinRpg.Portal.Resources;
+using System.Reflection;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -28,10 +28,19 @@ namespace JoinRpg.Portal.Controllers
         private readonly IRecaptchaVerificator _recaptchaVerificator;
         private readonly IStringLocalizer<LocalizationSharedResource> _localizer;
 
+        private static readonly string ImpossibleToVerifyRecaptcha;
+        private static readonly string LoginOrPasswordNotFound;
+
+        static AccountController()
+        {
+            Type t = MethodBase.GetCurrentMethod().DeclaringType;
+            ImpossibleToVerifyRecaptcha = t.FullName + ".Register.ImpossibleToVerifyCaptcha";
+            LoginOrPasswordNotFound = t.FullName + ".Login.LoginOrPasswordNotFound";
+        }
+
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }
         private IUserRepository UserRepository { get; }
-
 
         public AccountController(
             ApplicationUserManager userManager,
@@ -77,12 +86,10 @@ namespace JoinRpg.Portal.Controllers
                 }
             };
         }
-
         //
         // POST: /Account/Login
         [HttpPost]
         [AllowAnonymous]
-
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
@@ -123,7 +130,7 @@ namespace JoinRpg.Portal.Controllers
                 return View("Lockout");
             }
 
-            ModelState.AddModelError("", _localizer["AccountController_LoginOrPasswordNotFound"]);
+            ModelState.AddModelError("", _localizer[LoginOrPasswordNotFound]);
             var vm = await CreateLoginPageViewModelAsync(returnUrl);
             vm.Login.Email = model.Email;
             return View(vm);
@@ -170,7 +177,7 @@ namespace JoinRpg.Portal.Controllers
 
                 if (!isRecaptchaValid)
                 {
-                    ModelState.AddModelError("captcha", _localizer["AccountController_ImpossibleToVerifyCaptcha"]);
+                    ModelState.AddModelError("captcha", _localizer[ImpossibleToVerifyRecaptcha]);
                     model.IsRecaptchaConfigured = isRecaptchaConfigured;
                     model.RecaptchaPublicKey = _recaptchaOptions.Value.PublicKey;
                     return View(model);

@@ -16,21 +16,19 @@ namespace JoinRpg.Portal.Controllers
 
         public HomeController(ProjectListManager projectListManager) => ProjectListManager = projectListManager;
 
+        [AllowAnonymous]
         public ActionResult Language(string culture)
         {
-            // overwrite the cookie
             Response.Cookies.Append(
                 CookieRequestCultureProvider.DefaultCookieName,
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
                 new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
             );
 
-            return RedirectToAction("Index", "Home", new { area = "" });
+            return RedirectToAction("Index", "Home");
         }
 
-        public async Task<ActionResult> Index() =>
-            View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));
-
+        public async Task<ActionResult> Index() => View(await ProjectListManager.LoadModel(false, ProjectsOnHomePage));
 
         public ActionResult About() => View();
 

@@ -58,7 +58,7 @@ namespace JoinRpg.Portal
 
             services.AddSingleton<IValidationAttributeAdapterProvider, BooleanRequiredAttributeAdapterProvider>();
             services.AddSingleton<LocalizationService>();
-            services.AddLocalization(o => o.ResourcesPath = "Resources");
+            services.AddPortableObjectLocalization(o => o.ResourcesPath = "Resources");
 
             var mvc = services
                 .AddMvc(options =>

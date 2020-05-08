@@ -1,0 +1,136 @@
+#: AccountController.cs
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
+msgstr "Impossible to verify ReCAPTCHA. If the error persists, please, contact the support."
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
+msgstr "Login or password was not found"
+
+#: AccountViewModels.cs
+#: EditUserProfileViewModel
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgstr "LARP organiser groups or clubs"
+
+msgid "EditUserProfileViewModel_AllGroupsDescription"
+msgstr "All LARP ogranisers groups or clubs, which you consider you belong to, divided by comma. "
+
+msgid "EditUserProfileViewModel_AllNicknames"
+msgstr "All nicknames"
+
+msgid "EditUserProfileViewModel_AllNicknamesDescription"
+msgstr "All nicknames, divided by comma, which you could be known under. This will allow those, who uses your old or in other way written nickname, to find you. "
+
+msgid "EditUserProfileViewModel_EnterNickname"
+msgstr "Enter the nickname"
+
+msgid "EditUserProfileViewModel_LiveJournal"
+msgstr "LiveJournal"
+
+msgid "EditUserProfileViewModel_MiddleName"
+msgstr "Middle Name"
+
+msgid "EditUserProfileViewModel_Name"
+msgstr "Name"
+
+msgid "EditUserProfileViewModel_Nickname"
+msgstr "Nickname"
+
+msgid "EditUserProfileViewModel_NicknameDescription"
+msgstr "Under which name/nickname do you wish to be known? We reccomend to enter the nickname in Latin letters (or your name/surname, if you don't have a nickname)."
+
+msgid "EditUserProfileViewModel_PhoneNumber"
+msgstr "Phone number"
+
+msgid "EditUserProfileViewModel_Sex"
+msgstr "Sex"
+
+msgid "EditUserProfileViewModel_Skype"
+msgstr "Skype"
+
+msgid "EditUserProfileViewModel_Surname"
+msgstr "Surname"
+
+msgid "EditUserProfileViewModel_Telegram"
+msgstr "Telegram"
+
+msgid "EditUserProfileViewModel_VK"
+msgstr "VK"
+
+msgid "ExternalLoginConfirmationViewModel_AgreeWithTheRules"
+msgstr "I agree with the rules"
+
+msgid "ExternalLoginConfirmationViewModel_Email"
+msgstr "Email"
+
+msgid "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules"
+msgstr "You must agree with the rules in order to continue"
+
+msgid "ForgotPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "IndexView_TestMenu_About"
+msgstr "About"
+
+msgid "IndexView_TestMenu_CreateTestApplicationDatabase"
+msgstr "Create test LARP application database"
+
+msgid "IndexView_TestMenu_Documentation"
+msgstr "Documentation"
+
+msgid "IndexView_TestMenu_GoToMainServer"
+msgstr "Go to main server"
+
+msgid "IndexView_Test_DontUseTestVersionForRealWork"
+msgstr "Do not use it for real work with the players."
+
+msgid "IndexView_Test_Hello"
+msgstr "This is a test version of JoinRpg.ru."
+
+msgid "IndexView_Test_RedirectPlayersToMainServer"
+msgstr "If you are a player and got on this page accidentally, you should visit the main site."
+
+msgid "LoginViewModel_Email"
+msgstr "Email"
+
+msgid "LoginViewModel_Password"
+msgstr "Password"
+
+msgid "RegisterViewModel_AgreeWithTheRules"
+msgstr "I agree with the rules"
+
+msgid "RegisterViewModel_Email"
+msgstr "Email"
+
+msgid "RegisterViewModel_FieldIsRequired"
+msgstr "The field {0} is required"
+
+msgid "RegisterViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} should not be shorter than {2} symbols"
+
+msgid "RegisterViewModel_MustAgreeWithTheRules"
+msgstr "You must agree with the rules in order to continue"
+
+msgid "RegisterViewModel_OneMoreTime"
+msgstr "One more time?"
+
+msgid "RegisterViewModel_Password"
+msgstr "Password"
+
+msgid "RegisterViewModel_PasswordsDoNotMatch"
+msgstr "Passwords do not match"
+
+msgid "ResetPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "ResetPasswordViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} should not be shorter than {2} symbols"
+
+msgid "ResetPasswordViewModel_OneMoreTime"
+msgstr "One more time?"
+
+msgid "ResetPasswordViewModel_Password"
+msgstr "Password"
+
+msgid "ResetPasswordViewModel_PasswordsDoNotMatch"
+msgstr "Passwords do not match"

@@ -1,0 +1,137 @@
+#: format: Namespace.ClassName.MemberName.AttributeName.AttributeFieldName
+#: AccountController.cs
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
+msgstr "Невозможно верифицировать ReCAPTCHA. Если эта ошибка повторяется, пожалуйста, обратитесь в техподдержку."
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
+msgstr "Не найден логин или пароль"
+
+#: AccountViewModels.cs
+#: EditUserProfileViewModel
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgstr "МГ/Клубы"
+
+msgid "EditUserProfileViewModel_AllGroupsDescription"
+msgstr "Все мастерские группы/клубы, через запятую, к которым вы себя относите."
+
+msgid "EditUserProfileViewModel_AllNicknames"
+msgstr "Все ник(и)"
+
+msgid "EditUserProfileViewModel_AllNicknamesDescription"
+msgstr "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по-другому написанный ник"
+
+msgid "EditUserProfileViewModel_EnterNickname"
+msgstr "Укажите, как вас называть"
+
+msgid "EditUserProfileViewModel_LiveJournal"
+msgstr "ЖЖ"
+
+msgid "EditUserProfileViewModel_MiddleName"
+msgstr "Отчество"
+
+msgid "EditUserProfileViewModel_Name"
+msgstr "Имя"
+
+msgid "EditUserProfileViewModel_Nickname"
+msgstr "Как называть"
+
+msgid "EditUserProfileViewModel_NicknameDescription"
+msgstr "Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника)."
+
+msgid "EditUserProfileViewModel_PhoneNumber"
+msgstr "Номер телефона"
+
+msgid "EditUserProfileViewModel_Sex"
+msgstr "Пол"
+
+msgid "EditUserProfileViewModel_Skype"
+msgstr "Skype"
+
+msgid "EditUserProfileViewModel_Surname"
+msgstr "Фамилия"
+
+msgid "EditUserProfileViewModel_Telegram"
+msgstr "Telegram"
+
+msgid "EditUserProfileViewModel_VK"
+msgstr "ВК"
+
+msgid "ExternalLoginConfirmationViewModel_AgreeWithTheRules"
+msgstr "Согласен с правилами"
+
+msgid "ExternalLoginConfirmationViewModel_Email"
+msgstr "Email"
+
+msgid "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules"
+msgstr "Согласитесь с правилами, чтобы продолжить"
+
+msgid "ForgotPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "IndexView_TestMenu_About"
+msgstr "О проекте"
+
+msgid "IndexView_TestMenu_CreateTestApplicationDatabase"
+msgstr "Создать тестовую базу заявок"
+
+msgid "IndexView_TestMenu_Documentation"
+msgstr "Документация"
+
+msgid "IndexView_TestMenu_GoToMainServer"
+msgstr "Перейти на основной сервер"
+
+msgid "IndexView_Test_DontUseTestVersionForRealWork"
+msgstr "Не используйте ее для реальной работы с игроками."
+
+msgid "IndexView_Test_Hello"
+msgstr "Это тестовая версия JoinRpg.ru."
+
+msgid "IndexView_Test_RedirectPlayersToMainServer"
+msgstr "Если вы игрок и забрели сюда случайно, вам на основной сервер."
+
+msgid "LoginViewModel_Email"
+msgstr "Email"
+
+msgid "LoginViewModel_Password"
+msgstr "Пароль"
+
+msgid "RegisterViewModel_AgreeWithTheRules"
+msgstr "Согласен с правилами"
+
+msgid "RegisterViewModel_Email"
+msgstr "Email"
+
+msgid "RegisterViewModel_FieldIsRequired"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "RegisterViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} должен быть не короче {2} символов"
+
+msgid "RegisterViewModel_MustAgreeWithTheRules"
+msgstr "Согласитесь с правилами, чтобы продолжить"
+
+msgid "RegisterViewModel_OneMoreTime"
+msgstr "Еще раз?"
+
+msgid "RegisterViewModel_Password"
+msgstr "Пароль"
+
+msgid "RegisterViewModel_PasswordsDoNotMatch"
+msgstr "Пароли не совпадают"
+
+msgid "ResetPasswordViewModel_Email"
+msgstr "Email"
+
+msgid "ResetPasswordViewModel_FieldShouldNotBeShorterThan"
+msgstr "{0} должен быть не короче {2} символов"
+
+msgid "ResetPasswordViewModel_OneMoreTime"
+msgstr "Еще раз?"
+
+msgid "ResetPasswordViewModel_Password"
+msgstr "Пароль"
+
+msgid "ResetPasswordViewModel_PasswordsDoNotMatch"
+msgstr "Пароли не совпадают"
