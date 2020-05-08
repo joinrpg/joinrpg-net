@@ -80,7 +80,7 @@ namespace JoinRpg.Web.Helpers
         }
 
         public UriServiceImpl(IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor)
-            => urlHelper = new Lazy<IUrlHelper>(urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext));
+            => urlHelper = new Lazy<IUrlHelper>(() => urlHelperFactory.GetUrlHelper(actionContextAccessor.ActionContext));
 
         public string Get(ILinkable link) => GetUri(link).ToString();
 
