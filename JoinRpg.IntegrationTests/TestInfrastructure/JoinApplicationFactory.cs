@@ -1,10 +1,12 @@
 using System;
 using System.Reflection;
 using Autofac;
+using JoinRpg.Dal.Impl;
 using JoinRpg.Portal;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace JoinRpg.IntegrationTests.TestInfrastructure
@@ -36,6 +38,13 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
         {
             base.ConfigureWebHost(builder);
             builder.UseTestServer();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            var context = Services.GetRequiredService<MyDbContext>();
+            context.Database.Delete();
+            base.Dispose(disposing);
         }
     }
 }

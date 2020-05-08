@@ -23,7 +23,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
         }
 
-        [Fact(Skip = "Need to fix db")]
+        [Fact()]
         public async Task RegistrationShouldBePossible()
         {
             var client = factory.CreateClient();
@@ -42,7 +42,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
             HtmlDocument doc = await response.AsHtmlDocument();
 
-            doc.GetTitle().ShouldBe("Регистрация успешна");
+            doc.GetTitle().ShouldBe("Регистрация успешна - JoinRpg.Portal");
         }
 
 
