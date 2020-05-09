@@ -18,6 +18,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 
 namespace JoinRpg.Portal
 {
@@ -56,8 +62,10 @@ namespace JoinRpg.Portal
 
             services.AddRouting(options => options.LowercaseUrls = true);
 
-            services.AddSingleton<IValidationAttributeAdapterProvider, BooleanRequiredAttributeAdapterProvider>();
+            services.AddScoped<IValidationAttributeAdapterProvider, LocalizationValidationAttributeAdapterProvider>();
+            services.AddScoped<DataAnnotationsLocalizationDisplayMetadataProvider>();
             services.AddSingleton<LocalizationService>();
+
             services.AddPortableObjectLocalization(o => o.ResourcesPath = "Resources");
 
             var mvc = services
@@ -69,6 +77,9 @@ namespace JoinRpg.Portal
                     }
                     options.Filters.Add(new SetIsProductionFilterAttribute());
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
+
+                    var sp = services.BuildServiceProvider();
+                    options.ModelMetadataDetailsProviders.Add(sp.GetService<DataAnnotationsLocalizationDisplayMetadataProvider>());
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()

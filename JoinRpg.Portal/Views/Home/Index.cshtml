@@ -27,16 +27,16 @@
     {
   <div>
     <div class="alert alert-danger">
-      @Localizer["IndexView_Test_Hello"]<br />
-      @Localizer["IndexView_Test_DontUseTestVersionForRealWork"]<br />
-      @Localizer["IndexView_Test_RedirectPlayersToMainServer"] <br />
+      @Localizer["IndexView.Test.Hello"]<br />
+      @Localizer["IndexView.Test.DontUseTestVersionForRealWork"]<br />
+      @Localizer["IndexView.Test.RedirectPlayersToMainServer"] <br />
       <a href="http://joinrpg.ru">joinrpg.ru</a>
     </div>.
 
-    @Html.ActionLink(Localizer["IndexView_TestMenu_About"], "About", null, null, new { @class = "btn btn-primary" })
-    <a href="http://docs.joinrpg.ru" class="btn btn-info">@Localizer["IndexView_TestMenu_Documentation"]</a>
-    @Html.ActionLink(Localizer["IndexView_TestMenu_CreateTestApplicationDatabase"], "Create", "Game", null, new { @class = "btn btn-success" })
-    <a href="http://joinrpg.ru" class="btn btn-info">@Localizer["IndexView_TestMenu_GoToMainServer"]</a>
+    @Html.ActionLink(Localizer["IndexView.TestMenu.About"], "About", null, null, new { @class = "btn btn-primary" })
+    <a href="http://docs.joinrpg.ru" class="btn btn-info">@Localizer["IndexView.TestMenu.Documentation"]</a>
+    @Html.ActionLink(Localizer["IndexView.TestMenu.CreateTestApplicationDatabase"], "Create", "Game", null, new { @class = "btn btn-success" })
+    <a href="http://joinrpg.ru" class="btn btn-info">@Localizer["IndexView.TestMenu.GoToMainServer"]</a>
   </div>
     }
 

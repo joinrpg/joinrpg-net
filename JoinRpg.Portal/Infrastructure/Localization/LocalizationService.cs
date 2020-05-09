@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 
 namespace JoinRpg.Portal.Infrastructure.Localization
 {
@@ -34,6 +35,48 @@ namespace JoinRpg.Portal.Infrastructure.Localization
         {
             var assemblyName = new AssemblyName(typeof(LocalizationSharedResource).GetTypeInfo().Assembly.FullName);
             return factory.Create("LocalizationSharedResource", assemblyName.Name);
+        }
+
+        ///<summary>
+        ///   Gets the string from the localizer by given key.
+        ///   If the obtained string is null or not found(e.g.equals to key itself),
+        ///   the default value is returned.
+        ///</summary>
+        public static string GetLocalizedString(IStringLocalizer localizer, string key, string defaultValue)
+        {
+            string localizedString = localizer[key];
+            return localizedString == null || localizedString.Equals(key) ? defaultValue : localizedString;
+        }
+
+        public static string GenerateLocalizationKey<ModelType, AttributeType>(string memberName, string attributePropertyName)
+        {
+            return GenerateLocalizationKey(typeof(ModelType), typeof(AttributeType), memberName, attributePropertyName);
+        }
+
+        public static string GenerateLocalizationKey(Type modelType, Type attributeType, string memberName, string attributePropertyName)
+        {
+            StringBuilder key = new StringBuilder();
+            key.Append(modelType.FullName);
+
+            if (memberName != null)
+            {
+                key.Append(".");
+                key.Append(memberName);
+            }
+
+            if (attributeType != null)
+            {
+                key.Append(".");
+                key.Append(attributeType.Name.Replace("Attribute", ""));
+            }
+
+            if (attributePropertyName != null)
+            {
+                key.Append(".");
+                key.Append(attributePropertyName);
+            }
+
+            return key.ToString();
         }
     }
 }

@@ -1,5 +1,4 @@
-#: format: Namespace.ClassName.MemberName.AttributeName.AttributeFieldName
-#: AccountController.cs
+#: ----------------------------------------- AccountController.cs -------------------------------------
 
 msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
 msgstr "Невозможно верифицировать ReCAPTCHA. Если эта ошибка повторяется, пожалуйста, обратитесь в техподдержку."
@@ -7,131 +6,162 @@ msgstr "Невозможно верифицировать ReCAPTCHA. Если э
 msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
 msgstr "Не найден логин или пароль"
 
-#: AccountViewModels.cs
-#: EditUserProfileViewModel
+#: ------------------------------------------AccountViewModels.cs---------------------------------------
+#: ----------------------------------------EditUserProfileViewModel-------------------------------------
 
-msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Name"
 msgstr "МГ/Клубы"
 
-msgid "EditUserProfileViewModel_AllGroupsDescription"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Description"
 msgstr "Все мастерские группы/клубы, через запятую, к которым вы себя относите."
 
-msgid "EditUserProfileViewModel_AllNicknames"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Name"
 msgstr "Все ник(и)"
 
-msgid "EditUserProfileViewModel_AllNicknamesDescription"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Description"
 msgstr "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по-другому написанный ник"
 
-msgid "EditUserProfileViewModel_EnterNickname"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Required.ErrorMessage"
 msgstr "Укажите, как вас называть"
 
-msgid "EditUserProfileViewModel_LiveJournal"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Livejournal.Display.Name"
 msgstr "ЖЖ"
 
-msgid "EditUserProfileViewModel_MiddleName"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.FatherName.Display.Name"
 msgstr "Отчество"
 
-msgid "EditUserProfileViewModel_Name"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
 msgstr "Имя"
 
-msgid "EditUserProfileViewModel_Nickname"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Name"
 msgstr "Как называть"
 
-msgid "EditUserProfileViewModel_NicknameDescription"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Description"
 msgstr "Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника)."
 
-msgid "EditUserProfileViewModel_PhoneNumber"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PhoneNumber.Display.Name"
 msgstr "Номер телефона"
 
-msgid "EditUserProfileViewModel_Sex"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Gender.Display.Name"
 msgstr "Пол"
 
-msgid "EditUserProfileViewModel_Skype"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Skype.Display.Name"
 msgstr "Skype"
 
-msgid "EditUserProfileViewModel_Surname"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.SurName.Display.Name"
 msgstr "Фамилия"
 
-msgid "EditUserProfileViewModel_Telegram"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Telegram.Display.Name"
 msgstr "Telegram"
 
-msgid "EditUserProfileViewModel_VK"
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Vk.Display.Name"
 msgstr "ВК"
 
-msgid "ExternalLoginConfirmationViewModel_AgreeWithTheRules"
+#: ----------------------------ExternalLoginConfirmationViewModel---------------------------------
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.Display.Name"
 msgstr "Согласен с правилами"
 
-msgid "ExternalLoginConfirmationViewModel_Email"
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Display.Name"
 msgstr "Email"
 
-msgid "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules"
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.BooleanRequired.ErrorMessage"
 msgstr "Согласитесь с правилами, чтобы продолжить"
 
-msgid "ForgotPasswordViewModel_Email"
-msgstr "Email"
-
-msgid "IndexView_TestMenu_About"
-msgstr "О проекте"
-
-msgid "IndexView_TestMenu_CreateTestApplicationDatabase"
-msgstr "Создать тестовую базу заявок"
-
-msgid "IndexView_TestMenu_Documentation"
-msgstr "Документация"
-
-msgid "IndexView_TestMenu_GoToMainServer"
-msgstr "Перейти на основной сервер"
-
-msgid "IndexView_Test_DontUseTestVersionForRealWork"
-msgstr "Не используйте ее для реальной работы с игроками."
-
-msgid "IndexView_Test_Hello"
-msgstr "Это тестовая версия JoinRpg.ru."
-
-msgid "IndexView_Test_RedirectPlayersToMainServer"
-msgstr "Если вы игрок и забрели сюда случайно, вам на основной сервер."
-
-msgid "LoginViewModel_Email"
-msgstr "Email"
-
-msgid "LoginViewModel_Password"
-msgstr "Пароль"
-
-msgid "RegisterViewModel_AgreeWithTheRules"
-msgstr "Согласен с правилами"
-
-msgid "RegisterViewModel_Email"
-msgstr "Email"
-
-msgid "RegisterViewModel_FieldIsRequired"
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Required.ErrorMessage"
 msgstr "Поле {0} обязательно для заполнения"
 
-msgid "RegisterViewModel_FieldShouldNotBeShorterThan"
-msgstr "{0} должен быть не короче {2} символов"
-
-msgid "RegisterViewModel_MustAgreeWithTheRules"
-msgstr "Согласитесь с правилами, чтобы продолжить"
-
-msgid "RegisterViewModel_OneMoreTime"
-msgstr "Еще раз?"
-
-msgid "RegisterViewModel_Password"
-msgstr "Пароль"
-
-msgid "RegisterViewModel_PasswordsDoNotMatch"
-msgstr "Пароли не совпадают"
-
-msgid "ResetPasswordViewModel_Email"
+#: ---------------------------- ForgotPasswordViewModel-------------------------------------------
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Display.Name"
 msgstr "Email"
 
-msgid "ResetPasswordViewModel_FieldShouldNotBeShorterThan"
-msgstr "{0} должен быть не короче {2} символов"
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
 
-msgid "ResetPasswordViewModel_OneMoreTime"
-msgstr "Еще раз?"
+#: ----------------------------- LoginViewModel---------------------------------------------------
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
 
-msgid "ResetPasswordViewModel_Password"
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Display.Name"
 msgstr "Пароль"
 
-msgid "ResetPasswordViewModel_PasswordsDoNotMatch"
+#: ------------------------------- RegisterViewModel -------------------------------------------
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.Display.Name"
+msgstr "Согласен с правилами"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.BooleanRequired.ErrorMessage"
+msgstr "Согласитесь с правилами, чтобы продолжить"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} должен быть не короче {2} символов"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Display.Name"
+msgstr "Пароль"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Display.Name"
+msgstr "Еще раз?"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Compare.ErrorMessage"
 msgstr "Пароли не совпадают"
+
+#: ------------------------------------ ResetPasswordViewModel ------------------------------------
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Required.ErrorMessage"
+msgstr "Поле {0} обязательно для заполнения"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} должен быть не короче {2} символов"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Display.Name"
+msgstr "Пароль"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Display.Name"
+msgstr "Еще раз?"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Compare.ErrorMessage"
+msgstr "Пароли не совпадают"
+
+#: --------------------------------------- Views -------------------------------------------------
+#: ----------------------------- IndexView -------------------------------------------------------
+
+msgid "IndexView.TestMenu.About"
+msgstr "О проекте"
+
+msgid "IndexView.TestMenu.CreateTestApplicationDatabase"
+msgstr "Создать тестовую базу заявок"
+
+msgid "IndexView.TestMenu.Documentation"
+msgstr "Документация"
+
+msgid "IndexView.TestMenu.GoToMainServer"
+msgstr "Перейти на основной сервер"
+
+msgid "IndexView.Test.DontUseTestVersionForRealWork"
+msgstr "Не используйте ее для реальной работы с игроками."
+
+msgid "IndexView.Test.Hello"
+msgstr "Это тестовая версия JoinRpg.ru."
+
+msgid "IndexView.Test.RedirectPlayersToMainServer"
+msgstr "Если вы игрок и забрели сюда случайно, вам на основной сервер."
+

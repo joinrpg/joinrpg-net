@@ -14,13 +14,13 @@ namespace JoinRpg.Web.Models
             DisplayName = "";
         }
 
-        [Required]
-        [Display(Name = "ExternalLoginConfirmationViewModel_Email")]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
+        [Display(Name = "Email")]
         public string Email { get; set; }
 
         [Required]
-        [Display(Name = "ExternalLoginConfirmationViewModel_AgreeWithTheRules")]
-        [BooleanRequired(ErrorMessage = "ExternalLoginConfirmationViewModel_MustAgreeWithTheRules")]
+        [Display(Name = "Согласен с правилами")]
+        [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
     }
 
@@ -38,41 +38,41 @@ namespace JoinRpg.Web.Models
 
     public class LoginViewModel
     {
-        [Required]
-        [Display(Name = "LoginViewModel_Email")]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
+        [Display(Name = "Email")]
         [EmailAddress]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [DataType(DataType.Password)]
-        [Display(Name = "LoginViewModel_Password")]
+        [Display(Name = "Пароль")]
         public string Password { get; set; }
         public string ReturnUrl { get; set; }
     }
 
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "RegisterViewModel_FieldIsRequired")]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [EmailAddress]
-        [Display(Name = "RegisterViewModel_Email")]
+        [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "RegisterViewModel_FieldIsRequired")]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [StringLength(100,
-            ErrorMessage = "RegisterViewModel_FieldShouldNotBeShorterThan",
+            ErrorMessage = "{0} должен быть не короче {2} символов",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "RegisterViewModel_Password")]
+        [Display(Name = "Пароль")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "RegisterViewModel_OneMoreTime")]
-        [Compare("Password", ErrorMessage = "RegisterViewModel_PasswordsDoNotMatch")]
+        [Display(Name = "Еще раз?")]
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         public string ConfirmPassword { get; set; }
 
-        [Required()]
-        [Display(Name = "RegisterViewModel_AgreeWithTheRules")]
-        [BooleanRequired(ErrorMessage = "RegisterViewModel_MustAgreeWithTheRules")]
+        [Required]
+        [Display(Name = "Согласен с правилами")]
+        [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
 
         [Editable(false)]
@@ -84,22 +84,22 @@ namespace JoinRpg.Web.Models
 
     public class ResetPasswordViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [EmailAddress]
-        [Display(Name = "ResetPasswordViewModel_Email")]
+        [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [StringLength(100,
-            ErrorMessage = "ResetPasswordViewModel_FieldShouldNotBeShorterThan",
+            ErrorMessage = "{0} должен быть не короче {2} символов",
             MinimumLength = 8)]
         [DataType(DataType.Password)]
-        [Display(Name = "ResetPasswordViewModel_Password")]
+        [Display(Name = "Пароль")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "ResetPasswordViewModel_OneMoreTime")]
-        [Compare("Password", ErrorMessage = "ResetPasswordViewModel_PasswordsDoNotMatch")]
+        [Display(Name = "Еще раз?")]
+        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
@@ -107,9 +107,9 @@ namespace JoinRpg.Web.Models
 
     public class ForgotPasswordViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [EmailAddress]
-        [Display(Name = "ForgotPasswordViewModel_Email")]
+        [Display(Name = "Email")]
         public string Email { get; set; }
     }
 
@@ -120,38 +120,38 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Имя")]
         public string BornName { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_MiddleName")]
+        [Display(Name = "Отчество")]
         public string FatherName { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Surname")]
+        [Display(Name = "Фамилия")]
         public string SurName { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Nickname", Description = "EditUserProfileViewModel_NicknameDescription")]
-        [Required(ErrorMessage = "EditUserProfileViewModel_EnterNickname")]
+        [Display(Name = "Как называть", Description = "Под каким именем/ником вы хотите быть известны? Рекомендуем ввести ник русскими буквами (или фамилию/имя, если у вас нет ника).")]
+        [Required(ErrorMessage = "Укажите, как вас называть")]
         public string PrefferedName { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Sex")]
+        [Display(Name = "Пол")]
         public Gender Gender { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_PhoneNumber"), DataType(DataType.PhoneNumber)]
+        [Display(Name = "Номер телефона"), DataType(DataType.PhoneNumber)]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Skype")]
+        [Display(Name = "Skype")]
         public string Skype { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_LiveJournal")]
+        [Display(Name = "ЖЖ")]
         public string Livejournal { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_VK")]
+        [Display(Name = "ВК")]
         public string Vk { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_Telegram")]
+        [Display(Name = "Telegram")]
         public string Telegram { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_AllNicknames", Description = "EditUserProfileViewModel_AllNicknamesDescription")]
+        [Display(Name = "Все ник(и)", Description = "Все ники, через запятую, под которыми вас могут знать. Это позволит находить вас поиском даже тем, кто использует ваш старый или по-другому написанный ник")]
         public string Nicknames { get; set; }
 
-        [Display(Name = "EditUserProfileViewModel_AllGroups", Description = "EditUserProfileViewModel_AllGroupsDescription")]
+        [Display(Name = "МГ/Клубы", Description = "Все мастерские группы/клубы, через запятую, к которым вы себя относите.")]
         public string GroupNames { get; set; }
 
         public int? LastClaimId { get; set; }
