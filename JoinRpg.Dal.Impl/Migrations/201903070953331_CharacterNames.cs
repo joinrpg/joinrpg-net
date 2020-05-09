@@ -2,6 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
+    using System.Runtime.CompilerServices;
 
     public partial class CharacterNames : DbMigration
     {
@@ -18,7 +19,15 @@ namespace JoinRpg.Dal.Impl.Migrations
             AddForeignKey("dbo.ProjectDetails", "CharacterDescription_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
             AddForeignKey("dbo.ProjectDetails", "CharacterNameField_ProjectFieldId", "dbo.ProjectFields", "ProjectFieldId");
 
-            Sql(@"
+            if (false)
+            {
+                // Azure Pipeline has too old LocalDb
+                // https://github.com/actions/virtual-environments/issues/702
+                // It's safe to skip: all prod/staging etc already got this data migration happened
+                // Developer's DB it's highly likely have empty database in this stage.
+                // So it's probably NOP anyways 
+#pragma warning disable CS0162 // Unreachable code detected
+                Sql(@"
 
 INSERT INTO [dbo].[ProjectFields]
            ([FieldName]
@@ -89,7 +98,11 @@ UPDATE ProjectFields
 SET FieldName = 'Описание персонажа'
 WHERE FieldName LIKE '$$$Description'
 
-");
+"
+#pragma warning restore CS0162 // Unreachable code detected
+);
+            }
+
             DropColumn("dbo.Projects", "ProjectFieldsOrdering");
             DropColumn("dbo.ProjectDetails", "AllrpgId");
             DropColumn("dbo.ProjectDetails", "GenerateCharacterNamesFromPlayer");
