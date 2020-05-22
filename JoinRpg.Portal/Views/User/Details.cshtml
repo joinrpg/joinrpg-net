@@ -132,7 +132,9 @@
 
     @if (Model.ProjectsToAdd.Any())
     {
-    @await Html.PartialAsync("AddToProject", Model)
+      <div class="col-md-12">
+        @await Html.PartialAsync("AddToProject", Model)
+      </div>
     }
     </div>
 
