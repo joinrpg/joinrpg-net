@@ -135,7 +135,7 @@ namespace JoinRpg.Portal
         public static IHtmlContent HelpLink(this IHtmlHelper self, string link, string message)
         {
             return new HtmlString(
-                "<span class=\"glyphicon glyphicon-question-sign\"></span><a href=\"http://docs.joinrpg.ru/ru/latest/" +
+                "<span class=\"glyphicon glyphicon-question-sign\"></span>&nbsp;<a href=\"http://docs.joinrpg.ru/ru/latest/" +
                 link +
                 "\">" + message + "</a>");
         }
