@@ -14,4 +14,4 @@
         <a href="@Url.Action("Create", "Plot", new {Model.ProjectId})" class="btn btn-success"><span class="glyphicon glyphicon-plus"></span>Создать новый...</a>
     }
 </p>
-@Html.Partial("FolderList", Model)
+@await Html.PartialAsync("FolderList", Model)

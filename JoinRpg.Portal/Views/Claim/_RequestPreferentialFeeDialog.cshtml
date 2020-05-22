@@ -21,7 +21,7 @@
                         }
 
                         <h4>Поясните ваш запрос</h4>
-                        @Html.Partial("..\\Comments\\_CommentTextEditorPartial", Model)
+                        @await Html.PartialAsync("..\\Comments\\_CommentTextEditorPartial", Model)
                     </div>
                 </div>
 

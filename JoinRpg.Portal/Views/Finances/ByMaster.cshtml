@@ -13,15 +13,15 @@
 
 <h3>Итого</h3>
 
-@Html.Partial("_MasterBalance", new[] { Model.Balance })
+@await Html.PartialAsync("_MasterBalance", new[] { Model.Balance })
 
 <h3>Переводы</h3>
-@Html.Partial("_Transfers", Model.Transfers)
+@await Html.PartialAsync("_Transfers", Model.Transfers)
 
 <h3>Взносы по типам</h3>
-@Html.Partial("_PaymentTypes", Model.PaymentTypeSummary)
+@await Html.PartialAsync("_PaymentTypes", Model.PaymentTypeSummary)
 
 <h3>Взносы разбивка</h3>
 
-@Html.Partial("_Operations", Model.Operations.Items)
+@await Html.PartialAsync("_Operations", Model.Operations.Items)
 

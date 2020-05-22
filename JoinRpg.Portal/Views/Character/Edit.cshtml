@@ -16,7 +16,7 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            @Html.Partial("CharacterNavigation", Model.Navigation)
+            @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
         </div>
         <div class="panel-body">
 
@@ -31,7 +31,7 @@
                     <span class="control-label col-md-2"><b>История обновлений</b> </span>
                     <div class="col-md-10">
                         <div class="help-block">
-                            @Html.Partial("CreateUpdated", Model)
+                            @await Html.PartialAsync("CreateUpdated", Model)
                         </div>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                     </div>
                 </div>
 
-                @Html.Partial("_EditFieldsPartial", Model.Fields)
+                @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
                 @if (Model.Fields.Fields.Any(f => f.HasPrice))
                 {

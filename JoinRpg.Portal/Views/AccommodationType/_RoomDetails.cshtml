@@ -10,7 +10,7 @@
         {
             foreach (AccRequestViewModel request in Model.Requests)
             {
-                @Html.Partial("_RoomInhabitant", request)
+                @await Html.PartialAsync("_RoomInhabitant", request)
             }
         }
     </td>

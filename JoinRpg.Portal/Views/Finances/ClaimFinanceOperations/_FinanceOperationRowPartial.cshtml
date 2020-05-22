@@ -19,7 +19,7 @@
     </td>
     <td>@Model.Date</td>
     <td></td>
-    <td class="price-table">@Html.Partial("Money", new Money(Model.Money))</td>
+    <td class="price-table">@await Html.PartialAsync("Money", new Money(Model.Money))</td>
     <td>
         @if (Model.OperationType == FinanceOperationTypeViewModel.Online
              && Model.OperationState == FinanceOperationStateViewModel.Proposed)

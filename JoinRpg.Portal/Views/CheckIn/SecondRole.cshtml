@@ -6,7 +6,7 @@
 }
 
 <h2>Выпуск второй ролью</h2>
-@Html.Partial("CharacterNavigation", Model.Navigation)
+@await Html.PartialAsync("CharacterNavigation", Model.Navigation)
 @Html.DisplayFor(model => model.PlayerDetails)
 <dl>
   <dt>@Html.LabelFor(model => model.Master)</dt>

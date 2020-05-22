@@ -52,18 +52,18 @@
         <div id="availRequestsListContainer">
             @foreach (var req in Model.UnassignedRequests)
             {
-                @Html.Partial("_RoomInhabitant", req)
+                @await Html.PartialAsync("_RoomInhabitant", req)
             }
         </div>
     </div>
 </div>
 
-@Html.Partial("_RoomsList", new RoomTypeRoomsListViewModel(Model))
+@await Html.PartialAsync("_RoomsList", new RoomTypeRoomsListViewModel(Model))
 
 <div>
-    @Html.Partial("_BackButton", Model.ProjectId)
+    @await Html.PartialAsync("_BackButton", Model.ProjectId)
 </div>
 
-@Html.Partial("_RoomEditDlg")
+@await Html.PartialAsync("_RoomEditDlg")
 
-@Html.Partial("_OccupationDlg")
+@await Html.PartialAsync("_OccupationDlg")

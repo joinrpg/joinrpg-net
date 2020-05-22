@@ -22,7 +22,7 @@
         <h4>Сюжет</h4>
         <p>Удаленный сюжет и его вводные можно будет восстановить позже.</p>
         <hr/>
-        @Html.Partial("_PlotElements", Model.Elements)
+        @await Html.PartialAsync("_PlotElements", Model.Elements)
     }
     else
     {

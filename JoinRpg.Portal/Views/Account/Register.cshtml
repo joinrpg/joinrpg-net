@@ -9,7 +9,7 @@
 <form asp-action="Register" asp-controller="Account" method="post" class="form-horizontal" role="form">
   <h4>Создать аккаунт</h4>
 
-  @Html.Partial("_RegistrationRules")
+  @await Html.PartialAsync("_RegistrationRules")
 
   <p>@Html.HelpLink("register", "Подробнее о регистрации")</p>
   <hr />

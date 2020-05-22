@@ -5,7 +5,7 @@
 }
 
 <h2>Регистрация игрока</h2>
-@Html.Partial("CharacterNavigation", Model.Navigation)
+@await Html.PartialAsync("CharacterNavigation", Model.Navigation)
 @Html.DisplayFor(model => model.PlayerDetails)
 <dl>
   <dt>@Html.LabelFor(model => model.Master)</dt>
@@ -66,7 +66,7 @@
 
   </div>
   }
-  @Html.Partial("..\\Print\\_CharacterHandout", Model.Handouts)
+  @await Html.PartialAsync("..\\Print\\_CharacterHandout", Model.Handouts)
   @if (Model.Validator.CanCheckInInPrinciple)
   {
   <input type="submit" class="btn btn-success" value="Зарегистрировать игрока" />

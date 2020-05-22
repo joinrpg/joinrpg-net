@@ -6,7 +6,7 @@
 
 @if (!ViewBag.IsProduction)
 {
-    @Html.Partial("_DevAlertPartial")
+    @await Html.PartialAsync("_DevAlertPartial")
 }
 
     <div class="panel panel-default">

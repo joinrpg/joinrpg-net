@@ -19,13 +19,13 @@
     <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelTop.FormIndex))">Добавить комментарий</button>
 </div>
 <div id="@(addCommentModelTop.FormId)" class="collapse">
-    @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelTop)
+    @await Html.PartialAsync("..\\Comments\\_AddCommentFormPartial", addCommentModelTop)
 </div>
 
 <div class="media-list" style="margin-top: 1em;">
     @foreach (var comment in Model.RootComments)
     {
-        @Html.Partial("..\\Comments\\_CommentPartial", comment)
+        @await Html.PartialAsync("..\\Comments\\_CommentPartial", comment)
     }
 </div>
 
@@ -35,6 +35,6 @@
         <button class="btn btn-default" onclick="toggleCommentEditor(@(addCommentModelBottom.FormIndex))">Добавить комментарий</button>
     </div>
     <div id="@(addCommentModelBottom.FormId)" class="collapse">
-        @Html.Partial("..\\Comments\\_AddCommentFormPartial", addCommentModelBottom)
+        @await Html.PartialAsync("..\\Comments\\_AddCommentFormPartial", addCommentModelBottom)
     </div>
 }

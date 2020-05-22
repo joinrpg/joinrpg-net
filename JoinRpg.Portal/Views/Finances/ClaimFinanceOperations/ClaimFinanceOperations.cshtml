@@ -11,10 +11,10 @@
     feeBase = @(Model.BaseFee);
 </script>
 <div id="feeInfo" class="collapse in">
-    @Html.Partial("Money", new Money(Model.CurrentFee, "feeTotalDisp2"))
+    @await Html.PartialAsync("Money", new Money(Model.CurrentFee, "feeTotalDisp2"))
     <strong id="feeInfo0" style="display: none;">(оплачен полностью)</strong>
-    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2"))</strong>)</span>
-    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@Html.Partial("Money", new Money(Model.CurrentBalance))</strong>, осталось оплатить <strong class="text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2"))</strong>)</span>
+    <span id="feeInfo1" style="display: none;">(переплата <strong class="text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp2"))</strong>)</span>
+    <span id="feeInfo2" style="display: none;">(оплачено <strong class="text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance))</strong>, осталось оплатить <strong class="text-danger">@await Html.PartialAsync("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp2"))</strong>)</span>
     <strong id="feeInfo3" style="display: none;" class="text-danger">(не оплачен)</strong>
     <button type="button" class="btn btn-default btn-xs" style="margin-right: 1em;" onclick="toggleFeeBlock();">Подробнее&hellip;</button>
     @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
@@ -41,7 +41,7 @@
             <tr><th>Операция</th><th>Дата</th><th class="price-table">К оплате</th><th class="price-table">Оплачено</th><th></th></tr>
         </thead>
         <tbody>
-        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowBaseFee",
             Visible = Model.HasBaseFee || Model.HasFeeAdminAccess,
@@ -51,7 +51,7 @@
             Fee = Model.BaseFee,
             AdminFunctions = new FinanceOperationAdminFunctionsViewModel(Model)
         })
-        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowAccommodationFee",
             Visible = Model.HasAccommodationFee,
@@ -59,7 +59,7 @@
             Fee = Model.AccommodationFee,
             FeeHtmlId = "feeAccommodationDisp",
         })
-        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowClaimFee",
             Visible = Model.FieldsWithFeeCount[FieldBoundToViewModel.Claim] > 0,
@@ -67,7 +67,7 @@
             Fee = Model.FieldsFee[FieldBoundToViewModel.Claim],
             FeeHtmlId = "feeClaimFieldsDisp",
         })
-        @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
+        @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_RowPartial", new FinanceOperationsRowViewModel
         {
             HtmlId = "rowCharacterFee",
             Visible = Model.FieldsWithFeeCount[FieldBoundToViewModel.Character] > 0,
@@ -77,15 +77,15 @@
         })
         @foreach (var fo in Model.VisibleFinanceOperations)
         {
-            @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_FinanceOperationRowPartial", fo)
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_FinanceOperationRowPartial", fo)
         }
         </tbody>
         <tfoot>
             <tr>
                 <th>Итого</th>
                 <th></th>
-                <th class="price-table">@Html.Partial("Money", new Money(Model.CurrentFee, "feeTotalDisp"))</th>
-                <th class="price-table">@Html.Partial("Money", new Money(Model.CurrentBalance, "feeBalance"))</th>
+                <th class="price-table">@await Html.PartialAsync("Money", new Money(Model.CurrentFee, "feeTotalDisp"))</th>
+                <th class="price-table">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance, "feeBalance"))</th>
                 <th></th>
             </tr>
             <tr id="rowPaymentStatus">
@@ -96,8 +96,8 @@
                     <span id="feeStatus3" style="display: none;">Осталось оплатить</span>
                 </th>
                 <th></th>
-                <th class="price-table text-danger">@Html.Partial("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp"))</th>
-                <th class="price-table text-success">@Html.Partial("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp"))</th>
+                <th class="price-table text-danger">@await Html.PartialAsync("Money", new Money(Model.CurrentTotalFee - Model.CurrentBalance, "feeMoreToPayDisp"))</th>
+                <th class="price-table text-success">@await Html.PartialAsync("Money", new Money(Model.CurrentBalance - Model.CurrentTotalFee, "feeOverpaidDisp"))</th>
                 <th>
                     @if (Model.HasFeeAdminAccess && Model.CurrentBalance > 0)
                     {
@@ -115,11 +115,11 @@
             </tr>
             @if (Model.Balance[FinanceOperationState.Proposed] > 0)
             {
-                <tr><th>@FinanceOperationStateViewModel.Proposed.GetDisplayName()</th><th></th><th></th><th class="price-table">@Html.Partial("Money", new Money(Model.Balance[FinanceOperationState.Proposed]))</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Proposed.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Proposed]))</th><th></th></tr>
             }
             @if (Model.Balance[FinanceOperationState.Declined] > 0)
             {
-                <tr><th>@FinanceOperationStateViewModel.Declined.GetDisplayName()</th><th></th><th></th><th class="price-table">@Html.Partial("Money", new Money(Model.Balance[FinanceOperationState.Declined]))</th><th></th></tr>
+                <tr><th>@FinanceOperationStateViewModel.Declined.GetDisplayName()</th><th></th><th></th><th class="price-table">@await Html.PartialAsync("Money", new Money(Model.Balance[FinanceOperationState.Declined]))</th><th></th></tr>
             }
         </tfoot>
     </table>

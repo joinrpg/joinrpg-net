@@ -21,23 +21,23 @@
 </ul>
 <div class="tab-content scheduler-fullscreen">
     <section id="scheduler" class="scheduler-container tab-pane in active">
-        @Html.Partial("Scheduler", Model)
+        @await Html.PartialAsync("Scheduler", Model)
         <div id="scheduler-overlay" onclick="overlayClickHandler(event)" onwheel="overlayWheelHandler(event)">
             <div id="scheduler-details" all-rooms="false" no-users="false" error-mode="false">
-                @Html.Partial("_AppointmentDetailsPartial")
+                @await Html.PartialAsync("_AppointmentDetailsPartial")
             </div>
         </div>
     </section>
     @if (Model.Intersections.Count > 0)
     {
         <section id="intersections" class="scheduler-container tab-pane">
-            @Html.Partial("Intersections", Model)
+            @await Html.PartialAsync("Intersections", Model)
         </section>
     }
     @if (Model.NotAllocated.Count > 0)
     {
         <section id="notallocated" class="scheduler-container tab-pane">
-            @Html.Partial("Notallocated", Model)
+            @await Html.PartialAsync("Notallocated", Model)
         </section>
     }
 </div>

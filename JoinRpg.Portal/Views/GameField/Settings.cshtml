@@ -7,7 +7,7 @@
     ViewBag.Title = "Настройки полей";
 }
 
-@Html.Partial("_FieldNavigation", Model.Navigation)
+@await Html.PartialAsync("_FieldNavigation", Model.Navigation)
 
     <div class="alert alert-warning">
         По умолчанию в этом разделе все настроено оптимальным образом согласно выбору при создании проекта (игра/конвент).
@@ -18,7 +18,7 @@
 
 @if (Model.LegacyModelEnabled)
 {
-    @Html.Partial("_SwitchFromLegacyMode", Model)
+    @await Html.PartialAsync("_SwitchFromLegacyMode", Model)
 
 }
 
@@ -42,6 +42,6 @@
 
         @Html.JoinFormDropdownFor(model => model.DescriptionField, Model.PossibleDescriptionFields)
 
-        @Html.Partial("FormButtons")
+        @await Html.PartialAsync("FormButtons")
     </div>
 }

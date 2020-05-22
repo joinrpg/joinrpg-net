@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    @Html.Partial("_EditFieldsPartial", Model.Fields)
+    @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
     @if (Model.Fields.Fields.Any(f => f.HasPrice))
     {

@@ -35,13 +35,13 @@
 </head>
 <body>
     <nav>
-        @Html.Partial("_FullScreenHeader", ViewData["Header"])
+        @await Html.PartialAsync("_FullScreenHeader", ViewData["Header"])
     </nav>
     <article>
         @RenderBody()
     </article>
     <footer>
-        @Html.Partial("_FullScreenFooter", ViewData["Footer"])
+        @await Html.PartialAsync("_FullScreenFooter", ViewData["Footer"])
     </footer>
 
     <environment include="Development">
@@ -68,6 +68,6 @@
     @RenderSection("Scripts", required: false)
 
     <script src="~/Scripts/edit-funcs.js" type="text/javascript"></script>
-    @Html.Partial("Layout/_YandexPartial")
+    @await Html.PartialAsync("Layout/_YandexPartial")
 </body>
 </html>

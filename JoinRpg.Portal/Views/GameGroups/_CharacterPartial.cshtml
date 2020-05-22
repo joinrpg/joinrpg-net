@@ -38,7 +38,7 @@
 
     @if (Model.HasEditRolesAccess)
     {
-        @Html.Partial("_CharacterEditControls", Model)
+        @await Html.PartialAsync("_CharacterEditControls", Model)
     }
 
     @if (Model.IsFirstCopy)

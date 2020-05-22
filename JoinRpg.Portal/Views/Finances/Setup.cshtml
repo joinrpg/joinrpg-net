@@ -133,7 +133,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
         </div>
         <div class="panel-collapse collapse" role="tabpanel" id="setupPayment">
             <div class="panel-body">
-                @Html.Partial("..\\Finances\\_PaymentTypesPartial", Model)
+                @await Html.PartialAsync("..\\Finances\\_PaymentTypesPartial", Model)
             </div>
         </div>
     </div>
@@ -235,7 +235,7 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
                 Выберите размер взноса и с какого числа он вступает в силу.
               </p>
 
-              @Html.Partial("CreateFeeSettingPartial", localModel)
+              @await Html.PartialAsync("CreateFeeSettingPartial", localModel)
             </div>
 
             <div class="modal-footer">
@@ -248,9 +248,9 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
     </div><!-- /.modal-dialog -->
 </div>
 
-@Html.Partial("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId, Masters = Model.Masters })
+@await Html.PartialAsync("..\\Finances\\_AddPaymentTypeDialog", new CreatePaymentTypeViewModel { ProjectId = Model.ProjectId, Masters = Model.Masters })
 
-@Html.Partial("..\\Finances\\_TogglePaymentTypeDialog", new TogglePaymentTypeViewModel { ProjectId = Model.ProjectId })
+@await Html.PartialAsync("..\\Finances\\_TogglePaymentTypeDialog", new TogglePaymentTypeViewModel { ProjectId = Model.ProjectId })
 
 <div class="modal fade" id="deleteFeeSetting" tabindex="-1" role="dialog">
     <div class="modal-dialog">

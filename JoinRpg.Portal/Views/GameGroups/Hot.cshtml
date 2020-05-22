@@ -9,6 +9,6 @@
 @foreach (var character in Model)
 {
 <li>
-    @Html.Partial("_CharacterPartial", character)
+    @await Html.PartialAsync("_CharacterPartial", character)
 </li>
 }

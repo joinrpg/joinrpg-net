@@ -77,9 +77,9 @@
     }
 </h3>
 
-@Html.Partial("_PlotElements", Model.Elements)
+@await Html.PartialAsync("_PlotElements", Model.Elements)
 
-@Html.Partial("_PublishPlotElementDlg", new PublishPlotElementViewModel(Model))
-@Html.Partial("_DeletePlotElementDlg", Model)
-@Html.Partial("_UnpublishPlotElementDlg", Model)
-@Html.Partial("_RestorePlotElementDlg", Model)
+@await Html.PartialAsync("_PublishPlotElementDlg", new PublishPlotElementViewModel(Model))
+@await Html.PartialAsync("_DeletePlotElementDlg", Model)
+@await Html.PartialAsync("_UnpublishPlotElementDlg", Model)
+@await Html.PartialAsync("_RestorePlotElementDlg", Model)

@@ -16,7 +16,7 @@
             <div class="panel-body">
                 @foreach (var plot in Model.Elements)
                 {
-                    @Html.Partial("../Plot/ShowElementPartial", plot)
+                    @await Html.PartialAsync("../Plot/ShowElementPartial", plot)
                 }
             </div>
         </div>

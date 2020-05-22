@@ -6,4 +6,4 @@
     ViewBag.IsNew = true;
 }
 <h2>@ViewBag.Title</h2>
-@Html.Partial("_RoomTypeEdit", Model)
+@await Html.PartialAsync("_RoomTypeEdit", Model)

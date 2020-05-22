@@ -13,7 +13,7 @@
                 <div class="modal-body">
                     <div>Выберите название и ответственного за это мастера</div>
 
-                    @Html.Partial("_CreatePaymentTypePartial", Model)
+                    @await Html.PartialAsync("_CreatePaymentTypePartial", Model)
                 </div>
 
                 <div class="modal-footer">

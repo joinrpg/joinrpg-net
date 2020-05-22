@@ -8,5 +8,5 @@
 <div>
     <h4>Форумы @Html.ActionLink(Model.GroupDetails.Name, "ListThreadsByGroup", new { Model.ProjectId, Model.GroupDetails.CharacterGroupId }) → @Model.Header</h4>
     <hr />
-    @Html.Partial("..\\Comments\\CommentsListPartial", Model)
+    @await Html.PartialAsync("..\\Comments\\CommentsListPartial", Model)
 </div>

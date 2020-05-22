@@ -8,6 +8,6 @@
 <div class="row">
     @foreach (var project in Model.ActiveProjects)
     {
-    @Html.Partial("ProjectCard", project)
+    @await Html.PartialAsync("ProjectCard", project)
     }
 </div>

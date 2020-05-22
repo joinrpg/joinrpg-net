@@ -3,7 +3,7 @@
 <table>
     <tr>
         <td style="vertical-align: top">
-            @Html.Partial("DisplayTemplates/UserAvatar", Model.User)
+            @await Html.PartialAsync("DisplayTemplates/UserAvatar", Model.User)
         </td>
         <td>
             @if (Model.HasAccess)

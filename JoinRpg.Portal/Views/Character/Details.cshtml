@@ -7,7 +7,7 @@
 
 <div class="panel panel-default">
 <div class="panel-heading">
-    @Html.Partial("CharacterNavigation", Model.Navigation)
+    @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
 </div>
     <div class="panel-body">
           
@@ -16,7 +16,7 @@
                 @if (Model.HasMasterAccess)
                 {
                     <dt>История обновлений</dt>
-                    <dd>@Html.Partial("CreateUpdated", Model)</dd>
+                    <dd>@await Html.PartialAsync("CreateUpdated", Model)</dd>
                     
                 }
                 <dt>Игрок</dt>
@@ -30,13 +30,13 @@
   @if (Model.Fields.AnythingAccessible)
   {
     <div class="form-horizontal">
-      @Html.Partial("_EditFieldsPartial", Model.Fields)
+      @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
     </div>
 
     if (Model.Fields.ShowFieldsSubtotal)
     {
-        @Html.Partial("_CharacterFieldsSubtotal", Model.Fields);
+        @await Html.PartialAsync("_CharacterFieldsSubtotal", Model.Fields);
     }
   }
-  @Html.Partial("_PlotForCharacterPartial", Model.Plot)
+  @await Html.PartialAsync("_PlotForCharacterPartial", Model.Plot)
 </div>

@@ -5,7 +5,7 @@
     <div class="panel-group" id="elementsaccordion" role="tablist" aria-multiselectable="true">
         @foreach (var item in Model)
         {
-            @Html.Partial("EditElementPartial", item)
+            @await Html.PartialAsync("EditElementPartial", item)
         }
     </div>
 }

@@ -9,7 +9,7 @@
 }
 
 <h2>@ViewBag.Title</h2>
-@Html.Partial("_GroupHelpTextPartial")
+@await Html.PartialAsync("_GroupHelpTextPartial")
 
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
