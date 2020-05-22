@@ -92,25 +92,21 @@
         <dd>
           @if (Model.CanManageThisClaim && Model.ProjectActive)
           {
-            using (Html.BeginForm("ChangeResponsible", "Claim"))
-            {
+            <form asp-action="ChangeResponsible" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
               <div class="form-inline input-group-sm" style="margin-top: 0.5em">
-                @Html.AntiForgeryToken()
-                @Html.HiddenFor(model => model.ProjectId)
-                @Html.HiddenFor(model => model.ClaimId)
                 @Html.DropDownListFor(
-                model => model.ResponsibleMasterId,
-                Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                htmlAttributes: new { @class = "form-control" })
+                 model => model.ResponsibleMasterId,
+                 Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                 htmlAttributes: new { @class = "form-control" })
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
                 <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
               </div>
-            }
+              </form>
           }
           else
           {
-            @Html.DisplayFor(model => model.ResponsibleMaster)
+              @Html.DisplayFor(model => model.ResponsibleMaster)
             if (Model.HasMasterAccess && !Model.CanManageThisClaim)
             {
               <input type="button"
@@ -120,7 +116,7 @@
                      title="Изменять ответственного мастера для чужих заявок могут только администраторы." />
             }
           }
-        </dd>
+          </dd>
       </dl>
     </div>
   </div>

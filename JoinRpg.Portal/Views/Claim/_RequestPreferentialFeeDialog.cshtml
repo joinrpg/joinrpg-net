@@ -4,11 +4,7 @@
 <div class="modal fade" id="requestPreferentialFeeDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("RequestPreferentialFee", "Claim"))
-            {
-                @Html.AntiForgeryToken()
-                @Html.HiddenFor(model => model.ProjectId)
-                @Html.HiddenFor(model => model.ClaimId)
+          <form asp-action="RequestPreferentialFee" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
                 @Html.HiddenFor(model => model.OperationDate)
                 @Html.HiddenFor(model => model.CommentDiscussionId)
 
@@ -33,7 +29,7 @@
                     <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
                     <button type="submit" class="btn btn-success" id="submit-button">Запросить</button>
                 </div>
-            }
+            </form>
         </div>
     </div>
 </div>
