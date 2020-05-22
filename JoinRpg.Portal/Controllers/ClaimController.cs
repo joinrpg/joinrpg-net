@@ -233,9 +233,9 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-        public async Task<ActionResult> ApproveByMaster(ClaimOperationViewModel viewModel)
+        public async Task<ActionResult> ApproveByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -246,7 +246,7 @@ namespace JoinRpg.Portal.Controllers
                 await
                   _claimService.ApproveByMaster(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -256,9 +256,9 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpPost, MasterAuthorize(), ValidateAntiForgeryToken]
-        public async Task<ActionResult> OnHoldByMaster(ClaimOperationViewModel viewModel)
+        public async Task<ActionResult> OnHoldByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -269,7 +269,7 @@ namespace JoinRpg.Portal.Controllers
                 await
                   _claimService.OnHoldByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -281,9 +281,9 @@ namespace JoinRpg.Portal.Controllers
         [HttpPost]
         [MasterAuthorize()]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeclineByMaster(MasterDenialOperationViewModel viewModel)
+        public async Task<ActionResult> DeclineByMaster(int projectId, int claimId, MasterDenialOperationViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -304,7 +304,7 @@ namespace JoinRpg.Portal.Controllers
                         viewModel.CommentText,
                         viewModel.DeleteCharacter == MasterDenialExtraActionViewModel.DeleteCharacter);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -316,9 +316,9 @@ namespace JoinRpg.Portal.Controllers
         [HttpPost]
         [MasterAuthorize]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RestoreByMaster(ClaimOperationViewModel viewModel)
+        public async Task<ActionResult> RestoreByMaster(int projectId, int claimId, ClaimOperationViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -333,7 +333,7 @@ namespace JoinRpg.Portal.Controllers
                 await
                   _claimService.RestoreByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -345,9 +345,9 @@ namespace JoinRpg.Portal.Controllers
         [HttpPost]
         [Authorize()]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeclineByPlayer(ClaimOperationViewModel viewModel)
+        public async Task<ActionResult> DeclineByPlayer(int projectId, int claimId, ClaimOperationViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -366,7 +366,7 @@ namespace JoinRpg.Portal.Controllers
                 await
                   _claimService.DeclineByPlayer(claim.ProjectId, claim.ClaimId, viewModel.CommentText);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -388,7 +388,7 @@ namespace JoinRpg.Portal.Controllers
             try
             {
                 await _claimService.SetResponsible(projectId, claimId, CurrentUserId, responsibleMasterId);
-                return ReturnToClaim(claimId, projectId);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -402,9 +402,9 @@ namespace JoinRpg.Portal.Controllers
         /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
         [MasterAuthorize()]
         [HttpPost]
-        public async Task<ActionResult> Move(ClaimOperationViewModel viewModel, string claimTarget)
+        public async Task<ActionResult> Move(int projectId, int claimId, ClaimOperationViewModel viewModel, string claimTarget)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -421,7 +421,7 @@ namespace JoinRpg.Portal.Controllers
                 await
                   _claimService.MoveByMaster(claim.ProjectId, claim.ClaimId, CurrentUserId, viewModel.CommentText, characterGroupId, characterId);
 
-                return ReturnToClaim(viewModel);
+                return ReturnToClaim(projectId, claimId);
             }
             catch (Exception exception)
             {
@@ -431,10 +431,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [MustUseReturnValue]
-        private ActionResult ReturnToClaim(ClaimOperationViewModel viewModel) => ReturnToClaim(viewModel.ClaimId, viewModel.ProjectId);
-
-        [MustUseReturnValue]
-        private ActionResult ReturnToClaim(int claimId, int projectId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
+        private ActionResult ReturnToClaim(int projectId, int claimId) => RedirectToAction("Edit", "Claim", new { claimId, projectId });
 
         [HttpGet("/{projectId}/myclaim")]
         [Authorize, HttpGet]
@@ -450,13 +447,13 @@ namespace JoinRpg.Portal.Controllers
 
             var claimId = claims.TrySelectSingleClaim()?.ClaimId;
 
-            return claimId != null ? ReturnToClaim((int)claimId, projectId) : RedirectToAction("My", "ClaimList");
+            return claimId != null ? ReturnToClaim(projectId, (int)claimId) : RedirectToAction("My", "ClaimList");
         }
 
         [Authorize, HttpPost, ValidateAntiForgeryToken]
-        public async Task<ActionResult> FinanceOperation(SubmitPaymentViewModel viewModel)
+        public async Task<ActionResult> FinanceOperation(int projectId, int claimId, SubmitPaymentViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();
@@ -646,10 +643,10 @@ namespace JoinRpg.Portal.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<ActionResult> RequestPreferentialFee(
+        public async Task<ActionResult> RequestPreferentialFee(int projectId, int claimId,
             MarkMeAsPreferentialViewModel viewModel)
         {
-            var claim = await _claimsRepository.GetClaim(viewModel.ProjectId, viewModel.ClaimId);
+            var claim = await _claimsRepository.GetClaim(projectId, claimId);
             if (claim == null)
             {
                 return NotFound();

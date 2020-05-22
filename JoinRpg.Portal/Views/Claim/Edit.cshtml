@@ -8,477 +8,459 @@
 @using JoinRpg.Web.Models.Accommodation
 
 @{
-    ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
+  ViewBag.Title = Model.ProjectName + " —  заявка " + Model.Navigation.Name;
 }
 
 <div>
 
 
-    @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
-    {
-        @Html.Partial("_CheckInStatusBoard", Model.Validator)
-    }
+  @if (Model.CheckInModuleEnabled && Model.Validator.NotCheckedInAlready)
+  {
+    @await Html.PartialAsync("_CheckInStatusBoard", Model.Validator)
+  }
 
-    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-    <div class="panel panel-default">
-        <div class="panel-heading">
-         @*   @Html.Partial("CharacterNavigation", Model.Navigation) *@
-        </div>
-        <div class="panel-body">
-            @if (Model.HasMasterAccess && Model.Problems.Any())
+  @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      @*   @await Html.PartialAsync("CharacterNavigation", Model.Navigation) *@
+    </div>
+    <div class="panel-body">
+      @if (Model.HasMasterAccess && Model.Problems.Any())
+      {
+        <div class="join alert alert-warning">
+          <b>Проблемы:</b>
+          <div style="margin-left: 0.5em;">
+            @foreach (var pr in Model.Problems)
             {
-                <div class="join alert alert-warning">
-                    <b>Проблемы:</b>
-                    <div style="margin-left: 0.5em;">
-                        @foreach (var pr in Model.Problems)
-                        {
-                            @Html.DisplayFor(modelItem => pr)
-                        }
-                    </div>
-                </div>
+              @Html.DisplayFor(modelItem => pr)
             }
-
-            <dl class="dl-horizontal">
-                <dt>
-                    @Html.DisplayNameFor(model => model.Player)
-                </dt>
-
-                <dd>
-                    @Html.DisplayFor(model => model.Player)
-                    <button type="button"
-                            class="btn btn-xs btn-default"
-                            data-toggle="popover"
-                            title="Контакты"
-                            data-html="true"
-                            data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
-                        контакты
-                    </button>
-                </dd>
-                @if (Model.CharacterGroupId != null)
-                {
-                    <dt>
-                        @Html.DisplayNameFor(model => model.GroupName)
-                    </dt>
-
-                    <dd>
-                        @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
-                    </dd>
-                }
-                <dt>
-                    @Html.DisplayNameFor(model => model.Status)
-                </dt>
-                <dd>
-                    @Html.DisplayFor(model => model.Status)
-                </dd>
-                @if (Model.ParentGroups != null)
-                {
-                    <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
-                    <dd>
-                        @Html.DisplayFor(model => model.ParentGroups)
-                        @if (Model.Navigation.CanEditRoles)
-                        {
-                            <a href="@Url.Action("Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
-                        }
-                    </dd>
-                }
-                @if (Model.ClaimFee.ShowFee)
-                {
-                    <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
-                    <dd>@Html.Partial("..\\Finances\\ClaimFinanceOperations\\ClaimFinanceOperations", Model.ClaimFee)</dd>
-                }
-                <dt>
-                    @Html.DisplayNameFor(model => model.ResponsibleMasterId)
-                </dt>
-                <dd>
-                    @if (Model.CanManageThisClaim && Model.ProjectActive)
-                    {
-                        using (Html.BeginForm("ChangeResponsible", "Claim"))
-                        {
-                            <div class="form-inline input-group-sm" style="margin-top: 0.5em">
-                                @Html.AntiForgeryToken()
-                                @Html.HiddenFor(model => model.ProjectId)
-                                @Html.HiddenFor(model => model.ClaimId)
-                                @Html.DropDownListFor(
-                                model => model.ResponsibleMasterId,
-                                Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
-                                htmlAttributes: new { @class = "form-control" })
-
-                                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
-                                <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        @Html.DisplayFor(model => model.ResponsibleMaster)
-                        if (Model.HasMasterAccess && !Model.CanManageThisClaim)
-                        {
-                            <input type="button"
-                                   value="Изменить"
-                                   class="btn btn-default btn-xs"
-                                   disabled="disabled"
-                                   title="Изменять ответственного мастера для чужих заявок могут только администраторы." />
-                        }
-                    }
-                </dd>
-            </dl>
+          </div>
         </div>
+      }
+
+      <dl class="dl-horizontal">
+        <dt>
+          @Html.DisplayNameFor(model => model.Player)
+        </dt>
+
+        <dd>
+          @Html.DisplayFor(model => model.Player)
+          <button type="button"
+                  class="btn btn-xs btn-default"
+                  data-toggle="popover"
+                  title="Контакты"
+                  data-html="true"
+                  data-content='@Html.DisplayFor(model => model.PlayerDetails)'>
+            контакты
+          </button>
+        </dd>
+        @if (Model.CharacterGroupId != null)
+        {
+          <dt>
+            @Html.DisplayNameFor(model => model.GroupName)
+          </dt>
+
+          <dd>
+            @Html.ActionLink(Model.GroupName, "Index", "GameGroups", new { Model.CharacterGroupId, Model.ProjectId }, null)
+          </dd>
+        }
+        <dt>
+          @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd>
+          @Html.DisplayFor(model => model.Status)
+        </dd>
+        @if (Model.ParentGroups != null)
+        {
+          <dt>@Html.DisplayNameFor(model => model.ParentGroups)</dt>
+          <dd>
+            @Html.DisplayFor(model => model.ParentGroups)
+            @if (Model.Navigation.CanEditRoles)
+            {
+              <a href="@Url.Action("Edit", "Character" , new {Model.ProjectId, Model.CharacterId})"><span class="glyphicon glyphicon-pencil"></span></a>
+            }
+          </dd>
+        }
+        @if (Model.ClaimFee.ShowFee)
+        {
+          <dt>@Html.DisplayNameFor(model => model.ClaimFee)</dt>
+          <dd>@await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\ClaimFinanceOperations", Model.ClaimFee)</dd>
+        }
+        <dt>
+          @Html.DisplayNameFor(model => model.ResponsibleMasterId)
+        </dt>
+        <dd>
+          @if (Model.CanManageThisClaim && Model.ProjectActive)
+          {
+            using (Html.BeginForm("ChangeResponsible", "Claim"))
+            {
+              <div class="form-inline input-group-sm" style="margin-top: 0.5em">
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(model => model.ProjectId)
+                @Html.HiddenFor(model => model.ClaimId)
+                @Html.DropDownListFor(
+                model => model.ResponsibleMasterId,
+                Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                htmlAttributes: new { @class = "form-control" })
+
+                @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
+                <input type="submit" value="Изменить" class="btn btn-default btn-xs" />
+              </div>
+            }
+          }
+          else
+          {
+            @Html.DisplayFor(model => model.ResponsibleMaster)
+            if (Model.HasMasterAccess && !Model.CanManageThisClaim)
+            {
+              <input type="button"
+                     value="Изменить"
+                     class="btn btn-default btn-xs"
+                     disabled="disabled"
+                     title="Изменять ответственного мастера для чужих заявок могут только администраторы." />
+            }
+          }
+        </dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="panel-group">
+    <div class="btn-group">
+      @if (Model.CanManageThisClaim && Model.ProjectActive)
+      {
+        if (Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready)
+        {
+          <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
+                  aria-expanded="false">
+            Принять заявку
+          </button>
+        }
+        if (Model.Status.CanMove())
+        {
+          <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
+                  aria-expanded="false">
+            <span class="glyphicon glyphicon-transfer"></span>
+            Переместить заявку
+          </button>
+        }
+        if (Model.Status.CanChangeTo(ClaimStatusView.DeclinedByMaster))
+        {
+          <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declineClaimActionPanel"
+                  aria-expanded="false">
+            Отклонить заявку
+          </button>
+        }
+        if (Model.Status.CanChangeTo(ClaimStatusView.OnHold))
+        {
+          <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#holdClaimActionPanel"
+                  aria-expanded="false">
+            В лист ожидания
+          </button>
+        }
+        if (!Model.Status.IsActive())
+        {
+          <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
+                  aria-expanded="false">
+            Восстановить заявку
+          </button>
+        }
+      }
+      @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.DeclinedByUser))
+      {
+        <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
+                aria-expanded="false">
+          Отозвать заявку
+        </button>
+
+      }
+      @if (Model.Status.IsAlreadyApproved())
+      {
+        <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
+          <span class="glyphicon glyphicon-print"></span>
+          Для печати
+        </a>
+        foreach (var plugin in Model.PrintPlugins)
+        {
+          <a class="btn btn-default" href="@Url.Action("PrintCards", "Print" , new {Model.ProjectId, Plugin=plugin.Name, CharacterIds=new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
+            <span class="glyphicon glyphicon-print"></span>
+            @plugin.Name
+          </a>
+        }
+        if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
+        {
+          <a href="@Url.Action("CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
+            <span class="glyphicon glyphicon-tree-conifer"></span>
+            Зарегистрировать
+          </a>
+        }
+      }
+
+      @if (Model.Status.CanHaveSecondRole())
+      {
+        <a href="@Url.Action("SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
+          <span class="glyphicon glyphicon-duplicate"></span>
+          Вторая роль
+        </a>
+      }
+
+      @if (Model.HasMasterAccess)
+      {
+        <a href="@Url.Action("Subscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
+          <span class="glyphicon glyphicon-pushpin"></span>
+          Подписаться
+        </a>
+
+        <a href="@Url.Action("Unsubscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку" data-responsed="1">
+          <span class="glyphicon glyphicon-pushpin"></span>
+          Отписаться
+        </a>
+      }
+      @if (Model.HasMasterAccess && (Model.SubscriptionTooltip.ClaimStatusChange
+     || Model.SubscriptionTooltip.Comments
+     || Model.SubscriptionTooltip.FieldChange
+     || Model.SubscriptionTooltip.MoneyOperation) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
+      {
+        <span title='@Model.SubscriptionTooltip.Tooltip'>
+          <a href="#" class="btn btn-default disabled" data-placement="top" title="">
+            <span class="glyphicon glyphicon-pushpin"></span>
+            Вы подписаны
+          </a>
+        </span>
+      }
+
     </div>
 
-    <div class="panel-group">
-        <div class="btn-group">
-            @if (Model.CanManageThisClaim && Model.ProjectActive)
-            {
-                if (Model.Status.CanChangeTo(ClaimStatusView.Approved) && Model.Validator.NotCheckedInAlready)
-                {
-                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#approveClaimActionPanel"
-                            aria-expanded="false">
-                        Принять заявку
-                    </button>
-                }
-                if (Model.Status.CanMove())
-                {
-                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#moveClaimActionPanel"
-                            aria-expanded="false">
-                        <span class="glyphicon glyphicon-transfer"></span>
-                        Переместить заявку
-                    </button>
-                }
-                if (Model.Status.CanChangeTo(ClaimStatusView.DeclinedByMaster))
-                {
-                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declineClaimActionPanel"
-                            aria-expanded="false">
-                        Отклонить заявку
-                    </button>
-                }
-                if (Model.Status.CanChangeTo(ClaimStatusView.OnHold))
-                {
-                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#holdClaimActionPanel"
-                            aria-expanded="false">
-                        В лист ожидания
-                    </button>
-                }
-                if (!Model.Status.IsActive())
-                {
-                    <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#restoreClaimActionPanel"
-                            aria-expanded="false">
-                        Восстановить заявку
-                    </button>
-                }
-            }
-            @if (Model.IsMyClaim && Model.ProjectActive && Model.Status.CanChangeTo(ClaimStatusView.DeclinedByUser))
-            {
-                <button class="btn btn-default" type="button" data-toggle="collapse" data-target="#declinePlayerClaimActionPanel"
-                        aria-expanded="false">
-                    Отозвать заявку
-                </button>
+    <div class="panel panel-default collapse" id="approveClaimActionPanel">
 
-            }
-            @if (Model.Status.IsAlreadyApproved())
-            {
-                <a href="@Url.Action("Character", "Print" , new {Model.ProjectId, Model.CharacterId})" class="btn btn-default">
-                    <span class="glyphicon glyphicon-print"></span>
-                    Для печати
-                </a>
-                foreach (var plugin in Model.PrintPlugins)
-                {
-                    <a class="btn btn-default" href="@Url.Action("PrintCards", "Print" , new {Model.ProjectId, Plugin=plugin.Name, CharacterIds=new[] { (int) Model.CharacterId}.CompressIdList()}, null)">
-                        <span class="glyphicon glyphicon-print"></span>
-                        @plugin.Name
-                    </a>
-                }
-                if (Model.CheckInStarted && Model.Validator.NotCheckedInAlready && Model.HasMasterAccess)
-                {
-                    <a href="@Url.Action("CheckIn", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-success">
-                        <span class="glyphicon glyphicon-tree-conifer"></span>
-                        Зарегистрировать
-                    </a>
-                }
-            }
-
-            @if (Model.Status.CanHaveSecondRole())
-            {
-                <a href="@Url.Action("SecondRole", "CheckIn" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default">
-                    <span class="glyphicon glyphicon-duplicate"></span>
-                    Вторая роль
-                </a>
-            }
-
-            @if (Model.HasMasterAccess)
-            {
-                <a href="@Url.Action("Subscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="subscribe" data-placement="right" title="@Model.SubscriptionTooltip.Tooltip" data-responsed="1">
-                    <span class="glyphicon glyphicon-pushpin"></span>
-                    Подписаться
-                </a>
-
-                <a href="@Url.Action("Unsubscribe", "Claim" , new {Model.ProjectId, Model.ClaimId})" class="btn btn-default hidden" id="unsubscribe" data-placement="top" title="Вы подписаны на эту заявку" data-responsed="1">
-                    <span class="glyphicon glyphicon-pushpin"></span>
-                    Отписаться
-                </a>
-            }
-            @if (Model.HasMasterAccess && (Model.SubscriptionTooltip.ClaimStatusChange
-            || Model.SubscriptionTooltip.Comments
-            || Model.SubscriptionTooltip.FieldChange
-            || Model.SubscriptionTooltip.MoneyOperation) && !Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.HasFullParentSubscription)
-            {
-                <span title='@Model.SubscriptionTooltip.Tooltip'>
-                    <a href="#" class="btn btn-default disabled" data-placement="top" title="">
-                        <span class="glyphicon glyphicon-pushpin"></span>
-                        Вы подписаны
-                    </a>
-                </span>
-            }
-
-        </div>
-
-        <div class="panel panel-default collapse" id="approveClaimActionPanel">
-
-            <div class="panel-heading">Принятие заявки</div>
-            <div class="panel-body">
-                @if (Model.OtherClaimsForThisCharacterCount > 0)
-                {
-                    <div class="alert alert-danger">
-                        Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                                                                                                                              new { Model.CharacterId, Model.ProjectId }, null)
-                        или переведите их на другого персонажа или в группу.
-                    </div>
-                }
-                else
-                {
-                    if (Model.OtherClaimsFromThisPlayerCount > 0)
-                    {
-                        <div class="alert alert-warning">
-                            Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                                                                                  new { Model.ProjectId, Model.Player.UserId }, null).
-                            Если принять эту заявку, другие автоматически будут отклонены.
-                        </div>
-                    }
-                    using (Html.BeginForm("ApproveByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                    {
-                        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                        {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ActionName = "Принять заявку"
-                        })
-                        <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
-                    }
-                }
-            </div>
-        </div>
-
-        <div class="panel panel-default collapse" id="holdClaimActionPanel">
-
-            <div class="panel-heading">Перенос заявки в лист ожидания</div>
-            <div class="panel-body">
-                @{
-                    <div class="alert alert-info">
-                        Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
-                    </div>
-                    using (Html.BeginForm("OnHoldByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                    {
-                        @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                        {
-                        ProjectId = Model.ProjectId,
-                        ClaimId = Model.ClaimId,
-                        ActionName = "В лист ожидания"
-                        })
-                    }
-                }
-            </div>
-        </div>
-
-
-        <div class="panel panel-default collapse" id="declineClaimActionPanel">
-
-      <div class="panel-heading">Отклонение заявки</div>
+      <div class="panel-heading">Принятие заявки</div>
       <div class="panel-body">
-        @using (Html.BeginForm("DeclineByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        @if (Model.OtherClaimsForThisCharacterCount > 0)
         {
-        @Html.Partial("MasterDenialOperationPartial", new MasterDenialOperationViewModel
+          <div class="alert alert-danger">
+            Это не единственная заявка на этого персонажа. Прежде чем принимать эту заявку, отклоните @Html.ActionLink("заявки от других игроков", "Details", "Character",
+new { Model.CharacterId, Model.ProjectId }, null)
+            или переведите их на другого персонажа или в группу.
+          </div>
+        }
+        else
         {
-        ProjectId = Model.ProjectId,
-        ClaimId = Model.ClaimId,
-        ClaimStatus = Model.Status.ClaimStatus,
-        CharacterAutoCreated = Model.CharacterAutoCreated ?? false,
-        ActionName = "Отклонить заявку"
-        })
+          if (Model.OtherClaimsFromThisPlayerCount > 0)
+          {
+            <div class="alert alert-warning">
+              Также этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+new { Model.ProjectId, Model.Player.UserId }, null).
+              Если принять эту заявку, другие автоматически будут отклонены.
+            </div>
+          }
+          <form asp-action="ApproveByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+               {
+                 ActionName = "Принять заявку"
+               })
+            <p>Приняв заявку, вы сообщаете игроку, что роль за ним, вы не рассматриваете другие заявки и он может спокойно готовиться.</p>
+          </form>
         }
       </div>
     </div>
 
-        <div class="panel panel-default collapse" id="moveClaimActionPanel">
-            <div class="panel-heading">Перемещение заявки</div>
-            <div class="panel-body">
-                @if (Model.Status.IsAlreadyApproved())
-                {
-                    <div class="alert alert-warning">
-                        <span class="glyphicon glyphicon-exclamation-sign"></span>
-                        Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к
-                        новому персонажу.
-                        <br />
-                        Используйте этот инструмент только если хотите передать существующую роль другому игроку.
-                        Если вы хотите изменить состав групп у <b>существующего</b> персонажа,
-                        <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)</b> его.
-                    </div>
-                    ViewBag.ShowGroupsInAvailClaim = false;
-                }
-                else
-                {
-                    ViewBag.ShowGroupsInAvailClaim = true;
-                }
-                @using (Html.BeginForm("Move", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                {
-                    @Html.Partial("AvailClaimTargetsPartial", Model.Data)
-                    @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                    {
-                    ProjectId = Model.ProjectId,
-                    ClaimId = Model.ClaimId,
-                    ActionName = "Переместить заявку"
-                    })
-                }
-            </div>
-        </div>
+    <div class="panel panel-default collapse" id="holdClaimActionPanel">
 
-        <div class="panel panel-default collapse" id="restoreClaimActionPanel">
-                    <div class="panel-heading">Восстановление заявки</div>
-                    <div class="panel-body">
-        
-                        @if (Model.OtherClaimsFromThisPlayerCount > 0)
-                        {
-                            <div class="alert alert-danger">
-                                Этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
-                                                                               new { Model.ProjectId, Model.Player.UserId }, null)
-                                Отклоните другие заявки, прежде чем восстанавливать эту.
-                            </div>
-                        }
-                        else
-                        {
-                            using (Html.BeginForm("RestoreByMaster", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                            {
-                                if (Model.HasOtherApprovedClaim)
-                                {
-                    <div class="alert alert-warning">
-                        На этого персонажа есть другие утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
-                                                                                new { Model.CharacterId, Model.ProjectId }, null)
-                        При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
-                    </div>
-                                }
-                                if (Model.CharacterActive == false)
-                                {
-                                    <div class="alert alert-info">
-                                        Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
-                                    </div>
-                                }
-                                @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                                {
-                                ProjectId = Model.ProjectId,
-                                ClaimId = Model.ClaimId,
-                                ActionName = "Восстановить заявку"
-                                })
-        
-                            }
-                        }
-                    </div>
+      <div class="panel-heading">Перенос заявки в лист ожидания</div>
+      <div class="panel-body">
+          <div class="alert alert-info">
+            Заявка в листе ожидания ждет освобождения какой-то роли или другого события.
+          </div>
+          <form asp-action="OnHoldByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+            {
+            ActionName = "В лист ожидания"
+            })
+          </form>
+        </div>
+      </div>
+
+
+      <div class="panel panel-default collapse" id="declineClaimActionPanel">
+
+        <div class="panel-heading">Отклонение заявки</div>
+        <div class="panel-body">
+          <form asp-action="DeclineByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+
+            @await Html.PartialAsync("MasterDenialOperationPartial", new MasterDenialOperationViewModel
+            {
+            ClaimStatus = Model.Status.ClaimStatus,
+            CharacterAutoCreated = Model.CharacterAutoCreated ?? false,
+            ActionName = "Отклонить заявку"
+            })
+          </form>
+        </div>
+      </div>
+
+      <div class="panel panel-default collapse" id="moveClaimActionPanel">
+        <div class="panel-heading">Перемещение заявки</div>
+        <div class="panel-body">
+          @if (Model.Status.IsAlreadyApproved())
+          {
+            <div class="alert alert-warning">
+              <span class="glyphicon glyphicon-exclamation-sign"></span>
+              Перемещение принятой заявки <b>разорвет связь с существующим персонажем</b> и его полями, и прикрепит заявку к
+              новому персонажу.
+              <br />
+              Используйте этот инструмент только если хотите передать существующую роль другому игроку.
+              Если вы хотите изменить состав групп у <b>существующего</b> персонажа,
+              <b>@Html.ActionLink("отредактируйте", "Edit", "Character", new { Model.ProjectId, Model.CharacterId }, null)</b> его.
+            </div>
+            ViewBag.ShowGroupsInAvailClaim = false;
+          }
+          else
+          {
+            ViewBag.ShowGroupsInAvailClaim = true;
+          }
+          <form asp-action="Move" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+            @await Html.PartialAsync("AvailClaimTargetsPartial", Model.Data)
+            @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+            {
+            ActionName = "Переместить заявку"
+            })
+          </form>
+        </div>
+      </div>
+
+      <div class="panel panel-default collapse" id="restoreClaimActionPanel">
+        <div class="panel-heading">Восстановление заявки</div>
+        <div class="panel-body">
+
+          @if (Model.OtherClaimsFromThisPlayerCount > 0)
+          {
+            <div class="alert alert-danger">
+              Этим же игроком подано на этот проект еще @Html.ActionLink(Model.OtherClaimsFromThisPlayerCount + " заявки(ок)", "ForPlayer", "ClaimList",
+                   new { Model.ProjectId, Model.Player.UserId }, null)
+              Отклоните другие заявки, прежде чем восстанавливать эту.
+            </div>
+          }
+          else
+          {
+            <form asp-action="RestoreByMaster" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+
+              @if (Model.HasOtherApprovedClaim)
+              {
+                <div class="alert alert-warning">
+                  На этого персонажа есть другие утвержденные @Html.ActionLink("заявки от других игроков", "Details", "Character",
+new { Model.CharacterId, Model.ProjectId }, null)
+                  При восстановлении эта заявка будет автоматически перенесена в корневую локацию.
                 </div>
+              }
+              @if (Model.CharacterActive == false)
+              {
+                <div class="alert alert-info">
+                  Персонаж, на которого была подана эта заявка, был удален и будет автоматически восстановлен при восстановлении заявки.
+                </div>
+              }
+              @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+              {
+              ActionName = "Восстановить заявку"
+              })
+            </form>
+          }
+
+        </div>
+      </div>
     </div>
 
-@if (Model.ClaimFee.HasSubmittablePaymentTypes)
-{
-    @Html.Partial("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
-}
+    @if (Model.ClaimFee.HasSubmittablePaymentTypes)
+    {
+      @await Html.PartialAsync("..\\Finances\\_SubmitPaymentDialog", new SubmitPaymentViewModel(Model))
+    }
 
-@if (Model.ClaimFee.ShowOnlinePaymentControls)
-{
-    @Html.Partial("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
-}
+    @if (Model.ClaimFee.ShowOnlinePaymentControls)
+    {
+      @await Html.PartialAsync("..\\Finances\\_PayOnlineDialog", new PaymentViewModel(Model))
+    }
 
-@if (Model.ClaimFee.PreferentialFeeRequestEnabled)
-{
-    @Html.Partial("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))
-}
+    @if (Model.ClaimFee.PreferentialFeeRequestEnabled)
+    {
+      @await Html.PartialAsync("_RequestPreferentialFeeDialog", new MarkMeAsPreferentialViewModel(Model))
+    }
 
     <div class="panel panel-default collapse" id="declinePlayerClaimActionPanel">
-        <div class="panel-heading">Отозвать заявку</div>
-        <div class="panel-body">
-            @using (Html.BeginForm("DeclineByPlayer", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-            {
-                @Html.Partial("ClaimOperationPartial", new ClaimOperationViewModel
-                {
-                ProjectId = Model.ProjectId,
-                ClaimId = Model.ClaimId,
-                ActionName = "Отозвать заявку",
-                CommentText = "Извините, я передумал ехать"
-                })
-            }
-        </div>
+      <div class="panel-heading">Отозвать заявку</div>
+      <div class="panel-body">
+        <form asp-action="DeclineByPlayer" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+          @await Html.PartialAsync("ClaimOperationPartial", new ClaimOperationViewModel
+          {
+          ActionName = "Отозвать заявку",
+          CommentText = "Извините, я передумал ехать"
+          })
+        </form>
+      </div>
     </div>
 
     @if (Model.Status.IsAlreadyApproved() && Model.CanChangeRooms)
     {
-        @Html.Partial("_ClaimAccommodation",
-          new ClaimAccommodationViewModel
-          {
-            ProjectId = Model.ProjectId,
-            ClaimId = Model.ClaimId,
-            AccommodationRequests = Model.AccommodationRequests,
-            AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
-            IncomingInvite = Model.IncomingInvite,
-            OutgoingInvite = Model.OutgoingInvite,
-            PotentialNeighbors = Model.PotentialNeighbors,
-            AccommodationRequest = Model.AccommodationRequest,
-            AccommodationEnabledForClaim = Model.AccommodationEnabled && Model.Status.ClaimStatus == ClaimStatusView.Approved
-          })
+      @await Html.PartialAsync("_ClaimAccommodation",
+        new ClaimAccommodationViewModel
+        {
+          ProjectId = Model.ProjectId,
+          ClaimId = Model.ClaimId,
+          AccommodationRequests = Model.AccommodationRequests,
+          AvailableAccommodationTypes = Model.AvailableAccommodationTypes,
+          IncomingInvite = Model.IncomingInvite,
+          OutgoingInvite = Model.OutgoingInvite,
+          PotentialNeighbors = Model.PotentialNeighbors,
+          AccommodationRequest = Model.AccommodationRequest,
+          AccommodationEnabledForClaim = Model.AccommodationEnabled && Model.Status.ClaimStatus == ClaimStatusView.Approved
+        })
     }
     @if (Model.Fields.AnythingAccessible)
     {
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h5>Поля персонажа / заявки </h5>
-            </div>
-            <div class="panel-body">
-                <div class="form-horizontal">
-                    @using (Html.BeginForm())
-                    {
-                        @Html.AntiForgeryToken()
-
-                        @Html.Partial("_EditFieldsPartial", Model.Fields)
-
-                        if (Model.Fields.Fields.Any(f => f.CanEdit))
-                        {
-                            <div class="form-group">
-                                <div class="col-md-offset-2 col-md-10">
-                                    <input type="submit" value="Сохранить" class="btn btn-success" />
-                                </div>
-                            </div>
-                        }
-                    }
-
-                </div>
-            </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h5>Поля персонажа / заявки </h5>
         </div>
+        <div class="panel-body">
+          <div class="form-horizontal">
+            @using (Html.BeginForm())
+            {
+              @Html.AntiForgeryToken()
+
+              @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
+
+              if (Model.Fields.Fields.Any(f => f.CanEdit))
+              {
+                <div class="form-group">
+                  <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Сохранить" class="btn btn-success" />
+                  </div>
+                </div>
+              }
+            }
+
+          </div>
+        </div>
+      </div>
     }
     <div class="panel panel-default">
-        <div class="panel-heading"><h5>Комментарии к заявке</h5></div>
+      <div class="panel-heading"><h5>Комментарии к заявке</h5></div>
 
-        <div class="panel-body">
-            @Html.Partial("..\\Comments\\CommentsListPartial", Model)
-        </div>
+      <div class="panel-body">
+        @await Html.PartialAsync("..\\Comments\\CommentsListPartial", Model)
+      </div>
     </div>
-</div>
+  </div>
 
-@Html.Partial("_PlotForCharacterPartial", Model.Plot)
+  @await Html.PartialAsync("_PlotForCharacterPartial", Model.Plot)
 
 
-@section scripts
+  @section scripts
 {
     <script src="https://oos.pscb.ru/s/widget/pscb_oos_pay.min.js"></script>
 
     <script type="text/javascript">
-        $(function () {
-            $('[data-toggle="popover"]').popover();
-        })
-        $('[title]').tooltip({ html: true, offset: '1000 1100' });
+      $(function () {
+        $('[data-toggle="popover"]').popover();
+      })
+      $('[title]').tooltip({ html: true, offset: '1000 1100' });
     </script>
 
     <script type="text/javascript">
@@ -514,15 +496,15 @@
     </script>
     @if (Model.HasMasterAccess && !Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
     {
-        <script type="text/javascript">
-            $('#subscribe').toggleClass('hidden');
-        </script>
+      <script type="text/javascript">
+        $('#subscribe').toggleClass('hidden');
+      </script>
     }
 
     @if (Model.HasMasterAccess && Model.SubscriptionTooltip.IsDirect && Model.SubscriptionTooltip.IsDirect && !Model.SubscriptionTooltip.HasFullParentSubscription)
     {
-        <script type="text/javascript">
-            $('#unsubscribe').toggleClass('hidden');
-        </script>
+      <script type="text/javascript">
+        $('#unsubscribe').toggleClass('hidden');
+      </script>
     }
-}
+  }

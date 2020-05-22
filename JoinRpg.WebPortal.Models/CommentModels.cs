@@ -234,11 +234,6 @@ namespace JoinRpg.Web.Models
 
     public class ClaimOperationViewModel
     {
-        public int ProjectId { get; set; }
-        public int ClaimId { get; set; }
-        public ClaimStatusView ClaimStatus { get; set; }
-        public bool CharacterAutoCreated { get; set; }
-
         [Required(ErrorMessage = "Заполните текст комментария")]
         [DisplayName("Текст комментария")]
         [UIHint("MarkdownString")]
@@ -249,6 +244,9 @@ namespace JoinRpg.Web.Models
 
     public class MasterDenialOperationViewModel : ClaimOperationViewModel
     {
+        public ClaimStatusView ClaimStatus { get; set; }
+
+        public bool CharacterAutoCreated { get; set; }
         [Required(ErrorMessage = "Надо указать причину отказа"),
             Display(Name = "Причина отказа", Description = "Причины отклонения заявки будут видны только мастерам")]
         public ClaimDenialStatusView DenialStatus { get; set; }
