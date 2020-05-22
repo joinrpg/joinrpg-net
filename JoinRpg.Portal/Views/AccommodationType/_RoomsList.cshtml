@@ -18,7 +18,7 @@
             {
                 foreach (RoomViewModel room in Model.Rooms)
                 {
-                    @Html.Partial("_RoomDetails", room);
+                    @await Html.PartialAsync("_RoomDetails", room);
                 }
             }
             <tr id="rowPlaceholder">

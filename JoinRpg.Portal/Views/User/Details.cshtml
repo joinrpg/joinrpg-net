@@ -126,13 +126,13 @@
         
     @if (Model.Claims != null && Model.Claims.Items.Any())
     {
-        @Html.Partial("..\\ClaimList\\_ClaimList", Model.Claims, new ViewDataDictionary(ViewData) {{"HideUserColumn", true}, {"HideOperations", true}})
+        @await Html.PartialAsync("..\\ClaimList\\_ClaimList", Model.Claims, new ViewDataDictionary(ViewData) {{"HideUserColumn", true}, {"HideOperations", true}})
     }
     
 
     @if (Model.ProjectsToAdd.Any())
     {
-    @Html.Partial("AddToProject", Model)
+    @await Html.PartialAsync("AddToProject", Model)
     }
     </div>
 
@@ -146,7 +146,7 @@
                         <h4 class="modal-title" id="deleteTitle">Изменение email</h4>
                     </div>
                     <div class="modal-body">
-                        @Html.Partial("ChangeEmailForm", new ChangeEmailModel() { UserId = Model.UserId })
+                        @await Html.PartialAsync("ChangeEmailForm", new ChangeEmailModel() { UserId = Model.UserId })
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>

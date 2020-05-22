@@ -14,9 +14,9 @@
 </head>
 <body>
 <div>
-    @Html.Partial("CharacterListHeader", Model)
-    @Html.Partial("_CharacterHandout", Model.Handouts)
-    @Html.Partial("PrintCharacter", Model)
+    @await Html.PartialAsync("CharacterListHeader", Model)
+    @await Html.PartialAsync("_CharacterHandout", Model.Handouts)
+    @await Html.PartialAsync("PrintCharacter", Model)
 </div>
 </body>
 </html>

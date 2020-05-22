@@ -5,6 +5,6 @@
     ViewBag.Title = "Поля персонажа / заявки";
 }
 
-@Html.Partial("_FieldNavigation", Model.Navigation)
+@await Html.PartialAsync("_FieldNavigation", Model.Navigation)
 
-@Html.Partial("FieldList", Model)
+@await Html.PartialAsync("FieldList", Model)

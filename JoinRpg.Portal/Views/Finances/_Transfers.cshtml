@@ -79,7 +79,7 @@
 @if (Model.Any())
 {
 
-    @Html.Partial("_ApproveTransferDialog", Model.First())
-    @Html.Partial("_DeclineTransferDialog", Model.First())
+    @await Html.PartialAsync("_ApproveTransferDialog", Model.First())
+    @await Html.PartialAsync("_DeclineTransferDialog", Model.First())
 
 }

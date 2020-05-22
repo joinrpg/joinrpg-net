@@ -10,8 +10,8 @@
   <span class="h2">@ViewBag.Title</span>
   
 </div>
-@Html.Partial("CreateUpdated", Model)
-@Html.Partial("_GroupHelpTextPartial")
+@await Html.PartialAsync("CreateUpdated", Model)
+@await Html.PartialAsync("_GroupHelpTextPartial")
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()

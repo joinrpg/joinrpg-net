@@ -3,5 +3,5 @@
 
 @foreach (var m in Model)
 {
-    @Html.Partial("_RoomDetails", m);
+    @await Html.PartialAsync("_RoomDetails", m);
 }

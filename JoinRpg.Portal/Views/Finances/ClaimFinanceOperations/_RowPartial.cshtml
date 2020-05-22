@@ -5,12 +5,12 @@
 <tr id="@Model.HtmlId" style="@style">
     <td>@Model.Title</td>
     <td></td>
-    <td class="price-table">@if (Model.Fee.HasValue) { @Html.Partial("Money", new Money(Model.Fee.Value, Model.FeeHtmlId))}</td>
-    <td class="price-table">@if (Model.Payment.HasValue) { @Html.Partial("Money", new Money(Model.Payment.Value))}</td>
+    <td class="price-table">@if (Model.Fee.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Fee.Value, Model.FeeHtmlId))}</td>
+    <td class="price-table">@if (Model.Payment.HasValue) { @await Html.PartialAsync("Money", new Money(Model.Payment.Value))}</td>
     <td>
         @if (Model.AdminFunctions is FinanceOperationAdminFunctionsViewModel)
         {
-            @Html.Partial("..\\Finances\\ClaimFinanceOperations\\_AdminFunctionsPartial", Model.AdminFunctions)
+            @await Html.PartialAsync("..\\Finances\\ClaimFinanceOperations\\_AdminFunctionsPartial", Model.AdminFunctions)
         }
     </td>
 </tr>

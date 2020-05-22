@@ -6,7 +6,7 @@
     ViewBag.CountString = Html.DisplayCount_OfX(Model.Items.Count(), "заявка", "заявки", "заявок");
 }
 
-@Html.Partial("_ListOperationsDropdown", Model)
+@await Html.PartialAsync("_ListOperationsDropdown", Model)
 
 @{
     var firstItem = Model.Items.FirstOrDefault();

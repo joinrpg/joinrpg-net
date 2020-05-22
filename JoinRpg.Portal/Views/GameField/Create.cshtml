@@ -5,7 +5,7 @@
     ViewBag.Title = "Добавление нового поля";
 }
 
-@Html.Partial("_FieldNavigation", Model.Navigation)
+@await Html.PartialAsync("_FieldNavigation", Model.Navigation)
 
 @using (Html.BeginForm())
 {

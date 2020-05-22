@@ -140,7 +140,7 @@
         }
     </div>
 </div>
-@Html.Partial("_ClaimIncomingInvites", Model)
-@Html.Partial("_ClaimOutgoingInvites", Model)
+@await Html.PartialAsync("_ClaimIncomingInvites", Model)
+@await Html.PartialAsync("_ClaimOutgoingInvites", Model)
 
-@Html.Partial("_ClaimAccommodationTypeChange", Model)
+@await Html.PartialAsync("_ClaimAccommodationTypeChange", Model)

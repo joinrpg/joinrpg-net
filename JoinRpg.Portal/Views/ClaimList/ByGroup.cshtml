@@ -1,4 +1,4 @@
 ﻿@model JoinRpg.Web.Models.ClaimListForGroupViewModel
 
 @Html.DisplayFor(model => model.GroupModel)
-@Html.Partial("_ClaimList", Model)
+@await Html.PartialAsync("_ClaimList", Model)

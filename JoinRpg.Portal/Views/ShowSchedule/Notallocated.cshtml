@@ -2,6 +2,6 @@
 <div class="scheduler-notallocated">
     @foreach (var appointment in Model.NotAllocated)
     {
-        @Html.Partial("_AppointmentPartial", appointment)
+        @await Html.PartialAsync("_AppointmentPartial", appointment)
     }
 </div>

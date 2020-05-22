@@ -8,7 +8,7 @@
     <div class="col-md-10">
         <div id="total_fields_fee_row" class="price-subtotal-row">
             <div>ВСЕГО выбрано:</div>
-            @Html.Partial("Money", new Money(Model.FieldsTotalFee, "feeTotalFieldsDisp"))</div>
+            @await Html.PartialAsync("Money", new Money(Model.FieldsTotalFee, "feeTotalFieldsDisp"))</div>
     </div>
 </div>
 <hr style="clear: both;" />

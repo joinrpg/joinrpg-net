@@ -28,7 +28,7 @@
         <div class="form">
             <h4>Идет перенаправление на страницу оплаты...</h4>
             <h4>Если ничего не произошло, нажмите на кнопку «Перейти к оплате»</h4>
-            @Html.Partial("_RedirectFormPartial", Model.RequestDescriptor)
+            @await Html.PartialAsync("_RedirectFormPartial", Model.RequestDescriptor)
         </div>
     </div>
 </body>

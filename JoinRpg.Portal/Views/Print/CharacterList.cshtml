@@ -17,9 +17,9 @@
     @foreach (var item in Model)
     {
 
-        @Html.Partial("CharacterListHeader", item)
-        @Html.Partial("_CharacterHandout", item.Handouts)
-        @Html.Partial("PrintCharacter", item)
+        @await Html.PartialAsync("CharacterListHeader", item)
+        @await Html.PartialAsync("_CharacterHandout", item.Handouts)
+        @await Html.PartialAsync("PrintCharacter", item)
     }
 
 </body>

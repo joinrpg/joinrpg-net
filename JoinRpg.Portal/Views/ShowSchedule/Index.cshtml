@@ -9,21 +9,21 @@
 @Html.ActionLink("Открыть во весь экран", "FullScreen", "ShowSchedule", new { projectId = Model.ProjectId }, new { @class = "btn btn-default" })
 
 <section class="scheduler-container">
-    @Html.Partial("Scheduler", Model)
+    @await Html.PartialAsync("Scheduler", Model)
 </section>
 
 @if (Model.Intersections.Count > 0)
 {
     <h3>Мероприятия, пересекающиеся друг с другом</h3>
     <section>
-        @Html.Partial("Intersections", Model)
+        @await Html.PartialAsync("Intersections", Model)
     </section>
 }
 @if (Model.NotAllocated.Count > 0)
 {
     <h3>Мероприятия, не размещенные в сетке</h3>
     <section>
-        @Html.Partial("Notallocated", Model)
+        @await Html.PartialAsync("Notallocated", Model)
     </section>
 }
 

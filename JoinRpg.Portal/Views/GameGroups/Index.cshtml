@@ -70,7 +70,7 @@
                     @foreach (var character in item.ActiveCharacters)
                     {
                         <li>
-                            @Html.Partial("_CharacterPartial", character)
+                            @await Html.PartialAsync("_CharacterPartial", character)
                         </li>
                     }
                     @if (item.AvaiableDirectSlots != 0 || item.ActiveClaimsCount > 0)
