@@ -81,6 +81,7 @@ namespace JoinRpg.Portal
                 .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
 
             services.AddSwaggerGen(Swagger.ConfigureSwagger);
+            services.AddApplicationInsightsTelemetry();
         }
 
 

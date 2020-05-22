@@ -1,4 +1,5 @@
-﻿
+﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,6 +45,7 @@
                 integrity="sha384-vhJnz1OVIdLktyixHY4Uk3OHEwdQqPppqYR8+5mjsauETgLOcEynD9oPHhhz18Nw">
         </script>
     </environment>
+    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
 
