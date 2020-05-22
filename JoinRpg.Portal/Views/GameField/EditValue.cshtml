@@ -7,7 +7,7 @@
 }
 <h2>@ViewBag.Title</h2>
 <hr />
-@using (Html.BeginForm("EditValue", "GameField", FormMethod.Post, new { @class = "form-horizontal" }))
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectFieldDropdownValueId)

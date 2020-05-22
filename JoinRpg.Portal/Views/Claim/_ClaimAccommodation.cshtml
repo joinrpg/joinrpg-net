@@ -94,49 +94,48 @@
             {
                 <br />
                 <b>Потенциальных соседей не найдено</b>
-            }
+          }
 
 
-            if (Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
-            {
-                using (Html.BeginForm("Invite", "Claim", FormMethod.Post, new { enctype = "multipart/form-data" }))
-                {
-                    @Html.HiddenFor(model => model.ProjectId)
-                    @Html.HiddenFor(model => model.ClaimId)
+          if (Model.PotentialNeighbors.Any() && roomFreeSpace > 0)
+          {
+                <form asp-action="Invite" asp-controller="Claim" asp-route-projectId="@Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
+                
                     @Html.Hidden("RequestId", Model.AccommodationRequest.Id)
-                    @Html.AntiForgeryToken()
-
-                    var alreadyGroupedNeighbors = Model.PotentialNeighbors
-                    .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
-                    .GroupBy(neighbor => neighbor.AccommodationRequestId)
-                    .Where(group => group.Count() <= roomFreeSpace)
-                    .Select(neighborGroup =>
-                    new ImprovedSelectListItem()
-                    {
+                
+                  @{ 
+                      var alreadyGroupedNeighbors = Model.PotentialNeighbors
+                      .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId != null)
+                      .GroupBy(neighbor => neighbor.AccommodationRequestId)
+                      .Where(group => group.Count() <= roomFreeSpace)
+                      .Select(neighborGroup =>
+                      new ImprovedSelectListItem()
+                      {
                         Value = InviteRequestViewModel.AccommodationRequestPrefix + neighborGroup.Key.ToString(),
                         Text = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.UserName) ? person.ClaimName : person.UserName)),
                         ExtraSearch = neighborGroup.Aggregate(string.Empty, (result, person) => result + (string.IsNullOrWhiteSpace(result) ? "" : ", ") + (string.IsNullOrWhiteSpace(person.ClaimName) ? person.UserName : person.ClaimName)),
                         Subtext = neighborGroup.Count() > 1 ? "<br/>(группа проживающих)" : ""
-                    });
+                      });
 
-                    var unGroupedNeighbors = Model.PotentialNeighbors
-                    .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
-                    .Select(neighbor =>
-                    new ImprovedSelectListItem()
-                    {
+                      var unGroupedNeighbors = Model.PotentialNeighbors
+                      .Where(neighbor => neighbor.Type != NeighborType.Current && neighbor.AccommodationRequestId == null)
+                      .Select(neighbor =>
+                      new ImprovedSelectListItem()
+                      {
                         Value = neighbor.ClaimId.ToString(),
                         Text = neighbor.UserName,
                         ExtraSearch = neighbor.ClaimName,
                         Subtext = "<br/>еще не выбрал тип проживания"
-                    });
+                      });
 
 
-                    var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
+                      var selectableRows = alreadyGroupedNeighbors.Union(unGroupedNeighbors);
                     @Html.SearchableDropdown("ReceiverClaimOrAccommodationRequest", selectableRows)
 
                     <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#sendInvite"><i class="glyphicon glyphicon-plus"></i>Пригласить</button>
                     @Html.ConfirmDialog("sendInvite", "Отправить приглашение на совместное проживание?", "Подтвердите действие", "Да", "Нет")
-                }
+                      }
+                </form>
             }
         }
     </div>

@@ -12,7 +12,7 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm("Add", "Claim"))
+@using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.ProjectId)

@@ -149,47 +149,46 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 
             </div>
             <div class="panel-collapse collapse" role="tabpanel" id="changeSettings">
-                <div class="panel-body">
-                    @using (Html.BeginForm("ChangeSettings", "Finances"))
-                    {
-                        var model = Model.GlobalSettings;
-                        @Html.AntiForgeryToken()
-                        @Html.HiddenFor(item => model.ProjectId)
+              <div class="panel-body">
+                <form asp-action="ChangeSettings" asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
+                  @{
+                    var model = Model.GlobalSettings;
 
-                        <div class="form-group">
-                            @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new {@class = "control-label col-md-4"})
-                            <div class="col-md-8">
-                                @Html.EditorFor(item => model.WarnOnOverPayment)
-                                @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new {@class = "text-danger"})
-                                @Html.DescriptionFor(item => model.WarnOnOverPayment)
-                            </div>
-                        </div>
+                    <div class="form-group">
+                      @Html.LabelFor(item => model.WarnOnOverPayment, htmlAttributes: new { @class = "control-label col-md-4" })
+                      <div class="col-md-8">
+                        @Html.EditorFor(item => model.WarnOnOverPayment)
+                        @Html.ValidationMessageFor(item => model.WarnOnOverPayment, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(item => model.WarnOnOverPayment)
+                      </div>
+                    </div>
 
-                        <div class="form-group">
-                            @Html.LabelFor(item => model.PreferentialFeeEnabled, htmlAttributes: new {@class = "control-label col-md-4"})
-                            <div class="col-md-8">
-                                @Html.EditorFor(item => model.PreferentialFeeEnabled)
-                                @Html.ValidationMessageFor(item => model.PreferentialFeeEnabled, "", new {@class = "text-danger"})
-                                @Html.DescriptionFor(item => model.PreferentialFeeEnabled)
-                            </div>
-                        </div>
+                    <div class="form-group">
+                      @Html.LabelFor(item => model.PreferentialFeeEnabled, htmlAttributes: new { @class = "control-label col-md-4" })
+                      <div class="col-md-8">
+                        @Html.EditorFor(item => model.PreferentialFeeEnabled)
+                        @Html.ValidationMessageFor(item => model.PreferentialFeeEnabled, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(item => model.PreferentialFeeEnabled)
+                      </div>
+                    </div>
 
-                        <div class="form-group">
-                            @Html.LabelFor(item => model.PreferentialFeeConditions, htmlAttributes: new {@class = "control-label col-md-4"})
-                            <div class="col-md-8">
-                                @Html.EditorFor(item => model.PreferentialFeeConditions)
-                                @Html.ValidationMessageFor(item => model.PreferentialFeeConditions, "", new {@class = "text-danger"})
-                                @Html.DescriptionFor(item => model.PreferentialFeeConditions)
-                            </div>
-                        </div>
+                    <div class="form-group">
+                      @Html.LabelFor(item => model.PreferentialFeeConditions, htmlAttributes: new { @class = "control-label col-md-4" })
+                      <div class="col-md-8">
+                        @Html.EditorFor(item => model.PreferentialFeeConditions)
+                        @Html.ValidationMessageFor(item => model.PreferentialFeeConditions, "", new { @class = "text-danger" })
+                        @Html.DescriptionFor(item => model.PreferentialFeeConditions)
+                      </div>
+                    </div>
 
-                        <div class="form-group">
-                            <div class="col-md-offset-4 col-md-8">
-                                <input type="submit" value="Сохранить" class="btn btn-success"/>
-                            </div>
-                        </div>
-                    }
-                </div>
+                    <div class="form-group">
+                      <div class="col-md-offset-4 col-md-8">
+                        <input type="submit" value="Сохранить" class="btn btn-success" />
+                      </div>
+                    </div>
+                  }
+                  </form>
+              </div>
             </div>
         </div>
     }
@@ -221,30 +220,31 @@ else if (!Model.PaymentTypes.Any(pt => pt.IsActive) && Model.FeeSettings.Any())
 
 <div class="modal fade" id="addFeeSettingModal" tabindex="-1" role="dialog">
     <div class="modal-dialog">
-        <div class="modal-content">
-            @using (Html.BeginForm("CreateFeeSetting", "Finances", FormMethod.Post))
-            {
-                var localModel = new CreateProjectFeeSettingViewModel() {ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled};
+      <div class="modal-content">
+          <form asp-action="CreateFeeSetting"  asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
+          @{
+            var localModel = new CreateProjectFeeSettingViewModel() { ProjectId = Model.ProjectId, PreferentialFeeEnabled = Model.GlobalSettings.PreferentialFeeEnabled };
 
 
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="deleteTitle">Добавление нового размера взноса оплаты</h4>
             </div>
-                <div class="modal-body">
-                    <p>
-                        Выберите размер взноса и с какого числа он вступает в силу.
-                    </p>
+            <div class="modal-body">
+              <p>
+                Выберите размер взноса и с какого числа он вступает в силу.
+              </p>
 
-                    @Html.Partial("CreateFeeSettingPartial", localModel)
-                </div>
+              @Html.Partial("CreateFeeSettingPartial", localModel)
+            </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
-                </div>
-            }
-        </div><!-- /.modal-content -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+              <button type="submit" class="btn btn-success" id="submit-button">Добавить</button>
+            </div>
+          }
+            </form>
+      </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div>
 

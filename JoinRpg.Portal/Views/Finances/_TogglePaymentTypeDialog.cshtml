@@ -3,24 +3,22 @@
 <div class="modal fade" id="togglePaymentTypeDialog" tabindex="-1" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-            @using (Html.BeginForm("TogglePaymentType", "Finances", new { Model.ProjectId }, FormMethod.Post))
-            {
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="dlgToggleTitle"></h4>
-                </div>
+          <form asp-action="TogglePaymentType" asp-controller="Finances" asp-route-projectId="@Model.ProjectId" method="post">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="dlgToggleTitle"></h4>
+              </div>
 
-                @Html.AntiForgeryToken()
-                @Html.HiddenFor(model => model.ProjectId)
-                @Html.HiddenFor(model => model.PaymentTypeId)
-                @Html.HiddenFor(model => model.TypeKind)
-                @Html.HiddenFor(model => model.MasterId)
+              @Html.HiddenFor(model => model.PaymentTypeId)
+              @Html.HiddenFor(model => model.TypeKind)
+              @Html.HiddenFor(model => model.MasterId)
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="dlgToggleSubmit"></button>
-                </div>
-            }
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                <button type="submit" class="btn btn-success" id="dlgToggleSubmit"></button>
+              </div>
+            
+          </form>
         </div>
     </div>
 </div>

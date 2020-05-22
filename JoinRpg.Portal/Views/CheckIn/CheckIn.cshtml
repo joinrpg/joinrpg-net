@@ -26,52 +26,49 @@
   </div>
 }
 
-@using (Html.BeginForm("DoCheckIn", "CheckIn"))
-{
-  @Html.HiddenFor(model => model.ProjectId)
-  @Html.HiddenFor(model => model.ClaimId)
+<form asp-action="DoCheckIn" asp-route-projectId="Model.ProjectId" asp-route-claimId="@Model.ClaimId" method="post">
   <input type="hidden" name="money" id="money" value="@Model.Validator.FeeDue" />
-  @Html.AntiForgeryToken()
-  if (Model.Validator.FeeDue > 0)
+  
+  @if (Model.Validator.FeeDue > 0)
   {
 
-    <div class="panel panel-default">
-      <div class="panel-heading">Принять взнос @Model.Validator.FeeDue</div>
-      <div class="panel-body">
-        @{
-          var disableAcceptFeeCheckbox = Model.CanAcceptFee ? "" : "disabled";
-        }
-        @if (!Model.CanAcceptFee)
-        {
-          <div class="alert alert-danger">
-            У вас нет прав отметить оплату взноса.
-          </div>
+  <div class="panel panel-default">
+    <div class="panel-heading">Принять взнос @Model.Validator.FeeDue</div>
+    <div class="panel-body">
+      @{
+        var disableAcceptFeeCheckbox = Model.CanAcceptFee ? "" : "disabled";
+      }
+      @if (!Model.CanAcceptFee)
+      {
+        <div class="alert alert-danger">
+          У вас нет прав отметить оплату взноса.
+        </div>
 
-        }
-        <input type="checkbox" name="feeAccepted" id="feeAccepted" required="" @disableAcceptFeeCheckbox style="transform: scale(1.5); margin: 1em"/>
-        <label for="feeAccepted">
-          Я, @Model.CurrentUserFullName, принял оплату взноса в размере @Model.Validator.FeeDue рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
-        </label>
-      </div>
+      }
+      <input type="checkbox" name="feeAccepted" id="feeAccepted" required="" @disableAcceptFeeCheckbox style="transform: scale(1.5); margin: 1em" />
+      <label for="feeAccepted">
+        Я, @Model.CurrentUserFullName, принял оплату взноса в размере @Model.Validator.FeeDue рублей, эти деньги будут лежать у меня для передачи уполномоченному мастеру.
+      </label>
     </div>
+  </div>
   }
-  if (Model.NotFilledFields.Any())
+  @if (Model.NotFilledFields.Any())
   {
-    <div class="alert alert-danger">
-      Не заполнены следующие обязательные поля.
-      Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new {Model.ClaimId, Model.ProjectId}, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)
-      <ul>
-        @foreach (var field in Model.NotFilledFields)
-        {
-          <li><b>@field.FieldName</b> (заполняет @Html.DisplayFor(modelField => field.WhoWillFill))</li>
-        }
-      </ul>
+  <div class="alert alert-danger">
+    Не заполнены следующие обязательные поля.
+    Перейдите на @Html.ActionLink("заявку", "Edit", "Claim", new { Model.ClaimId, Model.ProjectId }, null) для их заполнения или вызовите ответственного мастера @Html.DisplayFor(model => model.Master)
+    <ul>
+      @foreach (var field in Model.NotFilledFields)
+      {
+        <li><b>@field.FieldName</b> (заполняет @Html.DisplayFor(modelField => field.WhoWillFill))</li>
+      }
+    </ul>
 
-    </div>
+  </div>
   }
   @Html.Partial("..\\Print\\_CharacterHandout", Model.Handouts)
-if (Model.Validator.CanCheckInInPrinciple)
- {
-   <input type="submit" class="btn btn-success" value="Зарегистрировать игрока"/>
- }
-}
+  @if (Model.Validator.CanCheckInInPrinciple)
+  {
+  <input type="submit" class="btn btn-success" value="Зарегистрировать игрока" />
+  }
+</form>
