@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Interfaces;
@@ -16,13 +15,10 @@ namespace JoinRpg.Portal.Infrastructure
         /// <inheritedoc />
         public override Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
-            var controller = context.Controller as Controller;
-            controller.ViewBag.IsProduction = context.HttpContext.Request.Host.Host == "joinrpg.ru";
-
-            if (CurrentUserAccessor.UserIdOrDefault != null)
+            if (context.Result is ViewResult viewResult && CurrentUserAccessor.UserIdOrDefault != null)
             {
-                controller.ViewBag.UserDisplayName = CurrentUserAccessor.DisplayName;
-                controller.ViewBag.GravatarHash = CurrentUserAccessor.Email.GravatarHash().Trim();
+                viewResult.ViewData["UserDisplayName"] = CurrentUserAccessor.DisplayName;
+                viewResult.ViewData["GravatarHash"] = CurrentUserAccessor.Email.GravatarHash().Trim();
             }
 
             return base.OnResultExecutionAsync(context, next);
