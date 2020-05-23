@@ -36,6 +36,7 @@ namespace JoinRpg.Portal
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
+            services.Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"));
 
             services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
