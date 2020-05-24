@@ -28,15 +28,8 @@ namespace JoinRpg.Portal.Controllers
         private readonly IRecaptchaVerificator _recaptchaVerificator;
         private readonly IStringLocalizer<LocalizationSharedResource> _localizer;
 
-        private static readonly string ImpossibleToVerifyRecaptcha;
-        private static readonly string LoginOrPasswordNotFound;
-
-        static AccountController()
-        {
-            Type t = MethodBase.GetCurrentMethod().DeclaringType;
-            ImpossibleToVerifyRecaptcha = t.FullName + ".Register.ImpossibleToVerifyCaptcha";
-            LoginOrPasswordNotFound = t.FullName + ".Login.LoginOrPasswordNotFound";
-        }
+        private static readonly string ImpossibleToVerifyRecaptcha = typeof(AccountController).FullName + ".Register.ImpossibleToVerifyCaptcha";
+        private static readonly string LoginOrPasswordNotFound = typeof(AccountController).FullName + ".Login.LoginOrPasswordNotFound";
 
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }

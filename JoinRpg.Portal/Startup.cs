@@ -18,12 +18,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System;
 
 namespace JoinRpg.Portal
 {
@@ -124,9 +118,9 @@ namespace JoinRpg.Portal
 
                 options.SupportedCultures = LocalizationService.SupportedCultures;
                 options.SupportedUICultures = LocalizationService.SupportedCultures;
-                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
-                options.RequestCultureProviders.Insert(0, new NotAllowUnsupportedCulturesCultureProvider());
+                options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
             });
 
             if (env.IsDevelopment())

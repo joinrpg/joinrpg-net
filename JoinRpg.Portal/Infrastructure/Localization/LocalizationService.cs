@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -16,9 +17,12 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                     (
                         new List<CultureInfo>()
                         {
-                            new CultureInfo("en-US"),
                             new CultureInfo("ru-RU"),
+                            new CultureInfo("ru"),
+                            new CultureInfo("en-US"),
+                            new CultureInfo("en"),
                             new CultureInfo("de-DE"),
+                            new CultureInfo("de")
                         }
                     );
         public string this[string key]
@@ -55,28 +59,14 @@ namespace JoinRpg.Portal.Infrastructure.Localization
 
         public static string GenerateLocalizationKey(Type modelType, Type attributeType, string memberName, string attributePropertyName)
         {
-            StringBuilder key = new StringBuilder();
-            key.Append(modelType.FullName);
+            var components = new[] {
+                modelType.FullName,
+                memberName,
+                attributeType.Name.Replace("Attribute", ""),
+                attributePropertyName
+            };
 
-            if (memberName != null)
-            {
-                key.Append(".");
-                key.Append(memberName);
-            }
-
-            if (attributeType != null)
-            {
-                key.Append(".");
-                key.Append(attributeType.Name.Replace("Attribute", ""));
-            }
-
-            if (attributePropertyName != null)
-            {
-                key.Append(".");
-                key.Append(attributePropertyName);
-            }
-
-            return key.ToString();
+            return string.Join(".", components.Where(x => x != null));
         }
     }
 }

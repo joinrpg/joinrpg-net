@@ -71,6 +71,17 @@ namespace JoinRpg.Portal.Infrastructure.Localization
         ///<br/><br/>
         /// <c>AttributeProperty</c> - the property name of an attribute, which is being localized.
         /// <br/><br/>Examples: Display.Name, Required.ErrorMessage
+        ///<br/><br/>
+        /// Potentially localized attributes:
+        ///<br/><br/>
+        ///- Display<br/>
+        ///- DisplayName<br/>
+        ///- DisplayFormat<br/>
+        ///- AmbientValue<br/>
+        ///- Category<br/>
+        ///- DefaultValue<br/>
+        ///- Description<br/>
+        /// 
         /// </summary>
         public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
         {
@@ -87,31 +98,13 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                 return;
             }
 
-            var displayMetadata = context.DisplayMetadata;
+            HandleDisplayAttribute(localizer, context);
+            HandleDisplayFormatAttribute(localizer, context);
+            HandleEnums(localizer, context);
+        }
 
-            var displayNameAttribute = context.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
-            var displayAttribute = context.Attributes.OfType<DisplayAttribute>().FirstOrDefault();
-
-            //Description
-            if (displayAttribute != null && displayAttribute.ResourceType == null)
-            {
-                string key = GenerateLocalizationKeyFromContext<DisplayAttribute>("Description", context);
-                displayMetadata.Description = () => LocalizationService.GetLocalizedString(localizer, key, displayAttribute.Description);
-            }
-
-            // Name
-            if (displayAttribute?.GetName() != null && displayAttribute.ResourceType == null)
-            {
-                string key = GenerateLocalizationKeyFromContext<DisplayAttribute>("Name", context);
-                displayMetadata.DisplayName = () => LocalizationService.GetLocalizedString(localizer, key, displayAttribute.Name);
-            }
-
-            if (displayAttribute?.GetName() == null && displayNameAttribute != null && localizer != null)
-            {
-                string key = GenerateLocalizationKeyFromContext<DisplayNameAttribute>("DisplayName", context);
-                displayMetadata.DisplayName = () => LocalizationService.GetLocalizedString(localizer, key, displayNameAttribute.DisplayName);
-            }
-
+        private void HandleEnums(IStringLocalizer localizer, DisplayMetadataProviderContext context)
+        {
             //Enums
             var underlyingType = Nullable.GetUnderlyingType(context.Key.ModelType) ?? context.Key.ModelType;
             var underlyingTypeInfo = underlyingType.GetTypeInfo();
@@ -145,29 +138,141 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                     namesAndValues.Add(field.Name, value);
                 }
 
-                displayMetadata.EnumGroupedDisplayNamesAndValues = groupedDisplayNamesAndValues;
-                displayMetadata.EnumNamesAndValues = namesAndValues;
+                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues = groupedDisplayNamesAndValues;
+                context.DisplayMetadata.EnumNamesAndValues = namesAndValues;
             }
+        }
 
-            //Prompt/Placeholder
+        private void HandleDisplayFormatAttribute(IStringLocalizer localizer, DisplayMetadataProviderContext context)
+        {
+            var displayFormatAttribute = context.Attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
+            // DisplayFormat
+            if (displayFormatAttribute != null && displayFormatAttribute.ApplyFormatInEditMode)
+            {
+                //check whether data format string could be localized
+                //it could happen, if format contains not only numbers
+                context.DisplayMetadata.EditFormatStringProvider = () => LocalizationService.GetLocalizedString(
+                    localizer,
+                    GenerateLocalizationKeyFromContext<DisplayFormatAttribute>(nameof(displayFormatAttribute.DataFormatString), context),
+                    displayFormatAttribute.DataFormatString
+                    );
+
+                //localizing NullDisplayText
+                if (displayFormatAttribute.NullDisplayTextResourceType == null)
+                {
+                    context.DisplayMetadata.NullDisplayTextProvider = () => LocalizationService.GetLocalizedString(
+                        localizer,
+                        GenerateLocalizationKeyFromContext<DisplayFormatAttribute>(nameof(displayFormatAttribute.NullDisplayText), context),
+                        ""
+                    );
+                }
+            }
+        }
+
+        // Handles DisplayAttribute
+        // DisplayNameAttribute
+        // and DescriptionAttribute
+        private void HandleDisplayAttribute(IStringLocalizer localizer, DisplayMetadataProviderContext context)
+        {
+            var displayNameAttribute = context.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
+            var displayAttribute = context.Attributes.OfType<DisplayAttribute>().FirstOrDefault();
+
+            HandleName(localizer, context);
+            HandleDescription(localizer, context);
+
+            //DisplayAttribute.Prompt/Placeholder
             if (displayAttribute != null && displayAttribute.ResourceType == null)
             {
-                string key = GenerateLocalizationKeyFromContext<DisplayAttribute>("Prompt", context);
-                displayMetadata.Placeholder = () => LocalizationService.GetLocalizedString(localizer, key, displayAttribute.Prompt);
+                context.DisplayMetadata.Placeholder = () => LocalizationService.GetLocalizedString(
+                    localizer,
+                    GenerateLocalizationKeyFromContext<DisplayAttribute>(nameof(displayAttribute.Prompt), context),
+                    displayAttribute.Prompt
+                    );
+            }
+        }
+
+        private void HandleName(IStringLocalizer localizer, DisplayMetadataProviderContext context)
+        {
+            var displayNameAttribute = context.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
+            var displayAttribute = context.Attributes.OfType<DisplayAttribute>().FirstOrDefault();
+
+            Func<string> nameFromDisplay = () => LocalizationService.GetLocalizedString(
+                    localizer,
+                    GenerateLocalizationKeyFromContext<DisplayAttribute>(nameof(displayAttribute.Name), context),
+                    null
+                    );
+
+            Func<string> nameFromShortName = () => LocalizationService.GetLocalizedString(
+                   localizer,
+                   GenerateLocalizationKeyFromContext<DisplayAttribute>(nameof(displayAttribute.ShortName), context),
+                   null
+                   );
+
+            Func<string> nameFromDisplayName = () => LocalizationService.GetLocalizedString(
+                   localizer,
+                   GenerateLocalizationKeyFromContext<DisplayNameAttribute>(nameof(displayNameAttribute.DisplayName), context),
+                   null
+                   );
+
+            Func<string> defaultName = () => displayAttribute?.Name ?? displayAttribute?.ShortName ?? displayNameAttribute?.DisplayName;
+
+            if (displayAttribute != null && displayAttribute.ResourceType == null)
+            {
+                context.DisplayMetadata.DisplayName = () =>
+                    nameFromDisplay()
+                        ?? nameFromShortName()
+                        ?? (displayNameAttribute != null ? nameFromDisplayName() : null)
+                        ?? defaultName(); 
             }
 
+            if (displayAttribute == null && displayNameAttribute != null)
+            {
+                context.DisplayMetadata.DisplayName = () => nameFromDisplayName() ?? displayNameAttribute.DisplayName;
+            }
+        }
+
+        private void HandleDescription(IStringLocalizer localizer, DisplayMetadataProviderContext context)
+        {
+            var descriptionAttribute = context.Attributes.OfType<DescriptionAttribute>().FirstOrDefault();
+            var displayAttribute = context.Attributes.OfType<DisplayAttribute>().FirstOrDefault();
+
+            Func<string> descriptionFromDescriptionAttribute = () => LocalizationService.GetLocalizedString(
+                          localizer,
+                          GenerateLocalizationKeyFromContext<DescriptionAttribute>(nameof(descriptionAttribute.Description), context),
+                          null);
+
+            Func<string> descriptionFromDisplay = () => LocalizationService.GetLocalizedString(
+                    localizer,
+                    GenerateLocalizationKeyFromContext<DisplayAttribute>(nameof(displayAttribute.Description), context),
+                    null);
+
+            Func<string> defaultDescription = () => displayAttribute?.Description ?? descriptionAttribute?.Description;
+
+            if (displayAttribute != null && displayAttribute.ResourceType == null)
+            {
+                context.DisplayMetadata.Description = () => 
+                      descriptionFromDisplay()
+                        ?? (descriptionAttribute != null ? descriptionFromDescriptionAttribute() : null)
+                        ?? defaultDescription();
+            }
+
+            //DisplayAttribute.Description
+            if (displayAttribute == null && descriptionAttribute != null)
+            {
+                context.DisplayMetadata.Description = () => descriptionFromDescriptionAttribute() ?? defaultDescription();
+            }
         }
 
         private string GenerateLocalizationKeyFromContext<AttributeType>(string attributePropertyName, DisplayMetadataProviderContext context)
         {
             Type classType = context.Key.PropertyInfo?.DeclaringType ?? context.Key.ModelType;
             Type attributeType = typeof(AttributeType);
-            string memberName = context.Key.Name;
+            string memberName = context.Key.PropertyInfo?.Name ?? context.Key.Name;
 
             return LocalizationService.GenerateLocalizationKey(classType, attributeType, memberName, attributePropertyName);
         }
 
-        private static string GetDisplayGroup(FieldInfo field)
+        private string GetDisplayGroup(FieldInfo field)
         {
             return field.GetCustomAttribute<DisplayAttribute>(inherit: false)?.GetGroupName() ?? string.Empty;
         }
@@ -175,16 +280,16 @@ namespace JoinRpg.Portal.Infrastructure.Localization
         private string GetDisplayName(FieldInfo field, IStringLocalizer stringLocalizer)
         {
             var display = field.GetCustomAttribute<DisplayAttribute>(inherit: false);
-
             if (display == null)
             {
                 return field.Name;
             }
-            var name = display.GetName();
-            var key = LocalizationService.GenerateLocalizationKey(field.DeclaringType, typeof(DisplayAttribute), field.Name, "Name");
 
-            if (stringLocalizer != null && display.ResourceType == null)
+            var name = display.GetName();
+
+            if (display.ResourceType == null)
             {
+                var key = LocalizationService.GenerateLocalizationKey(field.DeclaringType, typeof(DisplayAttribute), field.Name, "Name");
                 name = LocalizationService.GetLocalizedString(stringLocalizer, key, display.Name ?? field.Name);
             }
 

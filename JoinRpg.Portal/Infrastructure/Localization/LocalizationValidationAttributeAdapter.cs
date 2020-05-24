@@ -62,14 +62,12 @@ namespace JoinRpg.Portal.Infrastructure.Localization
 
             var objectType = validationContext.ModelMetadata.ContainerType;
             var memberName = validationContext.ModelMetadata.Name;
-            var key = LocalizationService.GenerateLocalizationKey(objectType, Attribute.GetType(), memberName, "ErrorMessage");
             var defaultErrorMessage = Attribute.FormatErrorMessage(validationContext.ModelMetadata.GetDisplayName());
 
-            if (_stringLocalizer != null
-                && string.IsNullOrEmpty(Attribute.ErrorMessageResourceName)
-                && Attribute.ErrorMessageResourceType == null)
+            if (string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) && Attribute.ErrorMessageResourceType == null)
             {
-                //the property formatting of an error message should be insured. Since every
+                var key = LocalizationService.GenerateLocalizationKey(objectType, Attribute.GetType(), memberName, nameof(Attribute.ErrorMessage));
+                //the property formatting of an error message should be ensured. Since every
                 //attribute has its own formatting logic, it's better to temporarily swap
                 //error messages.
                 var defaultAttributeErrorMessage = Attribute.ErrorMessage;
