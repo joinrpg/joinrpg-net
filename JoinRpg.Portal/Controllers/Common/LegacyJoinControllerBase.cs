@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using JoinRpg.DataModel;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Portal.Infrastructure.Authentication;
 
 namespace JoinRpg.Portal.Controllers.Common

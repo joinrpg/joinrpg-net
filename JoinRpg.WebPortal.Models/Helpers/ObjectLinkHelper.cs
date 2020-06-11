@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Helpers
     public static class ObjectLinkHelper
     {
         public static IEnumerable<GameObjectLinkViewModel> AsObjectLinks(
-            [NotNull] [ItemNotNull] this IEnumerable<IWorldObject> objects,
+            [NotNull][ItemNotNull] this IEnumerable<IWorldObject> objects,
             IUriService uriService)
         {
             if (objects == null)

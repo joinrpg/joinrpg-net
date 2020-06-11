@@ -1,9 +1,9 @@
-using BitArmory.ReCaptcha;
-using JetBrains.Annotations;
-using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BitArmory.ReCaptcha;
+using JetBrains.Annotations;
+using Microsoft.Extensions.Options;
 
 
 namespace JoinRpg.Portal.Infrastructure.Authentication

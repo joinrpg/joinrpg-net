@@ -77,7 +77,7 @@ namespace JoinRpg.Web.Models.Accommodation
         /// </summary>
         public IReadOnlyList<AccRequestViewModel> UnassignedRequests { get; set; }
 
-        public RoomTypeViewModel([NotNull]ProjectAccommodationType entity, int userId)
+        public RoomTypeViewModel([NotNull] ProjectAccommodationType entity, int userId)
             : this(entity.Project, userId)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)

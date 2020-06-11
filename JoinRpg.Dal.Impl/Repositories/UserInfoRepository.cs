@@ -1,10 +1,10 @@
+using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using System.Data.Entity;
-using System.Linq;
 using JoinRpg.Data.Interfaces.Subscribe;
+using JoinRpg.DataModel;
 
 namespace JoinRpg.Dal.Impl.Repositories
 {

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Joinrpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
-using Joinrpg.Markdown;
 using JoinRpg.Web.Models.Schedules;
 using JoinRpg.WebPortal.Managers.Interfaces;
 

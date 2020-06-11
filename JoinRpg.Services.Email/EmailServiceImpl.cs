@@ -324,8 +324,8 @@ namespace JoinRpg.Services.Email
         /// Gets info about changed fields and other attributes for particular user (if available).
         /// </summary>
         private string GetChangedFieldsInfoForUser(
-          [NotNull]EmailModelBase model,
-          [NotNull]User user)
+          [NotNull] EmailModelBase model,
+          [NotNull] User user)
         {
             if (!(model is IEmailWithUpdatedFieldsInfo mailWithFields))
             {

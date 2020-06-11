@@ -61,7 +61,7 @@ namespace JoinRpg.Web.Models.Accommodation
         {
         }
 
-        public RoomViewModel([NotNull]ProjectAccommodation entity, RoomTypeViewModel owner)
+        public RoomViewModel([NotNull] ProjectAccommodation entity, RoomTypeViewModel owner)
         {
             if (entity.ProjectId == 0 || entity.Id == 0)
             {
