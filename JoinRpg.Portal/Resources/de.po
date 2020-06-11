@@ -1,0 +1,170 @@
+#: ----------------------------------------- AccountController.cs -------------------------------------
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
+msgstr "Die Verifizierung von ReCAPTCHA ist zur Zeit leider nicht möglich. Falls dieser Fehler erneut auftritt, bitte melden Sie sich an den Support."
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
+msgstr "Das Login oder das Passwort können nicht gefunden werden"
+
+#: ------------------------------------------AccountViewModels.cs---------------------------------------
+#: ----------------------------------------EditUserProfileViewModel-------------------------------------
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Name"
+msgstr "Orga-Gruppen oder Clubs"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Description"
+msgstr "Alle Gruppen von Orgas oder die LARP-Vereine, dazu Sie gehören, mit Komma getrennt. "
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Name"
+msgstr "Alle Spitznamen"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Description"
+msgstr "Alle Spitznamen, unter denen Sie bekannt sind. Diese Spitznamen werden in dem Suchsystem benutzt, um einen Suchprozess für Ihre Bekanntschafte zu erleichten."
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Required.ErrorMessage"
+msgstr "Bitte geben Sie Ihren bevorzugten Namen ein"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Livejournal.Display.Name"
+msgstr "LiveJournal"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.FatherName.Display.Name"
+msgstr "Alle Andere Namen"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgstr "Vorname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Name"
+msgstr "Spitzname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Description"
+msgstr "Unter welchen Namen bevorzugen Sie bekannt zu werden? Es ist empfohlen, die latinische Buchstaben zum Spitznamen zu benutzen (oder geben Sie Ihren gewöhnlichen Vornamen/Nachnamen, wenn Sie keinen Spitznamen haben)."
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PhoneNumber.Display.Name"
+msgstr "Handynummer"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Gender.Display.Name"
+msgstr "Geschlecht"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Skype.Display.Name"
+msgstr "Skype"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.SurName.Display.Name"
+msgstr "Nachname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Telegram.Display.Name"
+msgstr "Telegram"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Vk.Display.Name"
+msgstr "VK"
+
+#: ----------------------------ExternalLoginConfirmationViewModel---------------------------------
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.Display.Name"
+msgstr "Ich bin mit den Regeln einverstanden"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.BooleanRequired.ErrorMessage"
+msgstr "Bitte stimmen Sie mit den Regeln zu, um fortzusetzen"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+#: ---------------------------- ForgotPasswordViewModel-------------------------------------------
+
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+#: ----------------------------- LoginViewModel---------------------------------------------------
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Display.Name"
+msgstr "Passwort"
+
+#: ------------------------------- RegisterViewModel -------------------------------------------
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.Display.Name"
+msgstr "Ich bin mit den Regeln einverstanden"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.BooleanRequired.ErrorMessage"
+msgstr "Bitte stimmen Sie mit den Regeln zu, um fortzusetzen"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} muss nicht kürzer als {2} Zeichnen sein"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Display.Name"
+msgstr "Passwort"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Display.Name"
+msgstr "Noch mal?"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Compare.ErrorMessage"
+msgstr "Passwörter stimmen nicht überein"
+
+#: ------------------------------------ ResetPasswordViewModel ------------------------------------
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Required.ErrorMessage"
+msgstr "Das Feld {0} ist erforderlich"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} muss nicht kürzer als {2} Zeichnen sein"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Display.Name"
+msgstr "Passwort"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Display.Name"
+msgstr "Noch mal?"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Compare.ErrorMessage"
+msgstr "Passwörter stimmen nicht überein"
+
+#: --------------------------------------- Views -------------------------------------------------
+#: ----------------------------- IndexView -------------------------------------------------------
+
+msgid "IndexView.TestMenu.About"
+msgstr "Über das Projekt"
+
+msgid "IndexView.TestMenu.CreateTestApplicationDatabase"
+msgstr "Testrollenspielanmeldungdatenbank erstellen"
+
+msgid "IndexView.TestMenu.Documentation"
+msgstr "Dokumentation"
+
+msgid "IndexView.TestMenu.GoToMainServer"
+msgstr "An den Hauptserver gehen"
+
+msgid "IndexView.Test.DontUseTestVersionForRealWork"
+msgstr "Bitte verwenden Sie diese Version für Ihre Arbeit nicht."
+
+msgid "IndexView.Test.Hello"
+msgstr "Das ist eine Testversion von JoinRpg.ru."
+
+msgid "IndexView.Test.RedirectPlayersToMainServer"
+msgstr "Wenn Sie ein LARPer oder LARPerin sind, sollen Sie an den Hauptserver von JoinRpg gehen. "

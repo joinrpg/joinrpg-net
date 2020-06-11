@@ -1,22 +1,21 @@
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Resources;
 using JoinRpg.Services.Interfaces.Notification;
-using Joinrpg.Web.Identity;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Localization;
-using JoinRpg.Portal.Resources;
-using System.Reflection;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -57,6 +56,7 @@ namespace JoinRpg.Portal.Controllers
 
 
         [AllowAnonymous]
+        [HttpGet]
         public async Task<ActionResult> Login(string returnUrl) => View(await CreateLoginPageViewModelAsync(returnUrl));
 
         private async Task<LoginPageViewModel> CreateLoginPageViewModelAsync(string returnUrl)
@@ -81,8 +81,8 @@ namespace JoinRpg.Portal.Controllers
         }
         //
         // POST: /Account/Login
-        [HttpPost]
         [AllowAnonymous]
+        [HttpPost]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
@@ -132,6 +132,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/Register
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult Register()
         {
             var isRecaptchaConfigured = _recaptchaVerificator.IsRecaptchaConfigured();
@@ -147,8 +148,8 @@ namespace JoinRpg.Portal.Controllers
 
         //
         // POST: /Account/Register
-        [HttpPost]
         [AllowAnonymous]
+        [HttpPost]
         public async Task<ActionResult> Register(RegisterViewModel model, [FromForm(Name = "g-recaptcha-response")] string recaptchaToken)
         {
             var isRecaptchaConfigured = _recaptchaVerificator.IsRecaptchaConfigured();
@@ -224,6 +225,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ConfirmEmail
         [AllowAnonymous]
+        [HttpGet]
         public async Task<ActionResult> ConfirmEmail(int? userId, string code)
         {
             if (userId == null || code == null)
@@ -245,13 +247,13 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ForgotPassword
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
 
         //
         // POST: /Account/ForgotPassword
-        [HttpPost]
         [AllowAnonymous]
-
+        [HttpPost]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (ModelState.IsValid)
@@ -287,11 +289,13 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ForgotPasswordConfirmation
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult ForgotPasswordConfirmation() => View();
 
         //
         // GET: /Account/ResetPassword
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult ResetPassword(int userId, string code)
         {
             if (userId == 0 || code is null)
@@ -304,8 +308,8 @@ namespace JoinRpg.Portal.Controllers
 
         //
         // POST: /Account/ResetPassword
-        [HttpPost]
         [AllowAnonymous]
+        [HttpPost]
 
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -337,12 +341,13 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ResetPasswordConfirmation
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult ResetPasswordConfirmation() => View();
 
         //
         // POST: /Account/ExternalLogin
-        [HttpPost]
         [AllowAnonymous]
+        [HttpPost]
 
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
@@ -357,6 +362,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ExternalLoginCallback
         [AllowAnonymous]
+        [HttpGet]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
             var auth = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
@@ -410,8 +416,8 @@ namespace JoinRpg.Portal.Controllers
 
         //
         // POST: /Account/ExternalLoginConfirmation
-        [HttpPost]
         [AllowAnonymous]
+        [HttpPost]
 
         public async Task<ActionResult> ExternalLoginConfirmation(
             ExternalLoginConfirmationViewModel model,
@@ -462,6 +468,7 @@ namespace JoinRpg.Portal.Controllers
         //
         // GET: /Account/ExternalLoginFailure
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult ExternalLoginFailure() => View();
 
         #region Helpers
@@ -478,6 +485,7 @@ namespace JoinRpg.Portal.Controllers
         #endregion
 
         [AllowAnonymous]
+        [HttpGet]
         public ActionResult AccessDenied(string returnUrl) => View("AccessDenied", returnUrl);
     }
 }

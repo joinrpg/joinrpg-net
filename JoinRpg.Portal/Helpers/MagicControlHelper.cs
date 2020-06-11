@@ -1,6 +1,6 @@
-using JoinRpg.Helpers;
 using System;
 using System.Collections.Generic;
+using JoinRpg.Helpers;
 using Microsoft.AspNetCore.Html;
 
 namespace JoinRpg.Web.Helpers

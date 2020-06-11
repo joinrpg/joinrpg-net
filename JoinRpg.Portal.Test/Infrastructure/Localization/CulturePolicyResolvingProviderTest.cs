@@ -157,7 +157,7 @@ namespace JoinRpg.Portal.Test.Infrastructure.Localization
 
             httpRequest.Headers.Add("Accept-Language", "en-USmalformed=0.5");
 
-            var expected = Task.FromResult(new ProviderCultureResult(""));
+            var expected = Task.FromResult(new ProviderCultureResult("ru-RU"));
             //action
             var actual = _provider.DetermineProviderCultureResult(httpContext);
             //assert
@@ -387,6 +387,6 @@ namespace JoinRpg.Portal.Test.Infrastructure.Localization
             }
         }
 
-        
+
     }
 }

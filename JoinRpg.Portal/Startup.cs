@@ -1,16 +1,15 @@
 using Autofac;
+using Joinrpg.Web.Identity;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.Localization;
-using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -59,7 +58,6 @@ namespace JoinRpg.Portal
             services.AddScoped<IValidationAttributeAdapterProvider, LocalizationValidationAttributeAdapterProvider>();
             services.AddScoped<DataAnnotationsLocalizationDisplayMetadataProvider>();
             services.AddSingleton<LocalizationService>();
-
             services.AddPortableObjectLocalization(o => o.ResourcesPath = "Resources");
 
             var mvc = services
@@ -113,15 +111,16 @@ namespace JoinRpg.Portal
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
-            app.UseRequestLocalization(options =>
-            {
+            //TODO: Enable in future
 
-                options.SupportedCultures = LocalizationService.SupportedCultures;
-                options.SupportedUICultures = LocalizationService.SupportedCultures;
-                options.DefaultRequestCulture = new RequestCulture("ru-RU");
+            //app.UseRequestLocalization(options =>
+            //{
+            //    options.SupportedCultures = LocalizationService.SupportedCultures;
+            //    options.SupportedUICultures = LocalizationService.SupportedCultures;
+            //    options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
-                options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
-            });
+            //    options.RequestCultureProviders.Insert(0, new CulturePolicyResolvingProvider());
+            //});
 
             if (env.IsDevelopment())
             {

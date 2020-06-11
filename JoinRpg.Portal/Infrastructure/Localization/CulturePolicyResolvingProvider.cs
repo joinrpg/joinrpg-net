@@ -1,16 +1,26 @@
-using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using MoreLinq;
 
 namespace JoinRpg.Portal.Infrastructure.Localization
 {
     public class CulturePolicyResolvingProvider : RequestCultureProvider
     {
+        private readonly static Task<ProviderCultureResult> DefaultCulture;
+
+        static CulturePolicyResolvingProvider()
+        {
+            var defaultCulture = LocalizationService.SupportedCultures.ElementAtOrDefault(0);
+            var defaultCultureName = defaultCulture?.Name ?? "ru";
+            DefaultCulture = Task.FromResult(new ProviderCultureResult(defaultCultureName));
+        }
+
         public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext context)
         {
             if (context == null)
@@ -18,7 +28,7 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                 throw new ArgumentNullException();
             }
 
-            return FromRequestParameter(context) ?? FromCookie(context) ?? FromHeader(context) ?? Task.FromResult(new ProviderCultureResult(""));
+            return FromRequestParameter(context) ?? FromCookie(context) ?? FromHeader(context) ?? DefaultCulture;
         }
 
         private Task<ProviderCultureResult> FromHeader(HttpContext context)
@@ -69,9 +79,9 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                     ? context.Request.Query["culture"].ToString()
                     : null;
 
-               return cultureFromRequestParam != null && IsSupported(new CultureInfo(cultureFromRequestParam))
-                    ? Task.FromResult(new ProviderCultureResult(cultureFromRequestParam))
-                    : null;
+                return cultureFromRequestParam != null && IsSupported(new CultureInfo(cultureFromRequestParam))
+                     ? Task.FromResult(new ProviderCultureResult(cultureFromRequestParam))
+                     : null;
             }
             catch (CultureNotFoundException ex)
             {

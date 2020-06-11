@@ -1,5 +1,3 @@
-using JoinRpg.Portal.Resources;
-using Microsoft.Extensions.Localization;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using JoinRpg.Portal.Resources;
+using Microsoft.Extensions.Localization;
 
 namespace JoinRpg.Portal.Infrastructure.Localization
 {

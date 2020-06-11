@@ -1,0 +1,170 @@
+#: ----------------------------------------- AccountController.cs -------------------------------------
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Register.ImpossibleToVerifyCaptcha"
+msgstr "Impossible to verify ReCAPTCHA. If the error persists, please, contact the support."
+
+msgid "JoinRpg.Portal.Controllers.AccountController.Login.LoginOrPasswordNotFound"
+msgstr "Login or password was not found"
+
+#: ------------------------------------------AccountViewModels.cs---------------------------------------
+#: ----------------------------------------EditUserProfileViewModel-------------------------------------
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Name"
+msgstr "LARP organiser groups or clubs"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.GroupNames.Display.Description"
+msgstr "All LARP ogranisers groups or clubs, which you consider you belong to, divided by comma. "
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Name"
+msgstr "All nicknames"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Nicknames.Display.Description"
+msgstr "All nicknames, divided by comma, which you could be known under. This will allow those, who uses your old or in other way written nickname, to find you. "
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Required.ErrorMessage"
+msgstr "Enter the nickname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Livejournal.Display.Name"
+msgstr "LiveJournal"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.FatherName.Display.Name"
+msgstr "Middle Name"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.BornName.Display.Name"
+msgstr "Name"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Name"
+msgstr "Nickname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PrefferedName.Display.Description"
+msgstr "Under which name/nickname do you wish to be known? We reccomend to enter the nickname in Latin letters (or your name/surname, if you don't have a nickname)."
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.PhoneNumber.Display.Name"
+msgstr "Phone number"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Gender.Display.Name"
+msgstr "Sex"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Skype.Display.Name"
+msgstr "Skype"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.SurName.Display.Name"
+msgstr "Surname"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Telegram.Display.Name"
+msgstr "Telegram"
+
+msgid "JoinRpg.Web.Models.EditUserProfileViewModel.Vk.Display.Name"
+msgstr "VK"
+
+#: ----------------------------ExternalLoginConfirmationViewModel---------------------------------
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.Display.Name"
+msgstr "I agree with the rules"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.RulesApproved.BooleanRequired.ErrorMessage"
+msgstr "You must agree with the rules in order to continue"
+
+msgid "JoinRpg.Web.Models.ExternalLoginConfirmationViewModel.Email.Required.ErrorMessage"
+msgstr "Field {0} is required"
+
+#: ---------------------------- ForgotPasswordViewModel-------------------------------------------
+
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ForgotPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "Field {0} is required"
+
+#: ----------------------------- LoginViewModel---------------------------------------------------
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Required.ErrorMessage"
+msgstr "Field {0} is required"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Required.ErrorMessage"
+msgstr "Field {0} is required"
+
+msgid "JoinRpg.Web.Models.LoginViewModel.Password.Display.Name"
+msgstr "Password"
+
+#: ------------------------------- RegisterViewModel -------------------------------------------
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.Display.Name"
+msgstr "I agree with the rules"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.RulesApproved.BooleanRequired.ErrorMessage"
+msgstr "You must agree with the rules in order to continue"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Email.Required.ErrorMessage"
+msgstr "The field {0} is required"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Required.ErrorMessage"
+msgstr "The field {0} is required"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} should not be shorter than {2} symbols"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.Password.Display.Name"
+msgstr "Password"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Display.Name"
+msgstr "One more time?"
+
+msgid "JoinRpg.Web.Models.RegisterViewModel.ConfirmPassword.Compare.ErrorMessage"
+msgstr "Passwords do not match"
+
+#: ------------------------------------ ResetPasswordViewModel ------------------------------------
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Display.Name"
+msgstr "Email"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Email.Required.ErrorMessage"
+msgstr "The field {0} is required"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Required.ErrorMessage"
+msgstr "The field {0} is required"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.StringLength.ErrorMessage"
+msgstr "{0} should not be shorter than {2} symbols"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.Password.Display.Name"
+msgstr "Password"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Display.Name"
+msgstr "One more time?"
+
+msgid "JoinRpg.Web.Models.ResetPasswordViewModel.ConfirmPassword.Compare.ErrorMessage"
+msgstr "Passwords do not match"
+
+#: --------------------------------------- Views -------------------------------------------------
+#: ----------------------------- IndexView -------------------------------------------------------
+
+msgid "IndexView.TestMenu.About"
+msgstr "About"
+
+msgid "IndexView.TestMenu.CreateTestApplicationDatabase"
+msgstr "Create test LARP application database"
+
+msgid "IndexView.TestMenu.Documentation"
+msgstr "Documentation"
+
+msgid "IndexView.TestMenu.GoToMainServer"
+msgstr "Go to main server"
+
+msgid "IndexView.Test.DontUseTestVersionForRealWork"
+msgstr "Do not use it for real work with the players."
+
+msgid "IndexView.Test.Hello"
+msgstr "This is a test version of JoinRpg.ru."
+
+msgid "IndexView.Test.RedirectPlayersToMainServer"
+msgstr "If you are a player and got on this page accidentally, you should visit the main site."

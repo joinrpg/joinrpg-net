@@ -8,8 +8,6 @@ namespace JoinRpg.Web.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
-        private static readonly string DisplayName = "";
-
         [Required(ErrorMessage = "Поле {0} обязательно для заполнения")]
         [Display(Name = "Email")]
         public string Email { get; set; }

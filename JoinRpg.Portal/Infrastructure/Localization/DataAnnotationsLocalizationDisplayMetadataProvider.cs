@@ -1,14 +1,14 @@
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 
 namespace JoinRpg.Portal.Infrastructure.Localization
 {
@@ -222,7 +222,7 @@ namespace JoinRpg.Portal.Infrastructure.Localization
                     nameFromDisplay()
                         ?? nameFromShortName()
                         ?? (displayNameAttribute != null ? nameFromDisplayName() : null)
-                        ?? defaultName(); 
+                        ?? defaultName();
             }
 
             if (displayAttribute == null && displayNameAttribute != null)
@@ -250,7 +250,7 @@ namespace JoinRpg.Portal.Infrastructure.Localization
 
             if (displayAttribute != null && displayAttribute.ResourceType == null)
             {
-                context.DisplayMetadata.Description = () => 
+                context.DisplayMetadata.Description = () =>
                       descriptionFromDisplay()
                         ?? (descriptionAttribute != null ? descriptionFromDescriptionAttribute() : null)
                         ?? defaultDescription();
