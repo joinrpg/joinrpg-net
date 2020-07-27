@@ -34,10 +34,10 @@ namespace JoinRpg.Services.Impl
                 ModifiedAt = Now,
                 AuthorUserId = CurrentUserId,
                 IsVisibleToPlayer = !hideFromUser,
-                CommentDiscussion = new CommentDiscussion() { ProjectId = projectId },
+                CommentDiscussion = new CommentDiscussion() { ProjectId = projectId, Project = group.Project, },
             };
 
-            CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+            _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
                 CurrentUserId,
                 Now,
                 commentText,
@@ -105,7 +105,7 @@ namespace JoinRpg.Services.Impl
         {
             var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
 
-            CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
+            _ = CommentHelper.CreateCommentForDiscussion(forumThread.CommentDiscussion,
                 CurrentUserId,
                 Now,
                 commentText,
