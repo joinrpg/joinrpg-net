@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using JoinRpg.Experimental.Plugin.Interfaces;
-using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.Experimental.Plugin.Interfaces;
+using JoinRpg.PluginHost.Interfaces;
 
 namespace JoinRpg.PluginHost.Impl
 {

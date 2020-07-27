@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JoinRpg.DataModel;
 using JetBrains.Annotations;
+using JoinRpg.DataModel;
 using JoinRpg.Helpers;
 
 // ReSharper disable once CheckNamespace
