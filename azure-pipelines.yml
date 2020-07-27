@@ -42,7 +42,7 @@ steps:
   inputs:
     command: 'custom'
     custom: 'format'
-    arguments: '--dry-run --check --verbosity diagnostic'
+    arguments: '--check --verbosity diagnostic'
 
 - task: DotNetCoreCLI@2
   inputs:
