@@ -31,11 +31,11 @@ steps:
     configuration: '$(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Install dotnet format'
+  displayName: 'Install dotnet tools'
   inputs:
     command: 'custom'
     custom: 'tool'
-    arguments: 'update -g dotnet-format'
+    arguments: 'restore'
 
 - task: DotNetCoreCLI@2
   displayName: 'Check that formatting is ok. Run dotnet-format'
