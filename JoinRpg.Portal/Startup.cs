@@ -1,22 +1,22 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Joinrpg.Web.Identity;
+using System.Diagnostics;
 using Autofac;
+using Joinrpg.Web.Identity;
 using JoinRpg.DataModel;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
+using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using JoinRpg.Portal.Infrastructure.DiscoverFilters;
-using System.Diagnostics;
 
 namespace JoinRpg.Portal
 {

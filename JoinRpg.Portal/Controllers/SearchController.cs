@@ -1,11 +1,11 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 using JoinRpg.Web.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {

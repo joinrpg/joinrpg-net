@@ -1,7 +1,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
@@ -9,6 +8,7 @@ using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.Accommodation;
 using JoinRpg.Web.Models.Exporters;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers
 {

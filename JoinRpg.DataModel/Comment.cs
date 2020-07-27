@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using JoinRpg.Helpers;
 using JetBrains.Annotations;
+using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
 {
