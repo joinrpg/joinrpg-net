@@ -18,7 +18,7 @@ namespace JoinRpg.Portal.Controllers.Comments
             var forumThread = discussion.GetForumThread();
             if (forumThread != null)
             {
-                var actionLink = Url.Action("ViewThread", new { discussion.ProjectId, forumThread.ForumThreadId });
+                var actionLink = Url.Action("ViewThread", "Forum", new { discussion.ProjectId, forumThread.ForumThreadId });
                 return new RedirectResult(actionLink + extra);
             }
             return new NotFoundResult();
