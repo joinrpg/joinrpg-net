@@ -47,5 +47,5 @@ steps:
   displayName: 'dotnet test'
   inputs:
     command: 'test'
-    nobuild: true
+    nobuild: true #that's actually is ignored
     projects: '**/*Test.csproj'
