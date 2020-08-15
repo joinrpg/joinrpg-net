@@ -49,6 +49,10 @@ steps:
     command: 'test'
     projects: '**/*Test.csproj'
 
+- task: Docker@2
+  inputs:
+    command: build
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
