@@ -29,7 +29,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
-    projects: 'Joinrpg.Portal/Joinrpg.Portal.csproj'
+    projects: 'src/Joinrpg.Portal/Joinrpg.Portal.csproj'
     arguments: '-c Release -o $(Build.ArtifactStagingDirectory)/publish'
 
 - task: Docker@2
