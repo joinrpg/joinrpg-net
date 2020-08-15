@@ -30,6 +30,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18541948-5966-481B-B755-833AF5A7BC17}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		azure-pipelines.check.pr.yml = azure-pipelines.check.pr.yml
 		azure-pipelines.yml = azure-pipelines.yml
 		code_placement.txt = code_placement.txt
 		CONTRIBUTING.MD = CONTRIBUTING.MD
@@ -92,7 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{7645AC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models", "src\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj", "{232A3943-E85F-47AB-8FDB-B50BD8971738}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebPortalShared", "src\WebPortalShared", "{B3BB8906-62C8-44A0-822C-566A144C05AE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebPortalShared", "WebPortalShared", "{B3BB8906-62C8-44A0-822C-566A144C05AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Managers", "src\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj", "{A5275764-EB9F-49DA-9FEC-5BD8E67D758F}"
 EndProject
