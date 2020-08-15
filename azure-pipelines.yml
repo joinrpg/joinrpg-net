@@ -31,6 +31,13 @@ steps:
     configuration: '$(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: 'Joinrpg.Portal/Joinrpg.Portal.csproj'
+    arguments: '-o $(Build.ArtifactStagingDirectory)/publish'
+
+- task: DotNetCoreCLI@2
   displayName: 'Install dotnet tools'
   inputs:
     command: 'custom'
@@ -52,6 +59,7 @@ steps:
 - task: Docker@2
   inputs:
     command: build
+    buildContext: '$(Build.ArtifactStagingDirectory)/publish'
 
 - task: PublishBuildArtifacts@1
   inputs:
