@@ -3,29 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DataModel", "JoinRpg.DataModel\JoinRpg.DataModel.csproj", "{BD1358F0-8C7B-4205-84BC-B1C954364DF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DataModel", "src\JoinRpg.DataModel\JoinRpg.DataModel.csproj", "{BD1358F0-8C7B-4205-84BC-B1C954364DF0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.Impl", "JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj", "{2FDC4A55-3A3D-445B-9916-2F3ED898168B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Dal.Impl", "src\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj", "{2FDC4A55-3A3D-445B-9916-2F3ED898168B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Interfaces", "JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj", "{7032C5D8-131D-4E84-ADF4-263399F9626A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Interfaces", "src\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj", "{7032C5D8-131D-4E84-ADF4-263399F9626A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Data.Interfaces", "JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj", "{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Data.Interfaces", "src\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj", "{633AFDDE-92F4-4630-B971-EA5A4E14D0CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Impl", "JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj", "{835EB33A-F3D1-49C7-9C85-1F5F2387A052}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Impl", "src\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj", "{835EB33A-F3D1-49C7-9C85-1F5F2387A052}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Domain", "JoinRpg.Domain\JoinRpg.Domain.csproj", "{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Domain", "src\JoinRpg.Domain\JoinRpg.Domain.csproj", "{FEE778A6-B9E7-4305-B985-3C4FA5F1B1D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers", "JoinRpg.Helpers\JoinRpg.Helpers.csproj", "{011FE918-5653-4A6D-BF65-BB0E01DD74AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers", "src\JoinRpg.Helpers\JoinRpg.Helpers.csproj", "{011FE918-5653-4A6D-BF65-BB0E01DD74AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Email", "JoinRpg.Services.Email\JoinRpg.Services.Email.csproj", "{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Email", "src\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj", "{4C917F4E-977F-4B8D-B9B1-9A92854E83BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.TestHelpers", "JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj", "{7B8DB01F-423B-4BC9-9336-50D772F34F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.TestHelpers", "src\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj", "{7B8DB01F-423B-4BC9-9336-50D772F34F82}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8BB208B6-13CD-4942-B3AC-037BDF858727}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Test", "JoinRpg.Helpers.Test\JoinRpg.Helpers.Test.csproj", "{2C54153D-EB05-4A29-9163-C559628CFD7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Test", "src\JoinRpg.Helpers.Test\JoinRpg.Helpers.Test.csproj", "{2C54153D-EB05-4A29-9163-C559628CFD7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Data.Write.Interfaces", "JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj", "{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Data.Write.Interfaces", "src\JoinRpg.Data.Write.Interfaces\JoinRpg.Data.Write.Interfaces.csproj", "{1DA9ABCA-67FE-4E37-B97D-7A5CCC5CDB46}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{18541948-5966-481B-B755-833AF5A7BC17}"
 	ProjectSection(SolutionItems) = preProject
@@ -38,51 +38,51 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Export", "JoinRpg.Services.Export\JoinRpg.Services.Export.csproj", "{195112ED-B687-48D2-ADA6-2F27294EA645}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Export", "src\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj", "{195112ED-B687-48D2-ADA6-2F27294EA645}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.CommonUI.Models", "JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj", "{81185840-6DA0-440B-813A-E32D6CCAD34E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.CommonUI.Models", "src\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj", "{81185840-6DA0-440B-813A-E32D6CCAD34E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.CommonUI.Models.Test", "JoinRpg.CommonUI.Models.Test\JoinRpg.CommonUI.Models.Test.csproj", "{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.CommonUI.Models.Test", "src\JoinRpg.CommonUI.Models.Test\JoinRpg.CommonUI.Models.Test.csproj", "{0DEAC762-ABEF-4AE8-AC2E-5B697171E703}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web", "JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj", "{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web", "src\JoinRpg.Helpers.Web\JoinRpg.Helpers.Web.csproj", "{DFE0D0A8-980E-49A1-9D9F-C7866FAF4C05}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web.Test", "JoinRpg.Helpers.Web.Test\JoinRpg.Helpers.Web.Test.csproj", "{6B134A2C-84BF-445E-B5FC-0451E3C432CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Helpers.Web.Test", "src\JoinRpg.Helpers.Web.Test\JoinRpg.Helpers.Web.Test.csproj", "{6B134A2C-84BF-445E-B5FC-0451E3C432CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.Interfaces", "JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj", "{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.Interfaces", "src\JoinRpg.Experimental.Plugin.Interfaces\JoinRpg.Experimental.Plugin.Interfaces.csproj", "{6C11AE85-E1F7-47B8-8B1A-A9B4D8EDF8F4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PluginSupport", "PluginSupport", "{C1858B8D-858C-4EAE-BE10-800CA3A2DE9C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.PluginHost.Interfaces", "JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj", "{916C67F2-50B1-45DA-B970-222CEE4FC8D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.PluginHost.Interfaces", "src\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj", "{916C67F2-50B1-45DA-B970-222CEE4FC8D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.PluginHost.Impl", "JoinRpg.PluginHost.Impl\JoinRpg.PluginHost.Impl.csproj", "{9819E020-80E9-4AA1-A504-6F6256C1EC01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.PluginHost.Impl", "src\JoinRpg.PluginHost.Impl\JoinRpg.PluginHost.Impl.csproj", "{9819E020-80E9-4AA1-A504-6F6256C1EC01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.HelloWorld", "JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj", "{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.HelloWorld", "src\JoinRpg.Experimental.Plugin.HelloWorld\JoinRpg.Experimental.Plugin.HelloWorld.csproj", "{9F1CFABD-18B1-47CF-8F6B-767F1DE5FEE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Markdown", "Joinrpg.Markdown\Joinrpg.Markdown.csproj", "{9E52DF40-A040-47C2-91DC-2413270FF9B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Markdown", "src\JoinRpg.Markdown\Joinrpg.Markdown.csproj", "{9E52DF40-A040-47C2-91DC-2413270FF9B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Markdown.Test", "JoinRpg.Markdown.Test\JoinRpg.Markdown.Test.csproj", "{138594D3-38DF-4025-B5B5-1049D686CC29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Markdown.Test", "src\JoinRpg.Markdown.Test\JoinRpg.Markdown.Test.csproj", "{138594D3-38DF-4025-B5B5-1049D686CC29}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Domain.Test", "JoinRpg.Domain.Test\JoinRpg.Domain.Test.csproj", "{F17A0823-4C0A-40C3-818F-A593FB6ADBEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Domain.Test", "src\JoinRpg.Domain.Test\JoinRpg.Domain.Test.csproj", "{F17A0823-4C0A-40C3-818F-A593FB6ADBEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DataModel.Mocks", "JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj", "{87AC11E6-9C66-468A-AC68-927D61D1E233}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DataModel.Mocks", "src\JoinRpg.DataModel.Mocks\JoinRpg.DataModel.Mocks.csproj", "{87AC11E6-9C66-468A-AC68-927D61D1E233}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Email.Test", "JoinRpg.Services.Email.Test\JoinRpg.Services.Email.Test.csproj", "{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Email.Test", "src\JoinRpg.Services.Email.Test\JoinRpg.Services.Email.Test.csproj", "{4ED65E28-2C8B-4F72-A19A-241368CC4FB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{33A49F7A-878E-4D82-8ECF-59922E247DC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.PlayerIdCard", "JoinRpg.Experimental.Plugin.PlayerIdCard\JoinRpg.Experimental.Plugin.PlayerIdCard.csproj", "{18686E89-984C-45C8-8D2B-DA9CDFD64E89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.PlayerIdCard", "src\JoinRpg.Experimental.Plugin.PlayerIdCard\JoinRpg.Experimental.Plugin.PlayerIdCard.csproj", "{18686E89-984C-45C8-8D2B-DA9CDFD64E89}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Impl.Test", "JoinRpg.Services.Impl.Test\JoinRpg.Services.Impl.Test.csproj", "{D21BDCDE-6A40-4AFC-8D72-E7441E638E17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Services.Impl.Test", "src\JoinRpg.Services.Impl.Test\JoinRpg.Services.Impl.Test.csproj", "{D21BDCDE-6A40-4AFC-8D72-E7441E638E17}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.DeusEx", "JoinRpg.Experimental.Plugin.DeusEx\JoinRpg.Experimental.Plugin.DeusEx.csproj", "{75C5529A-A892-4692-9B5F-8D01290BF1B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Experimental.Plugin.DeusEx", "src\JoinRpg.Experimental.Plugin.DeusEx\JoinRpg.Experimental.Plugin.DeusEx.csproj", "{75C5529A-A892-4692-9B5F-8D01290BF1B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.XGameApi.Contract", "JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj", "{5EDF70DA-E612-4514-80FF-8F72AAB87DA8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Web.XGameApi.Contract", "src\JoinRpg.Web.XGameApi.Contract\JoinRpg.Web.XGameApi.Contract.csproj", "{5EDF70DA-E612-4514-80FF-8F72AAB87DA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Common.EmailSending.Impl", "JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj", "{E4D7A0E5-7C93-4D5B-97E1-99F1A6C2300B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Common.EmailSending.Impl", "src\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj", "{E4D7A0E5-7C93-4D5B-97E1-99F1A6C2300B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DI", "JoinRpg.DI\JoinRpg.DI.csproj", "{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.DI", "src\JoinRpg.DI\JoinRpg.DI.csproj", "{5AF87445-9FA0-4176-B937-5D3FC2A31A7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Web.Identity", "Joinrpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{A940653D-D2AD-4701-AE83-2A425ACCA10E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Web.Identity", "src\JoinRpg.Web.Identity\Joinrpg.Web.Identity.csproj", "{A940653D-D2AD-4701-AE83-2A425ACCA10E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{4D578A76-DAE7-463A-9ABE-268E4D8488DA}"
 EndProject
@@ -90,25 +90,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dal", "Dal", "{B8A1A61E-CD9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{7645AC35-A68C-40EF-8AAD-1BF62D822E4C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models", "JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj", "{232A3943-E85F-47AB-8FDB-B50BD8971738}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models", "src\JoinRpg.WebPortal.Models\JoinRpg.WebPortal.Models.csproj", "{232A3943-E85F-47AB-8FDB-B50BD8971738}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebPortalShared", "WebPortalShared", "{B3BB8906-62C8-44A0-822C-566A144C05AE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebPortalShared", "src\WebPortalShared", "{B3BB8906-62C8-44A0-822C-566A144C05AE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Managers", "JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj", "{A5275764-EB9F-49DA-9FEC-5BD8E67D758F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Managers", "src\JoinRpg.WebPortal.Managers\JoinRpg.WebPortal.Managers.csproj", "{A5275764-EB9F-49DA-9FEC-5BD8E67D758F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Interfaces", "JoinRpg.Interfaces\JoinRpg.Interfaces.csproj", "{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Interfaces", "src\JoinRpg.Interfaces\JoinRpg.Interfaces.csproj", "{0E74D1CF-2383-47B5-B95E-43FBDDFF0B12}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PscbApi", "PscbApi\PscbApi.csproj", "{0453A789-D5AF-4E74-BE0B-9593AE524E6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PscbApi", "src\PscbApi\PscbApi.csproj", "{0453A789-D5AF-4E74-BE0B-9593AE524E6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models.Test", "JoinRpg.WebPortal.Models.Test\JoinRpg.WebPortal.Models.Test.csproj", "{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.WebPortal.Models.Test", "src\JoinRpg.WebPortal.Models.Test\JoinRpg.WebPortal.Models.Test.csproj", "{95951EFE-AE2B-48FD-87ED-FF0FFA90935C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal", "JoinRpg.Portal\JoinRpg.Portal.csproj", "{BF0B9903-B260-4FBF-889F-00F93CF16D1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal", "src\JoinRpg.Portal\JoinRpg.Portal.csproj", "{BF0B9903-B260-4FBF-889F-00F93CF16D1F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.AspNetCore.Helpers", "Joinrpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{B664B271-D508-4C7E-B3BB-7D7C062FB77C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.AspNetCore.Helpers", "src\JoinRpg.AspNetCore.Helpers\Joinrpg.AspNetCore.Helpers.csproj", "{B664B271-D508-4C7E-B3BB-7D7C062FB77C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal.Test", "JoinRpg.Portal.Test\JoinRpg.Portal.Test.csproj", "{78FC0625-A66C-4152-8BE2-FEAE45F161D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.Portal.Test", "src\JoinRpg.Portal.Test\JoinRpg.Portal.Test.csproj", "{78FC0625-A66C-4152-8BE2-FEAE45F161D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.IntegrationTest", "JoinRpg.IntegrationTests\JoinRpg.IntegrationTest.csproj", "{17FBA40C-1B31-4575-A4EC-27D40F65D63A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.IntegrationTest", "src\JoinRpg.IntegrationTests\JoinRpg.IntegrationTest.csproj", "{17FBA40C-1B31-4575-A4EC-27D40F65D63A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
