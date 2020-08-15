@@ -4,6 +4,7 @@
     <RootNamespace>JoinRpg.Dal.Impl</RootNamespace>
     <AssemblyName>JoinRpg.Dal.Impl</AssemblyName>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
