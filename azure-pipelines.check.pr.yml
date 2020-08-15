@@ -18,11 +18,13 @@ steps:
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
+  displayName: 'nuget restore'
   inputs:
     restoreSolution: '$(solution)'
 
 - task: DotNetCoreCLI@2
   inputs:
+    displayName: 'dotnet build'
     command: build
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
@@ -35,13 +37,14 @@ steps:
     arguments: 'restore'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Check that formatting is ok. Run dotnet-format'
+  displayName: 'dotnet-format'
   inputs:
     command: 'custom'
     custom: 'format'
     arguments: '--check --verbosity diagnostic'
 
 - task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
   inputs:
     command: 'test'
     nobuild: true
