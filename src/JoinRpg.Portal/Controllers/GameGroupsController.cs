@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -19,8 +20,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -195,20 +194,19 @@ namespace JoinRpg.Portal.Controllers
             });
         }
 
+        private class PascalCaseNamingPolicy : JsonNamingPolicy
+        {
+            public override string ConvertName(string name)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private JsonResult ReturnJson(object data)
         {
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-            return Json(data,
-                // this has to be pascal casing for compatibility
-                new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() }
-                );
-            //{
-            //  Data = data,
-            //  ContentEncoding = Encoding.UTF8,
-            //  JsonRequestBehavior = JsonRequestBehavior.AllowGet,
-            //  MaxJsonLength = int.MaxValue,
-            //};
+            return Json(data);
         }
 
         private object ConvertCharacterToJson(CharacterViewModel ch)
