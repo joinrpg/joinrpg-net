@@ -38,4 +38,4 @@ steps:
   inputs:
     command: buildAndPush
     buildContext: '$(Build.ArtifactStagingDirectory)/publish'
-    repository: joinrpg
+    repository: leotsarev/joinrpg
