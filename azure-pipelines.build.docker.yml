@@ -19,10 +19,10 @@ steps:
 #    restoreSolution: '$(solution)'
 
 - task: Docker@2
-  displayName: Login to ACR
+  displayName: Login to Docker.io
   inputs:
     command: login
-    containerRegistry: JoinrpgContainerRegistry
+    containerRegistry: LeotsarevDockerIo
 
 
 - task: DotNetCoreCLI@2
@@ -38,4 +38,4 @@ steps:
   inputs:
     command: buildAndPush
     buildContext: '$(Build.ArtifactStagingDirectory)/publish'
-    repository: joinrpg-master
+    repository: joinrpg
