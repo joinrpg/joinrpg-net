@@ -13,6 +13,7 @@ using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Characters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,6 +44,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult> Details(int projectid, int characterid)
         {
             var field = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
