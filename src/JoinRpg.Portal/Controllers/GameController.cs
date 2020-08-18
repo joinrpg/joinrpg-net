@@ -22,6 +22,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("{projectId}/home")]
+        [AllowAnonymous]
         //TODO enable this route w/o breaking everything [HttpGet("/{projectId:int}")]
         public async Task<IActionResult> Details(int projectId)
         {
