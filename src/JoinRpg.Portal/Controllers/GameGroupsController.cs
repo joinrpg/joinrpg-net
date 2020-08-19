@@ -36,6 +36,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("~/{projectId}/roles/{characterGroupId?}")]
+        [AllowAnonymous]
         public async Task<ActionResult> Index(int projectId, int? characterGroupId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -82,6 +83,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("~/{projectId}/roles/hot")]
+        [AllowAnonymous]
         public Task<ActionResult> Hot(int projectId) => Hot(projectId, null);
 
         [HttpGet]
@@ -119,6 +121,7 @@ namespace JoinRpg.Portal.Controllers
         }
 
         [HttpGet("~/{projectId}/roles/{characterGroupId}/indexjson")]
+        [AllowAnonymous]
         public async Task<ActionResult> IndexJson(int projectId, int characterGroupId)
         {
             var field = await ProjectRepository.LoadGroupWithTreeAsync(projectId, characterGroupId);
@@ -518,7 +521,7 @@ namespace JoinRpg.Portal.Controllers
 
         }
 
-        [HttpGet, Microsoft.AspNetCore.Authorization.AllowAnonymous]
+        [HttpGet, AllowAnonymous]
         public async Task<ActionResult> Details(int projectId, int characterGroupId)
         {
             var group = await ProjectRepository.GetGroupAsync(projectId, characterGroupId);
