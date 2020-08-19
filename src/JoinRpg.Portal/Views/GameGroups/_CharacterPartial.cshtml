@@ -29,6 +29,7 @@
 
     @if (Model.IsAvailable)
     {
+        <text>&nbsp;</text>
         @Html.ActionLink("заявиться", "AddForCharacter", "Claim", new { Model.ProjectId, Model.CharacterId }, new { @class = "btn btn-default btn-xs" })
         if (Model.IsHot)
         {
