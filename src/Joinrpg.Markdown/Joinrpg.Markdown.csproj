@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
-    <PackageReference Include="Markdig" Version="0.16.0" />
+    <PackageReference Include="Markdig" Version="0.21.1" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.6.0" />
   </ItemGroup>
 </Project>
