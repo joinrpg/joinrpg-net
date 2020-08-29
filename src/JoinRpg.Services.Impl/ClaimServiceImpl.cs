@@ -306,6 +306,8 @@ namespace JoinRpg.Services.Impl
                 throw new ClaimWrongStatusException(claim);
             }
 
+            commentText ??= "";
+
             claim.MasterAcceptedDate = Now;
             claim.ChangeStatusWithCheck(Claim.Status.Approved);
 
