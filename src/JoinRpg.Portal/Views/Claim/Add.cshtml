@@ -12,111 +12,109 @@
 <h2>@ViewBag.Title</h2>
 
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-    @Html.HiddenFor(model => model.ProjectId)
+<form asp-controller="Claim" asp-action="add" method="post" asp-route-ProjectId="@Model.ProjectId">
+  @Html.HiddenFor(model => model.ProjectId)
 
-<div class="form-horizontal">
+  <div class="form-horizontal">
 
     @foreach (var validation in Model.ValidationStatus)
     {
-        switch (validation)
-        {
-            case AddClaimForbideReasonViewModel.ProjectNotActive:
-                <div class="alert alert-warning">
-                    Проект находится в архиве, отослать новую заявку невозможно.
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.ProjectClaimsClosed:
-                <div class="alert alert-warning">
-                    Заявки на проект закрыты, отослать заявку невозможно.
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.NotForDirectClaims:
-                if (Model.IsRoot)
-                {
-                    <div class="alert alert-warning">
-                        Мастера проекта просят от игроков выбрать определенную роль
-                        из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null), чтобы заявиться.
-                        Заявиться «просто на игру», не указав роль, невозможно.
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-warning">
-                        Заявки в группу «@Model.TargetName» не принимаются.
-                        Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-                    </div>
-                }
-                break;
-            case AddClaimForbideReasonViewModel.SlotsExhausted:
-                <div class="alert alert-warning">
-                    Места в группе «@Model.TargetName» закончились.
-                    Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.Npc:
-                <div class="alert alert-warning">
-                    Заявки на роль «@Model.TargetName» не принимаются.
-                    Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.Busy:
-                <div class="alert alert-warning">
-                    Роль «@Model.TargetName» уже занята.
-                    Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.AlreadySent:
-                <div class="alert alert-danger">
-                    У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на эту роль.
-                    Невозможно отправить еще одну.
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.OnlyOneCharacter:
-                <div class="alert alert-danger">
-                    У вас уже есть утвержденная <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект.
-                    Невозможно иметь более одной утвержденной заявки
-                </div>
-                break;
-            case AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace:
-                if (Model.ProjectAllowsMultipleCharacters)
-                {
-                    <div class="alert alert-warning">
-                        У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
-                    </div>
-                }
-                else
-                {
-                    <div class="alert alert-warning">
-                        У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
-                    </div>
-                }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+      switch (validation)
+      {
+        case AddClaimForbideReasonViewModel.ProjectNotActive:
+          <div class="alert alert-warning">
+            Проект находится в архиве, отослать новую заявку невозможно.
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.ProjectClaimsClosed:
+          <div class="alert alert-warning">
+            Заявки на проект закрыты, отослать заявку невозможно.
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.NotForDirectClaims:
+          if (Model.IsRoot)
+          {
+            <div class="alert alert-warning">
+              Мастера проекта просят от игроков выбрать определенную роль
+              из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null), чтобы заявиться.
+              Заявиться «просто на игру», не указав роль, невозможно.
+            </div>
+          }
+          else
+          {
+            <div class="alert alert-warning">
+              Заявки в группу «@Model.TargetName» не принимаются.
+              Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
+            </div>
+          }
+          break;
+        case AddClaimForbideReasonViewModel.SlotsExhausted:
+          <div class="alert alert-warning">
+            Места в группе «@Model.TargetName» закончились.
+            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.Npc:
+          <div class="alert alert-warning">
+            Заявки на роль «@Model.TargetName» не принимаются.
+            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.Busy:
+          <div class="alert alert-warning">
+            Роль «@Model.TargetName» уже занята.
+            Возможно, выбрать другую роль из @Html.ActionLink("сетки ролей", "Index", "GameGroups", new { Model.ProjectId }, null)?
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.AlreadySent:
+          <div class="alert alert-danger">
+            У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на эту роль.
+            Невозможно отправить еще одну.
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.OnlyOneCharacter:
+          <div class="alert alert-danger">
+            У вас уже есть утвержденная <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект.
+            Невозможно иметь более одной утвержденной заявки
+          </div>
+          break;
+        case AddClaimForbideReasonViewModel.AlredySentNotApprovedClaimToAnotherPlace:
+          if (Model.ProjectAllowsMultipleCharacters)
+          {
+            <div class="alert alert-warning">
+              У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. На этот проект может быть утверждено несколько заявок.
+            </div>
+          }
+          else
+          {
+            <div class="alert alert-warning">
+              У вас уже есть <my-claim-link asp-for="@Model">заявка</my-claim-link> на проект. Утверждена может быть только одна заявка.
+            </div>
+          }
+          break;
+        default:
+          throw new ArgumentOutOfRangeException();
+      }
     }
 
     @if (Model.IsProjectRelatedReason)
     {
-        return;
+      return;
     }
 
     @if (Model.ClaimApplyRules != null)
     {
-        <div>@Model.ClaimApplyRules</div>
+      <div>@Model.ClaimApplyRules</div>
     }
 
     @if (!Model.IsRoot)
     {
-        <div class="form-group">
-            @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DisplayFor(model => model.TargetName, new { htmlAttributes = new { @class = "form-control" } })
-            </div>
+      <div class="form-group">
+        @Html.LabelFor(model => model.TargetName, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+          @Html.DisplayFor(model => model.TargetName, new { htmlAttributes = new { @class = "form-control" } })
         </div>
+      </div>
     }
 
 
@@ -124,42 +122,42 @@
     @if (!string.IsNullOrWhiteSpace(Model.Description.ToHtmlString()))
 
     {
-        <div class="form-group">
-            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Model.Description
-            </div>
+      <div class="form-group">
+        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+          @Model.Description
         </div>
+      </div>
     }
 
     @if (Model.CanSendClaim)
     {
-        ViewBag.HideCharacterClaimFieldsIcon = true;
+      ViewBag.HideCharacterClaimFieldsIcon = true;
 
-        @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
+      @await Html.PartialAsync("_EditFieldsPartial", Model.Fields)
 
-        if (Model.Fields.Fields.Any(f => f.HasPrice))
-        {
-            @await Html.PartialAsync("_ClaimFieldsSubtotal", 0);
-        }
+      if (Model.Fields.Fields.Any(f => f.HasPrice))
+      {
+        @await Html.PartialAsync("_ClaimFieldsSubtotal", 0);
+      }
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.ClaimText, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.ClaimText, "", new { @class = "text-danger" })
-                @Html.DescriptionFor(model => model.ClaimText)
-            </div>
+      <div class="form-group">
+        @Html.LabelFor(model => model.ClaimText, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+          @Html.EditorFor(model => model.ClaimText, new { htmlAttributes = new { @class = "form-control" } })
+          @Html.ValidationMessageFor(model => model.ClaimText, "", new { @class = "text-danger" })
+          @Html.DescriptionFor(model => model.ClaimText)
         </div>
+      </div>
 
-        @Html.HiddenFor(model => model.CharacterId)
-        @Html.HiddenFor(model => model.CharacterGroupId)
+      @Html.HiddenFor(model => model.CharacterId)
+      @Html.HiddenFor(model => model.CharacterGroupId)
 
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Отправить заявку" class="btn btn-success" />
-            </div>
+      <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+          <input type="submit" value="Отправить заявку" class="btn btn-success" />
         </div>
+      </div>
     }
-</div>
-}
+  </div>
+</form>
