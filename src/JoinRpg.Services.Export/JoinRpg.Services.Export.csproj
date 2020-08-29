@@ -12,6 +12,5 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.95.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
-    <PackageReference Include="System.IO.Packaging" Version="4.0.0" />
   </ItemGroup>
 </Project>
