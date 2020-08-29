@@ -14,16 +14,18 @@
 
     <div class="form-group">
         @Html.LabelFor(model => model.DenialStatus, htmlAttributes: new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DenialStatus, new { @class = "form-control" })
-            @Html.DescriptionFor(model => model.DenialStatus)
-        </div>
+      <div class="col-md-10">
+        @Html.EditorFor(model => model.DenialStatus, new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.DenialStatus, "", new { @class = "text-danger" })
+        @Html.DescriptionFor(model => model.DenialStatus)
+      </div>
     </div>
 
     <div class="form-group">
         @Html.LabelFor(model => model.CommentText, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
             @Html.EditorFor(model => model.CommentText, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.CommentText, "", new { @class = "text-danger" })
             <div class="help-block">
                 Сопроводите отклонение заявки объяснением ситуации для игрока.
                 @if (Model.ClaimStatus == ClaimStatusView.AddedByUser || Model.ClaimStatus == ClaimStatusView.Discussed)
@@ -42,10 +44,10 @@
     {
         <div class="form-group">
             @Html.LabelFor(model => model.DeleteCharacter, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-8">
-                @Html.EditorFor(model => model.DeleteCharacter, new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.DeleteCharacter, "", new { @class = "text-danger" })
-            </div>
+          <div class="col-md-8">
+            @Html.EditorFor(model => model.DeleteCharacter, new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.DeleteCharacter, "", new { @class = "text-danger" })
+          </div>
         </div>
     }
     <div class="form-group">

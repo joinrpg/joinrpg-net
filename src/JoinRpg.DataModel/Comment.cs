@@ -66,7 +66,7 @@ namespace JoinRpg.DataModel
                 yield return new ValidationResult("Child comments should not be visible if parent is not");
             }
 
-            if (Finance == null && string.IsNullOrWhiteSpace(CommentText.Text.Contents))
+            if (Finance == null && ExtraAction == null && string.IsNullOrWhiteSpace(CommentText.Text.Contents))
             {
                 yield return new ValidationResult("Comment can't be empty", new[] { nameof(CommentText) });
             }
