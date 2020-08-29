@@ -161,7 +161,9 @@ namespace JoinRpg.Portal.Controllers
 
             if (isRecaptchaConfigured)
             {
-                var isRecaptchaValid = await recaptchaVerificator.ValidateToken(recaptchaToken, clientIp);
+                var isRecaptchaValid =
+                    !string.IsNullOrWhiteSpace(recaptchaToken) &&
+                    await recaptchaVerificator.ValidateToken(recaptchaToken, clientIp);
 
                 if (!isRecaptchaValid)
                 {
