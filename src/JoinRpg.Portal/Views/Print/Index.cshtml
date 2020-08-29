@@ -47,7 +47,7 @@
         Содержимое конвертов
         @foreach (var chunk in @SplitByChunks(30))
         {
-            @Html.ActionLink(chunk.Name, "Character",
+            @Html.ActionLink(chunk.Name, "CharacterList",
                 new {Model.ProjectId, chunk.CharacterIds})
             <text>&nbsp;</text>
         }
