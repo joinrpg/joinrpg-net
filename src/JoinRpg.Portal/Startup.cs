@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using Autofac;
 using Joinrpg.Web.Identity;
 using JoinRpg.DataModel;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -98,6 +100,14 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRequestLocalization(options =>
+            {
+                options.DefaultRequestCulture = new RequestCulture("ru-RU");
+
+                //TODO before adding other cultures, ensure that datetime fields send correct format
+                options.SupportedCultures = new CultureInfo[] { new CultureInfo("ru-RU") };
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
