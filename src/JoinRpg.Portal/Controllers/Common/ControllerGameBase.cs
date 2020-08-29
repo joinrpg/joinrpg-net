@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JoinRpg.Portal.Controllers.Common
 {
-    [JoinRpgExceptionHandler]
+    [CaptureNoAccessExceptionHandler]
     [DiscoverProjectFilter]
     public abstract class ControllerGameBase : LegacyJoinControllerBase
     {

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace JoinRpg.Web.Filter
 {
-    public class JoinRpgExceptionHandlerAttribute : ExceptionFilterAttribute
+    public class CaptureNoAccessExceptionHandlerAttribute : ExceptionFilterAttribute
     {
         public override void OnException(ExceptionContext filterContext)
         {
