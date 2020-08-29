@@ -3,16 +3,16 @@
 
 <ul class="nav nav-tabs">
     @*//TODO дисаблить поля, к которым нет доступа *@
-    <nav-link asp-controller="GameField" asp-action="Index">
+    <nav-link asp-controller="GameField" asp-action="Index" asp-route-ProjectId="@Model.ProjectId">
         Активные
     </nav-link>
-    <nav-link asp-controller="GameField" asp-action="DeletedList" title="Только поля, использованные хотя бы один раз">
+    <nav-link asp-controller="GameField" asp-action="DeletedList" asp-route-ProjectId="@Model.ProjectId" title="Только поля, использованные хотя бы один раз">
         Удаленные
     </nav-link>
-    <nav-link asp-controller="GameField" asp-action="Settings">
+    <nav-link asp-controller="GameField" asp-action="Settings" asp-route-ProjectId="@Model.ProjectId">
         Настройки полей
     </nav-link>
-    <nav-link asp-controller="GameField" asp-action="Create">
+    <nav-link asp-controller="GameField" asp-action="Create" asp-route-ProjectId="@Model.ProjectId">
         <span class="glyphicon glyphicon-plus"></span>Добавить новое поле
     </nav-link>
 </ul>
