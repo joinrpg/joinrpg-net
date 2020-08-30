@@ -52,15 +52,6 @@ namespace JoinRpg.Services.Impl
         }
 
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
-        public async Task ChangeEmail(int userId, string newEmail)
-        {
-            var user = await UserRepository.GetById(userId);
-            user.Email = newEmail;
-            //TODO: Send email
-            await UnitOfWork.SaveChangesAsync();
-        }
-
-        //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetAdminFlag(int userId, bool administratorFlag)
         {
             var user = await UserRepository.GetById(userId);

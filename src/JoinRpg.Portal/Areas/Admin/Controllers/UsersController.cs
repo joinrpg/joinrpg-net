@@ -26,9 +26,13 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
         [ValidateAntiForgeryToken, HttpPost]
         public async Task<ActionResult> ChangeEmail(ChangeEmailModel model)
         {
-            await UserService.ChangeEmail(model.UserId, model.NewEmail);
             var user = await UserManager.FindByIdAsync(model.UserId.ToString());
-            await UserManager.UpdateSecurityStampAsync(user);
+            var token = await UserManager.GenerateChangeEmailTokenAsync(user, model.NewEmail);
+            var result = await UserManager.ChangeEmailAsync(user, model.NewEmail, token);
+            if (!result.Succeeded)
+            {
+                return new ContentResult { Content = $"Ошибка!, {result}" };
+            }
             return RedirectToUserDetails(model.UserId);
         }
 
