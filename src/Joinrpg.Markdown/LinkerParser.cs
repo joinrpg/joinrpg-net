@@ -22,7 +22,7 @@ namespace Joinrpg.Markdown
             LinkRenderer = linkRenderer;
         }
 
-        private TextMatchHelper _textMatchHelper;
+        private TextMatchHelper? _textMatchHelper;
 
         public override void Initialize()
         {
@@ -33,12 +33,20 @@ namespace Joinrpg.Markdown
 
         public override bool Match(InlineProcessor processor, ref StringSlice slice)
         {
+            if (_textMatchHelper is null)
+            {
+                throw new InvalidOperationException("Parser should be initialized before using");
+            }
             if (slice.Start != 0 && !slice.PeekCharExtra(-1).IsWhitespace())
             {
                 return false;
             }
-            string match;
-            if (!_textMatchHelper.TryMatch(slice.Text, slice.Start, slice.Length, out match))
+            if (!_textMatchHelper.TryMatch(slice.Text, slice.Start, slice.Length, out var match))
+            {
+                return false;
+            }
+
+            if (match is null)
             {
                 return false;
             }

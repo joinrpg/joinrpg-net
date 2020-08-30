@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2</TargetFramework>
     <AssemblyTitle>Joinrpg.Markdown</AssemblyTitle>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>

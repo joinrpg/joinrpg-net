@@ -47,7 +47,7 @@ namespace Markdig.Helpers
         ///   <c>true</c> if the match was successfull; <c>false</c> otherwise
         /// </returns>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public bool TryMatch(string text, int offset, int length, out string match)
+        public bool TryMatch(string text, int offset, int length, out string? match)
         {
             if (text == null)
             {
@@ -129,9 +129,9 @@ namespace Markdig.Helpers
 
         private class CharNode : Dictionary<char, CharNode>
         {
-            public List<string> NextList;
+            public List<string>? NextList;
 
-            public string Content { get; set; }
+            public string? Content { get; set; }
         }
     }
 }
