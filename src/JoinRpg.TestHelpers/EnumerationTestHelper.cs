@@ -21,7 +21,7 @@ namespace JoinRpg.TestHelpers
         {
             var firstMax = GetEnumMaxValue<TFirst>();
             var secondMax = GetEnumMaxValue<TSecond>();
-            firstMax.ShouldBe(secondMax);
+            firstMax.ShouldBe(secondMax, "should be of same length");
 
             foreach (var first in GetValues<TFirst>())
             {

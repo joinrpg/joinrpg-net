@@ -22,7 +22,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Login:
                     return false;
                 default:
-                    throw new ArgumentException(nameof(self));
+                    throw new ArgumentException(self.ToString(), nameof(self));
             }
         }
 
@@ -44,7 +44,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Login:
                     return false;
                 default:
-                    throw new ArgumentException(nameof(self));
+                    throw new ArgumentException(self.ToString(), nameof(self));
             }
         }
 
@@ -66,7 +66,7 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Login:
                     return false;
                 default:
-                    throw new ArgumentException(nameof(self));
+                    throw new ArgumentException(self.ToString(), nameof(self));
             }
         }
     }
