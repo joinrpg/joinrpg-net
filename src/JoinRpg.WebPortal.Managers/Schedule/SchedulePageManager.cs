@@ -216,15 +216,14 @@ namespace JoinRpg.WebPortal.Managers.Schedule
 
             IEnumerable<ScheduleConfigProblemsViewModel> Impl()
             {
-                var settings = project.Details.ScheduleSettings;
-                if (settings == null)
+                var roomField = project.GetRoomFieldOrDefault();
+                var timeSlotField = project.GetTimeSlotFieldOrDefault();
+                if (roomField is null || timeSlotField is null)
                 {
                     yield return ScheduleConfigProblemsViewModel.FieldsNotSet;
                 }
                 else
                 {
-                    var roomField = settings.RoomField;
-                    var timeSlotField = settings.TimeSlotField;
                     if (roomField.IsPublic != timeSlotField.IsPublic || roomField.CanPlayerView != timeSlotField.CanPlayerView)
                     {
                         yield return ScheduleConfigProblemsViewModel.InconsistentVisibility;

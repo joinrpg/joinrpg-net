@@ -70,14 +70,13 @@ namespace JoinRpg.Dal.Impl.Repositories
           ActiveProjects.Where(MyProjectPredicate(userInfoId)).ToListAsync();
 
         public async Task<IEnumerable<Project>> GetActiveProjectsWithSchedule()
-            => await ActiveProjects.Where(project => project.Details.ScheduleSettings != null)
+            => await ActiveProjects.Where(project => project.Details.ScheduleEnabled)
                 .ToListAsync();
 
         public Task<Project> GetProjectAsync(int project) => AllProjects.SingleOrDefaultAsync(p => p.ProjectId == project);
 
         public Task<Project> GetProjectWithDetailsAsync(int project)
           => AllProjects
-            .Include(p => p.Details.ScheduleSettings)
             .Include(p => p.ProjectAcls.Select(a => a.User))
             .SingleOrDefaultAsync(p => p.ProjectId == project);
 

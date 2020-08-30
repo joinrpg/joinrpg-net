@@ -25,8 +25,15 @@ namespace JoinRpg.Web.Models
             Name = "Логин/идентификатор",
             Description = "Латинские буквы и цифры. Если вам нужен логин во внешнюю систему, адрес игровой электронной почты, блога etc",
             Order = 8)]
-        [UsedImplicitly]
         Login,
+        [Display(
+            Name = "Место проведения мероприятия",
+            Order = 9)]
+        ScheduleRoomField,
+        [Display(
+            Name = "Время проведения мероприятия",
+            Order = 8)]
+        ScheduleTimeSlotField,
     }
 
     public static class ProjectFieldViewTypeHelper

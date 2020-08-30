@@ -43,8 +43,10 @@ namespace JoinRpg.DataModel
         [CanBeNull]
         public ProjectField CharacterDescription { get; set; }
 
-        [CanBeNull]
-        public virtual ProjectScheduleSettings ScheduleSettings { get; set; }
+        /// <summary>
+        /// If schedule module enabled on project
+        /// </summary>
+        public bool ScheduleEnabled { get; set; }
 
         public string FieldsOrdering { get; set; }
 

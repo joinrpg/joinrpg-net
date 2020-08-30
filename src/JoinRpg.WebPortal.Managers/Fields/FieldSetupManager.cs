@@ -130,7 +130,7 @@ namespace JoinRpg.WebPortal.Managers
                         fields.Where(f => f.FieldType == ProjectFieldType.String && f.FieldBoundTo == FieldBoundTo.Character),
                         "Имя персонажа берется из имени игрока"
                         ).SetSelected(project.Details.CharacterNameField?.ProjectFieldId);
-
+             
             // cast needed to call correct method
             var _ = FillFromProject(project, viewModel);
             return viewModel;

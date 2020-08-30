@@ -65,6 +65,7 @@ namespace JoinRpg.Portal.Menu
             menuModel.RootGroupId = project.RootGroup.CharacterGroupId;
             menuModel.EnableAccommodation = project.Details.EnableAccommodation;
             menuModel.IsAdmin = CurrentUserAccessor.IsAdmin;
+            menuModel.ShowSchedule = project.Details.ScheduleEnabled;
         }
     }
 }

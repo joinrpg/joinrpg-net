@@ -20,6 +20,8 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.Text:
                 case ProjectFieldType.Header:
                 case ProjectFieldType.Login:
+                case ProjectFieldType.ScheduleRoomField:
+                case ProjectFieldType.ScheduleTimeSlotField:
                     return false;
                 default:
                     throw new ArgumentException(self.ToString(), nameof(self));
@@ -42,6 +44,8 @@ namespace JoinRpg.DataModel
                 case ProjectFieldType.MultiSelect:
                 case ProjectFieldType.Header:
                 case ProjectFieldType.Login:
+                case ProjectFieldType.ScheduleRoomField:
+                case ProjectFieldType.ScheduleTimeSlotField:
                     return false;
                 default:
                     throw new ArgumentException(self.ToString(), nameof(self));
@@ -57,6 +61,8 @@ namespace JoinRpg.DataModel
             {
                 case ProjectFieldType.Dropdown:
                 case ProjectFieldType.MultiSelect:
+                case ProjectFieldType.ScheduleRoomField:
+                case ProjectFieldType.ScheduleTimeSlotField:
                     return true;
                 case ProjectFieldType.String:
                 case ProjectFieldType.Text:
