@@ -231,7 +231,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 var field = await ProjectRepository.GetProjectField(viewModel.ProjectId, viewModel.ProjectFieldId);
 
-                var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"][0]);
+                var timeSlotOptions = viewModel.GetTimeSlotRequest(field, Request.Form["TimeSlotStartTime"].FirstOrDefault());
 
                 await
                     FieldSetupService.CreateFieldValueVariant(
@@ -248,8 +248,9 @@ namespace JoinRpg.Portal.Controllers
 
                 return RedirectToAction("Edit", new { viewModel.ProjectId, projectFieldId = viewModel.ProjectFieldId });
             }
-            catch
+            catch (Exception ex)
             {
+                ModelState.AddException(ex);
                 return View(viewModel);
             }
         }
