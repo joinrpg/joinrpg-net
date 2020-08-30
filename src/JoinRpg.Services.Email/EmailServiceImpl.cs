@@ -144,11 +144,11 @@ namespace JoinRpg.Services.Email
               .ToList();
 
             string Target(bool forMessageBody) => model.IsCharacterMail
-                ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Character.CharacterName}"
-                : $"заявк{(forMessageBody ? "и" : "a")} {model.Claim?.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
+                ? $@"персонаж{(forMessageBody ? "a" : "")}  {model.Name}"
+                : $"заявк{(forMessageBody ? "и" : "a")} {model.Name} {(forMessageBody ? $", игрок {model.Claim?.Player.GetDisplayName()}" : "")}";
 
 
-            var linkString = _uriService.Get(model.GetLinkable());
+            var linkString = _uriService.Get(model.Linkable);
 
             if (recipients.Any())
             {
@@ -163,9 +163,7 @@ namespace JoinRpg.Services.Email
 
 ";
                 //All emails related to claim should have the same title, even if the change was made to a character
-                Claim claim = model.IsCharacterMail ? model.Character.ApprovedClaim : model.Claim;
-
-
+                Claim claim = model.Claim;
 
                 var subject = claim != null
                     ? model.GetClaimEmailTitle(claim)
@@ -266,7 +264,7 @@ namespace JoinRpg.Services.Email
 ";
 
             var sendTasks = email.Recipients.Select(emailRecipient => MessageService.SendEmail($"{email.ProjectName}: приглашения к проживанию",
-                    new MarkdownString(String.Format(messageTemplate, email.GetClaimByPerson(emailRecipient) == null ? "" : _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
+                    new MarkdownString(string.Format(messageTemplate, email.GetClaimByPerson(emailRecipient) == null ? "" : _uriService.Get(email.GetClaimByPerson(emailRecipient)))),
                     email.Initiator.ToRecepientData(),
                     emailRecipient.ToRecepientData()))
                 .ToList();
