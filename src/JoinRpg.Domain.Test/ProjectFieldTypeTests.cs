@@ -19,6 +19,14 @@ namespace JoinRpg.Domain.Test
         [MemberData(nameof(FieldTypes))]
         public void HasValuesListDecided(ProjectFieldType projectFieldType) => Should.NotThrow(() => projectFieldType.HasValuesList());
 
+        [Theory]
+        [MemberData(nameof(FieldTypes))]
+        public void ShouldBeAbleToCalculatePricing(ProjectFieldType projectFieldType)
+        {
+            var fieldWithValue = new FieldWithValue(new ProjectField { FieldType = projectFieldType }, null);
+            Should.NotThrow(() => fieldWithValue.GetCurrentFee());
+        }
+
         // ReSharper disable once MemberCanBePrivate.Global xUnit requirements
         public static TheoryData<ProjectFieldType> FieldTypes =>
             EnumerationTestHelper.GetTheoryDataForAllEnumValues<ProjectFieldType>();
