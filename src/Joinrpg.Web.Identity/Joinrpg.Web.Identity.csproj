@@ -4,7 +4,7 @@
         <AssemblyTitle>JoinRpg.Web.Identity</AssemblyTitle>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.1.6" />
+        <PackageReference Include="Microsoft.AspNetCore.App" Version="3.1.7" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
