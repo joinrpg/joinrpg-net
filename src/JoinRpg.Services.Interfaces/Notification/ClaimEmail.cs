@@ -50,15 +50,21 @@ namespace JoinRpg.Services.Interfaces.Notification
     {
         public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
 
-        public IFieldContainter FieldsContainer { get;}
+        public IFieldContainter FieldsContainer { get; }
         public ILinkable Linkable { get; }
 
         [NotNull]
         public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
+        /// <summary>
+        /// Имя связанной заявки
+        /// </summary>
         [CanBeNull]
         public Claim Claim { get; }
 
+        /// <summary>
+        /// Имя персонажа/заявки
+        /// </summary>
         [NotNull]
         public string Name { get; }
 
@@ -124,7 +130,6 @@ namespace JoinRpg.Services.Interfaces.Notification
                    $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
             }
 
-            Character = character;
             Initiator = initiator;
             Text = new MarkdownString();
             Recipients = recipients;
