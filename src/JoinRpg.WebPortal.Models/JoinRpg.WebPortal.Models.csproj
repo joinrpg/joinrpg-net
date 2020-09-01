@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
       <NoWarn>${NoWarn};1591</NoWarn>
   </PropertyGroup>
@@ -11,7 +11,7 @@
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
-    <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj" />
+    <ProjectReference Include="..\JoinRpg.Markdown\Joinrpg.Markdown.csproj" />
     <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
