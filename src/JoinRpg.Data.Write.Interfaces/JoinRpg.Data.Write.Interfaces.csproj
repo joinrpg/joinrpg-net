@@ -10,6 +10,6 @@
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.0" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
   </ItemGroup>
 </Project>
