@@ -8,7 +8,7 @@ namespace JoinRpg.Web.XGameApi.Contract
     public class CharacterHeader
     {
         /// <summary>
-        /// Id
+        /// Id of character. Globallly unique between all projects.
         /// </summary>
         public int CharacterId { get; set; }
         /// <summary>
