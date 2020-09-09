@@ -10,7 +10,7 @@ namespace JoinRpg.Web.XGameApi.Contract
     public class CharacterInfo
     {
         /// <summary>
-        /// Id
+        /// Id of character. Globallly unique between all projects.
         /// </summary>
         public int CharacterId { get; set; }
 
@@ -65,8 +65,8 @@ namespace JoinRpg.Web.XGameApi.Contract
         public string CharacterName { get; set; }
 
         /// <summary>
-        /// Description.
-        /// This is legacy field, in future will be removed in favor of just using Fields
+        /// This is legacy field. Please use into Fields to get character description.
+        /// In future will be removed.
         /// </summary>
         [Obsolete]
         public string CharacterDescription { get; set; }
