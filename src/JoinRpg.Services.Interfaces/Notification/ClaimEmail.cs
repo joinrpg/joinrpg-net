@@ -50,27 +50,33 @@ namespace JoinRpg.Services.Interfaces.Notification
     {
         public IReadOnlyCollection<FieldWithPreviousAndNewValue> UpdatedFields { get; }
 
-        public IFieldContainter FieldsContainer => (IFieldContainter)Claim ?? Character;
-        public ILinkable GetLinkable() => (ILinkable)Claim ?? Character;
+        public IFieldContainter FieldsContainer { get; }
+        public ILinkable Linkable { get; }
 
         [NotNull]
         public IReadOnlyDictionary<string, PreviousAndNewValue> OtherChangedAttributes { get; }
 
-        [CanBeNull]
-        public Character Character { get; }
-
+        /// <summary>
+        /// Имя связанной заявки
+        /// </summary>
         [CanBeNull]
         public Claim Claim { get; }
 
+        /// <summary>
+        /// Имя персонажа/заявки
+        /// </summary>
+        [NotNull]
+        public string Name { get; }
+
         //Is character is null, Claim is not null and vice versa. (restricted by constructors).
-        public bool IsCharacterMail => Character != null;
+        public bool IsCharacterMail { get; }
 
         public FieldsChangedEmail(
             Claim claim,
             User initiator,
             ICollection<User> recipients,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
+            IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
             : this(null, claim, initiator, recipients, updatedFields, otherChangedAttributes)
         {
         }
@@ -87,30 +93,43 @@ namespace JoinRpg.Services.Interfaces.Notification
         }
 
         private FieldsChangedEmail(
-            Character character,
-            Claim claim,
+            Character? character,
+            Claim? claim,
             User initiator,
             ICollection<User> recipients,
             [NotNull]
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
             [CanBeNull]
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
+            IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
         {
             if (character != null && claim != null)
             {
                 throw new ArgumentException(
                     $"Both {nameof(character)} and {nameof(claim)} were provided");
             }
-
-            if (character == null && claim == null)
+            else if (claim != null)
+            {
+                FieldsContainer = claim;
+                Linkable = claim;
+                ProjectName = claim.Project.ProjectName;
+                Claim = claim;
+                Name = claim.Name;
+            }
+            else if (character != null)
+            {
+                FieldsContainer = character;
+                Linkable = character;
+                ProjectName = character.Project.ProjectName;
+                Claim = character.ApprovedClaim;
+                Name = character.CharacterName;
+                IsCharacterMail = true;
+            }
+            else
             {
                 throw new ArgumentException(
-                    $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
+                   $"Neither  {nameof(character)} nor {nameof(claim)} were provided");
             }
 
-            Character = character;
-            Claim = claim;
-            ProjectName = character?.Project.ProjectName ?? claim?.Project.ProjectName;
             Initiator = initiator;
             Text = new MarkdownString();
             Recipients = recipients;

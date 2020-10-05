@@ -12,7 +12,7 @@ namespace Joinrpg.Markdown
         /// Return X first words from markdown (keeping formating).
         /// TODO: That method could be improved and unit tested
         /// </summary>
-        public static MarkdownString TakeWords(this MarkdownString markdownString, int words)
+        public static MarkdownString? TakeWords(this MarkdownString markdownString, int words)
         {
             if (markdownString?.Contents == null)
             {
