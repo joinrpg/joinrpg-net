@@ -2,7 +2,7 @@ namespace JoinRpg.Dal.Impl.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     public partial class ScheduleToField : DbMigration
     {
         public override void Up()
@@ -34,19 +34,19 @@ FROM dbo.ProjectFields F
 INNER JOIN dbo.ProjectScheduleSettings PSS ON PSS.TimeSlotField_ProjectFieldId = F.ProjectFieldId");
             DropTable("dbo.ProjectScheduleSettings");
         }
-        
+
         public override void Down()
         {
             CreateTable(
                 "dbo.ProjectScheduleSettings",
                 c => new
-                    {
-                        ProjectId = c.Int(nullable: false),
-                        RoomField_ProjectFieldId = c.Int(),
-                        TimeSlotField_ProjectFieldId = c.Int(),
-                    })
+                {
+                    ProjectId = c.Int(nullable: false),
+                    RoomField_ProjectFieldId = c.Int(),
+                    TimeSlotField_ProjectFieldId = c.Int(),
+                })
                 .PrimaryKey(t => t.ProjectId);
-            
+
             DropColumn("dbo.ProjectDetails", "ScheduleEnabled");
             CreateIndex("dbo.ProjectScheduleSettings", "TimeSlotField_ProjectFieldId");
             CreateIndex("dbo.ProjectScheduleSettings", "RoomField_ProjectFieldId");
