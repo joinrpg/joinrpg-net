@@ -13,5 +13,10 @@ namespace JoinRpg.Data.Interfaces
         /// Load every Subscriptions for project
         /// </summary>
         Task<(User User, UserSubscriptionDto[] UserSubscriptions)> LoadSubscriptionsForProject(int userId, int projectId);
+
+        /// <summary>
+        /// Load subscribtion by id
+        /// </summary>
+        Task<UserSubscriptionDto> LoadSubscriptionById(int projectId, int subscriptionId);
     }
 }

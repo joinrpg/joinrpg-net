@@ -1,5 +1,7 @@
+using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Interfaces;
@@ -37,10 +39,14 @@ namespace JoinRpg.Dal.Impl.Repositories
             var user = await WithProfile(userId);
             var subscribe = await _ctx.Set<UserSubscription>()
                 .Where(x => x.ProjectId == projectId && x.UserId == userId)
-                .Include(x => x.CharacterGroup)
-                .Include(x => x.Claim)
-                .Include(x => x.Character)
-                .Select(x =>
+                .Select(SubscriptionDtoBuilder())
+                .ToArrayAsync();
+            return (user, subscribe);
+        }
+
+        private Expression<Func<UserSubscription, UserSubscriptionDto>> SubscriptionDtoBuilder()
+        {
+            return x =>
                     new UserSubscriptionDto()
                     {
                         UserSubscriptionId = x.UserSubscriptionId,
@@ -60,10 +66,16 @@ namespace JoinRpg.Dal.Impl.Repositories
                             FieldChange = x.FieldChange,
                             MoneyOperation = x.MoneyOperation,
                         }
-                    }
-                )
-                .ToArrayAsync();
-            return (user, subscribe);
+                    };
+        }
+
+        public async Task<UserSubscriptionDto> LoadSubscriptionById(int projectId, int subscriptionId)
+        {
+            var subscribe = await _ctx.Set<UserSubscription>()
+                .Where(x => x.ProjectId == projectId && x.UserSubscriptionId == subscriptionId)
+                .Select(SubscriptionDtoBuilder())
+                .FirstOrDefaultAsync();
+            return subscribe;
         }
 
         public Task<User> GetByEmail(string email)

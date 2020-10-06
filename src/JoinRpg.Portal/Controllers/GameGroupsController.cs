@@ -16,6 +16,7 @@ using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
+using JoinRpg.Web.Models.Subscribe;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -500,7 +501,7 @@ namespace JoinRpg.Portal.Controllers
 
             var serverModel = new SubscribeSettingsViewModel(user, group);
 
-            serverModel.OrSetIn(viewModel);
+            serverModel.Options.AssignFrom(viewModel.Options);
 
             try
             {

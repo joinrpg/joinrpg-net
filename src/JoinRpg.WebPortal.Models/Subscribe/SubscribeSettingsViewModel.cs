@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 
-namespace JoinRpg.Web.Models.CharacterGroups
+namespace JoinRpg.Web.Models.Subscribe
 {
-    public class SubscribeSettingsViewModel : ISubscriptionOptions
+    public class SubscribeSettingsViewModel
     {
         public SubscribeSettingsViewModel()
         {
@@ -36,7 +35,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
             var direct = user.Subscriptions.SingleOrDefault(s => s.ClaimId == claim.ClaimId);
             if (direct != null)
             {
-                this.AssignFrom(direct);
+                Options.AssignFrom(direct);
             }
             else
             {
@@ -51,7 +50,7 @@ namespace JoinRpg.Web.Models.CharacterGroups
         {
             if (direct != null)
             {
-                this.AssignFrom(direct);
+                Options.AssignFrom(direct);
             }
 
             foreach (var characterGroup in group.ParentGroups)
@@ -68,11 +67,11 @@ namespace JoinRpg.Web.Models.CharacterGroups
             if (subscribe != null)
             {
                 //Set what set in parent
-                this.OrSetIn(subscribe);
+                Options.OrSetIn(subscribe);
                 //Disable edit if set in parent
-                EnabledFlags.AndNotSetIn(subscribe);
+                DisabledFlags.OrSetIn(subscribe);
 
-                if (!EnabledFlags.AnySet())
+                if (DisabledFlags.AllSet)
                 {
                     return;
                 }
@@ -81,37 +80,22 @@ namespace JoinRpg.Web.Models.CharacterGroups
             foreach (var parentGroup in characterGroup.ParentGroups)
             {
                 ParseCharacterGroup(parentGroup, user);
-                if (!EnabledFlags.AnySet())
+                if (DisabledFlags.AllSet)
                 {
                     return;
                 }
             }
         }
 
-        [Display(
-            Name = "Подписка на новые заявки/прием/отклонение",
-            Description = "Будут приходить уведомления о любых изменениях статуса заявки")]
-        public bool ClaimStatusChange { get; set; }
+        public SubscribeOptionsViewModel Options { get; set; } = new SubscribeOptionsViewModel();
 
-        [Display(Name = "Подписка на комментарии", Description = "Будут приходить уведомления о любых комментариях к заявке")]
-        public bool Comments { get; set; }
-
-        [Display(Name = "Подписка на изменение полей персонажа/заявки")]
-        public bool FieldChange { get; set; }
-
-        [Display(Name = "Подписка на финансовые операции", Description = "Будут приходить уведомления о сданном взносе, его изменении и других финансовых операциях")]
-        public bool MoneyOperation { get; set; }
-
-        [Display(Name = "Подписка на операции с поселением", Description = "Будут приходить уведомления о изменении типа поселения, назначении комнаты и других операциях с поселением")]
-        public bool AccommodationChange { get; set; }
-
-        public ISubscriptionOptions EnabledFlags { get; } = SubscribeOptionsExtensions.AllSet();
+        public SubscribeOptionsViewModel DisabledFlags { get; set; } = new SubscribeOptionsViewModel();
 
 
         public int ProjectId { get; set; }
         public int CharacterGroupId { get; set; }
 
-        public ISubscriptionOptions GetOptionsToSubscribeDirectly() => this.AndSetIn(EnabledFlags);
+        public ISubscriptionOptions GetOptionsToSubscribeDirectly() => Options.AndNotSetIn(DisabledFlags);
 
 
     }

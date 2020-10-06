@@ -40,7 +40,7 @@
                                 <span title="настроить" class="glyphicon glyphicon-wrench"></span> настроить
                             </a>
                         }
-                        <a type="button" class="btn btn-default" href="@Url.Action("EditSubscribe", "GameGroups", new {Model.ProjectId, Model.CharacterGroupId}, null)">
+                        <a type="button" class="btn btn-default" asp-controller="GameSubscribe" asp-action="EditForGroup" asp-route-projectId="@Model.ProjectId" asp-route-characterGroupId="@Model.CharacterGroupId" >
                             <span class="glyphicon glyphicon-pushpin"></span> подписка
                         </a>
 

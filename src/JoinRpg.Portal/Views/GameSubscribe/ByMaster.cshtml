@@ -17,13 +17,17 @@
     @foreach (var item in Model.Items)
     {
         <tr>
+          <td>
+            <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@item.UserSubscriptionId">
+              <span class="glyphicon glyphicon-pushpin"></span>
+            </a>
+            <a href="@item.Link">
+              @item.Name
+            </a>
+
+          </td>
             <td>
-                <a href="@item.Link">
-                    @item.Name
-                </a>
-            </td>
-            <td>
-                @if (item.ClaimStatusChange && item.AccommodationChange && item.Comments && item.FieldChange && item.MoneyOperation)
+                @if (item.Options.AllSet)
                 {
                     <label class="label label-success">
                         Любые изменения
@@ -31,32 +35,43 @@
                 }
                 else
                 {
-                    @if (item.ClaimStatusChange)
+                    @if (item.Options.ClaimStatusChange)
                     {
-                        <label asp-for="@item.ClaimStatusChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.ClaimStatusChange" class="label label-success"> </label>
                     }
-                    @if (item.Comments)
+                    @if (item.Options.Comments)
                     {
-                        <label asp-for="@item.Comments" class="label label-success"> </label>
+                        <label asp-for="@item.Options.Comments" class="label label-success"> </label>
                     }
-                    @if (item.FieldChange)
+                    @if (item.Options.FieldChange)
                     {
-                        <label asp-for="@item.FieldChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.FieldChange" class="label label-success"> </label>
                     }
-                    @if (item.MoneyOperation)
+                    @if (item.Options.MoneyOperation)
                     {
-                        <label asp-for="@item.MoneyOperation" class="label label-success"> </label>
+                        <label asp-for="@item.Options.MoneyOperation" class="label label-success"> </label>
                     }
-                    @if (item.AccommodationChange)
+                    @if (item.Options.AccommodationChange)
                     {
-                        <label asp-for="@item.AccommodationChange" class="label label-success"> </label>
+                        <label asp-for="@item.Options.AccommodationChange" class="label label-success"> </label>
                     }
                 }
             </td>
         </tr>
     }
+    @foreach (var paymentType in Model.PaymentTypeNames)
+    {
+      <tr>
+        <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+        <td>
+            <label class="label label-success">
+                Отмеченные взносы
+            </label>
+        </td>
+    </tr>
+    }
     <tr>
-        <td title="Эту подписку нельзя настроить">Заявки, за которые отвественен</td>
+        <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
         <td>
             <label class="label label-success">
                 Любые изменения
