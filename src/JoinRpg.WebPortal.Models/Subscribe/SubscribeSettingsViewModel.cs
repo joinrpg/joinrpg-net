@@ -1,9 +1,8 @@
 using System.Linq;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Web.Models.Subscribe;
 
-namespace JoinRpg.Web.Models.CharacterGroups
+namespace JoinRpg.Web.Models.Subscribe
 {
     public class SubscribeSettingsViewModel
     {
