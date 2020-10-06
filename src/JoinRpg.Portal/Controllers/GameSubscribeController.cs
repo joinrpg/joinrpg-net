@@ -54,7 +54,7 @@ namespace JoinRpg.Portal.Controllers
             var link = subscribe.ToSubscribeTargetLink();
             return link.LinkType switch
             {
-                LinkType.ResultCharacterGroup => RedirectToAction("EditForGroup", new { projectId, characterGroupId = link.Identification } ),
+                LinkType.ResultCharacterGroup => RedirectToAction("EditForGroup", new { projectId, characterGroupId = link.Identification }),
                 LinkType.Claim => Redirect(uriService.GetUri(link).AbsoluteUri),
                 _ => Redirect(uriService.GetUri(link).AbsoluteUri),
             };

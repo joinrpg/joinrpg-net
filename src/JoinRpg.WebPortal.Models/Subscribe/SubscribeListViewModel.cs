@@ -51,7 +51,7 @@ namespace JoinRpg.Web.Models.Subscribe
                 PaymentTypeKind.Custom => dto.Name,
                 PaymentTypeKind.Cash => "Наличные",
                 PaymentTypeKind.Online => "Онлайн",
-                _ => throw new ArgumentOutOfRangeException("dto.TypeKind", (object) dto.TypeKind, "Wrong type"),
+                _ => throw new ArgumentOutOfRangeException("dto.TypeKind", (object)dto.TypeKind, "Wrong type"),
             };
         }
 

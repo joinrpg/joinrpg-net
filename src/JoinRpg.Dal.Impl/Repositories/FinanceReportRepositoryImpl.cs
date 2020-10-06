@@ -44,6 +44,6 @@ namespace JoinRpg.Dal.Impl.Repositories
             return query.ToListAsync();
         }
 
-           
+
     }
 }
