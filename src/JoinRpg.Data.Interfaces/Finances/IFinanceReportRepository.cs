@@ -8,5 +8,10 @@ namespace JoinRpg.Data.Interfaces
     {
         Task<List<MoneyTransfer>> GetMoneyTransfersForMaster(int projectId, int masterId);
         Task<List<MoneyTransfer>> GetAllMoneyTransfers(int projectId);
+
+        /// <summary>
+        /// Get all payment types which linked to master to project
+        /// </summary>
+        Task<List<PaymentTypeDto>> GetPaymentTypesForMaster(int projectId, int masterId);
     }
 }

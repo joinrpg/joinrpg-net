@@ -9,5 +9,7 @@ namespace JoinRpg.Web.Models.Subscribe
         public string Name { get; set; }
 
         public SubscribeOptionsViewModel Options { get; set; }
+
+        public int UserSubscriptionId { get; set; }
     }
 }

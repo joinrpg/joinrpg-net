@@ -17,11 +17,15 @@
     @foreach (var item in Model.Items)
     {
         <tr>
-            <td>
-                <a href="@item.Link">
-                    @item.Name
-                </a>
-            </td>
+          <td>
+            <a asp-controller="GameSubscribe" asp-action="EditRedirect" asp-route-projectId="@Model.ProjectId" asp-route-subscriptionId="@item.UserSubscriptionId">
+              <span class="glyphicon glyphicon-pushpin"></span>
+            </a>
+            <a href="@item.Link">
+              @item.Name
+            </a>
+
+          </td>
             <td>
                 @if (item.Options.AllSet)
                 {
@@ -55,8 +59,19 @@
             </td>
         </tr>
     }
+    @foreach (var paymentType in Model.PaymentTypeNames)
+    {
+      <tr>
+        <td title="Эту подписку нельзя настроить">Взносы/@paymentType</td>
+        <td>
+            <label class="label label-success">
+                Отмеченные взносы
+            </label>
+        </td>
+    </tr>
+    }
     <tr>
-        <td title="Эту подписку нельзя настроить">Заявки, за которые отвественен</td>
+        <td title="Эту подписку нельзя настроить">Заявки, за которые ответственен</td>
         <td>
             <label class="label label-success">
                 Любые изменения
