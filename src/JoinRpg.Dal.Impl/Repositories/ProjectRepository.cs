@@ -234,11 +234,8 @@ namespace JoinRpg.Dal.Impl.Repositories
             var characterQuery = GetLastUpdateQuery<Character>(character => character.UpdatedAt);
             var characterGroupQuery = GetLastUpdateQuery<CharacterGroup>(group => group.UpdatedAt);
             var plotQuery = GetLastUpdateQuery<PlotFolder>(pf => pf.ModifiedDateTime);
-            var plotElementQuery =
-                GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime);
+            var plotElementQuery = GetLastUpdateQuery<PlotElement>(pe => pe.ModifiedDateTime);
             var claimQuery = GetLastUpdateQuery<Claim>(pfs => pfs.LastUpdateDateTime);
-
-
 
             var allQuery =
                 from updated in
@@ -248,16 +245,17 @@ namespace JoinRpg.Dal.Impl.Repositories
                         .Union(plotQuery)
                         .Union(plotElementQuery)
                         .Union(claimQuery)
-                group updated by new { updated.ProjectId, updated.ProjectName }
+                group updated by new { updated.ProjectId, updated.ProjectName, updated.LegacyMode }
                 into gr
                 select new ProjectWithUpdateDateDto()
                 {
                     ProjectId = gr.Key.ProjectId,
                     ProjectName = gr.Key.ProjectName,
                     LastUpdated = gr.Max(g => g.LastUpdated),
+                    LegacyMode = gr.Key.LegacyMode,
                 }
                 into beforeFilter
-                where beforeFilter.LastUpdated < inActiveSince
+                where beforeFilter.LastUpdated < inActiveSince || beforeFilter.LegacyMode
                 orderby beforeFilter.LastUpdated ascending
                 select beforeFilter;
 
@@ -276,6 +274,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                        ProjectId = gr.Key.ProjectId,
                        ProjectName = gr.Key.ProjectName,
                        LastUpdated = gr.Max(g => lastUpdateExpression.Invoke(g.entity)),
+                       LegacyMode = gr.Key.Details.CharacterNameLegacyMode,
                    };
         }
 
