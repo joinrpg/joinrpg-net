@@ -63,10 +63,10 @@ namespace JoinRpg.Domain
         /// <summary>
         /// Special field - schedule time slot
         /// </summary>
-        public static bool IsTimeSlot(this ProjectField field) => field.Project.Details.ScheduleSettings?.TimeSlotField == field;
+        public static bool IsTimeSlot(this ProjectField field) => field.FieldType == ProjectFieldType.ScheduleTimeSlotField;
         /// <summary>
         /// Special field - schedule room slot
         /// </summary>
-        public static bool IsRoomSlot(this ProjectField field) => field.Project.Details.ScheduleSettings?.RoomField == field;
+        public static bool IsRoomSlot(this ProjectField field) => field.FieldType == ProjectFieldType.ScheduleRoomField;
     }
 }

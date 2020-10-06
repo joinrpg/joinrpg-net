@@ -29,11 +29,13 @@
     <div class="col-md-8">
         @*TODO: May be also set client id here*@
         @switch (Model.FieldViewType)
-        {
-            case ProjectFieldViewType.Dropdown:
-            case ProjectFieldViewType.MultiSelect:
-                if (Model.ShowPrice && string.IsNullOrWhiteSpace(Model.Value))
-                {
+              {
+                case ProjectFieldViewType.Dropdown:
+                case ProjectFieldViewType.MultiSelect:
+                case ProjectFieldViewType.ScheduleRoomField:
+                case ProjectFieldViewType.ScheduleTimeSlotField:
+                  if (Model.ShowPrice && string.IsNullOrWhiteSpace(Model.Value))
+                  {
                     <div class="form-control-complex">
                         <div class="form-control-1-4">( ничего не выбрано )</div>
                         <div class="form-control-2-4"></div>
@@ -44,25 +46,25 @@
                 {
                     <div class="form-control-complex">
                     <div class="form-control-1-4">@if (Model.HasMasterAccess && value.SpecialGroupId != null)
-                    {
-                        @Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null)
-                        <text>&nbsp;</text>
+          {
+            @Html.ActionLink(value.Label, "Details", "GameGroups", new {Model.ProjectId, CharacterGroupId = value.SpecialGroupId}, null)
+            <text>&nbsp;</text>
                     }
                     else
                     {
                         @value.Label
-                    }
+        }
                     </div>
                     <div class="form-control-2-4">
                         @value.DescriptionHtml
 
                         @if (!value.MasterDescriptionHtml.IsNullOrWhiteSpace() && Model.HasMasterAccess)
-                        {
+        {
                         <div class="help-block world-object-hidden">@value.MasterDescriptionHtml</div>
                         }
                     </div>
                     @if (Model.ShowPrice)
-                    {
+        {
                         <div class="form-control-4-4 price-table"><strong>Цена:</strong> @Html.RenderPriceElement(value.Price)</div>
                     }                    
                     </div>

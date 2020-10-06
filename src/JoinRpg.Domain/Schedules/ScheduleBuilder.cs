@@ -18,13 +18,13 @@ namespace JoinRpg.Domain.Schedules
         public ScheduleBuilder(Project project, ICollection<Character> characters)
         {
             this.characters = characters.Where(ch => ch.IsActive).ToList();
-            var scheduleSettings = project.Details.ScheduleSettings;
-            if (scheduleSettings is null)
+            RoomField = project.GetRoomFieldOrDefault();
+            TimeSlotField = project.GetTimeSlotFieldOrDefault();
+
+            if (RoomField is null || TimeSlotField is null)
             {
                 throw new Exception("Schedule not enabled");
             }
-            TimeSlotField = scheduleSettings.TimeSlotField;
-            RoomField = scheduleSettings.RoomField;
         }
 
         private HashSet<ProgramItem> NotScheduled { get; } = new HashSet<ProgramItem>();

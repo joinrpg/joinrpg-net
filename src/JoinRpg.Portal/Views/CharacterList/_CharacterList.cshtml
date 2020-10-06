@@ -29,16 +29,18 @@
         <th>@Html.DisplayNameFor(model => firstItem.Problems)</th>
         @foreach (var field in Model.Fields)
         {
-            switch (field.FieldType)
-            {
-                case ProjectFieldType.Text:
-                    continue;
-                case ProjectFieldType.String:
-                case ProjectFieldType.Number:
-                case ProjectFieldType.Dropdown:
-                case ProjectFieldType.Checkbox:
-                case ProjectFieldType.MultiSelect:
-                case ProjectFieldType.Login:
+          switch (field.FieldType)
+          {
+            case ProjectFieldType.Text:
+              continue;
+            case ProjectFieldType.String:
+            case ProjectFieldType.Number:
+            case ProjectFieldType.Dropdown:
+            case ProjectFieldType.Checkbox:
+            case ProjectFieldType.MultiSelect:
+            case ProjectFieldType.ScheduleRoomField:
+            case ProjectFieldType.ScheduleTimeSlotField:
+            case ProjectFieldType.Login:
                     <th>@field.FieldName</th>
                     break;
                 case ProjectFieldType.Header:

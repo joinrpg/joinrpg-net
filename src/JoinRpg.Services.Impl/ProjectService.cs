@@ -108,6 +108,8 @@ namespace JoinRpg.Services.Impl
                 case ProjectTypeDto.ConventionProgram:
                     project.Details.EnableManyCharacters = true;
 
+                    project.Details.ScheduleEnabled = true;
+
                     project.Details.CharacterNameField = CreateField("Название мероприятия", ProjectFieldType.String);
                     project.Details.CharacterNameField.MandatoryStatus = MandatoryStatus.Required;
                     project.Details.CharacterNameField.CanPlayerEdit = true;
@@ -115,17 +117,11 @@ namespace JoinRpg.Services.Impl
                     project.Details.CharacterDescription = CreateField("Описание мероприятия", ProjectFieldType.Text);
                     project.Details.CharacterDescription.CanPlayerEdit = true;
 
-                    var timeField = CreateField("Время проведения мероприятия", ProjectFieldType.MultiSelect);
+                    var timeField = CreateField("Время проведения мероприятия", ProjectFieldType.ScheduleTimeSlotField);
                     timeField.MasterDescription = new MarkdownString("Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
 
-                    var roomField = CreateField("Место проведения мероприятия", ProjectFieldType.MultiSelect);
+                    var roomField = CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField);
                     roomField.MasterDescription = new MarkdownString("Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля возможное время проведения");
-
-                    project.Details.ScheduleSettings = new ProjectScheduleSettings
-                    {
-                        RoomField = roomField,
-                        TimeSlotField = timeField,
-                    };
 
                     break;
                 default:

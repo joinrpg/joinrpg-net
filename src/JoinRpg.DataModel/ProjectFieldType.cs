@@ -10,5 +10,7 @@ namespace JoinRpg.DataModel
         Header,
         Number,
         Login,
+        ScheduleRoomField,
+        ScheduleTimeSlotField,
     }
 }

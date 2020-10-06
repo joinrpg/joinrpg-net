@@ -120,21 +120,20 @@ namespace JoinRpg.Domain
         /// </summary>
         public static int GetCurrentFee(this FieldWithValue self)
         {
-            switch (self.Field.FieldType)
+            if (!self.Field.FieldType.SupportsPricing())
             {
-                case ProjectFieldType.Checkbox:
-                    return self.HasEditableValue ? self.Field.Price : 0;
-
-                case ProjectFieldType.Number:
-                    return self.ToInt() * self.Field.Price;
-
-                case ProjectFieldType.Dropdown:
-                case ProjectFieldType.MultiSelect:
-                    return self.GetDropdownValues().Sum(v => v.Price);
-
-                default:
-                    return 0;
+                return 0;
             }
+            return self.Field.FieldType
+            switch
+            {
+                ProjectFieldType.Checkbox => self.HasEditableValue ? self.Field.Price : 0,
+                ProjectFieldType.Number => self.ToInt() * self.Field.Price,
+                ProjectFieldType.Dropdown => self.GetDropdownValues().Sum(v => v.Price),
+                ProjectFieldType.MultiSelect => self.GetDropdownValues().Sum(v => v.Price),
+
+                _ => throw new NotSupportedException("Can't calculate pricing"),
+            };
         }
 
         /// <summary>

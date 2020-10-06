@@ -4,29 +4,36 @@ using JoinRpg.DataModel;
 
 namespace JoinRpg.Web.Models
 {
-
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public enum ProjectFieldViewType
     {
-        [Display(Name = "Строка", Order = 1), UsedImplicitly]
+        [Display(Name = "Строка", Order = 1)]
         String,
-        [Display(Name = "Текст", Order = 2), UsedImplicitly]
+        [Display(Name = "Текст", Order = 2)]
         Text,
-        [Display(Name = "Выбор", Order = 3), UsedImplicitly]
+        [Display(Name = "Выбор", Order = 3)]
         Dropdown,
-        [Display(Name = "Чекбокс", Order = 5), UsedImplicitly]
+        [Display(Name = "Чекбокс", Order = 5)]
         Checkbox,
-        [Display(Name = "Мультивыбор", Order = 4), UsedImplicitly]
+        [Display(Name = "Мультивыбор", Order = 4)]
         MultiSelect,
-        [Display(Name = "Заголовок", Order = 6), UsedImplicitly]
+        [Display(Name = "Заголовок", Order = 6)]
         Header,
-        [Display(Name = "Число", Order = 7), UsedImplicitly]
+        [Display(Name = "Число", Order = 7)]
         Number,
         [Display(
             Name = "Логин/идентификатор",
             Description = "Латинские буквы и цифры. Если вам нужен логин во внешнюю систему, адрес игровой электронной почты, блога etc",
             Order = 8)]
-        [UsedImplicitly]
         Login,
+        [Display(
+            Name = "Место проведения мероприятия",
+            Order = 9)]
+        ScheduleRoomField,
+        [Display(
+            Name = "Время проведения мероприятия",
+            Order = 8)]
+        ScheduleTimeSlotField,
     }
 
     public static class ProjectFieldViewTypeHelper
@@ -67,7 +74,7 @@ namespace JoinRpg.Web.Models
 
     public enum MandatoryStatusViewType
     {
-        [Display(Name = "Опциональное"), UsedImplicitly]
+        [Display(Name = "Опциональное")]
         Optional,
 
         [Display(Name = "Рекомендованное",
