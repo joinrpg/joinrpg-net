@@ -59,8 +59,7 @@ namespace Markdig.Helpers
             while (length > 0)
             {
                 var c = text[offset];
-                CharNode nextNode;
-                if (!node.TryGetValue(c, out nextNode))
+                if (!node.TryGetValue(c, out CharNode? nextNode))
                 {
                     break;
                 }
@@ -88,8 +87,7 @@ namespace Markdig.Helpers
                 var str = list[i];
                 var c = str[index];
 
-                CharNode nextNode;
-                if (!node.TryGetValue(c, out nextNode))
+                if (!node.TryGetValue(c, out CharNode? nextNode))
                 {
                     nextNode = new CharNode();
                     node.Add(c, nextNode);
