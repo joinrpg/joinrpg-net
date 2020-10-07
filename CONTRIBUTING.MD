@@ -8,7 +8,7 @@ For now joinrpg could be build & run only on **Windows**. Porting to .NET Core s
 1. Start with forking this repository on github. 
 1. Download [Visual Studio 2019](https://www.visualstudio.com/). Community Edition should be enough.
 1. Recommended to install Github Extension (options during install). See more on https://visualstudio.github.com/.
-1. Download .Net Framework 4.7.2 and .Net Framework 4.7.2 SDK (targeting pack).
+1. Download .Net Core 3.1 SDK.
 1. Download [SQL Server Express LocalDB 2017](https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SqlLocalDB.msi) and important! 
 download the latest [cumulative update for SQL Server 2017](https://support.microsoft.com/en-us/help/4047329/sql-server-2017-build-versions)
    1. Create an instance of localdb from command prompt, if you don't have any </br>`sqllocaldb create MSSQLLocalDB`
