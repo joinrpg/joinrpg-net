@@ -38,10 +38,23 @@ namespace Joinrpg.Dal.Migrate
 
             logger.LogInformation("Migrator created");
 
-            task = Task.Run(async () =>
+            task = Task.Run(() =>
             {
-                await DoWork(CancellationTokenSource.Token);
-                applicationLifetime.StopApplication();
+                try
+                {
+                    logger.LogInformation("Start migration");
+                    migrator.Update();
+                    logger.LogInformation("Migration completed");
+                }
+                catch (System.Exception exc)
+                {
+                    logger.LogError(exc, "Problem during migration");
+                    throw;
+                }
+                finally
+                {
+                    applicationLifetime.StopApplication();
+                }
             });
             return Task.CompletedTask;
         }
@@ -50,22 +63,6 @@ namespace Joinrpg.Dal.Migrate
             CancellationTokenSource.Cancel();
             // Defer completion promise, until our application has reported it is done.
             return task;
-        }
-
-        private async Task DoWork(CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Start migration");
-            try
-            {
-                migrator.Update();
-            }
-            catch (System.Exception exc)
-            {
-                logger.LogError("Problem during migration", exc);
-                throw;
-            }
-
-            logger.LogInformation("Migration completed");
         }
     }
 }
