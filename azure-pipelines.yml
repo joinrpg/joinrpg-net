@@ -35,3 +35,17 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: publish
+    projects: Joinrpg.Dal.Migrate\Joinrpg.Dal.Migrate.csproj
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\Migrate'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)\Migrate'
+    ArtifactName: 'migrate'
+    publishLocation: 'Container'
+
+
