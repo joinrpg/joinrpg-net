@@ -101,9 +101,6 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var migrator = new DbMigrator(new Dal.Impl.Migrations.Configuration());
-            migrator.Update();
-
             app.UseRequestLocalization(options =>
             {
                 options.DefaultRequestCulture = new RequestCulture("ru-RU");
