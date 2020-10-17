@@ -40,6 +40,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
+    zipAfterPublish: false
     projects: Joinrpg.Dal.Migrate\Joinrpg.Dal.Migrate.csproj
     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\Migrate'
 
