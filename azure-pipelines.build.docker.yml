@@ -31,16 +31,31 @@ steps:
 
 
 - task: DotNetCoreCLI@2
-  displayName: Build and publish
+  displayName: Build and publish Portal
   inputs:
     command: publish
     publishWebProjects: false
     projects: 'src/Joinrpg.Portal/Joinrpg.Portal.csproj'
-    arguments: '-c Release -o $(Build.ArtifactStagingDirectory)/publish'
+    arguments: '-c Release -o $(Build.ArtifactStagingDirectory)/portal'
 
 - task: Docker@2
-  displayName: Create and push image
+  displayName: Create and push Portal image
   inputs:
     command: buildAndPush
-    buildContext: '$(Build.ArtifactStagingDirectory)/publish'
+    buildContext: '$(Build.ArtifactStagingDirectory)/portal'
+    repository: leotsarev/joinrpg
+
+- task: DotNetCoreCLI@2
+  displayName: Build and publish Migrate
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: 'src/JJoinRpg.Dal.Migrate/JoinRpg.Dal.Migrate.csproj'
+    arguments: '-c Release -o $(Build.ArtifactStagingDirectory)/migrate'
+
+- task: Docker@2
+  displayName: Create and push Migrate image
+  inputs:
+    command: buildAndPush
+    buildContext: '$(Build.ArtifactStagingDirectory)/migrate'
     repository: leotsarev/joinrpg
