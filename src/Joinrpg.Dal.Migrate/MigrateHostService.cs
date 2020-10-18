@@ -31,8 +31,8 @@ namespace Joinrpg.Dal.Migrate
 
             logger.LogInformation("Start migration");
 
-            logger.LogInformation("Last local migration {lastLocal}", migrator.GetLocalMigrations().LastOrDefault());
-            logger.LogInformation("Last DB migration {lastDb}", migrator.GetDatabaseMigrations().LastOrDefault());
+            logger.LogInformation("Last local migration {lastLocal}", migrator.GetLocalMigrations().OrderBy(x => x).LastOrDefault());
+            logger.LogInformation("Last DB migration {lastDb}", migrator.GetDatabaseMigrations().OrderBy(x => x).LastOrDefault());
 
             var pending = migrator.GetPendingMigrations();
             logger.LogInformation("Pending migrations {pending}", string.Join("\n", pending));
