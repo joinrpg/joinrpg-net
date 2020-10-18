@@ -37,7 +37,7 @@ namespace Joinrpg.Dal.Migrate
         }
 
         internal abstract void DoWork();
-        
+
         Task IHostedService.StopAsync(CancellationToken cancellationToken)
         {
             CancellationTokenSource.Cancel();
