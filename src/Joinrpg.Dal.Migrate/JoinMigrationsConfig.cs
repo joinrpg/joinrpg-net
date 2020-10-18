@@ -10,6 +10,7 @@ namespace Joinrpg.Dal.Migrate
             TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo(connectionString, "System.Data.SqlClient");
             MigrationsAssembly = typeof(MyDbContext).Assembly;
             MigrationsNamespace = typeof(MyDbContext).Namespace + ".Migrations";
+            ContextKey = "JoinRpg.Dal.Impl.Migrations.Configuration";
         }
     }
 }
