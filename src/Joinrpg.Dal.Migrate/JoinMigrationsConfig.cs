@@ -8,6 +8,8 @@ namespace Joinrpg.Dal.Migrate
         public JoinMigrationsConfig(string connectionString)
         {
             TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo(connectionString, "System.Data.SqlClient");
+            MigrationsAssembly = typeof(MyDbContext).Assembly;
+            MigrationsNamespace = typeof(MyDbContext).Namespace + ".Migrations";
         }
     }
 }

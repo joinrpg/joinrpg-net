@@ -28,6 +28,7 @@ namespace Joinrpg.Dal.Migrate
 
             var migrator = new MigratorLoggingDecorator(new DbMigrator(new JoinMigrationsConfig(connectionString)), new MigrationsLoggerILoggerAdapter(logger));
             logger.LogInformation("Migrator created");
+
             logger.LogInformation("Start migration");
 
             logger.LogInformation("Last local migration {lastLocal}", migrator.GetLocalMigrations().LastOrDefault());
