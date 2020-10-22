@@ -1,3 +1,4 @@
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -9,7 +10,9 @@ namespace JoinRpg.Portal.Infrastructure.HealthChecks
     {
         internal static void MapJoinHealthChecks(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapHealthChecks("/health").WithMetadata(new AllowAnonymousAttribute());
+            endpoints.MapHealthChecks("/health",
+                new HealthCheckOptions { ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse })
+                .WithMetadata(new AllowAnonymousAttribute());
             endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
             {
                 Predicate = (check) => check.Tags.Contains("ready"), //TODO m.b. add some probes
