@@ -85,7 +85,8 @@ namespace JoinRpg.Portal
             services.AddSwaggerGen(Swagger.ConfigureSwagger);
             services.AddApplicationInsightsTelemetry();
 
-            services.AddHealthChecks();
+            services.AddHealthChecks()
+                .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
         }
 
 
