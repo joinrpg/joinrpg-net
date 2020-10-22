@@ -1,14 +1,12 @@
-using System.Data.Entity.Migrations;
-using System.Diagnostics;
 using System.Globalization;
 using Autofac;
 using Joinrpg.Web.Identity;
-using JoinRpg.DataModel;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
+using JoinRpg.Portal.Infrastructure.HealthChecks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -86,6 +84,8 @@ namespace JoinRpg.Portal
 
             services.AddSwaggerGen(Swagger.ConfigureSwagger);
             services.AddApplicationInsightsTelemetry();
+
+            services.AddHealthChecks();
         }
 
 
@@ -148,7 +148,8 @@ namespace JoinRpg.Portal
 
             app.UseEndpoints(endpoints =>
             {
-                //TODO endpoints.MapHealthChecks("/health");
+                endpoints.MapJoinHealthChecks();
+
                 endpoints.MapControllers();
                 endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
