@@ -198,19 +198,14 @@ namespace JoinRpg.Portal.Controllers
             });
         }
 
-        private class PascalCaseNamingPolicy : JsonNamingPolicy
-        {
-            public override string ConvertName(string name)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         private JsonResult ReturnJson(object data)
         {
             Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-            return Json(data);
+            return Json(data, new JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = null, // Pascal case
+            });
         }
 
         private object ConvertCharacterToJson(CharacterViewModel ch)
