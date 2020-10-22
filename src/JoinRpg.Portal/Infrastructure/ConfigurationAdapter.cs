@@ -1,7 +1,5 @@
-using System;
 using JoinRpg.Dal.Impl;
 using JoinRpg.Services.Interfaces;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using PscbApi;
 
@@ -31,11 +29,11 @@ namespace JoinRpg.Portal.Infrastructure
             {
 
                 var connString = configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrWhiteSpace(connString))
-                {
-                    return System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
-                        ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey) + "\\App_Data") ?? "_";
-                }
+                /*       if (string.IsNullOrWhiteSpace(connString))
+                       {
+                           return System.Configuration.ConfigurationManager.ConnectionStrings["DefaultConnection"]?.ConnectionString
+                               ?.Replace("!!!!", configuration.GetValue<string>(WebHostDefaults.ContentRootKey) + "\\App_Data") ?? "_";
+                       }*/
                 return connString;
             }
         }
