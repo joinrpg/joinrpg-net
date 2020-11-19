@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
 

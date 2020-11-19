@@ -1,7 +1,7 @@
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     internal class LinkerRenderAdapter : HtmlObjectRenderer<EntityLinkInline>
     {

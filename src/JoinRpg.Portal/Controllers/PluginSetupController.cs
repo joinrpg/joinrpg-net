@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.PluginHost.Interfaces;

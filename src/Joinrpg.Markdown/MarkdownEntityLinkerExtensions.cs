@@ -2,7 +2,7 @@ using System;
 using JetBrains.Annotations;
 using Markdig;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     internal static class MarkdownEntityLinkerExtensions
     {

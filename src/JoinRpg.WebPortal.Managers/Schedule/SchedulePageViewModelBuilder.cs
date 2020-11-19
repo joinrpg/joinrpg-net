@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using JoinRpg.Domain.Schedules;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Web.Models.Schedules;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     /// <summary>
     /// Default implementations of link renderer that will not render any links

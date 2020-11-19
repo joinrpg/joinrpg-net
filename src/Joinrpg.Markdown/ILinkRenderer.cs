@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     /// <summary>
     /// interfaces that allows consumers to plugin its renderers

@@ -2,7 +2,7 @@ using System;
 using HtmlAgilityPack;
 using Vereyon.Web;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     internal static class HtmlSanitizers
     {

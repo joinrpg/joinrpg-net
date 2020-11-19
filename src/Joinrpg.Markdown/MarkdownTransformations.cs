@@ -1,7 +1,7 @@
 using System.Linq;
 using JoinRpg.DataModel;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     /// <summary>
     /// Some utility functions that allows to transform markdown string to other markdown strings

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using JoinRpg.DataModel;
 using Shouldly;
 using Xunit;

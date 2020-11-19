@@ -11,7 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
-    <ProjectReference Include="..\Joinrpg.Markdown\Joinrpg.Markdown.csproj" />
+    <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
   </ItemGroup>
   <ItemGroup>

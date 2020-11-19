@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
