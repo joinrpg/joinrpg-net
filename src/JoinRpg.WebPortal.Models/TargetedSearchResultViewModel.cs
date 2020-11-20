@@ -1,8 +1,8 @@
 using System;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
-using JoinRpg.Markdown;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Services.Interfaces.Search;
 using Microsoft.AspNetCore.Html;

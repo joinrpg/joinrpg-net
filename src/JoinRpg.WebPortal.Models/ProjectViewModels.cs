@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using JoinRpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models
 {

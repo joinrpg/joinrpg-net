@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using JoinRpg.Markdown;
 using JoinRpg.CommonUI.Models;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
+using JoinRpg.Markdown;
 
 namespace JoinRpg.Web.Models
 {

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using JoinRpg.Markdown;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Experimental.Plugin.Interfaces;
+using JoinRpg.Markdown;
 using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure.Authorization;
