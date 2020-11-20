@@ -2,7 +2,7 @@
 WORKDIR /app
 
 COPY . ./
-RUN dotnet publish src/JoinRpg.Portal -c Release -o out -p:langversion=latest -p:GenerateDocumentationFile=true
+RUN dotnet publish src/JoinRpg.Portal -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:3.1
