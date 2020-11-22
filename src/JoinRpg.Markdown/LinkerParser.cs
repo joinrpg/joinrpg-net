@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 using Markdig.Helpers;
 using Markdig.Parsers;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     internal class LinkerParser : InlineParser
     {

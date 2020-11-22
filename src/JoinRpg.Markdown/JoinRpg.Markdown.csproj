@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyTitle>Joinrpg.Markdown</AssemblyTitle>
+    <AssemblyTitle>JoinRpg.Markdown</AssemblyTitle>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
+    <AssemblyName>JoinRpg.Markdown</AssemblyName>
+    <RootNamespace>JoinRpg.Markdown</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>

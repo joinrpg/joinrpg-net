@@ -1,6 +1,6 @@
 using Markdig.Syntax.Inlines;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     internal class EntityLinkInline : Inline
     {

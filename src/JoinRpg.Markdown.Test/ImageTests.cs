@@ -1,4 +1,4 @@
-using Joinrpg.Markdown;
+using JoinRpg.Markdown;
 using Microsoft.VisualBasic;
 using Shouldly;
 using Vereyon.Web;

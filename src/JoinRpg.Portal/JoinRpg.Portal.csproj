@@ -4,8 +4,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
-      <NoWarn>${NoWarn};CS1591</NoWarn>
-      <ApplicationInsightsResourceId>/subscriptions/f0fe6f62-070f-4b7b-bcd1-c4265207fead/resourcegroups/Joinrpg-Develop/providers/microsoft.insights/components/joinrpg-develop</ApplicationInsightsResourceId>
+    <NoWarn>${NoWarn};CS1591</NoWarn>
+    <ApplicationInsightsResourceId>/subscriptions/f0fe6f62-070f-4b7b-bcd1-c4265207fead/resourcegroups/Joinrpg-Develop/providers/microsoft.insights/components/joinrpg-develop</ApplicationInsightsResourceId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

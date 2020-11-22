@@ -6,7 +6,7 @@ using JoinRpg.Helpers.Web;
 using Markdig;
 using Vereyon.Web;
 
-namespace Joinrpg.Markdown
+namespace JoinRpg.Markdown
 {
     /// <summary>
     /// Helper that allows to easily render markdown

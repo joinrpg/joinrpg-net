@@ -1,5 +1,5 @@
-using Joinrpg.Markdown;
 using JoinRpg.DataModel;
+using JoinRpg.Markdown;
 using Shouldly;
 
 namespace JoinRpg.Markdown.Test
