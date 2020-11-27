@@ -76,5 +76,5 @@ stages:
             inputs:
               azureSubscription: $(azureSubscription)
               ScriptType: FilePath
-              ScriptPath:  $(Pipeline.Workspace)/DeployScripts/test-env.ps1
+              ScriptPath:  $(Pipeline.Workspace)/DeployScripts/Portal/test-env.ps1
               azurePowerShellVersion: LatestVersion
