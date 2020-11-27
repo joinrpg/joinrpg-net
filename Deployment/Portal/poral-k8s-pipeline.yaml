@@ -15,7 +15,7 @@ variables:
     imageSuffix: '-dev' 
 
   azureSubscription: 'JoinRPG-subscription-connection'
-  registryServiceConnection: 'JoinRPGacr'
+  registryServiceConnection: 'JoinRPG-ACR-connection'
   imageRepository: 'joinrpg.portal$(imageSuffix)'
   containerRegistry: 'joinrpg.azurecr.io'  
   dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
