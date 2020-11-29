@@ -70,6 +70,6 @@ stages:
               action: createSecret
               secretType: generic
               kubernetesServiceConnection: JoinRPG-k8s-dev-connection
-              secretArguments: --from-literal=ConnectionStrings__DefaultConnection='$(ConnectionString)' --from-literal='Test_Var=TestValue'
+              secretArguments: '"--from-literal=ConnectionStrings__DefaultConnection=$(ConnectionString)" "--from-literal=Test_Var=TestValue"'
               secretName: $(secretsName)
               namespace: $(namespaceName)
