@@ -25,6 +25,8 @@ variables:
 
   keyVaultName: "joinrpg-k8s-kv"
 
+  secretsName: "joinrpg-secrets"
+
   vmImageName: 'ubuntu-latest'
 
 stages:
@@ -36,29 +38,19 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(registryServiceConnection)
-        buildContext: .        
-        tags: |
-          latest
-          $(verTag)
-
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
       
 - stage: Deploy_Dev_Stage
+  variables:
+    namespaceName: "dev"
   displayName: Deploy Dev/Stage
   dependsOn: Build
   jobs:
   - deployment: 'Deploy_Dev'
     displayName: Deploy app to the 'Dev' namespace'
     condition: ne(variables.isMaster, true)
-    environment: Recova19_Dev
+    environment: Join-k8s-dev
     pool:
       vmImage: $(vmImageName)
     strategy:
@@ -72,9 +64,13 @@ stages:
               secretsFilter: '*'
               runAsPreJob: false 
 
-          - task: AzurePowerShell@4
-            inputs:
-              azureSubscription: $(azureSubscription)
-              ScriptType: FilePath
-              ScriptPath:  $(Pipeline.Workspace)/DeployScripts/Portal/test-env.ps1
-              azurePowerShellVersion: LatestVersion
+          - task: KubernetesManifest@0
+            displayName: Create secret
+            inputs: 
+              action: createSecret
+              secretType: generic
+              secretArguments: |
+                 --from-literal=ConnectionStrings__DefaultConnection=$(ConnectionString)
+                 --from-literal=Test_Var=TestValue
+              secretName: $(secretsName)
+              namespace: $(namespaceName)
