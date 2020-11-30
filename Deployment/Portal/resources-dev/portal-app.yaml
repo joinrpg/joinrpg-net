@@ -17,7 +17,7 @@ spec:
         app: joinrpg-portal
     spec:
       containers:
-      - image:  joinrpg.azurecr.io/joinrpg.portal-dev:latest
+      - image:  joinrpg.azurecr.io/joinrpg.portal-dev
         name: server
         env:
           - name: ASPNETCORE_ENVIRONMENT

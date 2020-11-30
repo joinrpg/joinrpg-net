@@ -38,6 +38,18 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .        
+        tags: |
+          latest
+          $(verTag)
+
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
       
@@ -83,6 +95,8 @@ stages:
             displayName: Deploy
             inputs:
               kubernetesServiceConnection: JoinRPG-k8s-dev-connection
+              containers: |
+                $(imageFullName)
               namespace: $(namespaceName)
               manifests: "$(Pipeline.Workspace)/DeployScripts/Portal/resources-dev/*.yaml"
 
