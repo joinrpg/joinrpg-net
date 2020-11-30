@@ -57,19 +57,31 @@ stages:
       runOnce:
         deploy:          
           steps:
-          - task: AzureKeyVault@1
+          - task: AzurePowerShell@4
             inputs:
               azureSubscription: $(azureSubscription)
-              keyVaultName: $(keyVaultName)
-              secretsFilter: '*'
-              runAsPreJob: false 
+              azurePowerShellVersion: LatestVersion
+              ScriptType: FilePath
+              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Get-JoinSecrets.ps1
+              scriptArguments:
+                -VaultName '$(keyVaultName)' `
+                -Prefix 'dev-' `
+                -Namespace '$(namespaceName)' `
+                -SecretName '$(secretsName) ' `
+                -Path "$(Pipeline.Workspace)/DeployScripts/Portal/resources-dev/join-secrets.yaml"
 
           - task: KubernetesManifest@0
-            displayName: Create secret
-            inputs: 
-              action: createSecret
-              secretType: generic
+            displayName: "Delete old secrets"
+            inputs:
+              action: delete
+              arguments: secret $(secretsName) 
               kubernetesServiceConnection: JoinRPG-k8s-dev-connection
-              secretArguments: '"--from-literal=ConnectionStrings__DefaultConnection=$(ConnectionString)" "--from-literal=Test_Var=TestValue"'
-              secretName: $(secretsName)
               namespace: $(namespaceName)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy
+            inputs:
+              kubernetesServiceConnection: JoinRPG-k8s-dev-connection
+              namespace: $(namespaceName)
+              manifests: "$(Pipeline.Workspace)/DeployScripts/Portal/resources-dev/*.yaml"
+
