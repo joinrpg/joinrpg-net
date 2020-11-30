@@ -72,6 +72,7 @@ stages:
 
           - task: KubernetesManifest@0
             displayName: "Delete old secrets"
+            continueOnError: true
             inputs:
               action: delete
               arguments: secret $(secretsName) 
