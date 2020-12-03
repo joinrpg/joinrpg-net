@@ -1,0 +1,12 @@
+﻿build-metadata-padding: 3
+commits-since-version-source-padding: 3
+branches:
+  master:
+    regex: ^master$
+    mode: ContinuousDelivery
+    tag: ''
+    increment: None
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false

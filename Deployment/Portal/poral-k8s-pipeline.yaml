@@ -48,7 +48,7 @@ stages:
       displayName: Determine Version
       inputs:
         useConfigFile: true
-        configFilePath: 'VersionConfig.yml'
+        configFilePath: 'GitVersion.yml'
 
     - pwsh: |
         $fullSemVer = "$(GitVersion.FullSemVer)"
