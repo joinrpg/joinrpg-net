@@ -14,12 +14,13 @@ variables:
   ${{ if ne(variables.isMaster, true) }}:
     imageSuffix: '-dev' 
 
+  rgName: 'joinrpg-k8s'
+  dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
+
   azureSubscription: 'JoinRPG-subscription-connection'
   registryServiceConnection: 'JoinRPG-ACR-connection'
   imageRepository: 'joinrpg.portal$(imageSuffix)'
-  containerRegistry: 'joinrpg.azurecr.io'  
-  dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
-  rgName: 'joinrpg-k8s'
+  containerRegistry: 'joinrpg.azurecr.io'   
   verTag: '1.0.$(Build.BuildId)'
   imageFullName: '$(containerRegistry)/$(imageRepository):$(verTag)'
 
@@ -38,6 +39,30 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: gitversion/setup@0
+      displayName: Install GitVersion
+      inputs:
+        versionSpec: '5.x'
+
+    - task: gitversion/execute@0
+      displayName: Determine Version
+      inputs:
+        useConfigFile: true
+        configFilePath: 'VersionConfig.yml'
+
+    - pwsh: |
+        $fullSemVer = "$(GitVersion.FullSemVer)"
+        if( $fullSemVer.Contains('+') ) {
+          $tags = $fullSemVer.Replace("+","-"),"latest"
+        }else{
+          $tags = "$(GitVersion.Major)","$(GitVersion.Major).$(GitVersion.Minor)",$fullSemVer,"latest"
+        }
+        $tagListStr = $tags -join "`n"
+        Write-Host "=== Tags list ==="
+        $tagListStr
+        Write-Host "##vso[task.setvariable variable=tagsList;]$tagListStr"
+      displayName: Generate Tags
+
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -45,10 +70,8 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(registryServiceConnection)
-        buildContext: .        
-        tags: |
-          latest
-          $(verTag)
+        buildContext: .
+        tags: $(tagsList)
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
@@ -61,7 +84,7 @@ stages:
   jobs:
   - deployment: 'Deploy_Dev'
     displayName: Deploy app to the 'Dev' namespace'
-    condition: ne(variables.isMaster, true)
+    condition: eq(variables.isMaster, true)
     environment: Join-k8s-dev
     pool:
       vmImage: $(vmImageName)
