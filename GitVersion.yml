@@ -1,5 +1,5 @@
-﻿build-metadata-padding: 3
-commits-since-version-source-padding: 3
+﻿build-metadata-padding: 4
+commits-since-version-source-padding: 4
 branches:
   master:
     regex: ^master$
@@ -10,3 +10,15 @@ branches:
     track-merge-target: false
     tracks-release-branches: false
     is-release-branch: false
+
+  containers:
+    regex: ^containers/main$
+    mode: ContinuousDelivery
+    tag: ''
+    source-branches: ['master']
+    increment: None
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+
