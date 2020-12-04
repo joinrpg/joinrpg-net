@@ -88,7 +88,7 @@ stages:
         containerRegistry: $(registryServiceConnection)
         buildContext: .
         tags: |
-          $(GitVersion.FullSemVer)
+          $[ replace(variables['GitVersion.FullSemVer'], '+', '-') ]
 
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
