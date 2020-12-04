@@ -50,6 +50,12 @@ stages:
         useConfigFile: true
         configFilePath: 'GitVersion.yml'
 
+    - pwsh: |
+        $tag = "$(GitVersion.FullSemVer)" -replace '\+','-'
+        Write-Host "##vso[task.setvariable variable=safeImageTag;]$tag"
+      displayName: "Create safe image tag"
+      condition: contains(variables['GitVersion.FullSemVer'], '+')      
+
     #- pwsh: |
     #    $fullSemVer = "$(GitVersion.FullSemVer)"
     #   if( $fullSemVer.Contains('+') ) {
@@ -79,6 +85,8 @@ stages:
           $(GitVersion.FullSemVer)
 
     - task: Docker@2
+      variables:
+        imageTag: 
       displayName: Build and push an image (Stage)
       condition: contains(variables['GitVersion.FullSemVer'], '+')
       inputs:
@@ -88,8 +96,7 @@ stages:
         containerRegistry: $(registryServiceConnection)
         buildContext: .
         tags: |
-          $[ replace(variables['GitVersion.FullSemVer'], '+', '-') ]
-
+          $(safeImageTag)
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
