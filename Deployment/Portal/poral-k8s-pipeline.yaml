@@ -92,8 +92,9 @@ stages:
 
     - bash: |
         helm registry login $(containerRegistry) --username $(acrLoginName) --password $(acrLoginPassword)
-        help chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
-        help chart push $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
+        helm chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
+        helm chart push $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
+      displayName: "Publish Helm chart (Portal)"
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
