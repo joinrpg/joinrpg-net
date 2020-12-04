@@ -50,28 +50,46 @@ stages:
         useConfigFile: true
         configFilePath: 'GitVersion.yml'
 
-    - pwsh: |
-        $fullSemVer = "$(GitVersion.FullSemVer)"
-        if( $fullSemVer.Contains('+') ) {
-          $tags = $fullSemVer.Replace("+","-"),"latest"
-        }else{
-          $tags = "$(GitVersion.Major)","$(GitVersion.Major).$(GitVersion.Minor)",$fullSemVer,"latest"
-        }
-        $tagListStr = $tags -join " "
-        Write-Host "=== Tags list ==="
-        $tagListStr
-        Write-Host "##vso[task.setvariable variable=tagsList;]$tagListStr"
-      displayName: Generate Tags
+    #- pwsh: |
+    #    $fullSemVer = "$(GitVersion.FullSemVer)"
+    #   if( $fullSemVer.Contains('+') ) {
+    #     $tags = $fullSemVer.Replace("+","-"),"latest"
+    #    }else{
+    #      $tags = "$(GitVersion.Major)","$(GitVersion.Major).$(GitVersion.Minor)",$fullSemVer,"latest"
+    #   }
+    #    $tagListStr = $tags -join " "
+    #    Write-Host "=== Tags list ==="
+    #    $tagListStr
+    #    Write-Host "##vso[task.setvariable variable=tagsList;]$tagListStr"
+    #  displayName: Generate Tags
 
     - task: Docker@2
-      displayName: Build and push an image to container registry
+      displayName: Build and push an image (Prod)
+      condition: $[ not(contains(GitVersion.FullSemVer, "+")) ]
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(registryServiceConnection)
         buildContext: .
-        tags: $(tagsList)
+        tags: |
+          latest
+          $(GitVersion.Major)
+          "$(GitVersion.Major).$(GitVersion.Minor)"
+          $(GitVersion.FullSemVer)
+
+    - task: Docker@2
+      displayName: Build and push an image (Stage)
+      condition: $[ contains(GitVersion.FullSemVer, "+") ]
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .
+        tags: |
+          $(GitVersion.FullSemVer)
+
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
@@ -84,7 +102,7 @@ stages:
   jobs:
   - deployment: 'Deploy_Dev'
     displayName: Deploy app to the 'Dev' namespace'
-    condition: eq(variables.isMaster, true)
+    condition: $[ eq(variables.isMaster, true) ]
     environment: Join-k8s-dev
     pool:
       vmImage: $(vmImageName)
