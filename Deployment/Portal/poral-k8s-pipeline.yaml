@@ -85,8 +85,6 @@ stages:
           $(GitVersion.FullSemVer)
 
     - task: Docker@2
-      variables:
-        imageTag: 
       displayName: Build and push an image (Stage)
       condition: contains(variables['GitVersion.FullSemVer'], '+')
       inputs:
