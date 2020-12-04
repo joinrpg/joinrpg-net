@@ -81,7 +81,7 @@ stages:
         tags: |
           latest
           $(GitVersion.Major)
-          "$(GitVersion.Major).$(GitVersion.Minor)"
+          $(GitVersion.Major).$(GitVersion.Minor)
           $(GitVersion.FullSemVer)
 
     - task: Docker@2
