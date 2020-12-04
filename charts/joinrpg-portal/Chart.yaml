@@ -1,0 +1,9 @@
+apiVersion: v2
+name: joinrpg-portal
+description: A Helm chart for JoinRPG Portal app
+type: application
+home: https://joinrpg.ru
+sources:
+- https://github.com/joinrpg/joinrpg-net
+version: 1.0.0
+appVersion: 1.0.0

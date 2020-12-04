@@ -6,6 +6,8 @@ trigger:
       - 'containers/main'
       
 variables:
+  HELM_EXPERIMENTAL_OCI: 1
+
   isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')] 
 
   ${{ if eq(variables.isMaster, true) }}:
@@ -44,6 +46,11 @@ stages:
       inputs:
         versionSpec: '5.x'
 
+    - task: HelmInstaller@1
+      displayName: Install Helm
+      inputs: 
+        helmVersionToInstall: latest
+
     - task: gitversion/execute@0
       displayName: Determine Version
       inputs:
@@ -54,23 +61,10 @@ stages:
         $tag = "$(GitVersion.FullSemVer)" -replace '\+','-'
         Write-Host "##vso[task.setvariable variable=safeImageTag;]$tag"
       displayName: "Create safe image tag"
-      condition: contains(variables['GitVersion.FullSemVer'], '+')      
-
-    #- pwsh: |
-    #    $fullSemVer = "$(GitVersion.FullSemVer)"
-    #   if( $fullSemVer.Contains('+') ) {
-    #     $tags = $fullSemVer.Replace("+","-"),"latest"
-    #    }else{
-    #      $tags = "$(GitVersion.Major)","$(GitVersion.Major).$(GitVersion.Minor)",$fullSemVer,"latest"
-    #   }
-    #    $tagListStr = $tags -join " "
-    #    Write-Host "=== Tags list ==="
-    #    $tagListStr
-    #    Write-Host "##vso[task.setvariable variable=tagsList;]$tagListStr"
-    #  displayName: Generate Tags
+      condition: contains(variables['GitVersion.FullSemVer'], '+')
 
     - task: Docker@2
-      displayName: Build and push an image (Prod)
+      displayName: "Prod: build and push an image"
       condition: not(contains(variables['GitVersion.FullSemVer'], '+'))
       inputs:
         command: buildAndPush
@@ -85,7 +79,7 @@ stages:
           $(GitVersion.FullSemVer)
 
     - task: Docker@2
-      displayName: Build and push an image (Stage)
+      displayName: "Stage: build and push an image"
       condition: contains(variables['GitVersion.FullSemVer'], '+')
       inputs:
         command: buildAndPush
@@ -95,6 +89,11 @@ stages:
         buildContext: .
         tags: |
           $(safeImageTag)
+
+    - bash: |
+        helm registry login $(containerRegistry) --username $(acrLoginName) --password $(acrLoginPassword)
+        help chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
+        help chart push $(containerRegistry)/charts/joinrpg-portal:$(safeImageTag)
 
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
