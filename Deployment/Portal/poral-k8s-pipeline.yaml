@@ -65,7 +65,7 @@ stages:
 
     - task: Docker@2
       displayName: Build and push an image (Prod)
-      condition: $[ not(contains(GitVersion.FullSemVer, "+")) ]
+      condition: not(contains(GitVersion.FullSemVer, "+"))
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -80,7 +80,7 @@ stages:
 
     - task: Docker@2
       displayName: Build and push an image (Stage)
-      condition: $[ contains(GitVersion.FullSemVer, "+") ]
+      condition: contains(GitVersion.FullSemVer, "+")
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -102,7 +102,7 @@ stages:
   jobs:
   - deployment: 'Deploy_Dev'
     displayName: Deploy app to the 'Dev' namespace'
-    condition: $[ eq(variables.isMaster, true) ]
+    condition: eq(variables.isMaster, true)
     environment: Join-k8s-dev
     pool:
       vmImage: $(vmImageName)
