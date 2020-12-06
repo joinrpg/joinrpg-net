@@ -1,3 +1,10 @@
+##======================================================
+## Used pipeline variables 
+##  - azureSubscription
+##  - keyVaultName
+##  - rgName
+##  - aksName
+##======================================================
 parameters:
 - name: ingressHostName
   displayName: 'Ingress rule hostname'

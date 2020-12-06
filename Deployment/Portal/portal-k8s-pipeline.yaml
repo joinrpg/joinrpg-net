@@ -86,17 +86,17 @@ stages:
     ##====================================================================
     ## Build dev version of image (on safe version tag like '1.0.1-1234')
     ##====================================================================
-    #- task: Docker@2
-    #  displayName: "Stage: build and push an image"
-    #  condition: contains(variables['GitVersion.FullSemVer'], '+')
-    #  inputs:
-    #    command: buildAndPush
-    #    repository: $(imageRepository)
-    #    dockerfile: $(dockerfilePath)
-    #    containerRegistry: $(registryServiceConnection)
-    #   buildContext: .
-    #    tags: |
-    #      $(defineTag.safeImageTag)
+    - task: Docker@2
+      displayName: "Stage: build and push an image"
+      condition: contains(variables['GitVersion.FullSemVer'], '+')
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(registryServiceConnection)
+        buildContext: .
+        tags: |
+          $(defineTag.safeImageTag)
 
     ##===============================================================
     ## Prepare (inject version) and push to registry Helm Chart
@@ -124,13 +124,11 @@ stages:
 ## Deployment part
 ##=================================================================================
 - stage: Deploy_Dev
-  variables:
-    fullSemVer: $[ stageDependencies.Build.Build.outputs['version.GitVersion.FullSemVer'] ]
   displayName: Deploy Dev/Stage
   dependsOn: Build
   condition: and(succeeded(), contains(dependencies.Build.outputs['Build.version.GitVersion.FullSemVer'], '+'))
   jobs:
-  - template: portal-helm-deploy-tpl.yaml
+  - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
       name: 'Deploy_Dev'
       displayName: "Dev: deploy to 'Dev' namespace"
