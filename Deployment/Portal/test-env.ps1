@@ -1,1 +1,0 @@
-Write-host Env:\ConnectionString
