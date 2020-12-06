@@ -126,7 +126,6 @@ stages:
 - stage: Deploy_Dev
   displayName: Deploy Dev/Stage
   dependsOn: Build
-  condition: and(succeeded(), contains(dependencies.Build.outputs['Build.version.GitVersion.FullSemVer'], '+'))
   jobs:
   - template: templates/portal-helm-deploy-tpl.yaml
     parameters:
