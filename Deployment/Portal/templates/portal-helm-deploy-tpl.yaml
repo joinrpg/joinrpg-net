@@ -92,5 +92,5 @@ jobs:
             valueFile: "$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml"
             releaseName: '${{ parameters.releaseName }}'
             install: true
-            force: true
+            force: false
             waitForExecution: true
