@@ -11,6 +11,7 @@ spec:
     matchLabels:
       app: joinrpg-portal
   strategy: {}
+  
   template:
     metadata:
       labels:
