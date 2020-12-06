@@ -20,8 +20,6 @@ variables:
 
   keyVaultName: "joinrpg-k8s-kv"
 
-  secretsName: "joinrpg-secrets"
-
   vmImageName: 'ubuntu-latest'
 
 stages:
@@ -165,14 +163,12 @@ stages:
               azureSubscription: $(azureSubscription)
               azurePowerShellVersion: LatestVersion
               ScriptType: FilePath
-              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Prepare-ChartVaules.ps1
+              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Prepare-ChartValues.ps1
               scriptArguments:
-                -VaultName '$(keyVaultName)' `
-                -Prefix 'dev-' `
-                -Namespace '$(namespaceName)' `
-                -SecretName '$(secretsName) ' `
-                -Path "$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml" `
-                -IngressHost $(devHostName) `
+                -VaultName '$(keyVaultName)'
+                -Prefix 'dev-'
+                -Path '$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml'
+                -IngressHost '$(devHostName)'
 
           ##==========================================================================
           ## Deploy Helm chart  
