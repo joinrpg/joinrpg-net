@@ -123,71 +123,19 @@ stages:
 ##=================================================================================
 ## Deployment part
 ##=================================================================================
-- stage: Deploy
+- stage: Deploy_Dev
   variables:
-    devHostName: "dev.k8s.joinrpg.ru"
-    prodHostName: "prod.k8s.joinrpg.ru"
-    devNamespace: "dev"
-    prodNamespace: "default"
     fullSemVer: $[ stageDependencies.Build.Build.outputs['version.GitVersion.FullSemVer'] ]
-    safeImageTag: $[ stageDependencies.Build.Build.outputs['defineTag.safeImageTag'] ]
   displayName: Deploy Dev/Stage
   dependsOn: Build
+  condition: and(succeeded(), contains(variables.fullSemVer, '+')
   jobs:
-  ##=================================================
-  ## Pablish Dev/Stage version
-  ##=================================================
-  - deployment: 'Deploy_Dev'
-    displayName: "Dev: deploy to 'Dev' namespace"
-    condition: contains(variables.fullSemVer, '+')
-    environment: Join-k8s-dev
-    pool:
-      vmImage: $(vmImageName)
-    strategy:
-      runOnce:
-        deploy:          
-          steps:
-          ##===========================
-          ## Install tools
-          ##===========================
-          - task: HelmInstaller@1
-            displayName: Install Helm
-            inputs: 
-              helmVersionToInstall: latest
-
-          ##==========================================================================
-          ## Get secrets from KeyVault and prepare parameters for Helm chart deploy 
-          ##==========================================================================
-          - task: AzurePowerShell@4
-            inputs:
-              azureSubscription: $(azureSubscription)
-              azurePowerShellVersion: LatestVersion
-              ScriptType: FilePath
-              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Prepare-ChartValues.ps1
-              scriptArguments:
-                -VaultName '$(keyVaultName)'
-                -Prefix 'dev-'
-                -Path '$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml'
-                -IngressHost '$(devHostName)'
-
-          ##==========================================================================
-          ## Deploy Helm chart  
-          ##==========================================================================
-          - task: HelmDeploy@0
-            displayName: Install/Upgdare application (Helm)
-            inputs:
-              connectionType: Azure Resource Manager
-              azureSubscriptionEndpoint: $(azureSubscription)
-              azureResourceGroup: $(rgName)
-              kubernetesCluster: $(aksName)
-              useClusterAdmin: true
-              namespace: $(devNamespace)
-              command: upgrade
-              chartType: filepath
-              chartPath: "$(Pipeline.Workspace)/Charts/joinrpg-portal"
-              valueFile: "$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml"
-              releaseName: "joinrpg-portal-dev"
-              install: true
-              force: true
-              waitForExecution: true
-
+  - template: portal-helm-deploy-tpl.yaml
+    parameters:
+      name: 'Deploy_Dev'
+      displayName: "Dev: deploy to 'Dev' namespace"
+      ingressHostName: 'dev.k8s.joinrpg.ru'
+      keyVaultPrefix: 'dev-'
+      releaseName: 'joinrpg-portal-dev'
+      namespace: 'dev'
+      environment: 'Join-k8s-dev'
