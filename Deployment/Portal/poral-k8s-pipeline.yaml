@@ -103,7 +103,7 @@ stages:
     ##===============================================================
     - bash: |
         sed -i 's/^version: 1\.0\.0/version: $(GitVersion.FullSemVer)/g' ./charts/joinrpg-portal/Chart.yaml
-        sed -i 's/tag: "1\.0\.0"/tag: "$(GitVersion.FullSemVer)"/g' ./charts/joinrpg-portal/values.yaml
+        sed -i 's/tag: "1\.0\.0"/tag: "$(defineTag.safeImageTag)"/g' ./charts/joinrpg-portal/values.yaml
 
         echo $(acrLoginPassword) | helm registry login $(containerRegistry) --username $(acrLoginName) --password-stdin
         helm chart save ./charts/joinrpg-portal $(containerRegistry)/charts/joinrpg-portal:$(defineTag.safeImageTag)
