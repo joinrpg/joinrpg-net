@@ -128,7 +128,7 @@ stages:
     fullSemVer: $[ stageDependencies.Build.Build.outputs['version.GitVersion.FullSemVer'] ]
   displayName: Deploy Dev/Stage
   dependsOn: Build
-  condition: and(succeeded(), contains(variables.fullSemVer, '+'))
+  condition: contains(stageDependencies.Build.Build.outputs['version.GitVersion.FullSemVer'], '+')
   jobs:
   - template: portal-helm-deploy-tpl.yaml
     parameters:
