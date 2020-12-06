@@ -176,9 +176,11 @@ stages:
           - task: HelmDeploy@0
             displayName: Install/Upgdare application (Helm)
             inputs:
+              connectionType: Azure Resource Manager
               azureSubscriptionEndpoint: $(azureSubscription)
               azureResourceGroup: $(rgName)
               kubernetesCluster: $(aksName)
+              useClusterAdmin: true
               namespace: $(devNamespace)
               command: upgrade
               chartType: filepath
