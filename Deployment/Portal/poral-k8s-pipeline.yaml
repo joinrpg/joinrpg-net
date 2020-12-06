@@ -8,23 +8,15 @@ trigger:
 variables:
   HELM_EXPERIMENTAL_OCI: 1
 
-  isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')] 
-
-  ${{ if eq(variables.isMaster, true) }}:
-    imageSuffix: '' 
-
-  ${{ if ne(variables.isMaster, true) }}:
-    imageSuffix: '-dev' 
-
   rgName: 'joinrpg-k8s'
+  aksName: 'join-main'
   dockerfilePath: 'src/JoinRpg.Portal/Dockerfile'
 
   azureSubscription: 'JoinRPG-subscription-connection'
   registryServiceConnection: 'JoinRPG-ACR-connection'
-  imageRepository: 'joinrpg.portal$(imageSuffix)'
-  containerRegistry: 'joinrpg.azurecr.io'   
-  verTag: '1.0.$(Build.BuildId)'
-  imageFullName: '$(containerRegistry)/$(imageRepository):$(verTag)'
+  imageRepository: 'joinrpg.portal'
+  containerRegistry: 'joinrpg.azurecr.io'
+  imageFullName: '$(containerRegistry)/$(imageRepository)'
 
   keyVaultName: "joinrpg-k8s-kv"
 
@@ -33,6 +25,9 @@ variables:
   vmImageName: 'ubuntu-latest'
 
 stages:
+##===========================
+## Build part
+##===========================
 - stage: Build
   displayName: Build and Push image
   jobs:  
@@ -41,6 +36,9 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    ##===========================
+    ## Install tools
+    ##===========================
     - task: gitversion/setup@0
       displayName: Install GitVersion
       inputs:
@@ -51,7 +49,11 @@ stages:
       inputs: 
         helmVersionToInstall: latest
 
+    ##=============================================
+    ## Get version info and create tag for image
+    ##=============================================
     - task: gitversion/execute@0
+      name: version
       displayName: Determine Version
       inputs:
         useConfigFile: true
@@ -59,10 +61,15 @@ stages:
 
     - pwsh: |
         $tag = "$(GitVersion.FullSemVer)" -replace '\+','-'
-        Write-Host "##vso[task.setvariable variable=safeImageTag;]$tag"
-      displayName: "Create safe image tag"
+        Write-Host 'Container Image tag for this build: $tag'
+        Write-Host "##vso[task.setvariable variable=safeImageTag;isOutput=true]$tag"
+      displayName: "Define safe image tag"
+      name: defineTag
       condition: contains(variables['GitVersion.FullSemVer'], '+')
 
+    ##===============================================================
+    ## Build production version of image (full set of version tags)
+    ##===============================================================
     - task: Docker@2
       displayName: "Prod: build and push an image"
       condition: not(contains(variables['GitVersion.FullSemVer'], '+'))
@@ -76,8 +83,11 @@ stages:
           latest
           $(GitVersion.Major)
           $(GitVersion.Major).$(GitVersion.Minor)
-          $(GitVersion.FullSemVer)
+          $(safeImageTag)
 
+    ##====================================================================
+    ## Build dev version of image (on safe version tag like '1.0.1-1234')
+    ##====================================================================
     - task: Docker@2
       displayName: "Stage: build and push an image"
       condition: contains(variables['GitVersion.FullSemVer'], '+')
@@ -90,6 +100,9 @@ stages:
         tags: |
           $(safeImageTag)
 
+    ##===============================================================
+    ## Prepare (inject version) and push to registry Helm Chart
+    ##===============================================================
     - bash: |
         sed -i 's/^version: 1\.0\.0/version: $(GitVersion.FullSemVer)/g' ./charts/joinrpg-portal/Chart.yaml
         sed -i 's/tag: "1\.0\.0"/tag: "$(GitVersion.FullSemVer)"/g' ./charts/joinrpg-portal/values.yaml
@@ -101,18 +114,34 @@ stages:
         helm chart push $(containerRegistry)/charts/joinrpg-portal:latest
       displayName: "Publish Helm chart (Portal)"
 
+    ##===============================================================
+    ## Publish scripts and charts as artifacts for deploy stage
+    ##===============================================================
     - publish: $(System.DefaultWorkingDirectory)/Deployment
       artifact: DeployScripts
+    - publish: $(System.DefaultWorkingDirectory)/charts
+      artifact: Charts
       
-- stage: Deploy_Dev_Stage
+##=================================================================================
+## Deployment part
+##=================================================================================
+- stage: Deploy
   variables:
-    namespaceName: "dev"
+    devHostName: "dev.k8s.joinrpg.ru"
+    prodHostName: "prod.k8s.joinrpg.ru"
+    devNamespace: "dev"
+    prodNamespace: "default"
+    fullSemVer: $[ stageDependencies.Build.Build.outputs['version.GitVersion.FullSemVer'] ]
+    safeImageTag: $[ stageDependencies.Build.Build.outputs['defineTag.safeImageTag'] ]
   displayName: Deploy Dev/Stage
   dependsOn: Build
   jobs:
+  ##=================================================
+  ## Pablish Dev/Stage version
+  ##=================================================
   - deployment: 'Deploy_Dev'
-    displayName: Deploy app to the 'Dev' namespace'
-    condition: eq(variables.isMaster, true)
+    displayName: "Dev: deploy to 'Dev' namespace"
+    condition: contains(variables.fullSemVer, '+')
     environment: Join-k8s-dev
     pool:
       vmImage: $(vmImageName)
@@ -120,34 +149,47 @@ stages:
       runOnce:
         deploy:          
           steps:
+          ##===========================
+          ## Install tools
+          ##===========================
+          - task: HelmInstaller@1
+            displayName: Install Helm
+            inputs: 
+              helmVersionToInstall: latest
+
+          ##==========================================================================
+          ## Get secrets from KeyVault and prepare parameters for Helm chart deploy 
+          ##==========================================================================
           - task: AzurePowerShell@4
             inputs:
               azureSubscription: $(azureSubscription)
               azurePowerShellVersion: LatestVersion
               ScriptType: FilePath
-              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Get-JoinSecrets.ps1
+              ScriptPath: $(Pipeline.Workspace)/DeployScripts/Portal/Prepare-ChartVaules.ps1
               scriptArguments:
                 -VaultName '$(keyVaultName)' `
                 -Prefix 'dev-' `
                 -Namespace '$(namespaceName)' `
                 -SecretName '$(secretsName) ' `
-                -Path "$(Pipeline.Workspace)/DeployScripts/Portal/resources-dev/join-secrets.yaml"
+                -Path "$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml" `
+                -IngressHost $(devHostName) `
 
-          - task: KubernetesManifest@0
-            displayName: "Delete old secrets"
-            continueOnError: true
+          ##==========================================================================
+          ## Deploy Helm chart  
+          ##==========================================================================
+          - task: HelmDeploy@0
+            displayName: Install/Upgdare application (Helm)
             inputs:
-              action: delete
-              arguments: secret $(secretsName) 
-              kubernetesServiceConnection: JoinRPG-k8s-dev-connection
-              namespace: $(namespaceName)
-
-          - task: KubernetesManifest@0
-            displayName: Deploy
-            inputs:
-              kubernetesServiceConnection: JoinRPG-k8s-dev-connection
-              containers: |
-                $(imageFullName)
-              namespace: $(namespaceName)
-              manifests: "$(Pipeline.Workspace)/DeployScripts/Portal/resources-dev/*.yaml"
+              azureSubscriptionEndpoint: $(azureSubscription)
+              azureResourceGroup: $(rgName)
+              kubernetesCluster: $(aksName)
+              namespace: $(devNamespace)
+              command: upgrade
+              chartType: filepath
+              chartPath: "$(Pipeline.Workspace)/Charts/joinrpg-portal"
+              valueFile: "$(Pipeline.Workspace)/DeployScripts/Portal/deploy-values.yaml"
+              releaseName: "joinrpg-portal-dev"
+              install: true
+              force: true
+              waitForExecution: true
 
