@@ -137,3 +137,18 @@ stages:
       releaseName: 'joinrpg-portal-dev'
       namespace: 'dev'
       environment: 'Join-k8s-dev'
+
+- stage: Deploy_Prod
+  displayName: Deploy Production
+  dependsOn: Build
+  condition: and(succeeded(), not(contains(dependencies.Build.outputs['Build.version.GitVersion.FullSemVer'], '+')))
+  jobs:
+  - template: templates/portal-helm-deploy-tpl.yaml
+    parameters:
+      name: 'Deploy_Prod'
+      displayName: "Prod: deploy to 'Default' namespace"
+      ingressHostName: 'prod.k8s.joinrpg.ru'
+      keyVaultPrefix: 'prod-'
+      releaseName: 'joinrpg-portal-prod'
+      namespace: 'default'
+      environment: 'Join-k8s-prod'
