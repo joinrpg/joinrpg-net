@@ -63,7 +63,6 @@ stages:
         Write-Host "##vso[task.setvariable variable=safeImageTag;isOutput=true]$tag"
       displayName: "Define safe image tag"
       name: defineTag
-      condition: contains(variables['GitVersion.FullSemVer'], '+')
 
     ##===============================================================
     ## Build production version of image (full set of version tags)
