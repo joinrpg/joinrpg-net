@@ -32,8 +32,13 @@ namespace JoinRpg.Web.Models
         ScheduleRoomField,
         [Display(
             Name = "Время проведения мероприятия",
-            Order = 8)]
+            Order = 10)]
         ScheduleTimeSlotField,
+        [Display(
+            Name = "PIN-код",
+            Description = "Автоматически сгенерированный пароль персонажа. Если вам нужен пароль для внешней системы",
+            Order = 11)]
+        PinCode,
     }
 
     public static class ProjectFieldViewTypeHelper
