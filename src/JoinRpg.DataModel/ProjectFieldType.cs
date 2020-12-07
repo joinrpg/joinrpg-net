@@ -12,5 +12,6 @@ namespace JoinRpg.DataModel
         Login,
         ScheduleRoomField,
         ScheduleTimeSlotField,
+        PinCode,
     }
 }

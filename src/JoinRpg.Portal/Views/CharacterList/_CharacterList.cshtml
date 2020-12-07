@@ -40,6 +40,7 @@
             case ProjectFieldType.MultiSelect:
             case ProjectFieldType.ScheduleRoomField:
             case ProjectFieldType.ScheduleTimeSlotField:
+            case ProjectFieldType.PinCode:
             case ProjectFieldType.Login:
                     <th>@field.FieldName</th>
                     break;
@@ -133,6 +134,9 @@
                     case ProjectFieldType.Dropdown:
                     case ProjectFieldType.Checkbox:
                     case ProjectFieldType.MultiSelect:
+                    case ProjectFieldType.ScheduleRoomField:
+                    case ProjectFieldType.ScheduleTimeSlotField:
+                    case ProjectFieldType.PinCode:
                     case ProjectFieldType.Login:
                         <td>
                             @if (fieldValueViewModel != null)

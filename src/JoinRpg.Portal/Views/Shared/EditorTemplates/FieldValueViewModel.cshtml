@@ -53,7 +53,7 @@
       @{
         bool isEmpty = string.IsNullOrWhiteSpace(Model.Value);
         Dictionary<string, string> attrs = new Dictionary<string, string>()
-              {
+                {
                 { "id", Model.FieldClientId },
                 { "name", Model.FieldClientId },
                 { "bound", Model.FieldBound.ToString() },
@@ -98,11 +98,11 @@
           <select onchange="selectChanged(event)" @Html.RenderAttrs(attrs)>
             @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
             {
-              Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
+              <partial name="EditorTemplates/_SelectOptionDefPartial" for=@Model />
             }
             @foreach (var val in Model.PossibleValueList)
             {
-              Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
+              <partial name="EditorTemplates/_SelectOptionPartial" for=@val />
             }
           </select>
           break;
@@ -113,6 +113,11 @@
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
                  data-val-regex="Это поле должно состоять из латинских букв и цифр, и начинаться с латинской буквы"
                  data-val-regex-pattern="^[a-zA-Z][a-zA-Z0-9]*$" data-val="true" />
+          break;
+        case ProjectFieldViewType.PinCode:
+          <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
+                 data-val-regex="Это поле должно состоять из цифр"
+                 data-val-regex-pattern="^[a-zA-Z0-9]*$" data-val="true" />
           break;
         case ProjectFieldViewType.Number:
           <div class="form-control-complex">
