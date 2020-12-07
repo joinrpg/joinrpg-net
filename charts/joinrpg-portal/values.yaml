@@ -38,5 +38,5 @@ serviceAccount:
 ingress:
   host: ""
   path: "/"
-  clusterIssuer: "letsencrypt-staging"
+  clusterIssuer: "letsencrypt-prod"
 

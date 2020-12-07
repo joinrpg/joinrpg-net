@@ -134,7 +134,7 @@ stages:
       displayName: "Dev: deploy to 'Dev' namespace"
       ingressHostName: 'dev.k8s.joinrpg.ru'
       keyVaultPrefix: 'dev-'
-      releaseName: 'joinrpg-portal-dev'
+      releaseName: 'joinrpg-portal'
       namespace: 'dev'
       environment: 'Join-k8s-dev'
 
@@ -149,6 +149,6 @@ stages:
       displayName: "Prod: deploy to 'Default' namespace"
       ingressHostName: 'prod.k8s.joinrpg.ru'
       keyVaultPrefix: 'prod-'
-      releaseName: 'joinrpg-portal-prod'
+      releaseName: 'joinrpg-portal'
       namespace: 'default'
       environment: 'Join-k8s-prod'
