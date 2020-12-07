@@ -6,17 +6,14 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
-using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Models.CharacterGroups;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Money;
 using JoinRpg.Web.Models.Plot;
-using JoinRpg.Web.Models.Print;
 
 
 namespace JoinRpg.Web.Models
@@ -101,8 +98,6 @@ namespace JoinRpg.Web.Models
         [ReadOnly(true)]
         public bool? CharacterActive { get; }
 
-        public IEnumerable<PluginOperationDescriptionViewModel> PrintPlugins { get; }
-
         public IEnumerable<UserSubscription> Subscriptions { get; set; }
 
         public UserSubscriptionTooltip SubscriptionTooltip { get; set; }
@@ -118,7 +113,6 @@ namespace JoinRpg.Web.Models
 
         public ClaimViewModel(User currentUser,
           Claim claim,
-          IEnumerable<PluginOperationData<IPrintCardPluginOperation>> pluginOperationDatas,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
           IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
@@ -178,7 +172,6 @@ namespace JoinRpg.Web.Models
             Problems = claim.GetProblems().Select(p => new ProblemViewModel(p)).ToList();
             PlayerDetails = new UserProfileDetailsViewModel(claim.Player,
                 (AccessReason)claim.Player.GetProfileAccess(currentUser));
-            PrintPlugins = pluginOperationDatas.Select(PluginOperationDescriptionViewModel.Create);
             ProjectActive = claim.Project.Active;
             CheckInStarted = claim.Project.Details.CheckInProgress;
             CheckInModuleEnabled = claim.Project.Details.EnableCheckInModule;

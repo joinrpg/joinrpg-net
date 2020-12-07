@@ -56,7 +56,6 @@ namespace JoinRpg.Web.Models
         Description,
         ScheduleTime,
         SchedulePlace,
-        HasPlugin,
     }
 
     //Actually most of this logic should be moved to Domain
@@ -203,7 +202,6 @@ namespace JoinRpg.Web.Models
             AddLabelIf(FieldSpecialLabelView.Description, ch.IsDescription);
             AddLabelIf(FieldSpecialLabelView.ScheduleTime, ch.IsTimeSlot);
             AddLabelIf(FieldSpecialLabelView.SchedulePlace, ch.IsRoomSlot);
-            AddLabelIf(FieldSpecialLabelView.HasPlugin, ch.Field.Mappings.Any());
         }
 
         public MandatoryStatusViewType MandatoryStatus { get; }

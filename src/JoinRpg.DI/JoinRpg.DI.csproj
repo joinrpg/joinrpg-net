@@ -13,8 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\JoinRpg.Common.EmailSending.Impl\JoinRpg.Common.EmailSending.Impl.csproj" />
     <ProjectReference Include="..\JoinRpg.Dal.Impl\JoinRpg.Dal.Impl.csproj" />
-    <ProjectReference Include="..\JoinRpg.PluginHost.Impl\JoinRpg.PluginHost.Impl.csproj" />
-    <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Email\JoinRpg.Services.Email.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Export\JoinRpg.Services.Export.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Impl\JoinRpg.Services.Impl.csproj" />
