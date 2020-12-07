@@ -68,17 +68,4 @@
 
 
     <dd>Отчет обо всех настроенных раздатках</dd>
-    @foreach (var plugin in Model.Plugins)
-    {
-        <dt>
-            <span class="label label-info">Плагин</span> @plugin.Name
-            @foreach (var chunk in @SplitByChunks())
-            {
-                @Html.ActionLink(chunk.Name, "PrintCards",
-                    new {Model.ProjectId, chunk.CharacterIds,  Plugin = plugin.Name})
-                <text>&nbsp;</text>
-            }
-</dt>
-        <dd>@Html.DisplayFor(item => plugin.Description)</dd>
-    }
 </dl>

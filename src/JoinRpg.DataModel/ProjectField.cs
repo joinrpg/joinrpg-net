@@ -78,8 +78,6 @@ namespace JoinRpg.DataModel
 
         public IntList AviableForImpl { get; set; } = new IntList();
 
-        public virtual ICollection<PluginFieldMapping> Mappings { get; set; } = new HashSet<PluginFieldMapping>();
-
         public IEnumerable<CharacterGroup> GroupsAvailableFor
         {
             get
