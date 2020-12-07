@@ -38,4 +38,5 @@ serviceAccount:
 ingress:
   host: ""
   path: "/"
+  cluster-issuer: "letsencrypt-staging"
 

@@ -15,6 +15,11 @@ param(
     [string] $IngressPath = "/"
 )
 
+##=================================================================================
+## Script for preparing values.yaml for deployment chart
+## Source: Azure Key Vault (secrets) and parameters (host & path)
+##=================================================================================
+
 $data = @{}
 
 $secrets = Get-AzKeyVaultSecret -VaultName $VaultName -WarningAction SilentlyContinue
