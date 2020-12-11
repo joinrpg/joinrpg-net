@@ -10,7 +10,7 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 </Project>
