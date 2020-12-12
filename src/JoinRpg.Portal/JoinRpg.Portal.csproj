@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <DebugType>full</DebugType>
     <UserSecretsId>aspnet-JoinRpg.Portal-D30D89A6-2652-4339-953B-C703F29AE5C7</UserSecretsId>
     <NoWarn>${NoWarn};CS1591</NoWarn>
@@ -14,18 +14,18 @@
     <Compile Remove="App_Code\SearchableDropdownMvcHelper.cs" />
   </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.1.1" />
+      <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.2.0" />
       <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.1.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
     <PackageReference Include="BitArmory.ReCaptcha" Version="5.0.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="3.1.9" />
-    <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="3.1.6" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="3.1.9" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="3.1.9" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.16.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.1" />
+    <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="5.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.2.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.1" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.113" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>

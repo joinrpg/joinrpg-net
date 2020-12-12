@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <AssemblyTitle>JoinRpg.Helpers.Web.Test</AssemblyTitle>
     <Product>JoinRpg.Helpers.Web.Test</Product>
     <NoWarn>${NoWarn};CS1591</NoWarn>
@@ -14,7 +14,7 @@
     <ProjectReference Include="..\JoinRpg.TestHelpers\JoinRpg.TestHelpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Shouldly" Version="3.0.2" />
+    <PackageReference Include="Shouldly" Version="4.0.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>

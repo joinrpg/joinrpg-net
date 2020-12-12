@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
       <NoWarn>${NoWarn};1591</NoWarn>
   </PropertyGroup>
@@ -12,12 +12,11 @@
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Domain\JoinRpg.Domain.csproj" />
     <ProjectReference Include="..\JoinRpg.Markdown\JoinRpg.Markdown.csproj" />
-    <ProjectReference Include="..\JoinRpg.PluginHost.Interfaces\JoinRpg.PluginHost.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.Services.Interfaces\JoinRpg.Services.Interfaces.csproj" />
   </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
     </ItemGroup>
 
 </Project>

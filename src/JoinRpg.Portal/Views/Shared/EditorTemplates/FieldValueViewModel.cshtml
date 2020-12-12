@@ -26,34 +26,56 @@
 }
 
 <div class="form-group @hideClassName">
-    <label class="control-label col-md-2">
-        @if (Model.IsDeleted)
-        {
-            <del>@Model.FieldName</del>
-        }
-        else
-        {
-            @Model.FieldName
-        }
-
-        @Html.DisplayFor(model => model.MandatoryStatus)
-        @if (ViewBag.HideCharacterClaimFieldsIcon != true)
-        {<text>&nbsp;</text>
-        if (Model.FieldBound == FieldBoundToViewModel.Claim)
-        {
-            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
-        }
-        if (Model.FieldBound == FieldBoundToViewModel.Character)
-        {
-            <span class="label label-success" title="Это поле привязано к персонажу и сохранится при смене игрока">П</span>
-        }
+  <label class="control-label col-md-2">
+    @if (Model.IsDeleted)
+    {
+      <del>@Model.FieldName</del>
     }
-    </label>
+    else
+    {
+      @Model.FieldName
+    }
+
+    @Html.DisplayFor(model => model.MandatoryStatus)
+    @if (Model.HasMasterAccess)
+    {
+      foreach (var label in Model.Labels)
+      {
+        switch (label)
+        {
+          case FieldSpecialLabelView.ForClaim:
+            <span class="label label-primary" title="Это поле привязано к заявке и сохранится при смене игроком роли">И</span>
+            break;
+          case FieldSpecialLabelView.Name:
+
+            <span class="glyphicon glyphicon-info-sign"
+                  title="Это поле считается именем персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
+            break;
+          case FieldSpecialLabelView.Description:
+
+            <span class="glyphicon glyphicon-info-sign"
+                  title="Это поле считается описанием персонажа и показывается в сетке ролей. Это можно изменить в настройках"></span>
+            break;
+          case FieldSpecialLabelView.SchedulePlace:
+
+            <span class="glyphicon glyphicon-info-sign"
+                  title="Это поле считается местом проведения мероприятия. Это можно изменить в настройках"></span>
+            break;
+          case FieldSpecialLabelView.ScheduleTime:
+
+            <span class="glyphicon glyphicon-info-sign"
+                  title="Это поле считается временем проведения мероприятия. Это можно изменить в настройках"></span>
+            break;
+        }
+      }
+    }
+    }
+  </label>
     <div class="col-md-8">
       @{
         bool isEmpty = string.IsNullOrWhiteSpace(Model.Value);
         Dictionary<string, string> attrs = new Dictionary<string, string>()
-              {
+                {
                 { "id", Model.FieldClientId },
                 { "name", Model.FieldClientId },
                 { "bound", Model.FieldBound.ToString() },
@@ -98,11 +120,11 @@
           <select onchange="selectChanged(event)" @Html.RenderAttrs(attrs)>
             @if (isEmpty || Model.MandatoryStatus != MandatoryStatusViewType.Required)
             {
-              Html.RenderPartial("EditorTemplates/_SelectOptionDefPartial", Model);
+              <partial name="EditorTemplates/_SelectOptionDefPartial" for=@Model />
             }
             @foreach (var val in Model.PossibleValueList)
             {
-              Html.RenderPartial("EditorTemplates/_SelectOptionPartial", val);
+              <partial name="EditorTemplates/_SelectOptionPartial" for=@val />
             }
           </select>
           break;
@@ -113,6 +135,11 @@
           <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
                  data-val-regex="Это поле должно состоять из латинских букв и цифр, и начинаться с латинской буквы"
                  data-val-regex-pattern="^[a-zA-Z][a-zA-Z0-9]*$" data-val="true" />
+          break;
+        case ProjectFieldViewType.PinCode:
+          <input type="text" @Html.RenderAttrs(attrs) value="@Model.Value"
+                 data-val-regex="Это поле должно состоять из цифр"
+                 data-val-regex-pattern="^[a-zA-Z0-9]*$" data-val="true" />
           break;
         case ProjectFieldViewType.Number:
           <div class="form-control-complex">

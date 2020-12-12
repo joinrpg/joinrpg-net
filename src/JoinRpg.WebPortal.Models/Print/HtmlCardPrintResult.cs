@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace JoinRpg.Experimental.Plugin.Interfaces
+namespace JoinRpg.Web.Models.Print
 {
     public class HtmlCardPrintResult
     {

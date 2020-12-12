@@ -2,8 +2,6 @@ using System.Linq;
 using Autofac;
 using JoinRpg.Common.EmailSending.Impl;
 using JoinRpg.Dal.Impl;
-using JoinRpg.PluginHost.Impl;
-using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Services.Email;
 using JoinRpg.Services.Export;
 using JoinRpg.Services.Impl;
@@ -24,8 +22,6 @@ namespace JoinRpg.DI
             builder.RegisterType<ExportDataServiceImpl>().As<IExportDataService>();
             builder.RegisterType<EmailServiceImpl>().As<IEmailService>();
             builder.RegisterType<EmailSendingServiceImpl>().As<IEmailSendingService>();
-
-            builder.RegisterType<PluginFactoryImpl>().As<IPluginFactory>();
 
             builder.RegisterType<MyDbContext>()
                 .AsSelf()

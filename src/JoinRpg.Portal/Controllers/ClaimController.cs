@@ -7,9 +7,7 @@ using Joinrpg.AspNetCore.Helpers;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Experimental.Plugin.Interfaces;
 using JoinRpg.Helpers;
-using JoinRpg.PluginHost.Interfaces;
 using JoinRpg.Portal.Controllers.Common;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authorization;
@@ -32,7 +30,6 @@ namespace JoinRpg.Portal.Controllers
         private readonly IAccommodationRepository _accommodationRepository;
         private IAccommodationInviteService AccommodationInviteService { get; }
         private IFinanceService FinanceService { get; }
-        private IPluginFactory PluginFactory { get; }
         private ICharacterRepository CharacterRepository { get; }
         private IAccommodationInviteRepository AccommodationInviteRepository { get; }
         private IUriService UriService { get; }
@@ -80,7 +77,6 @@ namespace JoinRpg.Portal.Controllers
             IPlotRepository plotRepository,
             IClaimsRepository claimsRepository,
             IFinanceService financeService,
-            IPluginFactory pluginFactory,
             ICharacterRepository characterRepository,
             IUriService uriService,
             IAccommodationRequestRepository accommodationRequestRepository,
@@ -98,7 +94,6 @@ namespace JoinRpg.Portal.Controllers
             AccommodationInviteService = accommodationInviteService;
             AccommodationInviteRepository = accommodationInviteRepository;
             FinanceService = financeService;
-            PluginFactory = pluginFactory;
             CharacterRepository = characterRepository;
             UriService = uriService;
         }
@@ -146,11 +141,6 @@ namespace JoinRpg.Portal.Controllers
                 return error;
             }
 
-            var printPlugins = claim.HasMasterAccess(CurrentUserId) && claim.IsApproved
-              ? PluginFactory.GetProjectOperations<IPrintCardPluginOperation>(claim.Project).Where(
-                p => p.AllowPlayerAccess || claim.HasMasterAccess(CurrentUserId))
-              : Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>();
-
             var currentUser = await GetCurrentUserAsync().ConfigureAwait(false);
 
             var plots = claim.IsApproved && claim.Character != null
@@ -193,7 +183,7 @@ namespace JoinRpg.Portal.Controllers
                 outgoingInvite = await AccommodationInviteRepository.GetOutgoingInviteForClaim(claim).ConfigureAwait(false);
             }
 
-            var claimViewModel = new ClaimViewModel(currentUser, claim, printPlugins, plots, UriService, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
+            var claimViewModel = new ClaimViewModel(currentUser, claim, plots, UriService, availableAccommodation, requestForAccommodation, potentialNeighbors, incomingInvite, outgoingInvite);
 
             if (claim.CommentDiscussion.Comments.Any(c => !c.IsReadByUser(CurrentUserId)))
             {
@@ -561,9 +551,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
 
-            var claimViewModel = new ClaimViewModel(user, claim,
-              Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
-                UriService);
+            var claimViewModel = new ClaimViewModel(user, claim, new PlotElement[] { }, UriService);
 
             await _claimService.SubscribeClaimToUser(projectid, claimid);
             var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -585,9 +573,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
 
-            var claimViewModel = new ClaimViewModel(user, claim,
-              Enumerable.Empty<PluginOperationData<IPrintCardPluginOperation>>(), new PlotElement[] { },
-                UriService);
+            var claimViewModel = new ClaimViewModel(user, claim, new PlotElement[] { }, UriService);
 
 
             await _claimService.UnsubscribeClaimToUser(projectid, claimid);

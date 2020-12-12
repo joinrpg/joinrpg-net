@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <AssemblyTitle>JoinRpg.Markdown</AssemblyTitle>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Nullable>enable</Nullable>
@@ -14,8 +14,8 @@
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Markdig" Version="0.22.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2020.3.0" />
+    <PackageReference Include="Markdig" Version="0.22.1" />
     <PackageReference Include="Vereyon.Web.HtmlSanitizer" Version="1.6.0" />
   </ItemGroup>
 </Project>
