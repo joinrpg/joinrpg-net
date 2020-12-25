@@ -138,8 +138,10 @@ stages:
     ## Publish scripts and charts as artifacts for deploy stage
     ##===============================================================
     - publish: $(System.DefaultWorkingDirectory)/Deployment
+      enabled: false
       artifact: DeployScripts
     - publish: $(System.DefaultWorkingDirectory)/charts
+      enabled: false
       artifact: Charts
 
 ##=================================================================================

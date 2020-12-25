@@ -56,6 +56,7 @@ jobs:
         ##===========================
         - task: HelmInstaller@1
           displayName: Install Helm
+          enabled: false
           inputs:
             helmVersionToInstall: latest
 
@@ -83,7 +84,7 @@ jobs:
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: --rm -e ConnectionStrings__DefaultConnection="$(DefaultConnection)" $(containerRegistry)\$(migrateImageRepository):latest
+            arguments: $(containerRegistry)\$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
