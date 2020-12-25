@@ -19,6 +19,7 @@ using JoinRpg.Web.Models;
 using JoinRpg.Web.Models.Exporters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace JoinRpg.Portal.Controllers
 {
@@ -33,7 +34,7 @@ namespace JoinRpg.Portal.Controllers
 
         private IVirtualUsersService VirtualUsers { get; }
         public ICurrentUserAccessor CurrentUserAccessor { get; }
-
+        private readonly ILogger<FinancesController> logger;
         private IUnitOfWork UnitOfWork { get; }
 
         public FinancesController(
@@ -46,7 +47,8 @@ namespace JoinRpg.Portal.Controllers
             IFinanceReportRepository financeReportRepository,
             IUserRepository userRepository,
             IVirtualUsersService vpu,
-            ICurrentUserAccessor currentUserAccessor
+            ICurrentUserAccessor currentUserAccessor,
+            ILogger<FinancesController> logger
             )
             : base(projectRepository, projectService, userRepository)
         {
@@ -57,6 +59,7 @@ namespace JoinRpg.Portal.Controllers
             VirtualUsers = vpu;
             UnitOfWork = uow;
             CurrentUserAccessor = currentUserAccessor;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -149,8 +152,9 @@ namespace JoinRpg.Portal.Controllers
 
                 return RedirectToAction("Setup", new { projectid = data.ProjectId });
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Проблема при включении платежа");
                 //TODO: Message that payment type was not created
                 return RedirectToAction("Setup", new { projectid = data.ProjectId });
             }
@@ -172,8 +176,9 @@ namespace JoinRpg.Portal.Controllers
                 });
                 return RedirectToAction("Setup", new { viewModel.ProjectId });
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogError(ex, "Проблема при создании платежа");
                 //TODO: Message that comment is not added
                 return RedirectToAction("Setup", new { viewModel.ProjectId });
             }
