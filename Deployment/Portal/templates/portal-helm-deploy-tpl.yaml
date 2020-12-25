@@ -83,7 +83,7 @@ jobs:
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: --rm -it -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(containerRegistry)/$(migrateImageRepository):latest
+            arguments: --rm -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(containerRegistry)/$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
