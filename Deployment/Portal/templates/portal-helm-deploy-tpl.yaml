@@ -82,8 +82,9 @@ jobs:
           displayName: "Run DB migration tool"
           inputs:
             command: run
+            repository: $(migrateImageRepository)
             containerRegistry: $(registryServiceConnection)
-            arguments: -e ConnectionStrings__DefaultConnection=$(DefaultConnection) joinrpg.azurecr.io\joinrpg.migrate:latest
+            arguments: '-e "ConnectionStrings__DefaultConnection=$(DefaultConnection)" "joinrpg.azurecr.io\joinrpg.migrate:latest"'
           
         ##==========================================================================
         ## Deploy Helm chart
