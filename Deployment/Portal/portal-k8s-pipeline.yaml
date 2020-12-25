@@ -74,7 +74,6 @@ stages:
     - task: Docker@2
       displayName: "Prod: build and push an image"
       condition: not(contains(variables['GitVersion.FullSemVer'], '+'))
-      enabled: false
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -93,7 +92,6 @@ stages:
     - task: Docker@2
       displayName: "Stage: build and push an image"
       condition: contains(variables['GitVersion.FullSemVer'], '+')
-      enabled: false
       inputs:
         command: buildAndPush
         repository: $(imageRepository)
@@ -108,7 +106,6 @@ stages:
     ##====================================================================
     - task: Docker@2
       displayName: "Build and push migration tool image"
-      enabled: false
       inputs:
         command: buildAndPush
         repository: $(migrateImageRepository)
