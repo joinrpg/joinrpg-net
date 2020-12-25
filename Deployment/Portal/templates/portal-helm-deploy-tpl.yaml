@@ -83,7 +83,7 @@ jobs:
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(migrateFullName):latest
+            arguments: -e ConnectionStrings__DefaultConnection=$(DefaultConnection) joinrpg.azurecr.io\joinrpg.migrate:latest
           
         ##==========================================================================
         ## Deploy Helm chart
