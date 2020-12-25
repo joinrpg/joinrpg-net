@@ -108,6 +108,7 @@ stages:
     ##====================================================================
     - task: Docker@2
       displayName: "Build and push migration tool image"
+      enabled: false
       inputs:
         command: buildAndPush
         repository: $(migrateImageRepository)
@@ -138,10 +139,8 @@ stages:
     ## Publish scripts and charts as artifacts for deploy stage
     ##===============================================================
     - publish: $(System.DefaultWorkingDirectory)/Deployment
-      enabled: false
       artifact: DeployScripts
     - publish: $(System.DefaultWorkingDirectory)/charts
-      enabled: false
       artifact: Charts
 
 ##=================================================================================
