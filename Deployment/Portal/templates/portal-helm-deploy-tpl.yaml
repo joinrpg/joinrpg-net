@@ -77,10 +77,13 @@ jobs:
 
         ##==========================================================================
         ## Run DB migration tool
-        ##==========================================================================
-        - bash: |
-            docker run --rm -it -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(containerRegistry)/$(migrateImageRepository):latest              
-          displayName: Run DB migration tool
+        ##==========================================================================          
+        - task: Docker@2
+          displayName: "Run DB migration tool"
+          inputs:
+            command: run
+            containerRegistry: $(registryServiceConnection)
+            arguments: --rm -it -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(containerRegistry)/$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
