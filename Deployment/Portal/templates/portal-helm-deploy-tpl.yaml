@@ -84,7 +84,7 @@ jobs:
           inputs:
             command: run
             containerRegistry: $(registryServiceConnection)
-            arguments: $(containerRegistry)\$(migrateImageRepository):latest
+            arguments: $(containerRegistry)/$(migrateImageRepository):latest
           
         ##==========================================================================
         ## Deploy Helm chart
