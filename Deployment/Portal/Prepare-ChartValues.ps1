@@ -12,7 +12,10 @@ param(
     [string] $IngressHost,
 
     [Parameter(Mandatory=$false)]
-    [string] $IngressPath = "/"
+    [string] $IngressPath = "/",
+
+    [Parameter(Mandatory=$false)]
+    [string] $ConnectionStringSecretName = "ConnectionStrings--DefaultConnection"
 )
 
 ##=================================================================================
@@ -33,6 +36,14 @@ $secrets | ?{ $_.Name.StartsWith($Prefix) } |
     $s = Get-AzKeyVaultSecret -VaultName $VaultName -Name $name -WarningAction SilentlyContinue
     $value = ConvertFrom-SecureString -SecureString $s.SecretValue -AsPlainText
 
+    #Save DB Connection String as variable for next pipeline steps
+    if( $name -eq ($Prefix + $ConnectionStringSecretName) )
+    {
+        Write-Host "Found the database connections string secret with name $name, save to pipeline variable 'DefaultConnection'"   
+        Write-Host "##vso[task.setvariable variable=DefaultConnection;issecret=true]$value"        
+    }
+    
+    #Save to the KeyVault
     $name = $name.Substring($Prefix.Length).Replace("--","__");
 
     $data.Add($name, $value);

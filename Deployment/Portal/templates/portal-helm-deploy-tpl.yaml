@@ -1,5 +1,5 @@
 ##======================================================
-## Used pipeline variables 
+## Used pipeline variables
 ##  - azureSubscription
 ##  - keyVaultName
 ##  - rgName
@@ -49,20 +49,21 @@ jobs:
     vmImage: $(vmImageName)
   strategy:
     runOnce:
-      deploy:          
+      deploy:
         steps:
         ##===========================
         ## Install tools
         ##===========================
         - task: HelmInstaller@1
           displayName: Install Helm
-          inputs: 
+          inputs:
             helmVersionToInstall: latest
 
         ##==========================================================================
-        ## Get secrets from KeyVault and prepare parameters for Helm chart deploy 
+        ## Get secrets from KeyVault and prepare parameters for Helm chart deploy
         ##==========================================================================
         - task: AzurePowerShell@4
+          displayName: Get values for Chart deployment
           inputs:
             azureSubscription: $(azureSubscription)
             azurePowerShellVersion: LatestVersion
@@ -75,7 +76,14 @@ jobs:
               -IngressHost '${{ parameters.ingressHostName }}'
 
         ##==========================================================================
-        ## Deploy Helm chart  
+        ## Run DB migration tool
+        ##==========================================================================
+        - bash: |
+            docker run --rm -it -e ConnectionStrings__DefaultConnection=$(DefaultConnection) $(containerRegistry)/$(migrateImageRepository):latest              
+          displayName: Run DB migration tool
+          
+        ##==========================================================================
+        ## Deploy Helm chart
         ##==========================================================================
         - task: HelmDeploy@0
           displayName: Install/Upgdare application (Helm)
