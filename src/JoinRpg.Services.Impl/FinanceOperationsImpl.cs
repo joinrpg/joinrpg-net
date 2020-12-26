@@ -75,7 +75,8 @@ namespace JoinRpg.Services.Impl
 
                 project.RequestMasterAccess(request.TargetMasterId);
                 // Cash payment could be only one
-                if (request.TypeKind == PaymentTypeKind.Cash && project.PaymentTypes.FirstOrDefault(pt => pt.UserId == request.TargetMasterId) != null)
+                if (request.TypeKind == PaymentTypeKind.Cash
+                    && project.PaymentTypes.Any(pt => pt.UserId == request.TargetMasterId && pt.TypeKind == PaymentTypeKind.Cash))
                 {
                     throw new JoinRpgInvalidUserException($@"Payment of type ${request.TypeKind.GetDisplayName()} is already created for the user ${request.TargetMasterId}");
                 }
