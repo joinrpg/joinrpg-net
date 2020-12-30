@@ -68,11 +68,11 @@ jobs:
             azureSubscription: $(azureSubscription)
             azurePowerShellVersion: LatestVersion
             ScriptType: FilePath
-            ScriptPath: $(Pipeline.Workspace)/deployScripts/portal/Prepare-ChartValues.ps1
+            ScriptPath: $(Pipeline.Workspace)/DeployScripts/portal/Prepare-ChartValues.ps1
             scriptArguments:
               -VaultName '$(keyVaultName)'
               -Prefix '${{ parameters.keyVaultPrefix }}'
-              -Path '$(Pipeline.Workspace)/deployScripts/portal/deploy-values.yaml'
+              -Path '$(Pipeline.Workspace)/DeployScripts/portal/deploy-values.yaml'
               -IngressHost '${{ parameters.ingressHostName }}'
 
         ##==========================================================================
@@ -100,7 +100,7 @@ jobs:
             command: upgrade
             chartType: filepath
             chartPath: "$(Pipeline.Workspace)/Charts/joinrpg-portal"
-            valueFile: "$(Pipeline.Workspace)/deployScripts/portal/deploy-values.yaml"
+            valueFile: "$(Pipeline.Workspace)/DeployScripts/portal/deploy-values.yaml"
             releaseName: '${{ parameters.releaseName }}'
             install: true
             force: false
