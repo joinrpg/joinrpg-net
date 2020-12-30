@@ -25,7 +25,7 @@ variables:
 
   keyVaultName: "joinrpg-k8s-kv"
 
-  vmImageName: 'ubuntu-latest'
+  buildVmImageName: 'ubuntu-latest'
 
 stages:
 ##===========================
@@ -37,7 +37,7 @@ stages:
   - job: Build
     displayName: Build
     pool:
-      vmImage: $(vmImageName)
+      vmImage: $(buildVmImageName)
     steps:
     ##===========================
     ## Install tools
@@ -136,7 +136,7 @@ stages:
     ##===============================================================
     ## Publish scripts and charts as artifacts for deploy stage
     ##===============================================================
-    - publish: $(System.DefaultWorkingDirectory)/Deployment
+    - publish: $(System.DefaultWorkingDirectory)/deployment
       artifact: DeployScripts
     - publish: $(System.DefaultWorkingDirectory)/charts
       artifact: Charts
