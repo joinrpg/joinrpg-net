@@ -2,7 +2,6 @@ using System;
 using System.Data.Entity.Validation;
 using System.Linq;
 using JoinRpg.Domain;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace JoinRpg.Portal.Infrastructure
@@ -48,6 +47,9 @@ namespace JoinRpg.Portal.Infrastructure
                 case JoinRpgNameFieldDeleteException _:
                     dict.AddModelError("",
                         "Невозможно удалить поле, потому что оно привязано к имени персонажа");
+                    return;
+                case JoinFieldScheduleShouldBeUniqueException _:
+                    dict.AddModelError("", "Невозможно добавить второе поле с настройками расписания");
                     return;
                 default:
                     dict.AddModelError("", exception.ToString());
