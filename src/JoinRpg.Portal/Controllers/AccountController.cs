@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using BitArmory.ReCaptcha;
 using Joinrpg.Web.Identity;
 using JoinRpg.Data.Interfaces;
 using JoinRpg.Portal.Identity;
@@ -25,6 +23,7 @@ namespace JoinRpg.Portal.Controllers
         private readonly IEmailService _emailService;
         private readonly IOptions<RecaptchaOptions> recaptchaOptions;
         private readonly IRecaptchaVerificator recaptchaVerificator;
+        private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
 
         private ApplicationUserManager UserManager { get; }
         private ApplicationSignInManager SignInManager { get; }
@@ -37,7 +36,8 @@ namespace JoinRpg.Portal.Controllers
             IEmailService emailService,
             IUserRepository userRepository,
             IOptions<RecaptchaOptions> recaptchaOptions,
-            IRecaptchaVerificator recaptchaVerificator
+            IRecaptchaVerificator recaptchaVerificator,
+            ExternalLoginProfileExtractor externalLoginProfileExtractor
         )
         {
             UserManager = userManager;
@@ -46,6 +46,7 @@ namespace JoinRpg.Portal.Controllers
             UserRepository = userRepository;
             this.recaptchaOptions = recaptchaOptions;
             this.recaptchaVerificator = recaptchaVerificator;
+            this.externalLoginProfileExtractor = externalLoginProfileExtractor;
         }
 
 
@@ -347,8 +348,6 @@ namespace JoinRpg.Portal.Controllers
 
             var authenticationProperties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(authenticationProperties, provider);
-            // Request a redirect to the external login provider
-            //return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
         //
@@ -369,8 +368,6 @@ namespace JoinRpg.Portal.Controllers
 
             var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
 
-
-
             // If sign in failed, may be we have user with same email. Let's bind.
             if (!result.Succeeded && !string.IsNullOrWhiteSpace(email))
             {
@@ -379,6 +376,10 @@ namespace JoinRpg.Portal.Controllers
                 {
                     await UserManager.AddLoginAsync(user, loginInfo);
                     result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
+                    if (result.Succeeded)
+                    {
+                        await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                    }
                 }
             }
 
@@ -398,10 +399,14 @@ namespace JoinRpg.Portal.Controllers
             }
 
             // If the user does not have an account, then prompt the user to create an account
-            ViewBag.ReturnUrl = returnUrl;
-            ViewBag.LoginProvider = loginInfo.LoginProvider;
             return View("ExternalLoginConfirmation",
-                new ExternalLoginConfirmationViewModel { Email = email });
+                new ExternalLoginConfirmationViewModel()
+                {
+                    ReturnUrl = returnUrl,
+                    LoginProviderName = loginInfo.LoginProvider,
+                    RulesApproved = false,
+                }
+                );
 
         }
 
@@ -411,8 +416,7 @@ namespace JoinRpg.Portal.Controllers
         [AllowAnonymous]
 
         public async Task<ActionResult> ExternalLoginConfirmation(
-            ExternalLoginConfirmationViewModel model,
-            string returnUrl)
+            ExternalLoginConfirmationViewModel model)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -422,29 +426,34 @@ namespace JoinRpg.Portal.Controllers
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                var info = await SignInManager.GetExternalLoginInfoAsync();
-                if (info == null)
+                var loginInfo = await SignInManager.GetExternalLoginInfoAsync();
+                if (loginInfo == null)
                 {
                     return View("ExternalLoginFailure");
                 }
 
-                var user = new JoinIdentityUser() { UserName = model.Email };
+                var email = loginInfo.Principal.FindFirstValue(ClaimTypes.Email);
+
+                var user = new JoinIdentityUser() { UserName = email };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
-                    result = await UserManager.AddLoginAsync(user, info);
+                    result = await UserManager.AddLoginAsync(user, loginInfo);
                     if (result.Succeeded)
                     {
-                        await SignInManager.SignInAsync(user,
-                            isPersistent: true);
-                        return RedirectToLocal(returnUrl);
+                        var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+                        _ = await UserManager.ConfirmEmailAsync(user, token);
+
+                        await SignInManager.SignInAsync(user, isPersistent: true);
+
+                        await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+                        return RedirectToLocal(model.ReturnUrl);
                     }
                 }
 
                 ModelState.AddErrors(result);
             }
 
-            ViewBag.ReturnUrl = returnUrl;
             return View(model);
         }
 
