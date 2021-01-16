@@ -11,6 +11,9 @@ namespace JoinRpg.Domain
         public static bool HasValueList(this ProjectField field)
                 => field.FieldType.HasValuesList();
 
+        public static bool SupportsMassAdding(this ProjectField field)
+        => field.FieldType.SupportsMassAdding();
+
         public static bool SupportsMarkdown([NotNull] this ProjectField field) => field.FieldType == ProjectFieldType.Text;
 
         public static bool HasSpecialGroup(this ProjectField field) => field.HasValueList() && field.FieldBoundTo == FieldBoundTo.Character;
