@@ -5,6 +5,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Impl
@@ -51,6 +52,9 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
+#nullable enable
+
+        /// <inheritdoc />
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetAdminFlag(int userId, bool administratorFlag)
         {
@@ -60,12 +64,31 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
+        /// <inheritdoc />
         //TODO need to add check on this level [PrincipalPermission(SecurityAction.Demand, Role = Security.AdminRoleName)]
         public async Task SetVerificationFlag(int userId, bool verificationFlag)
         {
             var user = await UserRepository.GetById(userId);
             user.VerifiedProfileFlag = verificationFlag;
             //TODO: Send email
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task SetNameIfNotSetWithoutAccessChecks(int userId, UserFullName userFullName)
+        {
+            var user = await UserRepository.WithProfile(userId);
+
+            if (user.VerifiedProfileFlag)
+            {
+                return;
+            }
+
+            user.PrefferedName ??= userFullName.PrefferedName;
+            user.SurName ??= userFullName.SurName?.Value;
+            user.BornName ??= userFullName.GivenName?.Value;
+            user.FatherName ??= userFullName.FatherName?.Value;
+
             await UnitOfWork.SaveChangesAsync();
         }
     }

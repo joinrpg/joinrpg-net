@@ -6,10 +6,10 @@ using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
+using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,6 +19,8 @@ namespace JoinRpg.Portal.Controllers
     public class ManageController : Common.ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ExternalLoginProfileExtractor externalLoginProfileExtractor;
+
         private ApplicationUserManager UserManager { get; }
 
         public ManageController(
@@ -27,7 +29,8 @@ namespace JoinRpg.Portal.Controllers
             IUserRepository userRepository,
             IUserService userService,
             ICurrentUserAccessor currentUserAccessor,
-            ConfigurationAdapter configurationAdapter)
+            ConfigurationAdapter configurationAdapter,
+            ExternalLoginProfileExtractor externalLoginProfileExtractor)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -35,6 +38,7 @@ namespace JoinRpg.Portal.Controllers
             _userService = userService;
             CurrentUserAccessor = currentUserAccessor;
             ConfigurationAdapter = configurationAdapter;
+            this.externalLoginProfileExtractor = externalLoginProfileExtractor;
         }
 
         private ApplicationSignInManager SignInManager { get; }
@@ -202,9 +206,13 @@ namespace JoinRpg.Portal.Controllers
             var user = await UserManager.FindByIdAsync(userId.ToString());
 
             var result = await UserManager.AddLoginAsync(user, loginInfo);
-            return result.Succeeded
-              ? RedirectToAction("ManageLogins")
-              : RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+            if (!result.Succeeded)
+            {
+                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+            }
+
+            await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
+            return RedirectToAction("ManageLogins");
         }
 
         [HttpGet]

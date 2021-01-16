@@ -9,13 +9,15 @@ namespace JoinRpg.Web.Models
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
-
-        [Required]
         [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
+
+        [ReadOnly(true)]
+        public string LoginProviderName { get; set; }
+
+        [ReadOnly(true)]
+        public string ReturnUrl { get; set; }
     }
 
     public class ExternalLoginListViewModel

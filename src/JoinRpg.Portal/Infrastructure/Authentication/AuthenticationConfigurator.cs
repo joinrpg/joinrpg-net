@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Joinrpg.Web.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +20,9 @@ namespace JoinRpg.Portal.Infrastructure
                 {
                     options.SignInScheme = IdentityConstants.ExternalScheme;
 
+                    options.Scope.Add("profile");
+                    options.Scope.Add("email");
+
                     (options.ClientId, options.ClientSecret) = googleConfig;
                 });
             }
@@ -32,6 +34,7 @@ namespace JoinRpg.Portal.Infrastructure
                 authBuilder.AddVkontakte(options =>
                 {
                     options.SignInScheme = IdentityConstants.ExternalScheme;
+                    options.Scope.Add("email");
 
                     (options.ClientId, options.ClientSecret) = vkConfig;
                 });
