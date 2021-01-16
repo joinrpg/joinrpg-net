@@ -99,6 +99,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.IntegrationTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Dal.Migrate", "src\Joinrpg.Dal.Migrate\Joinrpg.Dal.Migrate.csproj", "{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.PrimitiveTypes", "JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj", "{3623C97E-251A-4233-A359-18F76F9598C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -249,6 +251,10 @@ Global
 		{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3623C97E-251A-4233-A359-18F76F9598C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3623C97E-251A-4233-A359-18F76F9598C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3623C97E-251A-4233-A359-18F76F9598C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3623C97E-251A-4233-A359-18F76F9598C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -282,6 +288,7 @@ Global
 		{78FC0625-A66C-4152-8BE2-FEAE45F161D8} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{17FBA40C-1B31-4575-A4EC-27D40F65D63A} = {8BB208B6-13CD-4942-B3AC-037BDF858727}
 		{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5} = {B8A1A61E-CD98-49F5-98BA-30B0869576B1}
+		{3623C97E-251A-4233-A359-18F76F9598C8} = {7645AC35-A68C-40EF-8AAD-1BF62D822E4C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A5E4F92-A0F4-4350-92C7-361C88D58588}
