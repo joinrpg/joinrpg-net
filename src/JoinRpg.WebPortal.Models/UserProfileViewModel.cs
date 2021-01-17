@@ -67,6 +67,8 @@ namespace JoinRpg.Web.Models
         public bool IsVerifiedUser { get; }
         public bool IsAdmin { get; }
 
+        public ContactsAccessTypeView SocialNetworkAccess { get; }
+
         public UserProfileDetailsViewModel(User user, User currentUser)
             : this(user, (AccessReason)user.GetProfileAccess(currentUser))
         {
@@ -74,23 +76,26 @@ namespace JoinRpg.Web.Models
         }
         public UserProfileDetailsViewModel([NotNull] User user, AccessReason reason)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            Email = user.Email;
-            FullName = user.FullName;
-            User = user;
+            User = user ?? throw new ArgumentNullException(nameof(user));
             Reason = reason;
-            Skype = user.Extra?.Skype;
-            Telegram = user.Extra?.Telegram;
-            Livejournal = user.Extra?.Livejournal;
-            Vk = user.Extra?.Vk;
-            PhoneNumber = user.Extra?.PhoneNumber ?? "";
-            AllrpgId = user.Allrpg?.Sid;
-            IsVerifiedUser = user.VerifiedProfileFlag;
-            IsAdmin = user.Auth.IsAdmin;
+            SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
+
+            if (HasAccess)
+            {
+                Email = user.Email;
+                FullName = user.FullName;
+                Skype = user.Extra?.Skype;
+                Telegram = user.Extra?.Telegram;
+                Livejournal = user.Extra?.Livejournal;
+                PhoneNumber = user.Extra?.PhoneNumber ?? "";
+                IsVerifiedUser = user.VerifiedProfileFlag;
+                IsAdmin = user.Auth.IsAdmin;
+            }
+            if (HasAccess || user.Extra.SocialNetworksAccess == ContactsAccessType.Public)
+            {
+                Vk = user.Extra?.Vk;
+                AllrpgId = user.Allrpg?.Sid;
+            }
         }
 
         public bool HasAccess => Reason != AccessReason.NoAccess;

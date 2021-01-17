@@ -24,6 +24,8 @@ namespace JoinRpg.Portal
             builder.RegisterType<ReCaptchaService>().SingleInstance();
             builder.RegisterType<RecaptchaVerificator>().AsImplementedInterfaces();
 
+            builder.RegisterType<ExternalLoginProfileExtractor>();
+
             builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
                 .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();
 
