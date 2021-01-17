@@ -19,7 +19,7 @@ namespace JoinRpg.Web.Models
     public class SetPasswordViewModel
     {
         [Required]
-        [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "{0} должен быть не короче {2} символов.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Новый пароль")]
         public string NewPassword { get; set; }
