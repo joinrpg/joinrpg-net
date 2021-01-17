@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
+using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
@@ -46,30 +49,6 @@ namespace JoinRpg.Portal.Controllers
         private ICurrentUserAccessor CurrentUserAccessor { get; }
         private ConfigurationAdapter ConfigurationAdapter { get; }
 
-        public async Task<ActionResult> Index(ManageMessageId? message)
-        {
-            ViewBag.StatusMessage =
-              message == ManageMessageId.ChangePasswordSuccess
-                ? "Ваш пароль был изменен."
-                : message == ManageMessageId.SetPasswordSuccess
-                  ? "Ваш пароль был установлен."
-                  : message == ManageMessageId.Error
-                    ? "An error has occurred."
-                    : "";
-
-            var userId = CurrentUserAccessor.UserId;
-            var user = await UserManager.FindByIdAsync(userId.ToString());
-            var model = new IndexViewModel
-            {
-                HasPassword = user.HasPassword,
-                Email = CurrentUserAccessor.Email,
-                LoginsCount = (await UserManager.GetLoginsAsync(user)).Count,
-            };
-            return View(model);
-        }
-
-        //
-        // POST: /Manage/RemoveLogin
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
@@ -78,6 +57,7 @@ namespace JoinRpg.Portal.Controllers
             var user = await UserManager.FindByIdAsync(userId.ToString());
             ManageMessageId? message;
             var result = await UserManager.RemoveLoginAsync(user, loginProvider, providerKey);
+            await externalLoginProfileExtractor.CleanAfterLogin(user, loginProvider);
             if (result.Succeeded)
             {
                 if (user != null)
@@ -90,7 +70,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 message = ManageMessageId.Error;
             }
-            return RedirectToAction("ManageLogins", new { Message = message });
+            return RedirectToAction("SetupProfile", new { Message = message });
         }
 
         //
@@ -113,7 +93,7 @@ namespace JoinRpg.Portal.Controllers
             if (result.Succeeded)
             {
                 await SignInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", new { Message = ManageMessageId.ChangePasswordSuccess });
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.ChangePasswordSuccess });
             }
             ModelState.AddErrors(result);
             return View(model);
@@ -137,46 +117,13 @@ namespace JoinRpg.Portal.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", new { Message = ManageMessageId.SetPasswordSuccess });
+                    return RedirectToAction("SetupProfile", new { Message = ManageMessageId.SetPasswordSuccess });
                 }
                 ModelState.AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
-        }
-
-        //
-        // GET: /Manage/ManageLogins
-        public async Task<ActionResult> ManageLogins(ManageMessageId? message)
-        {
-            ViewBag.StatusMessage =
-              message == ManageMessageId.RemoveLoginSuccess
-                ? "The external login was removed."
-                : message == ManageMessageId.Error
-                  ? "An error has occurred."
-                  : "";
-            var userId = CurrentUserAccessor.UserId;
-            var user = await UserManager.FindByIdAsync(userId.ToString());
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var userLogins = await UserManager.GetLoginsAsync(user);
-            var otherLogins =
-              (await SignInManager.GetExternalAuthenticationSchemesAsync())
-                .Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider))
-                .ToList();
-            ViewBag.ShowRemoveButton = user.HasPassword || userLogins.Count > 1;
-            return View(new ManageLoginsViewModel
-            {
-                CurrentLogins = userLogins.Select(ul => new UserLoginInfoViewModel()
-                {
-                    LoginProvider = ul.LoginProvider,
-                    ProviderKey = ul.ProviderKey
-                }).ToList(),
-                OtherLogins = otherLogins.Select(ol => ol.ToViewModel()).ToList(),
-            });
         }
 
         //
@@ -199,7 +146,7 @@ namespace JoinRpg.Portal.Controllers
             var loginInfo = await SignInManager.GetExternalLoginInfoAsync(ConfigurationAdapter.XsrfKey);
             if (loginInfo == null)
             {
-                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
             }
 
             var userId = CurrentUserAccessor.UserId;
@@ -208,11 +155,11 @@ namespace JoinRpg.Portal.Controllers
             var result = await UserManager.AddLoginAsync(user, loginInfo);
             if (!result.Succeeded)
             {
-                return RedirectToAction("ManageLogins", new { Message = ManageMessageId.Error });
+                return RedirectToAction("SetupProfile", new { Message = ManageMessageId.Error });
             }
 
             await externalLoginProfileExtractor.TryExtractProfile(user, loginInfo);
-            return RedirectToAction("ManageLogins");
+            return RedirectToAction("SetupProfile");
         }
 
         [HttpGet]
@@ -226,7 +173,8 @@ namespace JoinRpg.Portal.Controllers
                 return RedirectToAction("Edit", "Claim",
                     new { lastClaim.ClaimId, lastClaim.ProjectId });
             }
-            return View(new EditUserProfileViewModel()
+
+            var model = new EditUserProfileViewModel()
             {
                 SurName = user.SurName,
                 UserId = user.UserId,
@@ -245,7 +193,84 @@ namespace JoinRpg.Portal.Controllers
                 LastClaimId = lastClaim?.ClaimId,
                 LastClaimProjectId = lastClaim?.ProjectId,
                 IsVerifiedFlag = user.VerifiedProfileFlag,
-            });
+                IsVkVerifiedFlag = user.Extra?.VkVerified ?? false,
+                SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess(),
+                SocialLoginStatus = GetSocialLogins(user).ToList(),
+                Email = user.Email,
+                HasPassword = user.PasswordHash != null,
+            };
+
+            return base.View(model);
+        }
+
+        private static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(User user)
+        {
+            var canRemoveLogins = user.PasswordHash != null || user.ExternalLogins.Count > 1;
+            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Google") is UserExternalLogin googleLogin)
+            {
+                yield return new UserLoginInfoViewModel()
+                {
+                    AllowLink = false,
+                    AllowUnlink = canRemoveLogins,
+                    LoginProvider = googleLogin.Provider,
+                    ProviderKey = googleLogin.Key,
+                    NeedToReLink = false,
+                    ProviderFriendlyName = "Google",
+                    ProviderLink = null,
+                };
+            }
+            else
+            {
+                yield return new UserLoginInfoViewModel()
+                {
+                    AllowLink = true,
+                    AllowUnlink = false,
+                    LoginProvider = "Google",
+                    ProviderKey = null,
+                    NeedToReLink = false,
+                    ProviderFriendlyName = "Google",
+                    ProviderLink = null,
+                };
+            }
+            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Vkontakte") is UserExternalLogin vkLogin)
+            {
+                yield return new UserLoginInfoViewModel()
+                {
+                    AllowLink = false,
+                    AllowUnlink = canRemoveLogins,
+                    LoginProvider = vkLogin.Provider,
+                    ProviderKey = vkLogin.Key,
+                    NeedToReLink = false,
+                    ProviderFriendlyName = "ВК",
+                    ProviderLink = $"https://vk.com/id{vkLogin.Key}",
+                };
+            }
+            else if (user.Extra?.Vk != null)
+            {
+                yield return new UserLoginInfoViewModel()
+                {
+                    AllowLink = false,
+                    AllowUnlink = false,
+                    LoginProvider = "Vkontakte",
+                    ProviderKey = null,
+                    NeedToReLink = true,
+                    ProviderFriendlyName = "ВК",
+                    ProviderLink = $"https://vk.com/id{user.Extra?.Vk}",
+                };
+            }
+            else
+            {
+                yield return new UserLoginInfoViewModel()
+                {
+                    AllowLink = true,
+                    AllowUnlink = false,
+                    LoginProvider = "Vkontakte",
+                    ProviderKey = null,
+                    NeedToReLink = false,
+                    ProviderFriendlyName = "ВК",
+                    ProviderLink = null,
+                };
+            }
         }
 
         [HttpPost]
@@ -254,9 +279,17 @@ namespace JoinRpg.Portal.Controllers
             try
             {
                 await
-                  _userService.UpdateProfile(viewModel.UserId, viewModel.SurName, viewModel.FatherName,
-                    viewModel.BornName, viewModel.PrefferedName, viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
-                    viewModel.GroupNames, viewModel.Skype, viewModel.Vk, viewModel.Livejournal, viewModel.Telegram);
+                  _userService.UpdateProfile(viewModel.UserId,
+                    new UserFullName(
+                        new PrefferedName(viewModel.PrefferedName),
+                        new BornName(viewModel.BornName),
+                        new SurName(viewModel.SurName),
+                        new FatherName(viewModel.FatherName)),
+                    viewModel.Gender, viewModel.PhoneNumber, viewModel.Nicknames,
+                    viewModel.GroupNames, viewModel.Skype, viewModel.Livejournal,
+                    viewModel.Telegram,
+                    (ContactsAccessType)viewModel.SocialNetworkAccess
+                  );
                 var userId = CurrentUserAccessor.UserId;
                 var user = await UserManager.FindByIdAsync(userId.ToString());
                 await UserManager.UpdateSecurityStampAsync(user);

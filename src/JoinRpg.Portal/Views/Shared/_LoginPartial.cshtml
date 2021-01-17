@@ -15,7 +15,7 @@
 
                 <ul class="dropdown-menu">
                     <li class="dropdown-item">@Html.ActionLink("Профиль", "Me", "User", new { area = "" }, null)</li>
-                    <li class="dropdown-item">@Html.ActionLink("Аккаунт", "Index", "Manage", new { area = "" }, null)</li>
+                    <li class="dropdown-item">@Html.ActionLink("Настройки", "SetupProfile", "Manage", new { area = "" }, null)</li>
                     <li class="dropdown-item"><a href="https://docs.joinrpg.ru"><span class="glyphicon glyphicon-question-sign"></span> Помощь</a></li>
                     @if (User.IsInRole("admin"))
                     {
