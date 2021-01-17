@@ -58,6 +58,12 @@ namespace JoinRpg.DataModel
         Female = 2,
     }
 
+    public enum ContactsAccessType : byte
+    {
+        OnlyForMasters = 0,
+        Public = 1,
+    }
+
     // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
     public class UserExternalLogin
     {
@@ -84,6 +90,7 @@ namespace JoinRpg.DataModel
         public string Skype { get; set; }
 
         public string Vk { get; set; }
+        public bool VkVerified { get; set; }
         public string Livejournal { get; set; }
 
         public string Nicknames { get; set; }
@@ -93,6 +100,8 @@ namespace JoinRpg.DataModel
         public string Telegram { get; set; }
 
         public DateTime? BirthDate { get; set; }
+
+        public ContactsAccessType SocialNetworksAccess { get; set; }
 
         public override string ToString() => $"UserExtra(UserId: {UserId}, Gender: {Gender}, PhoneNumber: {PhoneNumber}, Nicknames: {Nicknames}, GroupNames: {GroupNames}, BirthDate: {BirthDate}, Telegram: {Telegram})";
     }

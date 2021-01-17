@@ -41,6 +41,8 @@ namespace JoinRpg.Domain
             return AccessReason.NoAccess;
         }
 
+        public static ContactsAccessType GetSocialNetworkAccess(this User user) => user.Extra?.SocialNetworksAccess ?? ContactsAccessType.OnlyForMasters;
+
         public enum AccessReason
         {
             NoAccess,
