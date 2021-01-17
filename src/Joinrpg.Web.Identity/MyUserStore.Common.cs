@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -44,6 +42,10 @@ namespace Joinrpg.Web.Identity
                     AspNetSecurityStamp = "",
                 },
                 PasswordHash = user.PasswordHash,
+                Extra = new UserExtra
+                {
+                    SocialNetworksAccess = ContactsAccessType.Public,
+                },
             };
 
             if (!hasAnyUser)
