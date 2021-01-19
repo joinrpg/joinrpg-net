@@ -152,7 +152,7 @@ stages:
     parameters:
       name: 'Deploy_Dev'
       displayName: "Dev: deploy to 'Dev' namespace"
-      ingressHostName: 'dev.k8s.joinrpg.ru'
+      ingressHostName: 'dev.joinrpg.ru'
       keyVaultPrefix: 'dev-'
       releaseName: 'joinrpg-portal'
       namespace: 'dev'
