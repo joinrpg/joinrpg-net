@@ -5,6 +5,8 @@ trigger:
     include:
       - 'master'
       - 'containers/main'
+      - 
+pr: none
 
 variables:
   HELM_EXPERIMENTAL_OCI: 1
