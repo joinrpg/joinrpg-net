@@ -167,12 +167,16 @@
 {
     <script src="~/Scripts/editfieldvalues.js"></script>;
     <hr />
-    <div>
-        <a href="@Url.Action("CreateValue", new {Model.ProjectId, Model.ProjectFieldId})"
-           class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>Добавить значение</a>
-        <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal">Добавить несколько значений</button>
-    </div>
-    Html.RenderPartial("ValuesList", Model.DropdownValues, null);
+
+    @if (Model.SupportsMassAdding)
+    {
+      <div>
+          <a href="@Url.Action("CreateValue", new { Model.ProjectId, Model.ProjectFieldId })"
+             class="btn btn-default"><i class="glyphicon glyphicon-plus"></i>Добавить значение</a>
+          <button class="btn btn-default" data-toggle="modal" data-target="#massAddValueModal">Добавить несколько значений</button>
+      </div>
+    }
+    <partial name="ValuesList" for="@Model.DropdownValues" />
 }
 
 <!-- Deletion dialog -->

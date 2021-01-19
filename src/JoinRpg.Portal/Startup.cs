@@ -86,7 +86,8 @@ namespace JoinRpg.Portal
             services.AddApplicationInsightsTelemetry();
 
             services.AddHealthChecks()
-                .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
+                .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
+                .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
         }
 
 

@@ -22,6 +22,16 @@ namespace JoinRpg.Services.Impl
 
             project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
+            if (project.GetTimeSlotFieldOrDefault() != null && request.FieldType == ProjectFieldType.ScheduleTimeSlotField)
+            {
+                throw new JoinFieldScheduleShouldBeUniqueException(project);
+            }
+
+            if (project.GetRoomFieldOrDefault() != null && request.FieldType == ProjectFieldType.ScheduleRoomField)
+            {
+                throw new JoinFieldScheduleShouldBeUniqueException(project);
+            }
+
             var field = new ProjectField
             {
                 ProjectId = request.ProjectId,
@@ -102,11 +112,6 @@ namespace JoinRpg.Services.Impl
             if (field.IsDescription())
             {
                 field.Project.Details.CharacterDescription = null;
-            }
-
-            if (field.IsRoomSlot() || field.IsTimeSlot())
-            {
-                throw new JoinFieldScheduleUseException(field);
             }
 
             foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.

@@ -95,6 +95,9 @@ namespace JoinRpg.Web.Models.FieldSetup
         [ReadOnly(true)]
         public bool HasValueList { get; private set; }
 
+        [ReadOnly(true)]
+        public bool SupportsMassAdding { get; private set; }
+
         [Display(Name = "Описание"), UIHint("MarkdownString")]
         public string DescriptionEditable { get; set; }
 
@@ -151,6 +154,7 @@ namespace JoinRpg.Web.Models.FieldSetup
             CanEditFields = field.HasMasterAccess(currentUserId, acl => acl.CanChangeFields);
             CanDeleteField = CanEditFields && !field.IsName() && !field.IsRoomSlot() && !field.IsTimeSlot();
             IsTimeField = field.IsTimeSlot();
+            SupportsMassAdding = field.SupportsMassAdding();
 
         }
 
