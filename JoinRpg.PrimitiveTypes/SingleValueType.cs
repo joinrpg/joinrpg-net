@@ -1,7 +1,7 @@
 namespace JoinRpg.PrimitiveTypes
 {
-    public record SingleValueType(string Value)
+    public record SingleValueType<T>(T Value)
     {
-        public static implicit operator string(SingleValueType type) => type.Value;
+        public static implicit operator T(SingleValueType<T> type) => type.Value;
     }
 }
