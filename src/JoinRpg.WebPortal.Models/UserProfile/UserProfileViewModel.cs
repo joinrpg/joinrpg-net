@@ -6,6 +6,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Web.Models
 {
@@ -59,6 +60,7 @@ namespace JoinRpg.Web.Models
 
         public int? AllrpgId { get; }
 
+        public AvatarIdentification Avatar { get; }
         [Editable(false)]
         public User User { get; } //TODO: Start using ViewModel here
 
@@ -79,6 +81,7 @@ namespace JoinRpg.Web.Models
             User = user ?? throw new ArgumentNullException(nameof(user));
             Reason = reason;
             SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess();
+            Avatar = AvatarIdentification.FromOptional(user.SelectedAvatarId);
 
             if (HasAccess)
             {

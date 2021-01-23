@@ -8,6 +8,7 @@ using JoinRpg.Data.Interfaces;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
 using JoinRpg.DataModel.Finances;
+using JoinRpg.DataModel.Users;
 
 namespace JoinRpg.Dal.Impl
 {
@@ -190,6 +191,17 @@ namespace JoinRpg.Dal.Impl
                 .HasOptional(us => us.Claim)
                 .WithMany(c => c.Subscriptions)
                 .HasForeignKey(us => us.ClaimId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Avatars)
+                .WithRequired(a => a.User)
+                .HasForeignKey(a => a.UserId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<User>()
+                .HasOptional(c => c.SelectedAvatar)
+                .WithMany()
                 .WillCascadeOnDelete(false);
         }
 

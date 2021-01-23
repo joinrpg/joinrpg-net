@@ -1,5 +1,7 @@
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AspNet.Security.OAuth.Vkontakte;
 using Joinrpg.Web.Identity;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
@@ -25,11 +27,21 @@ namespace JoinRpg.Portal.Infrastructure.Authentication
 
             if (TryGetVkId(loginInfo) is VkId vkId)
             {
-                await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId);
+                var vkAvatar = TryGetClaim(loginInfo, VkontakteAuthenticationConstants.Claims.PhotoUrl);
+
+                if (vkAvatar is not null)
+                {
+                    await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId,
+                      new AvatarInfo(new Uri(vkAvatar), 50, 50));
+                }
+            }
+
+            if (TryGetClaim(loginInfo, "urn:google:photo") is string googleAvatar)
+            {
+                await userService.SetGoogleIfNotSetWithoutAccessChecks(user.Id,
+                     new AvatarInfo(new Uri(googleAvatar), 96, 96));
             }
             //var googleProfileLink = loginInfo.Principal.FindFirstValue("urn:google:profile");
-            //var googleAvatar = loginInfo.Principal.FindFirstValue("urn:google:photo");
-            //var vkAvatar = loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl);
         }
 
         /// <summary>
