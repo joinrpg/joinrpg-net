@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,11 +19,9 @@ namespace JoinRpg.Portal.Infrastructure
             {
                 authBuilder.AddGoogle(options =>
                 {
-                    options.SignInScheme = IdentityConstants.ExternalScheme;
-
                     options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
 
-                    (options.ClientId, options.ClientSecret) = googleConfig;
+                    SetCommonProperties(options, googleConfig);
                 });
             }
 
@@ -32,11 +31,17 @@ namespace JoinRpg.Portal.Infrastructure
             {
                 authBuilder.AddVkontakte(options =>
                 {
-                    options.SignInScheme = IdentityConstants.ExternalScheme;
                     options.Scope.Add("email");
 
-                    (options.ClientId, options.ClientSecret) = vkConfig;
+                    SetCommonProperties(options, vkConfig);
                 });
+            }
+
+            static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)
+            {
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+
+                (options.ClientId, options.ClientSecret) = config;
             }
         }
 
