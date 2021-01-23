@@ -140,7 +140,34 @@ namespace JoinRpg.Dal.Impl
                 .HasOptional(text => text.AuthorUser)
                 .WithMany()
                 .HasForeignKey(text => text.AuthorUserId);
+            ConfigureUser(modelBuilder);
 
+            modelBuilder.Entity<ProjectFieldDropdownValue>()
+                .HasOptional(v => v.CharacterGroup)
+                .WithOptionalDependent();
+
+            modelBuilder.Entity<ProjectField>()
+                .HasOptional(v => v.CharacterGroup)
+                .WithOptionalDependent();
+
+            modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName).IsUnique();
+            modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
+
+            modelBuilder.Entity<ProjectAccommodationType>();
+            modelBuilder.Entity<ProjectAccommodation>();
+            modelBuilder.Entity<AccommodationRequest>();
+            modelBuilder.Entity<AccommodationInvite>();
+
+            ConfigureMoneyTransfer(modelBuilder);
+
+            base.OnModelCreating(modelBuilder);
+        }
+
+        private static void ConfigureUser(DbModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<User>().HasRequired(u => u.Auth).WithRequiredPrincipal();
             modelBuilder.Entity<UserAuthDetails>().HasKey(uad => uad.UserId);
 
@@ -164,30 +191,6 @@ namespace JoinRpg.Dal.Impl
                 .WithMany(c => c.Subscriptions)
                 .HasForeignKey(us => us.ClaimId)
                 .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<ProjectFieldDropdownValue>()
-                .HasOptional(v => v.CharacterGroup)
-                .WithOptionalDependent();
-
-            modelBuilder.Entity<ProjectField>()
-                .HasOptional(v => v.CharacterGroup)
-                .WithOptionalDependent();
-
-            modelBuilder.Entity<UserForumSubscription>().HasRequired(ufs => ufs.User).WithMany()
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<ProjectItemTag>().Property(tag => tag.TagName).IsUnique();
-            modelBuilder.Entity<PlotFolder>().HasMany(tag => tag.PlotTags).WithMany();
-
-            modelBuilder.Entity<ProjectAccommodationType>();
-            modelBuilder.Entity<ProjectAccommodation>();
-            modelBuilder.Entity<AccommodationRequest>();
-            modelBuilder.Entity<AccommodationInvite>();
-
-            ConfigureMoneyTransfer(modelBuilder);
-
-
-            base.OnModelCreating(modelBuilder);
         }
 
         private static void ConfigureProjectDetails(DbModelBuilder modelBuilder)
