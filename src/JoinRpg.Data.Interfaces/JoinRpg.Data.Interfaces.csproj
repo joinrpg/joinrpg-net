@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <AssemblyTitle>JoinRpg.Data.Interfaces</AssemblyTitle>
     <Product>JoinRpg.Data.Interfaces</Product>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />
     <ProjectReference Include="..\JoinRpg.Helpers\JoinRpg.Helpers.csproj" />
   </ItemGroup>

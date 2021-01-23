@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj" />
     <ProjectReference Include="..\JoinRpg.CommonUI.Models\JoinRpg.CommonUI.Models.csproj" />
     <ProjectReference Include="..\JoinRpg.Data.Interfaces\JoinRpg.Data.Interfaces.csproj" />
     <ProjectReference Include="..\JoinRpg.DataModel\JoinRpg.DataModel.csproj" />

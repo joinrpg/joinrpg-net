@@ -3,6 +3,7 @@ using BitArmory.ReCaptcha;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.Portal.Infrastructure.Authentication.Avatars;
 using JoinRpg.Web.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using CurrentProjectAccessor = JoinRpg.Portal.Infrastructure.CurrentProjectAccessor;
@@ -26,7 +27,10 @@ namespace JoinRpg.Portal
 
             _ = builder.RegisterType<ExternalLoginProfileExtractor>();
 
-            _ = builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
+            builder.RegisterType<AvatarLoader>().AsImplementedInterfaces();
+            builder.RegisterDecorator<AvatarCacheDecoractor, IAvatarLoader>();
+
+            builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
                 .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();
 
         }

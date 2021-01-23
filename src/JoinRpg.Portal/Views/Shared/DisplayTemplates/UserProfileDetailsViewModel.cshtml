@@ -2,9 +2,11 @@
 @model UserProfileDetailsViewModel
 <table>
     <tr>
-        <td style="vertical-align: top">
-            @await Html.PartialAsync("DisplayTemplates/UserAvatar", Model.User)
-        </td>
+      <td style="vertical-align: top;padding-right:5px">
+        <vc:avatar user-avatar-id-or-null="@Model.Avatar"
+                   email="@Model.Email"
+                   recommended-size="64" />
+      </td>
         <td>
             @Html.DisplayFor(model => model.User)
             @if (!string.IsNullOrWhiteSpace(Model.FullName))

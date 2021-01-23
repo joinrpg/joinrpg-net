@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using JetBrains.Annotations;
+using JoinRpg.DataModel.Users;
 using JoinRpg.Helpers;
 
 namespace JoinRpg.DataModel
@@ -48,5 +50,11 @@ namespace JoinRpg.DataModel
 
         public const string OnlinePaymentVirtualUser = "payments@joinrpg.ru";
 
+        public virtual UserAvatar SelectedAvatar { get; set; }
+
+        [ForeignKey(nameof(SelectedAvatar))]
+        public int? SelectedAvatarId { get; set; }
+
+        public ICollection<UserAvatar> Avatars { get; set; } = new HashSet<UserAvatar>();
     }
 }

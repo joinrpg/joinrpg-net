@@ -1,7 +1,10 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using JoinRpg.Data.Write.Interfaces;
 using JoinRpg.DataModel;
+using JoinRpg.DataModel.Users;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
 using JoinRpg.Interfaces;
@@ -122,7 +125,7 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public async Task SetVkIfNotSetWithoutAccessChecks(int userId, VkId vkId)
+        async Task IUserService.SetVkIfNotSetWithoutAccessChecks(int userId, VkId vkId, AvatarInfo avatarInfo)
         {
             logger.LogInformation("About to link user: {userId} to {vkId}", userId, vkId);
             var user = await UserRepository.WithProfile(userId);
@@ -137,7 +140,49 @@ namespace JoinRpg.Services.Impl
             user.Extra.Vk = $"id{vkId.Value}";
             user.Extra.VkVerified = true;
 
+            AddSocialAvatarImpl(avatarInfo, user, "Vkontakte");
+
             await UnitOfWork.SaveChangesAsync();
+        }
+
+        async Task IUserService.SetGoogleIfNotSetWithoutAccessChecks(int userId, AvatarInfo avatarInfo)
+        {
+            logger.LogInformation("About to link user: {userId} to google", userId);
+            var user = await UserRepository.WithProfile(userId);
+
+            AddSocialAvatarImpl(avatarInfo, user, "Google");
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        private static void AddSocialAvatarImpl(AvatarInfo avatarInfo, User user, string providerId)
+        {
+            if (
+                user.Avatars.FirstOrDefault(ua => ua.IsActive && ua.ProviderId == providerId)
+                is UserAvatar oldAvatar)
+            {
+                if (new Uri(oldAvatar.Uri) != avatarInfo.Uri)
+                {
+                    oldAvatar.IsActive = false;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            var userAvatar = new UserAvatar()
+            {
+                AvatarSource = UserAvatar.Source.SocialNetwork,
+                IsActive = true,
+                ProviderId = providerId,
+                Uri = avatarInfo.Uri.AbsoluteUri,
+                User = user,
+            };
+
+            user.SelectedAvatar ??= userAvatar;
+
+            user.Avatars.Add(userAvatar);
         }
 
         /// <inheritdoc />
@@ -152,6 +197,87 @@ namespace JoinRpg.Services.Impl
             user.Extra ??= new UserExtra();
             user.Extra.Vk = null;
             user.Extra.VkVerified = false;
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        /// <inheritdoc/>
+        public async Task AddGrAvatarIfRequired(int userId)
+        {
+            logger.LogInformation("Ensuring that user({userId}) has GrAvatar", userId);
+
+            if (CurrentUserId != userId)
+            {
+                throw new JoinRpgInvalidUserException();
+            }
+
+            var user = await UserRepository.WithProfile(userId);
+
+            if (
+                user.Avatars.Any(fd => fd.AvatarSource == UserAvatar.Source.GrAvatar && fd.IsActive)
+                )
+            {
+                logger.LogDebug("GrAvatar already set");
+                return;
+            }
+
+            var userAvatar = new UserAvatar()
+            {
+                AvatarSource = UserAvatar.Source.GrAvatar,
+                IsActive = true,
+                ProviderId = null,
+                Uri = $"https://www.gravatar.com/avatar/{user.Email}?d=identicon&s=64",
+                User = user,
+            };
+            user.Avatars.Add(userAvatar);
+
+            user.SelectedAvatar ??= userAvatar;
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        async Task IUserService.SelectAvatar(int userId, AvatarIdentification avatarIdentification)
+        {
+            logger.LogInformation("Selecting {avatarId} for user({userId})", avatarIdentification, userId);
+
+            if (CurrentUserId != userId)
+            {
+                throw new JoinRpgInvalidUserException();
+            }
+
+            var user = await UserRepository.WithProfile(userId);
+            if (!user.Avatars.Any(a => a.UserAvatarId == avatarIdentification))
+            {
+                throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
+            }
+
+            user.SelectedAvatarId = avatarIdentification;
+
+            await UnitOfWork.SaveChangesAsync();
+        }
+
+        async Task IUserService.DeleteAvatar(int userId, AvatarIdentification avatarIdentification)
+        {
+            logger.LogInformation("Deleting {avatarId} for user({userId})", avatarIdentification, userId);
+
+            if (CurrentUserId != userId)
+            {
+                throw new JoinRpgInvalidUserException();
+            }
+
+            var user = await UserRepository.WithProfile(userId);
+            if (user.Avatars.SingleOrDefault(a => a.UserAvatarId == avatarIdentification)
+                is not UserAvatar avatar)
+            {
+                throw new JoinRpgEntityNotFoundException(avatarIdentification, "userAvatar");
+            }
+
+            if (user.SelectedAvatar == avatar)
+            {
+                throw new InvalidOperationException();
+            }
+
+            avatar.IsActive = false;
 
             await UnitOfWork.SaveChangesAsync();
         }

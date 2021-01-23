@@ -9,6 +9,7 @@ using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using JoinRpg.Helpers.Web;
 using JoinRpg.Markdown;
+using JoinRpg.PrimitiveTypes;
 using CommentExtraAction = JoinRpg.CommonUI.Models.CommentExtraAction;
 
 namespace JoinRpg.Web.Models
@@ -41,6 +42,8 @@ namespace JoinRpg.Web.Models
                                  comment.Finance?.PaymentType?.UserId == currentUserId;
             IsCommentByPlayer = comment.IsCommentByPlayer;
             Author = comment.Author;
+            AuthorAvatar = AvatarIdentification.FromOptional(comment.Author.SelectedAvatarId);
+            AuthorEmail = comment.Author.Email;
             CreatedTime = comment.CreatedAt;
             Finance = comment.Finance;
             CommentText = comment.CommentText.Text.ToHtmlString();
@@ -61,6 +64,9 @@ namespace JoinRpg.Web.Models
         public bool HasMasterAccess { get; }
         private bool CanModerateFinance { get; }
         public bool IsCommentByPlayer { get; }
+
+        public AvatarIdentification AuthorAvatar { get; }
+        public string AuthorEmail { get; }
         public User Author { get; }
         public DateTime CreatedTime { get; }
         public FinanceOperation Finance { get; }
