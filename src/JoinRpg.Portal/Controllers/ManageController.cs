@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
@@ -195,82 +194,12 @@ namespace JoinRpg.Portal.Controllers
                 IsVerifiedFlag = user.VerifiedProfileFlag,
                 IsVkVerifiedFlag = user.Extra?.VkVerified ?? false,
                 SocialNetworkAccess = (ContactsAccessTypeView)user.GetSocialNetworkAccess(),
-                SocialLoginStatus = GetSocialLogins(user).ToList(),
+                SocialLoginStatus = user.GetSocialLogins().ToList(),
                 Email = user.Email,
                 HasPassword = user.PasswordHash != null,
             };
 
             return base.View(model);
-        }
-
-        private static IEnumerable<UserLoginInfoViewModel> GetSocialLogins(User user)
-        {
-            var canRemoveLogins = user.PasswordHash != null || user.ExternalLogins.Count > 1;
-            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Google") is UserExternalLogin googleLogin)
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = false,
-                    AllowUnlink = canRemoveLogins,
-                    LoginProvider = googleLogin.Provider,
-                    ProviderKey = googleLogin.Key,
-                    NeedToReLink = false,
-                    ProviderFriendlyName = "Google",
-                    ProviderLink = null,
-                };
-            }
-            else
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = true,
-                    AllowUnlink = false,
-                    LoginProvider = "Google",
-                    ProviderKey = null,
-                    NeedToReLink = false,
-                    ProviderFriendlyName = "Google",
-                    ProviderLink = null,
-                };
-            }
-            if (user.ExternalLogins.SingleOrDefault(l => l.Provider == "Vkontakte") is UserExternalLogin vkLogin)
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = false,
-                    AllowUnlink = canRemoveLogins,
-                    LoginProvider = vkLogin.Provider,
-                    ProviderKey = vkLogin.Key,
-                    NeedToReLink = false,
-                    ProviderFriendlyName = "ВК",
-                    ProviderLink = $"https://vk.com/id{vkLogin.Key}",
-                };
-            }
-            else if (user.Extra?.Vk != null)
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = false,
-                    AllowUnlink = false,
-                    LoginProvider = "Vkontakte",
-                    ProviderKey = null,
-                    NeedToReLink = true,
-                    ProviderFriendlyName = "ВК",
-                    ProviderLink = $"https://vk.com/id{user.Extra?.Vk}",
-                };
-            }
-            else
-            {
-                yield return new UserLoginInfoViewModel()
-                {
-                    AllowLink = true,
-                    AllowUnlink = false,
-                    LoginProvider = "Vkontakte",
-                    ProviderKey = null,
-                    NeedToReLink = false,
-                    ProviderFriendlyName = "ВК",
-                    ProviderLink = null,
-                };
-            }
         }
 
         [HttpPost]

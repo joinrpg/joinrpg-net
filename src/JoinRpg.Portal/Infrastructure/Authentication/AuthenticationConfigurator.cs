@@ -20,8 +20,7 @@ namespace JoinRpg.Portal.Infrastructure
                 {
                     options.SignInScheme = IdentityConstants.ExternalScheme;
 
-                    options.Scope.Add("profile");
-                    options.Scope.Add("email");
+                    options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
 
                     (options.ClientId, options.ClientSecret) = googleConfig;
                 });
