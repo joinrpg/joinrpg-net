@@ -99,7 +99,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JoinRpg.IntegrationTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Joinrpg.Dal.Migrate", "src\Joinrpg.Dal.Migrate\Joinrpg.Dal.Migrate.csproj", "{AC09C4CB-0D6C-4301-A4BF-8129A9881BE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.PrimitiveTypes", "JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj", "{3623C97E-251A-4233-A359-18F76F9598C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JoinRpg.PrimitiveTypes", "src\JoinRpg.PrimitiveTypes\JoinRpg.PrimitiveTypes.csproj", "{3623C97E-251A-4233-A359-18F76F9598C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
