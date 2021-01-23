@@ -344,7 +344,12 @@ namespace JoinRpg.Portal.Controllers
 
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+            var redirectUrl = Url.Action(
+                "ExternalLoginCallback",
+                "Account",
+                new { ReturnUrl = returnUrl },
+                protocol: Request.Scheme //Ensure that it will request HTTPS if required
+                );
 
             var authenticationProperties = SignInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(authenticationProperties, provider);
