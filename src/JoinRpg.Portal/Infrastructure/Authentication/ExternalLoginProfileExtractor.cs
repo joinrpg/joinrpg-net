@@ -1,4 +1,3 @@
-using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Joinrpg.Web.Identity;
@@ -32,7 +31,8 @@ namespace JoinRpg.Portal.Infrastructure.Authentication
                 await userService.SetVkIfNotSetWithoutAccessChecks(user.Id, vkId);
             }
             //var googleProfileLink = loginInfo.Principal.FindFirstValue("urn:google:profile");
-            //var vkAvatar = loginInfo.Principal.FindFirstValue("urn:vkontakte:photo:link");
+            //var googleAvatar = loginInfo.Principal.FindFirstValue("urn:google:photo");
+            //var vkAvatar = loginInfo.Principal.FindFirstValue(VkontakteAuthenticationConstants.Claims.PhotoUrl);
         }
 
         /// <summary>

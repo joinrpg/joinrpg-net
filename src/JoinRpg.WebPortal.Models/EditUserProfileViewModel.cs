@@ -74,20 +74,4 @@ namespace JoinRpg.Web.Models
         public string Email { get; set; }
         public bool HasPassword { get; set; }
     }
-
-#nullable enable
-
-    public class UserLoginInfoViewModel
-    {
-        public string LoginProvider { get; set; }
-
-        public string? ProviderFriendlyName { get; set; }
-        public string? ProviderLink { get; set; }
-
-        public string? ProviderKey { get; set; }
-
-        public bool AllowLink { get; set; }
-        public bool AllowUnlink { get; set; }
-        public bool NeedToReLink { get; set; }
-    }
 }
