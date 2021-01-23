@@ -15,6 +15,7 @@ namespace JoinRpg.Portal.Controllers
         public ICurrentUserAccessor CurrentUserAccessor { get; }
 
         [HttpGet("user/{userId}")]
+        [AllowAnonymous]
         public async Task<ActionResult> Details(int userId)
         {
             var user = await UserRepository.GetById(userId);
