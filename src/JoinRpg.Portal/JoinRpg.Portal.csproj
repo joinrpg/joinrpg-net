@@ -20,7 +20,7 @@
     <PackageReference Include="BitArmory.ReCaptcha" Version="5.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.16.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="5.0.2" />
-    <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="5.0.0" />
+    <PackageReference Include="AspNet.Security.OAuth.Vkontakte" Version="5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="5.0.0" />
