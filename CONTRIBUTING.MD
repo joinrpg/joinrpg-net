@@ -3,12 +3,12 @@ Please direct any questions to @Leotsarev or leo@joinrpg.ru
 How to build locally
 ==
 
-For now joinrpg could be build & run only on **Windows**. Porting to .NET Core slow underway, but still not here.
+This guide presumes that you have Windows. If you have other OS, you should replace Windows-specific components with respective counterparts. I.e. VS → VS Code.
 
 1. Start with forking this repository on github. 
 1. Download [Visual Studio 2019](https://www.visualstudio.com/). Community Edition should be enough.
 1. Recommended to install Github Extension (options during install). See more on https://visualstudio.github.com/.
-1. Download .Net Core 3.1 SDK.
+1. Download .Net Core 5 SDK.
 1. Download [SQL Server Express LocalDB 2017](https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SqlLocalDB.msi) and important! 
 download the latest [cumulative update for SQL Server 2017](https://support.microsoft.com/en-us/help/4047329/sql-server-2017-build-versions)
    1. Create an instance of localdb from command prompt, if you don't have any </br>`sqllocaldb create MSSQLLocalDB`
@@ -22,7 +22,7 @@ download the latest [cumulative update for SQL Server 2017](https://support.micr
     1. If you got error about "The argument 2 of the JSON_MODIFY should be string literal", you have outdated version of LocalDb. Updating it could be tricky, see [here](https://knowledge-base.havit.eu/2018/09/04/sql-localdb-upgrade-to-2017-14-0-1000/)
     1. If you don't have Joinrpg/App_Data folder in your solution directory, create it. Otherwise you may get `System cannot find the file specified` error on database creation stage.
 1. Some features will be disabled — it's all about integration to Remote systems — email, social services login etc. 
-If you want to test this, you will need to rename Secret.config.example to Secret.config and provide correct keys.
+If you want to test this, you will need to provide correct keys in appsettings.json.
 1. First logged-in user will have his email automatically confirmed and adminstrator flag will be set. If you want more users, you have to change DB or setup mail integration.
 
 Submitting your changes
