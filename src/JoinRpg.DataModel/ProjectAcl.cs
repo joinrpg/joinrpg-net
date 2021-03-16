@@ -15,7 +15,7 @@ namespace JoinRpg.DataModel
 
         public virtual User User { get; set; }
 
-        public Guid Token { get; set; } = new Guid();
+        public Guid Token { get; set; } = Guid.NewGuid();
 
         public bool CanChangeFields { get; set; }
 

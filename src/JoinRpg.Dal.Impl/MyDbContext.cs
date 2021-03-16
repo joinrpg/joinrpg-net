@@ -49,12 +49,7 @@ namespace JoinRpg.Dal.Impl
             ConfigureProjectDetails(modelBuilder);
 
             modelBuilder.Entity<ProjectAcl>().HasKey(c => new { c.UserId, c.ProjectId });
-            modelBuilder.Entity<ProjectAcl>()
-                .Property(acl => acl.Token)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Computed);
-
             modelBuilder.Entity<ProjectAcl>().HasKey(acl => acl.ProjectAclId);
-
 
             modelBuilder.Entity<CharacterGroup>()
                 .HasOptional(c => c.ResponsibleMasterUser)
