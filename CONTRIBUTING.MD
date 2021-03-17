@@ -29,6 +29,7 @@ Submitting your changes
 ==
 1. 1 branch = 1 feature. 
 1. Test your changes locally, etc.
+1. Execute `dotnet format`, to apply project's code styles
 1. Commit.
 1. Rebase your changes on top of `upstream/master`
 1. Open pull request via Github UI from your branch to `joinrpg/joirpg-net/master`
