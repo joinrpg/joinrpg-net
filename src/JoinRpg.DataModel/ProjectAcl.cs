@@ -15,6 +15,12 @@ namespace JoinRpg.DataModel
 
         public virtual User User { get; set; }
 
+        /// <summary>
+        /// Project's Unique Token
+        /// </summary>
+        /// <remarks>
+        /// Token automatically assigns at creating ProjectAcl instance
+        /// </remarks>
         public Guid Token { get; set; } = Guid.NewGuid();
 
         public bool CanChangeFields { get; set; }
