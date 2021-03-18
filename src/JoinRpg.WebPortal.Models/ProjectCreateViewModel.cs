@@ -13,7 +13,6 @@ namespace JoinRpg.Web.Models
              MinimumLength = 5)]
         public string ProjectName { get; set; }
 
-        [Required]
         [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
