@@ -43,7 +43,10 @@
   {
     <div class="form-group">
       <div class="col-md-offset-2 col-md-10">
-        <div class="g-recaptcha" data-sitekey="@Model.RecaptchaPublicKey"></div>
+        <div class="g-recaptcha"
+             data-sitekey="@Model.RecaptchaPublicKey"
+             data-callback="reCaptchaCallback"
+             data-expired-callback="reCaptchaExpired"></div>
       </div>
     </div>
   }
@@ -57,4 +60,23 @@
 
 @section Scripts{
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script>
+    function disableSubmitButton() {
+      $("#btnRegister").attr("disabled", "disabled");
+    }
+
+    function reCaptchaCallback(response) {
+      $("#btnRegister").removeAttr("disabled");
+    }
+
+    function reCaptchaExpired() {
+      disableSubmitButton();
+    }
+
+    $(document).ready(function () {
+      if ($("#g-recaptcha-response")) {
+        disableSubmitButton();
+      }
+    });
+  </script>
 }
