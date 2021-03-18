@@ -27,7 +27,7 @@ namespace JoinRpg.Helpers.Web
                 throw new InvalidOperationException("Can only be used on boolean properties.");
             }
 
-            return (bool) value;
+            return (bool)value;
         }
 
         private bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
