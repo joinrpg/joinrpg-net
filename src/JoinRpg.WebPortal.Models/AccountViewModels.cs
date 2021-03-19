@@ -7,7 +7,6 @@ namespace JoinRpg.Web.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
-        [Required]
         [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
         public bool RulesApproved { get; set; }
@@ -72,9 +71,8 @@ namespace JoinRpg.Web.Models
         [Compare("Password", ErrorMessage = "Пароли не совпадают")]
         public string ConfirmPassword { get; set; }
 
-        [Required()]
-        [Display(Name = "Согласен с правилами")]
         [BooleanRequired(ErrorMessage = "Согласитесь с правилами, чтобы продолжить")]
+        [Display(Name = "Согласен с правилами")]
         public bool RulesApproved { get; set; }
 
         [Editable(false)]
