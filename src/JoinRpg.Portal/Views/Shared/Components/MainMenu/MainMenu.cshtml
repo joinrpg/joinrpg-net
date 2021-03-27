@@ -27,7 +27,13 @@
                                 {
                                     <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
                                 }
-                            </ul>
+                                <li>
+                                  <hr class="list-divider"/>
+                                </li>
+                                <li>
+                                  <a asp-action="GameArchive" asp-controller="Home">Архив</a>
+                                </li>
+                          </ul>
                         </li>
                     }
                     else if (Model.ProjectLinks.Count == 1)
