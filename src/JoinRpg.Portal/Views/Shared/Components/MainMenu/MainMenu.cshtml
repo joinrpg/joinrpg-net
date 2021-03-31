@@ -27,20 +27,18 @@
                                 {
                                     <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
                                 }
-                                <li>
-                                  <hr class="list-divider"/>
-                                </li>
-                                <li>
-                                  <a asp-action="GameArchive" asp-controller="Home">Архив</a>
-                                </li>
-                          </ul>
+                            </ul>
                         </li>
                     }
                     else if (Model.ProjectLinks.Count == 1)
                     {
-                        var project = Model.ProjectLinks.Single();
-                        <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
+                      var project = Model.ProjectLinks.Single();
+                      <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
                     }
+
+                    <li>
+                        <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                    </li>
 
                     @if (ViewBag.IsProduction != true)
                     {
