@@ -15,7 +15,7 @@ namespace JoinRpg.Portal.Infrastructure
             if (context.Result is ViewResult viewResult)
             {
                 var hostHost = context.HttpContext.Request.Host.Host;
-                viewResult.ViewData["IsProduction"] = hostHost == "joinrpg.ru";
+                viewResult.ViewData["IsProduction"] = hostHost.Contains("joinrpg.ru");
                 viewResult.ViewData["FullHostName"] = context.HttpContext.Request.Scheme + hostHost;
             }
             return base.OnResultExecutionAsync(context, next);
