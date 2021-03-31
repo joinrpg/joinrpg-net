@@ -104,7 +104,7 @@ namespace JoinRpg.Portal.Controllers
             var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count,
               groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(),
               UriService);
-            if(viewModel.UserId == CurrentUserId)
+            if (viewModel.UserId == CurrentUserId)
             {
                 viewModel.SelfRemove = true;
             }
