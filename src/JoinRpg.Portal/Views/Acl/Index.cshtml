@@ -68,45 +68,51 @@
             <td>
 
 
-                @if (item.ClaimsCount > 0)
+              @if (item.ClaimsCount > 0)
+              {
+                <div>
+                  @Html.ActionLink(
+                           CountOfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
+                           "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
+                  <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
+                </div>
+              }
+              @if (item.ResponsibleFor.Any())
+              {
+                var first = item.ResponsibleFor.First();
+                <div>
+                  <b>Отв. мастер</b>: @Html.JoinDisplayFor(", ", item.ResponsibleFor)
+                </div>
+              }
+              <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
+                Подписки
+              </a>
+              @if (Model.CanCurrentUserGrantRights)
+              {
+
+                <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
+                  <span class="glyphicon glyphicon-pencil"></span> Изменить права
+                </a>
+
+
+                if (item.UserId == Model.CurrentUserId && !Model.AnyoneElseCanGrantRights)
                 {
-                    <div>
-                        @Html.ActionLink(
-                                 CountOfX(item.ClaimsCount, "заявка", "заявки", "заявок"),
-                                 "Responsible", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null)
-                        <span>(@Html.ActionLink("проблемные", "ResponsibleProblems", "ClaimList", new { ResponsibleMasterId = item.UserId, item.ProjectId }, null))</span>
-                    </div>
-                }
-                @if (item.ResponsibleFor.Any())
-                {
-                    var first = item.ResponsibleFor.First();
-                    <div>
-                        <b>Отв. мастер</b>: @Html.JoinDisplayFor(", ", item.ResponsibleFor)
-                    </div>
-                }
-                    <a asp-action="ByMaster" asp-controller="GameSubscribe" asp-route-projectId="@item.ProjectId" asp-route-masterId="@item.UserId" class="btn btn-default btn-sm">
-                        Подписки
-                    </a>
-                @if (Model.CanCurrentUserGrantRights)
-                {
-
-                    <a href="@Url.Action("Edit", new {item.ProjectId, item.ProjectAclId})" class="btn btn-default btn-sm">
-                        <span class="glyphicon glyphicon-pencil"></span> Изменить права
-                    </a>
-
-
-                    if (item.UserId == Model.CurrentUserId && !Model.AnyoneElseCanGrantRights)
-                    {
-
-                    }
-                    else
-                    {
-                        <a href="@Url.Action("Delete", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
-                            <span class="glyphicon glyphicon-trash"></span> Снять доступ
-                        </a>
-                    }
 
                 }
+                else
+                {
+                  <a href="@Url.Action("Delete", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-trash"></span> Снять доступ
+                  </a>
+                }
+
+              }
+              else if (item.UserId == Model.CurrentUserId && Model.AnyoneElseCanGrantRights)
+              {
+                <a href="@Url.Action("RemoveYourself", new {item.ProjectId, item.ProjectAclId})" class="btn btn-danger btn-sm">
+                  <span class="glyphicon glyphicon-trash"></span> Уйти из мастеров
+                </a>
+              }
             </td>
 
         </tr>

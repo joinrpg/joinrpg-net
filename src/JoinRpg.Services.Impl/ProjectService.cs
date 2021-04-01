@@ -422,7 +422,10 @@ namespace JoinRpg.Services.Impl
         public async Task RemoveAccess(int projectId, int userId, int? newResponsibleMasterId)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
-            project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+            if (userId != CurrentUserId)
+            {
+                project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+            }
 
             if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
             {

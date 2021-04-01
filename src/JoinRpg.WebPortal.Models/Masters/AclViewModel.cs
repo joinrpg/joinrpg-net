@@ -176,8 +176,11 @@ namespace JoinRpg.Web.Models
           Description = "Ответственный мастер, который будет назначен тем заявкам, за которые раньше отвечал этот мастер.")]
         public int? ResponsibleMasterId { get; set; }
 
+        public bool SelfRemove { get; set; }
+
         [ReadOnly(true)]
         public IEnumerable<MasterListItemViewModel> Masters { get; private set; }
+
         public static DeleteAclViewModel FromAcl(ProjectAcl acl, int count, IReadOnlyCollection<CharacterGroup> groups, IUriService uriService)
         {
             return new DeleteAclViewModel

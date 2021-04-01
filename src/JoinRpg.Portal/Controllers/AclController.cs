@@ -100,10 +100,15 @@ namespace JoinRpg.Portal.Controllers
             var projectAcl = project.ProjectAcls.Single(acl => acl.ProjectAclId == projectaclid);
             var claims = await ClaimRepository.GetClaimsForMaster(projectId, projectAcl.UserId, ClaimStatusSpec.Any);
             var groups = await ProjectRepository.GetGroupsWithResponsible(projectId);
-            return View(DeleteAclViewModel.FromAcl(projectAcl,
-              claims.Count,
+
+            var viewModel = DeleteAclViewModel.FromAcl(projectAcl, claims.Count,
               groups.Where(gr => gr.ResponsibleMasterUserId == projectAcl.UserId).ToList(),
-                UriService));
+              UriService);
+            if (viewModel.UserId == CurrentUserId)
+            {
+                viewModel.SelfRemove = true;
+            }
+            return View("Delete", viewModel);
 
         }
 
@@ -127,6 +132,14 @@ namespace JoinRpg.Portal.Controllers
             return RedirectToAction("Index", "Acl", new { viewModel.ProjectId });
 
         }
+
+        [HttpGet("leave")]
+        [RequireMaster()]
+        public async Task<ActionResult> RemoveYourself(int projectId, int projectAclId) => await Delete(projectId, projectAclId);
+
+        [HttpPost("leave")]
+        [ValidateAntiForgeryToken, RequireMaster()]
+        public async Task<ActionResult> RemoveYourself(DeleteAclViewModel viewModel) => await Delete(viewModel);
 
 
         [HttpGet("edit")]
