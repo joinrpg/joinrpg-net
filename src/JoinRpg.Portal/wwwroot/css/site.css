@@ -431,7 +431,8 @@ tr.unapprovedPayment td:last-child {
 }
 
 hr.list-divider {
-  margin-top: 0;
-  margin-bottom: 0;
-  border: 1px solid #b37400;
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 0;
+    border-top: 3px solid #b37400;
 }

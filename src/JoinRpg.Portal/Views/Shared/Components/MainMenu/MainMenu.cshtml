@@ -1,4 +1,8 @@
 ﻿@model MainMenuViewModel
+@{
+    var activeProjects = Model.ProjectLinks.Where(p => p.IsActive).ToArray();
+    var archivedProjects = Model.ProjectLinks.Where(p => !p.IsActive).ToArray();
+}
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
@@ -17,28 +21,39 @@
                         <li>@Html.ActionLink("Мои заявки", "My", "ClaimList", new { area = "" }, null)</li>
                     }
 
-                    @if (Model.ProjectLinks.Count > 1)
+                    @if (activeProjects.Length > 1)
                     {
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Мои проекты <span class="caret"></span></a>
 
                             <ul class="dropdown-menu">
-                                @foreach (var project in Model.ProjectLinks)
+                                @foreach (var project in activeProjects)
                                 {
                                     <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
+                                }
+                                
+                                @if (archivedProjects.Any())
+                                {
+                                    <li><hr class="list-divider"/></li>
+                                    <li>
+                                        <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                                    </li>
                                 }
                             </ul>
                         </li>
                     }
-                    else if (Model.ProjectLinks.Count == 1)
+                    else if (activeProjects.Length == 1)
                     {
-                      var project = Model.ProjectLinks.Single();
-                      <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
+                        var project = activeProjects.Single();
+                        <li>@Html.ActionLink(@project.ProjectName, "Details", "Game", new { project.ProjectId, area = "" }, null)</li>
                     }
 
-                    <li>
-                        <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
-                    </li>
+                    @if (archivedProjects.Any() && activeProjects.Length <= 1)
+                    {
+                        <li>
+                            <a asp-action="GameArchive" asp-controller="Home">Архив игр</a>
+                        </li>
+                    }
 
                     @if (ViewBag.IsProduction != true)
                     {
