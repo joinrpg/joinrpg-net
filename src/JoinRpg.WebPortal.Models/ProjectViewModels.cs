@@ -16,6 +16,11 @@ namespace JoinRpg.Web.Models
         public string ProjectName { get; set; }
     }
 
+    public sealed class MainMenuProjectLinkViewModel : ProjectLinkViewModel
+    {
+        public bool IsActive { get; set; }
+    }
+
     public static class ProjectLinkViewModelBuilder
     {
         public static IEnumerable<ProjectLinkViewModel> ToLinkViewModels(
@@ -24,6 +29,14 @@ namespace JoinRpg.Web.Models
             {
                 ProjectId = p.ProjectId,
                 ProjectName = p.ProjectName,
+            });
+
+        public static IEnumerable<MainMenuProjectLinkViewModel> ToMainMenuLinkViewModels(this IEnumerable<Project> projects) =>
+            projects.Select(p => new MainMenuProjectLinkViewModel
+            {
+                ProjectId = p.ProjectId,
+                ProjectName = p.ProjectName,
+                IsActive = p.Active
             });
     }
 
