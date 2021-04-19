@@ -30,8 +30,8 @@ body {
     padding-right: 15px;
 }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
+/* Override the default bootstrap behavior where horizontal description lists
+   will truncate terms that are too long to fit in the left column
 */
 .dl-horizontal dt {
     white-space: normal;
@@ -45,7 +45,7 @@ textarea {
 }
 
 input[type=number] {
-    max-width: 150px;    
+    max-width: 150px;
     text-align: right;
 }
 
@@ -310,7 +310,7 @@ tr.unapprovedPayment td:last-child {
 }
 
 .join-users-h {
-    list-style-type: none;    
+    list-style-type: none;
     display: block;
     column-count: 3;
 }
@@ -428,4 +428,11 @@ tr.unapprovedPayment td:last-child {
     display: inline-block;
     width: 90%;
     vertical-align: middle;
+}
+
+hr.list-divider {
+    margin-top: 0;
+    margin-bottom: 0;
+    border: 0;
+    border-top: 3px solid #b37400;
 }

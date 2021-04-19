@@ -30,15 +30,15 @@ namespace JoinRpg.Portal.Menu
             return View("MainMenu", viewModel);
         }
 
-        private async Task<List<ProjectLinkViewModel>> GetProjectLinks()
+        private async Task<List<MainMenuProjectLinkViewModel>> GetProjectLinks()
         {
             var user = CurrentUserAccessor.UserIdOrDefault;
             if (user == null)
             {
-                return new List<ProjectLinkViewModel>();
+                return new List<MainMenuProjectLinkViewModel>();
             }
-            var projects = await ProjectRepository.GetMyActiveProjectsAsync(user.Value);
-            return projects.ToLinkViewModels().ToList();
+            var projects = await ProjectRepository.GetAllMyProjectsAsync(user.Value);
+            return projects.ToMainMenuLinkViewModels().ToList();
         }
     }
 }

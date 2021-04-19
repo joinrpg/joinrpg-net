@@ -3,11 +3,18 @@
 @{
   ViewBag.Title = "Все игры";
 }
-<h3>Игры</h3>
+@if (Model.ActiveProjects.Any())
+{
+  <h3>Игры</h3>
 
-<div class="row">
+  <div class="row">
     @foreach (var project in Model.ActiveProjects)
     {
-    @await Html.PartialAsync("ProjectCard", project)
+      @await Html.PartialAsync("ProjectCard", project)
     }
-</div>
+  </div>
+}
+else
+{
+  <h3>Архив игр пуст</h3>
+}

@@ -5,6 +5,6 @@ namespace JoinRpg.Portal.Models
 {
     public class MainMenuViewModel
     {
-        public List<ProjectLinkViewModel> ProjectLinks { get; set; }
+        public List<MainMenuProjectLinkViewModel> ProjectLinks { get; set; }
     }
 }
