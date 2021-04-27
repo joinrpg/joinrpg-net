@@ -22,7 +22,7 @@
   @Html.ValidationSummary(true, "", new { @class = "text-danger" })
   <div class="panel panel-default">
     <div class="panel-heading">
-      @*   @await Html.PartialAsync("CharacterNavigation", Model.Navigation) *@
+       @await Html.PartialAsync("CharacterNavigation", Model.Navigation)
     </div>
     <div class="panel-body">
       @if (Model.HasMasterAccess && Model.Problems.Any())
