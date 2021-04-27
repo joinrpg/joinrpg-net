@@ -7,6 +7,8 @@ namespace JoinRpg.Web.Models
     {
         int? ProjectId { get; }
 
+        int? CharacterGroupId => null;
+
         [NotNull]
         IReadOnlyCollection<int> ClaimIds { get; }
 
