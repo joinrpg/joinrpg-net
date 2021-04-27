@@ -55,7 +55,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
             await UserManager.UpdateSecurityStampAsync(user);
             return RedirectToUserDetails(userId);
         }
-        
+
         [ValidateAntiForgeryToken, HttpPost]
         public async Task<ActionResult> GrantVerification(int userId)
         {
