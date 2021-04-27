@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:5.0.101 AS build-env
+﻿FROM mcr.microsoft.com/dotnet/sdk:5.0.202 AS build-env
 WORKDIR /app
 
 COPY . ./
