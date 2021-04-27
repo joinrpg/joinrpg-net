@@ -10,6 +10,8 @@ using JoinRpg.Domain.Schedules;
 using JoinRpg.Interfaces;
 using JoinRpg.Services.Interfaces;
 
+#nullable enable
+
 namespace JoinRpg.Services.Impl
 {
     [UsedImplicitly]
