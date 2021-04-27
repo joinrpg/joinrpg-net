@@ -42,6 +42,11 @@ namespace JoinRpg.Services.Impl
 
             await SetFieldPropertiesFromRequest(request, field);
 
+            project.ProjectFields.Add(field);
+
+            project.Details.ScheduleEnabled =
+                project.GetTimeSlotFieldOrDefault() is not null && project.GetRoomFieldOrDefault() is not null;
+
             UnitOfWork.GetDbSet<ProjectField>().Add(field);
             await UnitOfWork.SaveChangesAsync();
         }
@@ -93,7 +98,11 @@ namespace JoinRpg.Services.Impl
         {
             ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
+            field.Project.Details.ScheduleEnabled =
+    field.Project.GetTimeSlotFieldOrDefault() is not null && field.Project.GetRoomFieldOrDefault() is not null;
+
             await DeleteField(field);
+
             return field;
         }
 
