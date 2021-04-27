@@ -122,9 +122,17 @@ namespace JoinRpg.Portal.Controllers
 
         [HttpGet("~/{ProjectId}/character/create")]
         [MasterAuthorize(Permission.CanEditRoles)]
-        public async Task<ActionResult> Create(int projectid, int charactergroupid, bool continueCreating = false)
+        public async Task<ActionResult> Create(int projectid, int? charactergroupid, bool continueCreating = false)
         {
-            var characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid);
+            CharacterGroup characterGroup;
+            if (charactergroupid is null)
+            {
+                characterGroup = await ProjectRepository.GetRootGroupAsync(projectid);
+            }
+            else
+            {
+                characterGroup = await ProjectRepository.GetGroupAsync(projectid, charactergroupid.Value);
+            }
 
             if (characterGroup == null)
             {

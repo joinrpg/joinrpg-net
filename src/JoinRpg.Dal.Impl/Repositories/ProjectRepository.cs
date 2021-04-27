@@ -98,6 +98,14 @@ namespace JoinRpg.Dal.Impl.Repositories
                 .SingleOrDefaultAsync(cg => cg.CharacterGroupId == characterGroupId && cg.ProjectId == projectId);
         }
 
+        public Task<CharacterGroup> GetRootGroupAsync(int projectId)
+        {
+            return
+             Ctx.Set<CharacterGroup>()
+               .Include(cg => cg.Project)
+               .SingleOrDefaultAsync(cg => cg.IsRoot && cg.ProjectId == projectId);
+        }
+
         public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
         {
             await LoadProjectCharactersAndGroups(projectId);

@@ -11,7 +11,7 @@ using JoinRpg.Web.Models.CharacterGroups;
 
 namespace JoinRpg.Web.Models.Characters
 {
-    public class CharacterListByGroupViewModel : CharacterListViewModel
+    public class CharacterListByGroupViewModel : CharacterListViewModel, IOperationsAwareView
     {
         public CharacterListByGroupViewModel(int currentUserId,
             IReadOnlyCollection<Character> characters,
@@ -28,6 +28,8 @@ namespace JoinRpg.Web.Models.Characters
         }
 
         public CharacterGroupDetailsViewModel GroupModel { get; }
+
+        int? IOperationsAwareView.CharacterGroupId => GroupModel.CharacterGroupId;
     }
 
     public class CharacterListViewModel : IOperationsAwareView
