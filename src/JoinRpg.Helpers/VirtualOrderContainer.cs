@@ -60,7 +60,7 @@ namespace JoinRpg.Helpers
                 .Select(orderItem => int.Parse(orderItem.Trim()));
         }
 
-        private static TItem FindItem(ICollection<TItem> list, int virtualOrderItem)
+        private static TItem? FindItem(ICollection<TItem> list, int virtualOrderItem)
         {
             var item = list.FirstOrDefault(i => i.Id == virtualOrderItem);
             if (item != null)
@@ -139,7 +139,7 @@ namespace JoinRpg.Helpers
             return this;
         }
 
-        public VirtualOrderContainer<TItem> MoveAfter(TItem field, TItem afterItem)
+        public VirtualOrderContainer<TItem> MoveAfter(TItem field, TItem? afterItem)
         {
             var index = GetIndex(field);
             if (afterItem == null)
