@@ -40,7 +40,7 @@ namespace JoinRpg.Web.Models
         public int? CharacterId { get; }
 
         [DisplayName("Заявка в группу")]
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         public int? CharacterGroupId { get; }
         public int OtherClaimsForThisCharacterCount { get; }
@@ -115,11 +115,11 @@ namespace JoinRpg.Web.Models
           Claim claim,
           IReadOnlyCollection<PlotElement> plotElements,
           IUriService uriService,
-          IEnumerable<ProjectAccommodationType> availableAccommodationTypes = null,
-          IEnumerable<AccommodationRequest> accommodationRequests = null,
-          IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors = null,
-          IEnumerable<AccommodationInvite> incomingInvite = null,
-          IEnumerable<AccommodationInvite> outgoingInvite = null)
+          IEnumerable<ProjectAccommodationType>? availableAccommodationTypes = null,
+          IEnumerable<AccommodationRequest>? accommodationRequests = null,
+          IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null,
+          IEnumerable<AccommodationInvite>? incomingInvite = null,
+          IEnumerable<AccommodationInvite>? outgoingInvite = null)
         {
             ClaimId = claim.ClaimId;
             CommentDiscussionId = claim.CommentDiscussionId;

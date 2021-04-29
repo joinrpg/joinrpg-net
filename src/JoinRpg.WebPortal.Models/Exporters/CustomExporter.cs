@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Models.Exporters
 
         private class TableColumn<T> : ITableColumn
         {
-            public TableColumn([CanBeNull] string name, [NotNull] Func<TRow, T> getter)
+            public TableColumn(string? name, [NotNull] Func<TRow, T?> getter)
             {
                 if (getter == null)
                 {
@@ -28,17 +28,16 @@ namespace JoinRpg.Web.Models.Exporters
                 Getter = getter;
             }
 
-            public TableColumn([CanBeNull] PropertyInfo member, Func<TRow, T> getter)
+            public TableColumn(PropertyInfo? member, Func<TRow, T?> getter)
               : this(member?.GetDisplayName(), getter)
             {
             }
 
-            public object ExtractValue(object row) => Getter((TRow)row);
+            public object? ExtractValue(object row) => Getter((TRow)row);
 
-            public string Name { get; }
+            public string? Name { get; }
 
-            [NotNull]
-            private Func<TRow, T> Getter { get; }
+            private Func<TRow, T?> Getter { get; }
         }
 
         private IUriService UriService { get; }
@@ -46,10 +45,10 @@ namespace JoinRpg.Web.Models.Exporters
         public abstract IEnumerable<ITableColumn> ParseColumns();
 
         [MustUseReturnValue]
-        protected ITableColumn StringColumn(Expression<Func<TRow, string>> func) => new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
+        protected ITableColumn StringColumn(Expression<Func<TRow, string?>> func) => new TableColumn<string>(func.AsPropertyAccess(), func.Compile());
 
         [Pure]
-        protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string name = null) => new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
+        protected ITableColumn UriColumn(Expression<Func<TRow, ILinkable>> func, string? name = null) => new TableColumn<Uri>(name ?? func.AsPropertyAccess()?.GetDisplayName(), row => UriService.GetUri(func.Compile()(row)));
 
         [Pure]
         protected ITableColumn UriListColumn(Expression<Func<TRow, IEnumerable<ILinkable>>> func)
@@ -60,7 +59,7 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [Pure]
-        protected ITableColumn StringListColumn(Expression<Func<TRow, IEnumerable<string>>> func, string name = null)
+        protected ITableColumn StringListColumn(Expression<Func<TRow, IEnumerable<string>>> func, string? name = null)
         {
             var compiledFunc = func.Compile();
             return new TableColumn<string>(name ?? func.AsPropertyAccess()?.GetDisplayName(),
@@ -111,7 +110,7 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [MustUseReturnValue]
-        protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User>> func)
+        protected IEnumerable<ITableColumn> UserColumn(Expression<Func<TRow, User?>> func)
         {
             return ComplexColumn(
                     func,
@@ -131,13 +130,13 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [MustUseReturnValue]
-        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
+        protected ITableColumn ShortUserColumn(Expression<Func<TRow, User>> func, string? name = null) => ComplexElementMemberColumn(func, u => u.GetDisplayName(), name);
 
         [MustUseReturnValue]
-        private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
+        private static IEnumerable<ITableColumn> ComplexColumn(Expression<Func<TRow, User>> func, params Expression<Func<User, string?>>[] expressions) => expressions.Select(expression => ComplexElementMemberColumn(func, expression));
 
         [MustUseReturnValue]
-        protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr, string name = null)
+        protected static ITableColumn ComplexElementMemberColumn<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr, string? name = null)
           where T : class
         {
 
@@ -146,11 +145,11 @@ namespace JoinRpg.Web.Models.Exporters
         }
 
         [Pure]
-        private static string CombineName(params PropertyInfo[] propertyAccessors) => propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
+        private static string CombineName(params PropertyInfo?[] propertyAccessors) => propertyAccessors.Select(prop => prop?.GetDisplayName()).JoinIfNotNullOrWhitespace(".");
 
         [MustUseReturnValue]
-        protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1>> complexGetter,
-          Expression<Func<T1, T2>> immed, Expression<Func<T2, TOut>> expr, string name = null)
+        protected static ITableColumn ComplexElementMemberColumn<T1, T2, TOut>(Expression<Func<TRow, T1?>> complexGetter,
+          Expression<Func<T1, T2>> immed, Expression<Func<T2, TOut>> expr, string? name = null)
           where T2 : class
           where T1 : class
         {
@@ -158,11 +157,11 @@ namespace JoinRpg.Web.Models.Exporters
             return new TableColumn<TOut>(name, CombineGetters(CombineGetters(complexGetter, immed), expr).Compile());
         }
 
-        private static Expression<Func<TRow, TOut>> CombineGetters<T, TOut>(Expression<Func<TRow, T>> complexGetter, Expression<Func<T, TOut>> expr)
+        private static Expression<Func<TRow, TOut?>> CombineGetters<T, TOut>(Expression<Func<TRow, T?>> complexGetter, Expression<Func<T, TOut>> expr)
           where T : class
         {
             //TODO: Combine getters before compile 
-            return arg => complexGetter.Compile()(arg) == null ? default(TOut) : expr.Compile()(complexGetter.Compile()(arg));
+            return arg => complexGetter.Compile()(arg) == null ? default(TOut) : expr.Compile()(complexGetter.Compile()(arg)!);
         }
 
         [Pure]

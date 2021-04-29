@@ -18,7 +18,7 @@ namespace JoinRpg.Markdown
         /// </summary>
         [NotNull]
         public static JoinHtmlString ToHtmlString([CanBeNull]
-            this MarkdownString markdownString,
+            this MarkdownString? markdownString,
             ILinkRenderer? renderer = null)
             => PerformRender(markdownString,
                 renderer,
@@ -30,7 +30,7 @@ namespace JoinRpg.Markdown
         /// </summary>
         [NotNull]
         public static JoinHtmlString ToPlainText([CanBeNull]
-            this MarkdownString markdownString,
+            this MarkdownString? markdownString,
             ILinkRenderer? renderer = null)
             =>
                 PerformRender(markdownString,
@@ -38,7 +38,7 @@ namespace JoinRpg.Markdown
                     (text, writer, pipeline, context) => Markdig.Markdown.ToPlainText(text, writer, pipeline, context),
                     HtmlSanitizers.RemoveAll);
 
-        private static JoinHtmlString PerformRender(MarkdownString markdownString, ILinkRenderer? linkRenderer,
+        private static JoinHtmlString PerformRender(MarkdownString? markdownString, ILinkRenderer? linkRenderer,
             Action<string, TextWriter, MarkdownPipeline, MarkdownParserContext> renderMethod, IHtmlSanitizer sanitizer)
         {
             linkRenderer ??= DoNothingLinkRenderer.Instance;

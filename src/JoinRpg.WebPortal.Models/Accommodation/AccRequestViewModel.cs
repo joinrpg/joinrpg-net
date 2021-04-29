@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Models.Accommodation
 
         public string PersonsList => Participants.Select(p => p.UserName).JoinStrings(@", ");
 
-        public object Instance => null;
+        public object? Instance => null;
 
         public int FeeTotal { get; protected set; }
 

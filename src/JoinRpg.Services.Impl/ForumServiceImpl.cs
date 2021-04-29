@@ -101,7 +101,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<ForumEmail> AddCommentWithEmail(string commentText, ForumThread forumThread,
-          bool isVisibleToPlayer, Comment parentComment)
+          bool isVisibleToPlayer, Comment? parentComment)
         {
             var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
 

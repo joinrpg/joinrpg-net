@@ -20,7 +20,7 @@ namespace JoinRpg.Services.Export.BackEnds
 
         private static string GetContentForCsv(Cell c) => EscapeForCsv(c.Content?.ToString());
 
-        private static string EscapeForCsv(string value)
+        private static string EscapeForCsv(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {

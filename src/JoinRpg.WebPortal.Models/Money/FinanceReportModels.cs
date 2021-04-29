@@ -72,7 +72,8 @@ namespace JoinRpg.Web.Models
             IReadOnlyCollection<MoneyTransfer> masterTransfers,
             int projectId)
         {
-            var masters = masterOperations.Select(fo => fo.PaymentType?.User).Where(m => m != null)
+            var masters = masterOperations.Select(fo => fo.PaymentType?.User)
+                .WhereNotNull()
                 .Union(masterTransfers.Select(mt => mt.Receiver))
                 .Union(masterTransfers.Select(mt => mt.Sender))
                 .DistinctBy(master => master.UserId);

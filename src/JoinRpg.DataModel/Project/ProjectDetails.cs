@@ -35,13 +35,13 @@ namespace JoinRpg.DataModel
         ///     Other value = bound to that field
         /// </summary>
         [CanBeNull]
-        public ProjectField CharacterNameField { get; set; }
+        public ProjectField? CharacterNameField { get; set; }
         /// <summary>
         ///     Null = no character description
         ///     Other value = bound to that field
         /// </summary>
         [CanBeNull]
-        public ProjectField CharacterDescription { get; set; }
+        public ProjectField? CharacterDescription { get; set; }
 
         /// <summary>
         /// If schedule module enabled on project

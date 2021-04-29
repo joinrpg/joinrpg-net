@@ -9,9 +9,9 @@ namespace JoinRpg.Services.Impl
     [UsedImplicitly]
     internal class FieldDefaultValueGenerator : IFieldDefaultValueGenerator
     {
-        public string CreateDefaultValue(Claim claim, FieldWithValue field) => null;
+        public string? CreateDefaultValue(Claim? claim, FieldWithValue field) => null;
 
-        public string CreateDefaultValue(Character character, FieldWithValue field)
+        public string? CreateDefaultValue(Character? character, FieldWithValue field)
         {
             if (field.IsName && character != null)
             {

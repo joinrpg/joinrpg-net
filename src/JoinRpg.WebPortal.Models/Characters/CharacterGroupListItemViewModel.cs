@@ -52,7 +52,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool IsAcceptingClaims { get; set; }
 
-        public bool Equals(CharacterGroupListItemViewModel other) => other != null && other.CharacterGroupId == CharacterGroupId;
+        public bool Equals(CharacterGroupListItemViewModel? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
         public override bool Equals(object obj) => Equals(obj as CharacterGroupListItemViewModel);
 

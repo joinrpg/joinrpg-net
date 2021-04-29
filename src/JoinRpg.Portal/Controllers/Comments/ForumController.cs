@@ -177,7 +177,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
             var isMaster = project.HasMasterAccess(CurrentUserIdOrDefault);
-            IEnumerable<int> groupIds;
+            IEnumerable<int>? groupIds;
             if (isMaster)
             {
                 groupIds = null;

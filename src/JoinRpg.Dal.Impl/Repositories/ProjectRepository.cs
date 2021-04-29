@@ -106,7 +106,7 @@ namespace JoinRpg.Dal.Impl.Repositories
                .SingleOrDefaultAsync(cg => cg.IsRoot && cg.ProjectId == projectId);
         }
 
-        public async Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
+        public async Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId)
         {
             await LoadProjectCharactersAndGroups(projectId);
             await LoadMasters(projectId);

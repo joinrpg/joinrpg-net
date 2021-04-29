@@ -4,6 +4,7 @@
     <TargetFramework>net5</TargetFramework>
     <RootNamespace>JoinRpg.Web.Models</RootNamespace>
       <NoWarn>${NoWarn};1591</NoWarn>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,8 +10,7 @@ namespace JoinRpg.Domain
     public static class ClaimSourceExtensions
     {
         [NotNull]
-        public static IEnumerable<CharacterGroup> GetParentGroupsToTop([CanBeNull]
-            this IClaimSource target)
+        public static IEnumerable<CharacterGroup> GetParentGroupsToTop(this IClaimSource? target)
         {
             return target?.ParentGroups.SelectMany(g => g.FlatTree(gr => gr.ParentGroups))
                        .OrderBy(g => g.CharacterGroupId)
@@ -33,7 +32,7 @@ namespace JoinRpg.Domain
         public static bool HasActiveClaims(this IClaimSource target) => target.Claims.Any(claim => claim.ClaimStatus.IsActive());
 
         public static bool IsNpc([CanBeNull]
-            this IClaimSource target)
+            this IClaimSource? target)
         {
             return target is Character character && !character.IsAcceptingClaims &&
                    character.ApprovedClaim == null;
@@ -57,7 +56,7 @@ namespace JoinRpg.Domain
 
         private static void ThrowIfValidationFailed(
             IReadOnlyCollection<AddClaimForbideReason> validation,
-            Claim claim)
+            Claim? claim)
         {
             if (validation.Any())
             {
@@ -65,7 +64,7 @@ namespace JoinRpg.Domain
             }
         }
 
-        internal static void ThrowForReason(AddClaimForbideReason reason, Claim claim)
+        internal static void ThrowForReason(AddClaimForbideReason reason, Claim? claim)
         {
             switch (reason)
             {
@@ -83,7 +82,7 @@ namespace JoinRpg.Domain
                     throw new OnlyOneApprovedClaimException();
                 case AddClaimForbideReason.ApprovedClaimMovedToGroup:
                 case AddClaimForbideReason.CheckedInClaimCantBeMoved:
-                    throw new ClaimWrongStatusException(claim);
+                    throw new ClaimWrongStatusException(claim!);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(reason), reason, message: null);
             }
@@ -96,7 +95,7 @@ namespace JoinRpg.Domain
         /// <param name="playerUserId">User</param>
         /// <param name="existingClaim">If we already have claim (move), that's it</param>
         /// <returns></returns>
-        private static IEnumerable<AddClaimForbideReason> ValidateImpl(this IClaimSource claimSource, int? playerUserId, [CanBeNull] Claim existingClaim)
+        private static IEnumerable<AddClaimForbideReason> ValidateImpl(this IClaimSource claimSource, int? playerUserId, Claim? existingClaim)
         {
             var project = claimSource.Project;
 

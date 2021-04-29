@@ -8,8 +8,8 @@ namespace JoinRpg.Services.Interfaces
     public interface IExportDataService
     {
         [Obsolete]
-        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data);
-        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend);
+        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) where T : class;
+        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend) where T : class;
         void BindDisplay<T>(Func<T, string> displayFunc);
     }
 
@@ -29,9 +29,9 @@ namespace JoinRpg.Services.Interfaces
     public interface ITableColumn
     {
         [CanBeNull]
-        object ExtractValue(object row);
+        object? ExtractValue(object row);
         [CanBeNull]
-        string Name { get; }
+        string? Name { get; }
     }
 
     public interface IGeneratorFrontend

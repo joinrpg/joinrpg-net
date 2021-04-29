@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using JoinRpg.DataModel;
+using JoinRpg.Helpers;
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace JoinRpg.Domain.Schedules
 {
@@ -12,6 +15,15 @@ namespace JoinRpg.Domain.Schedules
         public MarkdownString Description { get; internal set; }
         public User[] Authors { get; internal set; }
         public int ProjectId { get; set; }
+
+        public ProgramItem(Character character)
+        {
+            Id = character.CharacterId;
+            Name = character.CharacterName;
+            Description = character.Description;
+            Authors = new[] { character.ApprovedClaim?.Player }.WhereNotNull().ToArray();
+            ProjectId = character.ProjectId;
+        }
     }
 
     public class ProgramItemPlaced
@@ -36,9 +48,11 @@ namespace JoinRpg.Domain.Schedules
         public DateTimeOffset StartTime { get; set; }
 
         public IReadOnlyCollection<ScheduleRoom> Rooms { get; }
-        public ProgramItem ProgramItem { get; set; } = null;
+        public ProgramItem ProgramItem { get; set; }
     }
 
+    // TODO: Invent way to fix it
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public class ScheduleItemAttribute
     {
         public MarkdownString Description { get; internal set; }
@@ -53,19 +67,19 @@ namespace JoinRpg.Domain.Schedules
     {
         public TimeSlotOptions Options { get; internal set; }
     }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    public class ScheduleResult
-    {
-        public IReadOnlyList<ProgramItem> NotScheduled { get; set; }
-        public IReadOnlyList<ScheduleRoom> Rooms { get; set; }
+    public record ScheduleResult (
+        IReadOnlyList<ProgramItem> NotScheduled,
+        IReadOnlyList<ScheduleRoom> Rooms,
 
-        public IReadOnlyList<TimeSlot> TimeSlots { get; set; }
+        IReadOnlyList<TimeSlot> TimeSlots,
 
-        public IReadOnlyList<ProgramItem> Conflicted { get; set; }
+        IReadOnlyList<ProgramItem> Conflicted,
 
-        public List<List<ProgramItem>> Slots { get; set; }
+        List<List<ProgramItem?>> Slots,
 
-        public List<ProgramItemPlaced> AllItems { get; set; }
-    }
-
+        List<ProgramItemPlaced> AllItems)
+    { }
 }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

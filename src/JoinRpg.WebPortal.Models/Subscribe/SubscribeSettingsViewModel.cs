@@ -46,7 +46,7 @@ namespace JoinRpg.Web.Models.Subscribe
             }
         }
 
-        private void Init(User user, IWorldObject group, UserSubscription direct)
+        private void Init(User user, IWorldObject group, UserSubscription? direct)
         {
             if (direct != null)
             {

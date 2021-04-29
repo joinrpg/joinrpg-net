@@ -20,7 +20,7 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool IsActive { get; set; }
 
-        public User Player { get; set; }
+        public User? Player { get; set; }
         public bool HidePlayer { get; set; }
         public bool HasAccess => HasMasterAccess;
         public int ActiveClaimsCount { get; set; }

@@ -62,7 +62,7 @@ namespace JoinRpg.Portal.Controllers
                 return View("Index", list);
             }
 
-            return await Export(list, exportType);
+            return await Export(list, exportType.Value);
         }
 
         public CharacterListController(
@@ -106,12 +106,12 @@ namespace JoinRpg.Portal.Controllers
 
             var exportType = ExportTypeNameParserHelper.ToExportType(export);
 
-            if (exportType == null)
+            if (exportType is null)
             {
                 return View("ByGroup", list);
             }
 
-            return await Export(list, exportType);
+            return await Export(list, exportType.Value);
         }
 
         [HttpGet]
@@ -131,10 +131,10 @@ namespace JoinRpg.Portal.Controllers
         public Task<ActionResult> WithPlayers(int projectid, string export)
           => MasterCharacterList(projectid, character => character.ApprovedClaim != null && character.IsActive, export, "Занятые персонажи");
 
-        private async Task<FileContentResult> Export(CharacterListViewModel list, ExportType? exportType)
+        private async Task<FileContentResult> Export(CharacterListViewModel list, ExportType exportType)
         {
             var generator = ExportDataService.GetGenerator(
-                exportType.Value,
+                exportType,
                 list.Items,
               new CharacterListItemViewModelExporter(list.Fields, UriService));
 

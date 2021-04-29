@@ -9,7 +9,7 @@ namespace JoinRpg.Services.Interfaces
         /// <summary>
         /// Adds new room type
         /// </summary>
-        Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType);
+        Task<ProjectAccommodationType?> SaveRoomTypeAsync(ProjectAccommodationType roomType);
 
         Task RemoveRoomType(int roomTypeId);
 

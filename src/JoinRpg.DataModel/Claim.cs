@@ -16,10 +16,10 @@ namespace JoinRpg.DataModel
         public int? CharacterGroupId { get; set; }
 
         [CanBeNull]
-        public virtual CharacterGroup Group { get; set; }
+        public virtual CharacterGroup? Group { get; set; }
 
         [CanBeNull]
-        public virtual Character Character { get; set; }
+        public virtual Character? Character { get; set; }
 
         public int PlayerUserId { get; set; }
 
@@ -46,7 +46,7 @@ namespace JoinRpg.DataModel
 
         public virtual ICollection<UserSubscription> Subscriptions { get; set; } = new HashSet<UserSubscription>();
 
-        public virtual User ResponsibleMasterUser { get; set; }
+        public virtual User? ResponsibleMasterUser { get; set; }
         public int? ResponsibleMasterUserId { get; set; }
 
 

@@ -92,11 +92,11 @@ namespace JoinRpg.Domain
 
         public DateTime? ProblemTime { get; }
         [CanBeNull]
-        public string ExtraInfo { get; }
+        public string? ExtraInfo { get; }
 
         public ProblemSeverity Severity { get; }
 
-        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string extraInfo = null)
+        public ClaimProblem(ClaimProblemType problemType, ProblemSeverity severity, DateTime? problemTime = null, string? extraInfo = null)
         {
             ProblemType = problemType;
             Severity = severity;

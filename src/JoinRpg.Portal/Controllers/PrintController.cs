@@ -39,10 +39,13 @@ namespace JoinRpg.Portal.Controllers
         public async Task<IActionResult> Character(int projectid, int characterid)
         {
             var character = await CharacterRepository.GetCharacterWithGroups(projectid, characterid);
-            var error = WithCharacter(character);
-            if (error != null)
+            if (character == null)
             {
-                return error;
+                return NotFound();
+            }
+            if (!character.HasAnyAccess(CurrentUserId))
+            {
+                return NoAccesToProjectView(character.Project);
             }
 
             return View(new PrintCharacterViewModel(CurrentUserId, character, await PlotRepository.GetPlotsForCharacter(character), UriService));
@@ -110,19 +113,5 @@ namespace JoinRpg.Portal.Controllers
         }
 
         private static string GetFeeDueString(PrintCharacterViewModelSlim v) => v.FeeDue == 0 ? "" : $"<div style='background-color:lightgray; text-align:center'><b>Взнос</b>: {v.FeeDue}₽ </div>";
-
-        protected IActionResult WithCharacter(Character character)
-        {
-            if (character == null)
-            {
-                return NotFound();
-            }
-            if (!character.HasAnyAccess(CurrentUserId))
-            {
-                return NoAccesToProjectView(character.Project);
-            }
-
-            return null;
-        }
     }
 }

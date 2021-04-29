@@ -10,8 +10,8 @@ namespace JoinRpg.Domain.Test
 {
     public class FieldSaveHelperTest
     {
-        private MockedProject _original;
-        private IFieldDefaultValueGenerator _generator;
+        private MockedProject _original = null!; // Should be initialized per fact
+        private IFieldDefaultValueGenerator _generator = null!; // Should be initialized per fact
 
         [Fact]
         public void SaveOnAddTest()
@@ -24,7 +24,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {mock.CharacterField.ProjectFieldId, "test"},
                 },
@@ -51,7 +51,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     mock.CreateClaim(mock.Character, mock.Player),
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.MasterOnlyField.ProjectFieldId, "test"},
                     },
@@ -73,7 +73,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
                     {mock.CharacterField.ProjectFieldId, null},
@@ -95,7 +95,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Master.UserId,
                 mock.Character,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
                     {mock.CharacterField.ProjectFieldId, null},
@@ -116,7 +116,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {mock.CharacterField.ProjectFieldId, "test"},
                 },
@@ -139,7 +139,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {conditionalField.ProjectFieldId, "test"},
                 },
@@ -164,7 +164,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {conditionalField.ProjectFieldId, "test"},
                 },
@@ -189,7 +189,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     claim,
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
                     },
@@ -206,7 +206,7 @@ namespace JoinRpg.Domain.Test
             FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
-                new Dictionary<int, string>()
+                new Dictionary<int, string?>()
                 {
                     {mock.CharacterField.ProjectFieldId, "test"},
                 },
@@ -233,7 +233,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     mock.Character,
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.CharacterField.ProjectFieldId, "test"},
                     },
@@ -254,7 +254,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     claim,
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.CharacterField.ProjectFieldId, ""},
                     },
@@ -277,7 +277,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     claim,
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.CharacterField.ProjectFieldId, "test"},
                     },
@@ -300,7 +300,7 @@ namespace JoinRpg.Domain.Test
                 FieldSaveHelper.SaveCharacterFields(
                     mock.Player.UserId,
                     claim,
-                    new Dictionary<int, string>()
+                    new Dictionary<int, string?>()
                     {
                         {mock.CharacterField.ProjectFieldId, ""},
                     },
@@ -312,7 +312,7 @@ namespace JoinRpg.Domain.Test
 
     public class MockedFieldDefaultValueGenerator : IFieldDefaultValueGenerator
     {
-        public string CreateDefaultValue(Claim claim, FieldWithValue feld) => null;
-        public string CreateDefaultValue(Character character, FieldWithValue field) => null;
+        public string? CreateDefaultValue(Claim? claim, FieldWithValue feld) => null;
+        public string? CreateDefaultValue(Character? character, FieldWithValue field) => null;
     }
 }

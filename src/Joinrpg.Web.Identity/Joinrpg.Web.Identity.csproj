@@ -2,6 +2,7 @@
     <PropertyGroup>
         <TargetFramework>net5</TargetFramework>
         <AssemblyTitle>JoinRpg.Web.Identity</AssemblyTitle>
+        <Nullable>annotations</Nullable> <!-- MS.Ext.Identity.Core not correctly annotated -->
     </PropertyGroup>
     <ItemGroup>
       <FrameworkReference Include="Microsoft.AspNetCore.App" />

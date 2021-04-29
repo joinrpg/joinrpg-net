@@ -14,8 +14,7 @@ namespace JoinRpg.Services.Impl
             [NotNull]
             string commentText,
             bool isVisibleToPlayer,
-            [CanBeNull]
-            Comment parentComment,
+            Comment? parentComment,
             CommentExtraAction? extraAction = null)
         {
             if (commentDiscussion == null)

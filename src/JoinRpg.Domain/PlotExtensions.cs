@@ -69,14 +69,11 @@ namespace JoinRpg.Domain
         [NotNull]
         public static PlotElementTexts LastVersion([NotNull] this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).First();
 
-        [CanBeNull]
-        public static PlotElementTexts SpecificVersion([NotNull] this PlotElement e, int version) => e.Texts.SingleOrDefault(text => text.Version == version);
+        public static PlotElementTexts? SpecificVersion([NotNull] this PlotElement e, int version) => e.Texts.SingleOrDefault(text => text.Version == version);
 
         //TODO consider return NUll if deleted
-        [CanBeNull]
-        public static PlotElementTexts PublishedVersion([NotNull] this PlotElement e) => e.Published != null ? e.SpecificVersion((int)e.Published) : null;
+        public static PlotElementTexts? PublishedVersion([NotNull] this PlotElement e) => e.Published != null ? e.SpecificVersion((int)e.Published) : null;
 
-        [CanBeNull]
-        public static PlotElementTexts PrevVersion(this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).Skip(1).FirstOrDefault();
+        public static PlotElementTexts? PrevVersion(this PlotElement e) => e.Texts.OrderByDescending(text => text.Version).Skip(1).FirstOrDefault();
     }
 }

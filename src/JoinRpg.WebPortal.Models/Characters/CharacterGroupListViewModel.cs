@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Models.Characters
                 return Results;
             }
 
-            private CharacterGroupListItemViewModel GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
+            private CharacterGroupListItemViewModel? GenerateFrom(CharacterGroup characterGroup, int deepLevel, IList<CharacterGroup> pathToTop)
             {
                 if (!characterGroup.IsVisible(CurrentUserId))
                 {
@@ -128,8 +128,8 @@ namespace JoinRpg.Web.Models.Characters
                     HasMasterAccess = HasMasterAccess,
                     HasEditRolesAccess = HasEditRolesAccess,
                     ProjectId = arg.ProjectId,
-                    FirstInGroup = siblings.First() == arg,
-                    LastInGroup = siblings.Last() == arg,
+                    FirstInGroup = siblings[0] == arg,
+                    LastInGroup = siblings[^1] == arg,
                     ParentCharacterGroupId = group.CharacterGroupId,
                     RootGroupId = Root.CharacterGroupId,
                     IsHot = arg.IsHot && arg.IsAvailable,

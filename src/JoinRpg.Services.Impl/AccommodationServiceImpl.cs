@@ -18,7 +18,7 @@ namespace JoinRpg.Services.Impl
     {
         private IEmailService EmailService { get; }
 
-        public async Task<ProjectAccommodationType> SaveRoomTypeAsync(ProjectAccommodationType roomType)
+        public async Task<ProjectAccommodationType?> SaveRoomTypeAsync(ProjectAccommodationType roomType)
         {
             if (roomType.ProjectId == 0)
             {

@@ -80,7 +80,7 @@ namespace JoinRpg.Domain
         }
 
         public static void FillFrom([NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues,
-          [CanBeNull] IFieldContainter container)
+          [CanBeNull] IFieldContainter? container)
         {
             if (characterFieldValues == null)
             {
@@ -111,8 +111,8 @@ namespace JoinRpg.Domain
         }
 
         public static IReadOnlyCollection<FieldWithValue> FillIfEnabled(
-          [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim claim,
-          [CanBeNull] Character character)
+          [NotNull] this IReadOnlyCollection<FieldWithValue> characterFieldValues, [CanBeNull] Claim? claim,
+          [CanBeNull] Character? character)
         {
             if (characterFieldValues == null)
             {

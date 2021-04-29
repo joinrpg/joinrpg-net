@@ -13,6 +13,7 @@
 
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <LangVersion>9.0</LangVersion>
+        <Nullable>enable</Nullable>
 
         <WarningsAsErrors>true</WarningsAsErrors>
 

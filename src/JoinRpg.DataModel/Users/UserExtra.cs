@@ -16,15 +16,15 @@ namespace JoinRpg.DataModel
         public string PhoneNumber { get; set; }
         public string Skype { get; set; }
 
-        public string Vk { get; set; }
+        public string? Vk { get; set; }
         public bool VkVerified { get; set; }
-        public string Livejournal { get; set; }
+        public string? Livejournal { get; set; }
 
         public string Nicknames { get; set; }
 
         public string GroupNames { get; set; }
 
-        public string Telegram { get; set; }
+        public string? Telegram { get; set; }
 
         public DateTime? BirthDate { get; set; }
 

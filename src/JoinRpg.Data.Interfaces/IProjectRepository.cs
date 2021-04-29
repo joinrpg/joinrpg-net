@@ -32,7 +32,7 @@ namespace JoinRpg.Data.Interfaces
 
         Task<CharacterGroup> GetRootGroupAsync(int projectId);
 
-        Task<CharacterGroup> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
+        Task<CharacterGroup?> LoadGroupWithTreeAsync(int projectId, int? characterGroupId = null);
         Task<CharacterGroup> LoadGroupWithTreeSlimAsync(int projectId);
         Task<CharacterGroup> LoadGroupWithChildsAsync(int projectId, int characterGroupId);
         Task<IList<CharacterGroup>> LoadGroups(int projectId, IReadOnlyCollection<int> groupIds);

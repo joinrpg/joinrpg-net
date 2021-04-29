@@ -37,7 +37,7 @@ namespace JoinRpg.Dal.Impl.Repositories
             await LoadProjectFields(projectId);
 
             return
-              await Ctx.Set<Character>().Include(ch => ch.ApprovedClaim.Player)
+              await Ctx.Set<Character>().Include(ch => ch.ApprovedClaim!.Player)
                 .SingleOrDefaultAsync(e => e.CharacterId == characterId && e.ProjectId == projectId);
         }
         public async Task<Character> GetCharacterWithDetails(int projectId, int characterId)

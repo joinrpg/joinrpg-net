@@ -11,7 +11,7 @@ namespace JoinRpg.Domain
     {
         public static IEnumerable<User> GetSubscriptions(
           this ForumThread forumThread,
-          [CanBeNull] IEnumerable<User> extraRecipients,
+          IEnumerable<User?>? extraRecipients,
           bool isVisibleToPlayer)
         {
             return
@@ -24,7 +24,7 @@ namespace JoinRpg.Domain
         public static IEnumerable<User> GetSubscriptions(
           this Character character,
           Func<UserSubscription, bool> predicate,
-          [CanBeNull] IEnumerable<User> extraRecipients = null,
+          IEnumerable<User>? extraRecipients = null,
           bool mastersOnly = false
           )
         {
@@ -51,7 +51,7 @@ namespace JoinRpg.Domain
         public static IEnumerable<User> GetSubscriptions(
           this Claim claim,
           Func<UserSubscription, bool> predicate,
-          [CanBeNull] IEnumerable<User> extraRecipients = null,
+          IEnumerable<User?>? extraRecipients = null,
           bool mastersOnly = false)
         {
             return claim.GetTarget().GetGroupsPartOf() //Get all groups for claim
@@ -64,20 +64,19 @@ namespace JoinRpg.Domain
                 .Union(claim.Player) //...and player himself also
                 .Union(claim.Character?.ResponsibleMasterUser)
                 .Union(extraRecipients ?? Enumerable.Empty<User>()) //add extra recipients
-                .Where(u => u != null)
                 .VerifySubscriptions(mastersOnly, claim)
                 .Distinct(); //we make union of subscriptions and directly taken users. Duplicates may appear.
         }
 
         private static IEnumerable<User> VerifySubscriptions<TEntity>(
-          this IEnumerable<User> users,
+          this IEnumerable<User?> users,
           bool mastersOnly,
           TEntity entity)
           where TEntity : IProjectEntity
         {
             //TODO: currently there're no need to check for user access to entity but in general it's good to have
             return users
-                .Where(u => u != null)
+                .WhereNotNull()
                 .Where(u => !mastersOnly || entity.HasMasterAccess(u.UserId)); //remove player if we doing something not player visible
         }
 

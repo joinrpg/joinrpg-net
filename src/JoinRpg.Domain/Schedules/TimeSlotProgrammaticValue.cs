@@ -49,7 +49,7 @@ namespace JoinRpg.Domain.Schedules
 
             if (!(self.ProgrammaticValue is null))
             {
-                return JsonConvert.DeserializeObject<TimeSlotOptions>(self.ProgrammaticValue);
+                return JsonConvert.DeserializeObject<TimeSlotOptions>(self.ProgrammaticValue) ?? GetDefaultTimeSlotOptions(self.ProjectField, self);
             }
 
             return GetDefaultTimeSlotOptions(self.ProjectField, self);
@@ -62,9 +62,9 @@ namespace JoinRpg.Domain.Schedules
             => GetDefaultTimeSlotOptions(field, variant: null);
 
         private static TimeSlotOptions GetDefaultTimeSlotOptions(ProjectField field,
-            ProjectFieldDropdownValue variant)
+            ProjectFieldDropdownValue? variant)
         {
-            DateTimeOffset GetDefaultStartTime()
+            static DateTimeOffset GetDefaultStartTime()
             {
                 try
                 {
@@ -98,9 +98,8 @@ namespace JoinRpg.Domain.Schedules
             };
         }
 
-        [CanBeNull]
-        private static ProjectFieldDropdownValue GetPreviousVariant([NotNull] this ProjectField field,
-            [CanBeNull] ProjectFieldDropdownValue variant)
+        private static ProjectFieldDropdownValue? GetPreviousVariant([NotNull] this ProjectField field,
+            ProjectFieldDropdownValue? variant)
         {
             if (variant is null)
             {
@@ -114,7 +113,7 @@ namespace JoinRpg.Domain.Schedules
         /// <summary>
         /// Save time slot options to variant
         /// </summary>
-        public static void SetTimeSlotOptions(this ProjectFieldDropdownValue self, TimeSlotOptions timeSlotOptions)
+        public static void SetTimeSlotOptions(this ProjectFieldDropdownValue self, TimeSlotOptions? timeSlotOptions)
         {
             if (!self.ProjectField.IsTimeSlot())
             {

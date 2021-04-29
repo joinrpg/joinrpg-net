@@ -147,11 +147,11 @@ namespace JoinRpg.Portal.Controllers
               ? await _plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
               : new PlotElement[] { };
 
-            IEnumerable<ProjectAccommodationType> availableAccommodation = null;
-            IEnumerable<AccommodationRequest> requestForAccommodation = null;
-            IEnumerable<AccommodationPotentialNeighbors> potentialNeighbors = null;
-            IEnumerable<AccommodationInvite> incomingInvite = null;
-            IEnumerable<AccommodationInvite> outgoingInvite = null;
+            IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
+            IEnumerable<AccommodationRequest>? requestForAccommodation = null;
+            IEnumerable<AccommodationPotentialNeighbors>? potentialNeighbors = null;
+            IEnumerable<AccommodationInvite>? incomingInvite = null;
+            IEnumerable<AccommodationInvite>? outgoingInvite = null;
 
 
             if (claim.Project.Details.EnableAccommodation)
@@ -388,6 +388,8 @@ namespace JoinRpg.Portal.Controllers
 
         }
 
+        /// <param name="projectId"></param>
+        /// <param name="claimId"></param>
         /// <param name="viewModel"></param>
         /// <param name="claimTarget">Note that name is hardcoded in view. (TODO improve)</param>
         [MasterAuthorize()]
@@ -584,7 +586,7 @@ namespace JoinRpg.Portal.Controllers
             return Json(tooltip);
         }
 
-        private ActionResult WithClaim(Claim claim)
+        private ActionResult? WithClaim(Claim claim)
         {
             if (claim == null)
             {

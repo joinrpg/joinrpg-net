@@ -53,9 +53,9 @@ namespace JoinRpg.Web.Models.Characters
 
         public bool IsSpecial { get; set; }
 
-        public bool Equals(CharacterTreeItem other) => other != null && other.CharacterGroupId == CharacterGroupId;
+        public bool Equals(CharacterTreeItem? other) => other != null && other.CharacterGroupId == CharacterGroupId;
 
-        public override bool Equals(object obj) => Equals(obj as CharacterTreeItem);
+        public override bool Equals(object? obj) => Equals(obj as CharacterTreeItem);
 
         public override int GetHashCode() => CharacterGroupId;
 
@@ -82,7 +82,7 @@ namespace JoinRpg.Web.Models.Characters
         public bool IsAcceptingClaims { get; set; }
         public int ProjectId { get; set; }
 
-        public bool Equals(CharacterLinkViewModel other) => other != null && CharacterId == other.CharacterId;
+        public bool Equals(CharacterLinkViewModel? other) => other != null && CharacterId == other.CharacterId;
 
         public override bool Equals(object obj) => Equals(obj as CharacterLinkViewModel);
 

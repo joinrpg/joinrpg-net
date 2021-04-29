@@ -19,7 +19,7 @@ namespace Joinrpg.Web.Identity
             await _ctx.SaveChangesAsync();
         }
 
-        async Task<JoinIdentityUser> IUserLoginStore<JoinIdentityUser>.FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+        async Task<JoinIdentityUser?> IUserLoginStore<JoinIdentityUser>.FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
             var uel = await _ctx.Set<UserExternalLogin>().SingleOrDefaultAsync(u => u.Key == providerKey && u.Provider == loginProvider);
 

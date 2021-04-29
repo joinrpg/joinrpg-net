@@ -28,7 +28,7 @@ namespace JoinRpg.Web.Models
     {
         public string AuthenticationType { get; set; }
 
-        public string Caption { get; set; }
+        public string? Caption { get; set; }
     }
 
     public class LoginPageViewModel

@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using JetBrains.Annotations;
 using JoinRpg.DataModel;
+using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+using MustUseReturnValueAttribute = JetBrains.Annotations.MustUseReturnValueAttribute;
+using PureAttribute = JetBrains.Annotations.PureAttribute;
 
 namespace JoinRpg.Domain
 {
@@ -29,10 +31,9 @@ namespace JoinRpg.Domain
             return entity.HasMasterAccess(currentUserId, acl => true);
         }
 
-        [NotNull]
-        public static T RequestMasterAccess<T>([CanBeNull] this T field,
+        public static T RequestMasterAccess<T>([NotNull] this T field,
             int? currentUserId,
-            [CanBeNull] Expression<Func<ProjectAcl, bool>> accessType = null)
+            Expression<Func<ProjectAcl, bool>>? accessType = null)
         where T : IProjectEntity
         {
             if (field == null)
@@ -63,7 +64,6 @@ namespace JoinRpg.Domain
             return field;
         }
 
-        [NotNull]
         public static T EnsureActive<T>(this T entity) where T : IDeletableSubEntity, IProjectEntity
         {
             if (!entity.IsActive)
@@ -117,7 +117,6 @@ namespace JoinRpg.Domain
 
         public static bool HasEditRolesAccess(this IProjectEntity character, int? currentUserId) => character.HasMasterAccess(currentUserId, s => s.CanEditRoles) && character.Project.Active;
 
-        [NotNull]
         public static T EnsureProjectActive<T>(this T entity)
       where T : IProjectEntity => !entity.Project.Active ? throw new ProjectDeactivedException() : entity;
 
@@ -173,15 +172,15 @@ namespace JoinRpg.Domain
             return forumThread.HasMasterAccess(currentUserId) || forumThread.HasPlayerAccess(currentUserId);
         }
 
-        [CanBeNull, Pure]
-        public static Claim GetClaim(this CommentDiscussion commentDiscussion)
+        [Pure]
+        public static Claim? GetClaim(this CommentDiscussion commentDiscussion)
         {
             return commentDiscussion.Project.Claims.SingleOrDefault(
               c => c.CommentDiscussionId == commentDiscussion.CommentDiscussionId);
         }
 
-        [CanBeNull, Pure]
-        public static ForumThread GetForumThread(this CommentDiscussion commentDiscussion)
+        [Pure]
+        public static ForumThread? GetForumThread(this CommentDiscussion commentDiscussion)
         {
             return commentDiscussion.Project.ForumThreads.SingleOrDefault(
               ft => ft.CommentDiscussionId == commentDiscussion.CommentDiscussionId);

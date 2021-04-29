@@ -309,7 +309,7 @@ namespace JoinRpg.Web.Models.FieldSetup
 
         public GameFieldDropdownValueViewModelBase() { }
 
-        public TimeSlotOptions GetTimeSlotRequest(ProjectField field, string value)
+        public TimeSlotOptions? GetTimeSlotRequest(ProjectField field, string value)
         {
             return field.IsTimeSlot()
                 ? new TimeSlotOptions
