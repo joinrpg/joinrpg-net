@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2</TargetFramework>
     <AssemblyTitle>JoinRpg.Web.XGameApi.Contract</AssemblyTitle>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
