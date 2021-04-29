@@ -26,14 +26,27 @@ namespace JoinRpg.Web.Models.UserProfile
     public record UserAvatarListItemViewModel(
         AvatarIdentification AvatarId,
         Uri AvatarUri,
-        bool Selected)
+        bool Selected,
+        string Source)
     {
         public UserAvatarListItemViewModel(UserAvatar ua) : this(
                 new AvatarIdentification(ua.UserAvatarId),
-                new Uri(ua.Uri),
-                ua.User.SelectedAvatar == ua)
+                new Uri(ua.CachedUri ?? ua.OriginalUri),
+                ua.User.SelectedAvatar == ua,
+                GetSourceLabel(ua)
+            )
         {
 
+        }
+
+        private static string GetSourceLabel(UserAvatar ua)
+        {
+            return ua.AvatarSource switch
+            {
+                UserAvatar.Source.GrAvatar => "Сервис gravatar.com",
+                UserAvatar.Source.SocialNetwork => "Социальная сеть " + ua.ProviderId,
+                _ => "Неизвестный источник аватарки",
+            };
         }
     }
 }
