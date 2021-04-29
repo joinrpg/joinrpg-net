@@ -7,6 +7,7 @@ using JoinRpg.Portal.Infrastructure.Authentication;
 using JoinRpg.Portal.Infrastructure.Authorization;
 using JoinRpg.Portal.Infrastructure.DiscoverFilters;
 using JoinRpg.Portal.Infrastructure.HealthChecks;
+using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,6 +40,8 @@ namespace JoinRpg.Portal
             _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
             _ = services.Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"));
 
+            _ = services.Configure<AvatarStorageOptions>(Configuration.GetSection("AzureAvatarStorage"));
+
             _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
             _ = services
@@ -53,6 +56,8 @@ namespace JoinRpg.Portal
 
             _ = services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            services.AddHttpClient();
 
             _ = services.AddRouting(options => options.LowercaseUrls = true);
             var mvc = services
