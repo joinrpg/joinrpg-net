@@ -37,27 +37,19 @@ namespace JoinRpg.Domain
                 if (currentGroup.ResponsibleMasterUserId != null)
                 {
                     candidates.Add(currentGroup);
-                    removedGroups.AddRange(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false));
+                    removedGroups.UnionWith(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false));
                     //Some group with set responsible master will shadow out all parents.
                 }
                 else
                 {
-                    lookupGroups.AddRange(currentGroup.ParentGroups);
+                    lookupGroups.UnionWith(currentGroup.ParentGroups);
                 }
             }
             return candidates.Except(removedGroups).Select(c => c.ResponsibleMasterUser);
         }
 
-        private static void AddRange<T>(this ISet<T> set, IEnumerable<T> objectsToAdd)
-        {
-            foreach (var parentGroup in objectsToAdd)
-            {
-                set.Add(parentGroup);
-            }
-        }
-
         [CanBeNull]
-        public static User GetResponsibleMaster([NotNull] this Character character)
+        public static User? GetResponsibleMaster([NotNull] this Character character)
         {
             if (character == null)
             {
