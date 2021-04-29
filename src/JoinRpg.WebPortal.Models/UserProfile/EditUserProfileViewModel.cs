@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using JoinRpg.DataModel;
+using JoinRpg.Web.Models.UserProfile;
 
 namespace JoinRpg.Web.Models
 {
@@ -73,5 +74,7 @@ namespace JoinRpg.Web.Models
 
         public string Email { get; set; }
         public bool HasPassword { get; set; }
+
+        public UserAvatarListViewModel Avatars { get; set; }
     }
 }

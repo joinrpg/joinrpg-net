@@ -1,5 +1,6 @@
 using Autofac;
 using BitArmory.ReCaptcha;
+using JoinRpg.Avatar.Storage;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
@@ -32,6 +33,9 @@ namespace JoinRpg.Portal
 
             builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
                 .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();
+
+
+            builder.RegisterType<AzureAvatarStorageService>().AsImplementedInterfaces();
 
         }
     }

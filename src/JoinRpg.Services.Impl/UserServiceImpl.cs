@@ -7,6 +7,7 @@ using JoinRpg.DataModel;
 using JoinRpg.DataModel.Users;
 using JoinRpg.Domain;
 using JoinRpg.Helpers;
+using JoinRpg.Helpers.Web;
 using JoinRpg.Interfaces;
 using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
@@ -19,6 +20,7 @@ namespace JoinRpg.Services.Impl
     public class UserServiceImpl : DbServiceImplBase, IUserService
     {
         private readonly ILogger<UserServiceImpl> logger;
+        private readonly Lazy<IAvatarStorageService> avatarStorageService;
 
         /// <summary>
         /// ctor
@@ -26,9 +28,14 @@ namespace JoinRpg.Services.Impl
         public UserServiceImpl(
             IUnitOfWork unitOfWork,
             ICurrentUserAccessor currentUserAccessor,
-            ILogger<UserServiceImpl> logger
+            ILogger<UserServiceImpl> logger,
+            Lazy<IAvatarStorageService> avatarStorageService
             )
-            : base(unitOfWork, currentUserAccessor) => this.logger = logger;
+            : base(unitOfWork, currentUserAccessor)
+        {
+            this.logger = logger;
+            this.avatarStorageService = avatarStorageService;
+        }
 
         /// <inheritdoc />
         public async Task UpdateProfile(int userId,
@@ -140,7 +147,7 @@ namespace JoinRpg.Services.Impl
             user.Extra.Vk = $"id{vkId.Value}";
             user.Extra.VkVerified = true;
 
-            AddSocialAvatarImpl(avatarInfo, user, "Vkontakte");
+            await AddSocialAvatarImplAsync(avatarInfo, user, "Vkontakte");
 
             await UnitOfWork.SaveChangesAsync();
         }
@@ -150,18 +157,18 @@ namespace JoinRpg.Services.Impl
             logger.LogInformation("About to link user: {userId} to google", userId);
             var user = await UserRepository.WithProfile(userId);
 
-            AddSocialAvatarImpl(avatarInfo, user, "Google");
+            await AddSocialAvatarImplAsync(avatarInfo, user, "Google");
 
             await UnitOfWork.SaveChangesAsync();
         }
 
-        private static void AddSocialAvatarImpl(AvatarInfo avatarInfo, User user, string providerId)
+        private async Task AddSocialAvatarImplAsync(AvatarInfo avatarInfo, User user, string providerId)
         {
             if (
                 user.Avatars.FirstOrDefault(ua => ua.IsActive && ua.ProviderId == providerId)
                 is UserAvatar oldAvatar)
             {
-                if (new Uri(oldAvatar.Uri) != avatarInfo.Uri)
+                if (new Uri(oldAvatar.OriginalUri) != avatarInfo.Uri)
                 {
                     oldAvatar.IsActive = false;
                 }
@@ -171,18 +178,27 @@ namespace JoinRpg.Services.Impl
                 }
             }
 
+            UserAvatar userAvatar = await UploadNewAvatar(avatarInfo.Uri, user, providerId);
+
+            user.SelectedAvatar ??= userAvatar;
+
+            user.Avatars.Add(userAvatar);
+        }
+
+        private async Task<UserAvatar> UploadNewAvatar(Uri avatarUri, User user, string providerId)
+        {
+            var cachedUri = await avatarStorageService.Value.StoreAvatar(avatarUri);
+
             var userAvatar = new UserAvatar()
             {
                 AvatarSource = UserAvatar.Source.SocialNetwork,
                 IsActive = true,
                 ProviderId = providerId,
-                Uri = avatarInfo.Uri.AbsoluteUri,
+                OriginalUri = avatarUri.AbsoluteUri,
+                CachedUri = cachedUri.AbsoluteUri,
                 User = user,
             };
-
-            user.SelectedAvatar ??= userAvatar;
-
-            user.Avatars.Add(userAvatar);
+            return userAvatar;
         }
 
         /// <inheritdoc />
@@ -221,12 +237,14 @@ namespace JoinRpg.Services.Impl
                 return;
             }
 
+            // We do not need to cache avatar here — or GrAvatar will not be automatically updated 
             var userAvatar = new UserAvatar()
             {
                 AvatarSource = UserAvatar.Source.GrAvatar,
                 IsActive = true,
                 ProviderId = null,
-                Uri = $"https://www.gravatar.com/avatar/{user.Email}?d=identicon&s=64",
+                OriginalUri = GravatarHelper.GetLink(user.Email, 64).AbsoluteUri,
+                CachedUri = null,
                 User = user,
             };
             user.Avatars.Add(userAvatar);

@@ -12,6 +12,7 @@ using JoinRpg.PrimitiveTypes;
 using JoinRpg.Services.Interfaces;
 using JoinRpg.Web.Helpers;
 using JoinRpg.Web.Models;
+using JoinRpg.Web.Models.UserProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -197,6 +198,7 @@ namespace JoinRpg.Portal.Controllers
                 SocialLoginStatus = user.GetSocialLogins().ToList(),
                 Email = user.Email,
                 HasPassword = user.PasswordHash != null,
+                Avatars = new UserAvatarListViewModel(user),
             };
 
             return base.View(model);

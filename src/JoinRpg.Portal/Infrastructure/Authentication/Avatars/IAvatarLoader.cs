@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using JoinRpg.Data.Interfaces;
-using JoinRpg.DataModel;
-using JoinRpg.Helpers.Web;
 using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars
@@ -53,7 +49,7 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars
         public async Task<AvatarInfo> GetAvatar(AvatarIdentification userAvatarId, int recommendedSize)
         {
             var avatar = await userRepository.LoadAvatar(userAvatarId);
-            return new AvatarInfo(new Uri(avatar.Uri), recommendedSize);
+            return new AvatarInfo(new Uri(avatar.CachedUri ?? avatar.OriginalUri), recommendedSize);
         }
     }
 }

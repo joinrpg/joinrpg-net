@@ -15,7 +15,8 @@ namespace JoinRpg.Dal.Impl.Migrations
                     UserId = c.Int(nullable: false),
                     AvatarSource = c.Int(nullable: false),
                     ProviderId = c.String(),
-                    Uri = c.String(),
+                    CachedUri = c.String(),
+                    OriginalUri = c.String(),
                     IsActive = c.Boolean(nullable: false),
                 })
                 .PrimaryKey(t => t.UserAvatarId)
