@@ -10,12 +10,17 @@ namespace Joinrpg.Web.Identity
     {
         public static IList<Claim> ToClaimsList(this User dbUser)
         {
-            return new List<Claim>
+            var claimList = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, dbUser.Email),
                 new Claim(JoinClaimTypes.DisplayName, dbUser.GetDisplayName()),
-                new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId?.ToString())
             };
+            if (dbUser.SelectedAvatarId is not null)
+            {
+                //TODO: When we fix all avatars, it will be not required check
+                claimList.Add(new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId?.ToString()));
+            }
+            return claimList;
         }
     }
 }
