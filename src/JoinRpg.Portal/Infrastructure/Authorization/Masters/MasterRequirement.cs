@@ -44,7 +44,7 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
             requirement.Permission = permission;
 
             var policy = new AuthorizationPolicyBuilder();
-            policy.AddRequirements(requirement);
+            _ = policy.AddRequirements(requirement);
 
             return policy.Build();
         }

@@ -36,25 +36,25 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
-            services.Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"));
+            _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
+            _ = services.Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"));
 
-            services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
+            _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
-            services
+            _ = services
                 .AddIdentity<JoinIdentityUser, string>(options => options.Password.ConfigureValidation())
                 .AddDefaultTokenProviders()
                 .AddUserStore<MyUserStore>()
                 .AddRoleStore<MyUserStore>();
 
-            services.ConfigureApplicationCookie(AuthenticationConfigurator.SetCookieOptions());
+            _ = services.ConfigureApplicationCookie(AuthenticationConfigurator.SetCookieOptions());
 
-            services.AddLogging();
+            _ = services.AddLogging();
 
-            services.AddHttpContextAccessor();
+            _ = services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-            services.AddRouting(options => options.LowercaseUrls = true);
+            _ = services.AddRouting(options => options.LowercaseUrls = true);
             var mvc = services
                 .AddMvc(options =>
                 {
@@ -71,21 +71,21 @@ namespace JoinRpg.Portal
             if (environment.IsDevelopment())
             {
                 //That's make local debug more easy
-                mvc.AddRazorRuntimeCompilation();
+                _ = mvc.AddRazorRuntimeCompilation();
             }
 
-            services.AddAuthorization();
+            _ = services.AddAuthorization();
 
-            services.AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>();
+            _ = services.AddTransient<IAuthorizationPolicyProvider, AuthPolicyProvider>();
 
             services
                 .AddAuthentication()
                 .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
 
-            services.AddSwaggerGen(Swagger.ConfigureSwagger);
-            services.AddApplicationInsightsTelemetry();
+            _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
+            _ = services.AddApplicationInsightsTelemetry();
 
-            services.AddHealthChecks()
+            _ = services.AddHealthChecks()
                 .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
                 .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
         }
@@ -96,24 +96,24 @@ namespace JoinRpg.Portal
         /// </summary>
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.RegisterModule(new JoinrpgMainModule());
-            builder.RegisterModule(new JoinRpgPortalModule());
+            _ = builder.RegisterModule(new JoinrpgMainModule());
+            _ = builder.RegisterModule(new JoinRpgPortalModule());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseRequestLocalization(options =>
-            {
-                options.DefaultRequestCulture = new RequestCulture("ru-RU");
+            _ = app.UseRequestLocalization(options =>
+              {
+                  options.DefaultRequestCulture = new RequestCulture("ru-RU");
 
-                //TODO before adding other cultures, ensure that datetime fields send correct format
-                options.SupportedCultures = new CultureInfo[] { new CultureInfo("ru-RU") };
-            });
+                  //TODO before adding other cultures, ensure that datetime fields send correct format
+                  options.SupportedCultures = new CultureInfo[] { new CultureInfo("ru-RU") };
+              });
 
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                _ = app.UseDeveloperExceptionPage();
             }
             else if (env.IsEnvironment("IntegrationTest"))
             {
@@ -121,41 +121,41 @@ namespace JoinRpg.Portal
             }
             else
             {
-                app.UseExceptionHandler("/error");
+                _ = app.UseExceptionHandler("/error");
             }
 
-            app.Use(async (context, next) =>
-            {
-                await next();
-                if (context.Response.StatusCode == 404)
-                {
-                    context.Request.Path = "/error/404";
-                    await next();
-                }
-            });
+            _ = app.Use(async (context, next) =>
+              {
+                  await next();
+                  if (context.Response.StatusCode == 404)
+                  {
+                      context.Request.Path = "/error/404";
+                      await next();
+                  }
+              });
 
 
-            app.UseSwagger(Swagger.Configure);
-            app.UseSwaggerUI(Swagger.ConfigureUI);
+            _ = app.UseSwagger(Swagger.Configure);
+            _ = app.UseSwaggerUI(Swagger.ConfigureUI);
 
             //app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            _ = app.UseStaticFiles();
 
-            app.UseRouting();
+            _ = app.UseRouting();
 
-            app.UseMiddleware<DiscoverProjectMiddleware>();
+            _ = app.UseMiddleware<DiscoverProjectMiddleware>();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            _ = app.UseAuthentication();
+            _ = app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapJoinHealthChecks();
+            _ = app.UseEndpoints(endpoints =>
+              {
+                  endpoints.MapJoinHealthChecks();
 
-                endpoints.MapControllers();
-                endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-            });
+                  _ = endpoints.MapControllers();
+                  _ = endpoints.MapAreaControllerRoute("Admin_default", "Admin", "Admin/{controller}/{action=Index}/{id?}");
+                  _ = endpoints.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+              });
         }
     }
 }

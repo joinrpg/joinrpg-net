@@ -378,13 +378,13 @@ namespace JoinRpg.Portal.Controllers
                 .ToArrayAsync();
 
             var s = new StringBuilder();
-            s.AppendLine($"{"Id".PadLeft(10, ' ')} {"Paid".PadLeft(10, ' ')} {"Fee".PadLeft(10, ' ')}");
+            _ = s.AppendLine($"{"Id",10} {"Paid",10} {"Fee",10}");
 
             foreach (Claim claim in claims)
             {
-                s.AppendLine($"{claim.ClaimId.ToString().PadLeft(10, ' ')}" +
-                    $" {claim.ClaimBalance().ToString().PadLeft(10, ' ')}" +
-                    $" {claim.ClaimTotalFee().ToString().PadLeft(10, ' ')}");
+                _ = s.AppendLine($"{claim.ClaimId,10}" +
+                    $" {claim.ClaimBalance(),10}" +
+                    $" {claim.ClaimTotalFee(),10}");
             }
 
             return Content(s.ToString(), "text/plain", Encoding.ASCII);

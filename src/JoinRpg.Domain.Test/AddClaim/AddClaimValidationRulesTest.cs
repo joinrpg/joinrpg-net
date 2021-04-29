@@ -61,14 +61,14 @@ namespace JoinRpg.Domain.Test.AddClaim
         [Fact]
         public void CantSendClaimIfCharacterHasCheckedInClaim()
         {
-            Mock.CreateCheckedInClaim(Mock.Character, Mock.Master);
+            _ = Mock.CreateCheckedInClaim(Mock.Character, Mock.Master);
             ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.Busy);
         }
 
         [Fact]
         public void CantSendClaimToSameGroup()
         {
-            Mock.CreateClaim(Mock.Group, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Group, Mock.Player);
             ShouldBeNotAllowed(Mock.Group, AddClaimForbideReason.AlreadySent);
         }
 
@@ -76,14 +76,14 @@ namespace JoinRpg.Domain.Test.AddClaim
         public void AllowSendClaimToSameGroupIfProjectSettingsAllows()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateClaim(Mock.Group, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Group, Mock.Player);
             ShouldBeAllowed(Mock.Group);
         }
 
         [Fact]
         public void CantSendClaimToSameCharacter()
         {
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.AlreadySent);
         }
 
@@ -91,14 +91,14 @@ namespace JoinRpg.Domain.Test.AddClaim
         public void CantSendClaimToSameCharacterEvenProjectSettingsAllowsMultiple()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             ShouldBeNotAllowed(Mock.Character, AddClaimForbideReason.AlreadySent);
         }
 
         [Fact]
         public void CantSendClaimIfHasApproved()
         {
-            Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
             ShouldBeNotAllowed(Mock.Group, AddClaimForbideReason.OnlyOneCharacter);
         }
 
@@ -106,14 +106,14 @@ namespace JoinRpg.Domain.Test.AddClaim
         public void AllowSendClaimEvenIfHasApprovedAccordingToSettings()
         {
             Mock.Project.Details.EnableManyCharacters = true;
-            Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateApprovedClaim(Mock.Character, Mock.Player);
             ShouldBeAllowed(Mock.Group);
         }
 
         [Fact]
         public void AllowSendClaimEvenIfHasAnotherNotApproved()
         {
-            Mock.CreateClaim(Mock.Character, Mock.Player);
+            _ = Mock.CreateClaim(Mock.Character, Mock.Player);
             ShouldBeAllowed(Mock.Group);
         }
 

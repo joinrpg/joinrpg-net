@@ -9,7 +9,7 @@ namespace JoinRpg.Markdown
     internal class DoNothingLinkRenderer : ILinkRenderer
     {
         /// <inheritdoc />
-        public IEnumerable<string> LinkTypesToMatch { get; } = new string[] { };
+        public IEnumerable<string> LinkTypesToMatch { get; } = Array.Empty<string>();
 
         /// <inheritdoc />
         public string Render(string match, int index, string extra) => throw new NotSupportedException();
@@ -17,7 +17,7 @@ namespace JoinRpg.Markdown
         /// <summary>
         /// Instance copy to avoid allocations
         /// </summary>
-        public static readonly DoNothingLinkRenderer Instance = new DoNothingLinkRenderer();
+        public static readonly DoNothingLinkRenderer Instance = new();
 
         /// <summary>
         /// Private ctor (we will need only one copy)

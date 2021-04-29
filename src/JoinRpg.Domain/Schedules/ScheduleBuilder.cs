@@ -74,7 +74,7 @@ namespace JoinRpg.Domain.Schedules
         {
             if (!slots.Any())
             {
-                NotScheduled.Add(programItem);
+                _ = NotScheduled.Add(programItem);
                 return;
             }
 
@@ -84,10 +84,10 @@ namespace JoinRpg.Domain.Schedules
 
             if (conflicts.Any())
             {
-                Conflicted.Add(programItem);
+                _ = Conflicted.Add(programItem);
                 foreach (var conflict in conflicts)
                 {
-                    Conflicted.Add(conflict);
+                    _ = Conflicted.Add(conflict);
                 }
             }
             else
@@ -113,7 +113,7 @@ namespace JoinRpg.Domain.Schedules
                 var indexes = (from item in items where variantIds.Contains(item.Id) select item.SeqId).ToList();
                 if (indexes.Count < variantIds.Count) // Some variants not found, probably deleted
                 {
-                    NotScheduled.Add(programItem);
+                    _ = NotScheduled.Add(programItem);
                 }
 
                 return indexes;
@@ -155,7 +155,7 @@ namespace JoinRpg.Domain.Schedules
         {
             return new ProgramItem(character);
             {
-               
+
             };
         }
     }

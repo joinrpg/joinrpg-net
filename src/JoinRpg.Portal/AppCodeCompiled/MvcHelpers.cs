@@ -165,6 +165,6 @@ namespace JoinRpg.Portal
             return count + " " + @selected;
         }
 
-        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new HtmlString(request.Scheme + "://" + request.Host);
+        public static HtmlString GetFullHostName(this IHtmlHelper self, HttpRequest request) => new(request.Scheme + "://" + request.Host);
     }
 }

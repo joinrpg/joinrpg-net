@@ -8,7 +8,7 @@ namespace JoinRpg.Services.Export.BackEnds
 {
     internal class ClosedXmlExcelBackend : ExcelBackendBase
     {
-        private readonly Regex _invalidCharactersRegex = new Regex("[\x00-\x08\x0B\x0C\x0E-\x1F]");
+        private readonly Regex _invalidCharactersRegex = new("[\x00-\x08\x0B\x0C\x0E-\x1F]");
         private IXLWorksheet Sheet { get; }
 
         public ClosedXmlExcelBackend()
@@ -23,16 +23,16 @@ namespace JoinRpg.Services.Export.BackEnds
             var uri = cell.Content as Uri;
             if (cell.Content is DateTime)
             {
-                xlCell.SetValue((DateTime)cell.Content);
+                _ = xlCell.SetValue((DateTime)cell.Content);
             }
             else if (uri != null)
             {
-                xlCell.SetValue(uri.PathAndQuery);
+                _ = xlCell.SetValue(uri.PathAndQuery);
                 xlCell.Hyperlink.ExternalAddress = uri;
             }
             else
             {
-                xlCell.SetValue(_invalidCharactersRegex.Replace(cell.Content?.ToString() ?? "", ""));
+                _ = xlCell.SetValue(_invalidCharactersRegex.Replace(cell.Content?.ToString() ?? "", ""));
             }
         }
 

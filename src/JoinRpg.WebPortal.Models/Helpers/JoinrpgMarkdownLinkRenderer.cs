@@ -42,8 +42,8 @@ namespace JoinRpg.Web.Helpers
             var builder = new StringBuilder(groupLink);
             foreach (var character in characters)
             {
-                builder.Append("<br>");
-                builder.Append(CharacterImpl(character));
+                _ = builder.Append("<br>");
+                _ = builder.Append(CharacterImpl(character));
             }
             return $"<p>{builder}</p>";
         }

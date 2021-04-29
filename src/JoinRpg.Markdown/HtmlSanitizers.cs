@@ -6,10 +6,10 @@ namespace JoinRpg.Markdown
 {
     internal static class HtmlSanitizers
     {
-        private static readonly Lazy<HtmlSanitizer> SimpleHtml5Sanitizer = new Lazy<HtmlSanitizer>(InitHtml5Sanitizer);
+        private static readonly Lazy<HtmlSanitizer> SimpleHtml5Sanitizer = new(InitHtml5Sanitizer);
         public static IHtmlSanitizer Simple { get; } = SimpleHtml5Sanitizer.Value;
 
-        private static readonly Lazy<HtmlSanitizer> RemoveAllHtmlSanitizer = new Lazy<HtmlSanitizer>(InitRemoveSanitizer);
+        private static readonly Lazy<HtmlSanitizer> RemoveAllHtmlSanitizer = new(InitRemoveSanitizer);
         public static IHtmlSanitizer RemoveAll { get; } = RemoveAllHtmlSanitizer.Value;
 
         private static HtmlSanitizer InitRemoveSanitizer()
@@ -30,29 +30,29 @@ namespace JoinRpg.Markdown
 
             void FlattenTag(string s)
             {
-                htmlSanitizer.Tag(s).Operation(SanitizerOperation.FlattenTag);
+                _ = htmlSanitizer.Tag(s).Operation(SanitizerOperation.FlattenTag);
             }
         }
 
         private static HtmlSanitizer InitHtml5Sanitizer()
         {
             var sanitizer = HtmlSanitizer.SimpleHtml5Sanitizer();
-            sanitizer.Tag("img")
+            _ = sanitizer.Tag("img")
                .CheckAttributeUrl("src")
                .AllowAttributes("height")
                .AllowAttributes("width")
                .AllowAttributes("alt");
-            sanitizer
+            _ = sanitizer
                 .Tag("iframe")
                 .SanitizeAttributes("src", AllowWhiteListedIframeDomains.Default)
                 .AllowAttributes("height")
                 .AllowAttributes("width")
                 .AllowAttributes("frameborder");
-            sanitizer.Tag("hr");
-            sanitizer.Tag("blockquote");
-            sanitizer.Tag("s");
-            sanitizer.Tag("pre");
-            sanitizer.Tag("code");
+            _ = sanitizer.Tag("hr");
+            _ = sanitizer.Tag("blockquote");
+            _ = sanitizer.Tag("s");
+            _ = sanitizer.Tag("pre");
+            _ = sanitizer.Tag("code");
             return sanitizer;
         }
     }

@@ -21,7 +21,7 @@ namespace JoinRpg.Web.Helpers
 
     public static class MagicControlHelper
     {
-        private static readonly Random Random = new Random();
+        private static readonly Random Random = new();
 
 
         private static string GetImplicitGroupString(ShowImplicitGroups showGroups)

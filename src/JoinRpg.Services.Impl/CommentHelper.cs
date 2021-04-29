@@ -48,7 +48,7 @@ namespace JoinRpg.Services.Impl
             commentDiscussion.Comments.Add(comment);
             if (!isVisibleToPlayer)
             {
-                commentDiscussion.RequestMasterAccess(currentUserId);
+                _ = commentDiscussion.RequestMasterAccess(currentUserId);
             }
             //TODO: check access for discussion for players (claims & forums)
             return comment;

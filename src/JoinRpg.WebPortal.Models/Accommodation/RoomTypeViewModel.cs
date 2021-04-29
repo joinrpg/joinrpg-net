@@ -157,7 +157,7 @@ namespace JoinRpg.Web.Models.Accommodation
         }
 
         public ProjectAccommodationType ToEntity()
-            => new ProjectAccommodationType
+            => new()
             {
                 ProjectId = ProjectId,
                 Id = Id,

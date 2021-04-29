@@ -76,7 +76,7 @@ namespace JoinRpg.Web.Models.Plot
             int? currentUserId,
             Character character,
             IUriService uriService) =>
-            new PlotDisplayViewModel(plots,
+            new(plots,
                 currentUserId,
                 character,
                 true,
@@ -147,6 +147,6 @@ namespace JoinRpg.Web.Models.Plot
         public IEnumerable<PlotElementViewModel> Elements { get; }
         public bool HasUnready { get; }
 
-        public static PlotDisplayViewModel Empty() => new PlotDisplayViewModel();
+        public static PlotDisplayViewModel Empty() => new();
     }
 }

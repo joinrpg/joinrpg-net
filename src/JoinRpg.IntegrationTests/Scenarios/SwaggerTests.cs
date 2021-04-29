@@ -17,7 +17,7 @@ namespace JoinRpg.IntegrationTests.Scenarios
 
             var response = await client.GetAsync("swagger/v1/swagger.json");
 
-            response.EnsureSuccessStatusCode();
+            _ = response.EnsureSuccessStatusCode();
         }
     }
 }

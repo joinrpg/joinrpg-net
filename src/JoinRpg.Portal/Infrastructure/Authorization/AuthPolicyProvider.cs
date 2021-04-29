@@ -8,12 +8,10 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
     {
         private DefaultAuthorizationPolicyProvider FallbackPolicyProvider { get; }
 
-        public AuthPolicyProvider(IOptions<AuthorizationOptions> options)
-        {
+        public AuthPolicyProvider(IOptions<AuthorizationOptions> options) =>
             // ASP.NET Core only uses one authorization policy provider, so if the custom implementation
             // doesn't handle all policies it should fall back to an alternate provider.
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
-        }
 
         public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
             => FallbackPolicyProvider.GetFallbackPolicyAsync();

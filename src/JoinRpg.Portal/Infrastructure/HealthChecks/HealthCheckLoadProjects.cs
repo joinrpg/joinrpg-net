@@ -10,10 +10,7 @@ namespace JoinRpg.Portal.Infrastructure.HealthChecks
     {
         private readonly IProjectRepository projectRepository;
 
-        public HealthCheckLoadProjects(IProjectRepository projectRepository)
-        {
-            this.projectRepository = projectRepository;
-        }
+        public HealthCheckLoadProjects(IProjectRepository projectRepository) => this.projectRepository = projectRepository;
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {

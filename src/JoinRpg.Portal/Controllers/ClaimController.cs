@@ -145,7 +145,7 @@ namespace JoinRpg.Portal.Controllers
 
             var plots = claim.IsApproved && claim.Character != null
               ? await _plotRepository.GetPlotsForCharacter(claim.Character).ConfigureAwait(false)
-              : new PlotElement[] { };
+              : Array.Empty<PlotElement>();
 
             IEnumerable<ProjectAccommodationType>? availableAccommodation = null;
             IEnumerable<AccommodationRequest>? requestForAccommodation = null;
@@ -553,7 +553,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
 
-            var claimViewModel = new ClaimViewModel(user, claim, new PlotElement[] { }, UriService);
+            var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService);
 
             await _claimService.SubscribeClaimToUser(projectid, claimid);
             var parents = claim.GetTarget().GetParentGroupsToTop();
@@ -575,7 +575,7 @@ namespace JoinRpg.Portal.Controllers
                 return NotFound();
             }
 
-            var claimViewModel = new ClaimViewModel(user, claim, new PlotElement[] { }, UriService);
+            var claimViewModel = new ClaimViewModel(user, claim, Array.Empty<PlotElement>(), UriService);
 
 
             await _claimService.UnsubscribeClaimToUser(projectid, claimid);
@@ -694,7 +694,7 @@ namespace JoinRpg.Portal.Controllers
                 }
 
 
-                await _claimService.SetAccommodationType(viewModel.ProjectId,
+                _ = await _claimService.SetAccommodationType(viewModel.ProjectId,
                   viewModel.ClaimId,
                   viewModel.AccommodationTypeId).ConfigureAwait(false);
 
@@ -721,7 +721,7 @@ namespace JoinRpg.Portal.Controllers
                 return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             }
 
-            await AccommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
+            _ = await AccommodationInviteService.CreateAccommodationInviteToGroupOrClaim(viewModel.ProjectId,
                 viewModel.ClaimId,
                 viewModel.ReceiverClaimOrAccommodationRequest,
                 viewModel.RequestId,
@@ -745,7 +745,7 @@ namespace JoinRpg.Portal.Controllers
                 return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             }
 
-            await AccommodationInviteService.CancelOrDeclineAccommodationInvite(viewModel.InviteId, viewModel.InviteState).ConfigureAwait(false);
+            _ = await AccommodationInviteService.CancelOrDeclineAccommodationInvite(viewModel.InviteId, viewModel.InviteState).ConfigureAwait(false);
 
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }
@@ -765,7 +765,7 @@ namespace JoinRpg.Portal.Controllers
                 return await Edit(viewModel.ProjectId, viewModel.ClaimId).ConfigureAwait(false);
             }
 
-            await AccommodationInviteService.AcceptAccommodationInvite(viewModel.ProjectId, viewModel.InviteId).ConfigureAwait(false);
+            _ = await AccommodationInviteService.AcceptAccommodationInvite(viewModel.ProjectId, viewModel.InviteId).ConfigureAwait(false);
 
             return RedirectToAction("Edit", "Claim", new { viewModel.ClaimId, viewModel.ProjectId });
         }

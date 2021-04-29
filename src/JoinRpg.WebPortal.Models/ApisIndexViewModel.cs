@@ -13,7 +13,7 @@ namespace JoinRpg.Web.Models
         {
             ProjectId = project.ProjectId;
             RootGroupId = project.RootGroup.CharacterGroupId;
-            project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
+            _ = project.ProjectAcls.Single(acl => acl.UserId == currentUserId).Token.ToHexString();
         }
     }
 }

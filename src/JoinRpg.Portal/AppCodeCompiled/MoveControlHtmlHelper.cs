@@ -34,7 +34,7 @@ namespace JoinRpg.Portal
 
         public static IHtmlContent MoveControl<TModel, TValue>(this IHtmlHelper<TModel> self,
           [InstantHandle] Expression<Func<TModel, TValue>> expression, [AspMvcAction] string actionName)
-            where TValue: IMovableListItem
+            where TValue : IMovableListItem
         {
             var rd = self.ViewContext.RouteData;
             var currentController = rd.GetRequiredString("controller");

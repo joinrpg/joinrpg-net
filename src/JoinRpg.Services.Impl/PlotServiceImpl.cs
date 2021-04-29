@@ -33,7 +33,7 @@ namespace JoinRpg.Services.Impl
             }
 
             var project = await UnitOfWork.GetDbSet<Project>().FindAsync(projectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
             var startTimeUtc = DateTime.UtcNow;
             var plotFolder = new PlotFolder
             {
@@ -71,7 +71,7 @@ namespace JoinRpg.Services.Impl
         {
             var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-            folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            _ = folder.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
             folder.TodoField = todoField;
             folder.IsActive = true; //Restore if deleted
@@ -88,7 +88,7 @@ namespace JoinRpg.Services.Impl
         {
             var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
 
-            folder.RequestMasterAccess(CurrentUserId);
+            _ = folder.RequestMasterAccess(CurrentUserId);
 
             var now = DateTime.UtcNow;
             var characterGroups = await ProjectRepository.LoadGroups(projectId, targetGroups);
@@ -122,7 +122,7 @@ namespace JoinRpg.Services.Impl
 
             folder.ModifiedDateTime = now;
 
-            UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
+            _ = UnitOfWork.GetDbSet<PlotElement>().Add(plotElement);
             await UnitOfWork.SaveChangesAsync();
         }
 
@@ -134,7 +134,7 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
             var now = DateTime.UtcNow;
-            SmartDelete(folder);
+            _ = SmartDelete(folder);
             foreach (var element in folder.Elements)
             {
                 element.IsActive = false;
@@ -147,9 +147,9 @@ namespace JoinRpg.Services.Impl
         public async Task DeleteElement(int projectId, int plotFolderId, int plotelementid)
         {
             var plotElement = await LoadElement(projectId, plotFolderId, plotelementid);
-            plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            _ = plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
 
-            SmartDelete(plotElement);
+            _ = SmartDelete(plotElement);
             plotElement.ModifiedDateTime = DateTime.UtcNow;
             await UnitOfWork.SaveChangesAsync();
         }
@@ -157,7 +157,7 @@ namespace JoinRpg.Services.Impl
         private async Task<PlotElement> LoadElement(int projectId, int plotFolderId, int plotelementid)
         {
             var folder = await LoadProjectSubEntityAsync<PlotFolder>(projectId, plotFolderId);
-            folder.RequestMasterAccess(CurrentUserId);
+            _ = folder.RequestMasterAccess(CurrentUserId);
             return folder.Elements.Single(e => e.PlotElementId == plotelementid);
         }
 
@@ -231,7 +231,7 @@ namespace JoinRpg.Services.Impl
         public async Task MoveElement(int projectId, int plotElementId, int parentCharacterId, int direction)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, parentCharacterId);
-            character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            _ = character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
 
             var plots = await PlotRepository.GetPlotsForCharacter(character);
 
@@ -282,8 +282,8 @@ namespace JoinRpg.Services.Impl
                 var now = DateTime.UtcNow;
                 UpdateElementMetadata(plotElement, now);
             }
-            plotElement.EnsureActive();
-            plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
+            _ = plotElement.EnsureActive();
+            _ = plotElement.RequestMasterAccess(CurrentUserId, acl => acl.CanManagePlots);
             plotElement.IsCompleted = model.Version != null;
             plotElement.Published = model.Version;
             plotElement.ModifiedDateTime = plotElement.PlotFolder.ModifiedDateTime = DateTime.UtcNow;

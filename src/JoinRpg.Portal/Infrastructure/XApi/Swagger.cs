@@ -68,7 +68,7 @@ namespace JoinRpg.Portal.Infrastructure
                     var key = item.Key.ToLower();
                     if (!key.IsApiPath())
                     {
-                        swaggerDoc.Paths.Remove(item.Key);
+                        _ = swaggerDoc.Paths.Remove(item.Key);
                     }
                 }
 

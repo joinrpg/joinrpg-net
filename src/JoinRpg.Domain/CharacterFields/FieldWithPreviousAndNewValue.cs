@@ -12,7 +12,7 @@ namespace JoinRpg.Domain.CharacterFields
         public string? PreviousValue { get; private set; }
 
         public string PreviousDisplayString =>
-          GetDisplayValue(PreviousValue, Field.HasValueList() ? PreviousValue.ToIntList() : new int[0]);
+          GetDisplayValue(PreviousValue, Field.HasValueList() ? PreviousValue.ToIntList() : System.Array.Empty<int>());
 
         public FieldWithPreviousAndNewValue(
           ProjectField field,

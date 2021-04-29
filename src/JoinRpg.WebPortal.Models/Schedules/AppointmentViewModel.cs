@@ -41,8 +41,8 @@ namespace JoinRpg.Web.Models.Schedules
         public bool ErrorMode { get; set; }
         public AppointmentErrorType? ErrorType { get; set; }
 
-        public IReadOnlyCollection<TableHeaderViewModel> Rooms { get; set; } = new TableHeaderViewModel[] { };
-        public IReadOnlyCollection<TableHeaderViewModel> Slots { get; set; } = new TableHeaderViewModel[] { };
+        public IReadOnlyCollection<TableHeaderViewModel> Rooms { get; set; } = Array.Empty<TableHeaderViewModel>();
+        public IReadOnlyCollection<TableHeaderViewModel> Slots { get; set; } = Array.Empty<TableHeaderViewModel>();
 
         private readonly Lazy<Rect> _bounds;
 

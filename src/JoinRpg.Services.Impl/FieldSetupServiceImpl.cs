@@ -22,7 +22,7 @@ namespace JoinRpg.Services.Impl
         {
             var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             if (project.GetTimeSlotFieldOrDefault() != null && request.FieldType == ProjectFieldType.ScheduleTimeSlotField)
             {
@@ -49,7 +49,7 @@ namespace JoinRpg.Services.Impl
             project.Details.ScheduleEnabled =
                 project.GetTimeSlotFieldOrDefault() is not null && project.GetRoomFieldOrDefault() is not null;
 
-            UnitOfWork.GetDbSet<ProjectField>().Add(field);
+            _ = UnitOfWork.GetDbSet<ProjectField>().Add(field);
             await UnitOfWork.SaveChangesAsync();
         }
 
@@ -58,7 +58,7 @@ namespace JoinRpg.Services.Impl
         {
             var field = await ProjectRepository.GetProjectField(request.ProjectId, request.ProjectFieldId);
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             // If we are changing field.CanPlayerEdit, we should update variants to match
             if (field.CanPlayerEdit != request.CanPlayerEdit)
@@ -114,7 +114,7 @@ namespace JoinRpg.Services.Impl
         /// <param name="field">Field to delete</param>
         private async Task DeleteField(ProjectField field)
         {
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
             if (field.IsName())
             {
                 throw new JoinRpgNameFieldDeleteException(field);
@@ -133,7 +133,7 @@ namespace JoinRpg.Services.Impl
             var characterGroup = field.CharacterGroup; // SmartDelete will nullify all depend properties
             if (SmartDelete(field))
             {
-                SmartDelete(characterGroup);
+                _ = SmartDelete(characterGroup);
             }
             else if (characterGroup != null)
             {
@@ -150,7 +150,7 @@ namespace JoinRpg.Services.Impl
         {
             var field = await ProjectRepository.GetProjectField(request.ProjectId, request.ProjectFieldId);
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             CreateFieldValueVariantImpl(request, field);
 
@@ -164,7 +164,7 @@ namespace JoinRpg.Services.Impl
                 request.ProjectFieldId,
                 request.ProjectFieldDropdownValueId);
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             SetFieldVariantPropsFromRequest(request, field);
 
@@ -313,7 +313,7 @@ namespace JoinRpg.Services.Impl
         public async Task<ProjectFieldDropdownValue> DeleteFieldValueVariant(int projectId, int projectFieldId, int valueId)
         {
             var value = await ProjectRepository.GetFieldValue(projectId, projectFieldId, valueId);
-            value.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = value.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
             DeleteFieldVariantValueImpl(value);
             await UnitOfWork.SaveChangesAsync();
             return value;
@@ -324,7 +324,7 @@ namespace JoinRpg.Services.Impl
             var characterGroup = value.CharacterGroup; // SmartDelete will nullify all depend properties
             if (SmartDelete(value))
             {
-                SmartDelete(characterGroup);
+                _ = SmartDelete(characterGroup);
             }
             else
             {
@@ -338,7 +338,7 @@ namespace JoinRpg.Services.Impl
         public async Task MoveField(int projectId, int projectcharacterfieldid, short direction)
         {
             var field = await ProjectRepository.GetProjectField(projectId, projectcharacterfieldid);
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             field.Project.Details.FieldsOrdering
                 = field.Project.GetFieldsContainer().Move(field, direction).GetStoredOrder();
@@ -348,7 +348,7 @@ namespace JoinRpg.Services.Impl
         public async Task MoveFieldVariant(int projectid, int projectFieldId, int projectFieldVariantId, short direction)
         {
             var field = await ProjectRepository.GetProjectField(projectid, projectFieldId);
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             field.ValuesOrdering =
               field.GetFieldValuesContainer()
@@ -362,7 +362,7 @@ namespace JoinRpg.Services.Impl
         {
             var field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             foreach (var label in valuesToAdd.Split('\n').Select(v => v.Trim()).Where(v => !string.IsNullOrEmpty(v)))
             {
@@ -390,7 +390,7 @@ namespace JoinRpg.Services.Impl
               ? null
               : await ProjectRepository.GetProjectField(projectId, (int)afterFieldId);
 
-            field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             field.Project.Details.FieldsOrdering
                 = field.Project.GetFieldsContainer().MoveAfter(field, afterField).GetStoredOrder();
@@ -402,7 +402,7 @@ namespace JoinRpg.Services.Impl
         {
             var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
 
             project.Details.CharacterNameLegacyMode = request.LegacyModelEnabled;
             project.Details.CharacterNameField = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.NameField);

@@ -54,8 +54,8 @@ namespace Joinrpg.Web.Identity
                 dbUser.Auth.IsAdmin = true;
             }
 
-            _ctx.UserSet.Add(dbUser);
-            await _ctx.SaveChangesAsync(ct);
+            _ = _ctx.UserSet.Add(dbUser);
+            _ = await _ctx.SaveChangesAsync(ct);
             user.Id = dbUser.UserId;
         }
 
@@ -66,7 +66,7 @@ namespace Joinrpg.Web.Identity
             dbUser.Email = user.UserName;
             dbUser.Auth.EmailConfirmed = user.EmaiLConfirmed;
             dbUser.PasswordHash = user.PasswordHash;
-            await _ctx.SaveChangesAsync(ct);
+            _ = await _ctx.SaveChangesAsync(ct);
         }
 
         private async Task SetUserNameImpl(JoinIdentityUser user, string email, CancellationToken ct = default)
@@ -74,7 +74,7 @@ namespace Joinrpg.Web.Identity
             var dbUser = await LoadUser(user, ct);
             dbUser.Email = email;
             dbUser.UserName = email;
-            await _ctx.SaveChangesAsync(ct);
+            _ = await _ctx.SaveChangesAsync(ct);
         }
 
         [ItemCanBeNull]

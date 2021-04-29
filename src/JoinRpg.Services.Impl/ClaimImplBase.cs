@@ -51,13 +51,13 @@ namespace JoinRpg.Services.Impl
         protected async Task<FinanceOperationEmail> AcceptFeeImpl(string contents, DateTime operationDate, int feeChange,
         int money, PaymentType paymentType, Claim claim)
         {
-            paymentType.EnsureActive();
+            _ = paymentType.EnsureActive();
 
             CheckOperationDate(operationDate);
 
             if (feeChange != 0 || money < 0)
             {
-                claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
             }
             var state = FinanceOperationState.Approved;
 
@@ -70,7 +70,7 @@ namespace JoinRpg.Services.Impl
                 }
                 else
                 {
-                    claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    _ = claim.RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
                 }
             }
 

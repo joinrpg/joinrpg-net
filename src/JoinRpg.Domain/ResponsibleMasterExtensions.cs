@@ -27,7 +27,7 @@ namespace JoinRpg.Domain
             while (lookupGroups.Any())
             {
                 var currentGroup = lookupGroups.First();
-                lookupGroups.Remove(currentGroup); //Get next group
+                _ = lookupGroups.Remove(currentGroup); //Get next group
 
                 if (removedGroups.Contains(currentGroup) || candidates.Contains(currentGroup))
                 {
@@ -36,7 +36,7 @@ namespace JoinRpg.Domain
 
                 if (currentGroup.ResponsibleMasterUserId != null)
                 {
-                    candidates.Add(currentGroup);
+                    _ = candidates.Add(currentGroup);
                     removedGroups.UnionWith(currentGroup.FlatTree(c => c.ParentGroups, includeSelf: false));
                     //Some group with set responsible master will shadow out all parents.
                 }

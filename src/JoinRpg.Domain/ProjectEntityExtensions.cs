@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using JoinRpg.DataModel;
-using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 using MustUseReturnValueAttribute = JetBrains.Annotations.MustUseReturnValueAttribute;
+using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 using PureAttribute = JetBrains.Annotations.PureAttribute;
 
 namespace JoinRpg.Domain

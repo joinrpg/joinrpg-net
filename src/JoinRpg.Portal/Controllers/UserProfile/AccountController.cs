@@ -379,7 +379,7 @@ namespace JoinRpg.Portal.Controllers
                 var user = await UserManager.FindByEmailAsync(email);
                 if (user != null)
                 {
-                    await UserManager.AddLoginAsync(user, loginInfo);
+                    _ = await UserManager.AddLoginAsync(user, loginInfo);
                     result = await SignInManager.ExternalLoginSignInAsync(loginInfo.LoginProvider, loginInfo.ProviderKey, isPersistent: true);
                     if (result.Succeeded)
                     {

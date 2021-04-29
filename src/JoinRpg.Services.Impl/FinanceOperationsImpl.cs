@@ -61,7 +61,7 @@ namespace JoinRpg.Services.Impl
             // Checking access rights of the current user
             if (!IsCurrentUserAdmin)
             {
-                project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
             }
 
             // Preparing master Id and checking if the same payment type already created
@@ -73,7 +73,7 @@ namespace JoinRpg.Services.Impl
                     throw new ArgumentNullException(nameof(request.TargetMasterId), @"Target master must be specified");
                 }
 
-                project.RequestMasterAccess(request.TargetMasterId);
+                _ = project.RequestMasterAccess(request.TargetMasterId);
                 // Cash payment could be only one
                 if (request.TypeKind == PaymentTypeKind.Cash
                     && project.PaymentTypes.Any(pt => pt.UserId == request.TargetMasterId && pt.TypeKind == PaymentTypeKind.Cash))
@@ -125,7 +125,7 @@ namespace JoinRpg.Services.Impl
                 case PaymentTypeKind.Cash:
                     if (!IsCurrentUserAdmin)
                     {
-                        project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                        _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
                     }
 
                     break;
@@ -135,7 +135,7 @@ namespace JoinRpg.Services.Impl
                         // Regular master with finance management permissions can disable online payments
                         if (paymentType.IsActive)
                         {
-                            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
                         }
                         // ...but to enable them back he must have admin permissions
                         else
@@ -150,7 +150,7 @@ namespace JoinRpg.Services.Impl
 
             if (paymentType.IsActive)
             {
-                SmartDelete(paymentType);
+                _ = SmartDelete(paymentType);
             }
             else
             {
@@ -166,7 +166,7 @@ namespace JoinRpg.Services.Impl
             bool isDefault)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(projectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
             var paymentType = project.PaymentTypes.Single(pt => pt.PaymentTypeId == paymentTypeId);
 
@@ -193,7 +193,7 @@ namespace JoinRpg.Services.Impl
         public async Task CreateFeeSetting(CreateFeeSettingRequest request)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
             if (request.StartDate < DateTime.UtcNow.Date.AddDays(-1))
             {
@@ -222,7 +222,7 @@ namespace JoinRpg.Services.Impl
         public async Task DeleteFeeSetting(int projectid, int projectFeeSettingId)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(projectid);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
             var feeSetting =
                 project.ProjectFeeSettings.Single(pt =>
@@ -233,7 +233,7 @@ namespace JoinRpg.Services.Impl
                 throw new CannotPerformOperationInPast();
             }
 
-            UnitOfWork.GetDbSet<ProjectFeeSetting>().Remove(feeSetting);
+            _ = UnitOfWork.GetDbSet<ProjectFeeSetting>().Remove(feeSetting);
 
             await UnitOfWork.SaveChangesAsync();
         }
@@ -244,7 +244,7 @@ namespace JoinRpg.Services.Impl
 
                 .RequestAccess(CurrentUserId, acl => acl.CanManageMoney);
 
-            AddCommentImpl(claim,
+            _ = AddCommentImpl(claim,
                 null,
                 feeValue.ToString(),
                 isVisibleToPlayer: true,
@@ -262,7 +262,7 @@ namespace JoinRpg.Services.Impl
         public async Task SaveGlobalSettings(SetFinanceSettingsRequest request)
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
 
             project.Details.FinanceWarnOnOverPayment = request.WarnOnOverPayment;
             project.Details.PreferentialFeeEnabled = request.PreferentialFeeEnabled;
@@ -353,7 +353,7 @@ namespace JoinRpg.Services.Impl
                 Changed = Now,
                 State = FinanceOperationState.Approved,
             };
-            UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
+            _ = UnitOfWork.GetDbSet<Comment>().Add(commentFrom);
 
             // Comment to destination claim
             Comment commentTo = CommentHelper.CreateCommentForDiscussion(
@@ -411,7 +411,7 @@ namespace JoinRpg.Services.Impl
             }
 
             // Adding comments
-            await AddTransferCommentsAsync(
+            _ = await AddTransferCommentsAsync(
                 claimFrom,
                 claimTo,
                 request);
@@ -429,9 +429,9 @@ namespace JoinRpg.Services.Impl
         {
             var project = await ProjectRepository.GetProjectForFinanceSetup(request.ProjectId);
 
-            project.RequestMasterAccess(CurrentUserId);
-            project.RequestMasterAccess(request.Sender);
-            project.RequestMasterAccess(request.Receiver);
+            _ = project.RequestMasterAccess(CurrentUserId);
+            _ = project.RequestMasterAccess(request.Sender);
+            _ = project.RequestMasterAccess(request.Receiver);
 
             if (request.Sender == request.Receiver)
             {
@@ -440,7 +440,7 @@ namespace JoinRpg.Services.Impl
 
             if (request.Sender != CurrentUserId && request.Receiver != CurrentUserId)
             {
-                project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
             }
 
             CheckOperationDate(request.OperationDate);
@@ -495,7 +495,7 @@ namespace JoinRpg.Services.Impl
                 .Include(transfer => transfer.Receiver)
                 .SingleAsync(transfer => transfer.Id == request.MoneyTranferId &&
                                     transfer.ProjectId == request.ProjectId);
-            moneyTransfer.RequestMasterAccess(CurrentUserId);
+            _ = moneyTransfer.RequestMasterAccess(CurrentUserId);
 
             switch (moneyTransfer.ResultState)
             {
@@ -522,7 +522,7 @@ namespace JoinRpg.Services.Impl
                     break;
 
                 default: //admin tries to approve with superpowers
-                    moneyTransfer.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
+                    _ = moneyTransfer.RequestMasterAccess(CurrentUserId, acl => acl.CanManageMoney);
                     moneyTransfer.ResultState = request.Approved
                         ? MoneyTransferState.Approved
                         : MoneyTransferState.Declined;

@@ -25,10 +25,7 @@ namespace JoinRpg.Services.Impl
             ICurrentUserAccessor currentUserAccessor,
             ILogger<UserServiceImpl> logger
             )
-            : base(unitOfWork, currentUserAccessor)
-        {
-            this.logger = logger;
-        }
+            : base(unitOfWork, currentUserAccessor) => this.logger = logger;
 
         /// <inheritdoc />
         public async Task UpdateProfile(int userId,

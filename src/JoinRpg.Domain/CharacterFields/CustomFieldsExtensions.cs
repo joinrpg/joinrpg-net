@@ -160,14 +160,12 @@ namespace JoinRpg.Domain
                 throw new ArgumentNullException(nameof(entityWithFields));
             }
 
-            var claim = entityWithFields as Claim;
-            var character = entityWithFields as Character;
 
-            if (claim != null)
+            if (entityWithFields is Claim claim)
             {
                 return new AccessArguments(claim, userId);
             }
-            if (character != null)
+            if (entityWithFields is Character character)
             {
                 return new AccessArguments(character, userId);
             }

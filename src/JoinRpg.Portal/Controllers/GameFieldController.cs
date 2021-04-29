@@ -204,7 +204,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
+                _ = await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
                 return ReturnToIndex();
             }
@@ -323,7 +323,7 @@ namespace JoinRpg.Portal.Controllers
                     return NotFound();
                 }
 
-                await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
+                _ = await FieldSetupService.DeleteFieldValueVariant(value.ProjectId, value.ProjectFieldId, value.ProjectFieldDropdownValueId);
                 return value.IsActive
                     ? Ok()
                     : StatusCode(250);

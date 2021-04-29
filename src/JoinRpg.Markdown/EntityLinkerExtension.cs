@@ -10,15 +10,7 @@ namespace JoinRpg.Markdown
         [NotNull]
         private ILinkRenderer LinkRenderers { get; }
 
-        public EntityLinkerExtension([NotNull] ILinkRenderer linkRenderers)
-        {
-            if (linkRenderers == null)
-            {
-                throw new ArgumentNullException(nameof(linkRenderers));
-            }
-
-            LinkRenderers = linkRenderers;
-        }
+        public EntityLinkerExtension([NotNull] ILinkRenderer linkRenderers) => LinkRenderers = linkRenderers ?? throw new ArgumentNullException(nameof(linkRenderers));
 
         #region Implementation of IMarkdownExtension
 

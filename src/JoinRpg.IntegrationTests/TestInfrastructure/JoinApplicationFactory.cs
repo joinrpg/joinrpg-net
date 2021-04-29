@@ -20,7 +20,7 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
                 .UseEnvironment("IntegrationTest")
                 .ConfigureContainer<ContainerBuilder>(containerBuilder =>
                 {
-                    containerBuilder
+                    _ = containerBuilder
                         .RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
                         .Where(IsStub)
                         .AsSelf()
@@ -37,13 +37,13 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             base.ConfigureWebHost(builder);
-            builder.UseTestServer();
+            _ = builder.UseTestServer();
         }
 
         protected override void Dispose(bool disposing)
         {
             var context = Services.GetRequiredService<MyDbContext>();
-            context.Database.Delete();
+            _ = context.Database.Delete();
             base.Dispose(disposing);
         }
     }

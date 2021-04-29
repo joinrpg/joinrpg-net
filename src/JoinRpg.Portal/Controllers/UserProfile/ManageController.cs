@@ -175,7 +175,7 @@ namespace JoinRpg.Portal.Controllers
 
             var model = new EditUserProfileViewModel()
             {
-                SurName = user.SurName?? "",
+                SurName = user.SurName ?? "",
                 UserId = user.UserId,
                 FatherName = user.FatherName ?? "",
                 BornName = user.BornName ?? "",
@@ -221,7 +221,7 @@ namespace JoinRpg.Portal.Controllers
                   );
                 var userId = CurrentUserAccessor.UserId;
                 var user = await UserManager.FindByIdAsync(userId.ToString());
-                await UserManager.UpdateSecurityStampAsync(user);
+                _ = await UserManager.UpdateSecurityStampAsync(user);
                 if (viewModel.LastClaimId == null || viewModel.LastClaimProjectId == null)
                 {
                     return RedirectToAction("SetupProfile");

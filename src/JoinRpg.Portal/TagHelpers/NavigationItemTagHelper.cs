@@ -24,12 +24,12 @@ namespace JoinRpg.Portal.TagHelpers
             var hrefAttr = output.Attributes.FirstOrDefault(a => a.Name == "href");
             if (hrefAttr != null)
             {
-                output.Content.SetHtmlContent($@"<a href=""{hrefAttr.Value}"">{content}</a>");
-                output.Attributes.Remove(hrefAttr);
+                _ = output.Content.SetHtmlContent($@"<a href=""{hrefAttr.Value}"">{content}</a>");
+                _ = output.Attributes.Remove(hrefAttr);
             }
             else
             {
-                output.Content.SetHtmlContent(content);
+                _ = output.Content.SetHtmlContent(content);
             }
 
             if (ShouldBeActive())

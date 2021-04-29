@@ -35,7 +35,7 @@ namespace JoinRpg.Web.Models.Subscribe
             var direct = user.Subscriptions.SingleOrDefault(s => s.ClaimId == claim.ClaimId);
             if (direct != null)
             {
-                Options.AssignFrom(direct);
+                _ = Options.AssignFrom(direct);
             }
             else
             {
@@ -50,7 +50,7 @@ namespace JoinRpg.Web.Models.Subscribe
         {
             if (direct != null)
             {
-                Options.AssignFrom(direct);
+                _ = Options.AssignFrom(direct);
             }
 
             foreach (var characterGroup in group.ParentGroups)
@@ -67,9 +67,9 @@ namespace JoinRpg.Web.Models.Subscribe
             if (subscribe != null)
             {
                 //Set what set in parent
-                Options.OrSetIn(subscribe);
+                _ = Options.OrSetIn(subscribe);
                 //Disable edit if set in parent
-                DisabledFlags.OrSetIn(subscribe);
+                _ = DisabledFlags.OrSetIn(subscribe);
 
                 if (DisabledFlags.AllSet)
                 {

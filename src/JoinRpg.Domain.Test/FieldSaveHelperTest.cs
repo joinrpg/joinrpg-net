@@ -21,7 +21,7 @@ namespace JoinRpg.Domain.Test
             var mock = new MockedProject();
             var claim = mock.CreateClaim(mock.Character, mock.Player);
             // ReSharper disable once MustUseReturnValue
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -47,15 +47,15 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
 
-            Should.Throw<NoAccessToProjectException>(() =>
-                FieldSaveHelper.SaveCharacterFields(
-                    mock.Player.UserId,
-                    mock.CreateClaim(mock.Character, mock.Player),
-                    new Dictionary<int, string?>()
-                    {
+            _ = Should.Throw<NoAccessToProjectException>(() =>
+                  FieldSaveHelper.SaveCharacterFields(
+                      mock.Player.UserId,
+                      mock.CreateClaim(mock.Character, mock.Player),
+                      new Dictionary<int, string?>()
+                      {
                         {mock.MasterOnlyField.ProjectFieldId, "test"},
-                    },
-                    _generator));
+                      },
+                      _generator));
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace JoinRpg.Domain.Test
 
             MockedProject.AssignFieldValues(claim, publicField);
 
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -92,7 +92,7 @@ namespace JoinRpg.Domain.Test
             var mock = new MockedProject();
             var publicField = new FieldWithValue(mock.PublicField, "Public");
             MockedProject.AssignFieldValues(mock.Character, publicField);
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Master.UserId,
                 mock.Character,
                 new Dictionary<int, string?>()
@@ -113,7 +113,7 @@ namespace JoinRpg.Domain.Test
             var mock = new MockedProject();
             var claim = mock.CreateApprovedClaim(mock.Character, mock.Player);
 
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -136,7 +136,7 @@ namespace JoinRpg.Domain.Test
             var claim = mock.CreateClaim(mock.Character, mock.Player);
             var conditionalField = mock.CreateConditionalField();
 
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -161,7 +161,7 @@ namespace JoinRpg.Domain.Test
             var claim = mock.CreateClaim(mock.Group, mock.Player);
             var conditionalField = mock.CreateConditionalField();
 
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -185,15 +185,15 @@ namespace JoinRpg.Domain.Test
             var mock = new MockedProject();
             var claim = mock.CreateClaim(mock.Group, mock.Player);
 
-            Should.Throw<NoAccessToProjectException>(() =>
-                FieldSaveHelper.SaveCharacterFields(
-                    mock.Player.UserId,
-                    claim,
-                    new Dictionary<int, string?>()
-                    {
+            _ = Should.Throw<NoAccessToProjectException>(() =>
+                  FieldSaveHelper.SaveCharacterFields(
+                      mock.Player.UserId,
+                      claim,
+                      new Dictionary<int, string?>()
+                      {
                         {mock.HideForUnApprovedClaim.ProjectFieldId, "test"},
-                    },
-                    _generator));
+                      },
+                      _generator));
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
             var claim = mock.CreateClaim(mock.Character, mock.Player);
-            FieldSaveHelper.SaveCharacterFields(
+            _ = FieldSaveHelper.SaveCharacterFields(
                 mock.Player.UserId,
                 claim,
                 new Dictionary<int, string?>()
@@ -229,15 +229,15 @@ namespace JoinRpg.Domain.Test
             _generator = new MockedFieldDefaultValueGenerator();
             var mock = new MockedProject();
 
-            Should.Throw<NoAccessToProjectException>(() =>
-                FieldSaveHelper.SaveCharacterFields(
-                    mock.Player.UserId,
-                    mock.Character,
-                    new Dictionary<int, string?>()
-                    {
+            _ = Should.Throw<NoAccessToProjectException>(() =>
+                  FieldSaveHelper.SaveCharacterFields(
+                      mock.Player.UserId,
+                      mock.Character,
+                      new Dictionary<int, string?>()
+                      {
                         {mock.CharacterField.ProjectFieldId, "test"},
-                    },
-                    _generator));
+                      },
+                      _generator));
         }
 
         [Fact]

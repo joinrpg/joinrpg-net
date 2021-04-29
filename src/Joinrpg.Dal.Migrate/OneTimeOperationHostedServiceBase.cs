@@ -32,7 +32,7 @@ namespace Joinrpg.Dal.Migrate
                 {
                     applicationLifetime.StopApplication();
                 }
-            });
+            }, CancellationToken.None);
             return Task.CompletedTask;
         }
 

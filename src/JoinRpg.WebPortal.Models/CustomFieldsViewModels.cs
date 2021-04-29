@@ -230,12 +230,12 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Sum of fields fees
         /// </summary>
-        public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new Dictionary<FieldBoundToViewModel, int>();
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldsFee = new();
 
         /// <summary>
         /// Total number of fields with fee
         /// </summary>
-        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new Dictionary<FieldBoundToViewModel, int>();
+        public readonly Dictionary<FieldBoundToViewModel, int> FieldWithFeeCount = new();
 
         /// <summary>
         /// Returns true if there is at least one field with fee
@@ -289,7 +289,7 @@ namespace JoinRpg.Web.Models
             var fieldsList = target.Project.GetFieldsNotFilled();
             if (target is Character character)
             {
-                fieldsList.FillIfEnabled(claim: null, character: character);
+                _ = fieldsList.FillIfEnabled(claim: null, character: character);
             }
             Fields =
               fieldsList

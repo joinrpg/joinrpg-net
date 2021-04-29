@@ -84,6 +84,6 @@ namespace JoinRpg.Web.Helpers
 
         public string Get(ILinkable link) => GetUri(link).ToString();
 
-        public Uri GetUri(ILinkable link) => new Uri(GetRouteTarget(link, urlHelper.Value));
+        public Uri GetUri(ILinkable link) => new(GetRouteTarget(link, urlHelper.Value));
     }
 }

@@ -24,7 +24,7 @@ namespace JoinRpg.Domain.Test
         public void ShouldBeAbleToCalculatePricing(ProjectFieldType projectFieldType)
         {
             var fieldWithValue = new FieldWithValue(new ProjectField { FieldType = projectFieldType }, null);
-            Should.NotThrow(() => fieldWithValue.GetCurrentFee());
+            _ = Should.NotThrow(() => fieldWithValue.GetCurrentFee());
         }
 
         // ReSharper disable once MemberCanBePrivate.Global xUnit requirements

@@ -49,8 +49,8 @@ namespace JoinRpg.Helpers.Web
                 throw new ArgumentNullException(nameof(context));
             }
 
-            MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-enforcetrue", ErrorMessage);
+            _ = MergeAttribute(context.Attributes, "data-val", "true");
+            _ = MergeAttribute(context.Attributes, "data-val-enforcetrue", ErrorMessage);
         }
     }
 }

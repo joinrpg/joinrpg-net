@@ -10,15 +10,15 @@ namespace JoinRpg.Portal.Infrastructure.HealthChecks
     {
         internal static void MapJoinHealthChecks(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.MapHealthChecks("/health",
+            _ = endpoints.MapHealthChecks("/health",
                 new HealthCheckOptions { ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse })
                 .WithMetadata(new AllowAnonymousAttribute());
-            endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
+            _ = endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
             {
                 Predicate = (check) => check.Tags.Contains("ready"), //TODO m.b. add some probes
             }).WithMetadata(new AllowAnonymousAttribute());
 
-            endpoints.MapHealthChecks("/health/live", new HealthCheckOptions()
+            _ = endpoints.MapHealthChecks("/health/live", new HealthCheckOptions()
             {
                 Predicate = (_) => false
             }).WithMetadata(new AllowAnonymousAttribute());

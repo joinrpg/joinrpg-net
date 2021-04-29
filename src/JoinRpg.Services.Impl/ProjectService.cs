@@ -60,7 +60,7 @@ namespace JoinRpg.Services.Impl
             MarkTreeModified(project);
             ConfigureProjectDefaults(project, request.ProjectType);
 
-            UnitOfWork.GetDbSet<Project>().Add(project);
+            _ = UnitOfWork.GetDbSet<Project>().Add(project);
             await UnitOfWork.SaveChangesAsync();
             return project;
         }
@@ -147,8 +147,8 @@ namespace JoinRpg.Services.Impl
                 throw new Exception("No such master");
             }
 
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-            project.EnsureProjectActive();
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            _ = project.EnsureProjectActive();
 
             Create(new CharacterGroup()
             {
@@ -182,8 +182,8 @@ namespace JoinRpg.Services.Impl
         {
             var parentCharacterGroup =
                 await ProjectRepository.LoadGroupWithChildsAsync(projectId, parentCharacterGroupId);
-            parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
-            parentCharacterGroup.EnsureProjectActive();
+            _ = parentCharacterGroup.RequestMasterAccess(currentUserId, acl => acl.CanEditRoles);
+            _ = parentCharacterGroup.EnsureProjectActive();
 
             var thisCharacterGroup =
                 parentCharacterGroup.ChildGroups.Single(i =>
@@ -216,7 +216,7 @@ namespace JoinRpg.Services.Impl
             bool modelAllowSecondRoles)
         {
             var project = await ProjectRepository.GetProjectAsync(projectId);
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
 
             project.Details.CheckInProgress = checkInProgress && enableCheckInModule;
             project.Details.EnableCheckInModule = enableCheckInModule;
@@ -315,8 +315,8 @@ namespace JoinRpg.Services.Impl
                 throw new DbEntityValidationException();
             }
 
-            characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
-            characterGroup.EnsureProjectActive();
+            _ = characterGroup.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
+            _ = characterGroup.EnsureProjectActive();
 
             foreach (var character in characterGroup.Characters.Where(ch => ch.IsActive))
             {
@@ -349,7 +349,7 @@ namespace JoinRpg.Services.Impl
                 characterGroup.DirectlyRelatedPlotElements.CleanLinksList();
             }
 
-            SmartDelete(characterGroup);
+            _ = SmartDelete(characterGroup);
 
             await UnitOfWork.SaveChangesAsync();
         }
@@ -358,7 +358,7 @@ namespace JoinRpg.Services.Impl
         {
             var project = await ProjectRepository.GetProjectAsync(request.ProjectId);
 
-            project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
+            _ = project.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeProjectProperties);
 
             project.Details.ClaimApplyRules = new MarkdownString(request.ClaimApplyRules);
             project.Details.ProjectAnnounce = new MarkdownString(request.ProjectAnnounce);
@@ -381,11 +381,11 @@ namespace JoinRpg.Services.Impl
                 var user = await UserRepository.GetById(CurrentUserId);
                 if (!user.Auth.IsAdmin)
                 {
-                    project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+                    _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
                 }
             }
 
-            project.EnsureProjectActive();
+            _ = project.EnsureProjectActive();
 
             var acl = project.ProjectAcls.SingleOrDefault(a => a.UserId == grantAccessRequest.UserId);
             if (acl == null)
@@ -424,7 +424,7 @@ namespace JoinRpg.Services.Impl
             var project = await ProjectRepository.GetProjectAsync(projectId);
             if (userId != CurrentUserId)
             {
-                project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+                _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
             }
 
             if (!project.ProjectAcls.Any(a => a.CanGrantRights && a.UserId != userId))
@@ -453,7 +453,7 @@ namespace JoinRpg.Services.Impl
                     throw new MasterHasResponsibleException(acl);
                 }
 
-                project.RequestMasterAccess((int)newResponsibleMasterId);
+                _ = project.RequestMasterAccess((int)newResponsibleMasterId);
 
                 foreach (var claim in claims)
                 {
@@ -475,8 +475,8 @@ namespace JoinRpg.Services.Impl
                 }
             }
 
-            UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
-            UnitOfWork.GetDbSet<UserSubscription>()
+            _ = UnitOfWork.GetDbSet<ProjectAcl>().Remove(acl);
+            _ = UnitOfWork.GetDbSet<UserSubscription>()
                 .RemoveRange(UnitOfWork.GetDbSet<UserSubscription>()
                              .Where(x => x.UserId == userId && x.ProjectId == projectId));
 
@@ -486,7 +486,7 @@ namespace JoinRpg.Services.Impl
         public async Task ChangeAccess(ChangeAccessRequest changeAccessRequest)
         {
             var project = await ProjectRepository.GetProjectAsync(changeAccessRequest.ProjectId);
-            project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
+            _ = project.RequestMasterAccess(CurrentUserId, a => a.CanGrantRights);
 
             var acl = project.ProjectAcls.Single(
                 a => a.ProjectId == changeAccessRequest.ProjectId && a.UserId == changeAccessRequest.UserId);
@@ -497,7 +497,7 @@ namespace JoinRpg.Services.Impl
 
         public async Task UpdateSubscribeForGroup(SubscribeForGroupRequest request)
         {
-            (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
+            _ = (await ProjectRepository.GetGroupAsync(request.ProjectId, request.CharacterGroupId))
                 .RequestMasterAccess(CurrentUserId)
                 .EnsureActive();
 
@@ -515,16 +515,16 @@ namespace JoinRpg.Services.Impl
                         CharacterGroupId = request.CharacterGroupId,
                         ProjectId = request.ProjectId,
                     };
-                    user.Subscriptions.Add(direct);
+                    _ = user.Subscriptions.Add(direct);
                 }
 
-                direct.AssignFrom(request);
+                _ = direct.AssignFrom(request);
             }
             else
             {
                 if (direct != null)
                 {
-                    UnitOfWork.GetDbSet<UserSubscription>().Remove(direct);
+                    _ = UnitOfWork.GetDbSet<UserSubscription>().Remove(direct);
                 }
             }
 

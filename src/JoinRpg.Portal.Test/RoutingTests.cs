@@ -21,7 +21,7 @@ namespace JoinRpg.Portal.Test
                 return;
             }
             var routeAttribute = controllerType.GetCustomAttribute<RouteAttribute>();
-            routeAttribute.ShouldNotBeNull();
+            _ = routeAttribute.ShouldNotBeNull();
             routeAttribute.Template.ShouldStartWith("{projectId}");
         }
 

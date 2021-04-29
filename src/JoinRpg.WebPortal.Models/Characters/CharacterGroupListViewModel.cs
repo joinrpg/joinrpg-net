@@ -38,7 +38,7 @@ namespace JoinRpg.Web.Models.Characters
 
             public IList<CharacterGroupListItemViewModel> Generate()
             {
-                GenerateFrom(Root, 0, new List<CharacterGroup>());
+                _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
                 return Results;
             }
 

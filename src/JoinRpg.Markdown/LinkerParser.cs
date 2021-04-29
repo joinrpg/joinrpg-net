@@ -12,15 +12,7 @@ namespace JoinRpg.Markdown
     {
         private ILinkRenderer LinkRenderer { get; }
 
-        public LinkerParser([NotNull] ILinkRenderer linkRenderer)
-        {
-            if (linkRenderer == null)
-            {
-                throw new ArgumentNullException(nameof(linkRenderer));
-            }
-
-            LinkRenderer = linkRenderer;
-        }
+        public LinkerParser([NotNull] ILinkRenderer linkRenderer) => LinkRenderer = linkRenderer ?? throw new ArgumentNullException(nameof(linkRenderer));
 
         private TextMatchHelper? _textMatchHelper;
 
@@ -57,7 +49,7 @@ namespace JoinRpg.Markdown
             var builder = new StringBuilder();
             while (slice.CurrentChar.IsDigit() && !slice.IsEmpty)
             {
-                builder.Append(slice.CurrentChar);
+                _ = builder.Append(slice.CurrentChar);
                 slice.Start++;
             }
 
@@ -71,7 +63,7 @@ namespace JoinRpg.Markdown
                 return false;
             }
 
-            builder.Clear();
+            _ = builder.Clear();
 
             if (slice.CurrentChar == '(')
             {
@@ -79,7 +71,7 @@ namespace JoinRpg.Markdown
 
                 while (slice.CurrentChar != ')' && !slice.IsEmpty)
                 {
-                    builder.Append(slice.CurrentChar);
+                    _ = builder.Append(slice.CurrentChar);
                     slice.Start++;
                 }
 

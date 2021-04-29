@@ -38,13 +38,9 @@ namespace JoinRpg.Web.Models.Characters
         public bool IsAcceptingClaims { get; set; }
         public bool HasEditRolesAccess { get; set; }
 
-        public bool Equals(CharacterViewModel other) => CharacterId == other.CharacterId;
+        public bool Equals(CharacterViewModel? other) => other != null && CharacterId == other.CharacterId;
 
-        public override bool Equals(object obj)
-        {
-            var cg = obj as CharacterViewModel;
-            return cg != null && Equals(cg);
-        }
+        public override bool Equals(object obj) => Equals(obj as CharacterViewModel);
 
         public override int GetHashCode() => CharacterId;
 
