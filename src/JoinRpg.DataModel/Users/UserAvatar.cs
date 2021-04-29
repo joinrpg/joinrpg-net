@@ -19,7 +19,7 @@ namespace JoinRpg.DataModel.Users
         /// <summary>
         /// <see cref="User"/>
         /// </summary>
-        public virtual User User { get; set; }
+        public virtual User User { get; set; } = null!;
 
         /// <summary>
         /// Defines source how avatar was obtained
@@ -47,9 +47,14 @@ namespace JoinRpg.DataModel.Users
         public string? ProviderId { get; set; }
 
         /// <summary>
-        /// Provider-specified key
+        /// Cached Uri in Azure storage
         /// </summary>
-        public string Uri { get; set; } = null!;
+        public string? CachedUri { get; set; } = null!;
+
+        /// <summary>
+        /// Uri as specified by provider
+        /// </summary>
+        public string OriginalUri { get; set; } = null!;
 
         /// <summary>
         /// Is active or deleted
