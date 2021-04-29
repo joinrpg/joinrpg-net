@@ -114,7 +114,7 @@ namespace JoinRpg.Domain
         {
             if (!int.TryParse(Value, out var result))
             {
-                result = default(int);
+                result = default;
             }
 
             return result;

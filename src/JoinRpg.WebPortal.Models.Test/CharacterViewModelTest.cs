@@ -8,7 +8,7 @@ namespace JoinRpg.Web.Test
 {
     public class CharacterViewModelTest
     {
-        private readonly MockedProject _mock = new MockedProject();
+        private readonly MockedProject _mock = new();
 
         [Fact]
         public void AddCharacterViewModelHaveSimpleFields()
@@ -17,7 +17,7 @@ namespace JoinRpg.Web.Test
             var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId);
             var fieldView = vm.Fields.Field(field);
 
-            fieldView.ShouldNotBeNull();
+            _ = fieldView.ShouldNotBeNull();
             fieldView.Value.ShouldBeNull();
             fieldView.ShouldBeHidden();
             fieldView.ShouldBeEditable();
@@ -31,7 +31,7 @@ namespace JoinRpg.Web.Test
             var vm = new AddCharacterViewModel().Fill(_mock.Group, _mock.Master.UserId);
             var fieldView = vm.Fields.Field(field);
 
-            fieldView.ShouldNotBeNull();
+            _ = fieldView.ShouldNotBeNull();
             fieldView.Value.ShouldBeNull();
             fieldView.ShouldBeHidden();
             fieldView.ShouldBeEditable();
@@ -47,7 +47,7 @@ namespace JoinRpg.Web.Test
             var vm = new AddCharacterViewModel().Fill(groupForClaim, _mock.Master.UserId);
             var fieldView = vm.Fields.Field(field);
 
-            fieldView.ShouldNotBeNull();
+            _ = fieldView.ShouldNotBeNull();
             fieldView.Value.ShouldBeNull();
             fieldView.ShouldBeHidden();
             fieldView.ShouldBeReadonly();

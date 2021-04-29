@@ -8,7 +8,7 @@ namespace JoinRpg.Helpers
 {
     public static class StaticCollectionHelpers
     {
-        private static readonly Random Rng = new Random();
+        private static readonly Random Rng = new();
 
         public static Dictionary<string, string> ToDictionary(this NameValueCollection collection) => collection.AllKeys.ToDictionary(key => key, key => collection[key]);
 
@@ -26,7 +26,7 @@ namespace JoinRpg.Helpers
 
             if (includeSelf)
             {
-                groups.Add(obj);
+                _ = groups.Add(obj);
             }
 
             FlatTreeImpl(groups, obj, parentSelectorFunc);
@@ -41,7 +41,7 @@ namespace JoinRpg.Helpers
                 .Except(flattedcharacterGroupIds))
             {
                 FlatTreeImpl(flattedcharacterGroupIds, characterGroup, parentSelectorFunc);
-                flattedcharacterGroupIds.Add(characterGroup);
+                _ = flattedcharacterGroupIds.Add(characterGroup);
             }
         }
 

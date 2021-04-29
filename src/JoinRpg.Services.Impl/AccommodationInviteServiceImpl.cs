@@ -78,7 +78,7 @@ namespace JoinRpg.Services.Impl
                 IsAccepted = AccommodationRequest.InviteState.Unanswered,
             };
 
-            UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
+            _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
             //todo email it
 
@@ -172,7 +172,7 @@ namespace JoinRpg.Services.Impl
                     IsAccepted = AccommodationRequest.InviteState.Unanswered,
                 };
 
-                UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
+                _ = UnitOfWork.GetDbSet<AccommodationInvite>().Add(inviteRequest);
                 result.Add(inviteRequest);
             }
 
@@ -196,7 +196,7 @@ namespace JoinRpg.Services.Impl
             {
                 return await CreateAccommodationInviteToAccommodationRequest(projectId,
                     senderClaimId,
-                    int.Parse(receiverClaimOrAccommodationRequestId.Substring(2)),
+                    int.Parse(receiverClaimOrAccommodationRequestId[2..]),
                     accommodationRequestId).ConfigureAwait(false);
             }
 
@@ -238,7 +238,7 @@ namespace JoinRpg.Services.Impl
                 return null;
             }
 
-            receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To);
+            _ = (receiverAccommodationRequest?.Subjects.Remove(inviteRequest.To));
             senderAccommodationRequest.Subjects.Add(inviteRequest.To);
             inviteRequest.To.AccommodationRequest = senderAccommodationRequest;
 
@@ -250,7 +250,7 @@ namespace JoinRpg.Services.Impl
                     senderAccommodationRequest.Subjects.Add(claim);
                 }
 
-                UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
+                _ = UnitOfWork.GetDbSet<AccommodationRequest>().Remove(receiverAccommodationRequest);
             }
 
             inviteRequest.IsAccepted = AccommodationRequest.InviteState.Accepted;
@@ -344,7 +344,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
             claims = claims.Distinct().ToList();
-            claims.Remove(claimId);
+            _ = claims.Remove(claimId);
 
             var receivers = await UnitOfWork
                 .GetDbSet<Claim>()

@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
                 .Where(r => r.ProjectId == request.ProjectId && request.AccommodationRequestIds.Contains(r.Id))
                 .ToListAsync();
 
-            room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+            _ = room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
 
             foreach (var accommodationRequest in accommodationRequests)
             {
@@ -130,7 +130,7 @@ namespace JoinRpg.Services.Impl
         private async Task UnOccupyRoomImpl(ProjectAccommodation room,
             IReadOnlyCollection<AccommodationRequest> accommodationRequests)
         {
-            room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
+            _ = room.Project.RequestMasterAccess(CurrentUserId, acl => acl.CanSetPlayersAccommodations);
 
             foreach (var request in accommodationRequests)
             {
@@ -203,7 +203,7 @@ namespace JoinRpg.Services.Impl
             {
                 throw new RoomIsOccupiedException(occupiedRoom);
             }
-            UnitOfWork.GetDbSet<ProjectAccommodationType>().Remove(entity);
+            _ = UnitOfWork.GetDbSet<ProjectAccommodationType>().Remove(entity);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
 
         }
@@ -226,7 +226,7 @@ namespace JoinRpg.Services.Impl
             // Internal function
             // Creates new room using name and parameters from given room info
             ProjectAccommodation CreateRoom(string name)
-                => new ProjectAccommodation
+                => new()
                 {
                     Name = name,
                     AccommodationTypeId = roomTypeId,
@@ -308,7 +308,7 @@ namespace JoinRpg.Services.Impl
             {
                 throw new RoomIsOccupiedException(entity);
             }
-            UnitOfWork.GetDbSet<ProjectAccommodation>().Remove(entity);
+            _ = UnitOfWork.GetDbSet<ProjectAccommodation>().Remove(entity);
             await UnitOfWork.SaveChangesAsync().ConfigureAwait(false);
         }
 

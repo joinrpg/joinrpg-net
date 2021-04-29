@@ -11,7 +11,7 @@ namespace JoinRpg.Services.Export
     [UsedImplicitly]
     public class ExportDataServiceImpl : IExportDataService
     {
-        private Dictionary<Type, Func<object, string>> DisplayFunctions { get; } = new ();
+        private Dictionary<Type, Func<object, string>> DisplayFunctions { get; } = new();
 
         [Obsolete]
         public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) where T : class

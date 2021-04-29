@@ -10,8 +10,8 @@ namespace JoinRpg.Web.Models
     {
         public record ProviderDescViewModel(string ProviderId, string FriendlyName)
         {
-            public static readonly ProviderDescViewModel Google = new ProviderDescViewModel("Google", "Google");
-            public static readonly ProviderDescViewModel Vk = new ProviderDescViewModel("Vkontakte", "ВК");
+            public static readonly ProviderDescViewModel Google = new("Google", "Google");
+            public static readonly ProviderDescViewModel Vk = new("Vkontakte", "ВК");
         }
 
         public ProviderDescViewModel LoginProvider { get; init; } = null!;

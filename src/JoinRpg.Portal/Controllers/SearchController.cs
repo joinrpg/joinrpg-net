@@ -19,7 +19,7 @@ namespace JoinRpg.Portal.Controllers
         {
             var searchResults =
                 string.IsNullOrEmpty(searchString)
-                    ? new ISearchResult[0]
+                    ? System.Array.Empty<ISearchResult>()
                     : await _searchService.SearchAsync(CurrentUserIdOrDefault, searchString);
 
             if (searchResults.Count == 1)

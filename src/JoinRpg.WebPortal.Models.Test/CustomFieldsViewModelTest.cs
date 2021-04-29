@@ -35,9 +35,9 @@ namespace JoinRpg.Web.Test
             var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character);
 
             var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
-            publicField.ShouldNotBeNull();
+            _ = publicField.ShouldNotBeNull();
             publicField.CanView.ShouldBeTrue();
-            publicField.Value.ShouldNotBeNull();
+            _ = publicField.Value.ShouldNotBeNull();
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace JoinRpg.Web.Test
 
             var vm = new CustomFieldsViewModel(currentUserId: null, character: Mock.Character, disableEdit: true);
             var publicField = vm.FieldById(Mock.PublicField.ProjectFieldId);
-            publicField.ShouldNotBeNull();
+            _ = publicField.ShouldNotBeNull();
             publicField.CanView.ShouldBeTrue();
         }
 
@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Test
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
             var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.CanView.ShouldBeFalse();
             characterField.Value.ShouldBeNull();
 
@@ -76,7 +76,7 @@ namespace JoinRpg.Web.Test
 
             var characterField = vm.FieldById(mock.CharacterField.ProjectFieldId);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeHidden();
             characterField.Value.ShouldBe("test");
 
@@ -93,7 +93,7 @@ namespace JoinRpg.Web.Test
 
             var characterField = vm.Field(mock.CharacterField);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeHidden();
             characterField.ShouldNotHaveValue();
 
@@ -109,7 +109,7 @@ namespace JoinRpg.Web.Test
 
             var characterField = vm.Field(mock.CharacterField);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeHidden();
             characterField.ShouldNotHaveValue();
 
@@ -122,7 +122,7 @@ namespace JoinRpg.Web.Test
         {
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
             var characterField = vm.Field(Mock.CharacterField);
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
 
             characterField.ShouldBeHidden();
             characterField.ShouldNotHaveValue();
@@ -139,7 +139,7 @@ namespace JoinRpg.Web.Test
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim);
             var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeHidden();
             characterField.ShouldNotHaveValue();
 
@@ -155,7 +155,7 @@ namespace JoinRpg.Web.Test
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, claim);
             var characterField = vm.FieldById(conditionalHeader.ProjectFieldId);
 
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeVisible();
             characterField.ShouldNotHaveValue();
 
@@ -168,7 +168,7 @@ namespace JoinRpg.Web.Test
         {
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, Mock.Group);
             var characterField = vm.FieldById(Mock.CharacterField.ProjectFieldId);
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeHidden();
 
             characterField.ShouldNotHaveValue();
@@ -185,7 +185,7 @@ namespace JoinRpg.Web.Test
 
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
             var characterField = vm.Field(field);
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeVisible();
 
             characterField.Value.ShouldBe("xxx");
@@ -202,7 +202,7 @@ namespace JoinRpg.Web.Test
 
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
             var characterField = vm.Field(field);
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeVisible();
 
             characterField.Value.ShouldBe("xxx");
@@ -224,7 +224,7 @@ namespace JoinRpg.Web.Test
 
             var vm = new CustomFieldsViewModel(Mock.Player.UserId, (IClaimSource)Mock.Character);
             var characterField = vm.Field(field);
-            characterField.ShouldNotBeNull();
+            _ = characterField.ShouldNotBeNull();
             characterField.ShouldBeVisible();
 
             characterField.Value.ShouldBe("xxx");

@@ -22,10 +22,10 @@ namespace Joinrpg.AspNetCore.Helpers
             {
                 if (writeSep)
                 {
-                    builder.AppendHtml(rawSeparator);
+                    _ = builder.AppendHtml(rawSeparator);
                 }
                 writeSep = true;
-                builder.AppendHtml(c);
+                _ = builder.AppendHtml(c);
             }
             return builder;
         }

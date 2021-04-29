@@ -10,7 +10,7 @@ namespace JoinRpg.Domain.Test
 
     public class CustomFieldsExtensionsTest
     {
-        private MockedProject projectMock = new MockedProject();
+        private MockedProject projectMock = new();
         private ProjectField[] allFieldsExceptMasterOnly;
         private ProjectField[] allFields;
 

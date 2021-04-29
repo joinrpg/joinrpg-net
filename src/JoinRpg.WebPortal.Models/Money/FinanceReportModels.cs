@@ -128,7 +128,7 @@ namespace JoinRpg.Web.Models
         public int? ProjectId { get; }
 
         public IReadOnlyCollection<int> ClaimIds { get; }
-        public IReadOnlyCollection<int> CharacterIds => new int[] { };
+        public IReadOnlyCollection<int> CharacterIds => Array.Empty<int>();
 
         public FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations)
         {

@@ -15,7 +15,7 @@ namespace JoinRpg.Helpers
         {
             foreach (var parent in target.Except(newValue).ToList())
             {
-                target.Remove(parent);
+                _ = target.Remove(parent);
             }
 
             target.AddLinkList(newValue);
@@ -36,7 +36,7 @@ namespace JoinRpg.Helpers
         {
             foreach (var value in linksToRemove.Intersect(target).ToList())
             {
-                target.Remove(value);
+                _ = target.Remove(value);
             }
         }
     }

@@ -11,15 +11,7 @@ namespace JoinRpg.Domain
     {
         private readonly Claim claim;
 
-        public ClaimCheckInValidator([NotNull] Claim claim)
-        {
-            if (claim == null)
-            {
-                throw new ArgumentNullException(nameof(claim));
-            }
-
-            this.claim = claim;
-        }
+        public ClaimCheckInValidator([NotNull] Claim claim) => this.claim = claim ?? throw new ArgumentNullException(nameof(claim));
 
         public int FeeDue => claim.ClaimFeeDue();
 

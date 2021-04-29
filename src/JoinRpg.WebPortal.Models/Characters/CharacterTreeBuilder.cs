@@ -24,7 +24,7 @@ namespace JoinRpg.Web.Models.Characters
         [MustUseReturnValue]
         public IList<CharacterTreeItem> Generate()
         {
-            GenerateFrom(Root, 0, new List<CharacterGroup>());
+            _ = GenerateFrom(Root, 0, new List<CharacterGroup>());
             return Results;
         }
 

@@ -16,7 +16,7 @@ namespace JoinRpg.Web.Models
         public IEnumerable<ProjectLinkViewModel> ThisUserProjects { get; set; }
 
         [ReadOnly(true)]
-        public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = new ProjectLinkViewModel[] { };
+        public IEnumerable<ProjectLinkViewModel> CanGrantAccessProjects { get; set; } = Array.Empty<ProjectLinkViewModel>();
         public int UserId { get; set; }
 
         public IEnumerable<ProjectLinkViewModel> ProjectsToAdd

@@ -16,9 +16,9 @@ namespace JoinRpg.Helpers.Test
             public override string ToString() => $"Foo{Id}";
         }
 
-        private readonly Foo _f1 = new Foo(1);
-        private readonly Foo _f2 = new Foo(2);
-        private readonly Foo _f3 = new Foo(3);
+        private readonly Foo _f1 = new(1);
+        private readonly Foo _f2 = new(2);
+        private readonly Foo _f3 = new(3);
 
         [Fact]
         public void TestUnorderedOrderedById()
@@ -40,7 +40,7 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveDownBeyondEdges()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
-            Should.Throw<InvalidOperationException>(() => voc.Move(_f2, 1));
+            _ = Should.Throw<InvalidOperationException>(() => voc.Move(_f2, 1));
         }
 
         [Fact]
@@ -63,14 +63,14 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveUpBeyondEdges()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
-            Should.Throw<InvalidOperationException>(() => voc.Move(_f1, -1));
+            _ = Should.Throw<InvalidOperationException>(() => voc.Move(_f1, -1));
         }
 
         [Fact]
         public void TestMoveAfter()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
-            voc.MoveAfter(_f3, _f1);
+            _ = voc.MoveAfter(_f3, _f1);
             voc.OrderedItems.ShouldBe((IEnumerable<Foo>)new[] { _f1, _f3, _f2 });
         }
 
@@ -78,7 +78,7 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveToStart()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
-            voc.MoveAfter(_f3, null);
+            _ = voc.MoveAfter(_f3, null);
             voc.OrderedItems.ShouldBe((IEnumerable<Foo>)new[] { _f3, _f1, _f2 });
         }
 
@@ -86,7 +86,7 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveAfter2()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
-            voc.MoveAfter(_f1, _f2);
+            _ = voc.MoveAfter(_f1, _f2);
             voc.OrderedItems.ShouldBe((IEnumerable<Foo>)new[] { _f2, _f1, _f3 });
         }
 
@@ -94,7 +94,7 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveToEnd()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2, _f3 });
-            voc.MoveAfter(_f1, _f3);
+            _ = voc.MoveAfter(_f1, _f3);
             voc.OrderedItems.ShouldBe((IEnumerable<Foo>)new[] { _f2, _f3, _f1 });
         }
 
@@ -102,7 +102,7 @@ namespace JoinRpg.Helpers.Test
         public void TestMoveAfterNotExsts()
         {
             var voc = new VirtualOrderContainer<Foo>("", new[] { _f1, _f2 });
-            Should.Throw<ArgumentException>(() => voc.MoveAfter(_f2, _f3));
+            _ = Should.Throw<ArgumentException>(() => voc.MoveAfter(_f2, _f3));
         }
     }
 }

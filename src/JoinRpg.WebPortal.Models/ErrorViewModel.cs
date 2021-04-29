@@ -17,11 +17,10 @@ namespace JoinRpg.Web.Models
 
         public object Data { get; set; }
 
-        public ErrorViewModel()
-        {
+        public ErrorViewModel() =>
 #if DEBUG
             Debug = true;
 #endif
-        }
+
     }
 }

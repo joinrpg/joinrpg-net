@@ -16,7 +16,7 @@ namespace Joinrpg.Dal.Migrate
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<MigrateHostService>();
+                    _ = services.AddHostedService<MigrateHostService>();
                 });
     }
 }

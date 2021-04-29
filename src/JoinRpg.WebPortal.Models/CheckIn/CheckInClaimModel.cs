@@ -5,8 +5,8 @@ using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
-using JoinRpg.Markdown;
 using JoinRpg.Helpers;
+using JoinRpg.Markdown;
 using JoinRpg.Web.Models.Characters;
 using JoinRpg.Web.Models.Print;
 
@@ -42,7 +42,7 @@ namespace JoinRpg.Web.Models.CheckIn
                 .Select(e => e.PublishedVersion())
                 .WhereNotNull()
                 .Select(e => new HandoutListItemViewModel(e.Content.ToPlainText(), e.AuthorUser))
-                .ToArray() ?? new HandoutListItemViewModel[] { };
+                .ToArray() ?? Array.Empty<HandoutListItemViewModel>();
             NotFilledFields = Validator.NotFilledFields
               .Select(frp => new NotFilledFieldViewModel(
                 frp.Field.CanPlayerEdit

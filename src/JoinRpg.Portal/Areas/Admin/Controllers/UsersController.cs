@@ -43,7 +43,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
         {
             await UserService.SetAdminFlag(userId, administratorFlag: true);
             var user = await UserManager.FindByIdAsync(userId.ToString());
-            await UserManager.UpdateSecurityStampAsync(user);
+            _ = await UserManager.UpdateSecurityStampAsync(user);
             return RedirectToUserDetails(userId);
         }
 
@@ -52,7 +52,7 @@ namespace JoinRpg.Portal.Areas.Admin.Controllers
         {
             await UserService.SetAdminFlag(userId, administratorFlag: false);
             var user = await UserManager.FindByIdAsync(userId.ToString());
-            await UserManager.UpdateSecurityStampAsync(user);
+            _ = await UserManager.UpdateSecurityStampAsync(user);
             return RedirectToUserDetails(userId);
         }
 

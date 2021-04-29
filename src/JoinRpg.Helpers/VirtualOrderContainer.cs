@@ -14,7 +14,7 @@ namespace JoinRpg.Helpers
     {
         //Factory function enable type inference
         public static VirtualOrderContainer<TChild> Create<TChild>(IEnumerable<TChild> childs,
-            string ordering) where TChild : class, IOrderableEntity => new VirtualOrderContainer<TChild>(ordering, childs);
+            string ordering) where TChild : class, IOrderableEntity => new(ordering, childs);
     }
 
     public class VirtualOrderContainer<TItem> where TItem : class, IOrderableEntity
@@ -65,7 +65,7 @@ namespace JoinRpg.Helpers
             var item = list.FirstOrDefault(i => i.Id == virtualOrderItem);
             if (item != null)
             {
-                list.Remove(item);
+                _ = list.Remove(item);
             }
 
             return item;

@@ -16,10 +16,7 @@ namespace JoinRpg.Portal.Infrastructure.Authentication
     {
         private readonly IUserService userService;
 
-        public ExternalLoginProfileExtractor(IUserService userService)
-        {
-            this.userService = userService;
-        }
+        public ExternalLoginProfileExtractor(IUserService userService) => this.userService = userService;
 
         public async Task TryExtractProfile(JoinIdentityUser user, ExternalLoginInfo loginInfo)
         {

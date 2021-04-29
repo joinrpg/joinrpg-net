@@ -19,13 +19,8 @@ namespace JoinRpg.Web.Models.Exporters
         {
             public TableColumn(string? name, [NotNull] Func<TRow, T?> getter)
             {
-                if (getter == null)
-                {
-                    throw new ArgumentNullException(nameof(getter));
-                }
-
                 Name = name;
-                Getter = getter;
+                Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             }
 
             public TableColumn(PropertyInfo? member, Func<TRow, T?> getter)

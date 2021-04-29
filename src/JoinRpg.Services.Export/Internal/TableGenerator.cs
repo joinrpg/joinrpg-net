@@ -5,7 +5,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.Internal
 {
-    internal class TableGenerator<TRow> : IExportGenerator where TRow: class
+    internal class TableGenerator<TRow> : IExportGenerator where TRow : class
     {
         private IEnumerable<TRow> Data { get; }
         private IGeneratorBackend Backend { get; }

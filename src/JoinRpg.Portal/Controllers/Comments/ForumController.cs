@@ -134,7 +134,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 if (viewModel.HideFromUser)
                 {
-                    discussion.RequestMasterAccess(CurrentUserId);
+                    _ = discussion.RequestMasterAccess(CurrentUserId);
                 }
 
                 var claim = discussion.GetClaim();

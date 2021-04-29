@@ -9,10 +9,7 @@ namespace JoinRpg.Portal.Controllers
     public class LetsEncryptController : ControllerBase
     {
         private string redirectUrl;
-        public LetsEncryptController(IOptions<LetsEncryptOptions> options)
-        {
-            redirectUrl = options.Value.RedirectUrl;
-        }
+        public LetsEncryptController(IOptions<LetsEncryptOptions> options) => redirectUrl = options.Value.RedirectUrl;
 
         [HttpGet("/.well-known/acme-challenge/{token}")]
         [AllowAnonymous]

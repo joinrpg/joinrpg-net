@@ -45,7 +45,7 @@ namespace JoinRpg.Portal.TagHelpers
             var writer = new StringWriter();
             partialView.WriteTo(writer, _htmlEncoder);
 
-            output.Content.SetHtmlContent(writer.ToString());
+            _ = output.Content.SetHtmlContent(writer.ToString());
         }
     }
 }

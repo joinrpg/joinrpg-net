@@ -71,7 +71,7 @@ namespace JoinRpg.Helpers.Web
                                 count++;
                                 b = enumerator.MoveNext();
                             }
-                            builder.Append((char)('A' + count - 1));
+                            _ = builder.Append((char)('A' + count - 1));
                             if (!b)
                             {
                                 break;
@@ -82,16 +82,16 @@ namespace JoinRpg.Helpers.Web
                         }
                         if (next < 25)
                         {
-                            builder.Append((char)('a' + next - 2));
+                            _ = builder.Append((char)('a' + next - 2));
                             needSep = false;
                             break;
                         }
 
                         if (needSep)
                         {
-                            builder.Append(",");
+                            _ = builder.Append(",");
                         }
-                        builder.Append(next - 25);
+                        _ = builder.Append(next - 25);
                         needSep = true;
                         break;
                     }

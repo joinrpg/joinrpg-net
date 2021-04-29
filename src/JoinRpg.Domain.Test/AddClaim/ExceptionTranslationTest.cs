@@ -15,7 +15,7 @@ namespace JoinRpg.Domain.Test.AddClaim
         public void AllForbideReasonTranslatedToThrow(AddClaimForbideReason reason)
         {
             var claim = new Claim();
-            Should.Throw<JoinRpgBaseException>(() => ClaimSourceExtensions.ThrowForReason(reason, claim));
+            _ = Should.Throw<JoinRpgBaseException>(() => ClaimSourceExtensions.ThrowForReason(reason, claim));
         }
 
         // ReSharper disable once MemberCanBePrivate.Global xUnit requirements

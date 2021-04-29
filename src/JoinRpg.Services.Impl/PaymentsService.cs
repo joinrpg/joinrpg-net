@@ -48,7 +48,7 @@ namespace JoinRpg.Services.Impl
         }
 
         private BankApi GetApi(int projectId, int claimId)
-            => new BankApi(GetApiConfiguration(projectId, claimId));
+            => new(GetApiConfiguration(projectId, claimId));
 
         private async Task<Claim> GetClaimAsync(int projectId, int claimId)
         {
@@ -164,7 +164,7 @@ namespace JoinRpg.Services.Impl
                 Changed = Now,
                 State = FinanceOperationState.Proposed,
             };
-            UnitOfWork.GetDbSet<Comment>().Add(comment);
+            _ = UnitOfWork.GetDbSet<Comment>().Add(comment);
             await UnitOfWork.SaveChangesAsync();
 
             return comment;

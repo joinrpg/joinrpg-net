@@ -57,7 +57,7 @@ namespace JoinRpg.DataModel.Mocks
                 IsActive = true,
                 FieldBoundTo = FieldBoundTo.Character,
                 ShowOnUnApprovedClaims = true,
-                AvailableForCharacterGroupIds = new int[0],
+                AvailableForCharacterGroupIds = Array.Empty<int>(),
             };
 
             HideForUnApprovedClaim = new ProjectField()
@@ -67,7 +67,7 @@ namespace JoinRpg.DataModel.Mocks
                 IsActive = true,
                 FieldBoundTo = FieldBoundTo.Character,
                 ShowOnUnApprovedClaims = false,
-                AvailableForCharacterGroupIds = new int[0],
+                AvailableForCharacterGroupIds = Array.Empty<int>(),
             };
 
             PublicField = new ProjectField()
@@ -77,7 +77,7 @@ namespace JoinRpg.DataModel.Mocks
                 IsPublic = true,
                 IsActive = true,
                 FieldBoundTo = FieldBoundTo.Character,
-                AvailableForCharacterGroupIds = new int[0],
+                AvailableForCharacterGroupIds = Array.Empty<int>(),
                 ShowOnUnApprovedClaims = true,
             };
 
@@ -85,14 +85,14 @@ namespace JoinRpg.DataModel.Mocks
             {
                 IsActive = true,
                 IsAcceptingClaims = true,
-                ParentCharacterGroupIds = new int[0],
+                ParentCharacterGroupIds = Array.Empty<int>(),
             };
 
             CharacterWithoutGroup = new Character
             {
                 IsActive = true,
                 IsAcceptingClaims = true,
-                ParentCharacterGroupIds = new int[0],
+                ParentCharacterGroupIds = Array.Empty<int>(),
             };
 
 

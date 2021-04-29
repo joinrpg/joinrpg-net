@@ -30,7 +30,7 @@ namespace JoinRpg.IntegrationTest.Scenarios
             request.Content = content;
 
             var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            _ = response.EnsureSuccessStatusCode();
             MockDateTimeController.LastCalledDateTime.ShouldBe(new DateTime(2020, 8, 29));
         }
 
@@ -49,7 +49,7 @@ namespace JoinRpg.IntegrationTest.Scenarios
             request.Content = content;
 
             var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            _ = response.EnsureSuccessStatusCode();
             MockDateTimeController.LastCalledDateTime.ShouldBe(new DateTime(2020, 8, 29));
         }
     }

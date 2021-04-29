@@ -335,7 +335,7 @@ namespace JoinRpg.Domain.CharacterFields
                     throw new FieldRequiredException(field.Field.FieldName);
                 }
 
-                strategy.AssignFieldValue(field, normalizedValue);
+                _ = strategy.AssignFieldValue(field, normalizedValue);
             }
         }
 
@@ -350,7 +350,7 @@ namespace JoinRpg.Domain.CharacterFields
 
                 var normalizedValue = NormalizeValueBeforeAssign(field, newValue);
 
-                strategy.AssignFieldValue(field, normalizedValue);
+                _ = strategy.AssignFieldValue(field, normalizedValue);
             }
         }
 

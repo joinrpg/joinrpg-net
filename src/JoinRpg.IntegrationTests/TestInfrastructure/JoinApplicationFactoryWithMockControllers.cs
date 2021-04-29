@@ -12,8 +12,8 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
             return builder
                 .ConfigureServices(services =>
                 {
-                    services.AddControllersWithViews().AddApplicationPart(typeof(JoinApplicationFactory).Assembly);
-                    services.AddTransient<MockDateTimeController>();
+                    _ = services.AddControllersWithViews().AddApplicationPart(typeof(JoinApplicationFactory).Assembly);
+                    _ = services.AddTransient<MockDateTimeController>();
                 });
         }
     }

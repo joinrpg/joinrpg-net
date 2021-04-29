@@ -17,24 +17,24 @@ namespace JoinRpg.Portal.Infrastructure
 
             if (googleConfig is object)
             {
-                authBuilder.AddGoogle(options =>
-                {
-                    options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
+                _ = authBuilder.AddGoogle(options =>
+                  {
+                      options.ClaimActions.MapJsonKey("urn:google:photo", "picture");
 
-                    SetCommonProperties(options, googleConfig);
-                });
+                      SetCommonProperties(options, googleConfig);
+                  });
             }
 
             var vkConfig = configSection.GetSection("Vkontakte").Get<OAuthAuthenticationOptions>();
 
             if (vkConfig is object)
             {
-                authBuilder.AddVkontakte(options =>
-                {
-                    options.Scope.Add("email");
+                _ = authBuilder.AddVkontakte(options =>
+                  {
+                      options.Scope.Add("email");
 
-                    SetCommonProperties(options, vkConfig);
-                });
+                      SetCommonProperties(options, vkConfig);
+                  });
             }
 
             static void SetCommonProperties(OAuthOptions options, OAuthAuthenticationOptions config)

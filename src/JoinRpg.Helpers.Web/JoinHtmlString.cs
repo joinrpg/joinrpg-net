@@ -29,7 +29,7 @@ namespace JoinRpg.Helpers.Web
         /// <summary>
         /// concat operator 
         /// </summary>
-        public static JoinHtmlString operator +(JoinHtmlString left, JoinHtmlString right) => new JoinHtmlString(left.ToString() + right);
+        public static JoinHtmlString operator +(JoinHtmlString left, JoinHtmlString right) => new(left.ToString() + right);
 
         /// <inheritdoc />
         public string ToHtmlString() => Value;

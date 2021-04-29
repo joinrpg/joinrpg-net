@@ -21,7 +21,7 @@ namespace JoinRpg.Markdown.Test
             var sanitizer = new HtmlSanitizer();
 
             sanitizer.WhiteListMode = true;
-            sanitizer.Tag("img").AllowAttributes("src");
+            _ = sanitizer.Tag("img").AllowAttributes("src");
             sanitizer.Sanitize(str).ShouldBe("<img src=\"http://joinrpg.ru/a.png\">");
         }
 

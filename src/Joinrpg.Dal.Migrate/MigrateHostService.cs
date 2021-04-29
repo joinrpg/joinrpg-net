@@ -12,10 +12,7 @@ namespace Joinrpg.Dal.Migrate
         private readonly IConfiguration configuration;
 
         public MigrateHostService(IHostApplicationLifetime applicationLifetime, ILogger<MigrateHostService> logger, IConfiguration configuration)
-            : base(applicationLifetime, logger)
-        {
-            this.configuration = configuration;
-        }
+            : base(applicationLifetime, logger) => this.configuration = configuration;
 
         internal override void DoWork()
         {

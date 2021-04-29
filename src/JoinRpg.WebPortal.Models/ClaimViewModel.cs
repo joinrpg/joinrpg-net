@@ -588,7 +588,7 @@ namespace JoinRpg.Web.Models
         /// <summary>
         /// Sums of all finance operations by type
         /// </summary>
-        public readonly Dictionary<FinanceOperationState, int> Balance = new Dictionary<FinanceOperationState, int>();
+        public readonly Dictionary<FinanceOperationState, int> Balance = new();
 
         /// <summary>
         /// Sum of approved finance operations

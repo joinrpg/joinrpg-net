@@ -115,7 +115,7 @@ namespace JoinRpg.Portal.Controllers
 
                 return View("EditRoomType", model);
             }
-            await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
+            _ = await _accommodationService.SaveRoomTypeAsync(model.ToEntity()).ConfigureAwait(false);
             return RedirectToAction("Index", new { projectId = model.ProjectId });
         }
 
@@ -275,7 +275,7 @@ namespace JoinRpg.Portal.Controllers
             {
                 //TODO: Implement room names checking
                 //TODO: Implement new rooms HTML returning
-                await _accommodationService.AddRooms(projectId, roomTypeId, name);
+                _ = await _accommodationService.AddRooms(projectId, roomTypeId, name);
                 return StatusCode(201);
             }
             catch (Exception e) when (e is ArgumentException || e is JoinRpgEntityNotFoundException)
