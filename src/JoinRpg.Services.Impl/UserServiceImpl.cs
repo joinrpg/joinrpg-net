@@ -195,7 +195,7 @@ namespace JoinRpg.Services.Impl
                 IsActive = true,
                 ProviderId = providerId,
                 OriginalUri = avatarUri.AbsoluteUri,
-                CachedUri = cachedUri.AbsoluteUri,
+                CachedUri = cachedUri?.AbsoluteUri,
                 User = user,
             };
             return userAvatar;
