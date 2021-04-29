@@ -4,7 +4,12 @@
   ViewBag.Title ="Настройка аватаров";
 }
 <h2>@ViewBag.Title</h2>
-<table>
+<table class="table">
+  <tr>
+    <th>Аватарка</th>
+    <th>Источник</th>
+    <th>&nbsp;</th>
+  </tr>
   @foreach (var avatar in Model.Avatars)
   {
     <tr>
@@ -12,6 +17,9 @@
         <vc:avatar user-avatar-id-or-null="@avatar.AvatarId"
                    email="@Model.Email"
                    recommended-size="64"></vc:avatar>
+      </td>
+      <td>
+        @avatar.Source
       </td>
       <td>
         @if (avatar.Selected)
