@@ -1,4 +1,4 @@
-using System;
+using JoinRpg.PrimitiveTypes;
 
 namespace JoinRpg.Interfaces
 {
@@ -13,5 +13,9 @@ namespace JoinRpg.Interfaces
         string DisplayName { get; }
         string Email { get; }
         bool IsAdmin { get; }
+        /// <summary>
+        /// Avatar of current user
+        /// </summary>
+        AvatarIdentification? Avatar { get; }
     }
 }
