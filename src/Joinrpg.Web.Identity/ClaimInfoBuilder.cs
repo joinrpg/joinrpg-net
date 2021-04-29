@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using JoinRpg.DataModel;
 using JoinRpg.Domain;
 using Claim = System.Security.Claims.Claim;
+using ClaimTypes = System.Security.Claims.ClaimTypes;
 
 namespace Joinrpg.Web.Identity
 {
@@ -9,9 +10,12 @@ namespace Joinrpg.Web.Identity
     {
         public static IList<Claim> ToClaimsList(this User dbUser)
         {
-            var list = new List<Claim>();
-            list.Add(new Claim(JoinClaimTypes.DisplayName, dbUser.GetDisplayName()));
-            return list;
+            return new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, dbUser.Email),
+                new Claim(JoinClaimTypes.DisplayName, dbUser.GetDisplayName()),
+                new Claim(JoinClaimTypes.AvatarId, dbUser.SelectedAvatarId?.ToString())
+            };
         }
     }
 }
