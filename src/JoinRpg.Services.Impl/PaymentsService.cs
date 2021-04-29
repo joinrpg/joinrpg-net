@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
                 throw new NoAccessToProjectException(claim.Project, CurrentUserId);
             }
 
-            PaymentType onlinePaymentType =
+            var onlinePaymentType =
                 claim.Project.ActivePaymentTypes.SingleOrDefault(
                     pt => pt.TypeKind == PaymentTypeKind.Online);
             if (onlinePaymentType == null)

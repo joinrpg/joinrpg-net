@@ -55,7 +55,7 @@ namespace JoinRpg.DataModel
         public virtual IEnumerable<Claim> Claims => Project.Claims.Where(c => c.CharacterId == CharacterId);
 
         [CanBeNull/*, InverseProperty(null)*/]
-        public virtual Claim ApprovedClaim { get; set; }
+        public virtual Claim? ApprovedClaim { get; set; }
 
         [ForeignKey(nameof(ApprovedClaim))/*, InverseProperty(null)*/]
         public int? ApprovedClaimId { get; set; }
@@ -68,7 +68,7 @@ namespace JoinRpg.DataModel
         /// </summary>
         public bool IsAvailable => IsAcceptingClaims && ApprovedClaim == null && Project.IsAcceptingClaims;
 
-        public User ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
+        public User? ResponsibleMasterUser => null; // We don't implement yet of setting responsible masters for indv. characters. I think the group will be enough now
 
         public string PlotElementOrderData { get; set; }
 

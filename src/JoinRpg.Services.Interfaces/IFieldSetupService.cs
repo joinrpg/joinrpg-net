@@ -62,7 +62,7 @@ namespace JoinRpg.Services.Interfaces
             bool showForUnapprovedClaims,
             int price,
             string masterFieldHint,
-            string programmaticValue)
+            string? programmaticValue)
         {
             ProjectId = projectId;
             Name = name;
@@ -94,7 +94,7 @@ namespace JoinRpg.Services.Interfaces
         public bool ShowForUnapprovedClaims { get; }
         public int Price { get; }
         public string MasterFieldHint { get; }
-        public string ProgrammaticValue { get; }
+        public string? ProgrammaticValue { get; }
     }
 
     public sealed class CreateFieldRequest : FieldRequestBase
@@ -118,7 +118,7 @@ namespace JoinRpg.Services.Interfaces
             bool showForUnapprovedClaims,
             int price,
             string masterFieldHint,
-            string programmaticValue) : base(projectId,
+            string? programmaticValue) : base(projectId,
             name,
             fieldHint,
             canPlayerEdit,
@@ -178,22 +178,22 @@ namespace JoinRpg.Services.Interfaces
         public int ProjectId { get; }
         public int ProjectFieldId { get; }
         public string Label { get; }
-        public string Description { get; }
-        public string MasterDescription { get; }
-        public string ProgrammaticValue { get; }
+        public string? Description { get; }
+        public string? MasterDescription { get; }
+        public string? ProgrammaticValue { get; }
         public int Price { get; }
         public bool PlayerSelectable { get; }
-        public TimeSlotOptions TimeSlotOptions { get; }
+        public TimeSlotOptions? TimeSlotOptions { get; }
 
         protected FieldValueVariantRequestBase(int projectId,
             string label,
-            string description,
+            string? description,
             int projectFieldId,
-            string masterDescription,
-            string programmaticValue,
+            string? masterDescription,
+            string? programmaticValue,
             int price,
             bool playerSelectable,
-            TimeSlotOptions timeSlotOptions)
+            TimeSlotOptions? timeSlotOptions)
         {
             ProjectId = projectId;
             Label = label;
@@ -218,7 +218,7 @@ namespace JoinRpg.Services.Interfaces
             string programmaticValue,
             int price,
             bool playerSelectable,
-            TimeSlotOptions timeSlotOptions)
+            TimeSlotOptions? timeSlotOptions)
             : base(projectId,
                 label,
                 description,
@@ -236,13 +236,13 @@ namespace JoinRpg.Services.Interfaces
     {
         public CreateFieldValueVariantRequest(int projectId,
             string label,
-            string description,
+            string? description,
             int projectFieldId,
-            string masterDescription,
-            string programmaticValue,
+            string? masterDescription,
+            string? programmaticValue,
             int price,
             bool playerSelectable,
-            Domain.Schedules.TimeSlotOptions timeSlotOptions)
+            TimeSlotOptions? timeSlotOptions)
             : base(projectId,
                 label,
                 description,

@@ -25,7 +25,7 @@ namespace JoinRpg.DataModel
         public int? AccommodationId { get; set; }
         [CanBeNull]
         [ForeignKey("AccommodationId")]
-        public virtual ProjectAccommodation Accommodation { get; set; }
+        public virtual ProjectAccommodation? Accommodation { get; set; }
 
         public InviteState IsAccepted { get; set; }
 

@@ -26,8 +26,8 @@ namespace JoinRpg.Data.Interfaces
     public class ClaimAccommodationInfoRow
     {
         public int ClaimId { get; set; }
-        public string AccomodationType { get; set; }
-        public string RoomName { get; set; }
+        public string? AccomodationType { get; set; }
+        public string? RoomName { get; set; }
         public User User { get; set; }
     }
 }

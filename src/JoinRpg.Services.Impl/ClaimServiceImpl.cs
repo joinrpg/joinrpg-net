@@ -54,7 +54,7 @@ namespace JoinRpg.Services.Impl
                 throw new ClaimWrongStatusException(claim);
             }
 
-            FinanceOperationEmail financeEmail = null;
+            FinanceOperationEmail? financeEmail = null;
             if (money > 0)
             {
                 var paymentType = claim.Project.GetCashPaymentType(CurrentUserId);
@@ -154,7 +154,7 @@ namespace JoinRpg.Services.Impl
 
             // ReSharper disable once UnusedVariable TODO decide if we should send email if FieldDefaultValueGenerator changes something
             var updatedFields =
-              FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
+              FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
                 FieldDefaultValueGenerator);
 
             await UnitOfWork.SaveChangesAsync();
@@ -172,7 +172,7 @@ namespace JoinRpg.Services.Impl
             int? characterGroupId,
             int? characterId,
             string claimText,
-            IReadOnlyDictionary<int, string> fields)
+            IReadOnlyDictionary<int, string?> fields)
         {
             var source = await ProjectRepository.GetClaimSource(projectId, characterGroupId, characterId);
 
@@ -249,6 +249,10 @@ namespace JoinRpg.Services.Impl
 
             if (financeAction != FinanceOperationAction.None)
             {
+                if (parentComment is null)
+                {
+                    throw new InvalidOperationException("Requested to perform finance operation on parent comment, but there is no any");
+                }
                 extraAction = PerformFinanceOperation(financeAction, parentComment, claim);
                 predicate = s => s.Comments || s.MoneyOperation;
             }
@@ -345,7 +349,7 @@ namespace JoinRpg.Services.Impl
             // 2. M.b. we need to move some field values from Claim to Characters
             // 3. (2) Could activate changing of special groups
             // ReSharper disable once MustUseReturnValue we don't need send email here
-            FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string>(),
+            FieldSaveHelper.SaveCharacterFields(CurrentUserId, claim, new Dictionary<int, string?>(),
                 FieldDefaultValueGenerator);
 
             await UnitOfWork.SaveChangesAsync();
@@ -401,15 +405,20 @@ namespace JoinRpg.Services.Impl
             var claim = await LoadClaimForApprovalDecline(projectId, claimId, CurrentUserId);
 
             claim.EnsureCanChangeStatus(Claim.Status.DeclinedByMaster);
-            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
-
+            
             claim.MasterDeclinedDate = Now;
             claim.ClaimStatus = Claim.Status.DeclinedByMaster;
             claim.ClaimDenialStatus = claimDenialStatus;
 
             var roomEmail = await CommonClaimDecline(claim);
-            if (deleteCharacter && statusWasApproved)
+
+            var statusWasApproved = claim.ClaimStatus == Claim.Status.Approved;
+            if (deleteCharacter)
             {
+                if (claim.Character is null || !statusWasApproved)
+                {
+                    throw new InvalidOperationException("Attempt to delete character, but it not exists");
+                }
                 DeleteCharacter(claim.Character, CurrentUserId);
             }
 
@@ -444,8 +453,7 @@ namespace JoinRpg.Services.Impl
             MarkChanged(character);
         }
 
-        [ItemCanBeNull]
-        private async Task<LeaveRoomEmail> CommonClaimDecline(Claim claim)
+        private async Task<LeaveRoomEmail?> CommonClaimDecline(Claim claim)
         {
             MarkCharacterChangedIfApproved(claim);
 
@@ -458,10 +466,9 @@ namespace JoinRpg.Services.Impl
             return await ConsiderLeavingRoom(claim);
         }
 
-        [ItemCanBeNull]
-        private async Task<LeaveRoomEmail> ConsiderLeavingRoom(Claim claim)
+        private async Task<LeaveRoomEmail?> ConsiderLeavingRoom(Claim claim)
         {
-            LeaveRoomEmail email = null;
+            LeaveRoomEmail? email = null;
 
             if (claim.AccommodationRequest != null)
             {
@@ -712,8 +719,8 @@ namespace JoinRpg.Services.Impl
         }
 
         private async Task<T> AddCommentWithEmail<T>(string commentText, Claim claim,
-          bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment parentComment,
-          CommentExtraAction? extraAction = null, IEnumerable<User> extraSubscriptions = null) where T : ClaimEmailModel, new()
+          bool isVisibleToPlayer, Func<UserSubscription, bool> predicate, Comment? parentComment,
+          CommentExtraAction? extraAction = null, IEnumerable<User>? extraSubscriptions = null) where T : ClaimEmailModel, new()
         {
             var visibleToPlayerUpdated = isVisibleToPlayer && parentComment?.IsVisibleToPlayer != false;
             AddCommentImpl(claim, parentComment, commentText, visibleToPlayerUpdated, extraAction);
@@ -765,7 +772,7 @@ namespace JoinRpg.Services.Impl
 
         public async Task SaveFieldsFromClaim(int projectId,
             int characterId,
-            IReadOnlyDictionary<int, string> newFieldValue)
+            IReadOnlyDictionary<int, string?> newFieldValue)
         {
             //TODO: Prevent lazy load here - use repository 
             var claim = await LoadProjectSubEntityAsync<Claim>(projectId, characterId);

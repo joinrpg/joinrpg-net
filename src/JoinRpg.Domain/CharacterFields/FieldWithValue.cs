@@ -10,13 +10,13 @@ namespace JoinRpg.Domain
 {
     public class FieldWithValue
     {
-        private string _value;
+        private string? _value;
 
-        private IReadOnlyList<int> SelectedIds { get; set; }
+        private IReadOnlyList<int> SelectedIds { get; set; } = new List<int>();
 
         private Lazy<IReadOnlyList<ProjectFieldDropdownValue>> OrderedValueCache { get; }
 
-        public FieldWithValue(ProjectField field, [CanBeNull] string value)
+        public FieldWithValue(ProjectField field, string? value)
         {
             Field = field;
             Value = value;
@@ -26,7 +26,7 @@ namespace JoinRpg.Domain
         public ProjectField Field { get; }
 
         [CanBeNull]
-        public string Value
+        public string? Value
         {
             get => _value;
             set
@@ -42,7 +42,8 @@ namespace JoinRpg.Domain
         [NotNull]
         public string DisplayString => GetDisplayValue(Value, SelectedIds);
 
-        protected string GetDisplayValue(string value, IReadOnlyList<int> selectedIDs)
+        //TODO: there is a bug here (note Value used instead of value)
+        protected string GetDisplayValue(string? value, IReadOnlyList<int> selectedIDs)
         {
             if (Field.FieldType == ProjectFieldType.Checkbox)
             {

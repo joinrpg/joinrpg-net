@@ -42,17 +42,17 @@ namespace JoinRpg.WebPortal.Managers
         /// <summary>
         /// Get all active fields
         /// </summary>
-        public async Task<GameFieldListViewModel> GetActiveAsync() => await GetFieldsImpl(FieldNavigationPage.ActiveFieldsList, field => field.IsActive);
+        public async Task<GameFieldListViewModel?> GetActiveAsync() => await GetFieldsImpl(FieldNavigationPage.ActiveFieldsList, field => field.IsActive);
 
         /// <summary>
         /// Get all inactive fields
         /// </summary>
-        public async Task<GameFieldListViewModel> GetInActiveAsync() => await GetFieldsImpl(FieldNavigationPage.DeletedFieldsList, field => !field.IsActive);
+        public async Task<GameFieldListViewModel?> GetInActiveAsync() => await GetFieldsImpl(FieldNavigationPage.DeletedFieldsList, field => !field.IsActive);
 
         /// <summary>
         /// Get field creation page
         /// </summary>
-        public async Task<GameFieldCreateViewModel> CreatePageAsync()
+        public async Task<GameFieldCreateViewModel?> CreatePageAsync()
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -62,7 +62,7 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, new GameFieldCreateViewModel());
         }
 
-        public async Task<T> FillFailedModel<T>(T model) where T : class, IFieldNavigationAware
+        public async Task<T?> FillFailedModel<T>(T model) where T : class, IFieldNavigationAware
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -72,7 +72,7 @@ namespace JoinRpg.WebPortal.Managers
             return FillFromProject(project, model);
         }
 
-        public async Task<FieldSettingsViewModel> FillFailedSettingsModel(FieldSettingsViewModel model)
+        public async Task<FieldSettingsViewModel?> FillFailedSettingsModel(FieldSettingsViewModel model)
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -85,7 +85,7 @@ namespace JoinRpg.WebPortal.Managers
         /// <summary>
         /// Get field edit page
         /// </summary>
-        public async Task<GameFieldEditViewModel> EditPageAsync(int projectFieldId)
+        public async Task<GameFieldEditViewModel?> EditPageAsync(int projectFieldId)
         {
             var field = await ProjectRepository.GetProjectField(CurrentProject.ProjectId, projectFieldId);
             if (field == null)
@@ -100,7 +100,7 @@ namespace JoinRpg.WebPortal.Managers
         /// <summary>
         /// Page with field settings
         /// </summary>
-        public async Task<FieldSettingsViewModel> SettingsPagesAsync()
+        public async Task<FieldSettingsViewModel?> SettingsPagesAsync()
         {
             var project = await ProjectRepository.GetProjectWithFieldsAsync(CurrentProject.ProjectId);
             if (project == null)
@@ -152,7 +152,7 @@ namespace JoinRpg.WebPortal.Managers
 
         private List<JoinSelectListItem> ToSelectListItems(
             IEnumerable<ProjectField> enumerable,
-            string notSelectedName = null
+            string? notSelectedName = null
             )
         {
             var list = enumerable.Select(field => new JoinSelectListItem()
@@ -175,7 +175,7 @@ namespace JoinRpg.WebPortal.Managers
             return list;
         }
 
-        private async Task<GameFieldListViewModel> GetFieldsImpl(
+        private async Task<GameFieldListViewModel?> GetFieldsImpl(
             FieldNavigationPage page,
             Func<ProjectField, bool> predicate)
         {

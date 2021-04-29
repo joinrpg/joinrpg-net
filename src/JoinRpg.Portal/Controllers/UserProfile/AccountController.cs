@@ -423,7 +423,7 @@ namespace JoinRpg.Portal.Controllers
         public async Task<ActionResult> ExternalLoginConfirmation(
             ExternalLoginConfirmationViewModel model)
         {
-            if (User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index", "Manage");
             }

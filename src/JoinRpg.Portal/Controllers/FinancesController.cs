@@ -93,7 +93,7 @@ namespace JoinRpg.Portal.Controllers
             }
             else
             {
-                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName());
+                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName() ?? "");
                 var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
                 return File(
                     await generator.Generate(),

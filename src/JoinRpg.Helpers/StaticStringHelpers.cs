@@ -11,20 +11,20 @@ namespace JoinRpg.Helpers
     {
         [NotNull]
         public static string JoinIfNotNullOrWhitespace([NotNull, ItemCanBeNull]
-            this IEnumerable<string> strings,
+            this IEnumerable<string?> strings,
             [NotNull]
             string separator) => string.Join(separator, strings.WhereNotNullOrWhiteSpace());
 
         [NotNull, ItemNotNull]
         public static IEnumerable<string> WhereNotNullOrWhiteSpace([ItemCanBeNull] [NotNull]
-            this IEnumerable<string> strings)
+            this IEnumerable<string?> strings)
         {
             if (strings == null)
             {
                 throw new ArgumentNullException(nameof(strings));
             }
 
-            return strings.Where(s => !string.IsNullOrWhiteSpace(s));
+            return strings.Where(s => !string.IsNullOrWhiteSpace(s)).WhereNotNull();
         }
 
         [NotNull]
@@ -196,7 +196,7 @@ namespace JoinRpg.Helpers
 
         [NotNull]
         public static int[] ToIntList([CanBeNull]
-            this string claimIds)
+            this string? claimIds)
         {
             if (string.IsNullOrWhiteSpace(claimIds))
             {

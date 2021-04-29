@@ -7,7 +7,7 @@ namespace JoinRpg.IntegrationTests.TestInfrastructure
 {
     public static class HtmlDocumentHelpers
     {
-        public static string GetTitle(this HtmlDocument doc)
+        public static string? GetTitle(this HtmlDocument doc)
         {
             if (doc.DocumentNode.SelectSingleNode("//head/title") is HtmlNode titleNode)
             {

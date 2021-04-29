@@ -25,7 +25,7 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
         {
             foreach (var propertyInfo in TargetType.GetProperties())
             {
-                var displayColumnAttribute = propertyInfo.DeclaringType.GetCustomAttribute<DisplayColumnAttribute>();
+                var displayColumnAttribute = propertyInfo.DeclaringType?.GetCustomAttribute<DisplayColumnAttribute>();
 
                 if (displayColumnAttribute != null)
                 {
@@ -68,11 +68,10 @@ namespace JoinRpg.Services.Export.AutoFrontEnd
 
             if (typeof(IEnumerable).IsAssignableFrom(propertyType))
             {
-                return LambdaHelpers.GetEnumerableConvertor(item => item.ToString());
+                return LambdaHelpers.GetEnumerableConvertor(item => item.ToString()!);
             }
             return
-              DisplayFunctions.Where(
-                displayFunction => displayFunction.Key.IsAssignableFrom(propertyType))
+              DisplayFunctions.Where(displayFunction => displayFunction.Key.IsAssignableFrom(propertyType))
                 .Select(kv => kv.Value)
                 .FirstOrDefault() ?? (arg => arg?.ToString());
         }

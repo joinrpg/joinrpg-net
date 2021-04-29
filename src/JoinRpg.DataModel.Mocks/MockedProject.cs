@@ -129,7 +129,7 @@ namespace JoinRpg.DataModel.Mocks
 
         }
 
-        public CharacterGroup CreateCharacterGroup(CharacterGroup characterGroup = null)
+        public CharacterGroup CreateCharacterGroup(CharacterGroup? characterGroup = null)
         {
             characterGroup ??= new CharacterGroup();
 
@@ -150,7 +150,7 @@ namespace JoinRpg.DataModel.Mocks
             return field;
         }
 
-        public ProjectField CreateField(ProjectField field = null)
+        public ProjectField CreateField(ProjectField? field = null)
         {
             field ??= new ProjectField();
             field.Project = Project;

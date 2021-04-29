@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using JoinRpg.DataModel;
-using JoinRpg.Helpers;
 
 namespace JoinRpg.Domain.CharacterFields
 {
@@ -15,17 +14,17 @@ namespace JoinRpg.Domain.CharacterFields
     {
         private abstract class FieldSaveStrategyBase
         {
-            protected Claim Claim { get; }
-            protected Character Character { get; }
+            protected Claim? Claim { get; }
+            protected Character? Character { get; }
             private int CurrentUserId { get; }
             private IFieldDefaultValueGenerator Generator { get; }
-            private Project Project { get; }
+            protected Project Project { get; }
 
             private List<FieldWithPreviousAndNewValue> UpdatedFields { get; } =
                 new List<FieldWithPreviousAndNewValue>();
 
-            protected FieldSaveStrategyBase(Claim claim,
-                Character character,
+            protected FieldSaveStrategyBase(Claim? claim,
+                Character? character,
                 int currentUserId,
                 IFieldDefaultValueGenerator generator)
             {
@@ -33,27 +32,14 @@ namespace JoinRpg.Domain.CharacterFields
                 Character = character;
                 CurrentUserId = currentUserId;
                 Generator = generator;
-                Project = character?.Project ?? claim?.Project;
-
-                if (Project == null)
-                {
-                    throw new ArgumentNullException("",
+                Project = character?.Project ?? claim?.Project ?? throw new ArgumentNullException("",
                         "Either character or claim should be not null");
-                }
             }
 
             public IReadOnlyCollection<FieldWithPreviousAndNewValue> GetUpdatedFields() =>
                 UpdatedFields.Where(uf => uf.PreviousDisplayString != uf.DisplayString).ToList();
 
             public abstract void Save(Dictionary<int, FieldWithValue> fields);
-
-            protected void UpdateSpecialGroups(Dictionary<int, FieldWithValue> fields)
-            {
-                var ids = fields.Values.GenerateSpecialGroupsList();
-                var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial)
-                    .Select(g => g.CharacterGroupId);
-                Character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
-            }
 
             public Dictionary<int, FieldWithValue> LoadFields()
             {
@@ -69,7 +55,7 @@ namespace JoinRpg.Domain.CharacterFields
             {
                 var accessArguments = Character != null
                     ? new AccessArguments(Character, CurrentUserId)
-                    : new AccessArguments(Claim, CurrentUserId);
+                    : new AccessArguments(Claim!, CurrentUserId); // Either character or claim should be not null
 
                 var editAccess = field.HasEditAccess(accessArguments);
                 if (!editAccess)
@@ -81,7 +67,7 @@ namespace JoinRpg.Domain.CharacterFields
             /// <summary>
             /// Returns true is the value has changed
             /// </summary>
-            public bool AssignFieldValue(FieldWithValue field, string newValue)
+            public bool AssignFieldValue(FieldWithValue field, string? newValue)
             {
                 if (field.Value == newValue)
                 {
@@ -105,22 +91,34 @@ namespace JoinRpg.Domain.CharacterFields
                 return true;
             }
 
-            public string GenerateDefaultValue(FieldWithValue field)
+            public string? GenerateDefaultValue(FieldWithValue field)
             {
-                string newValue;
-                switch (field.Field.FieldBoundTo)
+                return field.Field.FieldBoundTo switch
                 {
-                    case FieldBoundTo.Character:
-                        newValue = Generator.CreateDefaultValue(Character, field);
-                        break;
-                    case FieldBoundTo.Claim:
-                        newValue = Generator.CreateDefaultValue(Claim, field);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                    FieldBoundTo.Character => Generator.CreateDefaultValue(Character, field),
+                    FieldBoundTo.Claim => Generator.CreateDefaultValue(Claim, field),
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
+            }
 
-                return newValue;
+            protected abstract void SetCharacterNameFromPlayer();
+        }
+
+        private abstract class CharacterExistsStrategyBase : FieldSaveStrategyBase
+        {
+            protected new Character Character => base.Character!; //Character should always exists
+
+            protected CharacterExistsStrategyBase(Claim? claim, Character character, int currentUserId, IFieldDefaultValueGenerator generator)
+                : base(claim, character, currentUserId, generator)
+            {
+            }
+
+            protected void UpdateSpecialGroups(Dictionary<int, FieldWithValue> fields)
+            {
+                var ids = fields.Values.GenerateSpecialGroupsList();
+                var groupsToKeep = Character.Groups.Where(g => !g.IsSpecial)
+                    .Select(g => g.CharacterGroupId);
+                Character.ParentCharacterGroupIds = groupsToKeep.Union(ids).ToArray();
             }
 
             protected void SetCharacterDescription(Dictionary<int, FieldWithValue> fields)
@@ -128,9 +126,7 @@ namespace JoinRpg.Domain.CharacterFields
                 if (Project.Details.CharacterDescription != null)
                 {
                     Character.Description = new MarkdownString(
-                        fields
-                            .GetValueOrDefault(Project.Details.CharacterDescription.ProjectFieldId)
-                            .Value);
+                        fields[Project.Details.CharacterDescription.ProjectFieldId].Value);
                 }
 
                 if (!Project.Details.CharacterNameLegacyMode)
@@ -141,27 +137,23 @@ namespace JoinRpg.Domain.CharacterFields
                     }
                     else
                     {
-                        Character.CharacterName = fields
-                            .GetValueOrDefault(Project.Details.CharacterNameField.ProjectFieldId)
-                            .Value;
+                        var name = fields[Project.Details.CharacterNameField.ProjectFieldId].Value;
 
-                        if (string.IsNullOrWhiteSpace(Character.CharacterName))
-                        {
-                            Character.CharacterName = "CHAR" + Character.CharacterId;
-                        }
+                        Character.CharacterName = string.IsNullOrWhiteSpace(name) ?
+                            Character.CharacterName = "CHAR" + Character.CharacterId
+                            : name;
                     }
                 }
             }
-
-            protected abstract void SetCharacterNameFromPlayer();
         }
 
-        private class SaveToCharacterOnlyStrategy : FieldSaveStrategyBase
+        private class SaveToCharacterOnlyStrategy : CharacterExistsStrategyBase
         {
-            public SaveToCharacterOnlyStrategy(Claim claim,
+            public SaveToCharacterOnlyStrategy(
                 Character character,
                 int currentUserId,
-                IFieldDefaultValueGenerator generator) : base(claim,
+                IFieldDefaultValueGenerator generator)
+                : base(claim: null,
                 character,
                 currentUserId,
                 generator)
@@ -187,11 +179,12 @@ namespace JoinRpg.Domain.CharacterFields
 
         private class SaveToClaimOnlyStrategy : FieldSaveStrategyBase
         {
+            protected new Claim Claim => base.Claim!; //Claim should always exists
+
             public SaveToClaimOnlyStrategy(Claim claim,
-                Character character,
                 int currentUserId,
                 IFieldDefaultValueGenerator generator) : base(claim,
-                character,
+                character: null,
                 currentUserId,
                 generator)
             {
@@ -209,8 +202,10 @@ namespace JoinRpg.Domain.CharacterFields
             }
         }
 
-        private class SaveToCharacterAndClaimStrategy : FieldSaveStrategyBase
+        private class SaveToCharacterAndClaimStrategy : CharacterExistsStrategyBase
         {
+            protected new Claim Claim => base.Claim!; //Claim should always exists
+
             public SaveToCharacterAndClaimStrategy(Claim claim,
                 Character character,
                 int currentUserId,
@@ -247,7 +242,7 @@ namespace JoinRpg.Domain.CharacterFields
             [NotNull]
             Claim claim,
             [NotNull]
-            IReadOnlyDictionary<int, string> newFieldValue,
+            IReadOnlyDictionary<int, string?> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
             if (claim == null)
@@ -271,8 +266,7 @@ namespace JoinRpg.Domain.CharacterFields
             int currentUserId,
             [NotNull]
             Character character,
-            [NotNull]
-            IReadOnlyDictionary<int, string> newFieldValue,
+            IReadOnlyDictionary<int, string?> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
             if (character == null)
@@ -290,12 +284,10 @@ namespace JoinRpg.Domain.CharacterFields
         [MustUseReturnValue]
         private static IReadOnlyCollection<FieldWithPreviousAndNewValue> SaveCharacterFieldsImpl(
             int currentUserId,
-            [CanBeNull]
-            Character character,
-            [CanBeNull]
-            Claim claim,
+            Character? character,
+            Claim? claim,
             [NotNull]
-            IReadOnlyDictionary<int, string> newFieldValue,
+            IReadOnlyDictionary<int, string?> newFieldValue,
             IFieldDefaultValueGenerator generator)
         {
             if (newFieldValue == null)
@@ -315,29 +307,19 @@ namespace JoinRpg.Domain.CharacterFields
             return strategy.GetUpdatedFields();
         }
 
-        private static FieldSaveStrategyBase CreateStrategy(int currentUserId, Character character,
-            Claim claim, IFieldDefaultValueGenerator generator)
+        private static FieldSaveStrategyBase CreateStrategy(int currentUserId, Character? character,
+            Claim? claim, IFieldDefaultValueGenerator generator)
         {
-            FieldSaveStrategyBase strategy;
-            if (claim == null)
+            return (claim, character) switch
             {
-                strategy =
-                    new SaveToCharacterOnlyStrategy(null, character, currentUserId, generator);
-            }
-            else if (!claim.IsApproved)
-            {
-                strategy = new SaveToClaimOnlyStrategy(claim, null, currentUserId, generator);
-            }
-            else
-            {
-                strategy =
-                    new SaveToCharacterAndClaimStrategy(claim, character, currentUserId, generator);
-            }
-
-            return strategy;
+                (null, Character ch) => new SaveToCharacterOnlyStrategy(ch, currentUserId, generator),
+                ({ IsApproved: true }, Character ch) => new SaveToCharacterAndClaimStrategy(claim!, ch, currentUserId, generator),
+                ({ IsApproved: false }, _) => new SaveToClaimOnlyStrategy(claim!, currentUserId, generator),
+                _ => throw new InvalidOperationException("Either claim or character should be correct"),
+            };
         }
 
-        private static void AssignValues(IReadOnlyDictionary<int, string> newFieldValue, Dictionary<int, FieldWithValue> fields,
+        private static void AssignValues(IReadOnlyDictionary<int, string?> newFieldValue, Dictionary<int, FieldWithValue> fields,
             FieldSaveStrategyBase strategy)
         {
             foreach (var keyValuePair in newFieldValue)
@@ -357,7 +339,7 @@ namespace JoinRpg.Domain.CharacterFields
             }
         }
 
-        private static void GenerateDefaultValues(Character character, Dictionary<int, FieldWithValue> fields,
+        private static void GenerateDefaultValues(Character? character, Dictionary<int, FieldWithValue> fields,
             FieldSaveStrategyBase strategy)
         {
             foreach (var field in fields.Values.Where(
@@ -372,7 +354,7 @@ namespace JoinRpg.Domain.CharacterFields
             }
         }
 
-        private static string NormalizeValueBeforeAssign(FieldWithValue field, string toAssign)
+        private static string? NormalizeValueBeforeAssign(FieldWithValue field, string? toAssign)
         {
             switch (field.Field.FieldType)
             {

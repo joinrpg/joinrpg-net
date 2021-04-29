@@ -50,9 +50,9 @@ namespace JoinRpg.Services.Impl
 
             if (!user.VerifiedProfileFlag)
             {
-                user.SurName = userFullName.SurName;
-                user.FatherName = userFullName.FatherName;
-                user.BornName = userFullName.GivenName;
+                user.SurName = userFullName.SurName?.Value;
+                user.FatherName = userFullName.FatherName?.Value;
+                user.BornName = userFullName.GivenName?.Value;
             }
             user.PrefferedName = userFullName.PrefferedName;
 

@@ -34,7 +34,7 @@ namespace JoinRpg.Web.Models.Characters
 
     public interface ICharacterWithPlayerViewModel
     {
-        User Player { get; }
+        User? Player { get; }
         bool HidePlayer { get; }
         bool HasAccess { get; }
     }
@@ -44,7 +44,7 @@ namespace JoinRpg.Web.Models.Characters
         [ReadOnly(true), DisplayName("Входит в группы")]
         public CharacterParentGroupsViewModel ParentGroups { get; }
 
-        public User Player { get; }
+        public User? Player { get; }
 
         public PlotDisplayViewModel Plot { get; }
 

@@ -22,7 +22,7 @@ namespace JoinRpg.Services.Impl
 
         private IEmailService EmailService { get; }
 
-        private async Task<AccommodationInvite> CreateAccommodationInvite(int projectId,
+        private async Task<AccommodationInvite?> CreateAccommodationInvite(int projectId,
             int senderClaimId,
             int receiverClaimId,
             int accommodationRequestId)
@@ -108,7 +108,7 @@ namespace JoinRpg.Services.Impl
             };
         }
 
-        private async Task<IEnumerable<AccommodationInvite>>
+        private async Task<IEnumerable<AccommodationInvite>?>
             CreateAccommodationInviteToAccommodationRequest(int projectId,
                 int senderClaimId,
                 int receiverAccommodationRequestId,
@@ -185,7 +185,7 @@ namespace JoinRpg.Services.Impl
             return result;
         }
 
-        public async Task<IEnumerable<AccommodationInvite>> CreateAccommodationInviteToGroupOrClaim(
+        public async Task<IEnumerable<AccommodationInvite?>?> CreateAccommodationInviteToGroupOrClaim(
             int projectId,
             int senderClaimId,
             string receiverClaimOrAccommodationRequestId,
@@ -210,7 +210,7 @@ namespace JoinRpg.Services.Impl
         }
 
         /// <inheritdoc />
-        public async Task<AccommodationInvite> AcceptAccommodationInvite(int projectId,
+        public async Task<AccommodationInvite?> AcceptAccommodationInvite(int projectId,
             int inviteId)
         {
             //todo: make null result descriptive
@@ -244,7 +244,7 @@ namespace JoinRpg.Services.Impl
 
             if (receiverAccommodationRequest != null)
             {
-                foreach (var claim in receiverAccommodationRequest?.Subjects.ToList())
+                foreach (var claim in receiverAccommodationRequest.Subjects.ToList())
                 {
                     await DeclineOtherInvite(claim.ClaimId, inviteId).ConfigureAwait(false);
                     senderAccommodationRequest.Subjects.Add(claim);
@@ -273,7 +273,7 @@ namespace JoinRpg.Services.Impl
             return inviteRequest;
         }
 
-        public async Task<AccommodationInvite> CancelOrDeclineAccommodationInvite(int inviteId,
+        public async Task<AccommodationInvite?> CancelOrDeclineAccommodationInvite(int inviteId,
             AccommodationRequest.InviteState newState)
         {
             var acceptedStates = new[]

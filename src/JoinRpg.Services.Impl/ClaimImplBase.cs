@@ -28,7 +28,7 @@ namespace JoinRpg.Services.Impl
         }
 
         protected Comment AddCommentImpl(Claim claim,
-            Comment parentComment,
+            Comment? parentComment,
             string commentText,
             bool isVisibleToPlayer,
             CommentExtraAction? extraAction = null)
@@ -128,7 +128,7 @@ namespace JoinRpg.Services.Impl
             }
         }
 
-        protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType = null, ExtraAccessReason reason = ExtraAccessReason.None)
+        protected async Task<Claim> LoadClaimAsMaster(IClaimOperationRequest request, Expression<Func<ProjectAcl, bool>> accessType, ExtraAccessReason reason = ExtraAccessReason.None)
         {
             var claim = await ClaimsRepository.GetClaim(request.ProjectId, request.ClaimId);
 
@@ -144,7 +144,7 @@ namespace JoinRpg.Services.Impl
             Func<UserSubscription, bool> subscribePredicate,
             CommentExtraAction? commentExtraAction,
             bool mastersOnly = false,
-            IEnumerable<User> extraRecipients = null)
+            IEnumerable<User?>? extraRecipients = null)
             where TEmail : ClaimEmailModel, new()
         {
             var initiator = await GetCurrentUser();

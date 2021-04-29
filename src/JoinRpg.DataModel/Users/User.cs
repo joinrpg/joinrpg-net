@@ -13,11 +13,11 @@ namespace JoinRpg.DataModel
 
         public override string ToString() => $"User(UserId: {UserId}, BornName: {BornName}, FatherName: {FatherName}, SurName: {SurName}, Id: {UserId}, UserName: {UserName}, Email: {Email}, PasswordHash: {PasswordHash}, ProjectAcls: {ProjectAcls.Select(acl => acl.Project.ProjectName).JoinStrings(", ")}, Claims: {Claims}, FullName: {FullName}, PrefferedName: {PrefferedName}, Auth: {Auth}, Allrpg: {Allrpg}, Extra: {Extra}, Subscriptions: {Subscriptions})";
 
-        public string BornName { get; set; }
+        public string? BornName { get; set; }
 
-        public string FatherName { get; set; }
+        public string? FatherName { get; set; }
 
-        public string SurName { get; set; }
+        public string? SurName { get; set; }
 
         public string UserName { get; set; }
         public string Email { get; set; }

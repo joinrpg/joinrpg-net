@@ -8,7 +8,7 @@ namespace JoinRpg.Domain.CharacterFields
         public MarkdownString DisplayString { get; }
         public MarkdownString PreviousDisplayString { get; }
 
-        public PreviousAndNewValue(string newValue, string previousValue)
+        public PreviousAndNewValue(string newValue, string? previousValue)
         {
             DisplayString = new MarkdownString(newValue);
             PreviousDisplayString = new MarkdownString(previousValue);

@@ -15,7 +15,7 @@ namespace JoinRpg.Helpers.Web
     public class BooleanRequiredAttribute : RequiredAttribute, IClientModelValidator
     {
         /// <inheritdoc />
-        public override bool IsValid(object value)
+        public override bool IsValid(object? value)
         {
             if (value is null)
             {

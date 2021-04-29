@@ -15,20 +15,21 @@ namespace JoinRpg.Portal.Infrastructure.Authorization
             FallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
 
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() => FallbackPolicyProvider.GetDefaultPolicyAsync();
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
+            => FallbackPolicyProvider.GetFallbackPolicyAsync();
 
-        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             if (policyName.StartsWith(nameof(RequireMaster)))
             {
-                AuthorizationPolicy policy = MasterRequirement.TryParsePolicy(policyName);
+                var policy = MasterRequirement.TryParsePolicy(policyName);
                 if (policy != null)
                 {
-                    return Task.FromResult(policy);
+                    return policy;
                 }
             }
 
-            return FallbackPolicyProvider.GetPolicyAsync(policyName);
+            return await FallbackPolicyProvider.GetPolicyAsync(policyName);
         }
 
 

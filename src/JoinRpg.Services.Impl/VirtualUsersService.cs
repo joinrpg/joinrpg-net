@@ -23,7 +23,7 @@ namespace JoinRpg.Services.Impl
 
         private User LoadPaymentsUser(IUnitOfWork uow)
         {
-            User result = uow
+            var result = uow
                 .GetDbSet<User>()
                 .AsNoTracking()
                 .Include(u => u.Auth)

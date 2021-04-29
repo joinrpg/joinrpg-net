@@ -13,14 +13,14 @@ namespace JoinRpg.Web.Helpers
             {
                 throw new ArgumentException($"{nameof(enumerationValue)} must be of Enum type", nameof(enumerationValue));
             }
-            var memberInfo = type.GetMember(enumerationValue.ToString());
+            var memberInfo = type.GetMember(enumerationValue.ToString()!);
             if (memberInfo.Length <= 0)
             {
-                return enumerationValue.ToString();
+                return enumerationValue.ToString()!;
             }
 
             var attrs = memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute), false);
-            return attrs.Length > 0 ? ((DescriptionAttribute)attrs[0]).Description : enumerationValue.ToString();
+            return attrs.Length > 0 ? ((DescriptionAttribute)attrs[0]).Description : enumerationValue.ToString()!;
         }
     }
 }

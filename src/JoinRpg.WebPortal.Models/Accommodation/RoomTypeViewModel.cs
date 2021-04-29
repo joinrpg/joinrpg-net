@@ -91,7 +91,7 @@ namespace JoinRpg.Web.Models.Accommodation
             IsInfinite = entity.IsInfinite;
             IsPlayerSelectable = entity.IsPlayerSelectable;
             IsAutoFilledAccommodation = entity.IsAutoFilledAccommodation;
-            DescriptionEditable = entity.Description.Contents;
+            DescriptionEditable = entity.Description.Contents ?? "";
             DescriptionView = entity.Description.ToHtmlString();
 
             // Creating a list of requests associated with this room type

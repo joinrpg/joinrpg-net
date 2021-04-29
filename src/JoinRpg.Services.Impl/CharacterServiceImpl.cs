@@ -74,7 +74,7 @@ namespace JoinRpg.Services.Impl
             IReadOnlyCollection<int> parentCharacterGroupIds,
             bool isAcceptingClaims,
             bool hidePlayerForCharacter,
-            IReadOnlyDictionary<int, string> characterFields,
+            IReadOnlyDictionary<int, string?> characterFields,
             bool isHot)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
@@ -110,7 +110,7 @@ namespace JoinRpg.Services.Impl
             MarkChanged(character);
             MarkTreeModified(character.Project); //TODO: Can be smarter
 
-            FieldsChangedEmail email = null;
+            FieldsChangedEmail? email = null;
             changedAttributes = changedAttributes
                 .Where(attr => attr.Value.DisplayString != attr.Value.PreviousDisplayString)
                 .ToDictionary(x => x.Key, x => x.Value);
@@ -176,7 +176,7 @@ namespace JoinRpg.Services.Impl
             await UnitOfWork.SaveChangesAsync();
         }
 
-        public async Task SetFields(int projectId, int characterId, Dictionary<int, string> requestFieldValues)
+        public async Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues)
         {
             var character = await LoadProjectSubEntityAsync<Character>(projectId, characterId);
             character.RequestMasterAccess(CurrentUserId, acl => acl.CanEditRoles);
@@ -190,7 +190,7 @@ namespace JoinRpg.Services.Impl
 
             MarkChanged(character);
 
-            FieldsChangedEmail email = null;
+            FieldsChangedEmail? email = null;
 
             if (changedFields.Any())
             {

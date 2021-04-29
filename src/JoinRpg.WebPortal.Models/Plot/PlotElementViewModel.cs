@@ -30,7 +30,7 @@ namespace JoinRpg.Web.Models.Plot
 
         public IEnumerable<GameObjectLinkViewModel> TargetsForDisplay { get; }
 
-        public PlotElementViewModel([CanBeNull] Character character,
+        public PlotElementViewModel([CanBeNull] Character? character,
             int? currentUserId,
             [NotNull] ILinkRenderer linkRendrer,
             [NotNull] PlotElementTexts plotElementVersion,
@@ -111,7 +111,7 @@ namespace JoinRpg.Web.Models.Plot
                 }
                 var linkRenderer = new JoinrpgMarkdownLinkRenderer(plots.First().Project);
 
-                Func<PlotElement, PlotElementTexts> selector;
+                Func<PlotElement, PlotElementTexts?> selector;
                 if (!publishedOnly)
                 {
                     selector = element => element.LastVersion();

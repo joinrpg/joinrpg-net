@@ -322,8 +322,8 @@ namespace JoinRpg.Portal.Controllers
                     .ToList()
             );
         }
-        private async Task<FileContentResult> ExportWithCustomFrontend<T>(
-            IEnumerable<T> viewModel, string title,
+        private async Task<FileContentResult> ExportWithCustomFrontend(
+            IEnumerable<ClaimListItemViewModel> viewModel, string title,
             ExportType exportType, IGeneratorFrontend frontend, string projectName)
         {
             var generator = ExportDataService.GetGenerator(exportType, viewModel,

@@ -16,7 +16,7 @@ namespace JoinRpg.WebPortal.Managers.Schedule
         public static IReadOnlyList<TableHeaderViewModel> ToViewModel(this IEnumerable<ScheduleItemAttribute> items)
             => items.Select(item => item.ToViewModel()).ToList();
 
-        public static ProgramItemViewModel ToViewModel(this ProgramItem item)
+        public static ProgramItemViewModel ToViewModel(this ProgramItem? item)
         {
             if (item == null)
             {

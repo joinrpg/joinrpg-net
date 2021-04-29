@@ -37,7 +37,7 @@ namespace JoinRpg.DataModel
         public virtual CommentDiscussion Discussion { get; set; }
 
         public int? ParentCommentId { get; set; }
-        public virtual Comment Parent { get; set; }
+        public virtual Comment? Parent { get; set; }
 
         [NotNull]
         public virtual CommentText CommentText { get; set; }

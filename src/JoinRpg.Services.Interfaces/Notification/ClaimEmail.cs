@@ -60,7 +60,7 @@ namespace JoinRpg.Services.Interfaces.Notification
         /// Имя связанной заявки
         /// </summary>
         [CanBeNull]
-        public Claim Claim { get; }
+        public Claim? Claim { get; }
 
         /// <summary>
         /// Имя персонажа/заявки
@@ -86,8 +86,7 @@ namespace JoinRpg.Services.Interfaces.Notification
             User initiator,
             ICollection<User> recipients,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            [CanBeNull]
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes)
+            IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes)
             : this(character, null, initiator, recipients, updatedFields, otherChangedAttributes)
         {
         }

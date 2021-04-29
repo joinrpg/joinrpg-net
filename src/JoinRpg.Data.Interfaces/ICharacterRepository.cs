@@ -39,7 +39,7 @@ namespace JoinRpg.Data.Interfaces
         public IReadOnlyCollection<GroupHeader> AllGroups { get; set; }
         public string JsonData { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 
     public class GroupHeader : IEquatable<GroupHeader>
@@ -52,7 +52,7 @@ namespace JoinRpg.Data.Interfaces
         public IntList ParentGroupIds { get; set; }
 
         /// <inheritdoc />
-        public bool Equals(GroupHeader other) => other != null && CharacterGroupId == other.CharacterGroupId;
+        public bool Equals(GroupHeader? other) => other != null && CharacterGroupId == other.CharacterGroupId;
 
         /// <inheritdoc />
         public override bool Equals(object obj) => Equals(obj as GroupHeader);

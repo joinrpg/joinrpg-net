@@ -20,7 +20,7 @@ namespace JoinRpg.Services.Interfaces
             IReadOnlyCollection<int> parentCharacterGroupIds,
             bool isAcceptingClaims,
             bool hidePlayerForCharacter,
-            IReadOnlyDictionary<int, string> characterFields,
+            IReadOnlyDictionary<int, string?> characterFields,
             bool isHot);
 
         Task MoveCharacter(int currentUserId,
@@ -29,6 +29,6 @@ namespace JoinRpg.Services.Interfaces
             int parentCharacterGroupId,
             short direction);
 
-        Task SetFields(int projectId, int characterId, Dictionary<int, string> requestFieldValues);
+        Task SetFields(int projectId, int characterId, Dictionary<int, string?> requestFieldValues);
     }
 }

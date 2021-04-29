@@ -17,7 +17,7 @@ namespace JoinRpg.Services.Impl
             User initiator,
             [NotNull]
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
+            IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
         {
             if (claim == null)
             {
@@ -41,7 +41,7 @@ namespace JoinRpg.Services.Impl
             Func<UserSubscription, bool> subscribePredicate,
             User initiator,
             IReadOnlyCollection<FieldWithPreviousAndNewValue> updatedFields,
-            IReadOnlyDictionary<string, PreviousAndNewValue> otherChangedAttributes = null)
+            IReadOnlyDictionary<string, PreviousAndNewValue>? otherChangedAttributes = null)
         {
             if (character == null)
             {

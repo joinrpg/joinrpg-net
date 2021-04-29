@@ -11,6 +11,6 @@ namespace Joinrpg.Web.Identity
 
         public bool EmaiLConfirmed { get; internal set; }
 
-        public string PasswordHash { get; internal set; }
+        public string? PasswordHash { get; internal set; }
     }
 }
