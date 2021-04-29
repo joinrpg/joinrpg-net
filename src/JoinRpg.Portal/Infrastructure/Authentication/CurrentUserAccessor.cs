@@ -3,7 +3,9 @@ using System.Security.Claims;
 using Joinrpg.Web.Identity;
 using JoinRpg.Interfaces;
 using JoinRpg.Portal.Infrastructure.Authentication;
+using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Http;
+#nullable enable
 
 namespace JoinRpg.Web.Helpers
 {
@@ -14,7 +16,8 @@ namespace JoinRpg.Web.Helpers
     {
         private IHttpContextAccessor HttpContextAccessor { get; }
 
-        private ClaimsPrincipal User => HttpContextAccessor.HttpContext.User;
+        private ClaimsPrincipal User => HttpContextAccessor.HttpContext?.User
+            ?? throw new Exception("Should be inside http request");
 
         /// <summary>
         /// ctor
@@ -25,10 +28,15 @@ namespace JoinRpg.Web.Helpers
 
         int? ICurrentUserAccessor.UserIdOrDefault => User.GetUserIdOrDefault();
 
-        string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName).Value;
+        string ICurrentUserAccessor.DisplayName => User.FindFirst(JoinClaimTypes.DisplayName)!.Value;
 
-        string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email).Value;
+        string ICurrentUserAccessor.Email => User.FindFirst(ClaimTypes.Email)!.Value;
 
         bool ICurrentUserAccessor.IsAdmin => User.IsInRole(DataModel.Security.AdminRoleName);
+
+        AvatarIdentification? ICurrentUserAccessor.Avatar
+            => AvatarIdentification.FromOptional(
+                int.TryParse(User.FindFirstValue(JoinClaimTypes.AvatarId), out var avatarId) ? avatarId : null
+            );
     }
 }

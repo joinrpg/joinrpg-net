@@ -1,5 +1,5 @@
-using System;
 using System.Threading.Tasks;
+using JoinRpg.Helpers.Web;
 using JoinRpg.PrimitiveTypes;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +26,7 @@ namespace JoinRpg.Portal.Infrastructure.Authentication.Avatars
             else
             {
                 avatar = new AvatarInfo(
-                    new Uri($"https://www.gravatar.com/avatar/{email}?d=identicon&s={recommendedSize}"),
+                    GravatarHelper.GetLink(email, recommendedSize),
                     recommendedSize,
                     recommendedSize);
             }
