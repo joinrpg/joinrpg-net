@@ -103,6 +103,10 @@ namespace JoinRpg.Portal
         {
             _ = builder.RegisterModule(new JoinrpgMainModule());
             _ = builder.RegisterModule(new JoinRpgPortalModule());
+
+            var avatarConfig = Configuration.GetSection("AzureAvatarStorage");
+            _ = builder.RegisterModule(
+                new Avatar.Storage.AvatarStorageModule(avatarConfig.Get<AvatarStorageOptions>()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

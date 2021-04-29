@@ -16,7 +16,7 @@ namespace JoinRpg.Avatar.Storage
     /// <summary>
     /// Service that allows to store blob to Azure
     /// </summary>
-    public class AzureAvatarStorageService : IAvatarStorageService
+    internal class AzureAvatarStorageService : IAvatarStorageService
     {
         private readonly string connectionString;
         private readonly ILogger<AzureAvatarStorageService> logger;
@@ -36,7 +36,7 @@ namespace JoinRpg.Avatar.Storage
             this.logger = logger;
             this.httpClientFactory = httpClientFactory;
         }
-        async Task<Uri> IAvatarStorageService.StoreAvatar(
+        async Task<Uri?> IAvatarStorageService.StoreAvatar(
             Uri remoteUri,
             CancellationToken ct)
         {

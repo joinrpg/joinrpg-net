@@ -33,10 +33,6 @@ namespace JoinRpg.Portal
 
             builder.RegisterAssemblyTypes(typeof(JoinRpgPortalModule).Assembly)
                 .Where(type => typeof(IAuthorizationHandler).IsAssignableFrom(type)).As<IAuthorizationHandler>();
-
-
-            builder.RegisterType<AzureAvatarStorageService>().AsImplementedInterfaces();
-
         }
     }
 }
