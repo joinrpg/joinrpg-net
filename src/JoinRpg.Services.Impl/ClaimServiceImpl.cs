@@ -178,7 +178,12 @@ namespace JoinRpg.Services.Impl
 
             source.EnsureCanAddClaim(CurrentUserId);
 
-            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault();
+            var responsibleMaster = source.GetResponsibleMasters().FirstOrDefault()
+                //if we failed to calculate responsible master, assign owner as responsible master
+                ?? source.Project.ProjectAcls.Where(w => w.IsOwner).FirstOrDefault()?.User
+                //if we found no owner, assign random master 
+                ?? source.Project.ProjectAcls.First().User;
+
             var claim = new Claim()
             {
                 CharacterGroupId = characterGroupId,
@@ -188,7 +193,7 @@ namespace JoinRpg.Services.Impl
                 PlayerAcceptedDate = Now,
                 CreateDate = Now,
                 ClaimStatus = Claim.Status.AddedByUser,
-                ResponsibleMasterUserId = responsibleMaster?.UserId,
+                ResponsibleMasterUserId = responsibleMaster.UserId,
                 ResponsibleMasterUser = responsibleMaster,
                 LastUpdateDateTime = Now,
                 CommentDiscussion = new CommentDiscussion() { CommentDiscussionId = -1, ProjectId = projectId },
