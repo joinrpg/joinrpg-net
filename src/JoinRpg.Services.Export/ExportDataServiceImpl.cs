@@ -17,7 +17,7 @@ namespace JoinRpg.Services.Export
         public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) where T : class
             => GetGenerator(type, data, new AutoFrontend<T>(DisplayFunctions));
 
-        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend)
+        public IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend<T> frontend)
              where T : class
             => new TableGenerator<T>(data, GetGeneratorBackend(type), frontend);
 
