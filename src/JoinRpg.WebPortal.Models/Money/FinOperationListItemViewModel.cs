@@ -8,7 +8,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models
 {
-    public class FinOperationListItemViewModel
+    public class FinOperationListItemViewModel : ILinkable
     {
         [Display(Name = "# операции")]
         public int FinanceOperationId { get; }
@@ -40,8 +40,19 @@ namespace JoinRpg.Web.Models
         [Display(Name = "Игрок"), Required]
         public User Player { get; }
 
+        LinkType ILinkable.LinkType => LinkType.Claim;
+
+        string ILinkable.Identification => ClaimId.ToString();
+
+        int? ILinkable.ProjectId => ProjectId;
+
+        public int ProjectId { get; }
+
+        public int ClaimId { get; }
+
         public FinOperationListItemViewModel(FinanceOperation fo, IUriService uriService)
         {
+            ProjectId = fo.ProjectId;
             PaymentTypeName = fo.PaymentType?.GetDisplayName();
             PaymentMaster = fo.PaymentType?.User;
             Claim = fo.Claim.Name;
@@ -52,6 +63,8 @@ namespace JoinRpg.Web.Models
             MarkingMaster = fo.Comment.Author;
             Player = fo.Claim.Player;
             ClaimLink = uriService.Get(fo.Claim);
+
+            ClaimId = fo.ClaimId;
 
             if (fo.OperationType == FinanceOperationType.TransferFrom ||
                 fo.OperationType == FinanceOperationType.TransferTo)
