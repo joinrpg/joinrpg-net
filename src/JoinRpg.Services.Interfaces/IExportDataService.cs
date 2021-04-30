@@ -7,10 +7,7 @@ namespace JoinRpg.Services.Interfaces
 {
     public interface IExportDataService
     {
-        [Obsolete]
-        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) where T : class;
         IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend<T> frontend) where T : class;
-        void BindDisplay<T>(Func<T, string> displayFunc);
     }
 
     public enum ExportType
