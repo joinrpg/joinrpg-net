@@ -16,6 +16,8 @@ namespace JoinRpg.Web.Models
         public IReadOnlyCollection<int> ClaimIds { get; }
         public IReadOnlyCollection<int> CharacterIds => Array.Empty<int>();
 
+        bool IOperationsAwareView.ShowCharacterCreateButton => false;
+
         public FinOperationListViewModel(Project project, IUriService urlHelper, IReadOnlyCollection<FinanceOperation> operations)
         {
             Items = operations
