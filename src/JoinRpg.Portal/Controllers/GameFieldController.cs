@@ -204,7 +204,7 @@ namespace JoinRpg.Portal.Controllers
 
             try
             {
-                _ = await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
+                await FieldSetupService.DeleteField(projectId, field.ProjectFieldId);
 
                 return ReturnToIndex();
             }

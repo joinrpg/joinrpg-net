@@ -46,13 +46,11 @@ namespace JoinRpg.Services.Impl
 
             project.ProjectFields.Add(field);
 
-            project.Details.ScheduleEnabled =
-                project.GetTimeSlotFieldOrDefault() is not null && project.GetRoomFieldOrDefault() is not null;
+            SetScheduleStatusBasedOnFields(project);
 
             _ = UnitOfWork.GetDbSet<ProjectField>().Add(field);
             await UnitOfWork.SaveChangesAsync();
         }
-
 
         public async Task UpdateFieldParams(UpdateFieldRequest request)
         {
@@ -96,25 +94,13 @@ namespace JoinRpg.Services.Impl
             CreateOrUpdateSpecialGroup(field);
         }
 
-        public async Task<ProjectField> DeleteField(int projectId, int projectFieldId)
+        public async Task DeleteField(int projectId, int projectFieldId)
         {
             ProjectField field = await ProjectRepository.GetProjectField(projectId, projectFieldId);
 
-            field.Project.Details.ScheduleEnabled =
-    field.Project.GetTimeSlotFieldOrDefault() is not null && field.Project.GetRoomFieldOrDefault() is not null;
-
-            await DeleteField(field);
-
-            return field;
-        }
-
-        /// <summary>
-        /// Deletes field by its object. We assume here that field represents really existed field in really existed project
-        /// </summary>
-        /// <param name="field">Field to delete</param>
-        private async Task DeleteField(ProjectField field)
-        {
             _ = field.RequestMasterAccess(CurrentUserId, acl => acl.CanChangeFields);
+
+            var project = field.Project;
             if (field.IsName())
             {
                 throw new JoinRpgNameFieldDeleteException(field);
@@ -122,7 +108,7 @@ namespace JoinRpg.Services.Impl
 
             if (field.IsDescription())
             {
-                field.Project.Details.CharacterDescription = null;
+                project.Details.CharacterDescription = null;
             }
 
             foreach (var fieldValueVariant in field.DropdownValues.ToArray()) //Required, cause we modify fields inside.
@@ -139,6 +125,9 @@ namespace JoinRpg.Services.Impl
             {
                 characterGroup.IsActive = false;
             }
+
+            SetScheduleStatusBasedOnFields(project);
+
             await UnitOfWork.SaveChangesAsync();
         }
 
@@ -409,6 +398,12 @@ namespace JoinRpg.Services.Impl
             project.Details.CharacterDescription = project.ProjectFields.SingleOrDefault(e => e.ProjectFieldId == request.DescriptionField);
 
             await UnitOfWork.SaveChangesAsync();
+        }
+
+        private static void SetScheduleStatusBasedOnFields(Project project)
+        {
+            project.Details.ScheduleEnabled =
+                project.GetTimeSlotFieldOrDefault() is not null && project.GetRoomFieldOrDefault() is not null;
         }
     }
 }

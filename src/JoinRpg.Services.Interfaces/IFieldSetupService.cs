@@ -10,7 +10,7 @@ namespace JoinRpg.Services.Interfaces
     {
         Task UpdateFieldParams(UpdateFieldRequest request);
 
-        Task<ProjectField> DeleteField(int projectId, int projectFieldId);
+        Task DeleteField(int projectId, int projectFieldId);
 
         Task AddField(CreateFieldRequest request);
 
