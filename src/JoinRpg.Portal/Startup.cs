@@ -76,6 +76,8 @@ namespace JoinRpg.Portal
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
 
+            _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
+
             if (environment.IsDevelopment())
             {
                 //That's make local debug more easy
