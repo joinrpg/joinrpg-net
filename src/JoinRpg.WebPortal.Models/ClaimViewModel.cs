@@ -58,7 +58,7 @@ namespace JoinRpg.Web.Models
         public User ResponsibleMaster { get; set; }
 
         [ReadOnly(true)]
-        public IEnumerable<MasterListItemViewModel> Masters { get; }
+        public List<MasterListItemViewModel> Masters { get; }
 
         [ReadOnly(true)]
         public bool HasOtherApprovedClaim { get; }
@@ -159,9 +159,13 @@ namespace JoinRpg.Web.Models
                     claim.IsApproved || claim.Project.Details.EnableManyCharacters
                         ? 0
                         : claim.OtherPendingClaimsForThisPlayer().Count();
-            Masters =
-                claim.Project.GetMasterListViewModel()
-                    .Union(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+            Masters = claim.Project.GetMasterListViewModel().ToList();
+
+            if (claim.ResponsibleMasterUserId is null)
+            {
+                Masters.Add(new MasterListItemViewModel() { Id = "-1", Name = "Нет" });
+            }
+
             ResponsibleMasterId = claim.ResponsibleMasterUserId ?? -1;
             ResponsibleMaster = claim.ResponsibleMasterUser;
             Fields = new CustomFieldsViewModel(currentUser.UserId, claim);

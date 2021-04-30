@@ -96,7 +96,11 @@
               <div class="form-inline input-group-sm" style="margin-top: 0.5em">
                 @Html.DropDownListFor(
                  model => model.ResponsibleMasterId,
-                 Model.Masters.Select(master => new SelectListItem() { Text = master.Name, Value = master.Id }),
+                 Model.Masters.Select(master => new SelectListItem() {
+                   Text = master.Name,
+                   Value = master.Id,
+                   Disabled = master.Id == "-1"
+                 }),
                  htmlAttributes: new { @class = "form-control" })
 
                 @Html.ValidationMessageFor(model => model.ResponsibleMasterId, "", new { @class = "text-danger" })
