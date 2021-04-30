@@ -29,7 +29,7 @@ namespace JoinRpg.Portal.Controllers
                 ThisUserProjects = user.ProjectAcls.Select(p => p.Project).ToLinkViewModels().ToList(),
                 UserId = user.UserId,
                 Details = new UserProfileDetailsViewModel(user, accessReason),
-                HasAdminAccess = currentUser?.Auth.IsAdmin ?? false,
+                HasAdminAccess = CurrentUserAccessor.IsAdmin,
                 IsAdmin = user.Auth.IsAdmin,
             };
 
@@ -37,9 +37,11 @@ namespace JoinRpg.Portal.Controllers
             {
                 userProfileViewModel.CanGrantAccessProjects =
                     currentUser.GetProjects(acl => acl.CanGrantRights).Where(project => project.Active).ToLinkViewModels().ToList();
-                userProfileViewModel.Claims = new ClaimListViewModel(currentUser.UserId,
-                    user.Claims.Where(claim =>
-                        claim.HasAccess(currentUser.UserId, ExtraAccessReason.Player)).ToArray(),
+                var claims = CurrentUserAccessor.IsAdmin
+                    ? user.Claims.ToArray()
+                    : user.Claims.Where(claim => claim.HasAccess(CurrentUserAccessor.UserId, ExtraAccessReason.Player)).ToArray();
+                userProfileViewModel.Claims = new ClaimListViewModel(CurrentUserAccessor.UserId,
+                    claims,
                     null,
                     showCount: false,
                     showUserColumn: false);
