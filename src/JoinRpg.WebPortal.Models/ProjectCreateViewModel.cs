@@ -33,8 +33,7 @@ namespace JoinRpg.Web.Models
             Description = "")]
         Convention,
 
-        [Display(Name = "Конвент - мероприятия",
-            Description = "Включает экспериментальную фичу «расписание»")]
+        [Display(Name = "Конвент - мероприятия")]
         ConventionProgram,
     }
 }
