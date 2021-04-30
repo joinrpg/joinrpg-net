@@ -9,9 +9,9 @@ namespace JoinRpg.Services.Export.Internal
     {
         private IEnumerable<TRow> Data { get; }
         private IGeneratorBackend Backend { get; }
-        private IGeneratorFrontend Frontend { get; }
+        private IGeneratorFrontend<TRow> Frontend { get; }
 
-        public TableGenerator(IEnumerable<TRow> data, IGeneratorBackend backend, IGeneratorFrontend frontend)
+        public TableGenerator(IEnumerable<TRow> data, IGeneratorBackend backend, IGeneratorFrontend<TRow> frontend)
         {
             Data = data;
             Backend = backend;

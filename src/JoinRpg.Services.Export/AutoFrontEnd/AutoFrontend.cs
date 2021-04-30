@@ -4,7 +4,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Services.Export.AutoFrontEnd
 {
-    internal class AutoFrontend<TRow> : IGeneratorFrontend
+    internal class AutoFrontend<TRow> : IGeneratorFrontend<TRow>
     {
         public AutoFrontend(IDictionary<Type, Func<object, string>> displayFunctions) => DisplayFunctions = displayFunctions;
 

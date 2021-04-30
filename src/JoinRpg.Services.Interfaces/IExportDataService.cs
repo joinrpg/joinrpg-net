@@ -9,7 +9,7 @@ namespace JoinRpg.Services.Interfaces
     {
         [Obsolete]
         IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data) where T : class;
-        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend frontend) where T : class;
+        IExportGenerator GetGenerator<T>(ExportType type, IEnumerable<T> data, IGeneratorFrontend<T> frontend) where T : class;
         void BindDisplay<T>(Func<T, string> displayFunc);
     }
 
@@ -34,7 +34,7 @@ namespace JoinRpg.Services.Interfaces
         string? Name { get; }
     }
 
-    public interface IGeneratorFrontend
+    public interface IGeneratorFrontend<TRow>
     {
         IEnumerable<ITableColumn> ParseColumns();
     }

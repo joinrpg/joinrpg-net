@@ -11,7 +11,7 @@ using JoinRpg.Services.Interfaces;
 
 namespace JoinRpg.Web.Models.Exporters
 {
-    public abstract class CustomExporter<TRow> : IGeneratorFrontend
+    public abstract class CustomExporter<TRow> : IGeneratorFrontend<TRow>
     {
         protected CustomExporter(IUriService uriService) => UriService = uriService;
 
