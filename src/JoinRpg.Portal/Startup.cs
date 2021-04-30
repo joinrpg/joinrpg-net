@@ -69,6 +69,9 @@ namespace JoinRpg.Portal
                     }
                     options.Filters.Add(new SetIsProductionFilterAttribute());
                     options.Filters.Add(new TypeFilterAttribute(typeof(SetUserDataFilterAttribute)));
+
+                    //TODO need to fix this
+                    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices();
