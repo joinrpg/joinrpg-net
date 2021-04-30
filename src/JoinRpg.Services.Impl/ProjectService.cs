@@ -121,7 +121,7 @@ namespace JoinRpg.Services.Impl
                     timeField.MasterDescription = new MarkdownString("Здесь вы можете указать, когда проводится мероприятие. Настройте в свойствах поля возможное время проведения");
 
                     var roomField = CreateField("Место проведения мероприятия", ProjectFieldType.ScheduleRoomField);
-                    roomField.MasterDescription = new MarkdownString("Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля возможное время проведения");
+                    roomField.MasterDescription = new MarkdownString("Здесь вы можете указать, где проводится мероприятие. Настройте в свойствах поля конкретные помещения");
 
                     break;
                 default:
