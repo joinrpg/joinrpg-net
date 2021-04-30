@@ -259,13 +259,37 @@ namespace JoinRpg.Portal.Controllers
 
         [HttpGet("~/my/claims")]
         [Authorize]
-        public async Task<ActionResult> My()
+        public async Task<ActionResult> My(string? export)
         {
             var user = await GetCurrentUserAsync();
-            ViewBag.Title = "Мои заявки";
-            return View("Index",
-                new ClaimListViewModel(CurrentUserId, user.Claims.ToList(), null, showCount: false,
-                    showUserColumn: false));
+            var title = "Мои заявки";
+
+            ViewBag.Title = title;
+
+            var viewModel = new ClaimListViewModel(
+                                       CurrentUserId,
+                                       user.Claims.ToList(),
+                                       projectId: null,
+                                       showCount: false,
+                                       showUserColumn: false);
+
+            var exportType = ExportTypeNameParserHelper.ToExportType(export);
+
+            if (exportType == null)
+            {
+                return base.View("Index", viewModel);
+            }
+            else
+            {
+                return await ExportWithCustomFrontend(
+                    viewModel.Items,
+                    title,
+                    exportType.Value,
+                    new MyClaimListItemViewModelExporter(UriService),
+                    user.PrefferedName);
+            }
+
+
         }
 
         [HttpGet, MasterAuthorize()]
