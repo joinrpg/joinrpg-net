@@ -93,13 +93,14 @@ namespace JoinRpg.Portal.Controllers
             }
             else
             {
-                ExportDataService.BindDisplay<User>(user => user?.GetDisplayName() ?? "");
-                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items);
-                return File(
-                    await generator.Generate(),
-                    generator.ContentType,
-                    Path.ChangeExtension("finance-export", generator.FileExtension)
-                );
+                var frontend = new FinanceOperationExporter(project, UriService);
+
+                var generator = ExportDataService.GetGenerator(exportType.Value, viewModel.Items, frontend);
+
+                var fileName = project.ProjectName + ": Финансы";
+
+                return File(await generator.Generate(), generator.ContentType,
+                    Path.ChangeExtension(fileName.ToSafeFileName(), generator.FileExtension));
             }
         }
 
