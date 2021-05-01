@@ -104,11 +104,6 @@ namespace JoinRpg.Portal
                 .AddAuthentication()
                 .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
 
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders = ForwardedHeaders.All;
-            });
-
             _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
             _ = services.AddApplicationInsightsTelemetry();
 
@@ -116,6 +111,18 @@ namespace JoinRpg.Portal
                 .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
                 .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" })
                 .AddCheck<HealthCheckBlobStorage>("Blob connect");
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+                options.KnownProxies.Clear();
+                options.KnownNetworks.Clear();
+                options.ForwardLimit = 1;
+                // Allow nearest proxy server to set X-Forwarded-?? header
+                // Do not white-list servers (It's hard to know them specifically proxy server in cloud)
+                // It will allow IP-spoofing, if Kestrel is directly exposed to end user
+                // But it should never happen anyway (we always should be under at least one proxy)
+            });
         }
 
 
@@ -132,6 +139,8 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            _ = app.UseForwardedHeaders();
+
             _ = app.UseRequestLocalization(options =>
               {
                   options.DefaultRequestCulture = new RequestCulture("ru-RU");
@@ -162,8 +171,6 @@ namespace JoinRpg.Portal
                       await next();
                   }
               });
-
-            _ = app.UseForwardedHeaders();
 
             _ = app
                 .UseSwagger(Swagger.Configure)
