@@ -106,8 +106,7 @@ namespace JoinRpg.Portal
 
             services.Configure<ForwardedHeadersOptions>(options =>
             {
-                options.ForwardedHeaders =
-                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.ForwardedHeaders = ForwardedHeaders.All;
             });
 
             _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
