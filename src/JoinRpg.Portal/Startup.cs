@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -103,6 +104,12 @@ namespace JoinRpg.Portal
                 .AddAuthentication()
                 .ConfigureJoinExternalLogins(Configuration.GetSection("Authentication"));
 
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            });
+
             _ = services.AddSwaggerGen(Swagger.ConfigureSwagger);
             _ = services.AddApplicationInsightsTelemetry();
 
@@ -157,9 +164,12 @@ namespace JoinRpg.Portal
                   }
               });
 
+            _ = app.UseForwardedHeaders();
 
-            _ = app.UseSwagger(Swagger.Configure);
-            _ = app.UseSwaggerUI(Swagger.ConfigureUI);
+            _ = app
+                .UseSwagger(Swagger.Configure)
+                .UseSwaggerUI(Swagger.ConfigureUI);
+
             if (!env.IsDevelopment())
             {
                 _ = app.UseHttpsRedirection();
