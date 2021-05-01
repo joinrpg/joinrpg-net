@@ -1,6 +1,7 @@
 using System.Globalization;
 using Autofac;
 using Joinrpg.Web.Identity;
+using JoinRpg.BlobStorage;
 using JoinRpg.DI;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;
@@ -37,10 +38,9 @@ namespace JoinRpg.Portal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"));
-            _ = services.Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"));
-
-            _ = services.Configure<AvatarStorageOptions>(Configuration.GetSection("AzureAvatarStorage"));
+            _ = services.Configure<RecaptchaOptions>(Configuration.GetSection("Recaptcha"))
+                .Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"))
+                .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"));
 
             _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
@@ -57,7 +57,7 @@ namespace JoinRpg.Portal
             _ = services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-            services.AddHttpClient();
+            _ = services.AddHttpClient();
 
             _ = services.AddRouting(options => options.LowercaseUrls = true);
             var mvc = services
@@ -109,9 +109,9 @@ namespace JoinRpg.Portal
             _ = builder.RegisterModule(new JoinrpgMainModule());
             _ = builder.RegisterModule(new JoinRpgPortalModule());
 
-            var avatarConfig = Configuration.GetSection("AzureAvatarStorage");
+            var avatarConfig = Configuration.GetSection("AzureBlobStorage");
             _ = builder.RegisterModule(
-                new Avatar.Storage.AvatarStorageModule(avatarConfig.Get<AvatarStorageOptions>()));
+                new BlobStorageModule(avatarConfig.Get<BlobStorageOptions>()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

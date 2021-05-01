@@ -1,6 +1,5 @@
 using Autofac;
 using BitArmory.ReCaptcha;
-using JoinRpg.Avatar.Storage;
 using JoinRpg.Portal.Identity;
 using JoinRpg.Portal.Infrastructure;
 using JoinRpg.Portal.Infrastructure.Authentication;

@@ -1,26 +1,28 @@
 using Autofac;
 using JoinRpg.Services.Interfaces;
 
-namespace JoinRpg.Avatar.Storage
+namespace JoinRpg.BlobStorage
 {
     /// <summary>
     /// Module that select correct avatar storage
     /// </summary>
-    public class AvatarStorageModule : Module
+    public class BlobStorageModule : Module
     {
-        private readonly AvatarStorageOptions options;
+        private readonly BlobStorageOptions? options;
 
         /// <summary>
         /// ctor
         /// </summary>
-        public AvatarStorageModule(AvatarStorageOptions options) => this.options = options;
+        public BlobStorageModule(BlobStorageOptions? options) => this.options = options;
 
         /// <inheritdoc/>
         protected override void Load(ContainerBuilder builder)
         {
-            if (options.AvatarStorageEnabled)
+            _ = builder.RegisterType<AzureBlobStorageConnectionFactory>().AsSelf();
+            if (options?.BlobStorageConfigured == true)
             {
                 _ = builder.RegisterType<AzureAvatarStorageService>().As<IAvatarStorageService>();
+
             }
             else
             {
