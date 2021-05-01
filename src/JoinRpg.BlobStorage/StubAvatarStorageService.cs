@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace JoinRpg.Avatar.Storage
+namespace JoinRpg.BlobStorage
 {
     internal class StubAvatarStorageService : IAvatarStorageService
     {

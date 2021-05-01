@@ -5,43 +5,40 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using JoinRpg.Services.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-namespace JoinRpg.Avatar.Storage
+namespace JoinRpg.BlobStorage
 {
     /// <summary>
     /// Service that allows to store blob to Azure
     /// </summary>
     internal class AzureAvatarStorageService : IAvatarStorageService
     {
-        private readonly string connectionString;
         private readonly ILogger<AzureAvatarStorageService> logger;
         private readonly IHttpClientFactory httpClientFactory;
-
+        private readonly AzureBlobStorageConnectionFactory connectionFactory;
         private readonly Random random = new();
 
         /// <summary>
         /// ctor
         /// </summary>
         public AzureAvatarStorageService(
-            IOptions<AvatarStorageOptions> options,
             ILogger<AzureAvatarStorageService> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            AzureBlobStorageConnectionFactory connectionFactory)
         {
-            connectionString = options.Value.AvatarStorageConnectionString;
             this.logger = logger;
             this.httpClientFactory = httpClientFactory;
+            this.connectionFactory = connectionFactory;
         }
         async Task<Uri?> IAvatarStorageService.StoreAvatar(
             Uri remoteUri,
             CancellationToken ct)
         {
             var downloadAvatarTask = DownloadAvatarAsync(remoteUri, ct);
-            var blobContainerClient = await ConnectToAzureAsync(ct);
+            var blobContainerClient = await connectionFactory.ConnectToAzureAsync("avatars", ct);
             var downloadResult = await downloadAvatarTask;
 
             var blobClient = blobContainerClient.GetBlobClient(CreateAvatarBlobName(remoteUri, downloadResult.Extension));
@@ -53,19 +50,6 @@ namespace JoinRpg.Avatar.Storage
 
             logger.LogInformation("Avatar successfully uploaded to {avatarAzureUri}", blobClient.Uri);
             return blobClient.Uri;
-        }
-
-        private async Task<BlobContainerClient> ConnectToAzureAsync(CancellationToken ct)
-        {
-            var client = new BlobServiceClient(connectionString);
-            var container = client.GetBlobContainerClient("avatars");
-            if (!await container.ExistsAsync(ct))
-            {
-                logger.LogInformation("Container not exist, creating");
-                _ = await container.CreateIfNotExistsAsync(PublicAccessType.Blob, cancellationToken: ct);
-            }
-
-            return container;
         }
 
         private async Task<(Stream Stream, string ContentType, string Extension)> DownloadAvatarAsync(Uri remoteUri, CancellationToken ct)
