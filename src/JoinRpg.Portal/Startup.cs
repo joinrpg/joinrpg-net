@@ -57,7 +57,7 @@ namespace JoinRpg.Portal
             _ = services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-            _ = services.AddHttpClient();
+            _ =services.AddHttpClient();
 
             _ = services.AddRouting(options => options.LowercaseUrls = true);
             var mvc = services
@@ -97,7 +97,8 @@ namespace JoinRpg.Portal
 
             _ = services.AddHealthChecks()
                 .AddSqlServer(Configuration["ConnectionStrings:DefaultConnection"], tags: new[] { "ready" })
-                .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" });
+                .AddCheck<HealthCheckLoadProjects>("Project load", tags: new[] { "ready" })
+                .AddCheck<HealthCheckBlobStorage>("Blob connect");
         }
 
 
