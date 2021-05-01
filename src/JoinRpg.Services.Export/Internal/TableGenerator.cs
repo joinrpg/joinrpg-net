@@ -30,10 +30,7 @@ namespace JoinRpg.Services.Export.Internal
 
                 foreach (var row in Data)
                 {
-                    Backend.WriteRow(columns.Select(tableColumn => new Cell()
-                    {
-                        Content = tableColumn.ExtractValue(row),
-                    }));
+                    Backend.WriteRow(columns.Select(tableColumn => new Cell(tableColumn.ExtractValue(row))));
                 }
 
                 return Backend.Generate();
