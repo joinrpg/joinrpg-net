@@ -11,6 +11,7 @@ using JoinRpg.Portal.Infrastructure.HealthChecks;
 using JoinRpg.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -26,6 +27,7 @@ namespace JoinRpg.Portal
     public class Startup
     {
         private readonly IWebHostEnvironment environment;
+        private BlobStorageOptions blobStorageOptions;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
@@ -42,6 +44,8 @@ namespace JoinRpg.Portal
                 .Configure<LetsEncryptOptions>(Configuration.GetSection("LetsEncrypt"))
                 .Configure<BlobStorageOptions>(Configuration.GetSection("AzureBlobStorage"));
 
+            blobStorageOptions = Configuration.GetSection("AzureBlobStorage").Get<BlobStorageOptions>();
+
             _ = services.Configure<PasswordHasherOptions>(options => options.CompatibilityMode = PasswordHasherCompatibilityMode.IdentityV2);
 
             _ = services
@@ -57,7 +61,7 @@ namespace JoinRpg.Portal
             _ = services.AddHttpContextAccessor();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-            _ =services.AddHttpClient();
+            _ = services.AddHttpClient();
 
             _ = services.AddRouting(options => options.LowercaseUrls = true);
             var mvc = services
@@ -77,6 +81,13 @@ namespace JoinRpg.Portal
                 .AddViewComponentsAsServices();
 
             _ = services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN-HEADERNAME");
+            var dataProtection = services.AddDataProtection();
+            if (blobStorageOptions.BlobStorageConfigured)
+            {
+                dataProtection.PersistKeysToAzureBlobStorage(
+                    blobStorageOptions.BlobStorageConnectionString,
+                    "data-protection-keys", "joinrpg-portal-protection-keys");
+            }
 
             if (environment.IsDevelopment())
             {
@@ -107,12 +118,9 @@ namespace JoinRpg.Portal
         /// </summary>
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            _ = builder.RegisterModule(new JoinrpgMainModule());
-            _ = builder.RegisterModule(new JoinRpgPortalModule());
-
-            var avatarConfig = Configuration.GetSection("AzureBlobStorage");
-            _ = builder.RegisterModule(
-                new BlobStorageModule(avatarConfig.Get<BlobStorageOptions>()));
+            _ = builder.RegisterModule(new JoinrpgMainModule())
+                .RegisterModule(new JoinRpgPortalModule())
+                .RegisterModule(new BlobStorageModule(blobStorageOptions));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
