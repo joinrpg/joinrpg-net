@@ -160,8 +160,11 @@ namespace JoinRpg.Portal
 
             _ = app.UseSwagger(Swagger.Configure);
             _ = app.UseSwaggerUI(Swagger.ConfigureUI);
+            if (!env.IsDevelopment())
+            {
+                _ = app.UseHttpsRedirection();
+            }
 
-            //app.UseHttpsRedirection();
             _ = app.UseStaticFiles();
 
             _ = app.UseRouting();
