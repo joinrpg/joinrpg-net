@@ -30,7 +30,7 @@ namespace JoinRpg.Services.Export.BackEnds
         {
             Sheet.SheetView.FreezeRows(1);
 
-            _ = Sheet.Columns(1, maxUsedColumn).AdjustToContents();
+            _ = Sheet.Columns(1, maxUsedColumn).AdjustToContents(minWidth: 5.0, maxWidth: 50.0);
 
             using var stream = new MemoryStream();
             Sheet.Workbook.SaveAs(stream);
