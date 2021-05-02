@@ -30,14 +30,5 @@ namespace JoinRpg.Helpers
         }
 
         public static void CleanLinksList<T>(this ICollection<T> target) => target.AssignLinksList(new List<T>());
-
-        public static void RemoveFromLinkList<T>(this ICollection<T> target,
-            IEnumerable<T> linksToRemove)
-        {
-            foreach (var value in linksToRemove.Intersect(target).ToList())
-            {
-                _ = target.Remove(value);
-            }
-        }
     }
 }

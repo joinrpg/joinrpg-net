@@ -89,7 +89,7 @@ namespace JoinRpg.Helpers.Web
 
                         if (needSep)
                         {
-                            _ = builder.Append(",");
+                            _ = builder.Append(',');
                         }
                         _ = builder.Append(next - 25);
                         needSep = true;
