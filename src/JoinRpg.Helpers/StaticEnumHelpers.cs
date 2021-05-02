@@ -16,8 +16,5 @@ namespace JoinRpg.Helpers
                 .GetField(enumValue.ToString())?
                 .GetCustomAttribute<TAttribute>();
         }
-
-        [PublicAPI]
-        public static IEnumerable<T> GetValues<T>() => Enum.GetValues(typeof(T)).Cast<T>();
     }
 }
