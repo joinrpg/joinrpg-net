@@ -23,6 +23,8 @@ namespace JoinRpg.Web.Models
                     return "unapprovedPayment danger";
                 case FinanceOperationState.Approved:
                     return "";
+                case FinanceOperationState.Invalid:
+                    return "unapprovedPayment";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(self));
             }

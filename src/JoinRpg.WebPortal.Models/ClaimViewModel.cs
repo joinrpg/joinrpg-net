@@ -438,7 +438,10 @@ namespace JoinRpg.Web.Models
                     Description = OperationState.GetDisplayName();
                     break;
                 case FinanceOperationTypeViewModel.Online when source.Approved:
-                    Description = OperationState.GetShortNameOrDefault();
+                    Description = OperationState.GetShortNameOrDefault() ?? "";
+                    break;
+                case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Invalid:
+                    Description = OperationState.GetDisplayName();
                     break;
                 case FinanceOperationTypeViewModel.Online when source.State == FinanceOperationState.Proposed:
                     CheckPaymentState = true;
@@ -499,10 +502,12 @@ namespace JoinRpg.Web.Models
                 .Union(CurrentFee)
                 .OrderBy(x => x)
                 .ToList();
-            FinanceOperations = claim.FinanceOperations.Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
-            VisibleFinanceOperations = FinanceOperations.Where(
-                fo => fo.OperationType != FinanceOperationTypeViewModel.FeeChange
-                    && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
+            FinanceOperations = claim.FinanceOperations
+                .Select(fo => new FinanceOperationViewModel(fo, model.HasMasterAccess));
+            VisibleFinanceOperations = FinanceOperations
+                .Where(fo =>
+                    fo.OperationType != FinanceOperationTypeViewModel.FeeChange
+                        && fo.OperationType != FinanceOperationTypeViewModel.PreferentialFeeRequest);
 
             ShowOnlinePaymentControls = model.PaymentTypes.OnlinePaymentsEnabled() && currentUserId == claim.PlayerUserId;
             HasSubmittablePaymentTypes = model.PaymentTypes.Any(pt => pt.TypeKind != PaymentTypeKindViewModel.Online);

@@ -267,7 +267,7 @@ tr.unapprovedPayment {
 }
 
 tr.unapprovedPayment td:last-child {
-    color: black;
+    color: #333333;
 }
 
 .join.alert {
