@@ -67,10 +67,10 @@
                 </div>
                 <div class="modal-footer" style="display: flex; flex-direction: row; align-items: center;">
                   <button type="button" class="btn btn-default" style="margin-right: auto;" data-dismiss="modal">Отмена</button>
-                  <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                  <div>
                     <button type="submit" id="dlgPayOnline1Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.BankCard" class="btn btn-success" style="font-size: larger;" title="@PaymentMethodViewModel.BankCard.GetDescription()">@PaymentMethodViewModel.BankCard.GetDisplayName()</button>
-                    <button type="submit" id="dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-secondary" style="font-size: larger; margin-top: 0.5em" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
-                  </div>
+                    <button type="submit" id="dlgPayOnline2Submit" disabled name="@Html.NameFor(m => m.Method)" value="@PaymentMethodViewModel.FastPaymentsSystem" class="btn btn-secondary" style="font-size: larger; margin-left: 0.5em;" title="@PaymentMethodViewModel.FastPaymentsSystem.GetDescription()">@PaymentMethodViewModel.FastPaymentsSystem.GetDisplayName()</button>
+                    </div>
                 </div>
             }
         </div>
