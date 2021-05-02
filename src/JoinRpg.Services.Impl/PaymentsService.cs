@@ -209,19 +209,27 @@ namespace JoinRpg.Services.Impl
                 case PaymentStatus.Hold:
                 case PaymentStatus.Undefined:
                     break;
+
                 // All ok
                 case PaymentStatus.Paid:
                     fo.State = FinanceOperationState.Approved;
                     fo.Changed = Now;
                     break;
-                // Something wrong
+
+                // User didn't do anything on payment page
                 case PaymentStatus.Expired:
+                    fo.State = FinanceOperationState.Invalid;
+                    fo.Changed = Now;
+                    break;
+
+                // Something went wrong
                 case PaymentStatus.Cancelled:
                 case PaymentStatus.Error: // TODO: Probably have to store last error within finance op?
                 case PaymentStatus.Rejected:
                     fo.State = FinanceOperationState.Declined;
                     fo.Changed = Now;
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -258,6 +266,11 @@ namespace JoinRpg.Services.Impl
                             claim.UpdateClaimFeeIfRequired(Now);
                         }
                     }
+                }
+                else if (paymentInfo.ErrorCode == ApiErrorCode.UnknownPayment)
+                {
+                    fo.State = FinanceOperationState.Invalid;
+                    fo.Changed = Now;
                 }
                 else if (IsCurrentUserAdmin)
                 {
