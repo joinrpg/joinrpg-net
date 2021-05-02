@@ -64,5 +64,11 @@ namespace PscbApi.Models
         /// </summary>
         [Identifier("mobi-money")]
         Mobile,
+
+        /// <summary>
+        /// Fast payments system
+        /// </summary>
+        [Identifier("sbp")]
+        FastPaymentsSystem,
     }
 }

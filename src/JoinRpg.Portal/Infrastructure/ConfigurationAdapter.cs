@@ -41,10 +41,9 @@ namespace JoinRpg.Portal.Infrastructure
         // TODO inject this
         internal string XsrfKey => configuration.GetValue<string>("XsrfKey");
 
-        string IBankSecretsProvider.MerchantId => configuration.GetValue<string>("PaymentProviders:Pscb:bankMerchantId");
-
-        string IBankSecretsProvider.ApiKey => configuration.GetValue<string>("PaymentProviders:Pscb:bankApiKey");
-
-        string IBankSecretsProvider.ApiDebugKey => configuration.GetValue<string>("PaymentProviders:Pscb:bankApiDebugKey");
+        string IBankSecretsProvider.MerchantId => configuration.GetValue<string>("PaymentProviders:Pscb:BankMerchantId");
+        string IBankSecretsProvider.MerchantIdFastPayments => configuration.GetValue<string>("PaymentProviders:Pscb:BankMerchantIdFastPayments");
+        string IBankSecretsProvider.ApiKey => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiKey");
+        string IBankSecretsProvider.ApiDebugKey => configuration.GetValue<string>("PaymentProviders:Pscb:BankApiDebugKey");
     }
 }
