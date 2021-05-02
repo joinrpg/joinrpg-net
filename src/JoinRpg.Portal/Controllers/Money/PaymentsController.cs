@@ -70,7 +70,7 @@ namespace JoinRpg.Portal.Controllers.Money
                         CommentText = data.CommentText,
                         PayerId = CurrentUserAccessor.UserId,
                         Money = data.Money,
-                        Method = (PaymentMethod) data.Method,
+                        Method = (PaymentMethod)data.Method,
                         OperationDate = data.OperationDate,
                     });
 
