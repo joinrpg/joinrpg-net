@@ -410,7 +410,7 @@ namespace JoinRpg.Web.Models
             ProjectId = source.ProjectId;
             Money = source.MoneyAmount;
             LinkedClaimId = source.LinkedClaimId;
-            LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : null;
+            LinkedClaimName = LinkedClaimId.HasValue ? source.LinkedClaim.Name : "";
             LinkedClaimUser = source.LinkedClaim?.Player;
             OperationType = (FinanceOperationTypeViewModel)source.OperationType;
             OperationState = (FinanceOperationStateViewModel)source.State;
@@ -418,7 +418,7 @@ namespace JoinRpg.Web.Models
             Date = source.OperationDate.ToShortDateString();
             ShowLinkedClaimLinkIfTransfer = isMaster;
 
-            Title = OperationType.GetDescription();
+            Title = OperationType.GetDescription() ?? "";
             if (string.IsNullOrWhiteSpace(Title))
             {
                 Title = OperationType.GetDisplayName();
