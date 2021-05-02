@@ -29,7 +29,7 @@
         }
         var server = element.dataset.server;
         if (!server) {
-            server = "http://joinrpg.ru";
+            server = "https://joinrpg.ru";
         }
         var maxCount = element.dataset.maxcount;
         var uri = server + "/" + projectId + "/roles/" + characterGroupId + "/hotjson?maxcount=" + maxCount;
